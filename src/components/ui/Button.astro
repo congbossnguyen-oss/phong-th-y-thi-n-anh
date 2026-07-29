@@ -5,6 +5,7 @@ interface Props {
   size?: "md" | "lg";
   class?: string;
   type?: "button" | "submit";
+  [key: `data-${string}`]: string | undefined;
 }
 const {
   href,
@@ -12,6 +13,7 @@ const {
   size = "md",
   class: className = "",
   type = "button",
+  ...rest
 } = Astro.props;
 
 const base =
@@ -36,11 +38,11 @@ const classes = `${base} ${variants[variant]} ${sizes[size]} ${className}`;
 
 {
   href ? (
-    <a href={href} class={classes}>
+    <a href={href} class={classes} {...rest}>
       <slot />
     </a>
   ) : (
-    <button type={type} class={classes}>
+    <button type={type} class={classes} {...rest}>
       <slot />
     </button>
   )

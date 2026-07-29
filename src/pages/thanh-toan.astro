@@ -1,0 +1,118 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/ui/PageHero.astro";
+import Container from "../components/ui/Container.astro";
+import Button from "../components/ui/Button.astro";
+
+export const prerender = true;
+---
+
+<BaseLayout title="Thanh toán" description="Hoàn tất đơn hàng tại Thiên Anh." noIndex>
+  <PageHero title="Thanh toán" breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Giỏ hàng", href: "/gio-hang" }, { label: "Thanh toán" }]} />
+
+  <Container class="py-16">
+    <div id="checkout-empty" class="hidden flex-col items-center gap-4 rounded-(--radius-card) border border-dashed border-(--color-ivory-300) py-20 text-center">
+      <p class="text-(--color-ink-600)">Giỏ hàng trống, không có gì để thanh toán.</p>
+      <Button href="/vat-pham">Quay lại cửa hàng</Button>
+    </div>
+
+    <div id="checkout-content" class="hidden grid gap-10 lg:grid-cols-5">
+      <form id="checkout-form" class="lg:col-span-3 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6 sm:p-8">
+        <h2 class="font-display text-xl font-semibold text-(--color-ink-950)">Thông tin giao hàng</h2>
+        <div class="mt-5 grid gap-5 sm:grid-cols-2">
+          <div>
+            <label for="name" class="text-sm font-medium text-(--color-ink-800)">Họ và tên <span class="text-(--color-danger-500)">*</span></label>
+            <input id="name" name="name" type="text" required autocomplete="name"
+              class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-cinnabar-500) focus:outline-none focus:ring-2 focus:ring-(--color-cinnabar-500)/20" />
+          </div>
+          <div>
+            <label for="phone" class="text-sm font-medium text-(--color-ink-800)">Số điện thoại <span class="text-(--color-danger-500)">*</span></label>
+            <input id="phone" name="phone" type="tel" required autocomplete="tel"
+              class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-cinnabar-500) focus:outline-none focus:ring-2 focus:ring-(--color-cinnabar-500)/20" />
+          </div>
+        </div>
+        <div class="mt-5">
+          <label for="address" class="text-sm font-medium text-(--color-ink-800)">Địa chỉ nhận hàng <span class="text-(--color-danger-500)">*</span></label>
+          <input id="address" name="address" type="text" required autocomplete="street-address"
+            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-cinnabar-500) focus:outline-none focus:ring-2 focus:ring-(--color-cinnabar-500)/20" />
+        </div>
+        <div class="mt-5">
+          <label for="note" class="text-sm font-medium text-(--color-ink-800)">Ghi chú (không bắt buộc)</label>
+          <textarea id="note" name="note" rows="2"
+            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-cinnabar-500) focus:outline-none focus:ring-2 focus:ring-(--color-cinnabar-500)/20"></textarea>
+        </div>
+
+        <h2 class="mt-8 font-display text-xl font-semibold text-(--color-ink-950)">Phương thức thanh toán</h2>
+        <div class="mt-4 space-y-3">
+          <label class="flex cursor-pointer items-start gap-3 rounded-(--radius-control) border border-(--color-ivory-300) p-4 has-[:checked]:border-(--color-cinnabar-500) has-[:checked]:bg-(--color-cinnabar-50)">
+            <input type="radio" name="payment" value="bank_transfer" checked class="mt-1 accent-(--color-cinnabar-500)" />
+            <span>
+              <span class="block text-sm font-medium text-(--color-ink-950)">Chuyển khoản ngân hàng</span>
+              <span class="block text-xs text-(--color-ink-600)">Thông tin chuyển khoản sẽ hiển thị sau khi đặt hàng.</span>
+            </span>
+          </label>
+          <label class="flex cursor-pointer items-start gap-3 rounded-(--radius-control) border border-(--color-ivory-300) p-4 has-[:checked]:border-(--color-cinnabar-500) has-[:checked]:bg-(--color-cinnabar-50)">
+            <input type="radio" name="payment" value="cod" class="mt-1 accent-(--color-cinnabar-500)" />
+            <span>
+              <span class="block text-sm font-medium text-(--color-ink-950)">Thanh toán khi nhận hàng (COD)</span>
+              <span class="block text-xs text-(--color-ink-600)">Thanh toán tiền mặt trực tiếp cho shipper.</span>
+            </span>
+          </label>
+        </div>
+
+        <Button type="submit" size="lg" class="mt-8 w-full">Đặt hàng</Button>
+      </form>
+
+      <aside class="lg:col-span-2 h-fit rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
+        <h2 class="font-display text-lg font-semibold text-(--color-ink-950)">Đơn hàng của bạn</h2>
+        <ul id="summary-items" class="mt-4 space-y-3"></ul>
+        <div class="mt-4 flex items-center justify-between border-t border-(--color-ivory-300) pt-4 text-base font-semibold">
+          <span class="text-(--color-ink-950)">Tổng cộng</span>
+          <span id="summary-total" class="text-(--color-cinnabar-500)">0đ</span>
+        </div>
+      </aside>
+    </div>
+  </Container>
+</BaseLayout>
+
+<script>
+  import { getCart, getCartTotal, clearCart } from "../lib/cart/cart-client";
+
+  const emptyEl = document.getElementById("checkout-empty")!;
+  const contentEl = document.getElementById("checkout-content")!;
+  const summaryItemsEl = document.getElementById("summary-items")!;
+  const summaryTotalEl = document.getElementById("summary-total")!;
+  const form = document.getElementById("checkout-form") as HTMLFormElement;
+
+  const formatPrice = (price: number) =>
+    price.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
+
+  const items = getCart();
+
+  if (items.length === 0) {
+    emptyEl.classList.remove("hidden");
+    emptyEl.classList.add("flex");
+  } else {
+    contentEl.classList.remove("hidden");
+    contentEl.classList.add("grid");
+
+    items.forEach((item) => {
+      const li = document.createElement("li");
+      li.className = "flex items-center justify-between text-sm";
+      li.innerHTML = `<span class="text-(--color-ink-700)">${item.name} × ${item.qty}</span><span class="font-medium text-(--color-ink-950)">${formatPrice(item.price * item.qty)}</span>`;
+      summaryItemsEl.appendChild(li);
+    });
+    summaryTotalEl.textContent = formatPrice(getCartTotal(items));
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      // BẢN DEMO: chưa ghi vào Neon Postgres — khi có DATABASE_URL, thay đoạn này bằng
+      // fetch('/api/orders/create', { method: 'POST', body: JSON.stringify({...}) }).
+      const orderId = `TA${Date.now().toString().slice(-8)}`;
+      const total = getCartTotal(items);
+      const payment = (form.elements.namedItem("payment") as RadioNodeList).value;
+      clearCart();
+      window.location.href = `/don-hang/thanh-cong?id=${orderId}&total=${total}&payment=${payment}`;
+    });
+  }
+</script>

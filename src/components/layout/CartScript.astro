@@ -1,0 +1,39 @@
+---
+// Script toàn cục: xử lý nút "Thêm vào giỏ" (event delegation) + cập nhật badge số lượng trên icon giỏ hàng.
+// Chỉ 1 bản duy nhất được nhúng trong BaseLayout, chạy trên mọi trang.
+---
+
+<script>
+  import { addItem, getCartCount, CART_EVENT_NAME } from "../../lib/cart/cart-client";
+
+  function updateBadge() {
+    const badge = document.getElementById("cart-count-badge");
+    if (!badge) return;
+    const count = getCartCount();
+    badge.textContent = String(count);
+    badge.classList.toggle("hidden", count === 0);
+  }
+
+  document.addEventListener("click", (event) => {
+    const btn = (event.target as HTMLElement)?.closest<HTMLButtonElement>(".js-add-to-cart");
+    if (!btn) return;
+
+    const { slug, name, price, qty } = btn.dataset;
+    if (!slug || !name || !price) return;
+
+    addItem({ slug, name, price: Number(price) }, qty ? Number(qty) : 1);
+
+    const originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = "Đã thêm vào giỏ";
+    window.setTimeout(() => {
+      btn.disabled = false;
+      btn.textContent = originalText;
+    }, 1200);
+  });
+
+  window.addEventListener(CART_EVENT_NAME, updateBadge);
+  window.addEventListener("storage", updateBadge);
+  document.addEventListener("DOMContentLoaded", updateBadge);
+  updateBadge();
+</script>

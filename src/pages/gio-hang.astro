@@ -12,13 +12,88 @@ export const prerender = true;
   <PageHero title="Giỏ hàng" breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Giỏ hàng" }]} />
 
   <Container class="py-16">
-    <div class="flex flex-col items-center gap-4 rounded-(--radius-card) border border-dashed border-(--color-ivory-300) py-20 text-center">
+    <div id="cart-empty" class="hidden flex-col items-center gap-4 rounded-(--radius-card) border border-dashed border-(--color-ivory-300) py-20 text-center">
       <Icon name="cart" class="size-10 text-(--color-ink-400)" />
       <p class="text-(--color-ink-600)">Giỏ hàng của bạn đang trống.</p>
       <Button href="/vat-pham">Khám phá vật phẩm phong thủy</Button>
     </div>
-    <p class="mt-6 text-center text-xs text-(--color-ink-600)">
-      Chức năng giỏ hàng đầy đủ (thêm/xóa sản phẩm, thanh toán) sẽ được kích hoạt ở Giai đoạn 3.
+
+    <div id="cart-filled" class="hidden grid gap-8 lg:grid-cols-3">
+      <div class="lg:col-span-2">
+        <ul id="cart-items" class="divide-y divide-(--color-ivory-300) rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50)"></ul>
+      </div>
+      <aside class="h-fit rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
+        <h2 class="font-display text-lg font-semibold text-(--color-ink-950)">Tổng cộng</h2>
+        <div class="mt-4 flex items-center justify-between text-sm text-(--color-ink-700)">
+          <span>Tạm tính</span>
+          <span id="cart-total" class="font-semibold text-(--color-cinnabar-500)">0đ</span>
+        </div>
+        <p class="mt-2 text-xs text-(--color-ink-600)">Phí vận chuyển sẽ được xác nhận khi đặt hàng.</p>
+        <Button href="/thanh-toan" size="lg" class="mt-5 w-full">Tiến hành thanh toán</Button>
+      </aside>
+    </div>
+
+    <p class="mt-8 text-center text-xs text-(--color-ink-600)">
+      Đây là bản demo giỏ hàng chạy phía trình duyệt (localStorage). Khi kết nối Neon Postgres, giỏ hàng sẽ được đồng bộ qua API.
     </p>
   </Container>
+
+  <template id="cart-item-template">
+    <li class="flex items-center gap-4 p-4">
+      <div class="size-16 shrink-0 rounded-(--radius-control) bg-(--color-ivory-200)"></div>
+      <div class="flex-1">
+        <p class="cart-item-name font-display text-sm font-semibold text-(--color-ink-950)"></p>
+        <p class="cart-item-price mt-1 text-sm text-(--color-cinnabar-500)"></p>
+      </div>
+      <div class="flex items-center rounded-(--radius-control) border border-(--color-ivory-300)">
+        <button type="button" class="cart-item-decrease flex size-9 items-center justify-center text-(--color-ink-800) hover:bg-(--color-ivory-200)" aria-label="Giảm số lượng">−</button>
+        <span class="cart-item-qty w-8 text-center text-sm font-medium" aria-live="polite"></span>
+        <button type="button" class="cart-item-increase flex size-9 items-center justify-center text-(--color-ink-800) hover:bg-(--color-ivory-200)" aria-label="Tăng số lượng">+</button>
+      </div>
+      <button type="button" class="cart-item-remove flex size-9 items-center justify-center rounded-full text-(--color-ink-500) hover:bg-(--color-danger-500)/10 hover:text-(--color-danger-500)" aria-label="Xóa khỏi giỏ hàng">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" class="size-4.5"><path d="M6 6l12 12M6 18 18 6"/></svg>
+      </button>
+    </li>
+  </template>
 </BaseLayout>
+
+<script>
+  import { getCart, updateQty, removeItem, getCartTotal, CART_EVENT_NAME, type CartItem } from "../lib/cart/cart-client";
+
+  const emptyEl = document.getElementById("cart-empty")!;
+  const filledEl = document.getElementById("cart-filled")!;
+  const listEl = document.getElementById("cart-items")!;
+  const totalEl = document.getElementById("cart-total")!;
+  const template = document.getElementById("cart-item-template") as HTMLTemplateElement;
+
+  const formatPrice = (price: number) =>
+    price.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
+
+  function render() {
+    const items = getCart();
+    emptyEl.classList.toggle("hidden", items.length > 0);
+    emptyEl.classList.toggle("flex", items.length === 0);
+    filledEl.classList.toggle("hidden", items.length === 0);
+    filledEl.classList.toggle("grid", items.length > 0);
+
+    listEl.innerHTML = "";
+    items.forEach((item: CartItem) => {
+      const node = template.content.cloneNode(true) as DocumentFragment;
+      node.querySelector(".cart-item-name")!.textContent = item.name;
+      node.querySelector(".cart-item-price")!.textContent = formatPrice(item.price);
+      node.querySelector(".cart-item-qty")!.textContent = String(item.qty);
+
+      node.querySelector(".cart-item-decrease")!.addEventListener("click", () => updateQty(item.slug, item.qty - 1));
+      node.querySelector(".cart-item-increase")!.addEventListener("click", () => updateQty(item.slug, item.qty + 1));
+      node.querySelector(".cart-item-remove")!.addEventListener("click", () => removeItem(item.slug));
+
+      listEl.appendChild(node);
+    });
+
+    totalEl.textContent = formatPrice(getCartTotal(items));
+  }
+
+  window.addEventListener(CART_EVENT_NAME, render);
+  document.addEventListener("DOMContentLoaded", render);
+  render();
+</script>

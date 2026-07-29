@@ -42,11 +42,19 @@ const formatPrice = (price: number) =>
 
       <div class="mt-6 flex items-center gap-3">
         <div class="flex items-center rounded-(--radius-control) border border-(--color-ivory-300)">
-          <button type="button" aria-label="Giảm số lượng" class="flex size-11 items-center justify-center text-(--color-ink-800) hover:bg-(--color-ivory-200)">−</button>
-          <span class="w-10 text-center text-sm font-medium" aria-live="polite">1</span>
-          <button type="button" aria-label="Tăng số lượng" class="flex size-11 items-center justify-center text-(--color-ink-800) hover:bg-(--color-ivory-200)">+</button>
+          <button type="button" id="qty-decrease" aria-label="Giảm số lượng" class="flex size-11 items-center justify-center text-(--color-ink-800) hover:bg-(--color-ivory-200)">−</button>
+          <span id="qty-value" class="w-10 text-center text-sm font-medium" aria-live="polite">1</span>
+          <button type="button" id="qty-increase" aria-label="Tăng số lượng" class="flex size-11 items-center justify-center text-(--color-ink-800) hover:bg-(--color-ivory-200)">+</button>
         </div>
-        <Button size="lg" class="flex-1">
+        <Button
+          size="lg"
+          id="add-to-cart-btn"
+          class="js-add-to-cart flex-1"
+          data-slug={product.slug}
+          data-name={product.name}
+          data-price={String(product.price)}
+          data-qty="1"
+        >
           <Icon name="cart" class="size-4.5" />
           Thêm vào giỏ hàng
         </Button>
@@ -54,4 +62,21 @@ const formatPrice = (price: number) =>
       <p class="mt-3 text-xs text-(--color-ink-600)">Thanh toán khi nhận hàng (COD) hoặc chuyển khoản — không cần thẻ tín dụng.</p>
     </div>
   </Container>
+
+  <script>
+    const qtyValue = document.getElementById("qty-value")!;
+    const addBtn = document.getElementById("add-to-cart-btn")!;
+    let qty = 1;
+
+    document.getElementById("qty-decrease")?.addEventListener("click", () => {
+      qty = Math.max(1, qty - 1);
+      qtyValue.textContent = String(qty);
+      addBtn.dataset.qty = String(qty);
+    });
+    document.getElementById("qty-increase")?.addEventListener("click", () => {
+      qty += 1;
+      qtyValue.textContent = String(qty);
+      addBtn.dataset.qty = String(qty);
+    });
+  </script>
 </BaseLayout>
