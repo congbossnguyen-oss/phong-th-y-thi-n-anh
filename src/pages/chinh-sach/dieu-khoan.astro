@@ -1,0 +1,16 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import Container from "../../components/ui/Container.astro";
+
+export const prerender = true;
+---
+
+<BaseLayout title="Điều khoản sử dụng" description="Điều khoản sử dụng website Thiên Anh.">
+  <PageHero title="Điều khoản sử dụng" breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Điều khoản sử dụng" }]} />
+  <Container class="py-16">
+    <div class="max-w-2xl text-sm leading-relaxed text-(--color-ink-700)">
+      <p>Nội dung điều khoản sử dụng đầy đủ sẽ được cập nhật cùng nội dung pháp lý chính thức từ khách hàng.</p>
+    </div>
+  </Container>
+</BaseLayout>

@@ -1,0 +1,83 @@
+---
+import Icon from "../ui/Icon.astro";
+import Container from "../ui/Container.astro";
+import { siteConfig, mainNav, footerPolicyLinks } from "../../lib/site-config";
+
+const year = new Date().getFullYear();
+const quickLinks = mainNav.filter((item) => item.href !== "/");
+---
+
+<footer class="border-t border-(--color-ivory-300) bg-(--color-ink-950) text-(--color-ivory-200)">
+  <Container class="grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4">
+    <div>
+      <a href="/" class="flex items-center gap-2.5">
+        <span class="flex size-10 items-center justify-center rounded-full border-2 border-(--color-gold-400) text-(--color-gold-300)">
+          <span class="font-display text-base font-semibold">TA</span>
+        </span>
+        <span class="font-display text-lg font-semibold text-(--color-ivory-50)">{siteConfig.name}</span>
+      </a>
+      <p class="mt-4 text-sm leading-relaxed text-(--color-ivory-300)">{siteConfig.description}</p>
+      <div class="mt-5 flex items-center gap-3">
+        <a href={siteConfig.social.facebook} aria-label="Facebook" class="flex size-9 items-center justify-center rounded-full border border-(--color-ink-600) hover:border-(--color-gold-400) hover:text-(--color-gold-300)">
+          <Icon name="facebook" class="size-4" />
+        </a>
+        <a href={siteConfig.social.youtube} aria-label="YouTube" class="flex size-9 items-center justify-center rounded-full border border-(--color-ink-600) hover:border-(--color-gold-400) hover:text-(--color-gold-300)">
+          <Icon name="youtube" class="size-4" />
+        </a>
+        <a href={siteConfig.social.tiktok} aria-label="TikTok" class="flex size-9 items-center justify-center rounded-full border border-(--color-ink-600) hover:border-(--color-gold-400) hover:text-(--color-gold-300)">
+          <Icon name="tiktok" class="size-4" />
+        </a>
+        <a href={siteConfig.social.zalo} aria-label="Zalo" class="flex size-9 items-center justify-center rounded-full border border-(--color-ink-600) hover:border-(--color-gold-400) hover:text-(--color-gold-300)">
+          <Icon name="zalo" class="size-4" />
+        </a>
+      </div>
+    </div>
+
+    <div>
+      <h3 class="font-display text-sm font-semibold uppercase tracking-wide text-(--color-gold-300)">Khám phá</h3>
+      <ul class="mt-4 space-y-2.5 text-sm">
+        {quickLinks.map((item) => (
+          <li><a href={item.href} class="text-(--color-ivory-300) hover:text-(--color-ivory-50)">{item.label}</a></li>
+        ))}
+      </ul>
+    </div>
+
+    <div>
+      <h3 class="font-display text-sm font-semibold uppercase tracking-wide text-(--color-gold-300)">Chính sách</h3>
+      <ul class="mt-4 space-y-2.5 text-sm">
+        {footerPolicyLinks.map((item) => (
+          <li><a href={item.href} class="text-(--color-ivory-300) hover:text-(--color-ivory-50)">{item.label}</a></li>
+        ))}
+      </ul>
+    </div>
+
+    <div>
+      <h3 class="font-display text-sm font-semibold uppercase tracking-wide text-(--color-gold-300)">Liên hệ</h3>
+      <ul class="mt-4 space-y-3 text-sm text-(--color-ivory-300)">
+        <li class="flex items-start gap-2.5">
+          <Icon name="map-pin" class="mt-0.5 size-4 shrink-0 text-(--color-gold-400)" />
+          <span>{siteConfig.address}</span>
+        </li>
+        <li class="flex items-center gap-2.5">
+          <Icon name="phone" class="size-4 shrink-0 text-(--color-gold-400)" />
+          <a href={`tel:${siteConfig.hotline.replace(/\s/g, "")}`} class="hover:text-(--color-ivory-50)">{siteConfig.hotline}</a>
+        </li>
+        <li class="flex items-center gap-2.5">
+          <Icon name="mail" class="size-4 shrink-0 text-(--color-gold-400)" />
+          <a href={`mailto:${siteConfig.email}`} class="hover:text-(--color-ivory-50)">{siteConfig.email}</a>
+        </li>
+        <li class="flex items-center gap-2.5">
+          <Icon name="clock" class="size-4 shrink-0 text-(--color-gold-400)" />
+          <span>{siteConfig.workingHours}</span>
+        </li>
+      </ul>
+    </div>
+  </Container>
+
+  <div class="border-t border-(--color-ink-800)">
+    <Container class="flex flex-col items-center justify-between gap-2 py-5 text-xs text-(--color-ivory-400) sm:flex-row">
+      <p>© {year} {siteConfig.name}. Đã đăng ký kinh doanh số {siteConfig.businessRegistration}.</p>
+      <p>Thiết kế &amp; phát triển bởi đội ngũ Thiên Anh Digital.</p>
+    </Container>
+  </div>
+</footer>

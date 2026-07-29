@@ -1,0 +1,32 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import Container from "../../components/ui/Container.astro";
+import { team } from "../../lib/placeholder-team";
+
+export const prerender = true;
+---
+
+<BaseLayout title="Đội ngũ chuyên gia" description="Đội ngũ chuyên gia phong thủy của Phong Thủy Thiên Anh.">
+  <PageHero
+    eyebrow="Giới thiệu"
+    title="Đội ngũ chuyên gia"
+    description="Đồng hành cùng bạn là các chuyên gia được đào tạo bài bản, giàu kinh nghiệm thực chiến."
+    breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Về Thiên Anh", href: "/gioi-thieu/ve-cong-ty" }, { label: "Đội ngũ" }]}
+  />
+
+  <Container class="py-16">
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {team.map((member) => (
+        <div class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-5 text-center">
+          <div class="mx-auto size-24 rounded-full bg-(--color-ivory-200)">
+            <!-- TODO: ảnh chân dung thật -->
+          </div>
+          <h3 class="mt-4 font-display text-base font-semibold text-(--color-ink-950)">{member.name}</h3>
+          <p class="mt-1 text-xs font-medium uppercase tracking-wide text-(--color-cinnabar-500)">{member.role}</p>
+          <p class="mt-2 text-sm leading-relaxed text-(--color-ink-600)">{member.bio}</p>
+        </div>
+      ))}
+    </div>
+  </Container>
+</BaseLayout>

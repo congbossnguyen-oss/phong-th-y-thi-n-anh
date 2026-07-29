@@ -1,0 +1,44 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import Container from "../../components/ui/Container.astro";
+import Button from "../../components/ui/Button.astro";
+import { products } from "../../lib/placeholder-data";
+
+export const prerender = true;
+
+const formatPrice = (price: number) =>
+  price.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
+---
+
+<BaseLayout title="Cửa hàng vật phẩm phong thủy" description="Vật phẩm phong thủy chính hiệu, hợp mệnh từ Thiên Anh.">
+  <PageHero
+    eyebrow="Cửa hàng"
+    title="Vật phẩm phong thủy"
+    description="Vật phẩm được lựa chọn kỹ lưỡng, hỗ trợ chiêu tài, hóa sát và hóa giải vận hạn theo từng mệnh cung."
+    breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Vật phẩm" }]}
+  />
+
+  <Container class="py-16">
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {products.map((product) => (
+        <div class="flex flex-col overflow-hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50)">
+          <a href={`/vat-pham/${product.slug}`} class="aspect-square bg-(--color-ivory-200)">
+            <!-- TODO: ảnh sản phẩm thật từ Sanity -->
+          </a>
+          <div class="flex flex-1 flex-col p-4">
+            <p class="text-xs uppercase tracking-wide text-(--color-gold-500)">{product.category}</p>
+            <a href={`/vat-pham/${product.slug}`} class="mt-1 font-display text-base font-semibold text-(--color-ink-950) hover:text-(--color-cinnabar-500)">
+              {product.name}
+            </a>
+            <p class="mt-2 text-base font-semibold text-(--color-cinnabar-500)">{formatPrice(product.price)}</p>
+            <Button size="md" class="mt-3 w-full">Thêm vào giỏ</Button>
+          </div>
+        </div>
+      ))}
+    </div>
+    <p class="mt-8 text-sm text-(--color-ink-600)">
+      Bộ lọc theo danh mục và giỏ hàng đầy đủ sẽ được kích hoạt khi kết nối CMS sản phẩm (Giai đoạn 3).
+    </p>
+  </Container>
+</BaseLayout>

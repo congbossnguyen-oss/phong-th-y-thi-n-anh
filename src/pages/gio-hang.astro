@@ -1,0 +1,24 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/ui/PageHero.astro";
+import Container from "../components/ui/Container.astro";
+import Button from "../components/ui/Button.astro";
+import Icon from "../components/ui/Icon.astro";
+
+export const prerender = true;
+---
+
+<BaseLayout title="Giỏ hàng" description="Giỏ hàng của bạn tại Thiên Anh.">
+  <PageHero title="Giỏ hàng" breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Giỏ hàng" }]} />
+
+  <Container class="py-16">
+    <div class="flex flex-col items-center gap-4 rounded-(--radius-card) border border-dashed border-(--color-ivory-300) py-20 text-center">
+      <Icon name="cart" class="size-10 text-(--color-ink-400)" />
+      <p class="text-(--color-ink-600)">Giỏ hàng của bạn đang trống.</p>
+      <Button href="/vat-pham">Khám phá vật phẩm phong thủy</Button>
+    </div>
+    <p class="mt-6 text-center text-xs text-(--color-ink-600)">
+      Chức năng giỏ hàng đầy đủ (thêm/xóa sản phẩm, thanh toán) sẽ được kích hoạt ở Giai đoạn 3.
+    </p>
+  </Container>
+</BaseLayout>

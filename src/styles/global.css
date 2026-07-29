@@ -1,0 +1,68 @@
+@import "tailwindcss";
+
+@theme {
+  /* Typography — Playfair Display (tiêu đề, chút nét cổ điển sang trọng)
+     + Be Vietnam Pro (nội dung, UI, tối ưu dấu tiếng Việt) */
+  --font-display: "Playfair Display", "Noto Serif", serif;
+  --font-sans: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+
+  /* Màu thương hiệu: đỏ trầm + vàng đồng trên nền ngà ấm, chữ than nâu thay vì đen tuyền */
+  --color-ink-950: #241a15;
+  --color-ink-800: #3a2b23;
+  --color-ink-700: #4a382f;
+  --color-ink-600: #5c4a3f;
+  --color-ink-500: #75604f;
+  --color-ink-400: #8c7a6d;
+
+  --color-ivory-50: #fdfaf5;
+  --color-ivory-100: #faf4ea;
+  --color-ivory-200: #f2e8d8;
+  --color-ivory-300: #e6d6bc;
+  --color-ivory-400: #a89984;
+
+  --color-cinnabar-50: #fdf1ee;
+  --color-cinnabar-100: #fbdfd8;
+  --color-cinnabar-400: #c14a3a;
+  --color-cinnabar-500: #a3352a;
+  --color-cinnabar-600: #862823;
+  --color-cinnabar-700: #6c2019;
+
+  --color-gold-100: #f4e9cf;
+  --color-gold-300: #dcbd7a;
+  --color-gold-400: #c9a256;
+  --color-gold-500: #ad8843;
+  --color-gold-700: #7c6230;
+
+  --color-success-500: #4a7c59;
+  --color-danger-500: #b3261e;
+
+  /* Bán kính bo góc: mềm nhưng không bo tròn kiểu playful */
+  --radius-card: 0.75rem;
+  --radius-control: 0.5rem;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-ivory-50);
+  color: var(--color-ink-800);
+  font-family: var(--font-sans);
+}
+
+h1, h2, h3, .font-display {
+  font-family: var(--font-display);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

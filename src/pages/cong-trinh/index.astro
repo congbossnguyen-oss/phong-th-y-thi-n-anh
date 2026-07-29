@@ -1,0 +1,33 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import Container from "../../components/ui/Container.astro";
+import { portfolio } from "../../lib/placeholder-data";
+
+export const prerender = true;
+---
+
+<BaseLayout title="Công trình đã thực hiện" description="Các công trình phong thủy tiêu biểu do Thiên Anh tư vấn.">
+  <PageHero
+    eyebrow="Công trình"
+    title="Công trình Thiên Anh đã thực hiện"
+    description="Một số dự án tiêu biểu đã được đội ngũ Thiên Anh tư vấn và đồng hành."
+    breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Công trình" }]}
+  />
+
+  <Container class="py-16">
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {portfolio.map((item) => (
+        <a href={`/cong-trinh/${item.slug}`} class="group overflow-hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50)">
+          <div class="aspect-4/3 bg-(--color-ivory-200)">
+            <!-- TODO: ảnh công trình thật -->
+          </div>
+          <div class="p-5">
+            <h2 class="font-display text-base font-semibold text-(--color-ink-950) group-hover:text-(--color-cinnabar-500)">{item.title}</h2>
+            <p class="mt-1 text-sm text-(--color-ink-600)">{item.location}</p>
+          </div>
+        </a>
+      ))}
+    </div>
+  </Container>
+</BaseLayout>

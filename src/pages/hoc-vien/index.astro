@@ -1,0 +1,23 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import Container from "../../components/ui/Container.astro";
+import Button from "../../components/ui/Button.astro";
+
+export const prerender = true;
+---
+
+<BaseLayout title="Khu vực học viên" description="Đăng nhập để truy cập khóa học online tại Thiên Anh.">
+  <PageHero title="Khu vực học viên" breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Học viên" }]} />
+
+  <Container class="flex flex-col items-center gap-4 py-20 text-center">
+    <p class="max-w-md text-(--color-ink-600)">
+      Đăng nhập/đăng ký để xem tiến độ khóa học và truy cập bài giảng video. Chức năng này sẽ được kích hoạt
+      đầy đủ ở Giai đoạn 4 khi kết nối cơ sở dữ liệu học viên.
+    </p>
+    <div class="flex gap-3">
+      <Button href="/hoc-vien/dang-nhap">Đăng nhập</Button>
+      <Button href="/hoc-vien/dang-ky" variant="secondary">Đăng ký</Button>
+    </div>
+  </Container>
+</BaseLayout>

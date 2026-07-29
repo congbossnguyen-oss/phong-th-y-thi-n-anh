@@ -1,0 +1,64 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import Container from "../../components/ui/Container.astro";
+import Button from "../../components/ui/Button.astro";
+import Icon from "../../components/ui/Icon.astro";
+import { services } from "../../lib/placeholder-data";
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  // TODO: thay bằng danh sách slug từ Sanity khi kết nối CMS thật.
+  return services.map((service) => ({ params: { slug: service.slug }, props: { service } }));
+}
+
+const { service } = Astro.props;
+
+const includes = [
+  "Khảo sát/thu thập thông tin ban đầu",
+  "Phân tích chuyên sâu bởi chuyên gia phụ trách",
+  "Báo cáo luận giải chi tiết kèm khuyến nghị áp dụng",
+  "01 buổi giải đáp trực tiếp sau khi có báo cáo",
+];
+---
+
+<BaseLayout title={service.name} description={service.summary}>
+  <PageHero
+    eyebrow="Dịch vụ"
+    title={service.name}
+    description={service.summary}
+    breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Dịch vụ", href: "/dich-vu" }, { label: service.name }]}
+  />
+
+  <Container class="grid gap-12 py-16 lg:grid-cols-3">
+    <div class="lg:col-span-2">
+      <h2 class="font-display text-2xl font-semibold text-(--color-ink-950)">Nội dung dịch vụ bao gồm</h2>
+      <ul class="mt-5 space-y-3">
+        {includes.map((item) => (
+          <li class="flex items-start gap-3 text-sm leading-relaxed text-(--color-ink-700)">
+            <Icon name="check-circle" class="mt-0.5 size-5 shrink-0 text-(--color-cinnabar-500)" />
+            {item}
+          </li>
+        ))}
+      </ul>
+
+      <h2 class="mt-10 font-display text-2xl font-semibold text-(--color-ink-950)">Quy trình thực hiện</h2>
+      <ol class="mt-5 space-y-4">
+        {["Đặt lịch tư vấn qua form hoặc hotline", "Chuyên gia thu thập thông tin, khảo sát thực tế (nếu cần)", "Phân tích và soạn báo cáo luận giải", "Bàn giao báo cáo và giải đáp trực tiếp"].map((step, i) => (
+          <li class="flex gap-4">
+            <span class="flex size-8 shrink-0 items-center justify-center rounded-full bg-(--color-ivory-200) font-display text-sm font-semibold text-(--color-cinnabar-500)">{i + 1}</span>
+            <p class="pt-1 text-sm leading-relaxed text-(--color-ink-700)">{step}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+
+    <aside class="h-fit rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
+      <p class="text-sm text-(--color-ink-600)">Chi phí tham khảo</p>
+      <p class="mt-1 font-display text-3xl font-semibold text-(--color-cinnabar-500)">Từ {service.priceFrom}</p>
+      <p class="mt-2 text-xs text-(--color-ink-600)">Chi phí thực tế tùy theo phạm vi công việc, sẽ được báo giá cụ thể sau khảo sát.</p>
+      <Button href="/lien-he" size="lg" class="mt-5 w-full">Đặt lịch tư vấn ngay</Button>
+    </aside>
+  </Container>
+</BaseLayout>

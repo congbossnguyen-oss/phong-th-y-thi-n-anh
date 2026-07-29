@@ -1,0 +1,57 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import Container from "../../components/ui/Container.astro";
+import Icon from "../../components/ui/Icon.astro";
+import { siteConfig } from "../../lib/site-config";
+
+export const prerender = true;
+
+const values = [
+  { title: "Chính đạo", desc: "Luận giải trung thực, không phóng đại, đặt lợi ích khách hàng lên hàng đầu." },
+  { title: "Chuyên sâu", desc: "Đội ngũ chuyên gia được đào tạo bài bản, cập nhật kiến thức liên tục." },
+  { title: "Đồng hành", desc: "Tư vấn dài hạn, hỗ trợ sau tư vấn chứ không dừng lại ở một buổi gặp." },
+];
+---
+
+<BaseLayout title="Về Thiên Anh" description="Câu chuyện thương hiệu và giá trị cốt lõi của Phong Thủy Thiên Anh.">
+  <PageHero
+    eyebrow="Giới thiệu"
+    title="Về Phong Thủy Thiên Anh"
+    description="Hơn một đơn vị tư vấn phong thủy, Thiên Anh là người bạn đồng hành trên hành trình kiến tạo cuộc sống an lành."
+    breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Về Thiên Anh" }]}
+  />
+
+  <Container class="grid gap-12 py-16 lg:grid-cols-2 lg:items-center">
+    <div>
+      <h2 class="font-display text-2xl font-semibold text-(--color-ink-950)">Câu chuyện của chúng tôi</h2>
+      <p class="mt-4 text-base leading-relaxed text-(--color-ink-600)">
+        {siteConfig.name} được thành lập bởi đội ngũ chuyên gia phong thủy nhiều năm kinh nghiệm, với mong muốn
+        đưa kiến thức phong thủy cổ truyền đến gần hơn với đời sống hiện đại. Chúng tôi tin rằng phong thủy không
+        phải điều huyền bí, mà là khoa học ứng dụng giúp con người sống hài hòa với không gian xung quanh.
+      </p>
+      <p class="mt-4 text-base leading-relaxed text-(--color-ink-600)">
+        Từ tư vấn nhà ở, văn phòng đến các quyết định quan trọng trong đời sống và kinh doanh, Thiên Anh luôn
+        đặt sự chính xác, trung thực và đồng hành lâu dài lên hàng đầu.
+      </p>
+    </div>
+    <div class="aspect-4/3 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-200)">
+      <!-- TODO: ảnh văn phòng/đội ngũ thật -->
+    </div>
+  </Container>
+
+  <section class="bg-(--color-ivory-100) py-16">
+    <Container>
+      <h2 class="font-display text-2xl font-semibold text-(--color-ink-950)">Giá trị cốt lõi</h2>
+      <div class="mt-8 grid gap-5 sm:grid-cols-3">
+        {values.map((v) => (
+          <div class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6">
+            <Icon name="check-circle" class="size-6 text-(--color-cinnabar-500)" />
+            <h3 class="mt-3 font-display text-lg font-semibold text-(--color-ink-950)">{v.title}</h3>
+            <p class="mt-2 text-sm leading-relaxed text-(--color-ink-600)">{v.desc}</p>
+          </div>
+        ))}
+      </div>
+    </Container>
+  </section>
+</BaseLayout>

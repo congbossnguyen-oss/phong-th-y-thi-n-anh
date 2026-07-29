@@ -1,0 +1,157 @@
+---
+import Icon from "../ui/Icon.astro";
+import Container from "../ui/Container.astro";
+import Button from "../ui/Button.astro";
+import { siteConfig, mainNav } from "../../lib/site-config";
+
+const currentPath = Astro.url.pathname;
+const isActive = (href: string) =>
+  href === "/" ? currentPath === "/" : currentPath.startsWith(href);
+---
+
+<header class="sticky top-0 z-40 border-b border-(--color-ivory-300) bg-(--color-ivory-50)/95 backdrop-blur">
+  <!-- Thanh liên hệ nhanh -->
+  <div class="hidden bg-(--color-ink-950) text-(--color-ivory-100) sm:block">
+    <Container class="flex h-9 items-center justify-between text-xs">
+      <div class="flex items-center gap-5">
+        <a href={`tel:${siteConfig.hotline.replace(/\s/g, "")}`} class="flex items-center gap-1.5 hover:text-(--color-gold-300)">
+          <Icon name="phone" class="size-3.5" />
+          {siteConfig.hotline}
+        </a>
+        <a href={`mailto:${siteConfig.email}`} class="flex items-center gap-1.5 hover:text-(--color-gold-300)">
+          <Icon name="mail" class="size-3.5" />
+          {siteConfig.email}
+        </a>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href={siteConfig.social.facebook} aria-label="Facebook Thiên Anh" class="hover:text-(--color-gold-300)">
+          <Icon name="facebook" class="size-3.5" />
+        </a>
+        <a href={siteConfig.social.youtube} aria-label="YouTube Thiên Anh" class="hover:text-(--color-gold-300)">
+          <Icon name="youtube" class="size-3.5" />
+        </a>
+        <a href={siteConfig.social.tiktok} aria-label="TikTok Thiên Anh" class="hover:text-(--color-gold-300)">
+          <Icon name="tiktok" class="size-3.5" />
+        </a>
+      </div>
+    </Container>
+  </div>
+
+  <!-- Header chính -->
+  <Container class="flex h-18 items-center justify-between gap-4 py-2.5">
+    <a href="/" class="flex shrink-0 items-center gap-2.5">
+      <span class="flex size-11 items-center justify-center rounded-full border-2 border-(--color-gold-400) text-(--color-cinnabar-500)">
+        <span class="font-display text-lg font-semibold">TA</span>
+      </span>
+      <span class="flex flex-col leading-tight">
+        <span class="font-display text-lg font-semibold text-(--color-ink-950)">{siteConfig.name}</span>
+        <span class="text-[11px] uppercase tracking-wide text-(--color-gold-500)">{siteConfig.tagline}</span>
+      </span>
+    </a>
+
+    <!-- Nav desktop -->
+    <nav class="hidden items-center gap-1 lg:flex" aria-label="Điều hướng chính">
+      {mainNav.map((item) =>
+        item.children ? (
+          <details class="group relative">
+            <summary
+              class:list={[
+                "flex cursor-pointer list-none items-center gap-1 rounded-(--radius-control) px-3 py-2 text-sm font-medium transition-colors hover:bg-(--color-ivory-200)",
+                isActive(item.href) ? "text-(--color-cinnabar-500)" : "text-(--color-ink-800)",
+              ]}
+            >
+              {item.label}
+              <Icon name="chevron-down" class="size-3.5 transition-transform group-open:rotate-180" />
+            </summary>
+            <ul class="absolute left-0 top-full z-10 mt-1 min-w-52 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-1.5 shadow-lg">
+              {item.children.map((child) => (
+                <li>
+                  <a
+                    href={child.href}
+                    class="block rounded-(--radius-control) px-3 py-2 text-sm text-(--color-ink-800) hover:bg-(--color-ivory-200) hover:text-(--color-cinnabar-500)"
+                  >
+                    {child.label}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </details>
+        ) : (
+          <a
+            href={item.href}
+            class:list={[
+              "rounded-(--radius-control) px-3 py-2 text-sm font-medium transition-colors hover:bg-(--color-ivory-200)",
+              isActive(item.href) ? "text-(--color-cinnabar-500)" : "text-(--color-ink-800)",
+            ]}
+          >
+            {item.label}
+          </a>
+        )
+      )}
+    </nav>
+
+    <div class="flex items-center gap-1.5">
+      <a
+        href="/hoc-vien"
+        class="hidden items-center gap-1.5 rounded-(--radius-control) px-3 py-2 text-sm font-medium text-(--color-ink-800) hover:bg-(--color-ivory-200) md:flex"
+      >
+        <Icon name="user" class="size-4.5" />
+        Học viên
+      </a>
+      <a
+        href="/gio-hang"
+        aria-label="Giỏ hàng"
+        class="flex size-11 items-center justify-center rounded-full text-(--color-ink-800) hover:bg-(--color-ivory-200)"
+      >
+        <Icon name="cart" class="size-5" />
+      </a>
+
+      <!-- Menu mobile -->
+      <details class="relative lg:hidden">
+        <summary
+          aria-label="Mở menu"
+          class="flex size-11 cursor-pointer list-none items-center justify-center rounded-full text-(--color-ink-800) hover:bg-(--color-ivory-200) [&::-webkit-details-marker]:hidden"
+        >
+          <Icon name="menu" class="size-5.5" />
+        </summary>
+        <div class="fixed inset-0 top-[--header-h,0] z-30 bg-(--color-ink-950)/40" />
+        <nav
+          aria-label="Điều hướng di động"
+          class="fixed inset-y-0 right-0 z-40 flex w-[85vw] max-w-sm flex-col gap-1 overflow-y-auto bg-(--color-ivory-50) p-5 shadow-xl"
+        >
+          <div class="mb-3 flex items-center justify-between">
+            <span class="font-display text-base font-semibold">{siteConfig.name}</span>
+          </div>
+          {mainNav.map((item) => (
+            <div>
+              <a href={item.href} class="block rounded-(--radius-control) px-3 py-2.5 text-sm font-medium text-(--color-ink-800) hover:bg-(--color-ivory-200)">
+                {item.label}
+              </a>
+              {item.children && (
+                <div class="ml-3 flex flex-col border-l border-(--color-ivory-300) pl-3">
+                  {item.children.map((child) => (
+                    <a href={child.href} class="rounded-(--radius-control) px-3 py-2 text-sm text-(--color-ink-600) hover:bg-(--color-ivory-200)">
+                      {child.label}
+                    </a>
+                  ))}
+                </div>
+              )}
+            </div>
+          ))}
+          <a href="/hoc-vien" class="mt-2 rounded-(--radius-control) px-3 py-2.5 text-sm font-medium text-(--color-ink-800) hover:bg-(--color-ivory-200)">
+            Khu vực học viên
+          </a>
+          <a
+            href={`tel:${siteConfig.hotline.replace(/\s/g, "")}`}
+            class="mt-3 flex items-center justify-center gap-2 rounded-(--radius-control) bg-(--color-cinnabar-500) px-4 py-3 text-sm font-medium text-(--color-ivory-50)"
+          >
+            <Icon name="phone" class="size-4" />
+            Gọi tư vấn: {siteConfig.hotline}
+          </a>
+        </nav>
+      </details>
+
+      <Button href="/lien-he" class="hidden lg:inline-flex">Đặt lịch tư vấn</Button>
+    </div>
+  </Container>
+</header>

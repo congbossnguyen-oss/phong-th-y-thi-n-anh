@@ -1,0 +1,41 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import Container from "../../components/ui/Container.astro";
+import Button from "../../components/ui/Button.astro";
+import { siteConfig } from "../../lib/site-config";
+
+export const prerender = true;
+
+const openings = [
+  { title: "Chuyên viên tư vấn phong thủy", type: "Toàn thời gian", location: "Hà Nội" },
+  { title: "Nhân viên kinh doanh vật phẩm phong thủy", type: "Toàn thời gian", location: "TP.HCM" },
+  { title: "Content Marketing (mảng phong thủy)", type: "Toàn thời gian / Freelance", location: "Từ xa" },
+];
+---
+
+<BaseLayout title="Tuyển dụng" description="Cơ hội việc làm tại Phong Thủy Thiên Anh.">
+  <PageHero
+    eyebrow="Giới thiệu"
+    title="Tuyển dụng"
+    description="Gia nhập đội ngũ Thiên Anh — nơi kiến thức truyền thống gặp gỡ tư duy hiện đại."
+    breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Về Thiên Anh", href: "/gioi-thieu/ve-cong-ty" }, { label: "Tuyển dụng" }]}
+  />
+
+  <Container class="py-16">
+    <div class="divide-y divide-(--color-ivory-300) rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50)">
+      {openings.map((job) => (
+        <div class="flex flex-col gap-3 p-6 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h3 class="font-display text-lg font-semibold text-(--color-ink-950)">{job.title}</h3>
+            <p class="mt-1 text-sm text-(--color-ink-600)">{job.type} · {job.location}</p>
+          </div>
+          <Button href={`mailto:${siteConfig.email}?subject=Ứng tuyển: ${job.title}`}>Ứng tuyển ngay</Button>
+        </div>
+      ))}
+    </div>
+    <p class="mt-6 text-sm text-(--color-ink-600)">
+      Không tìm thấy vị trí phù hợp? Gửi CV của bạn về <a href={`mailto:${siteConfig.email}`} class="font-medium text-(--color-cinnabar-500) hover:underline">{siteConfig.email}</a>, chúng tôi luôn chào đón những cộng sự tiềm năng.
+    </p>
+  </Container>
+</BaseLayout>

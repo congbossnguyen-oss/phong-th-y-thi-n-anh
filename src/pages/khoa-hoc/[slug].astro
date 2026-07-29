@@ -1,0 +1,58 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import Container from "../../components/ui/Container.astro";
+import Button from "../../components/ui/Button.astro";
+import Icon from "../../components/ui/Icon.astro";
+import { courses } from "../../lib/placeholder-courses";
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  return courses.map((course) => ({ params: { slug: course.slug }, props: { course } }));
+}
+
+const { course } = Astro.props;
+
+const formatPrice = (price: number) =>
+  price.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
+---
+
+<BaseLayout title={course.name} description={course.summary}>
+  <PageHero
+    eyebrow={course.format === "online" ? "Học online" : "Offline / Zoom"}
+    title={course.name}
+    description={course.summary}
+    breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Khóa học", href: "/khoa-hoc" }, { label: course.name }]}
+  />
+
+  <Container class="grid gap-10 py-16 lg:grid-cols-3">
+    <div class="lg:col-span-2">
+      <h2 class="font-display text-2xl font-semibold text-(--color-ink-950)">Bạn sẽ học được gì</h2>
+      <ul class="mt-5 space-y-3">
+        {["Nắm vững nguyên lý nền tảng, áp dụng thực tế ngay sau khóa học", "Bài tập/case study thực chiến cùng chuyên gia", "Tài liệu tổng hợp kèm theo khóa học", "Cộng đồng học viên hỗ trợ trao đổi lâu dài"].map((item) => (
+          <li class="flex items-start gap-3 text-sm leading-relaxed text-(--color-ink-700)">
+            <Icon name="check-circle" class="mt-0.5 size-5 shrink-0 text-(--color-cinnabar-500)" />
+            {item}
+          </li>
+        ))}
+      </ul>
+      <p class="mt-6 text-sm text-(--color-ink-600)">{course.lessonsCount} bài học · Nội dung chi tiết chương trình học sẽ được cập nhật cùng nội dung chính thức.</p>
+    </div>
+
+    <aside class="h-fit rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
+      <p class="font-display text-3xl font-semibold text-(--color-cinnabar-500)">{formatPrice(course.price)}</p>
+      {course.format === "online" ? (
+        <>
+          <p class="mt-2 text-sm text-(--color-ink-600)">Học online, xem lại không giới hạn, theo dõi tiến độ trong khu học viên.</p>
+          <Button href="/hoc-vien/dang-ky" size="lg" class="mt-5 w-full">Đăng ký học ngay</Button>
+        </>
+      ) : (
+        <>
+          <p class="mt-2 text-sm text-(--color-ink-600)">Học trực tiếp/qua Zoom cùng chuyên gia. Để lại thông tin, Thiên Anh sẽ liên hệ xếp lịch.</p>
+          <Button href={`/lien-he?khoa-hoc=${course.slug}`} size="lg" class="mt-5 w-full">Đăng ký khóa học</Button>
+        </>
+      )}
+    </aside>
+  </Container>
+</BaseLayout>

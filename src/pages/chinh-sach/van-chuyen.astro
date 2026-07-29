@@ -1,0 +1,16 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import Container from "../../components/ui/Container.astro";
+
+export const prerender = true;
+---
+
+<BaseLayout title="Chính sách vận chuyển" description="Chính sách vận chuyển vật phẩm phong thủy của Thiên Anh.">
+  <PageHero title="Chính sách vận chuyển" breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Chính sách vận chuyển" }]} />
+  <Container class="py-16">
+    <div class="max-w-2xl text-sm leading-relaxed text-(--color-ink-700)">
+      <p>Nội dung chính sách vận chuyển đầy đủ sẽ được cập nhật cùng nội dung pháp lý chính thức từ khách hàng.</p>
+    </div>
+  </Container>
+</BaseLayout>
