@@ -9,6 +9,10 @@ interface ImportMetaEnv {
   readonly BUNNY_STREAM_LIBRARY_ID: string;
   readonly BUNNY_STREAM_API_KEY: string;
   readonly BUNNY_STREAM_CDN_HOSTNAME: string;
+  readonly R2_ENDPOINT: string;
+  readonly R2_ACCESS_KEY_ID: string;
+  readonly R2_SECRET_ACCESS_KEY: string;
+  readonly R2_BUCKET_NAME: string;
   readonly PUBLIC_SITE_URL: string;
 }
 

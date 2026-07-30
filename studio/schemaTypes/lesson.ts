@@ -16,10 +16,10 @@ export default defineType({
     defineField({ name: "course", title: "Thuộc khóa học", type: "reference", to: [{ type: "course" }], validation: (r) => r.required() }),
     defineField({ name: "order", title: "Thứ tự trong khóa", type: "number", validation: (r) => r.required() }),
     defineField({
-      name: "bunnyVideoId",
-      title: "Bunny Stream Video GUID",
+      name: "r2VideoKey",
+      title: "Tên file video trong Cloudflare R2",
       type: "string",
-      description: "GUID video trong thư viện Bunny Stream — dùng để tạo URL phát có ký (xem src/lib/video/bunnyStream.ts)",
+      description: "Đường dẫn file trong bucket R2, theo quy ước \"{course-slug}/{lesson-slug}.mp4\" (xem src/lib/video/r2.ts)",
     }),
     defineField({ name: "durationSeconds", title: "Thời lượng (giây)", type: "number" }),
     defineField({
