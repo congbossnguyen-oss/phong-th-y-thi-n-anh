@@ -45,7 +45,7 @@ const formatPrice = (price: number) =>
       {course.format === "online" ? (
         <>
           <p class="mt-2 text-sm text-(--color-ink-600)">Học online, xem lại không giới hạn, theo dõi tiến độ trong khu học viên.</p>
-          <Button href="/hoc-vien/dang-ky" size="lg" class="mt-5 w-full">Đăng ký học ngay</Button>
+          <Button id="enroll-btn" size="lg" class="mt-5 w-full" data-course-slug={course.slug}>Đăng ký học ngay</Button>
         </>
       ) : (
         <>
@@ -56,3 +56,21 @@ const formatPrice = (price: number) =>
     </aside>
   </Container>
 </BaseLayout>
+
+{course.format === "online" && (
+  <script>
+    import { getCurrentUser, enroll } from "../../lib/lms/lms-client";
+
+    const btn = document.getElementById("enroll-btn") as HTMLButtonElement | null;
+    btn?.addEventListener("click", () => {
+      const slug = btn.dataset.courseSlug!;
+      const user = getCurrentUser();
+      if (!user) {
+        window.location.href = `/hoc-vien/dang-ky?course=${encodeURIComponent(slug)}`;
+        return;
+      }
+      enroll(slug);
+      window.location.href = `/hoc-vien/khoa-hoc/${slug}`;
+    });
+  </script>
+)}

@@ -1,0 +1,87 @@
+---
+import BaseLayout from "../../../../layouts/BaseLayout.astro";
+import PageHero from "../../../../components/ui/PageHero.astro";
+import Container from "../../../../components/ui/Container.astro";
+import Icon from "../../../../components/ui/Icon.astro";
+import { courses } from "../../../../lib/placeholder-courses";
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  return courses
+    .filter((c) => c.format === "online" && c.lessons)
+    .map((course) => ({ params: { slug: course.slug }, props: { course } }));
+}
+
+const { course } = Astro.props;
+---
+
+<BaseLayout title={`Khóa học: ${course.name}`} description={course.summary} noIndex>
+  <PageHero
+    eyebrow="Khu học viên"
+    title={course.name}
+    breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Học viên", href: "/hoc-vien" }, { label: course.name }]}
+  />
+
+  <div id="gate-checking" class="py-20 text-center text-sm text-(--color-ink-600)">Đang kiểm tra quyền truy cập…</div>
+
+  <div id="lesson-list-view" class="hidden">
+    <Container class="py-16">
+      <div class="mb-6">
+        <div class="h-2 overflow-hidden rounded-full bg-(--color-ivory-200)">
+          <div id="progress-bar" class="h-full rounded-full bg-(--color-cinnabar-500)" style="width: 0%"></div>
+        </div>
+        <p id="progress-label" class="mt-1.5 text-sm text-(--color-ink-600)"></p>
+      </div>
+
+      <ul class="divide-y divide-(--color-ivory-300) rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50)">
+        {course.lessons?.map((lesson, i) => (
+          <li>
+            <a href={`/hoc-vien/khoa-hoc/${course.slug}/bai-hoc/${lesson.slug}`} class="flex items-center gap-4 p-4 hover:bg-(--color-ivory-100)">
+              <span class="lesson-check flex size-9 shrink-0 items-center justify-center rounded-full bg-(--color-ivory-200) text-sm font-semibold text-(--color-ink-600)" data-lesson-slug={lesson.slug}>
+                {i + 1}
+              </span>
+              <span class="flex-1">
+                <span class="block text-sm font-medium text-(--color-ink-950)">{lesson.title}</span>
+                <span class="block text-xs text-(--color-ink-600)">{lesson.durationLabel}</span>
+              </span>
+              <Icon name="arrow-right" class="size-4 text-(--color-ink-400)" />
+            </a>
+          </li>
+        ))}
+      </ul>
+    </Container>
+  </div>
+
+  <script type="application/json" id="course-slug-data" set:html={JSON.stringify(course.slug)} />
+</BaseLayout>
+
+<script>
+  import { getCurrentUser, isEnrolled, getCompletedLessons } from "../../../../lib/lms/lms-client";
+
+  const courseSlug: string = JSON.parse(document.getElementById("course-slug-data")!.textContent!);
+  const user = getCurrentUser();
+
+  if (!user || !isEnrolled(courseSlug)) {
+    window.location.href = `/hoc-vien/dang-nhap?course=${encodeURIComponent(courseSlug)}`;
+  } else {
+    document.getElementById("gate-checking")!.classList.add("hidden");
+    const listView = document.getElementById("lesson-list-view")!;
+    listView.classList.remove("hidden");
+
+    const completed = getCompletedLessons(courseSlug);
+    document.querySelectorAll<HTMLElement>(".lesson-check").forEach((el) => {
+      if (completed.includes(el.dataset.lessonSlug ?? "")) {
+        el.classList.remove("bg-(--color-ivory-200)", "text-(--color-ink-600)");
+        el.classList.add("bg-(--color-success-500)", "text-(--color-ivory-50)");
+        el.innerHTML =
+          '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4"><path d="M9 12.75 11.25 15l3.5-4.5"/></svg>';
+      }
+    });
+
+    const total = document.querySelectorAll(".lesson-check").length;
+    const percent = total > 0 ? Math.round((completed.length / total) * 100) : 0;
+    (document.getElementById("progress-bar") as HTMLElement).style.width = `${percent}%`;
+    document.getElementById("progress-label")!.textContent = `Đã hoàn thành ${completed.length}/${total} bài học (${percent}%)`;
+  }
+</script>

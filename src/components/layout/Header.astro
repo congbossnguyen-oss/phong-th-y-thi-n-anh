@@ -92,11 +92,12 @@ const isActive = (href: string) =>
 
     <div class="flex items-center gap-1.5">
       <a
+        id="member-nav-link"
         href="/hoc-vien"
         class="hidden items-center gap-1.5 rounded-(--radius-control) px-3 py-2 text-sm font-medium text-(--color-ink-800) hover:bg-(--color-ivory-200) md:flex"
       >
         <Icon name="user" class="size-4.5" />
-        Học viên
+        <span id="member-nav-label">Học viên</span>
       </a>
       <a
         href="/gio-hang"

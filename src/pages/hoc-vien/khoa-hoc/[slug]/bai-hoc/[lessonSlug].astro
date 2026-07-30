@@ -1,0 +1,135 @@
+---
+import BaseLayout from "../../../../../layouts/BaseLayout.astro";
+import Container from "../../../../../components/ui/Container.astro";
+import Button from "../../../../../components/ui/Button.astro";
+import Icon from "../../../../../components/ui/Icon.astro";
+import { courses } from "../../../../../lib/placeholder-courses";
+
+export const prerender = true;
+
+export async function getStaticPaths() {
+  const paths: { params: { slug: string; lessonSlug: string }; props: Record<string, unknown> }[] = [];
+  for (const course of courses) {
+    if (!course.lessons) continue;
+    course.lessons.forEach((lesson, index) => {
+      paths.push({
+        params: { slug: course.slug, lessonSlug: lesson.slug },
+        props: {
+          course,
+          lesson,
+          prevLesson: course.lessons![index - 1] ?? null,
+          nextLesson: course.lessons![index + 1] ?? null,
+        },
+      });
+    });
+  }
+  return paths;
+}
+
+const { course, lesson, prevLesson, nextLesson } = Astro.props as {
+  course: (typeof courses)[number];
+  lesson: NonNullable<(typeof courses)[number]["lessons"]>[number];
+  prevLesson: NonNullable<(typeof courses)[number]["lessons"]>[number] | null;
+  nextLesson: NonNullable<(typeof courses)[number]["lessons"]>[number] | null;
+};
+---
+
+<BaseLayout title={`${lesson.title} — ${course.name}`} noIndex>
+  <div id="gate-checking" class="py-20 text-center text-sm text-(--color-ink-600)">Đang kiểm tra quyền truy cập…</div>
+
+  <div id="lesson-view" class="hidden">
+    <Container class="py-10">
+      <nav aria-label="Breadcrumb" class="mb-4 flex items-center gap-1.5 text-xs text-(--color-ink-600)">
+        <a href="/hoc-vien" class="hover:text-(--color-cinnabar-500)">Học viên</a>
+        <span aria-hidden="true">/</span>
+        <a href={`/hoc-vien/khoa-hoc/${course.slug}`} class="hover:text-(--color-cinnabar-500)">{course.name}</a>
+        <span aria-hidden="true">/</span>
+        <span class="text-(--color-ink-950)">{lesson.title}</span>
+      </nav>
+
+      <div class="grid gap-8 lg:grid-cols-3">
+        <div class="lg:col-span-2">
+          <div class="flex aspect-video items-center justify-center rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ink-950) text-(--color-ivory-300)">
+            <div class="text-center">
+              <Icon name="check-circle" class="mx-auto size-10 text-(--color-gold-400)" />
+              <p class="mt-3 text-sm">Trình phát video Bunny Stream (demo placeholder)</p>
+              <p class="mt-1 text-xs text-(--color-ivory-400)">Thời lượng: {lesson.durationLabel}</p>
+            </div>
+          </div>
+
+          <h1 class="mt-5 font-display text-2xl font-semibold text-(--color-ink-950)">{lesson.title}</h1>
+
+          <div class="mt-5 flex flex-wrap items-center gap-3">
+            <Button id="complete-btn" size="lg">Đánh dấu hoàn thành</Button>
+            <span id="completed-badge" class="hidden inline-flex items-center gap-1.5 text-sm font-medium text-(--color-success-500)">
+              <Icon name="check-circle" class="size-4.5" />
+              Đã hoàn thành
+            </span>
+          </div>
+
+          <div class="mt-8 flex items-center justify-between border-t border-(--color-ivory-300) pt-5">
+            {prevLesson ? (
+              <a href={`/hoc-vien/khoa-hoc/${course.slug}/bai-hoc/${prevLesson.slug}`} class="text-sm font-medium text-(--color-ink-700) hover:text-(--color-cinnabar-500)">← {prevLesson.title}</a>
+            ) : <span />}
+            {nextLesson ? (
+              <a href={`/hoc-vien/khoa-hoc/${course.slug}/bai-hoc/${nextLesson.slug}`} class="text-sm font-medium text-(--color-ink-700) hover:text-(--color-cinnabar-500)">{nextLesson.title} →</a>
+            ) : <span />}
+          </div>
+        </div>
+
+        <aside class="h-fit rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-5">
+          <h2 class="font-display text-base font-semibold text-(--color-ink-950)">Nội dung khóa học</h2>
+          <ul class="mt-3 space-y-1">
+            {course.lessons?.map((l) => (
+              <li>
+                <a
+                  href={`/hoc-vien/khoa-hoc/${course.slug}/bai-hoc/${l.slug}`}
+                  class:list={[
+                    "block rounded-(--radius-control) px-3 py-2 text-sm",
+                    l.slug === lesson.slug
+                      ? "bg-(--color-cinnabar-500) text-(--color-ivory-50)"
+                      : "text-(--color-ink-700) hover:bg-(--color-ivory-200)",
+                  ]}
+                >
+                  {l.title}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </aside>
+      </div>
+    </Container>
+  </div>
+
+  <script type="application/json" id="lesson-page-data" set:html={JSON.stringify({ courseSlug: course.slug, lessonSlug: lesson.slug })} />
+</BaseLayout>
+
+<script>
+  import { getCurrentUser, isEnrolled, markLessonComplete, isLessonComplete } from "../../../../../lib/lms/lms-client";
+
+  const { courseSlug, lessonSlug } = JSON.parse(document.getElementById("lesson-page-data")!.textContent!);
+  const user = getCurrentUser();
+
+  if (!user || !isEnrolled(courseSlug)) {
+    window.location.href = `/hoc-vien/dang-nhap?course=${encodeURIComponent(courseSlug)}`;
+  } else {
+    document.getElementById("gate-checking")!.classList.add("hidden");
+    document.getElementById("lesson-view")!.classList.remove("hidden");
+
+    const completeBtn = document.getElementById("complete-btn") as HTMLButtonElement;
+    const completedBadge = document.getElementById("completed-badge")!;
+
+    function refreshState() {
+      if (isLessonComplete(courseSlug, lessonSlug)) {
+        completeBtn.classList.add("hidden");
+        completedBadge.classList.remove("hidden");
+      }
+    }
+    refreshState();
+
+    completeBtn.addEventListener("click", () => {
+      markLessonComplete(courseSlug, lessonSlug);
+      refreshState();
+    });
+  }
+</script>

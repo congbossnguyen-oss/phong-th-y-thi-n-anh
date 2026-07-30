@@ -1,10 +1,12 @@
 ---
-// Script toàn cục: xử lý nút "Thêm vào giỏ" (event delegation) + cập nhật badge số lượng trên icon giỏ hàng.
+// Script toàn cục: xử lý nút "Thêm vào giỏ" (event delegation), cập nhật badge số lượng giỏ hàng,
+// và cập nhật nhãn "Học viên"/tên trong header theo trạng thái đăng nhập demo.
 // Chỉ 1 bản duy nhất được nhúng trong BaseLayout, chạy trên mọi trang.
 ---
 
 <script>
   import { addItem, getCartCount, CART_EVENT_NAME } from "../../lib/cart/cart-client";
+  import { getCurrentUser } from "../../lib/lms/lms-client";
 
   function updateBadge() {
     const badge = document.getElementById("cart-count-badge");
@@ -12,6 +14,13 @@
     const count = getCartCount();
     badge.textContent = String(count);
     badge.classList.toggle("hidden", count === 0);
+  }
+
+  function updateMemberNav() {
+    const label = document.getElementById("member-nav-label");
+    if (!label) return;
+    const user = getCurrentUser();
+    label.textContent = user ? user.name.split(" ")[0] : "Học viên";
   }
 
   document.addEventListener("click", (event) => {
@@ -34,6 +43,11 @@
 
   window.addEventListener(CART_EVENT_NAME, updateBadge);
   window.addEventListener("storage", updateBadge);
-  document.addEventListener("DOMContentLoaded", updateBadge);
+  window.addEventListener("storage", updateMemberNav);
+  document.addEventListener("DOMContentLoaded", () => {
+    updateBadge();
+    updateMemberNav();
+  });
   updateBadge();
+  updateMemberNav();
 </script>

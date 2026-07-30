@@ -5,10 +5,16 @@ import Container from "../components/ui/Container.astro";
 import Button from "../components/ui/Button.astro";
 import Icon from "../components/ui/Icon.astro";
 import { siteConfig } from "../lib/site-config";
+import { courses } from "../lib/placeholder-courses";
 
 export const prerender = false;
 
 const status = Astro.url.searchParams.get("status");
+const courseSlug = Astro.url.searchParams.get("khoa-hoc");
+const requestedCourse = courseSlug ? courses.find((c) => c.slug === courseSlug) : null;
+const prefilledMessage = requestedCourse
+  ? `Tôi muốn đăng ký khóa học "${requestedCourse.name}". Vui lòng liên hệ tư vấn lịch học.`
+  : "";
 ---
 
 <BaseLayout title="Liên hệ / Đặt lịch tư vấn" description="Liên hệ và đặt lịch tư vấn phong thủy cùng Thiên Anh.">
@@ -65,6 +71,7 @@ const status = Astro.url.searchParams.get("status");
             <option>Phong thủy văn phòng</option>
             <option>Hồ sơ trạch nhật</option>
             <option>Hồ sơ bát tự</option>
+            <option selected={!!requestedCourse}>Đăng ký khóa học</option>
             <option>Khác</option>
           </select>
         </div>
@@ -72,7 +79,7 @@ const status = Astro.url.searchParams.get("status");
         <div class="mt-5">
           <label for="message" class="text-sm font-medium text-(--color-ink-800)">Nội dung cần tư vấn</label>
           <textarea id="message" name="message" rows="4"
-            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3.5 py-2.5 text-sm text-(--color-ink-950) focus:border-(--color-cinnabar-500) focus:outline-none focus:ring-2 focus:ring-(--color-cinnabar-500)/20"></textarea>
+            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3.5 py-2.5 text-sm text-(--color-ink-950) focus:border-(--color-cinnabar-500) focus:outline-none focus:ring-2 focus:ring-(--color-cinnabar-500)/20">{prefilledMessage}</textarea>
         </div>
 
         <!-- honeypot chống spam bot, ẩn với người dùng thật -->
