@@ -3,10 +3,9 @@ export interface Lesson {
   slug: string;
   title: string;
   durationLabel: string;
-  // Khóa AES-128 dạng hex (32 ký tự = 16 byte) — chỉ điền khi đã mã hóa video bằng FFmpeg
-  // theo hướng dẫn trong src/lib/video/README.md. Bỏ trống = bài học chưa có video HLS,
-  // trang sẽ tự rơi về link MP4 thường (R2 signed URL) hoặc trạng thái "chưa có video".
-  hlsKeyHex?: string;
+  // Video GUID trong thư viện Bunny Stream (xem sau khi upload video trong Bunny dashboard).
+  // Bỏ trống = bài học chưa có video, trang sẽ hiện trạng thái "chưa có video".
+  bunnyVideoId?: string;
 }
 
 export interface Course {
