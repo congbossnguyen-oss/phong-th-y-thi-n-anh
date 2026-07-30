@@ -53,15 +53,26 @@ const [progress] = await db
   .limit(1);
 const isComplete = !!progress;
 
+// Chặn trang bài học bị nhúng iframe trên website khác (chặn kiểu hotlink phổ biến nhất).
+Astro.response.headers.set("X-Frame-Options", "SAMEORIGIN");
+Astro.response.headers.set("Content-Security-Policy", "frame-ancestors 'self'");
+
 const watermarkLabel = `${user.name} · ${user.email}`;
 
-// Video lưu trong R2 theo quy ước tên file "{course-slug}/{lesson-slug}.mp4".
-// Nếu chưa cấu hình R2 hoặc file chưa được upload, âm thầm rơi về placeholder — không làm sập trang.
+// Ưu tiên 1: video đã mã hóa HLS + AES-128 (bảo mật cao hơn nhiều, chống tải file gốc).
+// Ưu tiên 2 (fallback): link MP4 thường có hạn giờ từ R2, dùng khi bài học chưa được mã hóa HLS.
+const hasHls = !!lesson.hlsKeyHex && !!import.meta.env.PUBLIC_R2_HLS_BASE_URL;
+const hlsUrl = hasHls
+  ? `${import.meta.env.PUBLIC_R2_HLS_BASE_URL}/${course.slug}/${lesson.slug}/playlist.m3u8`
+  : null;
+
 let videoUrl: string | null = null;
-try {
-  videoUrl = await getSignedVideoUrl(`${course.slug}/${lesson.slug}.mp4`);
-} catch (err) {
-  console.error("[bai-hoc] Không tạo được link video R2:", err);
+if (!hasHls) {
+  try {
+    videoUrl = await getSignedVideoUrl(`${course.slug}/${lesson.slug}.mp4`);
+  } catch (err) {
+    console.error("[bai-hoc] Không tạo được link video R2:", err);
+  }
 }
 ---
 
@@ -78,7 +89,9 @@ try {
     <div class="grid gap-8 lg:grid-cols-3">
       <div class="lg:col-span-2">
         <div class="relative flex aspect-video items-center justify-center overflow-hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ink-950) text-(--color-ivory-300)">
-          {videoUrl ? (
+          {hlsUrl ? (
+            <video id="hls-video" controls controlsList="nodownload" class="size-full" preload="metadata" data-hls-src={hlsUrl} />
+          ) : videoUrl ? (
             <video controls controlsList="nodownload" class="size-full" preload="metadata">
               <source src={videoUrl} type="video/mp4" />
               Trình duyệt của bạn không hỗ trợ phát video.
@@ -140,6 +153,25 @@ try {
 </BaseLayout>
 
 <script>
+  import Hls from "hls.js";
+
+  const hlsVideo = document.getElementById("hls-video") as HTMLVideoElement | null;
+  const hlsSrc = hlsVideo?.dataset.hlsSrc;
+
+  if (hlsVideo && hlsSrc) {
+    if (Hls.isSupported()) {
+      // Khóa giải mã AES-128 được hls.js tự động fetch từ URI nhúng sẵn trong playlist.m3u8
+      // (chính là /api/courses/video-key) — cookie session gửi kèm tự nhiên vì cùng domain,
+      // server sẽ kiểm tra đăng nhập + đã ghi danh trước khi trả khóa.
+      const hls = new Hls();
+      hls.loadSource(hlsSrc);
+      hls.attachMedia(hlsVideo);
+    } else if (hlsVideo.canPlayType("application/vnd.apple.mpegurl")) {
+      // Safari hỗ trợ HLS gốc, không cần hls.js
+      hlsVideo.src = hlsSrc;
+    }
+  }
+
   const completeBtn = document.getElementById("complete-btn") as HTMLButtonElement | null;
   completeBtn?.addEventListener("click", async () => {
     completeBtn.disabled = true;

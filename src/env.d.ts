@@ -13,6 +13,7 @@ interface ImportMetaEnv {
   readonly R2_ACCESS_KEY_ID: string;
   readonly R2_SECRET_ACCESS_KEY: string;
   readonly R2_BUCKET_NAME: string;
+  readonly PUBLIC_R2_HLS_BASE_URL: string;
   readonly PUBLIC_SITE_URL: string;
 }
 

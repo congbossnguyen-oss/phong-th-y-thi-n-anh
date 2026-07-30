@@ -23,6 +23,7 @@
     "@tailwindcss/vite": "^4.3.3",
     "astro": "^7.1.6",
     "drizzle-orm": "^0.45.2",
+    "hls.js": "^1.6.16",
     "tailwindcss": "^4.3.3"
   },
   "devDependencies": {
