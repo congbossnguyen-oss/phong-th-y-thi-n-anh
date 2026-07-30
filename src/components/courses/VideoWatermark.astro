@@ -1,0 +1,47 @@
+---
+// Watermark chống quay màn hình chia sẻ: hiện tên + email học viên đang xem, đổi vị trí ngẫu nhiên
+// mỗi 10 phút (không di chuyển liên tục để tránh gây rối mắt khi học). Đặt component này bên trong
+// container video có `position: relative; overflow: hidden`.
+---
+
+<div
+  id="video-watermark"
+  class="pointer-events-none absolute z-10 whitespace-nowrap text-xs font-medium tracking-wide text-white/35 transition-[left,top] duration-1000 ease-in-out"
+  aria-hidden="true"
+>
+</div>
+
+<script>
+  import { getCurrentUser } from "../../lib/lms/lms-client";
+
+  const REPOSITION_INTERVAL_MS = 10 * 60 * 1000; // 10 phút
+
+  function initWatermark() {
+    const el = document.getElementById("video-watermark");
+    const container = el?.parentElement;
+    if (!el || !container) return;
+
+    // TODO: khi chuyển sang session thật (Astro.locals.user), truyền name/email qua data-attribute
+    // từ server thay vì đọc lại từ lms-client demo ở đây.
+    const user = getCurrentUser();
+    if (!user) return;
+
+    el.textContent = `${user.name} · ${user.email}`;
+
+    function reposition() {
+      const containerRect = container!.getBoundingClientRect();
+      const elRect = el!.getBoundingClientRect();
+      const maxX = Math.max(containerRect.width - elRect.width - 12, 12);
+      const maxY = Math.max(containerRect.height - elRect.height - 12, 12);
+      const x = Math.round(Math.random() * maxX);
+      const y = Math.round(Math.random() * maxY);
+      el!.style.left = `${x}px`;
+      el!.style.top = `${y}px`;
+    }
+
+    reposition();
+    setInterval(reposition, REPOSITION_INTERVAL_MS);
+  }
+
+  document.addEventListener("DOMContentLoaded", initWatermark);
+</script>
