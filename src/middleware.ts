@@ -1,5 +1,6 @@
 import { defineMiddleware } from "astro:middleware";
 import { SESSION_COOKIE_NAME, validateSessionToken } from "./lib/auth/session";
+import { getClientIp } from "./lib/auth/client-ip";
 
 export const onRequest = defineMiddleware(async (context, next) => {
   context.locals.user = null;
@@ -15,7 +16,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
   if (token) {
     try {
       // null nếu session không hợp lệ/đã bị đăng nhập máy khác ghi đè (chính sách 1 thiết bị/lúc)
-      context.locals.user = await validateSessionToken(token);
+      // hoặc IP khác lúc đăng nhập (chống dùng chung cookie từ nơi khác).
+      context.locals.user = await validateSessionToken(token, getClientIp(context));
     } catch (err) {
       // Không để lỗi kết nối DB (vd chưa cấu hình DATABASE_URL) làm sập toàn bộ trang marketing tĩnh —
       // chỉ các trang cần đăng nhập mới thực sự phụ thuộc vào DB, còn lại vẫn phải render bình thường.

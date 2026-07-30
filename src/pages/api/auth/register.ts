@@ -4,10 +4,12 @@ import { db } from "../../../lib/db/client";
 import { users } from "../../../../db/schema";
 import { hashPassword } from "../../../lib/auth/password";
 import { createSession, SESSION_COOKIE_NAME } from "../../../lib/auth/session";
+import { getClientIp } from "../../../lib/auth/client-ip";
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request, cookies }) => {
+export const POST: APIRoute = async (context) => {
+  const { request, cookies } = context;
   const body = await request.json().catch(() => null);
   const name = body?.name?.trim();
   const email = body?.email?.trim().toLowerCase();
@@ -27,7 +29,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     .values({ name, email, passwordHash: hashPassword(password) })
     .returning({ id: users.id, name: users.name, email: users.email });
 
-  const token = await createSession(user.id);
+  const token = await createSession(user.id, getClientIp(context));
   cookies.set(SESSION_COOKIE_NAME, token, {
     httpOnly: true,
     secure: import.meta.env.PROD,

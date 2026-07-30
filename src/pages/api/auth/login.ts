@@ -4,10 +4,12 @@ import { db } from "../../../lib/db/client";
 import { users } from "../../../../db/schema";
 import { verifyPassword } from "../../../lib/auth/password";
 import { createSession, SESSION_COOKIE_NAME } from "../../../lib/auth/session";
+import { getClientIp } from "../../../lib/auth/client-ip";
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request, cookies }) => {
+export const POST: APIRoute = async (context) => {
+  const { request, cookies } = context;
   const body = await request.json().catch(() => null);
   const email = body?.email?.trim().toLowerCase();
   const password = body?.password;
@@ -27,7 +29,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   }
 
   // createSession xóa mọi session cũ của user này -> thiết bị đang đăng nhập ở nơi khác sẽ tự bị đăng xuất.
-  const token = await createSession(user.id);
+  // Session mới bị "khóa" theo đúng IP hiện tại -> dùng chung cookie từ IP khác sẽ bị hủy.
+  const token = await createSession(user.id, getClientIp(context));
   cookies.set(SESSION_COOKIE_NAME, token, {
     httpOnly: true,
     secure: import.meta.env.PROD,

@@ -26,6 +26,9 @@ export const sessions = pgTable("sessions", {
   id: text("id").primaryKey(),
   userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  // IP lúc tạo phiên — nếu request sau đó đến từ IP khác, phiên bị hủy ngay (chống dùng chung
+  // cookie đăng nhập từ nhiều nơi cùng lúc, bổ sung cho chính sách "1 thiết bị/lúc").
+  ipAddress: text("ip_address"),
 });
 
 // --- Đơn hàng vật phẩm phong thủy (thanh toán thủ công) ---
