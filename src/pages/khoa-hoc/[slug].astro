@@ -59,17 +59,22 @@ const formatPrice = (price: number) =>
 
 {course.format === "online" && (
   <script>
-    import { getCurrentUser, enroll } from "../../lib/lms/lms-client";
-
     const btn = document.getElementById("enroll-btn") as HTMLButtonElement | null;
-    btn?.addEventListener("click", () => {
+    btn?.addEventListener("click", async () => {
       const slug = btn.dataset.courseSlug!;
-      const user = getCurrentUser();
-      if (!user) {
+      btn.disabled = true;
+
+      const res = await fetch("/api/courses/enroll", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ courseRef: slug }),
+      });
+
+      if (res.status === 401) {
         window.location.href = `/hoc-vien/dang-ky?course=${encodeURIComponent(slug)}`;
         return;
       }
-      enroll(slug);
+
       window.location.href = `/hoc-vien/khoa-hoc/${slug}`;
     });
   </script>

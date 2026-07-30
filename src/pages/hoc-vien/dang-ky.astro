@@ -26,20 +26,18 @@ export const prerender = true;
         <input id="password" name="password" type="password" required autocomplete="new-password" minlength="6"
           class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-cinnabar-500) focus:outline-none focus:ring-2 focus:ring-(--color-cinnabar-500)/20" />
       </div>
-      <Button type="submit" size="lg" class="mt-6 w-full">Tạo tài khoản</Button>
+      <Button type="submit" id="submit-btn" size="lg" class="mt-6 w-full">Tạo tài khoản</Button>
       <p class="mt-4 text-center text-sm text-(--color-ink-600)">
         Đã có tài khoản? <a id="login-link" href="/hoc-vien/dang-nhap" class="font-medium text-(--color-cinnabar-500) hover:underline">Đăng nhập</a>
       </p>
-      <p class="mt-3 text-center text-xs text-(--color-ink-500)">Bản demo: tài khoản lưu tạm trên trình duyệt này, sẽ được kết nối Neon Postgres thật ở Giai đoạn 4.</p>
     </form>
   </Container>
 </BaseLayout>
 
 <script>
-  import { register, enroll } from "../../lib/lms/lms-client";
-
   const form = document.getElementById("register-form") as HTMLFormElement;
   const errorEl = document.getElementById("register-error")!;
+  const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement;
   const loginLink = document.getElementById("login-link") as HTMLAnchorElement;
 
   const params = new URLSearchParams(window.location.search);
@@ -48,24 +46,44 @@ export const prerender = true;
     loginLink.href = `/hoc-vien/dang-nhap?course=${encodeURIComponent(courseSlug)}`;
   }
 
-  form.addEventListener("submit", (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
+    errorEl.classList.add("hidden");
+    submitBtn.disabled = true;
+
     const name = (document.getElementById("name") as HTMLInputElement).value.trim();
     const email = (document.getElementById("email") as HTMLInputElement).value.trim();
     const password = (document.getElementById("password") as HTMLInputElement).value;
 
-    const result = register(name, email, password);
-    if (!result.ok) {
-      errorEl.textContent = result.error ?? "Có lỗi xảy ra, thử lại.";
-      errorEl.classList.remove("hidden");
-      return;
-    }
+    try {
+      const res = await fetch("/api/auth/register", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, password }),
+      });
+      const data = await res.json();
 
-    if (courseSlug) {
-      enroll(courseSlug);
-      window.location.href = `/hoc-vien/khoa-hoc/${courseSlug}`;
-    } else {
-      window.location.href = "/hoc-vien";
+      if (!res.ok || !data.ok) {
+        errorEl.textContent = data.error ?? "Có lỗi xảy ra, thử lại.";
+        errorEl.classList.remove("hidden");
+        submitBtn.disabled = false;
+        return;
+      }
+
+      if (courseSlug) {
+        await fetch("/api/courses/enroll", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ courseRef: courseSlug }),
+        });
+        window.location.href = `/hoc-vien/khoa-hoc/${courseSlug}`;
+      } else {
+        window.location.href = "/hoc-vien";
+      }
+    } catch {
+      errorEl.textContent = "Không kết nối được máy chủ, thử lại sau.";
+      errorEl.classList.remove("hidden");
+      submitBtn.disabled = false;
     }
   });
 </script>

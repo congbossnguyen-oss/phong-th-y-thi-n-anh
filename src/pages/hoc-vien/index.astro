@@ -1,18 +1,52 @@
 ---
+import { eq } from "drizzle-orm";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
-import Icon from "../../components/ui/Icon.astro";
 import { courses } from "../../lib/placeholder-courses";
+import { db } from "../../lib/db/client";
+import { courseEnrollments, lessonProgress } from "../../../db/schema";
 
-export const prerender = true;
+export const prerender = false;
+
+const user = Astro.locals.user;
+
+let enrolledCourses: { slug: string; name: string; completed: number; total: number; percent: number }[] = [];
+
+if (user) {
+  const enrollments = await db
+    .select({ courseRef: courseEnrollments.courseRef })
+    .from(courseEnrollments)
+    .where(eq(courseEnrollments.userId, user.id));
+
+  const progressRows = await db
+    .select({ courseRef: lessonProgress.courseRef, lessonRef: lessonProgress.lessonRef })
+    .from(lessonProgress)
+    .where(eq(lessonProgress.userId, user.id));
+
+  enrolledCourses = enrollments
+    .map((e) => {
+      const course = courses.find((c) => c.slug === e.courseRef);
+      if (!course) return null;
+      const total = course.lessons?.length ?? 0;
+      const completed = progressRows.filter((p) => p.courseRef === e.courseRef).length;
+      return {
+        slug: course.slug,
+        name: course.name,
+        completed,
+        total,
+        percent: total > 0 ? Math.round((completed / total) * 100) : 0,
+      };
+    })
+    .filter((c): c is NonNullable<typeof c> => c !== null);
+}
 ---
 
 <BaseLayout title="Khu vực học viên" description="Đăng nhập để truy cập khóa học online tại Thiên Anh." noIndex>
   <PageHero title="Khu vực học viên" breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Học viên" }]} />
 
-  <div id="guest-view" class="hidden">
+  {!user ? (
     <Container class="flex flex-col items-center gap-4 py-20 text-center">
       <p class="max-w-md text-(--color-ink-600)">
         Đăng nhập/đăng ký để xem tiến độ khóa học và truy cập bài giảng video.
@@ -22,85 +56,44 @@ export const prerender = true;
         <Button href="/hoc-vien/dang-ky" variant="secondary">Đăng ký</Button>
       </div>
     </Container>
-  </div>
-
-  <div id="member-view" class="hidden">
+  ) : (
     <Container class="py-16">
       <div class="flex flex-wrap items-center justify-between gap-4">
         <div>
           <p class="text-sm text-(--color-ink-600)">Xin chào,</p>
-          <h2 id="member-name" class="font-display text-2xl font-semibold text-(--color-ink-950)"></h2>
+          <h2 class="font-display text-2xl font-semibold text-(--color-ink-950)">{user.name}</h2>
         </div>
         <button id="logout-btn" type="button" class="text-sm font-medium text-(--color-ink-600) hover:text-(--color-cinnabar-500)">Đăng xuất</button>
       </div>
 
       <h3 class="mt-10 font-display text-lg font-semibold text-(--color-ink-950)">Khóa học của tôi</h3>
-      <div id="enrolled-list" class="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3"></div>
-      <p id="no-enrollment" class="hidden mt-4 text-sm text-(--color-ink-600)">
-        Bạn chưa đăng ký khóa học online nào. <a href="/khoa-hoc" class="font-medium text-(--color-cinnabar-500) hover:underline">Khám phá khóa học</a>
-      </p>
-    </Container>
-  </div>
-
-  <template id="enrolled-card-template">
-    <a class="enrolled-link group overflow-hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50)">
-      <div class="aspect-video bg-(--color-ivory-200)"></div>
-      <div class="p-5">
-        <h4 class="enrolled-name font-display text-base font-semibold text-(--color-ink-950) group-hover:text-(--color-cinnabar-500)"></h4>
-        <div class="mt-3 h-2 overflow-hidden rounded-full bg-(--color-ivory-200)">
-          <div class="enrolled-progress-bar h-full rounded-full bg-(--color-cinnabar-500)"></div>
+      {enrolledCourses.length === 0 ? (
+        <p class="mt-4 text-sm text-(--color-ink-600)">
+          Bạn chưa đăng ký khóa học online nào. <a href="/khoa-hoc" class="font-medium text-(--color-cinnabar-500) hover:underline">Khám phá khóa học</a>
+        </p>
+      ) : (
+        <div class="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {enrolledCourses.map((c) => (
+            <a href={`/hoc-vien/khoa-hoc/${c.slug}`} class="group overflow-hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50)">
+              <div class="aspect-video bg-(--color-ivory-200)" />
+              <div class="p-5">
+                <h4 class="font-display text-base font-semibold text-(--color-ink-950) group-hover:text-(--color-cinnabar-500)">{c.name}</h4>
+                <div class="mt-3 h-2 overflow-hidden rounded-full bg-(--color-ivory-200)">
+                  <div class="h-full rounded-full bg-(--color-cinnabar-500)" style={`width: ${c.percent}%`} />
+                </div>
+                <p class="mt-1.5 text-xs text-(--color-ink-600)">{c.completed}/{c.total} bài học · {c.percent}%</p>
+              </div>
+            </a>
+          ))}
         </div>
-        <p class="enrolled-progress-label mt-1.5 text-xs text-(--color-ink-600)"></p>
-      </div>
-    </a>
-  </template>
-  <script type="application/json" id="courses-data" set:html={JSON.stringify(courses)} />
+      )}
+    </Container>
+  )}
 </BaseLayout>
 
 <script>
-  import { getCurrentUser, getEnrolledCourseSlugs, getCompletedLessons, logout } from "../../lib/lms/lms-client";
-  import type { Course } from "../../lib/placeholder-courses";
-
-  const coursesData: Course[] = JSON.parse(document.getElementById("courses-data")!.textContent!);
-
-  const user = getCurrentUser();
-  const guestView = document.getElementById("guest-view")!;
-  const memberView = document.getElementById("member-view")!;
-
-  if (!user) {
-    guestView.classList.remove("hidden");
-    guestView.classList.add("flex");
-  } else {
-    memberView.classList.remove("hidden");
-    document.getElementById("member-name")!.textContent = user.name;
-
-    const enrolledSlugs = getEnrolledCourseSlugs();
-    const listEl = document.getElementById("enrolled-list")!;
-    const template = document.getElementById("enrolled-card-template") as HTMLTemplateElement;
-
-    if (enrolledSlugs.length === 0) {
-      document.getElementById("no-enrollment")!.classList.remove("hidden");
-    }
-
-    enrolledSlugs.forEach((slug) => {
-      const course = coursesData.find((c) => c.slug === slug);
-      if (!course) return;
-      const node = template.content.cloneNode(true) as DocumentFragment;
-      (node.querySelector(".enrolled-link") as HTMLAnchorElement).href = `/hoc-vien/khoa-hoc/${slug}`;
-      node.querySelector(".enrolled-name")!.textContent = course.name;
-
-      const totalLessons = course.lessons?.length ?? 0;
-      const completed = getCompletedLessons(slug).length;
-      const percent = totalLessons > 0 ? Math.round((completed / totalLessons) * 100) : 0;
-      (node.querySelector(".enrolled-progress-bar") as HTMLElement).style.width = `${percent}%`;
-      node.querySelector(".enrolled-progress-label")!.textContent = `${completed}/${totalLessons} bài học · ${percent}%`;
-
-      listEl.appendChild(node);
-    });
-
-    document.getElementById("logout-btn")!.addEventListener("click", () => {
-      logout();
-      window.location.reload();
-    });
-  }
+  document.getElementById("logout-btn")?.addEventListener("click", async () => {
+    await fetch("/api/auth/logout", { method: "POST" });
+    window.location.href = "/hoc-vien";
+  });
 </script>

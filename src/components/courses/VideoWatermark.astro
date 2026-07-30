@@ -1,20 +1,23 @@
 ---
-// Watermark chống quay màn hình chia sẻ: hiện tên + email học viên đang xem.
-// Cứ mỗi 10 phút, watermark "chạy" (đổi vị trí liên tục) trong vòng 1 phút rồi đứng yên
-// đến chu kỳ 10 phút tiếp theo — không di chuyển liên tục suốt buổi học để tránh gây rối mắt.
+// Watermark chống quay màn hình chia sẻ: hiện tên + email học viên đang xem (lấy từ session thật
+// phía server, không tin dữ liệu client). Cứ mỗi 10 phút, watermark "chạy" (đổi vị trí liên tục)
+// trong vòng 1 phút rồi đứng yên đến chu kỳ 10 phút tiếp theo.
 // Đặt component này bên trong container video có `position: relative; overflow: hidden`.
+interface Props {
+  label: string;
+}
+const { label } = Astro.props;
 ---
 
 <div
   id="video-watermark"
   class="pointer-events-none absolute z-10 whitespace-nowrap text-xs font-medium tracking-wide text-white/35 transition-[left,top] duration-700 ease-in-out"
   aria-hidden="true"
+  data-label={label}
 >
 </div>
 
 <script>
-  import { getCurrentUser } from "../../lib/lms/lms-client";
-
   const CYCLE_INTERVAL_MS = 10 * 60 * 1000; // cứ 10 phút bắt đầu 1 chu kỳ chuyển động
   const MOVE_PHASE_DURATION_MS = 60 * 1000; // chuyển động trong vòng 1 phút mỗi chu kỳ
   const MOVE_STEP_MS = 4000; // trong 1 phút đó, cứ 4 giây đổi vị trí 1 lần
@@ -24,12 +27,9 @@
     const container = el?.parentElement;
     if (!el || !container) return;
 
-    // TODO: khi chuyển sang session thật (Astro.locals.user), truyền name/email qua data-attribute
-    // từ server thay vì đọc lại từ lms-client demo ở đây.
-    const user = getCurrentUser();
-    if (!user) return;
-
-    el.textContent = `${user.name} · ${user.email}`;
+    const label = el.dataset.label;
+    if (!label) return;
+    el.textContent = label;
 
     function reposition() {
       const containerRect = container!.getBoundingClientRect();
