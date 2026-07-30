@@ -1,12 +1,13 @@
 ---
-// Watermark chống quay màn hình chia sẻ: hiện tên + email học viên đang xem, đổi vị trí ngẫu nhiên
-// mỗi 10 phút (không di chuyển liên tục để tránh gây rối mắt khi học). Đặt component này bên trong
-// container video có `position: relative; overflow: hidden`.
+// Watermark chống quay màn hình chia sẻ: hiện tên + email học viên đang xem.
+// Cứ mỗi 10 phút, watermark "chạy" (đổi vị trí liên tục) trong vòng 1 phút rồi đứng yên
+// đến chu kỳ 10 phút tiếp theo — không di chuyển liên tục suốt buổi học để tránh gây rối mắt.
+// Đặt component này bên trong container video có `position: relative; overflow: hidden`.
 ---
 
 <div
   id="video-watermark"
-  class="pointer-events-none absolute z-10 whitespace-nowrap text-xs font-medium tracking-wide text-white/35 transition-[left,top] duration-1000 ease-in-out"
+  class="pointer-events-none absolute z-10 whitespace-nowrap text-xs font-medium tracking-wide text-white/35 transition-[left,top] duration-700 ease-in-out"
   aria-hidden="true"
 >
 </div>
@@ -14,7 +15,9 @@
 <script>
   import { getCurrentUser } from "../../lib/lms/lms-client";
 
-  const REPOSITION_INTERVAL_MS = 10 * 60 * 1000; // 10 phút
+  const CYCLE_INTERVAL_MS = 10 * 60 * 1000; // cứ 10 phút bắt đầu 1 chu kỳ chuyển động
+  const MOVE_PHASE_DURATION_MS = 60 * 1000; // chuyển động trong vòng 1 phút mỗi chu kỳ
+  const MOVE_STEP_MS = 4000; // trong 1 phút đó, cứ 4 giây đổi vị trí 1 lần
 
   function initWatermark() {
     const el = document.getElementById("video-watermark");
@@ -39,8 +42,14 @@
       el!.style.top = `${y}px`;
     }
 
-    reposition();
-    setInterval(reposition, REPOSITION_INTERVAL_MS);
+    function runMovementPhase() {
+      reposition();
+      const stepTimer = window.setInterval(reposition, MOVE_STEP_MS);
+      window.setTimeout(() => window.clearInterval(stepTimer), MOVE_PHASE_DURATION_MS);
+    }
+
+    runMovementPhase(); // chạy ngay 1 chu kỳ khi vào bài học
+    setInterval(runMovementPhase, CYCLE_INTERVAL_MS);
   }
 
   document.addEventListener("DOMContentLoaded", initWatermark);
