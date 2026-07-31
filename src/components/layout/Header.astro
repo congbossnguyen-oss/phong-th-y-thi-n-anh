@@ -11,7 +11,7 @@ const isActive = (href: string) =>
 
 <header class="sticky top-0 z-40 border-b border-(--color-ivory-300) bg-(--color-ivory-50)/95 backdrop-blur">
   <!-- Thanh liên hệ nhanh -->
-  <div class="hidden bg-(--color-ink-950) text-(--color-ivory-100) sm:block">
+  <div class="hidden bg-(--color-ivory-100) text-(--color-ink-700) sm:block">
     <Container class="flex h-9 items-center justify-between text-xs">
       <div class="flex items-center gap-5">
         <a href={`tel:${siteConfig.hotline.replace(/\s/g, "")}`} class="flex items-center gap-1.5 hover:text-(--color-gold-300)">
@@ -68,7 +68,7 @@ const isActive = (href: string) =>
                 <li>
                   <a
                     href={child.href}
-                    class="block rounded-(--radius-control) px-3 py-2 text-sm text-(--color-ink-800) hover:bg-(--color-ivory-200) hover:text-(--color-cinnabar-500)"
+                    class="block rounded-(--radius-control) px-3 py-2 text-sm text-(--color-ink-800) hover:bg-(--color-ivory-200) hover:text-(--color-cinnabar-400)"
                   >
                     {child.label}
                   </a>
@@ -107,7 +107,7 @@ const isActive = (href: string) =>
         <Icon name="cart" class="size-5" />
         <span
           id="cart-count-badge"
-          class="hidden absolute right-1 top-1 flex size-4.5 items-center justify-center rounded-full bg-(--color-cinnabar-500) text-[10px] font-semibold text-(--color-ivory-50)"
+          class="hidden absolute right-1 top-1 flex size-4.5 items-center justify-center rounded-full bg-(--color-cinnabar-500) text-[10px] font-semibold text-(--color-gold-100)"
         >0</span>
       </a>
 
@@ -119,7 +119,7 @@ const isActive = (href: string) =>
         >
           <Icon name="menu" class="size-5.5" />
         </summary>
-        <div class="fixed inset-0 top-[--header-h,0] z-30 bg-(--color-ink-950)/40" />
+        <div class="fixed inset-0 top-[--header-h,0] z-30 bg-(--color-ivory-50)/70" />
         <nav
           aria-label="Điều hướng di động"
           class="fixed inset-y-0 right-0 z-40 flex w-[85vw] max-w-sm flex-col gap-1 overflow-y-auto bg-(--color-ivory-50) p-5 shadow-xl"
@@ -148,7 +148,7 @@ const isActive = (href: string) =>
           </a>
           <a
             href={`tel:${siteConfig.hotline.replace(/\s/g, "")}`}
-            class="mt-3 flex items-center justify-center gap-2 rounded-(--radius-control) bg-(--color-cinnabar-500) px-4 py-3 text-sm font-medium text-(--color-ivory-50)"
+            class="mt-3 flex items-center justify-center gap-2 rounded-(--radius-control) bg-(--color-cinnabar-500) px-4 py-3 text-sm font-medium text-(--color-gold-100)"
           >
             <Icon name="phone" class="size-4" />
             Gọi tư vấn: {siteConfig.hotline}

@@ -1,31 +1,30 @@
 @import "tailwindcss";
 
 @theme {
-  /* Typography — Playfair Display (tiêu đề, chút nét cổ điển sang trọng)
-     + Be Vietnam Pro (nội dung, UI, tối ưu dấu tiếng Việt) */
-  --font-display: "Playfair Display", "Noto Serif", serif;
+  /* Typography: Cormorant Garamond (tieu de, co ho tro dau tieng Viet) + Be Vietnam Pro (noi dung) */
+  --font-display: "Cormorant Garamond", "Noto Serif", serif;
   --font-sans: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
 
-  /* Màu thương hiệu: đỏ trầm + vàng đồng trên nền ngà ấm, chữ than nâu thay vì đen tuyền */
-  --color-ink-950: #241a15;
-  --color-ink-800: #3a2b23;
-  --color-ink-700: #4a382f;
-  --color-ink-600: #5c4a3f;
-  --color-ink-500: #75604f;
-  --color-ink-400: #8c7a6d;
+  /* Redesign don do (ruou vang dam) + vang dong, nen toi sang trong thay cho ban nga sang cu. */
+  --color-ink-950: #f7ecd9;
+  --color-ink-800: #ead9bd;
+  --color-ink-700: #d8c3a3;
+  --color-ink-600: #c2a988;
+  --color-ink-500: #a68b6c;
+  --color-ink-400: #8a725a;
 
-  --color-ivory-50: #fdfaf5;
-  --color-ivory-100: #faf4ea;
-  --color-ivory-200: #f2e8d8;
-  --color-ivory-300: #e6d6bc;
-  --color-ivory-400: #a89984;
+  --color-ivory-50: #2b0f15;
+  --color-ivory-100: #35141a;
+  --color-ivory-200: #421a22;
+  --color-ivory-300: #5c2a34;
+  --color-ivory-400: #8a5560;
 
-  --color-cinnabar-50: #fdf1ee;
-  --color-cinnabar-100: #fbdfd8;
-  --color-cinnabar-400: #c14a3a;
-  --color-cinnabar-500: #a3352a;
-  --color-cinnabar-600: #862823;
-  --color-cinnabar-700: #6c2019;
+  --color-cinnabar-50: #451920;
+  --color-cinnabar-100: #5c232b;
+  --color-cinnabar-400: #d15c4a;
+  --color-cinnabar-500: #c14a3a;
+  --color-cinnabar-600: #a3352a;
+  --color-cinnabar-700: #862823;
 
   --color-gold-100: #f4e9cf;
   --color-gold-300: #dcbd7a;
@@ -33,8 +32,8 @@
   --color-gold-500: #ad8843;
   --color-gold-700: #7c6230;
 
-  --color-success-500: #4a7c59;
-  --color-danger-500: #b3261e;
+  --color-success-500: #5a9c6c;
+  --color-danger-500: #e35c4d;
 
   /* Bán kính bo góc: mềm nhưng không bo tròn kiểu playful */
   --radius-card: 0.75rem;

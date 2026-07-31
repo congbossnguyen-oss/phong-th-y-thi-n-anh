@@ -79,7 +79,7 @@ if (lesson.bunnyVideoId) {
 
     <div class="grid gap-8 lg:grid-cols-3">
       <div class="lg:col-span-2">
-        <div class="relative flex aspect-video items-center justify-center overflow-hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ink-950) text-(--color-ivory-300)">
+        <div class="relative flex aspect-video items-center justify-center overflow-hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) text-(--color-ink-600)">
           {embedUrl ? (
             <iframe
               src={embedUrl}
@@ -92,7 +92,7 @@ if (lesson.bunnyVideoId) {
             <div class="text-center">
               <Icon name="check-circle" class="mx-auto size-10 text-(--color-gold-400)" />
               <p class="mt-3 text-sm">Video chưa được tải lên (chưa cấu hình Bunny Stream hoặc chưa có video)</p>
-              <p class="mt-1 text-xs text-(--color-ivory-400)">Thời lượng dự kiến: {lesson.durationLabel}</p>
+              <p class="mt-1 text-xs text-(--color-ink-500)">Thời lượng dự kiến: {lesson.durationLabel}</p>
             </div>
           )}
           <VideoWatermark label={watermarkLabel} />
@@ -153,7 +153,7 @@ if (lesson.bunnyVideoId) {
                   class:list={[
                     "flex items-center gap-3 rounded-(--radius-control) px-3 py-2 text-sm",
                     isCurrent
-                      ? "bg-(--color-cinnabar-500) text-(--color-ivory-50)"
+                      ? "bg-(--color-cinnabar-500) text-(--color-gold-100)"
                       : "text-(--color-ink-700) hover:bg-(--color-ivory-200)",
                   ]}
                 >

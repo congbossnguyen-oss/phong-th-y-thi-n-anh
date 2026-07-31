@@ -95,8 +95,8 @@ const dashOffset = CIRCUMFERENCE - (percent / 100) * CIRCUMFERENCE;
             <Icon name="check-circle" class="size-5" />
           </span>
           <div>
-            <p class="font-display text-base font-semibold text-(--color-ink-950)">Chúc mừng bạn đã hoàn thành khóa học!</p>
-            <p class="text-sm text-(--color-ink-700)">Chứng chỉ đã được gửi tới email của bạn, hoặc tải trực tiếp tại đây.</p>
+            <p class="font-display text-base font-semibold text-(--color-ivory-50)">Chúc mừng bạn đã hoàn thành khóa học!</p>
+            <p class="text-sm text-(--color-ivory-200)">Chứng chỉ đã được gửi tới email của bạn, hoặc tải trực tiếp tại đây.</p>
           </div>
         </div>
         <Button href={`/api/certificates/${course.slug}.pdf`} variant="secondary" target="_blank">Tải chứng chỉ PDF</Button>
@@ -114,7 +114,7 @@ const dashOffset = CIRCUMFERENCE - (percent / 100) * CIRCUMFERENCE;
               href={`/hoc-vien/khoa-hoc/${course.slug}/bai-hoc/${lesson.slug}`}
               class:list={[
                 "flex items-center gap-4 p-4 transition-colors hover:bg-(--color-ivory-100)",
-                isNext && "bg-(--color-cinnabar-50)",
+                isNext && "bg-(--color-cinnabar-500)/10",
               ]}
             >
               <span
@@ -133,7 +133,7 @@ const dashOffset = CIRCUMFERENCE - (percent / 100) * CIRCUMFERENCE;
                 </span>
               </span>
               {isNext && (
-                <span class="hidden shrink-0 rounded-full bg-(--color-cinnabar-500) px-2.5 py-1 text-xs font-medium text-(--color-ivory-50) sm:inline-block">
+                <span class="hidden shrink-0 rounded-full bg-(--color-cinnabar-500) px-2.5 py-1 text-xs font-medium text-(--color-gold-100) sm:inline-block">
                   Tiếp theo
                 </span>
               )}
