@@ -3,13 +3,20 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
 import Icon from "../../components/ui/Icon.astro";
-import { siteConfig } from "../../lib/site-config";
+import { getOrderById } from "../../lib/db/orders";
 
 export const prerender = false;
 
-const orderId = Astro.url.searchParams.get("id") ?? "—";
-const total = Number(Astro.url.searchParams.get("total") ?? 0);
-const payment = Astro.url.searchParams.get("payment") ?? "bank_transfer";
+const orderIdParam = Astro.url.searchParams.get("orderId");
+const order = orderIdParam ? await getOrderById(orderIdParam) : null;
+
+if (!order) {
+  return Astro.redirect("/vat-pham");
+}
+
+const orderId = order.orderCode;
+const total = Number(order.totalAmount);
+const payment = order.paymentMethod;
 
 const formatPrice = (price: number) =>
   price.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
@@ -23,19 +30,10 @@ const formatPrice = (price: number) =>
     <h1 class="mt-5 font-display text-2xl font-semibold text-(--color-ink-950) sm:text-3xl">Đặt hàng thành công!</h1>
     <p class="mt-2 text-(--color-ink-600)">Mã đơn hàng <strong class="text-(--color-ink-950)">#{orderId}</strong> — tổng giá trị <strong class="text-(--color-cinnabar-500)">{formatPrice(total)}</strong></p>
 
-    {payment === "bank_transfer" ? (
-      <div class="mt-8 w-full max-w-md rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6 text-left">
-        <h2 class="font-display text-base font-semibold text-(--color-ink-950)">Thông tin chuyển khoản</h2>
-        <dl class="mt-3 space-y-2 text-sm text-(--color-ink-700)">
-          <div class="flex justify-between"><dt>Ngân hàng</dt><dd class="font-medium text-(--color-ink-950)">Vietcombank (mẫu)</dd></div>
-          <div class="flex justify-between"><dt>Số tài khoản</dt><dd class="font-medium text-(--color-ink-950)">0000 0000 0000</dd></div>
-          <div class="flex justify-between"><dt>Chủ tài khoản</dt><dd class="font-medium text-(--color-ink-950)">{siteConfig.name}</dd></div>
-          <div class="flex justify-between"><dt>Nội dung CK</dt><dd class="font-medium text-(--color-ink-950)">{orderId}</dd></div>
-        </dl>
-        <p class="mt-3 text-xs text-(--color-ink-600)">Thông tin chuyển khoản thật sẽ được cấu hình trong Sanity `siteSettings` ở giai đoạn kết nối CMS.</p>
-      </div>
-    ) : (
+    {payment === "cod" ? (
       <p class="mt-6 max-w-md text-sm text-(--color-ink-600)">Đơn hàng của bạn sẽ được giao và thu tiền trực tiếp (COD). Thiên Anh sẽ gọi xác nhận trong thời gian sớm nhất.</p>
+    ) : (
+      <p class="mt-6 max-w-md text-sm text-(--color-ink-600)">Thanh toán qua chuyển khoản QR đã được xác nhận tự động. Email xác nhận đơn hàng đã được gửi tới hộp thư của bạn.</p>
     )}
 
     <div class="mt-8 flex gap-3">

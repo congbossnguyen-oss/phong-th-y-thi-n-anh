@@ -45,7 +45,7 @@ const formatPrice = (price: number) =>
       {course.format === "online" ? (
         <>
           <p class="mt-2 text-sm text-(--color-ink-600)">Học online, xem lại không giới hạn, theo dõi tiến độ trong khu học viên.</p>
-          <Button id="enroll-btn" size="lg" class="mt-5 w-full" data-course-slug={course.slug}>Đăng ký học ngay</Button>
+          <Button href={`/khoa-hoc/${course.slug}/thanh-toan`} size="lg" class="mt-5 w-full">Đăng ký học ngay</Button>
         </>
       ) : (
         <>
@@ -56,26 +56,3 @@ const formatPrice = (price: number) =>
     </aside>
   </Container>
 </BaseLayout>
-
-{course.format === "online" && (
-  <script>
-    const btn = document.getElementById("enroll-btn") as HTMLButtonElement | null;
-    btn?.addEventListener("click", async () => {
-      const slug = btn.dataset.courseSlug!;
-      btn.disabled = true;
-
-      const res = await fetch("/api/courses/enroll", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ courseRef: slug }),
-      });
-
-      if (res.status === 401) {
-        window.location.href = `/hoc-vien/dang-ky?course=${encodeURIComponent(slug)}`;
-        return;
-      }
-
-      window.location.href = `/hoc-vien/khoa-hoc/${slug}`;
-    });
-  </script>
-)}

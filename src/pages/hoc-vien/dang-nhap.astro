@@ -66,12 +66,7 @@ export const prerender = true;
       }
 
       if (courseSlug) {
-        await fetch("/api/courses/enroll", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ courseRef: courseSlug }),
-        });
-        window.location.href = `/hoc-vien/khoa-hoc/${courseSlug}`;
+        window.location.href = `/khoa-hoc/${courseSlug}/thanh-toan`;
       } else {
         window.location.href = "/hoc-vien";
       }

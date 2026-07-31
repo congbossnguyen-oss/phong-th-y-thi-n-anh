@@ -30,6 +30,11 @@ export const prerender = true;
             <input id="phone" name="phone" type="tel" required autocomplete="tel"
               class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-cinnabar-500) focus:outline-none focus:ring-2 focus:ring-(--color-cinnabar-500)/20" />
           </div>
+          <div class="sm:col-span-2">
+            <label for="email" class="text-sm font-medium text-(--color-ink-800)">Email nhận thông tin đơn hàng <span class="text-(--color-danger-500)">*</span></label>
+            <input id="email" name="email" type="email" required autocomplete="email"
+              class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-cinnabar-500) focus:outline-none focus:ring-2 focus:ring-(--color-cinnabar-500)/20" />
+          </div>
         </div>
         <div class="mt-5">
           <label for="address" class="text-sm font-medium text-(--color-ink-800)">Địa chỉ nhận hàng <span class="text-(--color-danger-500)">*</span></label>
@@ -45,10 +50,10 @@ export const prerender = true;
         <h2 class="mt-8 font-display text-xl font-semibold text-(--color-ink-950)">Phương thức thanh toán</h2>
         <div class="mt-4 space-y-3">
           <label class="flex cursor-pointer items-start gap-3 rounded-(--radius-control) border border-(--color-ivory-300) p-4 has-[:checked]:border-(--color-cinnabar-500) has-[:checked]:bg-(--color-cinnabar-50)">
-            <input type="radio" name="payment" value="bank_transfer" checked class="mt-1 accent-(--color-cinnabar-500)" />
+            <input type="radio" name="payment" value="sepay_qr" checked class="mt-1 accent-(--color-cinnabar-500)" />
             <span>
-              <span class="block text-sm font-medium text-(--color-ink-950)">Chuyển khoản ngân hàng</span>
-              <span class="block text-xs text-(--color-ink-600)">Thông tin chuyển khoản sẽ hiển thị sau khi đặt hàng.</span>
+              <span class="block text-sm font-medium text-(--color-ink-950)">Chuyển khoản QR (tự động xác nhận)</span>
+              <span class="block text-xs text-(--color-ink-600)">Quét mã VietQR, đơn hàng được xác nhận ngay khi thanh toán thành công.</span>
             </span>
           </label>
           <label class="flex cursor-pointer items-start gap-3 rounded-(--radius-control) border border-(--color-ivory-300) p-4 has-[:checked]:border-(--color-cinnabar-500) has-[:checked]:bg-(--color-cinnabar-50)">
@@ -60,7 +65,8 @@ export const prerender = true;
           </label>
         </div>
 
-        <Button type="submit" size="lg" class="mt-8 w-full">Đặt hàng</Button>
+        <p id="checkout-error" class="mt-4 hidden text-sm text-(--color-danger-500)"></p>
+        <Button id="checkout-submit" type="submit" size="lg" class="mt-8 w-full">Đặt hàng</Button>
       </form>
 
       <aside class="lg:col-span-2 h-fit rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
@@ -104,15 +110,52 @@ export const prerender = true;
     });
     summaryTotalEl.textContent = formatPrice(getCartTotal(items));
 
-    form.addEventListener("submit", (e) => {
+    const errorEl = document.getElementById("checkout-error")!;
+    const submitBtn = document.getElementById("checkout-submit") as HTMLButtonElement;
+
+    form.addEventListener("submit", async (e) => {
       e.preventDefault();
-      // BẢN DEMO: chưa ghi vào Neon Postgres — khi có DATABASE_URL, thay đoạn này bằng
-      // fetch('/api/orders/create', { method: 'POST', body: JSON.stringify({...}) }).
-      const orderId = `TA${Date.now().toString().slice(-8)}`;
-      const total = getCartTotal(items);
-      const payment = (form.elements.namedItem("payment") as RadioNodeList).value;
-      clearCart();
-      window.location.href = `/don-hang/thanh-cong?id=${orderId}&total=${total}&payment=${payment}`;
+      errorEl.classList.add("hidden");
+      submitBtn.disabled = true;
+
+      const formData = new FormData(form);
+      const paymentMethod = formData.get("payment")?.toString() ?? "sepay_qr";
+
+      try {
+        const res = await fetch("/api/orders/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: formData.get("name"),
+            phone: formData.get("phone"),
+            email: formData.get("email"),
+            address: formData.get("address"),
+            note: formData.get("note"),
+            paymentMethod,
+            lines: items.map((i) => ({ slug: i.slug, qty: i.qty })),
+          }),
+        });
+        const data = await res.json();
+
+        if (!data.ok) {
+          errorEl.textContent = data.error || "Có lỗi xảy ra, vui lòng thử lại.";
+          errorEl.classList.remove("hidden");
+          submitBtn.disabled = false;
+          return;
+        }
+
+        clearCart();
+
+        if (paymentMethod === "cod") {
+          window.location.href = `/don-hang/thanh-cong?orderId=${data.orderId}`;
+        } else {
+          window.location.href = `/don-hang/${data.orderId}/cho-thanh-toan`;
+        }
+      } catch {
+        errorEl.textContent = "Không kết nối được máy chủ, vui lòng thử lại.";
+        errorEl.classList.remove("hidden");
+        submitBtn.disabled = false;
+      }
     });
   }
 </script>

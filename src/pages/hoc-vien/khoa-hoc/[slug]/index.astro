@@ -4,6 +4,7 @@ import BaseLayout from "../../../../layouts/BaseLayout.astro";
 import PageHero from "../../../../components/ui/PageHero.astro";
 import Container from "../../../../components/ui/Container.astro";
 import Icon from "../../../../components/ui/Icon.astro";
+import Button from "../../../../components/ui/Button.astro";
 import { courses } from "../../../../lib/placeholder-courses";
 import { db } from "../../../../lib/db/client";
 import { courseEnrollments, lessonProgress } from "../../../../../db/schema";
@@ -40,6 +41,12 @@ const completedSlugs = new Set(progressRows.map((p) => p.lessonRef));
 
 const total = course.lessons!.length;
 const percent = total > 0 ? Math.round((completedSlugs.size / total) * 100) : 0;
+const nextLesson = course.lessons!.find((l) => !completedSlugs.has(l.slug)) ?? course.lessons![0];
+
+// Vòng tròn tiến độ SVG — chu vi hình tròn bán kính 26.
+const RADIUS = 26;
+const CIRCUMFERENCE = 2 * Math.PI * RADIUS;
+const dashOffset = CIRCUMFERENCE - (percent / 100) * CIRCUMFERENCE;
 ---
 
 <BaseLayout title={`Khóa học: ${course.name}`} description={course.summary} noIndex>
@@ -50,19 +57,66 @@ const percent = total > 0 ? Math.round((completedSlugs.size / total) * 100) : 0;
   />
 
   <Container class="py-16">
-    <div class="mb-6">
-      <div class="h-2 overflow-hidden rounded-full bg-(--color-ivory-200)">
-        <div class="h-full rounded-full bg-(--color-cinnabar-500)" style={`width: ${percent}%`} />
+    <div class="mb-8 flex flex-wrap items-center justify-between gap-6 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6">
+      <div class="flex items-center gap-5">
+        <div class="relative flex size-16 shrink-0 items-center justify-center">
+          <svg viewBox="0 0 64 64" class="size-16 -rotate-90">
+            <circle cx="32" cy="32" r={RADIUS} fill="none" stroke="var(--color-ivory-200)" stroke-width="6" />
+            <circle
+              cx="32"
+              cy="32"
+              r={RADIUS}
+              fill="none"
+              stroke={percent === 100 ? "var(--color-success-500)" : "var(--color-cinnabar-500)"}
+              stroke-width="6"
+              stroke-linecap="round"
+              stroke-dasharray={CIRCUMFERENCE}
+              stroke-dashoffset={dashOffset}
+            />
+          </svg>
+          <span class="absolute font-display text-sm font-semibold text-(--color-ink-950)">{percent}%</span>
+        </div>
+        <div>
+          <p class="font-display text-base font-semibold text-(--color-ink-950)">Tiến độ khóa học</p>
+          <p class="mt-0.5 text-sm text-(--color-ink-600)">Đã hoàn thành {completedSlugs.size}/{total} bài học</p>
+        </div>
       </div>
-      <p class="mt-1.5 text-sm text-(--color-ink-600)">Đã hoàn thành {completedSlugs.size}/{total} bài học ({percent}%)</p>
+      {percent < 100 && (
+        <Button href={`/hoc-vien/khoa-hoc/${course.slug}/bai-hoc/${nextLesson.slug}`} size="lg">
+          {completedSlugs.size === 0 ? "Bắt đầu học" : "Tiếp tục học"}
+        </Button>
+      )}
     </div>
 
-    <ul class="divide-y divide-(--color-ivory-300) rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50)">
+    {percent === 100 && (
+      <div class="mb-8 flex flex-wrap items-center justify-between gap-4 rounded-(--radius-card) border border-(--color-gold-300) bg-(--color-gold-100) p-5">
+        <div class="flex items-center gap-3">
+          <span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-(--color-gold-500) text-(--color-ivory-50)">
+            <Icon name="check-circle" class="size-5" />
+          </span>
+          <div>
+            <p class="font-display text-base font-semibold text-(--color-ink-950)">Chúc mừng bạn đã hoàn thành khóa học!</p>
+            <p class="text-sm text-(--color-ink-700)">Chứng chỉ đã được gửi tới email của bạn, hoặc tải trực tiếp tại đây.</p>
+          </div>
+        </div>
+        <Button href={`/api/certificates/${course.slug}.pdf`} variant="secondary" target="_blank">Tải chứng chỉ PDF</Button>
+      </div>
+    )}
+
+    <h2 class="mb-3 font-display text-lg font-semibold text-(--color-ink-950)">Nội dung khóa học</h2>
+    <ul class="divide-y divide-(--color-ivory-300) overflow-hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50)">
       {course.lessons?.map((lesson, i) => {
         const isDone = completedSlugs.has(lesson.slug);
+        const isNext = lesson.slug === nextLesson.slug && !isDone;
         return (
           <li>
-            <a href={`/hoc-vien/khoa-hoc/${course.slug}/bai-hoc/${lesson.slug}`} class="flex items-center gap-4 p-4 hover:bg-(--color-ivory-100)">
+            <a
+              href={`/hoc-vien/khoa-hoc/${course.slug}/bai-hoc/${lesson.slug}`}
+              class:list={[
+                "flex items-center gap-4 p-4 transition-colors hover:bg-(--color-ivory-100)",
+                isNext && "bg-(--color-cinnabar-50)",
+              ]}
+            >
               <span
                 class:list={[
                   "flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold",
@@ -73,9 +127,17 @@ const percent = total > 0 ? Math.round((completedSlugs.size / total) * 100) : 0;
               </span>
               <span class="flex-1">
                 <span class="block text-sm font-medium text-(--color-ink-950)">{lesson.title}</span>
-                <span class="block text-xs text-(--color-ink-600)">{lesson.durationLabel}</span>
+                <span class="mt-0.5 flex items-center gap-1 text-xs text-(--color-ink-600)">
+                  <Icon name="clock" class="size-3.5" />
+                  {lesson.durationLabel}
+                </span>
               </span>
-              <Icon name="arrow-right" class="size-4 text-(--color-ink-400)" />
+              {isNext && (
+                <span class="hidden shrink-0 rounded-full bg-(--color-cinnabar-500) px-2.5 py-1 text-xs font-medium text-(--color-ivory-50) sm:inline-block">
+                  Tiếp theo
+                </span>
+              )}
+              <Icon name={isDone ? "arrow-right" : "play-circle"} class="size-5 shrink-0 text-(--color-ink-400)" />
             </a>
           </li>
         );

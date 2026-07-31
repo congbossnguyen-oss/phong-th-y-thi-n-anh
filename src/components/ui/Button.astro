@@ -5,6 +5,7 @@ interface Props {
   size?: "md" | "lg";
   class?: string;
   type?: "button" | "submit";
+  target?: "_blank" | "_self";
   [key: `data-${string}`]: string | undefined;
 }
 const {

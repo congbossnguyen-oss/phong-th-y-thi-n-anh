@@ -1,0 +1,88 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import Container from "../../../components/ui/Container.astro";
+import { getOrderById } from "../../../lib/db/orders";
+import { getSepayQrUrl } from "../../../lib/payments/sepay";
+import { courses } from "../../../lib/placeholder-courses";
+
+export const prerender = false;
+
+const { id } = Astro.params;
+const order = await getOrderById(id!);
+
+if (!order) {
+  return Astro.redirect("/");
+}
+
+if (order.status !== "pending_payment") {
+  const redirectTo =
+    order.orderType === "course" && order.courseRef
+      ? `/hoc-vien/khoa-hoc/${order.courseRef}`
+      : `/don-hang/thanh-cong?orderId=${order.id}`;
+  return Astro.redirect(redirectTo);
+}
+
+const qrUrl = getSepayQrUrl({ amount: Number(order.totalAmount), orderCode: order.orderCode });
+const course = order.courseRef ? courses.find((c) => c.slug === order.courseRef) : null;
+
+const formatPrice = (price: number) =>
+  price.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
+
+const successRedirect =
+  order.orderType === "course" && order.courseRef ? `/hoc-vien/khoa-hoc/${order.courseRef}` : `/don-hang/thanh-cong?orderId=${order.id}`;
+---
+
+<BaseLayout title="Chờ thanh toán" description="Quét mã QR để hoàn tất thanh toán." noIndex>
+  <Container class="flex flex-col items-center py-16 text-center">
+    <h1 class="font-display text-2xl font-semibold text-(--color-ink-950) sm:text-3xl">
+      Quét mã để thanh toán
+    </h1>
+    <p class="mt-2 text-(--color-ink-600)">
+      {course ? `Khóa học: ${course.name}` : "Đơn hàng của bạn"} · Mã đơn <strong class="text-(--color-ink-950)">#{order.orderCode}</strong>
+    </p>
+
+    <div class="mt-8 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6">
+      <img src={qrUrl} alt="Mã QR thanh toán VietQR" width="280" height="280" class="mx-auto rounded-(--radius-control)" />
+    </div>
+
+    <p class="mt-6 font-display text-2xl font-semibold text-(--color-cinnabar-500)">{formatPrice(Number(order.totalAmount))}</p>
+
+    <div id="status-badge" class="mt-4 flex items-center gap-2 rounded-full bg-(--color-gold-100) px-4 py-2 text-sm font-medium text-(--color-gold-700)">
+      <span class="size-2 animate-pulse rounded-full bg-(--color-gold-500)"></span>
+      Đang chờ thanh toán...
+    </div>
+
+    <div class="mt-8 max-w-md rounded-(--radius-card) border border-dashed border-(--color-ivory-300) p-5 text-left text-sm text-(--color-ink-700)">
+      <p class="font-medium text-(--color-ink-950)">Lưu ý khi chuyển khoản:</p>
+      <ul class="mt-2 list-disc space-y-1 pl-5">
+        <li>Quét mã QR bằng app ngân hàng hoặc ví điện tử — nội dung chuyển khoản đã được điền sẵn.</li>
+        <li>Không tự sửa nội dung chuyển khoản, hệ thống cần đúng mã <strong>#{order.orderCode}</strong> để xác nhận tự động.</li>
+        <li>Trang này sẽ tự chuyển tiếp ngay khi nhận được thanh toán (thường trong vài giây đến 1 phút).</li>
+      </ul>
+    </div>
+  </Container>
+</BaseLayout>
+
+<script define:vars={{ orderId: order.id, successRedirect }}>
+  const badge = document.getElementById("status-badge");
+
+  async function poll() {
+    try {
+      const res = await fetch(`/api/orders/${orderId}/status`);
+      const data = await res.json();
+      if (data.ok && data.status === "confirmed") {
+        if (badge) {
+          badge.textContent = "Thanh toán thành công! Đang chuyển hướng...";
+          badge.className = "mt-4 flex items-center gap-2 rounded-full bg-(--color-success-500)/10 px-4 py-2 text-sm font-medium text-(--color-success-500)";
+        }
+        window.location.href = successRedirect;
+        return;
+      }
+    } catch {
+      // bỏ qua lỗi mạng tạm thời, thử lại ở lần poll tiếp theo
+    }
+    setTimeout(poll, 3000);
+  }
+
+  poll();
+</script>

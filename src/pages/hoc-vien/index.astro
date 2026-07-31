@@ -4,15 +4,16 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
+import Icon from "../../components/ui/Icon.astro";
 import { courses } from "../../lib/placeholder-courses";
 import { db } from "../../lib/db/client";
-import { courseEnrollments, lessonProgress } from "../../../db/schema";
+import { courseEnrollments, lessonProgress, courseCertificates } from "../../../db/schema";
 
 export const prerender = false;
 
 const user = Astro.locals.user;
 
-let enrolledCourses: { slug: string; name: string; completed: number; total: number; percent: number }[] = [];
+let enrolledCourses: { slug: string; name: string; completed: number; total: number; percent: number; hasCertificate: boolean }[] = [];
 
 if (user) {
   const enrollments = await db
@@ -24,6 +25,12 @@ if (user) {
     .select({ courseRef: lessonProgress.courseRef, lessonRef: lessonProgress.lessonRef })
     .from(lessonProgress)
     .where(eq(lessonProgress.userId, user.id));
+
+  const certificateRows = await db
+    .select({ courseRef: courseCertificates.courseRef })
+    .from(courseCertificates)
+    .where(eq(courseCertificates.userId, user.id));
+  const certifiedCourseRefs = new Set(certificateRows.map((c) => c.courseRef));
 
   enrolledCourses = enrollments
     .map((e) => {
@@ -37,10 +44,22 @@ if (user) {
         completed,
         total,
         percent: total > 0 ? Math.round((completed / total) * 100) : 0,
+        hasCertificate: certifiedCourseRefs.has(course.slug),
       };
     })
     .filter((c): c is NonNullable<typeof c> => c !== null);
 }
+
+const initials = user?.name
+  .split(" ")
+  .filter(Boolean)
+  .slice(-2)
+  .map((w) => w[0]?.toUpperCase())
+  .join("") ?? "";
+
+const totalCourses = enrolledCourses.length;
+const completedCourses = enrolledCourses.filter((c) => c.percent === 100).length;
+const inProgressCourses = totalCourses - completedCourses;
 ---
 
 <BaseLayout title="Khu vực học viên" description="Đăng nhập để truy cập khóa học online tại Thiên Anh." noIndex>
@@ -58,28 +77,76 @@ if (user) {
     </Container>
   ) : (
     <Container class="py-16">
-      <div class="flex flex-wrap items-center justify-between gap-4">
-        <div>
-          <p class="text-sm text-(--color-ink-600)">Xin chào,</p>
-          <h2 class="font-display text-2xl font-semibold text-(--color-ink-950)">{user.name}</h2>
+      <div class="flex flex-wrap items-center justify-between gap-6 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6">
+        <div class="flex items-center gap-4">
+          <span class="flex size-14 shrink-0 items-center justify-center rounded-full bg-(--color-cinnabar-500) font-display text-lg font-semibold text-(--color-ivory-50)">
+            {initials}
+          </span>
+          <div>
+            <p class="text-sm text-(--color-ink-600)">Xin chào,</p>
+            <h2 class="font-display text-2xl font-semibold text-(--color-ink-950)">{user.name}</h2>
+          </div>
         </div>
-        <button id="logout-btn" type="button" class="text-sm font-medium text-(--color-ink-600) hover:text-(--color-cinnabar-500)">Đăng xuất</button>
+        <button id="logout-btn" type="button" class="flex items-center gap-1.5 text-sm font-medium text-(--color-ink-600) hover:text-(--color-cinnabar-500)">
+          <Icon name="logout" class="size-4" />
+          Đăng xuất
+        </button>
+      </div>
+
+      <div class="mt-5 grid gap-4 sm:grid-cols-3">
+        <div class="flex items-center gap-3 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-5">
+          <span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-(--color-cinnabar-50) text-(--color-cinnabar-500)">
+            <Icon name="book-open" class="size-5" />
+          </span>
+          <div>
+            <p class="font-display text-xl font-semibold text-(--color-ink-950)">{totalCourses}</p>
+            <p class="text-xs text-(--color-ink-600)">Khóa học đã đăng ký</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-5">
+          <span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-(--color-gold-100) text-(--color-gold-700)">
+            <Icon name="play-circle" class="size-5" />
+          </span>
+          <div>
+            <p class="font-display text-xl font-semibold text-(--color-ink-950)">{inProgressCourses}</p>
+            <p class="text-xs text-(--color-ink-600)">Đang học</p>
+          </div>
+        </div>
+        <div class="flex items-center gap-3 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-5">
+          <span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-(--color-success-500)/10 text-(--color-success-500)">
+            <Icon name="award" class="size-5" />
+          </span>
+          <div>
+            <p class="font-display text-xl font-semibold text-(--color-ink-950)">{completedCourses}</p>
+            <p class="text-xs text-(--color-ink-600)">Đã hoàn thành</p>
+          </div>
+        </div>
       </div>
 
       <h3 class="mt-10 font-display text-lg font-semibold text-(--color-ink-950)">Khóa học của tôi</h3>
       {enrolledCourses.length === 0 ? (
-        <p class="mt-4 text-sm text-(--color-ink-600)">
-          Bạn chưa đăng ký khóa học online nào. <a href="/khoa-hoc" class="font-medium text-(--color-cinnabar-500) hover:underline">Khám phá khóa học</a>
-        </p>
+        <div class="mt-4 flex flex-col items-center gap-3 rounded-(--radius-card) border border-dashed border-(--color-ivory-300) py-14 text-center">
+          <Icon name="book-open" class="size-8 text-(--color-ink-400)" />
+          <p class="text-sm text-(--color-ink-600)">Bạn chưa đăng ký khóa học online nào.</p>
+          <Button href="/khoa-hoc" variant="secondary">Khám phá khóa học</Button>
+        </div>
       ) : (
         <div class="mt-4 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {enrolledCourses.map((c) => (
-            <a href={`/hoc-vien/khoa-hoc/${c.slug}`} class="group overflow-hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50)">
-              <div class="aspect-video bg-(--color-ivory-200)" />
+            <a href={`/hoc-vien/khoa-hoc/${c.slug}`} class="group overflow-hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) transition-shadow hover:shadow-lg hover:shadow-(--color-ink-950)/5">
+              <div class="relative flex aspect-video items-center justify-center bg-gradient-to-br from-(--color-ivory-200) to-(--color-gold-100)">
+                <Icon name="play-circle" class="size-10 text-(--color-gold-500) opacity-70 transition-opacity group-hover:opacity-100" />
+                {c.hasCertificate && (
+                  <span class="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-(--color-success-500) px-2.5 py-1 text-xs font-medium text-(--color-ivory-50)">
+                    <Icon name="award" class="size-3.5" />
+                    Đã có chứng chỉ
+                  </span>
+                )}
+              </div>
               <div class="p-5">
                 <h4 class="font-display text-base font-semibold text-(--color-ink-950) group-hover:text-(--color-cinnabar-500)">{c.name}</h4>
                 <div class="mt-3 h-2 overflow-hidden rounded-full bg-(--color-ivory-200)">
-                  <div class="h-full rounded-full bg-(--color-cinnabar-500)" style={`width: ${c.percent}%`} />
+                  <div class:list={["h-full rounded-full", c.percent === 100 ? "bg-(--color-success-500)" : "bg-(--color-cinnabar-500)"]} style={`width: ${c.percent}%`} />
                 </div>
                 <p class="mt-1.5 text-xs text-(--color-ink-600)">{c.completed}/{c.total} bài học · {c.percent}%</p>
               </div>

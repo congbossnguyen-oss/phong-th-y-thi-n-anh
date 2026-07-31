@@ -31,7 +31,7 @@ export const sessions = pgTable("sessions", {
   ipAddress: text("ip_address"),
 });
 
-// --- Đơn hàng vật phẩm phong thủy (thanh toán thủ công) ---
+// --- Đơn hàng (vật phẩm phong thủy hoặc khóa học online) ---
 
 export const orderStatusEnum = pgEnum("order_status", [
   "pending_payment",
@@ -40,18 +40,28 @@ export const orderStatusEnum = pgEnum("order_status", [
   "cancelled",
 ]);
 
-export const paymentMethodEnum = pgEnum("payment_method", ["bank_transfer", "cod"]);
+export const paymentMethodEnum = pgEnum("payment_method", ["bank_transfer", "cod", "sepay_qr"]);
+
+export const orderTypeEnum = pgEnum("order_type", ["product", "course"]);
 
 export const orders = pgTable("orders", {
   id: uuid("id").primaryKey().defaultRandom(),
   userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }), // null = khách mua không tài khoản
+  orderType: orderTypeEnum("order_type").notNull().default("product"),
   status: orderStatusEnum("status").notNull().default("pending_payment"),
   paymentMethod: paymentMethodEnum("payment_method").notNull(),
   customerName: text("customer_name").notNull(),
   customerPhone: text("customer_phone").notNull(),
-  shippingAddress: text("shipping_address").notNull(),
+  customerEmail: text("customer_email"),
+  // Bắt buộc với đơn vật phẩm (giao hàng), null với đơn khóa học.
+  shippingAddress: text("shipping_address"),
   note: text("note"),
   totalAmount: numeric("total_amount", { precision: 12, scale: 0 }).notNull(),
+  // Đơn khóa học: courseRef trỏ tới khóa học duy nhất được mua (mỗi đơn = 1 khóa).
+  courseRef: text("course_ref"),
+  // Mã đơn hàng ngắn, duy nhất — nhúng vào nội dung chuyển khoản QR để đối soát với webhook SePay.
+  orderCode: text("order_code").notNull().unique(),
+  paidAt: timestamp("paid_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -77,6 +87,8 @@ export const courseEnrollments = pgTable("course_enrollments", {
   userId: uuid("user_id").references(() => users.id, { onDelete: "cascade" }),
   courseRef: text("course_ref").notNull(), // Sanity `course` document _id
   source: enrollmentSourceEnum("source").notNull(),
+  // Đơn hàng đã thanh toán tạo ra lượt đăng ký này (mua online qua SePay) — null với offline.
+  orderId: uuid("order_id").references(() => orders.id, { onDelete: "set null" }),
   // Với đăng ký offline: học viên có thể chưa có tài khoản, lưu thông tin liên hệ trực tiếp.
   contactName: text("contact_name"),
   contactPhone: text("contact_phone"),
@@ -89,4 +101,27 @@ export const lessonProgress = pgTable("lesson_progress", {
   courseRef: text("course_ref").notNull(), // Sanity `course` document _id
   lessonRef: text("lesson_ref").notNull(), // Sanity `lesson` document _id
   completedAt: timestamp("completed_at", { withTimezone: true }),
+});
+
+// --- Thanh toán SePay ---
+
+// Log mọi webhook SePay đã xử lý — id là ID giao dịch phía SePay, ràng buộc UNIQUE để
+// chống xử lý trùng khi SePay gửi lại webhook (retry tối đa 7 lần trong 5 giờ nếu lỗi).
+export const sepayWebhookLogs = pgTable("sepay_webhook_logs", {
+  id: text("id").primaryKey(), // SePay transaction "id" (webhook payload)
+  orderId: uuid("order_id").references(() => orders.id, { onDelete: "set null" }),
+  transferAmount: numeric("transfer_amount", { precision: 12, scale: 0 }).notNull(),
+  content: text("content").notNull(),
+  receivedAt: timestamp("received_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// --- Chứng chỉ hoàn thành khóa học ---
+
+export const courseCertificates = pgTable("course_certificates", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  courseRef: text("course_ref").notNull(),
+  // Mã tra cứu/xác thực chứng chỉ công khai, in trên PDF (vd THA-XXXXXXXX).
+  certificateCode: text("certificate_code").notNull().unique(),
+  issuedAt: timestamp("issued_at", { withTimezone: true }).notNull().defaultNow(),
 });

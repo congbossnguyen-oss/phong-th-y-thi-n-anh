@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { and, eq } from "drizzle-orm";
 import { db } from "../../../lib/db/client";
 import { courseEnrollments, lessonProgress } from "../../../../db/schema";
+import { issueCertificateIfCourseCompleted } from "../../../lib/db/certificates";
 
 export const prerender = false;
 
@@ -49,5 +50,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
     });
   }
 
-  return new Response(JSON.stringify({ ok: true }), { status: 200 });
+  const certificate = await issueCertificateIfCourseCompleted({
+    userId: locals.user.id,
+    userName: locals.user.name,
+    userEmail: locals.user.email,
+    courseRef,
+  });
+
+  return new Response(JSON.stringify({ ok: true, certificateIssued: Boolean(certificate) }), { status: 200 });
 };

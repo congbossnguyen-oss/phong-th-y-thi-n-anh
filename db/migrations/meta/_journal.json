@@ -15,6 +15,13 @@
       "when": 1785390863922,
       "tag": "0001_magenta_pyro",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1785497700792,
+      "tag": "0002_outstanding_nekra",
+      "breakpoints": true
     }
   ]
 }
