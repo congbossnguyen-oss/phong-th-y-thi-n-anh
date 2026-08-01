@@ -13,25 +13,31 @@ export const services = [
     slug: "phong-thuy-nha-o",
     name: "Phong thủy nhà ở",
     summary: "Tư vấn bố cục, hướng nhà, nội thất hợp mệnh gia chủ để đón vượng khí.",
-    priceFrom: "3.000.000đ",
+    priceFrom: "3.000.000đ – 5.000.000đ",
   },
   {
-    slug: "ho-so-trach-nhat",
-    name: "Hồ sơ trạch nhật",
+    slug: "xem-ngay-cao-cap",
+    name: "Xem ngày cao cấp",
     summary: "Chọn ngày giờ tốt cho khai trương, động thổ, cưới hỏi, nhập trạch.",
-    priceFrom: "1.500.000đ",
+    priceFrom: "1.000.000đ",
   },
   {
-    slug: "ho-so-bat-tu",
-    name: "Hồ sơ bát tự",
+    slug: "bat-tu",
+    name: "Bát tự",
     summary: "Luận giải lá số bát tự: sự nghiệp, tài lộc, hôn nhân, sức khỏe.",
-    priceFrom: "2.500.000đ",
+    priceFrom: "2.000.000đ – 3.000.000đ",
   },
   {
     slug: "phong-thuy-van-phong",
     name: "Phong thủy văn phòng",
     summary: "Bố trí không gian làm việc, kinh doanh thu hút tài lộc, hanh thông.",
-    priceFrom: "5.000.000đ",
+    priceFrom: "5.000.000đ – 10.000.000đ",
+  },
+  {
+    slug: "phong-thuy-nha-chuyen-sau",
+    name: "Phong thủy nhà chuyên sâu",
+    summary: "Luận giải toàn diện nhà ở theo nhiều trường phái, khảo sát thực địa và báo cáo chi tiết chuyên sâu.",
+    priceFrom: "15.000.000đ – 20.000.000đ",
   },
 ];
 
@@ -107,6 +113,22 @@ export const products = [
     category: "Hoá Giải Vận Hạn",
     price: 2468000,
     image: "/images/products/vong-tay-tram-huong.jpg",
+    description:
+      "Vòng Tay Trầm Hương mang ý nghĩa phong thủy và tâm linh sâu sắc, giúp xua đuổi tà khí, thu hút tài lộc và cân bằng năng lượng cho người đeo.",
+    benefits: [
+      {
+        title: "Xua đuổi tà khí",
+        desc: "Vòng được xem là vật phẩm giúp loại bỏ uế khí, tạp khí và bảo vệ chủ nhân.",
+      },
+      {
+        title: "Thu hút tài lộc",
+        desc: "Mang lại may mắn, bình an và thuận lợi cho người làm ăn, kinh doanh.",
+      },
+      {
+        title: "Cân bằng năng lượng",
+        desc: "Tượng trưng cho linh khí đất trời, giúp tinh thần người đeo luôn lạc quan và an yên.",
+      },
+    ],
   },
 ];
 
