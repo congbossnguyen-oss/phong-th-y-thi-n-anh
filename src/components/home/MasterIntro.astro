@@ -1,12 +1,6 @@
 ---
 import Container from "../ui/Container.astro";
-import Icon from "../ui/Icon.astro";
-
-// TODO: bổ sung bằng cấp/chứng chỉ cụ thể khi khách hàng cung cấp thêm.
-const credentials = [
-  "Hơn 10 năm nghiên cứu huyền học phong thủy",
-  "[Bằng cấp / chứng chỉ phong thủy]",
-];
+import { siteConfig } from "../../lib/site-config";
 ---
 
 <section class="bg-(--color-ivory-100) py-16 sm:py-20">
@@ -22,22 +16,13 @@ const credentials = [
     <div>
       <p class="text-xs font-semibold uppercase tracking-widest text-(--color-cinnabar-500)">Giới thiệu</p>
       <h2 class="mt-2 font-display text-3xl font-semibold text-(--color-ink-950) sm:text-4xl">
-        Master Zhi Gong
+        {siteConfig.name}
       </h2>
       <p class="mt-4 text-base leading-relaxed text-(--color-ink-700)">
-        Với hơn 10 năm nghiên cứu huyền học phong thủy, Master Zhi Gong mang đến những luận giải chuẩn
-        xác, gần gũi và thiết thực — đồng hành cùng khách hàng trong từng quyết định quan trọng về nhà
-        ở, sự nghiệp và cuộc sống.
+        Với hơn 10 năm nghiên cứu huyền học phong thủy, {siteConfig.shortName} mang đến những luận giải
+        chuẩn xác, gần gũi và thiết thực — đồng hành cùng khách hàng trong từng quyết định quan trọng về
+        nhà ở, sự nghiệp và cuộc sống.
       </p>
-      <ul class="mt-6 space-y-3">
-        {credentials.map((item) => (
-          <li class="flex items-start gap-2.5 text-sm text-(--color-ink-700)">
-            <Icon name="award" class="mt-0.5 size-4 shrink-0 text-(--color-gold-400)" />
-            <span>{item}</span>
-          </li>
-        ))}
-      </ul>
-      <p class="mt-6 font-display text-lg italic text-(--color-gold-300)">Zhi Gong — Chuyên gia phong thủy</p>
     </div>
   </Container>
 </section>
