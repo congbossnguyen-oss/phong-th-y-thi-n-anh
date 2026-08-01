@@ -27,15 +27,7 @@ export type NavItem = {
 
 export const mainNav: NavItem[] = [
   { label: "Trang chủ", href: "/" },
-  {
-    label: "Giới thiệu",
-    href: "/gioi-thieu/ve-cong-ty",
-    children: [
-      { label: "Về Thiên Anh", href: "/gioi-thieu/ve-cong-ty" },
-      { label: "Đội ngũ chuyên gia", href: "/gioi-thieu/doi-ngu" },
-      { label: "Tuyển dụng", href: "/gioi-thieu/tuyen-dung" },
-    ],
-  },
+  { label: "Giới thiệu", href: "/gioi-thieu/ve-cong-ty" },
   { label: "Dịch vụ", href: "/dich-vu" },
   { label: "Vật phẩm", href: "/vat-pham" },
   { label: "Khóa học", href: "/khoa-hoc" },
