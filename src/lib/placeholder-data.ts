@@ -42,6 +42,25 @@ export const products = [
     category: "Chiêu Tài - Kích Lộc",
     price: 1868000,
     image: "/images/products/ty-huu-phong-thuy.jpeg",
+    description: "Tỳ Hưu là linh vật phong thủy giúp chiêu tài, giữ lộc và trấn trạch trừ tà khí cho gia chủ.",
+    benefits: [
+      {
+        title: "Hút tiền tài",
+        desc: "Giúp công việc kinh doanh buôn bán thuận lợi, hồng phát và thu hút nguồn vượng khí lớn cho gia chủ.",
+      },
+      {
+        title: "Giữ của cải",
+        desc: "Ngăn không cho tiền bạc thất thoát ra ngoài, phù hợp cho người làm ăn, buôn bán lớn.",
+      },
+      {
+        title: "Xua đuổi tà ma",
+        desc: "Đặt tượng tỳ hưu trong nhà giúp bảo vệ bình yên cho các thành viên, ngăn chặn năng lượng xấu.",
+      },
+      {
+        title: "Hóa giải sát khí",
+        desc: "Giảm bớt vận hạn và những hướng nhà xấu theo quan niệm phong thủy.",
+      },
+    ],
   },
   {
     slug: "thap-van-xuong",
@@ -49,6 +68,29 @@ export const products = [
     category: "Công Danh - Sự Nghiệp",
     price: 968000,
     image: "/images/products/thap-van-xuong.jpg",
+    description: "Tháp Văn Xương hỗ trợ khai mở trí tuệ, thúc đẩy công danh và mang lại bình an, may mắn cho gia chủ.",
+    benefits: [
+      {
+        title: "Khai mở trí tuệ",
+        desc: "Giúp người học tăng cường sự tập trung, ghi nhớ tốt hơn và sáng suốt trong các kỳ thi cử.",
+      },
+      {
+        title: "Thúc đẩy công danh",
+        desc: "Hỗ trợ người đi làm phát triển sự nghiệp, dễ thăng quan tiến chức hoặc đạt thành tựu cao trong nghiên cứu, quản lý.",
+      },
+      {
+        title: "Xua đuổi uế khí",
+        desc: "Trừ tà ma, xui rủi và thanh lọc các nguồn năng lượng tiêu cực xung quanh chủ nhân.",
+      },
+      {
+        title: "Thu hút may mắn",
+        desc: "Mang lại vượng khí, tài lộc và sự hanh thông cho người làm ăn, kinh doanh.",
+      },
+      {
+        title: "Biểu tượng bình an",
+        desc: "Giúp tâm tính bình tĩnh, từ bi và hướng thiện hơn trong cuộc sống.",
+      },
+    ],
   },
   {
     slug: "guong-bat-quai",
