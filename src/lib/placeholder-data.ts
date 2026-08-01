@@ -39,6 +39,12 @@ export const services = [
     summary: "Luận giải toàn diện nhà ở theo nhiều trường phái, khảo sát thực địa và báo cáo chi tiết chuyên sâu.",
     priceFrom: "15.000.000đ – 20.000.000đ",
   },
+  {
+    slug: "sim-so-phong-thuy",
+    name: "Sim Số Phong Thủy Kích Vận Khí",
+    summary: "Lựa chọn sim số hợp bản mệnh theo nguyên lý Âm Dương - Ngũ Hành, giúp hài hòa năng lượng và đồng hành trên hành trình phát triển.",
+    priceFrom: "Liên hệ",
+  },
 ];
 
 export const products = [
