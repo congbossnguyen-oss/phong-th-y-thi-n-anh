@@ -45,6 +45,12 @@ export const services = [
     summary: "Lựa chọn sim số hợp bản mệnh theo nguyên lý Âm Dương - Ngũ Hành, giúp hài hòa năng lượng và đồng hành trên hành trình phát triển.",
     priceFrom: "Liên hệ",
   },
+  {
+    slug: "cung-dong-tho-nhap-trach-lap-ban-than-tai",
+    name: "Cúng động thổ, nhập trạch, lập bàn thần tài",
+    summary: "Thực hiện nghi lễ cúng động thổ, nhập trạch và lập bàn thờ Thần Tài đúng nghi thức, chọn ngày giờ hợp mệnh gia chủ.",
+    priceFrom: "5.000.000đ – 7.000.000đ",
+  },
 ];
 
 export const products = [
