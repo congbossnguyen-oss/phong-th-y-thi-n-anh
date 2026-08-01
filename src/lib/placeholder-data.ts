@@ -51,6 +51,24 @@ export const services = [
     summary: "Thực hiện nghi lễ cúng động thổ, nhập trạch và lập bàn thờ Thần Tài đúng nghi thức, chọn ngày giờ hợp mệnh gia chủ.",
     priceFrom: "5.000.000đ – 7.000.000đ",
   },
+  {
+    slug: "chon-ngay-gio-sinh",
+    name: "Chọn ngày giờ sinh (sinh mổ)",
+    summary: "Chọn ngày giờ sinh mổ tốt dựa trên thông tin bác sĩ đưa ra, giúp con hợp mệnh và khởi đầu vận trình thuận lợi.",
+    priceFrom: "1.000.000đ",
+  },
+  {
+    slug: "luan-que-kinh-dich-ky-mon",
+    name: "Luận quẻ Kinh Dịch - Kỳ Môn",
+    summary: "Luận giải sự vụ, tài vận, quan vận, nhân duyên, sức khỏe... qua quẻ Kinh Dịch và Kỳ Môn Độn Giáp.",
+    priceFrom: "500.000đ – 1.000.000đ",
+  },
+  {
+    slug: "co-van-chien-luoc-toan-dien",
+    name: "Cố vấn chiến lược toàn diện (dành cho doanh nghiệp)",
+    summary: "Hỗ trợ tuyển dụng nhân sự, bố trí sắp xếp cán bộ cấp cao, hóa giải sự vụ, bố trí phong thủy công ty, xem ngày giờ ký kết... đồng hành cùng doanh nghiệp trong 1 năm.",
+    priceFrom: "30.000.000đ – 50.000.000đ / năm",
+  },
 ];
 
 export const products = [
