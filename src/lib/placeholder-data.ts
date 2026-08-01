@@ -41,14 +41,12 @@ export const products = [
     name: "Tỳ Hưu Chiêu Tài",
     category: "Chiêu Tài - Kích Lộc",
     price: 1868000,
-    image: "/images/products/ty-huu-phong-thuy.jpg",
   },
   {
     slug: "thap-van-xuong",
     name: "Tháp Văn Xương",
     category: "Công Danh - Sự Nghiệp",
     price: 968000,
-    image: "/images/products/thap-van-xuong.jpg",
   },
   {
     slug: "guong-bat-quai",
@@ -62,7 +60,6 @@ export const products = [
     name: "Vòng Tay Trầm Hương",
     category: "Hoá Giải Vận Hạn",
     price: 2468000,
-    image: "/images/products/vong-tay-tram-huong.jpg",
   },
 ];
 
