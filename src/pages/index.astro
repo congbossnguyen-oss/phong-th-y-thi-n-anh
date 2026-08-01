@@ -2,6 +2,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Hero from "../components/home/Hero.astro";
 import StatsSection from "../components/home/StatsSection.astro";
+import MasterIntro from "../components/home/MasterIntro.astro";
 import FeaturedServices from "../components/home/FeaturedServices.astro";
 import FeaturedProducts from "../components/home/FeaturedProducts.astro";
 import Testimonials from "../components/home/Testimonials.astro";
@@ -15,6 +16,7 @@ export const prerender = true;
 <BaseLayout title={siteConfig.name} description={siteConfig.description}>
   <Hero />
   <StatsSection />
+  <MasterIntro />
   <FeaturedServices />
   <FeaturedProducts />
   <Testimonials />

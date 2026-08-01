@@ -1,42 +1,46 @@
 ---
 import Icon from "../ui/Icon.astro";
 import Container from "../ui/Container.astro";
-import { siteConfig, mainNav, footerPolicyLinks } from "../../lib/site-config";
+import { siteConfig, footerPolicyLinks } from "../../lib/site-config";
 
 const year = new Date().getFullYear();
-const quickLinks = mainNav.filter((item) => item.href !== "/");
+
+const footerServiceLinks = [
+  { label: "Nhà ở", href: "/dich-vu/phong-thuy-nha-o" },
+  { label: "Văn phòng", href: "/dich-vu/phong-thuy-van-phong" },
+  { label: "Bát tự", href: "/dich-vu/ho-so-bat-tu" },
+  { label: "Trạch nhật", href: "/dich-vu/ho-so-trach-nhat" },
+];
+
+const footerSocialLinks = [
+  { label: "Facebook", href: siteConfig.social.facebook },
+  { label: "TikTok", href: siteConfig.social.tiktok },
+  { label: "Zalo", href: siteConfig.social.zalo },
+];
 ---
 
 <footer class="border-t border-(--color-ivory-300) bg-(--color-ivory-100) text-(--color-ink-700)">
   <Container class="grid gap-10 py-14 sm:grid-cols-2 lg:grid-cols-4">
     <div>
-      <a href="/" class="flex items-center gap-2.5">
-        <span class="flex size-10 items-center justify-center rounded-full border-2 border-(--color-gold-400) text-(--color-gold-300)">
-          <span class="font-display text-base font-semibold">TA</span>
-        </span>
-        <span class="font-display text-lg font-semibold text-(--color-ink-950)">{siteConfig.name}</span>
-      </a>
+      <a href="/" class="font-display text-xl font-semibold text-(--color-gold-300)">{siteConfig.shortName}</a>
       <p class="mt-4 text-sm leading-relaxed text-(--color-ink-700)">{siteConfig.description}</p>
       <div class="mt-5 flex items-center gap-3">
-        <a href={siteConfig.social.facebook} aria-label="Facebook" class="flex size-9 items-center justify-center rounded-full border border-(--color-ink-600) hover:border-(--color-gold-400) hover:text-(--color-gold-300)">
-          <Icon name="facebook" class="size-4" />
-        </a>
-        <a href={siteConfig.social.youtube} aria-label="YouTube" class="flex size-9 items-center justify-center rounded-full border border-(--color-ink-600) hover:border-(--color-gold-400) hover:text-(--color-gold-300)">
-          <Icon name="youtube" class="size-4" />
-        </a>
-        <a href={siteConfig.social.tiktok} aria-label="TikTok" class="flex size-9 items-center justify-center rounded-full border border-(--color-ink-600) hover:border-(--color-gold-400) hover:text-(--color-gold-300)">
-          <Icon name="tiktok" class="size-4" />
-        </a>
         <a href={siteConfig.social.zalo} aria-label="Zalo" class="flex size-9 items-center justify-center rounded-full border border-(--color-ink-600) hover:border-(--color-gold-400) hover:text-(--color-gold-300)">
           <Icon name="zalo" class="size-4" />
+        </a>
+        <a href={`mailto:${siteConfig.email}`} aria-label="Email" class="flex size-9 items-center justify-center rounded-full border border-(--color-ink-600) hover:border-(--color-gold-400) hover:text-(--color-gold-300)">
+          <Icon name="mail" class="size-4" />
+        </a>
+        <a href={`tel:${siteConfig.hotline.replace(/\s/g, "")}`} aria-label="Điện thoại" class="flex size-9 items-center justify-center rounded-full border border-(--color-ink-600) hover:border-(--color-gold-400) hover:text-(--color-gold-300)">
+          <Icon name="phone" class="size-4" />
         </a>
       </div>
     </div>
 
     <div>
-      <h3 class="font-display text-sm font-semibold uppercase tracking-wide text-(--color-gold-300)">Khám phá</h3>
+      <h3 class="font-display text-sm font-semibold uppercase tracking-wide text-(--color-gold-300)">Dịch vụ</h3>
       <ul class="mt-4 space-y-2.5 text-sm">
-        {quickLinks.map((item) => (
+        {footerServiceLinks.map((item) => (
           <li><a href={item.href} class="text-(--color-ink-700) hover:text-(--color-ink-950)">{item.label}</a></li>
         ))}
       </ul>
@@ -52,32 +56,42 @@ const quickLinks = mainNav.filter((item) => item.href !== "/");
     </div>
 
     <div>
-      <h3 class="font-display text-sm font-semibold uppercase tracking-wide text-(--color-gold-300)">Liên hệ</h3>
-      <ul class="mt-4 space-y-3 text-sm text-(--color-ink-700)">
-        <li class="flex items-start gap-2.5">
-          <Icon name="map-pin" class="mt-0.5 size-4 shrink-0 text-(--color-gold-400)" />
-          <span>{siteConfig.address}</span>
-        </li>
-        <li class="flex items-center gap-2.5">
-          <Icon name="phone" class="size-4 shrink-0 text-(--color-gold-400)" />
-          <a href={`tel:${siteConfig.hotline.replace(/\s/g, "")}`} class="hover:text-(--color-ink-950)">{siteConfig.hotline}</a>
-        </li>
-        <li class="flex items-center gap-2.5">
-          <Icon name="mail" class="size-4 shrink-0 text-(--color-gold-400)" />
-          <a href={`mailto:${siteConfig.email}`} class="hover:text-(--color-ink-950)">{siteConfig.email}</a>
-        </li>
-        <li class="flex items-center gap-2.5">
-          <Icon name="clock" class="size-4 shrink-0 text-(--color-gold-400)" />
-          <span>{siteConfig.workingHours}</span>
-        </li>
-      </ul>
+      <h3 class="font-display text-sm font-semibold uppercase tracking-wide text-(--color-gold-300)">Đăng ký bản tin</h3>
+      <p class="mt-4 text-sm leading-relaxed text-(--color-ink-700)">
+        Nhận bài luận giải vận hạn hàng tháng và các bí quyết phong thủy từ chuyên gia.
+      </p>
+      <form id="newsletter-form" class="mt-4 flex items-center overflow-hidden rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50)">
+        <input
+          type="email"
+          required
+          placeholder="Email của bạn"
+          aria-label="Email của bạn"
+          class="w-full bg-transparent px-3.5 py-2.5 text-sm text-(--color-ink-950) placeholder:text-(--color-ink-500) focus:outline-none"
+        />
+        <button type="submit" aria-label="Đăng ký" class="flex size-11 shrink-0 items-center justify-center text-(--color-gold-400) hover:text-(--color-gold-300)">
+          <Icon name="arrow-right" class="size-4" />
+        </button>
+      </form>
     </div>
   </Container>
 
   <div class="border-t border-(--color-ivory-300)">
     <Container class="flex flex-col items-center justify-between gap-2 py-5 text-xs text-(--color-ink-500) sm:flex-row">
       <p>© {year} {siteConfig.name}. Đã đăng ký kinh doanh số {siteConfig.businessRegistration}.</p>
-      <p>Thiết kế &amp; phát triển bởi đội ngũ Thiên Anh Digital.</p>
+      <div class="flex items-center gap-4">
+        {footerSocialLinks.map((item) => (
+          <a href={item.href} class="uppercase tracking-wide hover:text-(--color-ink-950)">{item.label}</a>
+        ))}
+      </div>
     </Container>
   </div>
 </footer>
+
+<script>
+  document.getElementById("newsletter-form")?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    // TODO: nối vào dịch vụ email marketing thật khi có (Giai đoạn CMS).
+    const form = e.target as HTMLFormElement;
+    form.reset();
+  });
+</script>
