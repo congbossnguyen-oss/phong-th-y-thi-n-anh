@@ -7,7 +7,7 @@ export const siteConfig = {
   description:
     "Phong Thủy Thiên Anh cung cấp dịch vụ tư vấn phong thủy nhà ở, văn phòng, chọn ngày, xem tuổi và vật phẩm phong thủy chính hiệu.",
   hotline: "0836.768.768",
-  email: "lienhe@phongthuythienanh.vn", // TODO
+  email: "lienhe@phongthuythienanh.com", // TODO: kích hoạt hòm mail thật (chuyển tiếp hoặc Zoho/Google Workspace)
   address: "Ô 11, B5, KĐT Đại Kim - Định Công, TP. Hà Nội",
   workingHours: "8:00 - 17:30, tất cả các ngày trong tuần",
   businessRegistration: "0000000000", // TODO: số ĐKKD thật
