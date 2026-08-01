@@ -6,9 +6,9 @@ export const siteConfig = {
   tagline: "Kiến giải phong thủy — Kiến tạo an lành",
   description:
     "Phong Thủy Thiên Anh cung cấp dịch vụ tư vấn phong thủy nhà ở, văn phòng, chọn ngày, xem tuổi và vật phẩm phong thủy chính hiệu.",
-  hotline: "0900 000 000", // TODO: thay số hotline thật
+  hotline: "0836.768.768",
   email: "lienhe@phongthuythienanh.vn", // TODO
-  address: "Số 1, Đường ABC, Quận XYZ, Hà Nội", // TODO
+  address: "Ô 11, B5, KĐT Đại Kim - Định Công, TP. Hà Nội",
   workingHours: "8:00 - 17:30, tất cả các ngày trong tuần",
   businessRegistration: "0000000000", // TODO: số ĐKKD thật
   social: {
