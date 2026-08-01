@@ -22,8 +22,12 @@ const { item } = Astro.props;
   />
 
   <Container class="py-16">
-    <div class="aspect-video rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-200)">
-      <!-- TODO: bộ ảnh công trình thật -->
+    <div class="aspect-video overflow-hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-200)">
+      {item.image ? (
+        <img src={item.image} alt={item.title} class="h-full w-full object-cover" />
+      ) : (
+        <div class="flex h-full items-center justify-center text-sm text-(--color-ink-500)">Ảnh đang cập nhật</div>
+      )}
     </div>
     <div class="mt-8 max-w-2xl">
       <h2 class="font-display text-2xl font-semibold text-(--color-ink-950)">Bài toán phong thủy</h2>

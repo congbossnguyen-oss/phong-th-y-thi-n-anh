@@ -41,25 +41,30 @@ export const products = [
     name: "Tỳ Hưu Chiêu Tài",
     category: "Chiêu Tài - Kích Lộc",
     price: 1868000,
+    image: "/images/products/ty-huu-phong-thuy.jpeg",
   },
   {
     slug: "thap-van-xuong",
     name: "Tháp Văn Xương",
     category: "Công Danh - Sự Nghiệp",
     price: 968000,
+    image: "/images/products/thap-van-xuong.jpg",
   },
   {
     slug: "guong-bat-quai",
-    name: "Gương Bát Quái Trấn Trạch",
+    name: "Gương Bát Quái Ma Phương",
     category: "Hóa Sát - Trấn Trạch",
-    price: 568000,
+    price: 1000000,
     image: "/images/products/guong-bat-quai.jpg",
+    description:
+      "Vật phẩm được lựa chọn kỹ lưỡng, phù hợp cho mục đích hóa sát - trấn trạch. Hóa giải hướng xấu ngũ quỷ, tuyệt mạng, họa hại lục sát, không vong.",
   },
   {
     slug: "vong-tay-tram-huong",
     name: "Vòng Tay Trầm Hương",
     category: "Hoá Giải Vận Hạn",
     price: 2468000,
+    image: "/images/products/vong-tay-tram-huong.jpg",
   },
 ];
 
@@ -112,7 +117,17 @@ export const posts = [
 ];
 
 export const portfolio = [
-  { slug: "biet-thu-vinhomes", title: "Biệt thự Vinhomes Ocean Park", location: "Hà Nội" },
-  { slug: "van-phong-abc-tower", title: "Văn phòng ABC Tower", location: "TP.HCM" },
-  { slug: "nha-pho-lien-ke", title: "Nhà phố liền kề Ecopark", location: "Hưng Yên" },
+  {
+    slug: "biet-thu-vinhomes-riverside",
+    title: "Biệt thự Vinhomes Riverside",
+    location: "Hà Nội",
+    image: "/images/portfolio/biet-thu-vinhomes-riverside.jpg",
+  },
+  {
+    slug: "van-phong-lanh-dao-agribank",
+    title: "Phòng làm việc lãnh đạo Agribank",
+    location: "Hà Nội",
+    image: "/images/portfolio/van-phong-agribank.jpg",
+  },
+  { slug: "showroom-oto-hai-phong", title: "Showroom ô tô", location: "Hải Phòng" },
 ];
