@@ -26,7 +26,7 @@ export const services = [
     name: "Bát tự",
     summary: "Luận giải lá số bát tự: sự nghiệp, tài lộc, hôn nhân, sức khỏe.",
     priceFrom: "2.000.000đ – 3.000.000đ",
-    image: "/images/services/bat-tu.png",
+    image: "/images/services/bat-tu.jpg",
   },
   {
     slug: "phong-thuy-van-phong",
