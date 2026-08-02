@@ -12,10 +12,10 @@ export const siteConfig = {
   workingHours: "8:00 - 17:30, tất cả các ngày trong tuần",
   businessRegistration: "0000000000", // TODO: số ĐKKD thật
   social: {
-    facebook: "#",
+    facebook: "https://www.facebook.com/ZhiGongFengShui",
     youtube: "#",
     zalo: "#",
-    tiktok: "#",
+    tiktok: "https://www.facebook.com/ZhiGongFengShui",
   },
 };
 
