@@ -174,13 +174,15 @@ export const testimonials = [
   {
     name: "Anh Minh Tuấn",
     role: "Chủ doanh nghiệp, Hà Nội",
+    avatar: "/images/team/testimonials/minh-tuan.jpg",
     quote:
       "Sau khi được Thiên Anh tư vấn lại bố cục văn phòng, công việc kinh doanh của tôi thuận lợi hẳn, đối tác tự tìm đến nhiều hơn.",
     rating: 5,
   },
   {
-    name: "Chị Thu Hà",
+    name: "Chị Hà Lê",
     role: "Khách hàng cá nhân, TP.HCM",
+    avatar: "/images/team/testimonials/ha-le.jpg",
     quote:
       "Đội ngũ chuyên gia rất tận tâm, giải thích cặn kẽ từng luận điểm chứ không chung chung. Rất an tâm khi nhờ tư vấn nhà mới.",
     rating: 5,
@@ -188,6 +190,7 @@ export const testimonials = [
   {
     name: "Anh Quang Huy",
     role: "Chủ đầu tư dự án, Đà Nẵng",
+    avatar: "/images/team/testimonials/quang-huy.jpg",
     quote:
       "Thiên Anh hỗ trợ chọn ngày động thổ và bố trí tổng thể dự án rất chuyên nghiệp, đúng tiến độ và cát lợi.",
     rating: 5,
