@@ -1,0 +1,91 @@
+---
+// Hoạ tiết linh khí trang trí (bát quái / hoa sen Flower of Life / chòm sao) — thuần trang trí, không mang nội dung.
+// class truyền vào quyết định vị trí, kích thước, màu (dùng text-(--color-x)/NN) — component chỉ vẽ path theo variant.
+interface Props {
+  variant: "bagua" | "flower-of-life" | "constellation";
+  class?: string;
+}
+const { variant, class: className = "" } = Astro.props;
+
+const constellationPoints: [number, number][] = [
+  [20, 30], [45, 15], [70, 25], [90, 10],
+  [35, 55], [60, 60], [85, 50],
+  [15, 80], [50, 90], [78, 85],
+];
+const constellationLines: [number, number][] = [
+  [0, 1], [1, 2], [2, 3], [1, 4], [4, 5], [5, 6], [2, 6], [4, 7], [5, 8], [8, 9], [6, 9],
+];
+---
+
+{
+  variant === "bagua" && (
+    <svg class={className} viewBox="0 0 200 200" fill="none" aria-hidden="true">
+      <circle cx="100" cy="100" r="98" stroke="currentColor" stroke-width="0.75" />
+      <circle cx="100" cy="100" r="82" stroke="currentColor" stroke-width="0.75" />
+      <circle cx="100" cy="100" r="34" stroke="currentColor" stroke-width="0.75" />
+      {Array.from({ length: 8 }).map((_, i) => {
+        const angle = (i * Math.PI) / 4;
+        const x1 = 100 + 34 * Math.cos(angle);
+        const y1 = 100 + 34 * Math.sin(angle);
+        const x2 = 100 + 82 * Math.cos(angle);
+        const y2 = 100 + 82 * Math.sin(angle);
+        return <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="currentColor" stroke-width="0.75" />;
+      })}
+      {Array.from({ length: 8 }).map((_, i) => {
+        const angle = (i * Math.PI) / 4 + Math.PI / 8;
+        const x = 100 + 58 * Math.cos(angle);
+        const y = 100 + 58 * Math.sin(angle);
+        return (
+          <rect
+            x={x - 6}
+            y={y - 1.5}
+            width="12"
+            height="3"
+            fill="currentColor"
+            transform={`rotate(${(angle * 180) / Math.PI} ${x} ${y})`}
+          />
+        );
+      })}
+    </svg>
+  )
+}
+
+{
+  variant === "flower-of-life" && (
+    <svg class={className} viewBox="0 0 200 200" fill="none" aria-hidden="true">
+      {(() => {
+        const r = 22;
+        const centers: [number, number][] = [[100, 100]];
+        for (let i = 0; i < 6; i++) {
+          const angle = (i * Math.PI) / 3;
+          centers.push([100 + r * Math.cos(angle), 100 + r * Math.sin(angle)]);
+        }
+        for (let i = 0; i < 6; i++) {
+          const angle = (i * Math.PI) / 3;
+          const cx = 100 + r * Math.cos(angle);
+          const cy = 100 + r * Math.sin(angle);
+          for (let j = 0; j < 6; j++) {
+            const a2 = (j * Math.PI) / 3;
+            centers.push([cx + r * Math.cos(a2), cy + r * Math.sin(a2)]);
+          }
+        }
+        return centers.map(([cx, cy]) => <circle cx={cx} cy={cy} r={r} stroke="currentColor" stroke-width="0.5" />);
+      })()}
+    </svg>
+  )
+}
+
+{
+  variant === "constellation" && (
+    <svg class={className} viewBox="0 0 100 100" fill="none" aria-hidden="true">
+      {constellationLines.map(([a, b]) => {
+        const [x1, y1] = constellationPoints[a];
+        const [x2, y2] = constellationPoints[b];
+        return <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="currentColor" stroke-width="0.4" />;
+      })}
+      {constellationPoints.map(([cx, cy]) => (
+        <circle cx={cx} cy={cy} r="1.2" fill="currentColor" />
+      ))}
+    </svg>
+  )
+}

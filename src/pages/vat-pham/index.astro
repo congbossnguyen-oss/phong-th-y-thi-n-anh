@@ -32,10 +32,10 @@ const formatPrice = (price: number) =>
           </a>
           <div class="flex flex-1 flex-col p-4">
             <p class="text-xs uppercase tracking-wide text-(--color-gold-500)">{product.category}</p>
-            <a href={`/vat-pham/${product.slug}`} class="mt-1 font-display text-base font-semibold text-(--color-ink-950) hover:text-(--color-cinnabar-500)">
+            <a href={`/vat-pham/${product.slug}`} class="mt-1 font-display text-base font-semibold text-(--color-ink-950) hover:text-(--color-gold-300)">
               {product.name}
             </a>
-            <p class="mt-2 text-base font-semibold text-(--color-cinnabar-500)">{formatPrice(product.price)}</p>
+            <p class="mt-2 text-base font-semibold text-(--color-gold-300)">{formatPrice(product.price)}</p>
             <Button
               size="md"
               class="js-add-to-cart mt-3 w-full"

@@ -56,8 +56,8 @@ const isActive = (href: string) =>
           <details class="group relative">
             <summary
               class:list={[
-                "flex cursor-pointer list-none items-center gap-1 rounded-(--radius-control) px-3 py-2 text-sm font-medium transition-colors hover:bg-(--color-ivory-200)",
-                isActive(item.href) ? "text-(--color-cinnabar-500)" : "text-(--color-ink-800)",
+                "flex cursor-pointer list-none items-center gap-1 rounded-(--radius-control) px-3 py-2 text-sm font-medium uppercase tracking-wide transition-colors hover:bg-(--color-ivory-200)",
+                isActive(item.href) ? "text-(--color-gold-300)" : "text-(--color-ink-800)",
               ]}
             >
               {item.label}
@@ -68,7 +68,7 @@ const isActive = (href: string) =>
                 <li>
                   <a
                     href={child.href}
-                    class="block rounded-(--radius-control) px-3 py-2 text-sm text-(--color-ink-800) hover:bg-(--color-ivory-200) hover:text-(--color-cinnabar-400)"
+                    class="block rounded-(--radius-control) px-3 py-2 text-sm text-(--color-ink-800) hover:bg-(--color-ivory-200) hover:text-(--color-gold-300)"
                   >
                     {child.label}
                   </a>
@@ -80,8 +80,10 @@ const isActive = (href: string) =>
           <a
             href={item.href}
             class:list={[
-              "rounded-(--radius-control) px-3 py-2 text-sm font-medium transition-colors hover:bg-(--color-ivory-200)",
-              isActive(item.href) ? "text-(--color-cinnabar-500)" : "text-(--color-ink-800)",
+              "rounded-(--radius-control) border-b-2 px-3 py-2 text-sm font-medium uppercase tracking-wide transition-colors hover:bg-(--color-ivory-200)",
+              isActive(item.href)
+                ? "border-(--color-gold-300) text-(--color-gold-300)"
+                : "border-transparent text-(--color-ink-800)",
             ]}
           >
             {item.label}
@@ -148,7 +150,7 @@ const isActive = (href: string) =>
           </a>
           <a
             href={`tel:${siteConfig.hotline.replace(/\s/g, "")}`}
-            class="mt-3 flex items-center justify-center gap-2 rounded-(--radius-control) bg-(--color-cinnabar-500) px-4 py-3 text-sm font-medium text-(--color-gold-100)"
+            class="mt-3 flex items-center justify-center gap-2 rounded-(--radius-pill) bg-(--color-gold-400) px-4 py-3 text-sm font-semibold text-(--color-ivory-50) hover:bg-(--color-gold-300)"
           >
             <Icon name="phone" class="size-4" />
             Gọi tư vấn: {siteConfig.hotline}
@@ -156,7 +158,7 @@ const isActive = (href: string) =>
         </nav>
       </details>
 
-      <Button href="/lien-he" class="hidden lg:inline-flex">Đặt lịch tư vấn</Button>
+      <Button href="/lien-he" class="hidden shrink-0 whitespace-nowrap lg:inline-flex">Đặt lịch tư vấn</Button>
     </div>
   </Container>
 </header>

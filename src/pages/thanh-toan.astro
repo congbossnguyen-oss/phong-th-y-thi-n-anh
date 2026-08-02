@@ -23,41 +23,41 @@ export const prerender = true;
           <div>
             <label for="name" class="text-sm font-medium text-(--color-ink-800)">Họ và tên <span class="text-(--color-danger-500)">*</span></label>
             <input id="name" name="name" type="text" required autocomplete="name"
-              class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-cinnabar-500) focus:outline-none focus:ring-2 focus:ring-(--color-cinnabar-500)/20" />
+              class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20" />
           </div>
           <div>
             <label for="phone" class="text-sm font-medium text-(--color-ink-800)">Số điện thoại <span class="text-(--color-danger-500)">*</span></label>
             <input id="phone" name="phone" type="tel" required autocomplete="tel"
-              class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-cinnabar-500) focus:outline-none focus:ring-2 focus:ring-(--color-cinnabar-500)/20" />
+              class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20" />
           </div>
           <div class="sm:col-span-2">
             <label for="email" class="text-sm font-medium text-(--color-ink-800)">Email nhận thông tin đơn hàng <span class="text-(--color-danger-500)">*</span></label>
             <input id="email" name="email" type="email" required autocomplete="email"
-              class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-cinnabar-500) focus:outline-none focus:ring-2 focus:ring-(--color-cinnabar-500)/20" />
+              class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20" />
           </div>
         </div>
         <div class="mt-5">
           <label for="address" class="text-sm font-medium text-(--color-ink-800)">Địa chỉ nhận hàng <span class="text-(--color-danger-500)">*</span></label>
           <input id="address" name="address" type="text" required autocomplete="street-address"
-            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-cinnabar-500) focus:outline-none focus:ring-2 focus:ring-(--color-cinnabar-500)/20" />
+            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20" />
         </div>
         <div class="mt-5">
           <label for="note" class="text-sm font-medium text-(--color-ink-800)">Ghi chú (không bắt buộc)</label>
           <textarea id="note" name="note" rows="2"
-            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-cinnabar-500) focus:outline-none focus:ring-2 focus:ring-(--color-cinnabar-500)/20"></textarea>
+            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20"></textarea>
         </div>
 
         <h2 class="mt-8 font-display text-xl font-semibold text-(--color-ink-950)">Phương thức thanh toán</h2>
         <div class="mt-4 space-y-3">
-          <label class="flex cursor-pointer items-start gap-3 rounded-(--radius-control) border border-(--color-ivory-300) p-4 has-[:checked]:border-(--color-cinnabar-500) has-[:checked]:bg-(--color-cinnabar-50)">
-            <input type="radio" name="payment" value="sepay_qr" checked class="mt-1 accent-(--color-cinnabar-500)" />
+          <label class="flex cursor-pointer items-start gap-3 rounded-(--radius-control) border border-(--color-ivory-300) p-4 has-[:checked]:border-(--color-gold-300) has-[:checked]:bg-(--color-gold-400)/10">
+            <input type="radio" name="payment" value="sepay_qr" checked class="mt-1 accent-(--color-gold-300)" />
             <span>
               <span class="block text-sm font-medium text-(--color-ink-950)">Chuyển khoản QR (tự động xác nhận)</span>
               <span class="block text-xs text-(--color-ink-600)">Quét mã VietQR, đơn hàng được xác nhận ngay khi thanh toán thành công.</span>
             </span>
           </label>
-          <label class="flex cursor-pointer items-start gap-3 rounded-(--radius-control) border border-(--color-ivory-300) p-4 has-[:checked]:border-(--color-cinnabar-500) has-[:checked]:bg-(--color-cinnabar-50)">
-            <input type="radio" name="payment" value="cod" class="mt-1 accent-(--color-cinnabar-500)" />
+          <label class="flex cursor-pointer items-start gap-3 rounded-(--radius-control) border border-(--color-ivory-300) p-4 has-[:checked]:border-(--color-gold-300) has-[:checked]:bg-(--color-gold-400)/10">
+            <input type="radio" name="payment" value="cod" class="mt-1 accent-(--color-gold-300)" />
             <span>
               <span class="block text-sm font-medium text-(--color-ink-950)">Thanh toán khi nhận hàng (COD)</span>
               <span class="block text-xs text-(--color-ink-600)">Thanh toán tiền mặt trực tiếp cho shipper.</span>
@@ -74,7 +74,7 @@ export const prerender = true;
         <ul id="summary-items" class="mt-4 space-y-3"></ul>
         <div class="mt-4 flex items-center justify-between border-t border-(--color-ivory-300) pt-4 text-base font-semibold">
           <span class="text-(--color-ink-950)">Tổng cộng</span>
-          <span id="summary-total" class="text-(--color-cinnabar-500)">0đ</span>
+          <span id="summary-total" class="text-(--color-gold-300)">0đ</span>
         </div>
       </aside>
     </div>

@@ -5,7 +5,7 @@
   --font-display: "Cormorant Garamond", "Noto Serif", serif;
   --font-sans: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
 
-  /* Redesign don do (ruou vang dam) + vang dong, nen toi sang trong thay cho ban nga sang cu. */
+  /* Redesign "Celestial Alchemy": nen gan den am (dark luxury) + vang dong, ke thua tong do tram cu lam mau phu. */
   --color-ink-950: #f7ecd9;
   --color-ink-800: #ead9bd;
   --color-ink-700: #d8c3a3;
@@ -13,11 +13,11 @@
   --color-ink-500: #a68b6c;
   --color-ink-400: #8a725a;
 
-  --color-ivory-50: #2b0f15;
-  --color-ivory-100: #35141a;
-  --color-ivory-200: #421a22;
-  --color-ivory-300: #5c2a34;
-  --color-ivory-400: #8a5560;
+  --color-ivory-50: #150a0c;
+  --color-ivory-100: #1c0e12;
+  --color-ivory-200: #26141a;
+  --color-ivory-300: #3d1f27;
+  --color-ivory-400: #6b3b46;
 
   --color-cinnabar-50: #451920;
   --color-cinnabar-100: #5c232b;
@@ -30,14 +30,16 @@
   --color-gold-300: #dcbd7a;
   --color-gold-400: #c9a256;
   --color-gold-500: #ad8843;
+  --color-gold-600: #8f6f37;
   --color-gold-700: #7c6230;
 
   --color-success-500: #5a9c6c;
   --color-danger-500: #e35c4d;
 
-  /* Bán kính bo góc: mềm nhưng không bo tròn kiểu playful */
+  /* Bán kính bo góc: card/input mềm, pill dành riêng cho nút CTA */
   --radius-card: 0.75rem;
   --radius-control: 0.5rem;
+  --radius-pill: 999px;
 }
 
 html {

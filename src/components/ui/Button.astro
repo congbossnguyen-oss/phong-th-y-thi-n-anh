@@ -18,13 +18,13 @@ const {
 } = Astro.props;
 
 const base =
-  "inline-flex items-center justify-center gap-2 rounded-(--radius-control) font-medium transition-colors duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-cinnabar-500) disabled:opacity-50 disabled:pointer-events-none";
+  "inline-flex items-center justify-center gap-2 rounded-(--radius-pill) font-semibold uppercase tracking-wide transition-colors duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-gold-400) disabled:opacity-50 disabled:pointer-events-none";
 
 const variants = {
   primary:
-    "bg-(--color-cinnabar-500) text-(--color-gold-100) hover:bg-(--color-cinnabar-600) active:bg-(--color-cinnabar-700)",
+    "bg-(--color-gold-400) text-(--color-ivory-50) hover:bg-(--color-gold-300) active:bg-(--color-gold-500)",
   secondary:
-    "bg-transparent text-(--color-cinnabar-400) border border-(--color-cinnabar-400) hover:bg-(--color-cinnabar-500) hover:text-(--color-gold-100) hover:border-(--color-cinnabar-500)",
+    "bg-transparent text-(--color-ink-950) border border-(--color-ink-600) hover:border-(--color-gold-400) hover:text-(--color-gold-300)",
   ghost:
     "bg-transparent text-(--color-ink-800) hover:bg-(--color-ivory-200)",
 };

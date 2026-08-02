@@ -2,10 +2,8 @@
 // Khi có SANITY_PROJECT_ID, thay các import này bằng truy vấn từ src/lib/cms/queries.ts.
 
 export const stats = [
-  { value: "9.000+", label: "Khách hàng tin tưởng" },
-  { value: "600+", label: "Công trình đã tư vấn" },
-  { value: "10+", label: "Chuyên gia phong thủy" },
-  { value: "15", label: "Năm kinh nghiệm" },
+  { value: "1000+", label: "Khách hàng tin tưởng" },
+  { value: "10", label: "Năm kinh nghiệm" },
 ];
 
 export const services = [

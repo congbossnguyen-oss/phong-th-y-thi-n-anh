@@ -3,7 +3,7 @@ import { db } from "./client";
 import { orders, orderItems, courseEnrollments } from "../../../db/schema";
 import { generateOrderCode } from "../payments/sepay";
 import { products } from "../placeholder-data";
-import { courses } from "../placeholder-courses";
+import { getCourseBySlug } from "../cms/queries";
 import { sendProductOrderConfirmedEmail, sendCourseOrderConfirmedEmail } from "../email/send";
 
 export interface CartLine {
@@ -80,7 +80,8 @@ export async function createCourseOrder(params: {
   customerEmail: string;
   courseSlug: string;
 }) {
-  const course = courses.find((c) => c.slug === params.courseSlug && c.format === "online");
+  const courseData = await getCourseBySlug(params.courseSlug);
+  const course = courseData && courseData.format === "online" ? courseData : null;
   if (!course) {
     throw new Error("Khóa học không hợp lệ.");
   }
@@ -143,7 +144,7 @@ export async function markOrderPaidAndFulfill(orderId: string) {
       orderId: order.id,
     });
 
-    const course = courses.find((c) => c.slug === order.courseRef);
+    const course = await getCourseBySlug(order.courseRef);
     if (course && order.customerEmail) {
       await sendCourseOrderConfirmedEmail({
         to: order.customerEmail,

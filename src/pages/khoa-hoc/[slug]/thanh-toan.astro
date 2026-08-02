@@ -4,14 +4,15 @@ import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/ui/PageHero.astro";
 import Container from "../../../components/ui/Container.astro";
 import Button from "../../../components/ui/Button.astro";
-import { courses } from "../../../lib/placeholder-courses";
+import { getCourseBySlug } from "../../../lib/cms/queries";
 import { db } from "../../../lib/db/client";
 import { courseEnrollments } from "../../../../db/schema";
 
 export const prerender = false;
 
 const { slug } = Astro.params;
-const course = courses.find((c) => c.slug === slug && c.format === "online");
+const courseData = slug ? await getCourseBySlug(slug) : null;
+const course = courseData && courseData.format === "online" ? courseData : null;
 
 if (!course) {
   return Astro.redirect("/khoa-hoc");
@@ -47,13 +48,13 @@ const formatPrice = (price: number) =>
     <div class="mx-auto max-w-md rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6 sm:p-8">
       <div class="flex items-center justify-between border-b border-(--color-ivory-300) pb-4">
         <span class="text-sm text-(--color-ink-700)">{course.name}</span>
-        <span class="font-display text-lg font-semibold text-(--color-cinnabar-500)">{formatPrice(course.price)}</span>
+        <span class="font-display text-lg font-semibold text-(--color-gold-300)">{formatPrice(course.price)}</span>
       </div>
 
       <form id="course-checkout-form" class="mt-5">
         <label for="phone" class="text-sm font-medium text-(--color-ink-800)">Số điện thoại liên hệ <span class="text-(--color-danger-500)">*</span></label>
         <input id="phone" name="phone" type="tel" required autocomplete="tel"
-          class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-cinnabar-500) focus:outline-none focus:ring-2 focus:ring-(--color-cinnabar-500)/20" />
+          class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20" />
 
         <p id="checkout-error" class="mt-4 hidden text-sm text-(--color-danger-500)"></p>
         <Button id="checkout-submit" type="submit" size="lg" class="mt-6 w-full">Thanh toán qua QR</Button>

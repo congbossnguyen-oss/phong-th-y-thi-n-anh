@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import { and, eq } from "drizzle-orm";
 import { db } from "../../../lib/db/client";
 import { courseCertificates } from "../../../../db/schema";
-import { courses } from "../../../lib/placeholder-courses";
+import { getCourseBySlug } from "../../../lib/cms/queries";
 import { generateCertificatePdf } from "../../../lib/certificate/generate";
 
 export const prerender = false;
@@ -13,7 +13,7 @@ export const GET: APIRoute = async ({ params, locals }) => {
   }
 
   const courseRef = params.courseRef!;
-  const course = courses.find((c) => c.slug === courseRef);
+  const course = await getCourseBySlug(courseRef);
   if (!course) {
     return new Response("Không tìm thấy khóa học.", { status: 404 });
   }

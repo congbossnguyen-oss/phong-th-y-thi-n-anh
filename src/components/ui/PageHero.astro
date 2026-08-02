@@ -1,5 +1,6 @@
 ---
 import Container from "./Container.astro";
+import SacredMotif from "./SacredMotif.astro";
 
 interface Crumb {
   label: string;
@@ -14,8 +15,12 @@ interface Props {
 const { eyebrow, title, description, breadcrumbs = [] } = Astro.props;
 ---
 
-<section class="border-b border-(--color-ivory-300) bg-(--color-ivory-100) py-14">
-  <Container>
+<section class="relative overflow-hidden border-b border-(--color-ivory-300) bg-(--color-ivory-100) py-14">
+  <SacredMotif
+    variant="bagua"
+    class="pointer-events-none absolute -right-40 top-1/2 size-[30rem] -translate-y-1/2 text-(--color-gold-500)/10"
+  />
+  <Container class="relative">
     {breadcrumbs.length > 0 && (
       <nav aria-label="Breadcrumb" class="mb-4 flex flex-wrap items-center gap-1.5 text-xs text-(--color-ink-600)">
         {breadcrumbs.map((crumb, i) => (

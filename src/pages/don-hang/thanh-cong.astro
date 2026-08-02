@@ -28,7 +28,7 @@ const formatPrice = (price: number) =>
       <Icon name="check-circle" class="size-8" />
     </span>
     <h1 class="mt-5 font-display text-2xl font-semibold text-(--color-ink-950) sm:text-3xl">Đặt hàng thành công!</h1>
-    <p class="mt-2 text-(--color-ink-600)">Mã đơn hàng <strong class="text-(--color-ink-950)">#{orderId}</strong> — tổng giá trị <strong class="text-(--color-cinnabar-500)">{formatPrice(total)}</strong></p>
+    <p class="mt-2 text-(--color-ink-600)">Mã đơn hàng <strong class="text-(--color-ink-950)">#{orderId}</strong> — tổng giá trị <strong class="text-(--color-gold-300)">{formatPrice(total)}</strong></p>
 
     {payment === "cod" ? (
       <p class="mt-6 max-w-md text-sm text-(--color-ink-600)">Đơn hàng của bạn sẽ được giao và thu tiền trực tiếp (COD). Thiên Anh sẽ gọi xác nhận trong thời gian sớm nhất.</p>

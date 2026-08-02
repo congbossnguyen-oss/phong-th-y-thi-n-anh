@@ -2,7 +2,7 @@ import { randomBytes } from "node:crypto";
 import { and, eq } from "drizzle-orm";
 import { db } from "./client";
 import { courseCertificates, lessonProgress } from "../../../db/schema";
-import { courses } from "../placeholder-courses";
+import { getCourseWithLessons } from "../cms/queries";
 import { generateCertificatePdf } from "../certificate/generate";
 import { sendCourseCertificateEmail } from "../email/send";
 
@@ -24,8 +24,8 @@ export async function issueCertificateIfCourseCompleted(params: {
   userEmail: string;
   courseRef: string;
 }) {
-  const course = courses.find((c) => c.slug === params.courseRef);
-  if (!course || !course.lessons || course.lessons.length === 0) return null;
+  const course = await getCourseWithLessons(params.courseRef);
+  if (!course || course.lessons.length === 0) return null;
 
   const progressRows = await db
     .select({ lessonRef: lessonProgress.lessonRef })

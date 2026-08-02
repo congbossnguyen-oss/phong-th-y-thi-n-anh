@@ -16,12 +16,12 @@ const formatPrice = (price: number) =>
         title="Vật phẩm phong thủy nổi bật"
         description="Vật phẩm được lựa chọn kỹ lưỡng, hợp mệnh, hỗ trợ chiêu tài và hóa giải vận hạn."
       />
-      <a href="/vat-pham" class="text-sm font-medium text-(--color-cinnabar-500) hover:underline">Xem cửa hàng →</a>
+      <a href="/vat-pham" class="text-sm font-medium text-(--color-gold-300) hover:underline">Xem cửa hàng →</a>
     </div>
 
     <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
       {products.map((product) => (
-        <div class="flex flex-col overflow-hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50)">
+        <div class="flex flex-col overflow-hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) transition-colors hover:border-(--color-gold-400)/50">
           <a href={`/vat-pham/${product.slug}`} class="block aspect-square overflow-hidden bg-(--color-ivory-200)">
             {product.image ? (
               <img src={product.image} alt={product.name} class="h-full w-full object-cover" loading="lazy" />
@@ -31,10 +31,10 @@ const formatPrice = (price: number) =>
           </a>
           <div class="flex flex-1 flex-col p-4">
             <p class="text-xs uppercase tracking-wide text-(--color-gold-500)">{product.category}</p>
-            <a href={`/vat-pham/${product.slug}`} class="mt-1 font-display text-base font-semibold text-(--color-ink-950) hover:text-(--color-cinnabar-500)">
+            <a href={`/vat-pham/${product.slug}`} class="mt-1 font-display text-base font-semibold text-(--color-ink-950) hover:text-(--color-gold-300)">
               {product.name}
             </a>
-            <p class="mt-2 text-base font-semibold text-(--color-cinnabar-500)">{formatPrice(product.price)}</p>
+            <p class="mt-2 text-base font-semibold text-(--color-gold-300)">{formatPrice(product.price)}</p>
             <Button
               size="md"
               class="js-add-to-cart mt-3 w-full"

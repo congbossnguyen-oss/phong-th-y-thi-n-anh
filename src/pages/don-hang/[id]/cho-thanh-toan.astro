@@ -3,7 +3,7 @@ import BaseLayout from "../../../layouts/BaseLayout.astro";
 import Container from "../../../components/ui/Container.astro";
 import { getOrderById } from "../../../lib/db/orders";
 import { getSepayQrUrl } from "../../../lib/payments/sepay";
-import { courses } from "../../../lib/placeholder-courses";
+import { getCourseBySlug } from "../../../lib/cms/queries";
 
 export const prerender = false;
 
@@ -23,7 +23,7 @@ if (order.status !== "pending_payment") {
 }
 
 const qrUrl = getSepayQrUrl({ amount: Number(order.totalAmount), orderCode: order.orderCode });
-const course = order.courseRef ? courses.find((c) => c.slug === order.courseRef) : null;
+const course = order.courseRef ? await getCourseBySlug(order.courseRef) : null;
 
 const formatPrice = (price: number) =>
   price.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
@@ -45,7 +45,7 @@ const successRedirect =
       <img src={qrUrl} alt="Mã QR thanh toán VietQR" width="280" height="280" class="mx-auto rounded-(--radius-control)" />
     </div>
 
-    <p class="mt-6 font-display text-2xl font-semibold text-(--color-cinnabar-500)">{formatPrice(Number(order.totalAmount))}</p>
+    <p class="mt-6 font-display text-2xl font-semibold text-(--color-gold-300)">{formatPrice(Number(order.totalAmount))}</p>
 
     <div id="status-badge" class="mt-4 flex items-center gap-2 rounded-full bg-(--color-gold-100) px-4 py-2 text-sm font-medium text-(--color-gold-700)">
       <span class="size-2 animate-pulse rounded-full bg-(--color-gold-500)"></span>

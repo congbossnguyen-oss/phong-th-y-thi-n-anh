@@ -2,63 +2,26 @@
 import Container from "../ui/Container.astro";
 import Button from "../ui/Button.astro";
 import Icon from "../ui/Icon.astro";
+import SacredMotif from "../ui/SacredMotif.astro";
 import { siteConfig } from "../../lib/site-config";
 
 const [taglineMain, taglineSub] = siteConfig.tagline.split(" — ");
 ---
 
 <section class="relative overflow-hidden bg-(--color-ivory-50)">
-  <!-- Hoạ tiết bát quái + hoa sen trang trí, không mang nội dung -->
-  <svg
+  <!-- Hoạ tiết linh khí trang trí, không mang nội dung -->
+  <SacredMotif
+    variant="bagua"
     class="pointer-events-none absolute -left-32 top-1/2 size-[42rem] -translate-y-1/2 text-(--color-gold-500)/20 sm:-left-16"
-    viewBox="0 0 200 200"
-    fill="none"
-    aria-hidden="true"
-  >
-    <circle cx="100" cy="100" r="98" stroke="currentColor" stroke-width="0.75" />
-    <circle cx="100" cy="100" r="82" stroke="currentColor" stroke-width="0.75" />
-    <circle cx="100" cy="100" r="34" stroke="currentColor" stroke-width="0.75" />
-    {Array.from({ length: 8 }).map((_, i) => {
-      const angle = (i * Math.PI) / 4;
-      const x1 = 100 + 34 * Math.cos(angle);
-      const y1 = 100 + 34 * Math.sin(angle);
-      const x2 = 100 + 82 * Math.cos(angle);
-      const y2 = 100 + 82 * Math.sin(angle);
-      return <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="currentColor" stroke-width="0.75" />;
-    })}
-    {Array.from({ length: 8 }).map((_, i) => {
-      const angle = (i * Math.PI) / 4 + Math.PI / 8;
-      const x = 100 + 58 * Math.cos(angle);
-      const y = 100 + 58 * Math.sin(angle);
-      return <rect x={x - 6} y={y - 1.5} width="12" height="3" fill="currentColor" transform={`rotate(${(angle * 180) / Math.PI} ${x} ${y})`} />;
-    })}
-  </svg>
-
-  <svg
+  />
+  <SacredMotif
+    variant="flower-of-life"
     class="pointer-events-none absolute -right-24 -top-16 size-[34rem] text-(--color-gold-500)/15"
-    viewBox="0 0 200 200"
-    fill="none"
-    aria-hidden="true"
-  >
-    {(() => {
-      const r = 22;
-      const centers: [number, number][] = [[100, 100]];
-      for (let i = 0; i < 6; i++) {
-        const angle = (i * Math.PI) / 3;
-        centers.push([100 + r * Math.cos(angle), 100 + r * Math.sin(angle)]);
-      }
-      for (let i = 0; i < 6; i++) {
-        const angle = (i * Math.PI) / 3;
-        const cx = 100 + r * Math.cos(angle);
-        const cy = 100 + r * Math.sin(angle);
-        for (let j = 0; j < 6; j++) {
-          const a2 = (j * Math.PI) / 3;
-          centers.push([cx + r * Math.cos(a2), cy + r * Math.sin(a2)]);
-        }
-      }
-      return centers.map(([cx, cy]) => <circle cx={cx} cy={cy} r={r} stroke="currentColor" stroke-width="0.5" />);
-    })()}
-  </svg>
+  />
+  <SacredMotif
+    variant="constellation"
+    class="pointer-events-none absolute right-4 bottom-0 size-[26rem] text-(--color-gold-300)/25 hidden sm:block"
+  />
 
   <div class="pointer-events-none absolute left-1/2 top-1/2 size-[28rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-(--color-cinnabar-500)/10 blur-3xl"></div>
 
@@ -85,7 +48,7 @@ const [taglineMain, taglineSub] = siteConfig.tagline.split(" — ");
           Đặt lịch tư vấn
           <Icon name="arrow-right" class="size-4" />
         </Button>
-        <Button href="/dich-vu" variant="secondary" size="lg" class="border-(--color-ink-600) text-(--color-ink-950) hover:bg-(--color-ink-950)/10">
+        <Button href="/dich-vu" variant="secondary" size="lg">
           Xem dịch vụ
         </Button>
       </div>

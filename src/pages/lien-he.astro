@@ -5,13 +5,13 @@ import Container from "../components/ui/Container.astro";
 import Button from "../components/ui/Button.astro";
 import Icon from "../components/ui/Icon.astro";
 import { siteConfig } from "../lib/site-config";
-import { courses } from "../lib/placeholder-courses";
+import { getCourseBySlug } from "../lib/cms/queries";
 
 export const prerender = false;
 
 const status = Astro.url.searchParams.get("status");
 const courseSlug = Astro.url.searchParams.get("khoa-hoc");
-const requestedCourse = courseSlug ? courses.find((c) => c.slug === courseSlug) : null;
+const requestedCourse = courseSlug ? await getCourseBySlug(courseSlug) : null;
 const prefilledMessage = requestedCourse
   ? `Tôi muốn đăng ký khóa học "${requestedCourse.name}". Vui lòng liên hệ tư vấn lịch học.`
   : "";
@@ -48,25 +48,25 @@ const prefilledMessage = requestedCourse
           <div>
             <label for="name" class="text-sm font-medium text-(--color-ink-800)">Họ và tên <span class="text-(--color-danger-500)">*</span></label>
             <input id="name" name="name" type="text" required autocomplete="name"
-              class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3.5 py-2.5 text-sm text-(--color-ink-950) focus:border-(--color-cinnabar-500) focus:outline-none focus:ring-2 focus:ring-(--color-cinnabar-500)/20" />
+              class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3.5 py-2.5 text-sm text-(--color-ink-950) focus:border-(--color-gold-400) focus:outline-none focus:ring-2 focus:ring-(--color-gold-400)/20" />
           </div>
           <div>
             <label for="phone" class="text-sm font-medium text-(--color-ink-800)">Số điện thoại <span class="text-(--color-danger-500)">*</span></label>
             <input id="phone" name="phone" type="tel" required autocomplete="tel"
-              class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3.5 py-2.5 text-sm text-(--color-ink-950) focus:border-(--color-cinnabar-500) focus:outline-none focus:ring-2 focus:ring-(--color-cinnabar-500)/20" />
+              class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3.5 py-2.5 text-sm text-(--color-ink-950) focus:border-(--color-gold-400) focus:outline-none focus:ring-2 focus:ring-(--color-gold-400)/20" />
           </div>
         </div>
 
         <div class="mt-5">
           <label for="email" class="text-sm font-medium text-(--color-ink-800)">Email</label>
           <input id="email" name="email" type="email" autocomplete="email"
-            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3.5 py-2.5 text-sm text-(--color-ink-950) focus:border-(--color-cinnabar-500) focus:outline-none focus:ring-2 focus:ring-(--color-cinnabar-500)/20" />
+            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3.5 py-2.5 text-sm text-(--color-ink-950) focus:border-(--color-gold-400) focus:outline-none focus:ring-2 focus:ring-(--color-gold-400)/20" />
         </div>
 
         <div class="mt-5">
           <label for="topic" class="text-sm font-medium text-(--color-ink-800)">Nhu cầu tư vấn</label>
           <select id="topic" name="topic"
-            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3.5 py-2.5 text-sm text-(--color-ink-950) focus:border-(--color-cinnabar-500) focus:outline-none focus:ring-2 focus:ring-(--color-cinnabar-500)/20">
+            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3.5 py-2.5 text-sm text-(--color-ink-950) focus:border-(--color-gold-400) focus:outline-none focus:ring-2 focus:ring-(--color-gold-400)/20">
             <option>Phong thủy nhà ở</option>
             <option>Phong thủy nhà chuyên sâu</option>
             <option>Phong thủy văn phòng</option>
@@ -80,7 +80,7 @@ const prefilledMessage = requestedCourse
         <div class="mt-5">
           <label for="message" class="text-sm font-medium text-(--color-ink-800)">Nội dung cần tư vấn</label>
           <textarea id="message" name="message" rows="4"
-            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3.5 py-2.5 text-sm text-(--color-ink-950) focus:border-(--color-cinnabar-500) focus:outline-none focus:ring-2 focus:ring-(--color-cinnabar-500)/20">{prefilledMessage}</textarea>
+            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3.5 py-2.5 text-sm text-(--color-ink-950) focus:border-(--color-gold-400) focus:outline-none focus:ring-2 focus:ring-(--color-gold-400)/20">{prefilledMessage}</textarea>
         </div>
 
         <!-- honeypot chống spam bot, ẩn với người dùng thật -->
@@ -99,19 +99,19 @@ const prefilledMessage = requestedCourse
         <h2 class="font-display text-lg font-semibold text-(--color-ink-950)">Thông tin liên hệ</h2>
         <ul class="mt-4 space-y-4 text-sm text-(--color-ink-700)">
           <li class="flex items-start gap-3">
-            <Icon name="map-pin" class="mt-0.5 size-5 shrink-0 text-(--color-cinnabar-500)" />
+            <Icon name="map-pin" class="mt-0.5 size-5 shrink-0 text-(--color-gold-400)" />
             {siteConfig.address}
           </li>
           <li class="flex items-center gap-3">
-            <Icon name="phone" class="size-5 shrink-0 text-(--color-cinnabar-500)" />
+            <Icon name="phone" class="size-5 shrink-0 text-(--color-gold-400)" />
             <a href={`tel:${siteConfig.hotline.replace(/\s/g, "")}`} class="hover:underline">{siteConfig.hotline}</a>
           </li>
           <li class="flex items-center gap-3">
-            <Icon name="mail" class="size-5 shrink-0 text-(--color-cinnabar-500)" />
+            <Icon name="mail" class="size-5 shrink-0 text-(--color-gold-400)" />
             <a href={`mailto:${siteConfig.email}`} class="hover:underline">{siteConfig.email}</a>
           </li>
           <li class="flex items-center gap-3">
-            <Icon name="clock" class="size-5 shrink-0 text-(--color-cinnabar-500)" />
+            <Icon name="clock" class="size-5 shrink-0 text-(--color-gold-400)" />
             {siteConfig.workingHours}
           </li>
         </ul>

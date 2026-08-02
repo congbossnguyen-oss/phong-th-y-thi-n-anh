@@ -5,14 +5,15 @@ import PageHero from "../../../../components/ui/PageHero.astro";
 import Container from "../../../../components/ui/Container.astro";
 import Icon from "../../../../components/ui/Icon.astro";
 import Button from "../../../../components/ui/Button.astro";
-import { courses } from "../../../../lib/placeholder-courses";
+import { getCourseWithLessons, formatDuration } from "../../../../lib/cms/queries";
 import { db } from "../../../../lib/db/client";
 import { courseEnrollments, lessonProgress } from "../../../../../db/schema";
 
 export const prerender = false;
 
 const { slug } = Astro.params;
-const course = courses.find((c) => c.slug === slug && c.format === "online" && c.lessons);
+const courseData = slug ? await getCourseWithLessons(slug) : null;
+const course = courseData && courseData.format === "online" && courseData.lessons.length > 0 ? courseData : null;
 
 if (!course) {
   return Astro.redirect("/khoa-hoc");
@@ -39,9 +40,9 @@ const progressRows = await db
   .where(and(eq(lessonProgress.userId, user.id), eq(lessonProgress.courseRef, course.slug)));
 const completedSlugs = new Set(progressRows.map((p) => p.lessonRef));
 
-const total = course.lessons!.length;
+const total = course.lessons.length;
 const percent = total > 0 ? Math.round((completedSlugs.size / total) * 100) : 0;
-const nextLesson = course.lessons!.find((l) => !completedSlugs.has(l.slug)) ?? course.lessons![0];
+const nextLesson = course.lessons.find((l) => !completedSlugs.has(l.slug)) ?? course.lessons[0];
 
 // Vòng tròn tiến độ SVG — chu vi hình tròn bán kính 26.
 const RADIUS = 26;
@@ -67,7 +68,7 @@ const dashOffset = CIRCUMFERENCE - (percent / 100) * CIRCUMFERENCE;
               cy="32"
               r={RADIUS}
               fill="none"
-              stroke={percent === 100 ? "var(--color-success-500)" : "var(--color-cinnabar-500)"}
+              stroke={percent === 100 ? "var(--color-success-500)" : "var(--color-gold-300)"}
               stroke-width="6"
               stroke-linecap="round"
               stroke-dasharray={CIRCUMFERENCE}
@@ -114,7 +115,7 @@ const dashOffset = CIRCUMFERENCE - (percent / 100) * CIRCUMFERENCE;
               href={`/hoc-vien/khoa-hoc/${course.slug}/bai-hoc/${lesson.slug}`}
               class:list={[
                 "flex items-center gap-4 p-4 transition-colors hover:bg-(--color-ivory-100)",
-                isNext && "bg-(--color-cinnabar-500)/10",
+                isNext && "bg-(--color-gold-300)/10",
               ]}
             >
               <span
@@ -129,11 +130,11 @@ const dashOffset = CIRCUMFERENCE - (percent / 100) * CIRCUMFERENCE;
                 <span class="block text-sm font-medium text-(--color-ink-950)">{lesson.title}</span>
                 <span class="mt-0.5 flex items-center gap-1 text-xs text-(--color-ink-600)">
                   <Icon name="clock" class="size-3.5" />
-                  {lesson.durationLabel}
+                  {formatDuration(lesson.durationSeconds)}
                 </span>
               </span>
               {isNext && (
-                <span class="hidden shrink-0 rounded-full bg-(--color-cinnabar-500) px-2.5 py-1 text-xs font-medium text-(--color-gold-100) sm:inline-block">
+                <span class="hidden shrink-0 rounded-full bg-(--color-gold-400) px-2.5 py-1 text-xs font-medium text-(--color-ivory-50) sm:inline-block">
                   Tiếp theo
                 </span>
               )}

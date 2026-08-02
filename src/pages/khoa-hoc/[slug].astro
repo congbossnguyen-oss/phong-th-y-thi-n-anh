@@ -4,15 +4,16 @@ import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
 import Icon from "../../components/ui/Icon.astro";
-import { courses } from "../../lib/placeholder-courses";
+import { getCourseBySlug } from "../../lib/cms/queries";
 
-export const prerender = true;
+export const prerender = false;
 
-export async function getStaticPaths() {
-  return courses.map((course) => ({ params: { slug: course.slug }, props: { course } }));
+const { slug } = Astro.params;
+const course = slug ? await getCourseBySlug(slug) : null;
+
+if (!course) {
+  return Astro.redirect("/khoa-hoc");
 }
-
-const { course } = Astro.props;
 
 const formatPrice = (price: number) =>
   price.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
@@ -32,7 +33,7 @@ const formatPrice = (price: number) =>
       <ul class="mt-5 space-y-3">
         {["Nắm vững nguyên lý nền tảng, áp dụng thực tế ngay sau khóa học", "Bài tập/case study thực chiến cùng chuyên gia", "Tài liệu tổng hợp kèm theo khóa học", "Cộng đồng học viên hỗ trợ trao đổi lâu dài"].map((item) => (
           <li class="flex items-start gap-3 text-sm leading-relaxed text-(--color-ink-700)">
-            <Icon name="check-circle" class="mt-0.5 size-5 shrink-0 text-(--color-cinnabar-500)" />
+            <Icon name="check-circle" class="mt-0.5 size-5 shrink-0 text-(--color-gold-300)" />
             {item}
           </li>
         ))}
@@ -41,7 +42,7 @@ const formatPrice = (price: number) =>
     </div>
 
     <aside class="h-fit rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
-      <p class="font-display text-3xl font-semibold text-(--color-cinnabar-500)">{formatPrice(course.price)}</p>
+      <p class="font-display text-3xl font-semibold text-(--color-gold-300)">{formatPrice(course.price)}</p>
       {course.format === "online" ? (
         <>
           <p class="mt-2 text-sm text-(--color-ink-600)">Học online, xem lại không giới hạn, theo dõi tiến độ trong khu học viên.</p>
