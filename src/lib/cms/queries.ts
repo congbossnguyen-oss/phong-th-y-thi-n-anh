@@ -15,9 +15,12 @@ export interface CmsLesson {
 export interface CmsCourse {
   slug: string;
   name: string;
+  category: string | null;
+  order: number;
   format: "online" | "offline";
   summary: string;
   price: number;
+  coverImageUrl: string | null;
   lessonsCount: number;
 }
 
@@ -25,17 +28,44 @@ export interface CmsCourseWithLessons extends CmsCourse {
   lessons: CmsLesson[];
 }
 
+// Thứ tự hiển thị các nhóm môn học trên trang /khoa-hoc.
+export const COURSE_CATEGORY_ORDER = [
+  "Bát tự",
+  "Bát trạch",
+  "Huyền không phi tinh",
+  "Trạch nhật",
+  "Huyền không lục pháp",
+  "Kỳ môn",
+  "Tử vi",
+  "Kinh dịch",
+];
+
 const courseListProjection = `{
   "slug": slug.current,
   name,
+  category,
+  order,
   format,
   summary,
   price,
+  "coverImageUrl": coverImage.asset->url,
   "lessonsCount": count(*[_type == "lesson" && references(^._id)])
 }`;
 
 export async function getCourses(): Promise<CmsCourse[]> {
-  return sanityClient.fetch(`*[_type == "course"] | order(name asc) ${courseListProjection}`);
+  return sanityClient.fetch(`*[_type == "course"] | order(order asc, name asc) ${courseListProjection}`);
+}
+
+export function groupCoursesByCategory(courses: CmsCourse[]): { category: string; courses: CmsCourse[] }[] {
+  const groups = COURSE_CATEGORY_ORDER.map((category) => ({
+    category,
+    courses: courses.filter((c) => c.category === category),
+  })).filter((g) => g.courses.length > 0);
+
+  const uncategorized = courses.filter((c) => !c.category || !COURSE_CATEGORY_ORDER.includes(c.category));
+  if (uncategorized.length > 0) groups.push({ category: "Khác", courses: uncategorized });
+
+  return groups;
 }
 
 export async function getCourseBySlug(slug: string): Promise<CmsCourse | null> {

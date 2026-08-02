@@ -14,6 +14,24 @@ export default defineType({
       validation: (r) => r.required(),
     }),
     defineField({
+      name: "category",
+      title: "Nhóm môn học",
+      type: "string",
+      options: {
+        list: [
+          { title: "Bát tự", value: "Bát tự" },
+          { title: "Bát trạch", value: "Bát trạch" },
+          { title: "Huyền không phi tinh", value: "Huyền không phi tinh" },
+          { title: "Trạch nhật", value: "Trạch nhật" },
+          { title: "Huyền không lục pháp", value: "Huyền không lục pháp" },
+          { title: "Kỳ môn", value: "Kỳ môn" },
+          { title: "Tử vi", value: "Tử vi" },
+          { title: "Kinh dịch", value: "Kinh dịch" },
+        ],
+      },
+      validation: (r) => r.required(),
+    }),
+    defineField({
       name: "format",
       title: "Hình thức",
       type: "string",
@@ -24,6 +42,12 @@ export default defineType({
         ],
       },
       validation: (r) => r.required(),
+    }),
+    defineField({
+      name: "order",
+      title: "Thứ tự trong nhóm (nhập môn → nâng cao)",
+      type: "number",
+      initialValue: 0,
     }),
     defineField({ name: "summary", title: "Mô tả ngắn", type: "text", rows: 2 }),
     defineField({ name: "description", title: "Nội dung chi tiết / bạn sẽ học được gì", type: "array", of: [{ type: "block" }] }),
