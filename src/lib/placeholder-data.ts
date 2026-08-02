@@ -204,6 +204,21 @@ export const posts = [
     excerpt: "Tổng quan vận khí năm mới và những lưu ý quan trọng cho từng mệnh cung.",
     category: "Kiến thức",
     categorySlug: "kien-thuc-ung-dung",
+    image: "/images/blog/phong-thuy-nam-2026.png",
+    content: [
+      "Năm 2026 là thời điểm vận khí có nhiều chuyển biến. Mỗi ngôi nhà, mỗi gia đình sẽ chịu tác động khác nhau tùy theo hướng nhà, bố cục và sự vận hành của Cửu Cung Phi Tinh.",
+      "Một vài điều chỉnh đúng lúc có thể giúp:",
+      {
+        list: [
+          "Kích hoạt tài lộc.",
+          "Gia tăng may mắn.",
+          "Hóa giải sát khí.",
+          "Ổn định sức khỏe và gia đạo.",
+        ],
+      },
+      "Phong thủy không thay đổi số mệnh, nhưng giúp con người đón cát - tránh hung, sống hài hòa với thiên thời và địa khí.",
+      "Nếu cần luận đoán phong thủy riêng cho ngôi nhà của bạn, hãy liên hệ Phong Thủy Thiên Anh để được tư vấn.",
+    ],
   },
   {
     slug: "cach-bai-tri-ban-tho",

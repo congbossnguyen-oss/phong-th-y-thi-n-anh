@@ -25,11 +25,36 @@ const { post } = Astro.props;
 
   <Container class="py-16">
     <article class="mx-auto max-w-3xl">
-      <p class="text-base leading-relaxed text-(--color-ink-700)">{post.excerpt}</p>
-      <p class="mt-4 text-sm leading-relaxed text-(--color-ink-600)">
-        Nội dung đầy đủ của bài viết sẽ được biên tập và đăng tải qua Sanity CMS (định dạng Portable Text)
-        khi kết nối CMS thật ở Giai đoạn 2.
-      </p>
+      {post.image && (
+        <div class="mb-8 aspect-video overflow-hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-200)">
+          <img src={post.image} alt={post.title} class="h-full w-full object-cover" />
+        </div>
+      )}
+
+      {post.content ? (
+        post.content.map((block) =>
+          typeof block === "string" ? (
+            <p class="mt-4 text-base leading-relaxed text-(--color-ink-700) first:mt-0">{block}</p>
+          ) : (
+            <ul class="mt-4 space-y-2">
+              {block.list.map((item) => (
+                <li class="flex items-start gap-2 text-base leading-relaxed text-(--color-ink-700)">
+                  <span class="mt-1.5 size-1.5 shrink-0 rounded-full bg-(--color-gold-300)"></span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          ),
+        )
+      ) : (
+        <>
+          <p class="text-base leading-relaxed text-(--color-ink-700)">{post.excerpt}</p>
+          <p class="mt-4 text-sm leading-relaxed text-(--color-ink-600)">
+            Nội dung đầy đủ của bài viết sẽ được biên tập và đăng tải qua Sanity CMS (định dạng Portable Text)
+            khi kết nối CMS thật ở Giai đoạn 2.
+          </p>
+        </>
+      )}
     </article>
   </Container>
 </BaseLayout>
