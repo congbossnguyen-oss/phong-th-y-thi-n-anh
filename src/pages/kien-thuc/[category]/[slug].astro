@@ -32,10 +32,14 @@ const { post } = Astro.props;
       )}
 
       {post.content ? (
-        post.content.map((block) =>
-          typeof block === "string" ? (
-            <p class="mt-4 text-base leading-relaxed text-(--color-ink-700) first:mt-0">{block}</p>
-          ) : (
+        post.content.map((block) => {
+          if (typeof block === "string") {
+            return <p class="mt-4 text-base leading-relaxed text-(--color-ink-700) first:mt-0">{block}</p>;
+          }
+          if ("heading" in block) {
+            return <h2 class="mt-8 font-display text-xl font-semibold text-(--color-ink-950)">{block.heading}</h2>;
+          }
+          return (
             <ul class="mt-4 space-y-2">
               {block.list.map((item) => (
                 <li class="flex items-start gap-2 text-base leading-relaxed text-(--color-ink-700)">
@@ -44,8 +48,8 @@ const { post } = Astro.props;
                 </li>
               ))}
             </ul>
-          ),
-        )
+          );
+        })
       ) : (
         <>
           <p class="text-base leading-relaxed text-(--color-ink-700)">{post.excerpt}</p>

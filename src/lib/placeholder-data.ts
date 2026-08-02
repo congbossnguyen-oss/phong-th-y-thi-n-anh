@@ -226,6 +226,22 @@ export const posts = [
     excerpt: "Hướng dẫn chi tiết vị trí, hướng đặt và các vật phẩm cần thiết trên bàn thờ.",
     category: "Nhà ở",
     categorySlug: "nha-o",
+    image: "/images/blog/cach-bai-tri-ban-tho.png",
+    content: [
+      "Ban thờ đẹp không bằng ban thờ đúng.",
+      "Ban thờ gia tiên là nơi kết nối giữa con cháu với cội nguồn, vì vậy việc bài trí cần đảm bảo sự trang nghiêm, sạch sẽ và đúng nguyên tắc.",
+      "Một ban thờ hợp phong thủy nên:",
+      {
+        list: [
+          "Sắp xếp cân đối, gọn gàng.",
+          "Đặt tại vị trí thanh tịnh.",
+          "Thường xuyên lau dọn và thay nước, hoa tươi.",
+          "Hạn chế đặt gần khu vực ô uế hoặc nhiều tiếng ồn.",
+        ],
+      },
+      "Điều quan trọng nhất vẫn là lòng thành kính. Khi tâm an, gia đạo sẽ thêm hòa thuận và phúc khí cũng theo đó mà bền vững.",
+      "Cần tư vấn bố trí ban thờ theo đúng phong thủy và phù hợp với ngôi nhà, hãy liên hệ Phong Thủy Thiên Anh.",
+    ],
   },
   {
     slug: "chon-huong-nha-hop-menh",
@@ -233,6 +249,30 @@ export const posts = [
     excerpt: "Phân tích Đông Tứ Trạch – Tây Tứ Trạch và cách áp dụng thực tế.",
     category: "Kiến thức",
     categorySlug: "kien-thuc-ung-dung",
+    image: "/images/blog/chon-huong-nha-hop-menh.png",
+    content: [
+      "Nhiều người cho rằng chỉ cần chọn hướng nhà hợp tuổi là mọi việc sẽ hanh thông. Thực tế, hướng nhà chỉ là một trong nhiều yếu tố quyết định phong thủy của một ngôi nhà.",
+      "Để lựa chọn hướng nhà phù hợp, cần xem xét đồng thời mệnh quái của gia chủ, thế đất, môi trường xung quanh, hướng nắng, hướng gió và vận khí của từng thời kỳ. Một ngôi nhà có hướng đẹp nhưng bố cục sai hoặc phạm các yếu tố bất lợi vẫn có thể ảnh hưởng đến tài lộc, sức khỏe và sự ổn định của gia đình.",
+      "Khi chọn đúng hướng nhà, bạn sẽ có cơ hội:",
+      {
+        list: [
+          "Đón nhận sinh khí, giúp tài lộc lưu thông tốt hơn.",
+          "Gia tăng sự ổn định trong công việc và sự nghiệp.",
+          "Cải thiện sức khỏe, tinh thần và chất lượng cuộc sống.",
+          "Góp phần xây dựng gia đạo hòa thuận, bền vững.",
+        ],
+      },
+      { heading: "Một vài lưu ý quan trọng" },
+      {
+        list: [
+          "Không nên chỉ chọn hướng theo tuổi mà bỏ qua điều kiện thực tế của khu đất.",
+          "Cần kết hợp hướng cửa chính, vị trí bếp, phòng ngủ và các không gian quan trọng để tạo nên một tổng thể hài hòa.",
+          "Với nhà đã xây, nếu hướng chưa phù hợp vẫn có thể áp dụng các giải pháp phong thủy để điều hòa và giảm bớt ảnh hưởng bất lợi.",
+        ],
+      },
+      "Phong thủy không phải là thay đổi vận mệnh bằng phép màu, mà là tạo dựng một môi trường sống hài hòa giữa con người và thiên nhiên, từ đó giúp mỗi thành viên trong gia đình có thêm điều kiện để phát triển và đón nhận những cơ hội tốt đẹp.",
+      "Phong Thủy Thiên Anh luôn sẵn sàng đồng hành cùng bạn trong việc lựa chọn hướng nhà, phân tích phong thủy tổng thể và đưa ra giải pháp phù hợp với từng ngôi nhà và từng gia chủ.",
+    ],
   },
 ];
 
