@@ -118,7 +118,13 @@ const prefilledMessage = requestedCourse
       </div>
 
       <div class="mt-5 aspect-4/3 overflow-hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-200)">
-        <!-- TODO: nhúng Google Maps địa chỉ thật -->
+        <iframe
+          title={`Bản đồ ${siteConfig.name} — ${siteConfig.address}`}
+          src={`https://www.google.com/maps?q=${encodeURIComponent(siteConfig.address)}&output=embed`}
+          class="h-full w-full border-0"
+          loading="lazy"
+          referrerpolicy="no-referrer-when-downgrade"
+        ></iframe>
       </div>
     </aside>
   </Container>

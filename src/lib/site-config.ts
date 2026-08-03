@@ -37,6 +37,7 @@ export const mainNav: NavItem[] = [
 ];
 
 export const footerPolicyLinks = [
+  { label: "Câu hỏi thường gặp", href: "/cau-hoi-thuong-gap" },
   { label: "Chính sách bảo mật", href: "/chinh-sach/bao-mat" },
   { label: "Chính sách thanh toán & hoàn tiền", href: "/chinh-sach/thanh-toan-hoan-tien" },
   { label: "Chính sách vận chuyển", href: "/chinh-sach/van-chuyen" },
