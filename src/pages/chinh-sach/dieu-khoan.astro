@@ -2,15 +2,172 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
+import { siteConfig } from "../../lib/site-config";
 
 export const prerender = true;
+
+type Block = string | { list: string[] };
+
+const sections: { title: string; body: Block[] }[] = [
+  {
+    title: "1. Chấp nhận điều khoản",
+    body: [
+      `Khi truy cập và sử dụng website ${siteConfig.name}, bạn đồng ý tuân thủ các điều khoản sử dụng được quy định tại đây. Nếu không đồng ý với bất kỳ điều khoản nào, vui lòng ngừng sử dụng website.`,
+    ],
+  },
+  {
+    title: "2. Phạm vi sử dụng",
+    body: [
+      "Website cung cấp:",
+      {
+        list: [
+          "Kiến thức về phong thủy, tử vi, bát tự, kinh dịch...",
+          "Dịch vụ tư vấn phong thủy",
+          "Đặt lịch tư vấn",
+          "Khóa học",
+          "Tin tức và bài viết chuyên môn",
+        ],
+      },
+      "Mọi thông tin trên website nhằm mục đích tham khảo và hỗ trợ người dùng.",
+    ],
+  },
+  {
+    title: "3. Quyền sở hữu trí tuệ",
+    body: [
+      "Toàn bộ:",
+      {
+        list: ["Nội dung", "Hình ảnh", "Video", "Logo", "Thiết kế", "Bài viết", "Tài liệu"],
+      },
+      `thuộc quyền sở hữu của ${siteConfig.shortName} hoặc được cấp phép sử dụng.`,
+      "Nghiêm cấm:",
+      {
+        list: ["Sao chép", "Đăng tải lại", "Chỉnh sửa", "Kinh doanh"],
+      },
+      "khi chưa có sự đồng ý bằng văn bản.",
+    ],
+  },
+  {
+    title: "4. Nghĩa vụ của người dùng",
+    body: [
+      "Người dùng cam kết:",
+      {
+        list: [
+          "Cung cấp thông tin chính xác khi đăng ký.",
+          "Không phát tán nội dung vi phạm pháp luật.",
+          "Không tấn công hoặc gây ảnh hưởng đến hệ thống.",
+          "Không sử dụng website vào mục đích trái pháp luật.",
+        ],
+      },
+    ],
+  },
+  {
+    title: "5. Dịch vụ tư vấn",
+    body: [
+      "Các kết quả tư vấn phong thủy, tử vi, bát tự, kinh dịch… được xây dựng trên cơ sở học thuật huyền học truyền thống kết hợp kinh nghiệm nghiên cứu của chuyên gia.",
+      "Kết quả tư vấn mang tính tham khảo và hỗ trợ người dùng trong việc đưa ra quyết định. Người dùng chịu trách nhiệm đối với các quyết định và hành động của mình.",
+    ],
+  },
+  {
+    title: "6. Thanh toán",
+    body: [
+      "Đối với các dịch vụ có thu phí:",
+      {
+        list: [
+          "Giá dịch vụ được công khai trước khi thanh toán.",
+          "Thanh toán được thực hiện theo hình thức website quy định.",
+          "Sau khi hoàn thành tư vấn, phí dịch vụ thường không được hoàn lại, trừ trường hợp có thỏa thuận khác hoặc lỗi từ phía chúng tôi.",
+        ],
+      },
+    ],
+  },
+  {
+    title: "7. Chính sách hủy lịch",
+    body: [
+      "Khách hàng có thể đổi lịch hoặc hủy lịch theo quy định được thông báo khi đặt lịch.",
+      `${siteConfig.shortName} có quyền điều chỉnh lịch tư vấn trong trường hợp bất khả kháng và sẽ thông báo trước cho khách hàng.`,
+    ],
+  },
+  {
+    title: "8. Giới hạn trách nhiệm",
+    body: [
+      `${siteConfig.shortName} không chịu trách nhiệm đối với:`,
+      {
+        list: [
+          "Thiệt hại phát sinh từ việc người dùng tự áp dụng thông tin trên website.",
+          "Gián đoạn truy cập do lỗi đường truyền, bảo trì hoặc sự cố kỹ thuật.",
+          "Thiệt hại do bên thứ ba gây ra.",
+        ],
+      },
+    ],
+  },
+  {
+    title: "9. Liên kết bên thứ ba",
+    body: [
+      "Website có thể chứa liên kết đến các website khác.",
+      "Chúng tôi không chịu trách nhiệm về nội dung hoặc chính sách của các website bên thứ ba.",
+    ],
+  },
+  {
+    title: "10. Thay đổi điều khoản",
+    body: [
+      `${siteConfig.shortName} có quyền sửa đổi hoặc cập nhật Điều khoản sử dụng bất kỳ lúc nào. Phiên bản mới sẽ có hiệu lực kể từ thời điểm được đăng tải trên website.`,
+    ],
+  },
+];
 ---
 
 <BaseLayout title="Điều khoản sử dụng" description="Điều khoản sử dụng website Thiên Anh.">
   <PageHero title="Điều khoản sử dụng" breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Điều khoản sử dụng" }]} />
   <Container class="py-16">
-    <div class="max-w-2xl text-sm leading-relaxed text-(--color-ink-700)">
-      <p>Nội dung điều khoản sử dụng đầy đủ sẽ được cập nhật cùng nội dung pháp lý chính thức từ khách hàng.</p>
+    <div class="max-w-3xl">
+      <div class="space-y-8">
+        {sections.map((section) => (
+          <div>
+            <h2 class="font-display text-lg font-semibold text-(--color-ink-950)">{section.title}</h2>
+            <div class="mt-3">
+              {section.body.map((block) =>
+                typeof block === "string" ? (
+                  <p class="mt-2 text-sm leading-relaxed text-(--color-ink-700) first:mt-0">{block}</p>
+                ) : (
+                  <ul class="mt-2 space-y-1.5">
+                    {block.list.map((item) => (
+                      <li class="flex items-start gap-2 text-sm leading-relaxed text-(--color-ink-700)">
+                        <span class="mt-1.5 size-1 shrink-0 rounded-full bg-(--color-gold-300)"></span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                ),
+              )}
+            </div>
+          </div>
+        ))}
+
+        <div>
+          <h2 class="font-display text-lg font-semibold text-(--color-ink-950)">11. Liên hệ</h2>
+          <p class="mt-3 text-sm leading-relaxed text-(--color-ink-700)">
+            Nếu có thắc mắc về Điều khoản sử dụng, vui lòng liên hệ:
+          </p>
+          <ul class="mt-2 space-y-1.5">
+            <li class="flex items-start gap-2 text-sm leading-relaxed text-(--color-ink-700)">
+              <span class="mt-1.5 size-1 shrink-0 rounded-full bg-(--color-gold-300)"></span>
+              {siteConfig.name}
+            </li>
+            <li class="flex items-start gap-2 text-sm leading-relaxed text-(--color-ink-700)">
+              <span class="mt-1.5 size-1 shrink-0 rounded-full bg-(--color-gold-300)"></span>
+              Email: <a href={`mailto:${siteConfig.email}`} class="font-medium text-(--color-gold-300) hover:underline">{siteConfig.email}</a>
+            </li>
+            <li class="flex items-start gap-2 text-sm leading-relaxed text-(--color-ink-700)">
+              <span class="mt-1.5 size-1 shrink-0 rounded-full bg-(--color-gold-300)"></span>
+              Hotline: <a href={`tel:${siteConfig.hotline}`} class="font-medium text-(--color-gold-300) hover:underline">{siteConfig.hotline}</a>
+            </li>
+            <li class="flex items-start gap-2 text-sm leading-relaxed text-(--color-ink-700)">
+              <span class="mt-1.5 size-1 shrink-0 rounded-full bg-(--color-gold-300)"></span>
+              Website: <a href="https://phongthuythienanh.com" target="_blank" rel="noopener" class="font-medium text-(--color-gold-300) hover:underline">phongthuythienanh.com</a>
+            </li>
+          </ul>
+        </div>
+      </div>
     </div>
   </Container>
 </BaseLayout>

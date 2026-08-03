@@ -38,7 +38,8 @@ export const mainNav: NavItem[] = [
 
 export const footerPolicyLinks = [
   { label: "Chính sách bảo mật", href: "/chinh-sach/bao-mat" },
-  { label: "Chính sách đổi trả", href: "/chinh-sach/doi-tra" },
+  { label: "Chính sách thanh toán & hoàn tiền", href: "/chinh-sach/thanh-toan-hoan-tien" },
   { label: "Chính sách vận chuyển", href: "/chinh-sach/van-chuyen" },
+  { label: "Chính sách đặt lịch tư vấn", href: "/chinh-sach/dat-lich-tu-van" },
   { label: "Điều khoản sử dụng", href: "/chinh-sach/dieu-khoan" },
 ];

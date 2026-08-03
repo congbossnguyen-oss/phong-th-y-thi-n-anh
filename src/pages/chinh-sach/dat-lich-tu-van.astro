@@ -1,0 +1,155 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import Container from "../../components/ui/Container.astro";
+import { siteConfig } from "../../lib/site-config";
+
+export const prerender = true;
+
+type Block = string | { list: string[] };
+
+const sections: { title: string; body: Block[] }[] = [
+  {
+    title: "1. Mục đích",
+    body: [
+      `Chính sách này quy định quy trình đặt lịch, xác nhận, thay đổi hoặc hủy lịch đối với các dịch vụ tư vấn do ${siteConfig.shortName} cung cấp, nhằm đảm bảo quyền lợi và sự thuận tiện cho cả khách hàng và chuyên gia.`,
+    ],
+  },
+  {
+    title: "2. Phạm vi áp dụng",
+    body: [
+      `Chính sách áp dụng cho tất cả các dịch vụ tư vấn được đặt thông qua website, điện thoại, email, Zalo hoặc các kênh chính thức của ${siteConfig.shortName}, bao gồm nhưng không giới hạn:`,
+      {
+        list: [
+          "Tư vấn phong thủy nhà ở.",
+          "Tư vấn Bát tự – Tứ trụ.",
+          "Tư vấn Tử vi.",
+          "Tư vấn Kinh Dịch, Lục Hào.",
+          "Chọn ngày giờ cát lành.",
+          "Tư vấn Sim phong thủy.",
+          "Các dịch vụ tư vấn chuyên sâu khác.",
+        ],
+      },
+    ],
+  },
+  {
+    title: "3. Quy trình đặt lịch",
+    body: [
+      `Khách hàng có thể đặt lịch thông qua các kênh chính thức của ${siteConfig.shortName}.`,
+      "Khi đặt lịch, khách hàng vui lòng cung cấp đầy đủ và chính xác các thông tin cần thiết theo yêu cầu của từng dịch vụ để việc chuẩn bị và tư vấn được thuận lợi.",
+      "Sau khi tiếp nhận thông tin, chúng tôi sẽ xác nhận lịch hẹn thông qua điện thoại, email hoặc Zalo.",
+    ],
+  },
+  {
+    title: "4. Thanh toán",
+    body: [
+      `Đối với các dịch vụ yêu cầu thanh toán trước, lịch tư vấn chỉ được xác nhận sau khi ${siteConfig.shortName} xác nhận đã nhận được thanh toán theo quy định.`,
+      "Mức phí của từng dịch vụ được công khai trên website hoặc được thông báo trực tiếp trước khi khách hàng xác nhận sử dụng dịch vụ.",
+    ],
+  },
+  {
+    title: "5. Thay đổi hoặc hủy lịch",
+    body: [
+      `Khách hàng có thể yêu cầu thay đổi lịch tư vấn bằng cách liên hệ với ${siteConfig.shortName} trước thời gian hẹn.`,
+      "Trong trường hợp cần thay đổi lịch vì lý do khách quan hoặc bất khả kháng, chúng tôi sẽ chủ động liên hệ để sắp xếp thời gian phù hợp với khách hàng.",
+      "Nếu khách hàng không tham gia buổi tư vấn đúng thời gian đã xác nhận mà không thông báo trước, lịch hẹn có thể được xem là đã hoàn thành và khoản phí đã thanh toán (nếu có) sẽ không được hoàn lại, trừ trường hợp hai bên có thỏa thuận khác.",
+    ],
+  },
+  {
+    title: "6. Chuẩn bị trước buổi tư vấn",
+    body: [
+      `Để buổi tư vấn đạt hiệu quả cao nhất, khách hàng nên chuẩn bị đầy đủ các thông tin và tài liệu liên quan theo hướng dẫn của ${siteConfig.shortName}.`,
+      "Tùy từng dịch vụ, các thông tin có thể bao gồm:",
+      {
+        list: [
+          "Họ và tên.",
+          "Ngày, tháng, năm, giờ sinh (nếu có).",
+          "Địa chỉ nhà ở hoặc vị trí công trình.",
+          "Bản vẽ, hình ảnh hoặc tài liệu liên quan.",
+          "Nội dung cần tư vấn.",
+        ],
+      },
+      "Khách hàng chịu trách nhiệm về tính chính xác của các thông tin đã cung cấp.",
+    ],
+  },
+  {
+    title: "7. Bảo mật thông tin",
+    body: [
+      `Mọi thông tin cá nhân và dữ liệu khách hàng cung cấp trong quá trình đặt lịch và tư vấn được bảo mật theo Chính sách bảo mật của ${siteConfig.shortName} và chỉ được sử dụng nhằm mục đích cung cấp dịch vụ.`,
+    ],
+  },
+  {
+    title: "8. Giới hạn trách nhiệm",
+    body: [
+      "Các nội dung tư vấn được xây dựng trên cơ sở kiến thức phong thủy, huyền học truyền thống kết hợp kinh nghiệm nghiên cứu và thực hành của chuyên gia.",
+      "Kết quả tư vấn mang tính tham khảo và hỗ trợ khách hàng trong quá trình cân nhắc, ra quyết định. Khách hàng là người tự chịu trách nhiệm đối với các quyết định và hành động của mình.",
+    ],
+  },
+  {
+    title: "9. Thay đổi chính sách",
+    body: [
+      `${siteConfig.shortName} có quyền điều chỉnh hoặc cập nhật Chính sách đặt lịch tư vấn khi cần thiết nhằm phù hợp với hoạt động cung cấp dịch vụ và quy định của pháp luật. Mọi thay đổi sẽ được công bố trên website và có hiệu lực kể từ thời điểm đăng tải.`,
+    ],
+  },
+];
+---
+
+<BaseLayout title="Chính sách đặt lịch tư vấn" description="Chính sách đặt lịch tư vấn phong thủy của Thiên Anh.">
+  <PageHero title="Chính sách đặt lịch tư vấn" breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Chính sách đặt lịch tư vấn" }]} />
+  <Container class="py-16">
+    <div class="max-w-3xl">
+      <div class="space-y-8">
+        {sections.map((section) => (
+          <div>
+            <h2 class="font-display text-lg font-semibold text-(--color-ink-950)">{section.title}</h2>
+            <div class="mt-3">
+              {section.body.map((block) =>
+                typeof block === "string" ? (
+                  <p class="mt-2 text-sm leading-relaxed text-(--color-ink-700) first:mt-0">{block}</p>
+                ) : (
+                  <ul class="mt-2 space-y-1.5">
+                    {block.list.map((item) => (
+                      <li class="flex items-start gap-2 text-sm leading-relaxed text-(--color-ink-700)">
+                        <span class="mt-1.5 size-1 shrink-0 rounded-full bg-(--color-gold-300)"></span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                ),
+              )}
+            </div>
+          </div>
+        ))}
+
+        <div>
+          <h2 class="font-display text-lg font-semibold text-(--color-ink-950)">10. Thông tin liên hệ</h2>
+          <p class="mt-3 text-sm leading-relaxed text-(--color-ink-700)">
+            Nếu có bất kỳ câu hỏi hoặc cần hỗ trợ về việc đặt lịch tư vấn, vui lòng liên hệ:
+          </p>
+          <ul class="mt-2 space-y-1.5">
+            <li class="flex items-start gap-2 text-sm leading-relaxed text-(--color-ink-700)">
+              <span class="mt-1.5 size-1 shrink-0 rounded-full bg-(--color-gold-300)"></span>
+              {siteConfig.name}
+            </li>
+            <li class="flex items-start gap-2 text-sm leading-relaxed text-(--color-ink-700)">
+              <span class="mt-1.5 size-1 shrink-0 rounded-full bg-(--color-gold-300)"></span>
+              Website: <a href="https://phongthuythienanh.com" target="_blank" rel="noopener" class="font-medium text-(--color-gold-300) hover:underline">phongthuythienanh.com</a>
+            </li>
+            <li class="flex items-start gap-2 text-sm leading-relaxed text-(--color-ink-700)">
+              <span class="mt-1.5 size-1 shrink-0 rounded-full bg-(--color-gold-300)"></span>
+              Email: <a href={`mailto:${siteConfig.email}`} class="font-medium text-(--color-gold-300) hover:underline">{siteConfig.email}</a>
+            </li>
+            <li class="flex items-start gap-2 text-sm leading-relaxed text-(--color-ink-700)">
+              <span class="mt-1.5 size-1 shrink-0 rounded-full bg-(--color-gold-300)"></span>
+              Hotline: <a href={`tel:${siteConfig.hotline}`} class="font-medium text-(--color-gold-300) hover:underline">{siteConfig.hotline}</a>
+            </li>
+            <li class="flex items-start gap-2 text-sm leading-relaxed text-(--color-ink-700)">
+              <span class="mt-1.5 size-1 shrink-0 rounded-full bg-(--color-gold-300)"></span>
+              Thời gian hỗ trợ: Theo lịch làm việc được công bố trên website.
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </Container>
+</BaseLayout>
