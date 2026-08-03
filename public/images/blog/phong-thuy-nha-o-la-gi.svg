@@ -1,0 +1,35 @@
+<svg viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="450" fill="#1c0e12"/>
+  <!-- Mat bang tong the -->
+  <rect x="140" y="60" width="520" height="340" fill="none" stroke="#6b3b46" stroke-width="3"/>
+  <!-- Phong khach giua nha -->
+  <rect x="140" y="60" width="520" height="340" fill="#26141a" opacity="0.4"/>
+  <!-- Cua chinh -->
+  <rect x="375" y="392" width="50" height="12" fill="#150a0c" stroke="#dcbd7a" stroke-width="2.5"/>
+  <path d="M400 392 A 60 60 0 0 0 460 340" fill="none" stroke="#8a725a" stroke-width="1" stroke-dasharray="3 4"/>
+  <circle cx="400" cy="415" r="5" fill="#c14a3a"/>
+  <text x="400" y="440" fill="#ead9bd" font-family="serif" font-size="14" text-anchor="middle">Cửa chính</text>
+  <!-- Bep, goc tren trai -->
+  <rect x="160" y="80" width="150" height="120" fill="#1c0e12" stroke="#c9a256" stroke-width="1.5"/>
+  <rect x="180" y="100" width="60" height="35" fill="none" stroke="#8f6f37" stroke-width="1.2"/>
+  <circle cx="195" cy="117" r="4" fill="none" stroke="#dcbd7a" stroke-width="1.2"/>
+  <circle cx="222" cy="117" r="4" fill="none" stroke="#dcbd7a" stroke-width="1.2"/>
+  <text x="235" y="175" fill="#dcbd7a" font-family="serif" font-size="15" text-anchor="middle">BẾP</text>
+  <!-- Phong ngu, goc tren phai -->
+  <rect x="490" y="80" width="150" height="120" fill="#1c0e12" stroke="#c9a256" stroke-width="1.5"/>
+  <rect x="510" y="150" width="90" height="35" fill="none" stroke="#8f6f37" stroke-width="1.2"/>
+  <line x1="555" y1="150" x2="555" y2="185" stroke="#8f6f37" stroke-width="1"/>
+  <text x="565" y="120" fill="#dcbd7a" font-family="serif" font-size="15" text-anchor="middle">PHÒNG NGỦ</text>
+  <!-- Sinh khi tu cua toa ra -->
+  <g stroke="#c14a3a" stroke-width="1.2" opacity="0.7" fill="none">
+    <path d="M400 392 Q400 320 400 260"/>
+    <path d="M400 340 Q320 300 260 240"/>
+    <path d="M400 340 Q480 300 540 240"/>
+  </g>
+  <g fill="#c9a256" opacity="0.85">
+    <circle cx="400" cy="260" r="3"/>
+    <circle cx="260" cy="240" r="3"/>
+    <circle cx="540" cy="240" r="3"/>
+  </g>
+  <text x="400" y="250" fill="#c2a988" font-family="serif" font-size="13" text-anchor="middle">Vùng sinh khí</text>
+</svg>

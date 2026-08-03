@@ -1,0 +1,44 @@
+<svg viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="450" fill="#1c0e12"/>
+  <text x="400" y="55" fill="#c2a988" font-family="serif" font-size="16" text-anchor="middle" letter-spacing="2">TỨ TRỤ — BÁT TỰ</text>
+  <!-- 4 tru: Nam, Thang, Ngay, Gio -->
+  <g>
+    <!-- Tru 1 -->
+    <rect x="90" y="90" width="130" height="290" rx="6" fill="#26141a" stroke="#6b3b46" stroke-width="2"/>
+    <rect x="105" y="110" width="100" height="100" rx="4" fill="none" stroke="#c9a256" stroke-width="1.5"/>
+    <text x="155" y="172" fill="#dcbd7a" font-family="serif" font-size="40" text-anchor="middle">甲</text>
+    <rect x="105" y="230" width="100" height="100" rx="4" fill="none" stroke="#8f6f37" stroke-width="1.5"/>
+    <text x="155" y="292" fill="#c2a988" font-family="serif" font-size="40" text-anchor="middle">子</text>
+    <text x="155" y="410" fill="#ead9bd" font-family="serif" font-size="15" text-anchor="middle">Năm trụ</text>
+  </g>
+  <g>
+    <!-- Tru 2 -->
+    <rect x="235" y="90" width="130" height="290" rx="6" fill="#26141a" stroke="#6b3b46" stroke-width="2"/>
+    <rect x="250" y="110" width="100" height="100" rx="4" fill="none" stroke="#c9a256" stroke-width="1.5"/>
+    <text x="300" y="172" fill="#dcbd7a" font-family="serif" font-size="40" text-anchor="middle">丙</text>
+    <rect x="250" y="230" width="100" height="100" rx="4" fill="none" stroke="#8f6f37" stroke-width="1.5"/>
+    <text x="300" y="292" fill="#c2a988" font-family="serif" font-size="40" text-anchor="middle">寅</text>
+    <text x="300" y="410" fill="#ead9bd" font-family="serif" font-size="15" text-anchor="middle">Tháng trụ</text>
+  </g>
+  <g>
+    <!-- Tru 3: Ngay - Nhat Chu, noi bat -->
+    <rect x="380" y="80" width="140" height="310" rx="6" fill="#26141a" stroke="#c14a3a" stroke-width="2.5"/>
+    <rect x="396" y="102" width="108" height="108" rx="4" fill="none" stroke="#dcbd7a" stroke-width="2"/>
+    <text x="450" y="168" fill="#dcbd7a" font-family="serif" font-size="44" text-anchor="middle">戊</text>
+    <rect x="396" y="226" width="108" height="108" rx="4" fill="none" stroke="#8f6f37" stroke-width="1.5"/>
+    <text x="450" y="290" fill="#c2a988" font-family="serif" font-size="44" text-anchor="middle">午</text>
+    <text x="450" y="420" fill="#dcbd7a" font-family="serif" font-size="15" font-weight="bold" text-anchor="middle">Ngày trụ (Nhật Chủ)</text>
+  </g>
+  <g>
+    <!-- Tru 4 -->
+    <rect x="540" y="90" width="130" height="290" rx="6" fill="#26141a" stroke="#6b3b46" stroke-width="2"/>
+    <rect x="555" y="110" width="100" height="100" rx="4" fill="none" stroke="#c9a256" stroke-width="1.5"/>
+    <text x="605" y="172" fill="#dcbd7a" font-family="serif" font-size="40" text-anchor="middle">辛</text>
+    <rect x="555" y="230" width="100" height="100" rx="4" fill="none" stroke="#8f6f37" stroke-width="1.5"/>
+    <text x="605" y="292" fill="#c2a988" font-family="serif" font-size="40" text-anchor="middle">酉</text>
+    <text x="605" y="410" fill="#ead9bd" font-family="serif" font-size="15" text-anchor="middle">Giờ trụ</text>
+  </g>
+  <g>
+    <rect x="685" y="90" width="30" height="290" rx="4" fill="none" stroke="#3d1f27" stroke-width="1.5" stroke-dasharray="1 5"/>
+  </g>
+</svg>
