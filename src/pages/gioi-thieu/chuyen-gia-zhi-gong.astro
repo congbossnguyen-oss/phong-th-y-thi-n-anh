@@ -1,0 +1,93 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import Container from "../../components/ui/Container.astro";
+import Button from "../../components/ui/Button.astro";
+import { siteConfig } from "../../lib/site-config";
+
+export const prerender = true;
+
+const siteUrl = (Astro.site ?? new URL("http://localhost:4321")).toString().replace(/\/$/, "");
+const personSchema = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: "Zhi Gong",
+  jobTitle: "Chuyên gia phong thủy",
+  worksFor: { "@type": "Organization", name: siteConfig.name },
+  url: `${siteUrl}/gioi-thieu/chuyen-gia-zhi-gong`,
+  sameAs: [siteConfig.social.facebook].filter((href) => href && href !== "#"),
+  description:
+    "Chuyên gia phong thủy nghiên cứu huyền học từ năm 2017, từng quản trị một cộng đồng Kinh Dịch có tiếng tại Việt Nam, đã đồng hành cùng hơn 1.000 khách hàng.",
+};
+---
+
+<BaseLayout
+  title="Chuyên gia phong thủy Zhi Gong"
+  description="Zhi Gong — chuyên gia phong thủy nghiên cứu huyền học từ năm 2017, đã đồng hành cùng hơn 1.000 khách hàng. Tìm hiểu triết lý tư vấn và hành trình vào nghề."
+>
+  <script type="application/ld+json" set:html={JSON.stringify(personSchema)} />
+  <PageHero
+    eyebrow="Giới thiệu"
+    title="Chuyên gia Zhi Gong"
+    description="Hành trình từ nghiên cứu Phật Pháp đến trở thành chuyên gia phong thủy đồng hành cùng hơn 1.000 khách hàng."
+    breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Giới thiệu", href: "/gioi-thieu/ve-cong-ty" }, { label: "Chuyên gia Zhi Gong" }]}
+  />
+
+  <Container class="grid gap-12 py-16 lg:grid-cols-3">
+    <div class="lg:col-span-2">
+      <p class="text-lg leading-relaxed text-(--color-ink-800)">
+        Có những buổi tư vấn kết thúc bằng một câu cảm ơn. Và có những buổi, người ngồi trước mặt tôi lặng đi một lúc — không phải vì phong thủy phức tạp, mà vì lần đầu tiên có người ngồi nghe hết câu chuyện của họ trước khi nói về hướng nhà.
+      </p>
+      <p class="mt-5 text-base leading-relaxed text-(--color-ink-700)">
+        Tôi là Zhi Gong. Hành trình của tôi với huyền học bắt đầu từ năm 2017, không phải từ mong muốn "xem bói" hay "đoán vận", mà từ một quãng thời gian tìm hiểu Phật Pháp. Càng đọc, càng nghiệm, tôi càng nhận ra huyền học phương Đông — Ngũ Hành, Âm Dương, Kinh Dịch — chia sẻ chung một gốc rễ tư duy với Phật Pháp: quan sát quy luật vận hành của vạn vật để sống hài hòa hơn với nó. Từ đó tôi bắt đầu đi sâu vào tìm hiểu, nghiên cứu một cách nghiêm túc và dần dần trở thành đam mê theo đuổi lâu dài.
+      </p>
+      <p class="mt-5 text-base leading-relaxed text-(--color-ink-700)">
+        Trong quá trình đó, tôi từng đảm nhiệm vai trò quản trị viên của một cộng đồng Kinh Dịch có tiếng tại Việt Nam — nơi tôi có cơ hội trao đổi, phản biện và học hỏi cùng rất nhiều người nghiên cứu huyền học nghiêm túc khác, thay vì chỉ tự học một mình. Đến nay, tôi đã trực tiếp tư vấn cho hơn <strong class="text-(--color-gold-300)">1.000 khách hàng</strong> — từ những gia đình băn khoăn chọn hướng bếp, đến các doanh nghiệp cần định vị lại văn phòng trước một giai đoạn quan trọng.
+      </p>
+
+      <h2 class="mt-10 font-display text-2xl font-semibold text-(--color-ink-950)">Tôi tin điều này trước tiên</h2>
+      <p class="mt-4 text-base leading-relaxed text-(--color-ink-700)">
+        Phong thủy không phải phép màu để thay đổi số phận. Nó là một hệ thống quan sát — quan sát ánh sáng, hướng gió, dòng người, dòng khí — để con người đưa ra lựa chọn tỉnh táo hơn. Tôi không hứa "đổi vận sau một buổi tư vấn". Tôi chỉ hứa sẽ nói thật những gì mình thấy, kể cả khi điều đó không phải điều khách hàng muốn nghe.
+      </p>
+
+      <h2 class="mt-10 font-display text-2xl font-semibold text-(--color-ink-950)">Một buổi tư vấn với tôi trông như thế nào</h2>
+      <ul class="mt-4 space-y-3 text-sm leading-relaxed text-(--color-ink-700)">
+        <li>Không luận đoán qua vài dòng tin nhắn vội — tôi cần đủ thông tin thật (ngày giờ sinh, hiện trạng nhà, đôi khi cả bản vẽ) trước khi kết luận bất cứ điều gì.</li>
+        <li>Tôi giải thích <em>vì sao</em> mình kết luận như vậy, không chỉ đưa ra kết quả — để khách hàng hiểu, chứ không chỉ tin.</li>
+        <li>Với các trường hợp quan trọng (nhà ở, văn phòng), tôi ưu tiên khảo sát trực tiếp thay vì chỉ luận qua hình ảnh.</li>
+      </ul>
+
+      <h2 class="mt-10 font-display text-2xl font-semibold text-(--color-ink-950)">Điều tôi muốn khách hàng nhớ nhất</h2>
+      <p class="mt-4 text-base leading-relaxed text-(--color-ink-700)">
+        Lấy chữ <strong class="text-(--color-gold-300)">Tâm</strong> làm gốc, chữ <strong class="text-(--color-gold-300)">Đức</strong> làm nền, tri thức làm giá trị cốt lõi — không phải một câu khẩu hiệu treo trên tường, mà là cách tôi từ chối một vài yêu cầu tư vấn khi thấy nó đi ngược lại lợi ích thật sự của khách hàng.
+      </p>
+    </div>
+
+    <aside class="h-fit space-y-6">
+      <div class="overflow-hidden rounded-(--radius-card) border border-(--color-gold-500)/30">
+        <img src="/images/team/zhi-gong.jpg" alt="Chuyên gia phong thủy Zhi Gong" class="h-full w-full object-cover" />
+      </div>
+      <div class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
+        <dl class="space-y-4 text-sm">
+          <div>
+            <dt class="text-(--color-ink-600)">Bắt đầu nghiên cứu huyền học</dt>
+            <dd class="mt-0.5 font-display text-lg font-semibold text-(--color-ink-950)">Năm 2017</dd>
+          </div>
+          <div>
+            <dt class="text-(--color-ink-600)">Khách hàng đã tư vấn</dt>
+            <dd class="mt-0.5 font-display text-lg font-semibold text-(--color-ink-950)">Hơn 1.000</dd>
+          </div>
+          <div>
+            <dt class="text-(--color-ink-600)">Xuất phát điểm</dt>
+            <dd class="mt-0.5 text-(--color-ink-800)">Nghiên cứu Phật Pháp, sau đó đi sâu vào huyền học</dd>
+          </div>
+          <div>
+            <dt class="text-(--color-ink-600)">Kinh nghiệm cộng đồng</dt>
+            <dd class="mt-0.5 text-(--color-ink-800)">Nguyên quản trị viên một cộng đồng Kinh Dịch có tiếng tại Việt Nam</dd>
+          </div>
+        </dl>
+        <Button href="/lien-he" size="lg" class="mt-6 w-full">Đặt lịch tư vấn cùng Zhi Gong</Button>
+      </div>
+    </aside>
+  </Container>
+</BaseLayout>

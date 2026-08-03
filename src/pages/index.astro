@@ -12,8 +12,8 @@ import { siteConfig } from "../lib/site-config";
 
 export const prerender = true;
 
-// Person cho chuyên gia Zhi Gong — đặt ở trang chủ vì đây là nơi giới thiệu chuyên gia hiện có
-// (chưa có trang bio riêng, xem checklist "30 ngày" của audit SEO).
+// Person cho chuyên gia Zhi Gong — url trỏ về trang bio riêng /gioi-thieu/chuyen-gia-zhi-gong
+// (nơi có schema Person đầy đủ hơn), giữ bản rút gọn ở đây vì Zhi Gong cũng xuất hiện ở trang chủ.
 const siteUrl = (Astro.site ?? new URL("http://localhost:4321")).toString().replace(/\/$/, "");
 const personSchema = {
   "@context": "https://schema.org",
@@ -21,7 +21,7 @@ const personSchema = {
   name: "Zhi Gong",
   jobTitle: "Chuyên gia phong thủy",
   worksFor: { "@type": "Organization", name: siteConfig.name },
-  url: siteUrl,
+  url: `${siteUrl}/gioi-thieu/chuyen-gia-zhi-gong`,
   sameAs: [siteConfig.social.facebook].filter((href) => href && href !== "#"),
 };
 ---
