@@ -3,6 +3,7 @@ import Container from "../ui/Container.astro";
 import Button from "../ui/Button.astro";
 import Icon from "../ui/Icon.astro";
 import SacredMotif from "../ui/SacredMotif.astro";
+import BaguaWheel from "../ui/BaguaWheel.astro";
 import { siteConfig } from "../../lib/site-config";
 
 const [taglineMain, taglineSub] = siteConfig.tagline.split(" — ");
@@ -25,33 +26,37 @@ const [taglineMain, taglineSub] = siteConfig.tagline.split(" — ");
 
   <div class="pointer-events-none absolute left-1/2 top-1/2 size-[28rem] -translate-x-1/2 -translate-y-1/2 rounded-full bg-(--color-cinnabar-500)/10 blur-3xl"></div>
 
-  <Container class="relative py-20 lg:py-28">
-    <div class="max-w-2xl">
-      <p class="mb-4 inline-flex items-center gap-2 rounded-full border border-(--color-gold-500)/40 px-3.5 py-1.5 text-xs font-medium uppercase tracking-widest text-(--color-gold-300)">
-        Khai thông vận khí
-      </p>
-      <h1 class="font-display text-4xl font-semibold leading-tight text-(--color-ink-950) sm:text-5xl lg:text-[3.25rem]">
-        {taglineMain}
-        {taglineSub && (
-          <>
-            <br />
-            <span class="italic text-(--color-gold-300)">— {taglineSub}</span>
-          </>
-        )}
-      </h1>
-      <p class="mt-5 max-w-xl text-base leading-relaxed text-(--color-ink-700) sm:text-lg">
-        Sứ mệnh của {siteConfig.shortName} là mang đến sự cân bằng và thịnh vượng thông qua tri thức
-        phong thủy chính thống, đồng hành cùng bạn trong từng quyết định quan trọng của cuộc đời.
-      </p>
-      <div class="mt-8 flex flex-wrap gap-3">
-        <Button href="/lien-he" size="lg">
-          Đặt lịch tư vấn
-          <Icon name="arrow-right" class="size-4" />
-        </Button>
-        <Button href="/dich-vu" variant="secondary" size="lg">
-          Xem dịch vụ
-        </Button>
+  <Container class="relative py-16 lg:py-28">
+    <div class="flex flex-col-reverse items-center gap-10 lg:flex-row lg:items-center lg:justify-between lg:gap-12">
+      <div class="max-w-2xl">
+        <p class="mb-4 inline-flex items-center gap-2 rounded-full border border-(--color-gold-500)/40 px-3.5 py-1.5 text-xs font-medium uppercase tracking-widest text-(--color-gold-300)">
+          Khai thông vận khí
+        </p>
+        <h1 class="font-display text-4xl font-semibold leading-tight text-(--color-ink-950) sm:text-5xl lg:text-[3.25rem]">
+          {taglineMain}
+          {taglineSub && (
+            <>
+              <br />
+              <span class="italic text-(--color-gold-300)">— {taglineSub}</span>
+            </>
+          )}
+        </h1>
+        <p class="mt-5 max-w-xl text-base leading-relaxed text-(--color-ink-700) sm:text-lg">
+          Sứ mệnh của {siteConfig.shortName} là mang đến sự cân bằng và thịnh vượng thông qua tri thức
+          phong thủy chính thống, đồng hành cùng bạn trong từng quyết định quan trọng của cuộc đời.
+        </p>
+        <div class="mt-8 flex flex-wrap gap-3">
+          <Button href="/lien-he" size="lg">
+            Đặt lịch tư vấn
+            <Icon name="arrow-right" class="size-4" />
+          </Button>
+          <Button href="/dich-vu" variant="secondary" size="lg">
+            Xem dịch vụ
+          </Button>
+        </div>
       </div>
+
+      <BaguaWheel class="size-48 shrink-0 sm:size-64 lg:size-72 xl:size-80" />
     </div>
   </Container>
 </section>

@@ -1,0 +1,120 @@
+---
+// Vector bát quái - âm dương - ngũ hành, xoay chậm theo chiều kim đồng hồ, có hào quang ánh xạ.
+// Thuần trang trí (aria-hidden), dùng ở đầu trang chủ cho không khí huyền bí.
+interface Props {
+  class?: string;
+}
+const { class: className = "" } = Astro.props;
+
+const trigramAngles = Array.from({ length: 8 }, (_, i) => (i * Math.PI) / 4);
+const elementAngles = Array.from({ length: 5 }, (_, i) => (i * 2 * Math.PI) / 5 - Math.PI / 2);
+const elements = [
+  { name: "Kim", color: "var(--color-gold-100)" },
+  { name: "Mộc", color: "#7fa66b" },
+  { name: "Thủy", color: "#5a86ad" },
+  { name: "Hỏa", color: "var(--color-cinnabar-400)" },
+  { name: "Thổ", color: "var(--color-gold-500)" },
+];
+---
+
+<div class={`relative ${className}`} aria-hidden="true">
+  <div class="glow-pulse pointer-events-none absolute inset-0 rounded-full bg-(--color-gold-400)/25 blur-3xl"></div>
+  <div class="shimmer-spin pointer-events-none absolute inset-0 rounded-full opacity-70 [mask-image:radial-gradient(circle,black_60%,transparent_75%)]"></div>
+
+  <svg viewBox="0 0 200 200" class="bagua-spin relative h-full w-full" fill="none">
+    <circle cx="100" cy="100" r="98" stroke="var(--color-gold-300)" stroke-opacity="0.35" stroke-width="0.75" />
+    <circle cx="100" cy="100" r="84" stroke="var(--color-gold-300)" stroke-opacity="0.35" stroke-width="0.75" />
+
+    {elements.map((el, i) => {
+      const a1 = elementAngles[i];
+      const a2 = elementAngles[(i + 2) % 5];
+      const x1 = 100 + 91 * Math.cos(a1);
+      const y1 = 100 + 91 * Math.sin(a1);
+      const x2 = 100 + 91 * Math.cos(a2);
+      const y2 = 100 + 91 * Math.sin(a2);
+      return <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--color-gold-300)" stroke-opacity="0.2" stroke-width="0.5" />;
+    })}
+    {elements.map((el, i) => {
+      const angle = elementAngles[i];
+      const x = 100 + 91 * Math.cos(angle);
+      const y = 100 + 91 * Math.sin(angle);
+      return <circle cx={x} cy={y} r="5" fill={el.color} fill-opacity="0.9" />;
+    })}
+
+    {trigramAngles.map((angle) => {
+      const x1 = 100 + 58 * Math.cos(angle);
+      const y1 = 100 + 58 * Math.sin(angle);
+      const x2 = 100 + 78 * Math.cos(angle);
+      const y2 = 100 + 78 * Math.sin(angle);
+      return <line x1={x1} y1={y1} x2={x2} y2={y2} stroke="var(--color-gold-300)" stroke-opacity="0.45" stroke-width="0.75" />;
+    })}
+    {trigramAngles.map((angle) => {
+      const a = angle + Math.PI / 8;
+      const x = 100 + 68 * Math.cos(a);
+      const y = 100 + 68 * Math.sin(a);
+      return (
+        <rect
+          x={x - 7}
+          y={y - 1.6}
+          width="14"
+          height="3.2"
+          rx="0.5"
+          fill="var(--color-gold-300)"
+          fill-opacity="0.55"
+          transform={`rotate(${(a * 180) / Math.PI} ${x} ${y})`}
+        />
+      );
+    })}
+
+    <g>
+      <circle cx="100" cy="100" r="34" fill="var(--color-ink-950)" />
+      <path
+        d="M100,66 A34,34 0 1,1 100,134 A17,17 0 0,1 100,100 A17,17 0 0,0 100,66 Z"
+        fill="var(--color-gold-500)"
+      />
+      <circle cx="100" cy="83" r="5.5" fill="var(--color-gold-500)" />
+      <circle cx="100" cy="117" r="5.5" fill="var(--color-ink-950)" />
+      <circle cx="100" cy="100" r="34" stroke="var(--color-gold-300)" stroke-opacity="0.5" stroke-width="0.75" />
+    </g>
+  </svg>
+</div>
+
+<style>
+  .bagua-spin {
+    animation: bagua-spin 50s linear infinite;
+    transform-origin: center;
+  }
+  @keyframes bagua-spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  .glow-pulse {
+    animation: glow-pulse 6s ease-in-out infinite;
+  }
+  @keyframes glow-pulse {
+    0%,
+    100% {
+      opacity: 0.4;
+    }
+    50% {
+      opacity: 0.75;
+    }
+  }
+  .shimmer-spin {
+    background: conic-gradient(from 0deg, transparent 0deg, rgba(247, 236, 217, 0.35) 12deg, transparent 45deg, transparent 360deg);
+    animation: shimmer-spin 8s linear infinite;
+  }
+  @keyframes shimmer-spin {
+    to {
+      transform: rotate(-360deg);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .bagua-spin,
+    .shimmer-spin,
+    .glow-pulse {
+      animation: none;
+    }
+  }
+</style>
