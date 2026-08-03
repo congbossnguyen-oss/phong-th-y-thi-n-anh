@@ -1,0 +1,33 @@
+<svg viewBox="0 0 800 450" xmlns="http://www.w3.org/2000/svg">
+  <rect width="800" height="450" fill="#1c0e12"/>
+  <circle cx="400" cy="225" r="170" fill="none" stroke="#3d1f27" stroke-width="2"/>
+  <circle cx="400" cy="225" r="130" fill="none" stroke="#6b3b46" stroke-width="1.5"/>
+  <circle cx="400" cy="225" r="90" fill="none" stroke="#c9a256" stroke-width="1.5"/>
+  <g stroke="#dcbd7a" stroke-width="2">
+    <line x1="400" y1="55" x2="400" y2="95"/>
+    <line x1="400" y1="355" x2="400" y2="395"/>
+    <line x1="230" y1="225" x2="270" y2="225"/>
+    <line x1="530" y1="225" x2="570" y2="225"/>
+    <line x1="280" y1="105" x2="308" y2="133"/>
+    <line x1="492" y1="317" x2="520" y2="345"/>
+    <line x1="520" y1="105" x2="492" y2="133"/>
+    <line x1="308" y1="317" x2="280" y2="345"/>
+  </g>
+  <g fill="#ead9bd" font-family="serif" font-size="15" text-anchor="middle">
+    <text x="400" y="45">BẮC</text>
+    <text x="400" y="418">NAM</text>
+    <text x="205" y="230">TÂY</text>
+    <text x="595" y="230">ĐÔNG</text>
+  </g>
+  <circle cx="400" cy="225" r="46" fill="#26141a" stroke="#c14a3a" stroke-width="2"/>
+  <text x="400" y="219" fill="#dcbd7a" font-family="serif" font-size="22" text-anchor="middle">九</text>
+  <text x="400" y="242" fill="#c2a988" font-family="serif" font-size="12" text-anchor="middle">Cửu Cung</text>
+  <g fill="#c9a256">
+    <circle cx="140" cy="90" r="2.5"/>
+    <circle cx="670" cy="120" r="2"/>
+    <circle cx="120" cy="360" r="2"/>
+    <circle cx="690" cy="340" r="2.5"/>
+    <circle cx="640" cy="70" r="1.8"/>
+    <circle cx="90" cy="250" r="1.8"/>
+  </g>
+</svg>
