@@ -16,12 +16,13 @@ interface Props {
 const {
   title,
   description = siteConfig.description,
-  ogImage = "/og-default.jpg",
+  ogImage = "/og-default.png",
   noIndex = false,
 } = Astro.props;
 
 const pageTitle = title === siteConfig.name ? title : `${title} | ${siteConfig.name}`;
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? "http://localhost:4321");
+const absoluteOgImage = new URL(ogImage, Astro.site ?? "http://localhost:4321");
 ---
 
 <!doctype html>
@@ -38,7 +39,8 @@ const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? "http://localhost
     <meta property="og:type" content="website" />
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
-    <meta property="og:image" content={ogImage} />
+    <meta property="og:image" content={absoluteOgImage} />
+    <meta property="og:url" content={canonicalUrl} />
     <meta property="og:locale" content="vi_VN" />
     <meta name="twitter:card" content="summary_large_image" />
 

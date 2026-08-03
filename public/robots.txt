@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /hoc-vien/
+Disallow: /gio-hang
+Disallow: /don-hang/
+Disallow: /api/
+
+Sitemap: https://phongthuythienanh.com/sitemap-index.xml
