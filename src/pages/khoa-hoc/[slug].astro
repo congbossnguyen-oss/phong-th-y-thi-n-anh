@@ -5,6 +5,7 @@ import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
 import Icon from "../../components/ui/Icon.astro";
 import { getCourseBySlug } from "../../lib/cms/queries";
+import { courseOutcomes, defaultCourseOutcomes } from "../../lib/course-outcomes";
 
 export const prerender = false;
 
@@ -17,6 +18,8 @@ if (!course) {
 
 const formatPrice = (price: number) =>
   price > 0 ? price.toLocaleString("vi-VN", { style: "currency", currency: "VND" }) : "Liên hệ";
+
+const outcomes = courseOutcomes[course.slug] ?? defaultCourseOutcomes;
 ---
 
 <BaseLayout title={course.name} description={course.summary}>
@@ -39,7 +42,7 @@ const formatPrice = (price: number) =>
 
       <h2 class="mt-10 font-display text-2xl font-semibold text-(--color-ink-950)">Bạn sẽ học được gì</h2>
       <ul class="mt-5 space-y-3">
-        {["Nắm vững nguyên lý nền tảng, áp dụng thực tế ngay sau khóa học", "Bài tập/case study thực chiến cùng chuyên gia", "Tài liệu tổng hợp kèm theo khóa học", "Cộng đồng học viên hỗ trợ trao đổi lâu dài"].map((item) => (
+        {outcomes.map((item) => (
           <li class="flex items-start gap-3 text-sm leading-relaxed text-(--color-ink-700)">
             <Icon name="check-circle" class="mt-0.5 size-5 shrink-0 text-(--color-gold-300)" />
             {item}
