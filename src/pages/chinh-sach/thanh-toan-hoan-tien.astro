@@ -2,78 +2,179 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
-import Icon from "../../components/ui/Icon.astro";
 import { siteConfig } from "../../lib/site-config";
 
 export const prerender = true;
 
-const exchangeCases = [
-  {
-    title: "Sản phẩm bị lỗi do nhà sản xuất",
-    desc: `Trong trường hợp nhận hàng và phát hiện sản phẩm bị lỗi, khách hàng có thể hoàn trả lại và ${siteConfig.shortName} sẽ có trách nhiệm đổi một sản phẩm khác thay thế.`,
-  },
-  {
-    title: "Sản phẩm giao không đúng theo đơn hàng",
-    desc: "Nếu nhận phải sản phẩm không đúng như đơn hàng, khách hàng vui lòng hoàn lại để được đổi trả sản phẩm đúng như trên đơn.",
-  },
-  {
-    title: "Không ưng ý với sản phẩm đã mua",
-    desc: `Nếu đơn giản không hài lòng và ưng ý với sản phẩm đã đặt mua, khách hàng hoàn toàn có thể hoàn trả lại hàng. ${siteConfig.shortName} sẽ đổi một sản phẩm khác có giá thành tương tự cho khách hàng.`,
-  },
-];
+type Block = string | { list: string[] } | { heading: string };
 
-const exchangeConditions = [
-  `Sản phẩm vẫn còn nguyên hộp và giấy bảo hành của ${siteConfig.shortName}`,
-  "Sản phẩm chưa qua sử dụng (bị bẩn hay sứt mẻ,…)",
-  "Sản phẩm đổi mới phải có giá trị tương ứng hoặc cao hơn so với sản phẩm ban đầu",
-];
-
-const exchangeSteps = [
-  `Kiểm tra kỹ lưỡng hàng ngay sau khi nhận hàng, nếu phát hiện ra vấn đề gì hãy báo với nhân viên giao hàng hoặc gọi đến hotline của ${siteConfig.shortName} để được hỗ trợ ngay`,
-  `Xác nhận lại yêu cầu và điều kiện đổi trả theo Chính sách thanh toán & hoàn tiền của ${siteConfig.shortName} và phối hợp với điều phối viên để được thực hiện đổi hàng nhanh nhất`,
+const sections: { title: string; body: Block[] }[] = [
+  {
+    title: "1. Mục đích",
+    body: [
+      `Chính sách này quy định về phương thức thanh toán, xác nhận giao dịch và điều kiện hoàn tiền đối với các dịch vụ và sản phẩm do ${siteConfig.shortName} cung cấp, nhằm đảm bảo quyền lợi của khách hàng và sự minh bạch trong quá trình sử dụng dịch vụ.`,
+    ],
+  },
+  {
+    title: "2. Phạm vi áp dụng",
+    body: [
+      `Chính sách áp dụng cho tất cả các dịch vụ và sản phẩm được cung cấp thông qua website ${siteConfig.shortName}, bao gồm nhưng không giới hạn:`,
+      {
+        list: [
+          "Tư vấn phong thủy nhà ở.",
+          "Tư vấn Bát tự – Tứ trụ.",
+          "Tư vấn Tử vi.",
+          "Tư vấn Kinh Dịch, Lục Hào.",
+          "Chọn ngày giờ cát lành.",
+          "Tư vấn Sim phong thủy.",
+          "Khóa học trực tuyến.",
+          "Ebook, tài liệu số và các sản phẩm số khác.",
+          "Các dịch vụ chuyên môn khác được công bố trên website.",
+        ],
+      },
+    ],
+  },
+  {
+    title: "3. Phương thức thanh toán",
+    body: [
+      "Khách hàng có thể thanh toán bằng một hoặc nhiều hình thức sau:",
+      {
+        list: [
+          "Chuyển khoản ngân hàng.",
+          "Thanh toán qua cổng thanh toán điện tử (nếu được hỗ trợ).",
+          "Các phương thức thanh toán khác được công bố trên website tại từng thời điểm.",
+        ],
+      },
+      "Thông tin thanh toán sẽ được cung cấp khi khách hàng xác nhận sử dụng dịch vụ.",
+    ],
+  },
+  {
+    title: "4. Xác nhận thanh toán",
+    body: [
+      `Sau khi nhận được thanh toán, ${siteConfig.shortName} sẽ tiến hành xác nhận giao dịch và thông báo tới khách hàng qua điện thoại, email hoặc Zalo.`,
+      "Đối với các dịch vụ yêu cầu đặt lịch, lịch hẹn chỉ được xác nhận sau khi việc thanh toán hoàn tất theo quy định.",
+    ],
+  },
+  {
+    title: "5. Chính sách hoàn tiền",
+    body: [
+      { heading: "Các trường hợp được xem xét hoàn tiền" },
+      "Khách hàng có thể được xem xét hoàn tiền trong các trường hợp sau:",
+      {
+        list: [
+          "Thanh toán trùng lặp do lỗi giao dịch.",
+          `Thanh toán sai số tiền theo hướng dẫn của ${siteConfig.shortName}.`,
+          `Không thể cung cấp dịch vụ do lỗi từ phía ${siteConfig.shortName}.`,
+          "Hai bên có thỏa thuận bằng văn bản hoặc xác nhận qua các kênh liên hệ chính thức.",
+        ],
+      },
+      "Khoản hoàn tiền (nếu có) sẽ được xử lý theo phương thức thanh toán ban đầu hoặc theo thỏa thuận giữa hai bên.",
+      { heading: "Các trường hợp không áp dụng hoàn tiền" },
+      `Để đảm bảo tính công bằng và chất lượng dịch vụ, ${siteConfig.shortName} không áp dụng hoàn tiền trong các trường hợp sau:`,
+      {
+        list: [
+          "Dịch vụ tư vấn đã được thực hiện hoặc đã hoàn thành theo nội dung đã thỏa thuận.",
+          "Khách hàng thay đổi ý định sau khi dịch vụ đã được xác nhận hoặc triển khai.",
+          "Khách hàng cung cấp thông tin không chính xác dẫn đến ảnh hưởng đến kết quả tư vấn.",
+          "Khách hàng không tham gia buổi tư vấn theo lịch đã xác nhận mà không thông báo trước theo quy định.",
+          "Khóa học trực tuyến, ebook hoặc các sản phẩm số đã được cấp quyền truy cập, tải xuống hoặc gửi tới khách hàng.",
+          "Các trường hợp khác theo thỏa thuận riêng giữa hai bên.",
+        ],
+      },
+    ],
+  },
+  {
+    title: "6. Thời gian xử lý hoàn tiền",
+    body: [
+      "Đối với các trường hợp đủ điều kiện hoàn tiền, yêu cầu sẽ được xem xét và xử lý trong thời gian hợp lý kể từ khi hai bên xác nhận.",
+      "Thời gian khách hàng thực nhận khoản tiền hoàn có thể phụ thuộc vào quy trình xử lý của ngân hàng hoặc đơn vị cung cấp dịch vụ thanh toán.",
+    ],
+  },
+  {
+    title: "7. Nghĩa vụ của khách hàng",
+    body: [
+      "Khách hàng có trách nhiệm:",
+      {
+        list: [
+          "Cung cấp đầy đủ và chính xác thông tin thanh toán.",
+          "Kiểm tra kỹ nội dung dịch vụ trước khi xác nhận thanh toán.",
+          "Lưu giữ hóa đơn, biên lai hoặc chứng từ thanh toán để đối chiếu khi cần thiết.",
+        ],
+      },
+    ],
+  },
+  {
+    title: "8. Giải quyết khiếu nại",
+    body: [
+      `Nếu phát sinh vấn đề liên quan đến thanh toán hoặc hoàn tiền, khách hàng vui lòng liên hệ với ${siteConfig.shortName} qua các kênh chính thức. Chúng tôi sẽ tiếp nhận, xác minh và phản hồi trong thời gian sớm nhất nhằm đảm bảo quyền lợi của khách hàng.`,
+    ],
+  },
+  {
+    title: "9. Thay đổi chính sách",
+    body: [
+      `${siteConfig.shortName} có quyền sửa đổi hoặc cập nhật Chính sách thanh toán & hoàn tiền nhằm phù hợp với hoạt động kinh doanh và quy định của pháp luật. Phiên bản mới sẽ có hiệu lực kể từ thời điểm được đăng tải trên website.`,
+    ],
+  },
 ];
 ---
 
-<BaseLayout title="Chính sách thanh toán & hoàn tiền" description="Chính sách thanh toán và hoàn tiền vật phẩm phong thủy của Thiên Anh.">
+<BaseLayout title="Chính sách thanh toán & hoàn tiền" description="Chính sách thanh toán và hoàn tiền dịch vụ, sản phẩm của Thiên Anh.">
   <PageHero title="Chính sách thanh toán & hoàn tiền" breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Chính sách thanh toán & hoàn tiền" }]} />
   <Container class="py-16">
-    <div class="max-w-2xl">
-      <p class="text-base leading-relaxed text-(--color-ink-700)">
-        Mọi khách hàng được đổi sản phẩm trong các trường hợp sau:
-      </p>
-
-      <div class="mt-6 space-y-5">
-        {exchangeCases.map((c) => (
-          <div class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-5">
-            <h2 class="font-display text-base font-semibold text-(--color-ink-950)">{c.title}</h2>
-            <p class="mt-2 text-sm leading-relaxed text-(--color-ink-700)">{c.desc}</p>
+    <div class="max-w-3xl">
+      <div class="space-y-8">
+        {sections.map((section) => (
+          <div>
+            <h2 class="font-display text-lg font-semibold text-(--color-ink-950)">{section.title}</h2>
+            <div class="mt-3">
+              {section.body.map((block) => {
+                if (typeof block === "string") {
+                  return <p class="mt-2 text-sm leading-relaxed text-(--color-ink-700) first:mt-0">{block}</p>;
+                }
+                if ("heading" in block) {
+                  return <h3 class="mt-5 font-display text-sm font-semibold text-(--color-gold-400) first:mt-0">{block.heading}</h3>;
+                }
+                return (
+                  <ul class="mt-2 space-y-1.5">
+                    {block.list.map((item) => (
+                      <li class="flex items-start gap-2 text-sm leading-relaxed text-(--color-ink-700)">
+                        <span class="mt-1.5 size-1 shrink-0 rounded-full bg-(--color-gold-300)"></span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                );
+              })}
+            </div>
           </div>
         ))}
+
+        <div>
+          <h2 class="font-display text-lg font-semibold text-(--color-ink-950)">10. Thông tin liên hệ</h2>
+          <ul class="mt-3 space-y-1.5">
+            <li class="flex items-start gap-2 text-sm leading-relaxed text-(--color-ink-700)">
+              <span class="mt-1.5 size-1 shrink-0 rounded-full bg-(--color-gold-300)"></span>
+              {siteConfig.name}
+            </li>
+            <li class="flex items-start gap-2 text-sm leading-relaxed text-(--color-ink-700)">
+              <span class="mt-1.5 size-1 shrink-0 rounded-full bg-(--color-gold-300)"></span>
+              Website: <a href="https://phongthuythienanh.com" target="_blank" rel="noopener" class="font-medium text-(--color-gold-300) hover:underline">phongthuythienanh.com</a>
+            </li>
+            <li class="flex items-start gap-2 text-sm leading-relaxed text-(--color-ink-700)">
+              <span class="mt-1.5 size-1 shrink-0 rounded-full bg-(--color-gold-300)"></span>
+              Email: <a href={`mailto:${siteConfig.email}`} class="font-medium text-(--color-gold-300) hover:underline">{siteConfig.email}</a>
+            </li>
+            <li class="flex items-start gap-2 text-sm leading-relaxed text-(--color-ink-700)">
+              <span class="mt-1.5 size-1 shrink-0 rounded-full bg-(--color-gold-300)"></span>
+              Hotline: <a href={`tel:${siteConfig.hotline}`} class="font-medium text-(--color-gold-300) hover:underline">{siteConfig.hotline}</a>
+            </li>
+            <li class="flex items-start gap-2 text-sm leading-relaxed text-(--color-ink-700)">
+              <span class="mt-1.5 size-1 shrink-0 rounded-full bg-(--color-gold-300)"></span>
+              Thời gian hỗ trợ: Theo lịch làm việc được công bố trên website.
+            </li>
+          </ul>
+        </div>
       </div>
-
-      <h2 class="mt-10 font-display text-xl font-semibold text-(--color-ink-950)">Điều kiện đổi trả hàng</h2>
-      <p class="mt-3 text-sm leading-relaxed text-(--color-ink-700)">
-        Khách hàng có thể đổi sang sản phẩm khác 1 lần duy nhất và có hiệu lực trong vòng 07 ngày kể từ thời
-        điểm nhận hàng. Trong đó các sản phẩm cần đổi phải đáp ứng những điều kiện sau:
-      </p>
-      <ul class="mt-4 space-y-3">
-        {exchangeConditions.map((item) => (
-          <li class="flex items-start gap-3 text-sm leading-relaxed text-(--color-ink-700)">
-            <Icon name="check-circle" class="mt-0.5 size-5 shrink-0 text-(--color-gold-300)" />
-            {item}
-          </li>
-        ))}
-      </ul>
-
-      <h2 class="mt-10 font-display text-xl font-semibold text-(--color-ink-950)">Cách thức đổi trả hàng</h2>
-      <ol class="mt-4 space-y-4">
-        {exchangeSteps.map((step, i) => (
-          <li class="flex gap-4">
-            <span class="flex size-8 shrink-0 items-center justify-center rounded-full bg-(--color-gold-300)/15 font-display text-sm font-semibold text-(--color-gold-400)">{i + 1}</span>
-            <p class="pt-1 text-sm leading-relaxed text-(--color-ink-700)">{step}</p>
-          </li>
-        ))}
-      </ol>
     </div>
   </Container>
 </BaseLayout>
