@@ -31,7 +31,7 @@ export const mainNav: NavItem[] = [
     label: "Giới thiệu",
     href: "/gioi-thieu/ve-cong-ty",
     children: [
-      { label: "Về Thiên Anh", href: "/gioi-thieu/ve-cong-ty" },
+      { label: "Phong Thủy Thiên Anh", href: "/gioi-thieu/ve-cong-ty" },
       { label: "Chuyên gia Zhi Gong", href: "/gioi-thieu/chuyen-gia-zhi-gong" },
     ],
   },
