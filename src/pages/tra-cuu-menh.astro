@@ -1,0 +1,124 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/ui/PageHero.astro";
+import Container from "../components/ui/Container.astro";
+import Button from "../components/ui/Button.astro";
+
+export const prerender = true;
+---
+
+<BaseLayout
+  title="Tra cứu mệnh theo năm sinh"
+  description="Nhập năm sinh để tra Can Chi, con giáp và mệnh Ngũ Hành Nạp Âm theo bảng Lục Thập Hoa Giáp truyền thống."
+>
+  <PageHero
+    eyebrow="Công cụ tra cứu"
+    title="Tra cứu mệnh theo năm sinh"
+    description="Nhập năm sinh (dương lịch) để xem Can Chi, con giáp và mệnh Ngũ Hành Nạp Âm theo bảng Lục Thập Hoa Giáp."
+    breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Tra cứu mệnh theo năm sinh" }]}
+  />
+
+  <Container class="py-16">
+    <div class="mx-auto max-w-2xl">
+      <form id="tra-menh-form" class="flex flex-col gap-4 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6 sm:flex-row sm:items-end">
+        <div class="flex-1">
+          <label for="nam-sinh" class="text-sm font-medium text-(--color-ink-800)">Năm sinh (dương lịch)</label>
+          <input
+            id="nam-sinh"
+            type="number"
+            required
+            min="1900"
+            max="2100"
+            placeholder="Ví dụ: 1990"
+            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20"
+          />
+        </div>
+        <Button type="submit" size="lg" class="shrink-0">Tra cứu</Button>
+      </form>
+      <p class="mt-2 text-xs text-(--color-ink-500)">
+        Nếu sinh vào tháng Giêng hoặc trước ngày Tết Âm lịch, tuổi Can Chi thực tế có thể lệch 1 năm so với năm dương lịch — nên đối chiếu thêm ngày Tết Âm lịch của năm sinh.
+      </p>
+
+      <div id="ket-qua" class="mt-8 hidden rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-ivory-100) p-6">
+        <p class="text-xs font-semibold uppercase tracking-wide text-(--color-gold-500)">Kết quả</p>
+        <h2 id="kq-can-chi" class="mt-1 font-display text-2xl font-semibold text-(--color-ink-950)"></h2>
+        <p id="kq-con-giap" class="mt-1 text-sm text-(--color-ink-600)"></p>
+
+        <div class="mt-5 border-t border-(--color-ivory-300) pt-5">
+          <p class="text-xs font-semibold uppercase tracking-wide text-(--color-gold-500)">Mệnh Ngũ Hành Nạp Âm</p>
+          <p id="kq-nap-am" class="mt-1 font-display text-lg font-semibold text-(--color-ink-950)"></p>
+          <p id="kq-mo-ta" class="mt-2 text-sm leading-relaxed text-(--color-ink-600)"></p>
+        </div>
+
+        <div class="mt-5 border-t border-(--color-ivory-300) pt-5">
+          <p class="text-xs font-semibold uppercase tracking-wide text-(--color-gold-500)">Quan hệ Ngũ Hành</p>
+          <ul id="kq-quan-he" class="mt-2 space-y-1.5 text-sm text-(--color-ink-700)"></ul>
+        </div>
+
+        <p class="mt-5 text-xs text-(--color-ink-500)">
+          Đây là mệnh Ngũ Hành Nạp Âm tính theo năm sinh — chỉ là một lớp thông tin trong luận giải phong thủy đầy đủ (còn cần đối chiếu Bát Tự, mệnh quái, hướng nhà...). Muốn luận giải chính xác cho bản thân, hãy đặt lịch tư vấn trực tiếp.
+        </p>
+      </div>
+    </div>
+
+    <div class="mx-auto mt-10 max-w-2xl rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6">
+      <h2 class="font-display text-lg font-semibold text-(--color-ink-950)">Tìm hiểu thêm</h2>
+      <ul class="mt-3 space-y-2">
+        <li>
+          <a href="/kien-thuc/kien-thuc-ung-dung/bat-tu-la-gi" class="text-sm font-medium text-(--color-gold-300) hover:underline">
+            Bát Tự là gì? Hướng dẫn tổng quan cho người mới bắt đầu →
+          </a>
+        </li>
+        <li>
+          <a href="/kien-thuc/thuat-ngu-phong-thuy" class="text-sm font-medium text-(--color-gold-300) hover:underline">
+            Tra cứu thuật ngữ phong thủy →
+          </a>
+        </li>
+        <li>
+          <a href="/dich-vu/bat-tu" class="text-sm font-medium text-(--color-gold-300) hover:underline">
+            Dịch vụ luận giải Bát Tự tại Thiên Anh →
+          </a>
+        </li>
+      </ul>
+    </div>
+  </Container>
+</BaseLayout>
+
+<script>
+  import { tinhMenhTheoNamSinh } from "../lib/menh-nap-am";
+
+  const form = document.getElementById("tra-menh-form") as HTMLFormElement;
+  const input = document.getElementById("nam-sinh") as HTMLInputElement;
+  const ketQua = document.getElementById("ket-qua")!;
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const year = parseInt(input.value, 10);
+    if (!year || year < 1900 || year > 2100) return;
+
+    const result = tinhMenhTheoNamSinh(year);
+
+    document.getElementById("kq-can-chi")!.textContent = `${result.canChi} (${year})`;
+    document.getElementById("kq-con-giap")!.textContent = `Tuổi con ${result.conGiap}`;
+    document.getElementById("kq-nap-am")!.textContent = `${result.napAm} — Mệnh ${result.element}`;
+    document.getElementById("kq-mo-ta")!.textContent = result.moTa;
+
+    const quanHeEl = document.getElementById("kq-quan-he")!;
+    quanHeEl.innerHTML = "";
+    const items = [
+      `Mệnh ${result.element} sinh ra mệnh ${result.quanHe.sinhRa}`,
+      `Mệnh ${result.quanHe.duocSinh} sinh ra mệnh ${result.element}`,
+      `Mệnh ${result.element} khắc mệnh ${result.quanHe.khacDuoc}`,
+      `Mệnh ${result.quanHe.biKhac} khắc mệnh ${result.element}`,
+    ];
+    for (const text of items) {
+      const li = document.createElement("li");
+      li.className = "flex items-start gap-2";
+      li.innerHTML = `<span class="mt-1.5 size-1.5 shrink-0 rounded-full bg-(--color-gold-300)"></span><span>${text}</span>`;
+      quanHeEl.appendChild(li);
+    }
+
+    ketQua.classList.remove("hidden");
+    ketQua.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  });
+</script>

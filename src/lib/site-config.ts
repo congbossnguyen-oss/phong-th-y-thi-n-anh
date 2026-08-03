@@ -39,7 +39,15 @@ export const mainNav: NavItem[] = [
   { label: "Vật phẩm", href: "/vat-pham" },
   { label: "Khóa học", href: "/khoa-hoc" },
   { label: "Công trình", href: "/cong-trinh" },
-  { label: "Kiến thức", href: "/kien-thuc" },
+  {
+    label: "Kiến thức",
+    href: "/kien-thuc",
+    children: [
+      { label: "Tất cả bài viết", href: "/kien-thuc" },
+      { label: "Thuật ngữ phong thủy", href: "/kien-thuc/thuat-ngu-phong-thuy" },
+      { label: "Tra cứu mệnh theo năm sinh", href: "/tra-cuu-menh" },
+    ],
+  },
   { label: "Liên hệ", href: "/lien-he" },
 ];
 

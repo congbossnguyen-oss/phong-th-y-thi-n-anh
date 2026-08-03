@@ -492,6 +492,7 @@ export const posts = [
       { label: "Khóa Bát tự nhập môn", href: "/khoa-hoc/bat-tu-nhap-mon" },
       { label: "Khóa Bát tự chuyên sâu", href: "/khoa-hoc/bat-tu-chuyen-sau" },
       { label: "Tra cứu thuật ngữ: Nhật Chủ, Dụng Thần, Đại Vận...", href: "/kien-thuc/thuat-ngu-phong-thuy" },
+      { label: "Công cụ: Tra cứu mệnh theo năm sinh", href: "/tra-cuu-menh" },
     ],
   },
   {

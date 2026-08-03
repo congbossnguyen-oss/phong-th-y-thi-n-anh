@@ -16,17 +16,30 @@ export const prerender = true;
   />
 
   <Container class="py-16">
-    <a
-      href="/kien-thuc/thuat-ngu-phong-thuy"
-      class="mb-10 flex items-center justify-between gap-4 rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-ivory-100) p-5 transition-colors hover:border-(--color-gold-400)"
-    >
-      <div>
-        <p class="text-xs font-semibold uppercase tracking-wide text-(--color-gold-500)">Tra cứu nhanh</p>
-        <h2 class="mt-1 font-display text-lg font-semibold text-(--color-ink-950)">Thuật ngữ phong thủy</h2>
-        <p class="mt-1 text-sm text-(--color-ink-600)">Giải thích ngắn gọn Ngũ Hành, Bát Trạch, Huyền Không, Bát Tự, Trạch Nhật...</p>
-      </div>
-      <span class="shrink-0 text-sm font-medium text-(--color-gold-300)">Xem ngay →</span>
-    </a>
+    <div class="mb-10 grid gap-4 sm:grid-cols-2">
+      <a
+        href="/kien-thuc/thuat-ngu-phong-thuy"
+        class="flex items-center justify-between gap-4 rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-ivory-100) p-5 transition-colors hover:border-(--color-gold-400)"
+      >
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wide text-(--color-gold-500)">Tra cứu nhanh</p>
+          <h2 class="mt-1 font-display text-lg font-semibold text-(--color-ink-950)">Thuật ngữ phong thủy</h2>
+          <p class="mt-1 text-sm text-(--color-ink-600)">Ngũ Hành, Bát Trạch, Huyền Không, Bát Tự, Trạch Nhật...</p>
+        </div>
+        <span class="shrink-0 text-sm font-medium text-(--color-gold-300)">Xem ngay →</span>
+      </a>
+      <a
+        href="/tra-cuu-menh"
+        class="flex items-center justify-between gap-4 rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-ivory-100) p-5 transition-colors hover:border-(--color-gold-400)"
+      >
+        <div>
+          <p class="text-xs font-semibold uppercase tracking-wide text-(--color-gold-500)">Công cụ</p>
+          <h2 class="mt-1 font-display text-lg font-semibold text-(--color-ink-950)">Tra cứu mệnh theo năm sinh</h2>
+          <p class="mt-1 text-sm text-(--color-ink-600)">Can Chi, con giáp và mệnh Ngũ Hành Nạp Âm.</p>
+        </div>
+        <span class="shrink-0 text-sm font-medium text-(--color-gold-300)">Tra ngay →</span>
+      </a>
+    </div>
 
     <div class="grid gap-6 lg:grid-cols-3">
       {posts.map((post) => (
