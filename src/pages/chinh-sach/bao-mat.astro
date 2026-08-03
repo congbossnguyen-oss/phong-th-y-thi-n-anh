@@ -2,15 +2,135 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
+import { siteConfig } from "../../lib/site-config";
 
 export const prerender = true;
+
+type Block = string | { list: string[] };
+
+const sections: { title: string; body: Block[] }[] = [
+  {
+    title: "1. Mục đích thu thập thông tin cá nhân của người tiêu dùng",
+    body: [
+      "Cung cấp dịch vụ cho Khách hàng và quản lý, sử dụng thông tin cá nhân của Người Tiêu Dùng nhằm mục đích quản lý cơ sở dữ liệu về Người Tiêu Dùng và kịp thời xử lý các tình huống phát sinh (nếu có).",
+    ],
+  },
+  {
+    title: "2. Phạm vi sử dụng thông tin cá nhân",
+    body: [
+      "Website phongthuythienanh.com sử dụng thông tin của Người Tiêu Dùng cung cấp để:",
+      {
+        list: [
+          "Cung cấp các dịch vụ đến Người Tiêu Dùng;",
+          `Gửi các thông báo về các hoạt động trao đổi thông tin giữa Người Tiêu Dùng và ${siteConfig.shortName};`,
+          "Ngăn ngừa các hoạt động phá hủy, chiếm đoạt tài khoản người dùng của Người Tiêu Dùng hoặc các hoạt động giả mạo Người Tiêu Dùng;",
+          "Liên lạc và giải quyết khiếu nại với Người Tiêu Dùng;",
+          `Xác nhận và trao đổi thông tin về giao dịch của Người Tiêu Dùng tại ${siteConfig.shortName};`,
+          "Trong trường hợp có yêu cầu của cơ quan quản lý nhà nước có thẩm quyền.",
+        ],
+      },
+    ],
+  },
+  {
+    title: "3. Thời gian lưu trữ thông tin cá nhân",
+    body: [
+      `Không có thời hạn ngoại trừ trường hợp Người Tiêu Dùng gửi có yêu cầu hủy bỏ tới cho Ban quản trị hoặc ${siteConfig.shortName} giải thể hoặc bị phá sản.`,
+    ],
+  },
+  {
+    title: "4. Những người hoặc tổ chức có thể được tiếp cận với thông tin cá nhân của người tiêu dùng",
+    body: [
+      "Người Tiêu Dùng đồng ý rằng, trong trường hợp cần thiết, các cơ quan/ tổ chức/cá nhân sau có quyền được tiếp cận và thu thập các thông tin cá nhân của mình, bao gồm:",
+      {
+        list: [
+          "Ban quản trị",
+          "Bên thứ ba có dịch vụ tích hợp với Website phongthuythienanh.com",
+          "Công ty tổ chức sự kiện và nhà tài trợ.",
+          "Cơ quan nhà nước có thẩm quyền trong trường hợp có yêu cầu theo quy định tại quy chế hoạt động.",
+          "Công ty nghiên cứu thị trường",
+          "Cố vấn tài chính, pháp lý và Công ty kiểm toán",
+          "Bên khiếu nại chứng minh được hành vi vi phạm của Người Tiêu Dùng",
+          "Theo yêu cầu của cơ quan nhà nước có thẩm quyền",
+        ],
+      },
+    ],
+  },
+  {
+    title: "5. Địa chỉ của đơn vị thu thập và quản lý thông tin",
+    body: [
+      siteConfig.shortName,
+      {
+        list: [`Địa chỉ: ${siteConfig.address}`, `Điện thoại: ${siteConfig.hotline}`],
+      },
+    ],
+  },
+  {
+    title: "6. Phương tiện và công cụ để người tiêu dùng tiếp cận và chỉnh sửa dữ liệu thông tin cá nhân của mình",
+    body: [
+      "Người Tiêu Dùng có quyền tự kiểm tra, cập nhật, điều chỉnh hoặc hủy bỏ thông tin cá nhân của mình bằng cách đăng nhập vào Website phongthuythienanh.com và chỉnh sửa thông tin cá nhân hoặc yêu cầu Ban quản trị thực hiện việc này.",
+      `Người Tiêu Dùng có quyền gửi khiếu nại về việc lộ thông tin cá nhân của mình cho bên thứ 3 đến Ban quản trị. Khi tiếp nhận những phản hồi này, ${siteConfig.shortName} sẽ xác nhận lại thông tin, phải có trách nhiệm trả lời lý do và hướng dẫn Người Tiêu Dùng khôi phục và bảo mật lại thông tin.`,
+      "Các hình thức tiếp nhận thông tin khiếu nại của Người Tiêu Dùng:",
+      { list: [`Qua điện thoại: ${siteConfig.hotline}`] },
+    ],
+  },
+  {
+    title: "7. Cam kết bảo mật thông tin cá nhân của người tiêu dùng",
+    body: [
+      "Thông tin cá nhân của Người Tiêu Dùng trên Website phongthuythienanh.com được Ban quản trị cam kết bảo mật tuyệt đối theo chính sách bảo mật thông tin cá nhân được đăng tải trên Website phongthuythienanh.com. Việc thu thập và sử dụng thông tin của mỗi Người Tiêu Dùng chỉ được thực hiện khi có sự đồng ý của Người Tiêu Dùng trừ những trường hợp pháp luật có quy định khác và quy định này.",
+      "Không sử dụng, không chuyển giao, cung cấp hoặc tiết lộ cho bên thứ 3 về thông tin cá nhân của Người Tiêu Dùng khi không có sự đồng ý của Người Tiêu Dùng ngoại trừ các trường hợp được quy định tại quy định này hoặc quy định của pháp luật.",
+      "Trong trường hợp máy chủ lưu trữ thông tin bị hacker tấn công dẫn đến mất mát dữ liệu cá nhân của Người Tiêu Dùng, Ban quản trị có trách nhiệm thông báo và làm việc với cơ quan chức năng điều tra và xử lý kịp thời, đồng thời thông báo cho Người Tiêu Dùng được biết về vụ việc.",
+      `Bảo mật tuyệt đối mọi thông tin giao dịch trực tuyến của Người Tiêu Dùng bao gồm thông tin hóa đơn kế toán chứng từ số hóa tại khu vực dữ liệu trung tâm an toàn cấp 1 của ${siteConfig.shortName}.`,
+    ],
+  },
+  {
+    title: "8. Cơ chế tiếp nhận và giải quyết khiếu nại liên quan đến việc thông tin của người tiêu dùng",
+    body: [
+      `Khi phát hiện thông tin cá nhân của mình bị sử dụng sai mục đích hoặc phạm vi, Người Tiêu Dùng gọi điện thoại tới số ${siteConfig.hotline} để khiếu nại và cung cấp chứng cứ liên quan tới vụ việc cho Ban quản trị. Ban quản trị cam kết sẽ phản hồi ngay lập tức hoặc muộn nhất là trong vòng 24 (hai mươi tư) giờ làm việc kể từ thời điểm nhận được khiếu nại.`,
+    ],
+  },
+];
 ---
 
 <BaseLayout title="Chính sách bảo mật" description="Chính sách bảo mật thông tin khách hàng của Thiên Anh.">
   <PageHero title="Chính sách bảo mật" breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Chính sách bảo mật" }]} />
   <Container class="py-16">
-    <div class="max-w-2xl text-sm leading-relaxed text-(--color-ink-700)">
-      <p>Nội dung chính sách bảo mật đầy đủ sẽ được cập nhật cùng nội dung pháp lý chính thức từ khách hàng.</p>
+    <div class="max-w-3xl">
+      <p class="text-sm leading-relaxed text-(--color-ink-700)">
+        Cảm ơn bạn đã truy cập vào trang website phongthuythienanh.com được vận hành bởi {siteConfig.name}.
+        Chúng tôi tôn trọng và cam kết sẽ bảo mật những thông tin mang tính riêng tư của bạn. Xin vui lòng
+        đọc bản Chính sách bảo vệ thông tin cá nhân của người tiêu dùng dưới đây để hiểu hơn những cam kết
+        mà chúng tôi thực hiện nhằm tôn trọng và bảo vệ quyền lợi của người truy cập.
+      </p>
+      <p class="mt-4 text-sm leading-relaxed text-(--color-ink-700)">
+        Bảo vệ thông tin cá nhân của người tiêu dùng và gây dựng được niềm tin cho bạn là vấn đề rất quan
+        trọng với chúng tôi. Vì vậy, chúng tôi sẽ dùng tên và các thông tin khác liên quan đến bạn tuân thủ
+        theo nội dung của chính sách này. Chúng tôi chỉ thu thập những thông tin cần thiết liên quan đến
+        giao dịch mua bán.
+      </p>
+
+      <div class="mt-8 space-y-8">
+        {sections.map((section) => (
+          <div>
+            <h2 class="font-display text-lg font-semibold text-(--color-ink-950)">{section.title}</h2>
+            <div class="mt-3">
+              {section.body.map((block) =>
+                typeof block === "string" ? (
+                  <p class="mt-2 text-sm leading-relaxed text-(--color-ink-700) first:mt-0">{block}</p>
+                ) : (
+                  <ul class="mt-2 space-y-1.5">
+                    {block.list.map((item) => (
+                      <li class="flex items-start gap-2 text-sm leading-relaxed text-(--color-ink-700)">
+                        <span class="mt-1.5 size-1 shrink-0 rounded-full bg-(--color-gold-300)"></span>
+                        {item}
+                      </li>
+                    ))}
+                  </ul>
+                ),
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   </Container>
 </BaseLayout>
