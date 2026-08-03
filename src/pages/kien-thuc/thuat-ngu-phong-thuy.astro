@@ -1,0 +1,195 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import Container from "../../components/ui/Container.astro";
+
+export const prerender = true;
+
+type Term = { term: string; definition: string; href?: string };
+type TermGroup = { group: string; terms: Term[] };
+
+const termGroups: TermGroup[] = [
+  {
+    group: "Nền tảng",
+    terms: [
+      {
+        term: "Âm Dương",
+        definition:
+          "Hai mặt đối lập nhưng bổ sung cho nhau của vạn vật (tối-sáng, tĩnh-động, lạnh-nóng...). Phong thủy tìm sự cân bằng Âm Dương trong không gian sống, không thiên lệch hẳn về một phía.",
+      },
+      {
+        term: "Ngũ Hành",
+        definition:
+          "Kim, Mộc, Thủy, Hỏa, Thổ — 5 yếu tố vận động và tương tác theo quy luật tương sinh (hỗ trợ nhau) và tương khắc (chế ngự nhau), là nền tảng để luận giải hầu hết các bộ môn huyền học.",
+      },
+      {
+        term: "Thiên Can, Địa Chi",
+        definition:
+          "Hệ thống 10 Thiên Can (Giáp, Ất, Bính...) và 12 Địa Chi (Tý, Sửu, Dần...) dùng để ghi năm, tháng, ngày, giờ theo lịch can chi — là đơn vị cơ bản để lập lá số Bát Tự và xem ngày.",
+      },
+      {
+        term: "Bát Quái",
+        definition:
+          "8 quẻ cơ bản (Càn, Khảm, Cấn, Chấn, Tốn, Ly, Khôn, Đoài) tượng trưng cho 8 phương vị và hiện tượng tự nhiên, là nền tảng của Kinh Dịch và nhiều trường phái phong thủy nhà ở.",
+      },
+      {
+        term: "Sinh khí, Sát khí",
+        definition:
+          "Sinh khí là nguồn năng lượng tích cực nuôi dưỡng sức khỏe, tài lộc; sát khí là năng lượng bất lợi cần hóa giải hoặc tránh né khi bố trí không gian sống.",
+      },
+    ],
+  },
+  {
+    group: "Phong thủy nhà ở",
+    terms: [
+      {
+        term: "Mệnh quái",
+        definition:
+          "Một trong 8 quái số được tính từ năm sinh và giới tính, dùng để xác định một người thuộc Đông Tứ Mệnh hay Tây Tứ Mệnh — cơ sở để chọn hướng nhà, hướng bàn làm việc hợp mệnh.",
+      },
+      {
+        term: "Bát Trạch",
+        definition:
+          "Trường phái phong thủy đối chiếu mệnh quái gia chủ với 8 hướng nhà, chia thành Đông Tứ Trạch và Tây Tứ Trạch, xác định hướng nào là cát (tốt), hướng nào là hung (xấu) cho từng người.",
+        href: "/kien-thuc/nha-o/phong-thuy-nha-o-la-gi",
+      },
+      {
+        term: "Huyền Không Phi Tinh",
+        definition:
+          "Trường phái luận phong thủy theo thời gian — dựa vào Sơn, Hướng và Vận xây dựng của ngôi nhà để lập tinh bàn, xác định sao nào đang vượng, đang suy tại từng vị trí trong nhà.",
+        href: "/kien-thuc/kien-thuc-ung-dung/huyen-khong-phi-tinh-la-gi",
+      },
+      {
+        term: "Tam Nguyên Cửu Vận",
+        definition:
+          "Hệ thống chia thời gian thành 9 vận, mỗi vận 20 năm, là cơ sở thời gian để lập tinh bàn trong Huyền Không Phi Tinh.",
+      },
+      {
+        term: "Vượng Sơn Vượng Hướng",
+        definition:
+          "Cách cục tốt nhất trong Huyền Không Phi Tinh, khi sao vượng khí rơi đúng cả vào Sơn (sau nhà) và Hướng (trước nhà), giúp nhà vừa vượng nhân đinh vừa vượng tài lộc.",
+      },
+    ],
+  },
+  {
+    group: "Bát Tự — Tứ Trụ",
+    terms: [
+      {
+        term: "Bát Tự / Tứ Trụ",
+        definition:
+          "8 chữ Can Chi tạo thành từ năm, tháng, ngày, giờ sinh — gồm 4 trụ (Năm, Tháng, Ngày, Giờ), dùng để luận sự nghiệp, tài lộc, hôn nhân, sức khỏe của một người.",
+        href: "/kien-thuc/kien-thuc-ung-dung/bat-tu-la-gi",
+      },
+      {
+        term: "Nhật Chủ",
+        definition:
+          "Thiên Can của trụ Ngày sinh, đại diện cho chính bản thân người xem trong lá số Bát Tự — mọi luận đoán đều xoay quanh việc xét vượng suy của Nhật Chủ.",
+      },
+      {
+        term: "Dụng Thần",
+        definition:
+          "Yếu tố Ngũ Hành cần bổ sung để cân bằng lá số Bát Tự, được xác định sau khi luận vượng suy của Nhật Chủ — là căn cứ để đưa ra lời khuyên về màu sắc, hướng, ngành nghề phù hợp.",
+      },
+      {
+        term: "Đại Vận, Lưu Niên",
+        definition:
+          "Đại Vận là các giai đoạn 10 năm nối tiếp nhau trong đời người; Lưu Niên là vận của từng năm cụ thể — cả hai được đối chiếu với lá số gốc để luận thời điểm thuận lợi hay cần thận trọng.",
+      },
+    ],
+  },
+  {
+    group: "Trạch nhật — chọn ngày",
+    terms: [
+      {
+        term: "Trạch Nhật",
+        definition:
+          "Việc chọn ngày giờ tốt cho các sự kiện quan trọng (cưới hỏi, động thổ, khai trương...), dựa trên Chính Ngũ Hành và đối chiếu với mệnh cục người chủ sự.",
+        href: "/kien-thuc/kien-thuc-ung-dung/cach-xem-ngay-tot-xau",
+      },
+      {
+        term: "Tam Tai",
+        definition:
+          "3 năm liên tiếp được cho là dễ gặp biến động, xác định theo nhóm tuổi (Tứ hành xung) của mỗi người — cần lưu ý khi chọn ngày cho việc lớn trong giai đoạn này.",
+      },
+      {
+        term: "Không Vong",
+        definition:
+          "Trạng thái Thiên Can và Địa Chi không tương hợp, được xem là một trong các yếu tố cần tránh khi chọn ngày giờ cho việc quan trọng.",
+      },
+      {
+        term: "Kỳ Môn Độn Giáp",
+        definition:
+          "Hệ thống chọn ngày giờ và phương vị dựa trên lá bàn Cửu Cung - Bát Môn - Cửu Tinh biến đổi theo từng giờ, thường dùng cho các việc đòi hỏi độ chính xác cao như ký kết hợp đồng.",
+      },
+    ],
+  },
+  {
+    group: "Các bộ môn liên quan",
+    terms: [
+      {
+        term: "Tử Vi",
+        definition:
+          "Bộ môn an sao lên 12 cung theo giờ, ngày, tháng, năm sinh, luận đoán theo vị trí và bộ sao hội tụ ở từng cung — khác với Bát Tự vốn luận qua quan hệ sinh khắc Can Chi.",
+      },
+      {
+        term: "Kinh Dịch",
+        definition:
+          "Hệ thống 64 quẻ được lập từ Bát Quái, dùng để trả lời một câu hỏi cụ thể tại một thời điểm — khác với Bát Tự hay Tử Vi vốn luận cả một giai đoạn hoặc cả đời người.",
+      },
+    ],
+  },
+];
+---
+
+<BaseLayout
+  title="Thuật ngữ phong thủy"
+  description="Giải thích ngắn gọn, dễ hiểu các thuật ngữ phong thủy, Bát Tự, Huyền Không Phi Tinh, Trạch Nhật thường gặp."
+>
+  <script
+    type="application/ld+json"
+    set:html={JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "DefinedTermSet",
+      name: "Thuật ngữ phong thủy",
+      description: "Bảng giải thích thuật ngữ phong thủy, Bát Tự, Huyền Không Phi Tinh, Trạch Nhật.",
+      hasDefinedTerm: termGroups.flatMap((g) =>
+        g.terms.map((t) => ({
+          "@type": "DefinedTerm",
+          name: t.term,
+          description: t.definition,
+          inDefinedTermSet: "Thuật ngữ phong thủy",
+        })),
+      ),
+    })}
+  />
+
+  <PageHero
+    eyebrow="Kiến thức"
+    title="Thuật ngữ phong thủy"
+    description="Giải thích ngắn gọn các thuật ngữ thường gặp khi tìm hiểu phong thủy, Bát Tự, Huyền Không Phi Tinh và Trạch Nhật."
+    breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Kiến thức", href: "/kien-thuc" }, { label: "Thuật ngữ phong thủy" }]}
+  />
+
+  <Container class="py-16">
+    <div class="mx-auto max-w-3xl space-y-12">
+      {termGroups.map((g) => (
+        <section>
+          <h2 class="font-display text-xl font-semibold text-(--color-ink-950)">{g.group}</h2>
+          <dl class="mt-5 divide-y divide-(--color-ivory-300) rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50)">
+            {g.terms.map((t) => (
+              <div class="p-5">
+                <dt class="font-display text-base font-semibold text-(--color-ink-950)">{t.term}</dt>
+                <dd class="mt-1.5 text-sm leading-relaxed text-(--color-ink-600)">{t.definition}</dd>
+                {t.href && (
+                  <a href={t.href} class="mt-2 inline-block text-sm font-medium text-(--color-gold-300) hover:underline">
+                    Tìm hiểu sâu hơn →
+                  </a>
+                )}
+              </div>
+            ))}
+          </dl>
+        </section>
+      ))}
+    </div>
+  </Container>
+</BaseLayout>

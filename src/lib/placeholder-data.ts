@@ -578,6 +578,96 @@ export const posts = [
       { label: "Khóa Kỳ môn nhập môn", href: "/khoa-hoc/ky-mon-nhap-mon" },
     ],
   },
+  {
+    slug: "phong-thuy-can-ho-chung-cu",
+    title: "Phong thủy căn hộ chung cư: khác gì so với nhà đất?",
+    excerpt: "Những giới hạn riêng của căn hộ chung cư và cách hóa giải khi không thể chọn hướng đất hay sửa kết cấu.",
+    category: "Nhà ở",
+    categorySlug: "nha-o",
+    publishedAt: "2026-08-04",
+    image: "/images/services/phong-thuy-nha-o.jpg",
+    content: [
+      `Với nhà đất, gia chủ có thể chọn miếng đất, chọn hướng ngay từ đầu. Căn hộ chung cư thì khác — bạn mua một khối không gian đã định hình sẵn trong một tòa nhà lớn, nên phần lớn câu hỏi phong thủy chung cư đều xoay quanh: "hướng nhà đã cố định rồi, giờ làm sao?"`,
+      { heading: "Luận hướng theo cửa chính căn hộ, không phải hướng tòa nhà" },
+      "Khác với nhà đất luận theo hướng cửa chính ngôi nhà, căn hộ chung cư luận theo hướng cửa ra vào của chính căn hộ đó — vì đây mới là nơi khí thực sự đi vào không gian sống của gia đình. Hai căn hộ trong cùng một tòa, cùng một mặt, vẫn có thể luận khác nhau nếu bố cục cửa và các phòng bên trong khác nhau.",
+      { heading: "Tầng và số căn hộ có ảnh hưởng không?" },
+      "Quan niệm phổ biến là đối chiếu số tầng, số căn hộ với Ngũ Hành của gia chủ (theo quy luật Hà Đồ: số 1-6 thuộc Thủy, 2-7 thuộc Hỏa, 3-8 thuộc Mộc, 4-9 thuộc Kim, 5-0 thuộc Thổ). Đây là một yếu tố tham khảo thêm, không phải yếu tố quyết định — bố cục nội thất và hướng cửa vẫn đóng vai trò chính.",
+      { heading: "Không sửa được kết cấu bê tông thì hóa giải bằng gì?" },
+      {
+        list: [
+          "Ánh sáng và cây xanh: bù đắp cho những căn hộ thiếu sáng tự nhiên hoặc bí khí.",
+          "Sắp xếp nội thất, hướng kê giường/bàn làm việc trong giới hạn phòng có sẵn.",
+          "Vật phẩm hóa giải khi bếp đối diện cửa chính hoặc gần nhà vệ sinh — tình huống rất phổ biến ở căn hộ diện tích nhỏ.",
+          "Rèm, vách ngăn nhẹ để điều chỉnh luồng khí mà không cần đập phá kết cấu chịu lực.",
+        ],
+      },
+      "Vì không gian căn hộ thường nhỏ và khó thay đổi kết cấu, nên việc khảo sát kỹ bản vẽ hoặc hiện trạng thực tế trước khi đưa ra giải pháp càng quan trọng hơn so với nhà đất.",
+    ],
+    relatedLinks: [
+      { label: "Dịch vụ Phong thủy nhà ở", href: "/dich-vu/phong-thuy-nha-o" },
+      { label: "Khóa Bát trạch nhập môn", href: "/khoa-hoc/bat-trach-nhap-mon" },
+      { label: "Phong thủy nhà ở là gì?", href: "/kien-thuc/nha-o/phong-thuy-nha-o-la-gi" },
+    ],
+  },
+  {
+    slug: "phong-thuy-shop-kinh-doanh",
+    title: "Phong thủy shop, cửa hàng kinh doanh: 4 vị trí quyết định dòng tiền",
+    excerpt: "Quầy thu ngân, hướng cửa, lối đi và thời điểm khai trương — những yếu tố ảnh hưởng trực tiếp đến việc buôn bán.",
+    category: "Kinh doanh",
+    categorySlug: "kinh-doanh",
+    publishedAt: "2026-08-04",
+    image: "/images/services/phong-thuy-van-phong.jpg",
+    content: [
+      "Khác với nhà ở — nơi ưu tiên sự an tĩnh, một cửa hàng kinh doanh cần khí động, cần dòng người ra vào để tạo ra doanh thu. Vì vậy phong thủy shop kinh doanh không chỉ xét hướng theo mệnh chủ cửa hàng, mà còn đối chiếu với lưu lượng người qua lại thực tế của mặt bằng.",
+      { heading: "Vị trí quầy thu ngân — nơi giữ tài vị" },
+      "Quầy thu ngân được xem là nơi giữ tài vị của cửa hàng, nên thường được đặt ở vị trí \"tọa cát hướng cát\": tránh đặt đối diện trực xung với cửa ra vào (tiền vào rồi trôi thẳng ra), và tránh để người ngồi thu ngân quay lưng ra cửa chính.",
+      { heading: "Hướng cửa và lối đi" },
+      {
+        list: [
+          "Cửa chính nên thông thoáng, tránh vật cản lớn ngay trước cửa làm nghẽn khí và tầm nhìn của khách.",
+          "Lối đi trong cửa hàng nên có luồng di chuyển rõ ràng, tránh kệ hàng che khuất hoặc chắn ngang lối vào chính.",
+          "Khu vực trưng bày sản phẩm chủ lực nên đặt ở nơi khách nhìn thấy ngay khi bước vào, thay vì khuất trong góc.",
+        ],
+      },
+      { heading: "Chọn ngày khai trương" },
+      "Ngày khai trương ảnh hưởng đến tâm lý khởi đầu và thường được xem theo Can Chi ngày kết hợp với mệnh cục người chủ — tương tự nguyên tắc trạch nhật áp dụng cho các sự kiện quan trọng khác.",
+      "Với mặt bằng đi thuê, phần lớn giải pháp vẫn nằm ở cách bố trí nội thất, quầy kệ và ánh sáng — không cần can thiệp vào kết cấu mặt bằng.",
+    ],
+    relatedLinks: [
+      { label: "Dịch vụ Phong thủy văn phòng", href: "/dich-vu/phong-thuy-van-phong" },
+      { label: "Dịch vụ Xem ngày cao cấp", href: "/dich-vu/xem-ngay-cao-cap" },
+      { label: "Cách xem ngày tốt xấu chuẩn phong thủy", href: "/kien-thuc/kien-thuc-ung-dung/cach-xem-ngay-tot-xau" },
+    ],
+  },
+  {
+    slug: "phong-thuy-van-phong-nho",
+    title: "Phong thủy văn phòng nhỏ, startup: ưu tiên gì khi diện tích hạn chế?",
+    excerpt: "Nguyên tắc bố trí khi không có phòng riêng cho lãnh đạo và không gian làm việc theo kiểu mở.",
+    category: "Văn phòng",
+    categorySlug: "van-phong",
+    publishedAt: "2026-08-04",
+    image: "/images/services/phong-thuy-van-phong.jpg",
+    content: [
+      "Nguyên tắc phong thủy văn phòng truyền thống thường giả định có phòng riêng cho lãnh đạo, có phòng họp, có lễ tân. Nhưng với văn phòng nhỏ hoặc startup vài chục mét vuông, không gian mở là bắt buộc — vấn đề là ưu tiên điều gì trước khi không thể có đủ mọi thứ.",
+      { heading: "Ưu tiên số một: vị trí ngồi của người đứng đầu" },
+      "Dù không có phòng riêng, vị trí bàn làm việc của người đứng đầu vẫn nên được ưu tiên bố trí trước — lý tưởng là lưng tựa vào vách tường (không tựa cửa sổ hoặc lối đi), tầm nhìn bao quát được cửa ra vào, tránh ngồi ngay dưới xà ngang hoặc đối diện trực tiếp cửa nhà vệ sinh.",
+      { heading: "Không gian mở: giải pháp mềm thay vì tường ngăn" },
+      {
+        list: [
+          "Dùng kệ sách, cây xanh hoặc vách ngăn thấp để tạo ranh giới khu vực thay vì tường xây cố định.",
+          "Khu vực tiếp khách/họp nhanh nên tách biệt tương đối khỏi khu làm việc chính để tránh nhiễu khí và tiếng ồn.",
+          "Bàn làm việc nhân viên tránh xếp thẳng hàng đối mặt trực tiếp với cửa chính.",
+        ],
+      },
+      { heading: "Ánh sáng và cây xanh — giải pháp chi phí thấp, hiệu quả cao" },
+      "Với văn phòng nhỏ khó thay đổi kết cấu, ánh sáng tự nhiên và cây xanh là hai yếu tố dễ điều chỉnh nhất để cải thiện sinh khí tổng thể mà không cần thi công lớn.",
+      "Điều quan trọng là không cố áp nguyên xi các nguyên tắc dành cho văn phòng lớn vào không gian nhỏ — cần chọn lọc 2-3 điểm có tác động lớn nhất thay vì cố gắng thỏa mãn mọi tiêu chí cùng lúc.",
+    ],
+    relatedLinks: [
+      { label: "Dịch vụ Phong thủy văn phòng", href: "/dich-vu/phong-thuy-van-phong" },
+      { label: "Khóa Bát trạch nhập môn", href: "/khoa-hoc/bat-trach-nhap-mon" },
+    ],
+  },
 ];
 
 export const portfolio = [
