@@ -394,6 +394,7 @@ export const posts = [
     excerpt: "Tổng quan vận khí năm mới và những lưu ý quan trọng cho từng mệnh cung.",
     category: "Kiến thức",
     categorySlug: "kien-thuc-ung-dung",
+    publishedAt: "2026-08-01",
     image: "/images/blog/phong-thuy-nam-2026.png",
     content: [
       "Năm 2026 là thời điểm vận khí có nhiều chuyển biến. Mỗi ngôi nhà, mỗi gia đình sẽ chịu tác động khác nhau tùy theo hướng nhà, bố cục và sự vận hành của Cửu Cung Phi Tinh.",
@@ -416,6 +417,7 @@ export const posts = [
     excerpt: "Hướng dẫn chi tiết vị trí, hướng đặt và các vật phẩm cần thiết trên bàn thờ.",
     category: "Nhà ở",
     categorySlug: "nha-o",
+    publishedAt: "2026-08-02",
     image: "/images/blog/cach-bai-tri-ban-tho.png",
     content: [
       "Ban thờ đẹp không bằng ban thờ đúng.",
@@ -439,6 +441,7 @@ export const posts = [
     excerpt: "Phân tích Đông Tứ Trạch – Tây Tứ Trạch và cách áp dụng thực tế.",
     category: "Kiến thức",
     categorySlug: "kien-thuc-ung-dung",
+    publishedAt: "2026-08-02",
     image: "/images/blog/chon-huong-nha-hop-menh.png",
     content: [
       "Nhiều người cho rằng chỉ cần chọn hướng nhà hợp tuổi là mọi việc sẽ hanh thông. Thực tế, hướng nhà chỉ là một trong nhiều yếu tố quyết định phong thủy của một ngôi nhà.",

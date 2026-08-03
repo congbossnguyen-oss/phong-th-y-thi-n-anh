@@ -14,9 +14,30 @@ export async function getStaticPaths() {
 }
 
 const { post } = Astro.props;
+
+const siteUrl = (Astro.site ?? new URL("http://localhost:4321")).toString().replace(/\/$/, "");
+const articleUrl = `${siteUrl}/kien-thuc/${post.categorySlug}/${post.slug}`;
+const articleSchema = post.publishedAt
+  ? {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      headline: post.title,
+      description: post.excerpt,
+      image: post.image ? `${siteUrl}${post.image}` : undefined,
+      datePublished: post.publishedAt,
+      author: {
+        "@type": "Person",
+        name: "Zhi Gong",
+        url: `${siteUrl}/gioi-thieu/chuyen-gia-zhi-gong`,
+      },
+      publisher: { "@type": "Organization", name: "Phong Thủy Thiên Anh" },
+      mainEntityOfPage: articleUrl,
+    }
+  : null;
 ---
 
 <BaseLayout title={post.title} description={post.excerpt}>
+  {articleSchema && <script type="application/ld+json" set:html={JSON.stringify(articleSchema)} />}
   <PageHero
     eyebrow={post.category}
     title={post.title}
@@ -59,6 +80,18 @@ const { post } = Astro.props;
           </p>
         </>
       )}
+
+      <a
+        href="/gioi-thieu/chuyen-gia-zhi-gong"
+        class="mt-10 flex items-center gap-4 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-5 transition-colors hover:border-(--color-gold-400)/50"
+      >
+        <img src="/images/team/zhi-gong.jpg" alt="Zhi Gong" class="size-14 shrink-0 rounded-full object-cover" />
+        <div>
+          <p class="text-xs uppercase tracking-wide text-(--color-ink-600)">Tác giả</p>
+          <p class="font-display text-base font-semibold text-(--color-ink-950)">Zhi Gong</p>
+          <p class="mt-0.5 text-sm text-(--color-ink-600)">Chuyên gia phong thủy · Xem hồ sơ →</p>
+        </div>
+      </a>
     </article>
   </Container>
 </BaseLayout>
