@@ -13,6 +13,25 @@ export const services = [
     summary: "Tư vấn bố cục, hướng nhà, nội thất hợp mệnh gia chủ để đón vượng khí.",
     priceFrom: "3.000.000đ – 5.000.000đ",
     image: "/images/services/phong-thuy-nha-o.jpg",
+    intro: [
+      `"Nhà em hướng Tây Nam, mua rồi mới biết không hợp tuổi chồng — giờ có phải đập đi xây lại không?" — đó là câu hỏi khách hàng hỏi nhiều nhất. Câu trả lời gần như luôn là: không cần đập, chỉ cần điều chỉnh đúng chỗ.`,
+      "Phong thủy nhà ở không phải việc đi tìm một ngôi nhà hoàn hảo tuyệt đối — vì gần như không tồn tại. Đó là việc tìm ra 2-3 điểm điều chỉnh có tác động lớn nhất: hướng cửa chính, vị trí bếp, vị trí phòng ngủ chủ — đối chiếu đúng mệnh quái và Đông/Tây Tứ Trạch của gia chủ, thay vì áp một công thức chung cho mọi nhà.",
+    ],
+    suitableFor: [
+      "Gia đình chuẩn bị mua nhà, muốn kiểm tra trước khi đặt cọc",
+      "Nhà đã ở nhưng cảm thấy công việc, sức khỏe, hòa khí gia đình không thuận",
+      "Chuẩn bị sửa chữa, cải tạo và muốn tận dụng dịp này để điều chỉnh phong thủy",
+    ],
+    faq: [
+      {
+        q: "Nhà hướng xấu có bắt buộc phải đổi hướng không?",
+        a: "Không. Phần lớn trường hợp có thể hóa giải bằng cách điều chỉnh nội thất, màu sắc, vị trí bếp — không cần đập phá kết cấu.",
+      },
+      {
+        q: "Tư vấn qua hình ảnh có chính xác không?",
+        a: "Có thể luận sơ bộ, nhưng để kết luận chính xác cần khảo sát trực tiếp hoặc bản vẽ đầy đủ kèm số đo la bàn thật.",
+      },
+    ],
   },
   {
     slug: "xem-ngay-cao-cap",
@@ -20,6 +39,25 @@ export const services = [
     summary: "Chọn ngày giờ tốt cho khai trương, động thổ, cưới hỏi, nhập trạch.",
     priceFrom: "1.000.000đ",
     image: "/images/services/xem-ngay-cao-cap.jpg",
+    intro: [
+      `Ông bà xưa có câu "lấy vợ xem tuổi đàn bà, làm nhà xem tuổi đàn ông" — chọn đúng ngày giờ từ lâu đã là bước không thể bỏ qua trước những cột mốc quan trọng. Xem ngày không đơn thuần là tránh ngày xấu theo lịch vạn niên thông thường, mà là đối chiếu Can Chi ngày giờ dự kiến với mệnh cục gia chủ, tránh phạm Tam Tai, Không Vong, Nguyệt Kỵ.`,
+      "Dịch vụ áp dụng cho khai trương, động thổ, cưới hỏi, nhập trạch, ký kết hợp đồng và các sự kiện quan trọng khác trong đời sống lẫn kinh doanh.",
+    ],
+    suitableFor: [
+      "Gia đình chuẩn bị cưới hỏi, động thổ, nhập trạch",
+      "Doanh nghiệp chuẩn bị khai trương, ký kết hợp đồng lớn",
+      "Người muốn xác nhận lại ngày đã chọn trước khi tiến hành",
+    ],
+    faq: [
+      {
+        q: "Xem ngày qua lịch vạn niên có đủ chưa?",
+        a: "Lịch vạn niên chỉ cho biết ngày tốt xấu chung theo Nhị Thập Bát Tú, chưa đối chiếu với mệnh cục riêng — cùng một ngày có thể hợp người này nhưng phạm với người khác.",
+      },
+      {
+        q: "Cần chuẩn bị thông tin gì để xem ngày?",
+        a: "Ngày giờ sinh của người chủ sự (và người liên quan nếu là cưới hỏi), việc cần làm, và địa điểm thực hiện.",
+      },
+    ],
   },
   {
     slug: "bat-tu",
@@ -27,6 +65,25 @@ export const services = [
     summary: "Luận giải lá số bát tự: sự nghiệp, tài lộc, hôn nhân, sức khỏe.",
     priceFrom: "2.000.000đ – 3.000.000đ",
     image: "/images/services/bat-tu.jpg",
+    intro: [
+      'Bát Tự (hay Tứ Trụ) là 8 chữ Can Chi tạo từ năm, tháng, ngày, giờ sinh — được xem như "bản đồ" Ngũ Hành của một đời người. Qua việc luận vượng suy của Nhật Chủ, tìm Dụng Thần và xét các đại vận, chuyên gia có thể chỉ ra xu hướng sự nghiệp, tài lộc, hôn nhân, sức khỏe trong từng giai đoạn.',
+      "Khác với các hình thức xem cảm tính, luận Bát Tự là một hệ thống có quy tắc rõ ràng, dựa trên quan hệ sinh khắc giữa các Can Chi — mỗi kết luận đều có căn cứ có thể giải thích được.",
+    ],
+    suitableFor: [
+      "Người muốn hiểu điểm mạnh/yếu bản thân trước quyết định lớn (đổi việc, khởi nghiệp, kết hôn)",
+      "Cha mẹ muốn hiểu tính cách, định hướng phù hợp cho con",
+      "Người đang gặp giai đoạn khó khăn, muốn biết thời điểm chuyển vận",
+    ],
+    faq: [
+      {
+        q: "Bát Tự có đoán trước tương lai chính xác 100% không?",
+        a: "Không. Bát Tự cho biết xu hướng vượng suy theo từng giai đoạn (đại vận, lưu niên) — là cơ sở để chủ động chuẩn bị, không phải lời tiên tri tuyệt đối.",
+      },
+      {
+        q: "Người sinh cùng giờ có số phận giống nhau?",
+        a: "Không hoàn toàn — môi trường sống, gia đình và lựa chọn cá nhân cũng tác động lớn đến vận trình thực tế; Bát Tự chỉ là một trong nhiều yếu tố.",
+      },
+    ],
   },
   {
     slug: "phong-thuy-van-phong",
@@ -34,6 +91,25 @@ export const services = [
     summary: "Bố trí không gian làm việc, kinh doanh thu hút tài lộc, hanh thông.",
     priceFrom: "5.000.000đ – 10.000.000đ",
     image: "/images/services/phong-thuy-van-phong.jpg",
+    intro: [
+      "Một văn phòng bố trí đúng phong thủy không chỉ đẹp mắt mà còn ảnh hưởng trực tiếp đến dòng tiền, mối quan hệ đối tác và tinh thần làm việc của cả đội ngũ. Dịch vụ tập trung vào 3 điểm trọng yếu: vị trí bàn làm việc của người đứng đầu, hướng cửa chính đón khách, và cách bố trí không gian chung để khí lưu thông thay vì tù đọng.",
+      "Phù hợp cho văn phòng mới thuê, đang cải tạo lại không gian làm việc, hoặc khi công việc kinh doanh chững lại và muốn tìm nguyên nhân từ góc độ phong thủy.",
+    ],
+    suitableFor: [
+      "Doanh nghiệp chuẩn bị thuê hoặc mở văn phòng mới",
+      "Công ty cảm thấy công việc trì trệ, nhân sự biến động",
+      "Cá nhân kinh doanh muốn tối ưu bàn làm việc, phòng riêng",
+    ],
+    faq: [
+      {
+        q: "Văn phòng đi thuê, không sửa được kết cấu thì tư vấn có ý nghĩa không?",
+        a: "Có — phần lớn giải pháp là sắp xếp lại nội thất, hướng bàn, màu sắc, vật phẩm hóa giải, không nhất thiết phải đập phá kết cấu thuê.",
+      },
+      {
+        q: "Có cần khảo sát trực tiếp không?",
+        a: "Với văn phòng, nên khảo sát trực tiếp để đo hướng chính xác bằng la bàn và quan sát dòng người/khí thực tế, hạn chế tư vấn hoàn toàn qua ảnh.",
+      },
+    ],
   },
   {
     slug: "phong-thuy-nha-chuyen-sau",
@@ -41,6 +117,25 @@ export const services = [
     summary: "Luận giải toàn diện nhà ở theo nhiều trường phái, khảo sát thực địa và báo cáo chi tiết chuyên sâu.",
     priceFrom: "15.000.000đ – 20.000.000đ",
     image: "/images/services/phong-thuy-nha-chuyen-sau.jpg",
+    intro: [
+      "Đây là gói tư vấn chuyên sâu nhất, dành cho công trình quan trọng hoặc trường hợp đã áp dụng phong thủy cơ bản nhưng chưa thấy chuyển biến rõ rệt. Ngoài phân tích Bát Trạch thông thường, chuyên gia đối chiếu thêm theo Huyền Không Phi Tinh (vận khí theo từng giai đoạn 20 năm) và khảo sát thực địa toàn bộ công trình.",
+      'Kết quả là một báo cáo luận giải chi tiết, không dừng ở kết luận "tốt/xấu" mà chỉ rõ nguyên nhân theo từng trường phái và phương án điều chỉnh theo thứ tự ưu tiên.',
+    ],
+    suitableFor: [
+      "Biệt thự, nhà phố, công trình quy mô lớn",
+      "Nhà đã tư vấn cơ bản nhưng chưa thấy cải thiện",
+      "Người muốn đối chiếu nhiều trường phái trước khi quyết định",
+    ],
+    faq: [
+      {
+        q: "Khác gì so với gói Phong thủy nhà ở thông thường?",
+        a: "Gói cơ bản tập trung Bát Trạch (hướng, cửa - bếp - phòng ngủ); gói chuyên sâu bổ sung Huyền Không Phi Tinh, khảo sát thực địa toàn diện và báo cáo chi tiết theo từng khu vực trong nhà.",
+      },
+      {
+        q: "Thời gian thực hiện mất bao lâu?",
+        a: "Tùy quy mô công trình, thường cần khảo sát trực tiếp và vài ngày để phân tích, tổng hợp báo cáo trước khi bàn giao.",
+      },
+    ],
   },
   {
     slug: "sim-so-phong-thuy",
@@ -48,6 +143,25 @@ export const services = [
     summary: "Lựa chọn sim số hợp bản mệnh theo nguyên lý Âm Dương - Ngũ Hành, giúp hài hòa năng lượng và đồng hành trên hành trình phát triển.",
     priceFrom: "Liên hệ",
     image: "/images/services/sim-so-phong-thuy.jpg",
+    intro: [
+      'Một số điện thoại được sử dụng hàng ngày, xuất hiện trên danh thiếp, hợp đồng — về mặt năng lượng học, dãy số lặp lại liên tục cũng được xem là một dạng trường khí đồng hành cùng người sở hữu. Chọn sim phong thủy là chọn dãy số có tổng Ngũ Hành và tổ hợp số tương sinh với bản mệnh, thay vì chỉ chọn theo quan niệm "số đẹp" dân gian như tứ quý, lộc phát thông thường.',
+      "Dịch vụ phù hợp cho cả sim cá nhân và sim đại diện thương hiệu, doanh nghiệp.",
+    ],
+    suitableFor: [
+      "Người muốn đổi sim hợp mệnh",
+      "Doanh nghiệp chọn hotline đại diện thương hiệu",
+      "Người kinh doanh muốn số điện thoại hỗ trợ giao dịch thuận lợi",
+    ],
+    faq: [
+      {
+        q: "Số đẹp theo phong thủy có giống số đẹp dân gian (68, 79...) không?",
+        a: "Không nhất thiết. Một dãy số dân gian gọi là đẹp nhưng Ngũ Hành lại khắc với bản mệnh vẫn có thể không phù hợp, hoặc ngược lại.",
+      },
+      {
+        q: "Cần cung cấp thông tin gì để chọn sim?",
+        a: "Ngày giờ sinh của người sẽ sử dụng chính, để xác định bản mệnh trước khi đối chiếu với các đầu số hiện có.",
+      },
+    ],
   },
   {
     slug: "cung-dong-tho-nhap-trach-lap-ban-than-tai",
@@ -55,6 +169,25 @@ export const services = [
     summary: "Thực hiện nghi lễ cúng động thổ, nhập trạch và lập bàn thờ Thần Tài đúng nghi thức, chọn ngày giờ hợp mệnh gia chủ.",
     priceFrom: "5.000.000đ – 7.000.000đ",
     image: "/images/services/cung-dong-tho-nhap-trach-lap-ban-than-tai.jpg",
+    intro: [
+      'Động thổ, nhập trạch, lập bàn thờ Thần Tài là những nghi lễ mang tính khởi đầu — theo quan niệm truyền thống, làm đúng nghi thức và đúng thời điểm được xem là cách "báo cáo" với thổ địa, gia tiên trước khi bắt đầu một giai đoạn mới, giúp công việc hanh thông, tránh phạm phải những điều kiêng kỵ ban đầu.',
+      "Chuyên gia hỗ trợ chọn ngày giờ hợp mệnh gia chủ, chuẩn bị lễ vật đúng nghi thức và trực tiếp thực hiện hoặc hướng dẫn gia chủ tự thực hiện nghi lễ.",
+    ],
+    suitableFor: [
+      "Gia đình chuẩn bị động thổ, xây nhà mới",
+      "Người chuyển về nhà mới (nhập trạch)",
+      "Người kinh doanh mở bàn thờ Thần Tài lần đầu",
+    ],
+    faq: [
+      {
+        q: "Có bắt buộc phải mời thầy cúng trực tiếp không?",
+        a: "Không bắt buộc — có thể chỉ cần tư vấn ngày giờ và hướng dẫn nghi thức để gia chủ tự thực hiện, hoặc chuyên gia trực tiếp thực hiện tùy nhu cầu.",
+      },
+      {
+        q: "Nhập trạch nhưng chưa ở ngay có cần làm lễ không?",
+        a: 'Vẫn nên làm lễ nhập trạch đúng ngày đã chọn dù chưa dọn vào ở ngay — theo quan niệm truyền thống, đây là bước "xác nhận" ngôi nhà đã có chủ.',
+      },
+    ],
   },
   {
     slug: "chon-ngay-gio-sinh",
@@ -62,6 +195,25 @@ export const services = [
     summary: "Chọn ngày giờ sinh mổ tốt dựa trên thông tin bác sĩ đưa ra, giúp con hợp mệnh và khởi đầu vận trình thuận lợi.",
     priceFrom: "1.000.000đ",
     image: "/images/services/chon-ngay-gio-sinh.jpg",
+    intro: [
+      "Với các ca sinh mổ chủ động, gia đình có thể chọn được ngày giờ chào đời cho con — đây là quyết định chỉ có một lần, nên nhiều gia đình muốn cân nhắc kỹ theo cả yếu tố y khoa lẫn phong thủy. Dịch vụ dựa trên khung thời gian bác sĩ đưa ra để chọn ra ngày giờ có Bát Tự hài hòa nhất trong khung đó.",
+      "Chuyên gia không chọn ngày giờ ngoài chỉ định y khoa, mà chỉ tối ưu trong phạm vi bác sĩ đã cho phép.",
+    ],
+    suitableFor: [
+      "Gia đình đã có lịch sinh mổ dự kiến từ bác sĩ",
+      "Cha mẹ muốn con có lá số hài hòa ngay từ đầu",
+      "Gia đình muốn đối chiếu thêm phong thủy trước quyết định cuối",
+    ],
+    faq: [
+      {
+        q: "Có thể chọn ngày giờ sinh ngoài chỉ định của bác sĩ không?",
+        a: "Không nên, và dịch vụ cũng không thực hiện việc này — an toàn của mẹ và bé luôn là ưu tiên số một, phong thủy chỉ tối ưu trong khung thời gian y khoa cho phép.",
+      },
+      {
+        q: "Cần cung cấp thông tin gì?",
+        a: "Khung ngày bác sĩ chỉ định và ngày giờ sinh của bố mẹ để đối chiếu mệnh cục gia đình.",
+      },
+    ],
   },
   {
     slug: "luan-que-kinh-dich-ky-mon",
@@ -69,6 +221,25 @@ export const services = [
     summary: "Luận giải sự vụ, tài vận, quan vận, nhân duyên, sức khỏe... qua quẻ Kinh Dịch và Kỳ Môn Độn Giáp.",
     priceFrom: "500.000đ – 1.000.000đ",
     image: "/images/services/luan-que-kinh-dich-ky-mon.jpg",
+    intro: [
+      "Kinh Dịch và Kỳ Môn Độn Giáp là hai hệ thống dự đoán cổ xưa dựa trên sự vận hành của quẻ và các sao theo thời gian thực. Khác với Bát Tự (luận cả đời người), Kinh Dịch và Kỳ Môn thường dùng để trả lời một câu hỏi cụ thể tại một thời điểm cụ thể — nên làm hay không nên làm, thời điểm nào thuận lợi, hướng đi nào nên chọn.",
+      "Phù hợp khi cần ra quyết định nhanh cho một sự việc cụ thể, thay vì luận giải tổng quan dài hạn.",
+    ],
+    suitableFor: [
+      "Người cần quyết định cho một sự việc cụ thể (đầu tư, đàm phán, kiện tụng)",
+      "Người muốn biết thời điểm thuận lợi để hành động",
+      "Người đã xem Bát Tự nhưng muốn đối chiếu thêm cho tình huống hiện tại",
+    ],
+    faq: [
+      {
+        q: "Nên chọn Bát Tự hay Kinh Dịch/Kỳ Môn?",
+        a: "Bát Tự phù hợp để hiểu xu hướng dài hạn cả cuộc đời; Kinh Dịch/Kỳ Môn phù hợp hơn khi cần quyết định nhanh cho một việc cụ thể trong thời gian ngắn.",
+      },
+      {
+        q: "Lập quẻ có cần ngày giờ sinh không?",
+        a: "Kinh Dịch thường lập quẻ theo thời điểm hỏi việc, không nhất thiết cần ngày sinh; Kỳ Môn Độn Giáp có thể kết hợp thêm Tứ Trụ nếu cần luận sâu hơn.",
+      },
+    ],
   },
   {
     slug: "co-van-chien-luoc-toan-dien",
@@ -76,6 +247,25 @@ export const services = [
     summary: "Hỗ trợ tuyển dụng nhân sự, bố trí sắp xếp cán bộ cấp cao, hóa giải sự vụ, bố trí phong thủy công ty, xem ngày giờ ký kết... đồng hành cùng doanh nghiệp trong 1 năm.",
     priceFrom: "30.000.000đ – 50.000.000đ / năm",
     image: "/images/services/co-van-chien-luoc-toan-dien.jpg",
+    intro: [
+      "Đây là gói đồng hành dài hạn dành riêng cho doanh nghiệp — không dừng ở một buổi tư vấn mà là một năm hỗ trợ liên tục cho các quyết định quan trọng: sắp xếp nhân sự cấp cao, chọn ngày ký kết hợp đồng lớn, bố trí lại phong thủy văn phòng theo từng giai đoạn kinh doanh, và xử lý sự vụ phát sinh khi cần.",
+      "Phù hợp với doanh nghiệp coi phong thủy và mệnh lý là một phần trong chiến lược quản trị rủi ro, bên cạnh các yếu tố tài chính, nhân sự thông thường.",
+    ],
+    suitableFor: [
+      "Doanh nghiệp đang mở rộng quy mô, cần ra nhiều quyết định lớn trong năm",
+      "Chủ doanh nghiệp muốn có kênh tham vấn thường xuyên thay vì tư vấn một lần",
+      "Công ty đang tái cấu trúc nhân sự cấp cao",
+    ],
+    faq: [
+      {
+        q: "Khác gì so với việc đặt lịch tư vấn từng lần riêng lẻ?",
+        a: "Gói đồng hành 1 năm giúp chuyên gia hiểu sâu bối cảnh doanh nghiệp theo thời gian, thay vì mỗi lần tư vấn phải bắt đầu lại từ đầu, đồng thời chủ động hỗ trợ khi có sự vụ phát sinh.",
+      },
+      {
+        q: "Có thể chỉ dùng một phần dịch vụ trong gói không?",
+        a: "Nội dung cụ thể trong gói được thống nhất theo nhu cầu thực tế của từng doanh nghiệp khi trao đổi trực tiếp.",
+      },
+    ],
   },
 ];
 
