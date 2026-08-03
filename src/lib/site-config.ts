@@ -15,7 +15,7 @@ export const siteConfig = {
     facebook: "https://www.facebook.com/ZhiGongFengShui",
     youtube: "#",
     zalo: "https://zalo.me/0836768768",
-    tiktok: "https://www.facebook.com/ZhiGongFengShui",
+    tiktok: "https://www.tiktok.com/@zhigong_fengshui",
   },
 };
 
