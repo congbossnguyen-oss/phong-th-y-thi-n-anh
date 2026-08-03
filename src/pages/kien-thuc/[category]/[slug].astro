@@ -81,6 +81,21 @@ const articleSchema = post.publishedAt
         </>
       )}
 
+      {post.relatedLinks && (
+        <div class="mt-10 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-5">
+          <p class="text-xs font-semibold uppercase tracking-wide text-(--color-gold-500)">Khám phá thêm</p>
+          <ul class="mt-3 space-y-2">
+            {post.relatedLinks.map((link) => (
+              <li>
+                <a href={link.href} class="text-sm font-medium text-(--color-gold-300) hover:underline">
+                  {link.label} →
+                </a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
       <a
         href="/gioi-thieu/chuyen-gia-zhi-gong"
         class="mt-10 flex items-center gap-4 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-5 transition-colors hover:border-(--color-gold-400)/50"
