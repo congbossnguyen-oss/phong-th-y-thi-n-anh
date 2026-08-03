@@ -491,6 +491,7 @@ export const posts = [
       { label: "Dịch vụ Bát tự", href: "/dich-vu/bat-tu" },
       { label: "Khóa Bát tự nhập môn", href: "/khoa-hoc/bat-tu-nhap-mon" },
       { label: "Khóa Bát tự chuyên sâu", href: "/khoa-hoc/bat-tu-chuyen-sau" },
+      { label: "Tra cứu thuật ngữ: Nhật Chủ, Dụng Thần, Đại Vận...", href: "/kien-thuc/thuat-ngu-phong-thuy" },
     ],
   },
   {
@@ -521,6 +522,7 @@ export const posts = [
       { label: "Dịch vụ Phong thủy nhà ở", href: "/dich-vu/phong-thuy-nha-o" },
       { label: "Dịch vụ Phong thủy nhà chuyên sâu", href: "/dich-vu/phong-thuy-nha-chuyen-sau" },
       { label: "Khóa Bát trạch nhập môn", href: "/khoa-hoc/bat-trach-nhap-mon" },
+      { label: "Tra cứu thuật ngữ: Mệnh quái, Bát Trạch, Huyền Không...", href: "/kien-thuc/thuat-ngu-phong-thuy" },
     ],
   },
   {
@@ -545,6 +547,7 @@ export const posts = [
       { label: "Dịch vụ Phong thủy nhà chuyên sâu", href: "/dich-vu/phong-thuy-nha-chuyen-sau" },
       { label: "Khóa Huyền không phi tinh nhập môn", href: "/khoa-hoc/huyen-khong-phi-tinh-nhap-mon" },
       { label: "Khóa Huyền không phi tinh cao cấp", href: "/khoa-hoc/huyen-khong-phi-tinh-cao-cap" },
+      { label: "Tra cứu thuật ngữ: Tam Nguyên Cửu Vận, Vượng Sơn Vượng Hướng...", href: "/kien-thuc/thuat-ngu-phong-thuy" },
     ],
   },
   {
@@ -576,6 +579,7 @@ export const posts = [
       { label: "Dịch vụ Xem ngày cao cấp", href: "/dich-vu/xem-ngay-cao-cap" },
       { label: "Khóa Trạch nhật cơ bản", href: "/khoa-hoc/trach-nhat-co-ban" },
       { label: "Khóa Kỳ môn nhập môn", href: "/khoa-hoc/ky-mon-nhap-mon" },
+      { label: "Tra cứu thuật ngữ: Tam Tai, Không Vong, Kỳ Môn Độn Giáp...", href: "/kien-thuc/thuat-ngu-phong-thuy" },
     ],
   },
   {
@@ -607,6 +611,7 @@ export const posts = [
       { label: "Dịch vụ Phong thủy nhà ở", href: "/dich-vu/phong-thuy-nha-o" },
       { label: "Khóa Bát trạch nhập môn", href: "/khoa-hoc/bat-trach-nhap-mon" },
       { label: "Phong thủy nhà ở là gì?", href: "/kien-thuc/nha-o/phong-thuy-nha-o-la-gi" },
+      { label: "Tra cứu thuật ngữ phong thủy", href: "/kien-thuc/thuat-ngu-phong-thuy" },
     ],
   },
   {
@@ -637,6 +642,7 @@ export const posts = [
       { label: "Dịch vụ Phong thủy văn phòng", href: "/dich-vu/phong-thuy-van-phong" },
       { label: "Dịch vụ Xem ngày cao cấp", href: "/dich-vu/xem-ngay-cao-cap" },
       { label: "Cách xem ngày tốt xấu chuẩn phong thủy", href: "/kien-thuc/kien-thuc-ung-dung/cach-xem-ngay-tot-xau" },
+      { label: "Tra cứu thuật ngữ phong thủy", href: "/kien-thuc/thuat-ngu-phong-thuy" },
     ],
   },
   {
@@ -666,6 +672,7 @@ export const posts = [
     relatedLinks: [
       { label: "Dịch vụ Phong thủy văn phòng", href: "/dich-vu/phong-thuy-van-phong" },
       { label: "Khóa Bát trạch nhập môn", href: "/khoa-hoc/bat-trach-nhap-mon" },
+      { label: "Tra cứu thuật ngữ phong thủy", href: "/kien-thuc/thuat-ngu-phong-thuy" },
     ],
   },
 ];
