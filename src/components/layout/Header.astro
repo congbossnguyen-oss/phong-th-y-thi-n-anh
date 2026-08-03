@@ -2,6 +2,7 @@
 import Icon from "../ui/Icon.astro";
 import Container from "../ui/Container.astro";
 import Button from "../ui/Button.astro";
+import SearchOverlay from "./SearchOverlay.astro";
 import { siteConfig, mainNav } from "../../lib/site-config";
 
 const currentPath = Astro.url.pathname;
@@ -39,13 +40,13 @@ const isActive = (href: string) =>
 
   <!-- Header chính -->
   <Container class="flex h-18 items-center justify-between gap-4 py-2.5">
-    <a href="/" class="flex shrink-0 items-center gap-2.5">
+    <a href="/" class="flex shrink-0 items-center gap-2 sm:gap-2.5">
       <span class="flex size-11 items-center justify-center overflow-hidden rounded-full border-2 border-(--color-gold-400)">
         <img src="/images/brand/zhi-gong-logo.png" alt={siteConfig.name} class="h-full w-full object-cover" />
       </span>
       <span class="flex flex-col leading-tight">
-        <span class="font-display text-lg font-semibold text-(--color-ink-950)">{siteConfig.name}</span>
-        <span class="text-[11px] uppercase tracking-wide text-(--color-gold-500)">{siteConfig.tagline}</span>
+        <span class="font-display text-base font-semibold text-(--color-ink-950) sm:text-lg">{siteConfig.name}</span>
+        <span class="hidden text-[11px] uppercase tracking-wide text-(--color-gold-500) sm:block">{siteConfig.tagline}</span>
       </span>
     </a>
 
@@ -101,6 +102,13 @@ const isActive = (href: string) =>
         <Icon name="user" class="size-4.5" />
         <span id="member-nav-label">Học viên</span>
       </a>
+      <button
+        type="button"
+        aria-label="Tìm kiếm"
+        class="js-search-open flex size-11 items-center justify-center rounded-full text-(--color-ink-800) hover:bg-(--color-ivory-200)"
+      >
+        <Icon name="search" class="size-5" />
+      </button>
       <a
         href="/gio-hang"
         aria-label="Giỏ hàng"
@@ -114,17 +122,17 @@ const isActive = (href: string) =>
       </a>
 
       <!-- Menu mobile -->
-      <details class="relative lg:hidden">
+      <details class="group relative lg:hidden">
         <summary
           aria-label="Mở menu"
           class="flex size-11 cursor-pointer list-none items-center justify-center rounded-full text-(--color-ink-800) hover:bg-(--color-ivory-200) [&::-webkit-details-marker]:hidden"
         >
           <Icon name="menu" class="size-5.5" />
         </summary>
-        <div class="fixed inset-0 top-[--header-h,0] z-30 bg-(--color-ivory-50)/70" />
+        <div class="hidden fixed inset-0 top-[--header-h,0] z-30 bg-(--color-ivory-50)/70 group-open:block" />
         <nav
           aria-label="Điều hướng di động"
-          class="fixed inset-y-0 right-0 z-40 flex w-[85vw] max-w-sm flex-col gap-1 overflow-y-auto bg-(--color-ivory-50) p-5 shadow-xl"
+          class="hidden fixed inset-y-0 right-0 z-40 w-[85vw] max-w-sm flex-col gap-1 overflow-y-auto bg-(--color-ivory-50) p-5 shadow-xl group-open:flex"
         >
           <div class="mb-3 flex items-center justify-between">
             <span class="font-display text-base font-semibold">{siteConfig.name}</span>
@@ -158,7 +166,11 @@ const isActive = (href: string) =>
         </nav>
       </details>
 
-      <Button href="/lien-he" class="hidden shrink-0 whitespace-nowrap lg:inline-flex">Đặt lịch tư vấn</Button>
+      <div class="hidden lg:block">
+        <Button href="/lien-he" class="shrink-0 whitespace-nowrap">Đặt lịch tư vấn</Button>
+      </div>
     </div>
   </Container>
 </header>
+
+<SearchOverlay />

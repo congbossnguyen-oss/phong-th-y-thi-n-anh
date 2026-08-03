@@ -1,0 +1,107 @@
+---
+import Icon from "../ui/Icon.astro";
+---
+
+<div
+  id="search-overlay"
+  class="hidden fixed inset-0 z-50 flex items-start justify-center bg-(--color-ivory-50)/80 px-4 pt-20 sm:pt-28"
+>
+  <div class="w-full max-w-xl rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) shadow-xl">
+    <div class="flex items-center gap-2.5 border-b border-(--color-ivory-300) px-4 py-3">
+      <Icon name="search" class="size-5 shrink-0 text-(--color-ink-500)" />
+      <input
+        id="search-input"
+        type="text"
+        placeholder="Tìm dịch vụ, khóa học, vật phẩm, bài viết..."
+        autocomplete="off"
+        class="w-full bg-transparent text-sm text-(--color-ink-950) placeholder:text-(--color-ink-500) focus:outline-none"
+      />
+      <button
+        id="search-close-btn"
+        type="button"
+        aria-label="Đóng tìm kiếm"
+        class="flex size-8 shrink-0 items-center justify-center rounded-full text-(--color-ink-600) hover:bg-(--color-ivory-200)"
+      >
+        <Icon name="close" class="size-4.5" />
+      </button>
+    </div>
+    <div id="search-results" class="max-h-[60vh] overflow-y-auto p-2">
+      <p id="search-hint" class="px-3 py-6 text-center text-sm text-(--color-ink-500)">
+        Nhập ít nhất 2 ký tự để bắt đầu tìm kiếm.
+      </p>
+    </div>
+  </div>
+</div>
+
+<script>
+  const overlay = document.getElementById("search-overlay")!;
+  const input = document.getElementById("search-input") as HTMLInputElement;
+  const closeBtn = document.getElementById("search-close-btn")!;
+  const resultsEl = document.getElementById("search-results")!;
+
+  function openSearch() {
+    overlay.classList.remove("hidden");
+    input.value = "";
+    resultsEl.innerHTML = `<p class="px-3 py-6 text-center text-sm text-(--color-ink-500)">Nhập ít nhất 2 ký tự để bắt đầu tìm kiếm.</p>`;
+    window.setTimeout(() => input.focus(), 0);
+    document.body.style.overflow = "hidden";
+  }
+
+  function closeSearch() {
+    overlay.classList.add("hidden");
+    document.body.style.overflow = "";
+  }
+
+  document.querySelectorAll(".js-search-open").forEach((btn) => {
+    btn.addEventListener("click", openSearch);
+  });
+  closeBtn.addEventListener("click", closeSearch);
+  overlay.addEventListener("click", (e) => {
+    if (e.target === overlay) closeSearch();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !overlay.classList.contains("hidden")) closeSearch();
+  });
+
+  type SearchResult = { title: string; description: string; url: string; type: string };
+
+  let debounceTimer: number | undefined;
+  input.addEventListener("input", () => {
+    window.clearTimeout(debounceTimer);
+    const q = input.value.trim();
+    if (q.length < 2) {
+      resultsEl.innerHTML = `<p class="px-3 py-6 text-center text-sm text-(--color-ink-500)">Nhập ít nhất 2 ký tự để bắt đầu tìm kiếm.</p>`;
+      return;
+    }
+    resultsEl.innerHTML = `<p class="px-3 py-6 text-center text-sm text-(--color-ink-500)">Đang tìm...</p>`;
+    debounceTimer = window.setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/search?q=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        renderResults(data.results as SearchResult[]);
+      } catch {
+        resultsEl.innerHTML = `<p class="px-3 py-6 text-center text-sm text-(--color-ink-500)">Không thể tìm kiếm lúc này, thử lại sau.</p>`;
+      }
+    }, 250);
+  });
+
+  function renderResults(results: SearchResult[]) {
+    if (results.length === 0) {
+      resultsEl.innerHTML = `<p class="px-3 py-6 text-center text-sm text-(--color-ink-500)">Không tìm thấy kết quả phù hợp.</p>`;
+      return;
+    }
+    resultsEl.innerHTML = "";
+    for (const item of results) {
+      const a = document.createElement("a");
+      a.href = item.url;
+      a.className =
+        "block rounded-(--radius-control) px-3 py-2.5 hover:bg-(--color-ivory-200)";
+      a.innerHTML = `
+        <p class="text-[11px] font-medium uppercase tracking-wide text-(--color-gold-500)">${item.type}</p>
+        <p class="mt-0.5 font-display text-sm font-semibold text-(--color-ink-950)">${item.title}</p>
+        <p class="mt-0.5 line-clamp-1 text-xs text-(--color-ink-600)">${item.description}</p>
+      `;
+      resultsEl.appendChild(a);
+    }
+  }
+</script>
