@@ -2,15 +2,73 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
+import { siteConfig } from "../../lib/site-config";
 
 export const prerender = true;
+
+const subsections = [
+  {
+    title: "Phạm vi áp dụng",
+    items: [
+      "Tất cả khách hàng mua hàng qua Hotline hoặc Website hoặc Fanpage",
+      "Tất cả khách hàng trên toàn quốc",
+    ],
+  },
+  {
+    title: "Hình thức áp dụng",
+    items: [
+      "Các sản phẩm và hồ sơ bản cứng được vận chuyển MIỄN PHÍ trên toàn quốc",
+      "Đối với khách nhận quà tặng Giveaway, vui lòng thanh toán phí giao hàng tiêu chuẩn với đơn vị vận chuyển",
+    ],
+  },
+  {
+    title: "Thời gian giao hàng",
+    items: [
+      "Khi đặt hàng vui lòng ghi chính xác địa chỉ để được nhận hàng và thanh toán nhanh chóng nhất",
+      "Thời gian giao hàng từ 2-5 ngày tùy từng khu vực vận chuyển",
+      `Đối với các đơn tỉnh, ${siteConfig.shortName} không chịu trách nhiệm với các trường hợp hàng thất lạc hoặc giao trễ`,
+      "Vui lòng luôn kiểm tra kỹ tình trạng hàng hóa và các giấy tờ đi kèm ngay sau khi nhận hàng với bên vận chuyển",
+    ],
+  },
+];
 ---
 
 <BaseLayout title="Chính sách vận chuyển" description="Chính sách vận chuyển vật phẩm phong thủy của Thiên Anh.">
   <PageHero title="Chính sách vận chuyển" breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Chính sách vận chuyển" }]} />
   <Container class="py-16">
-    <div class="max-w-2xl text-sm leading-relaxed text-(--color-ink-700)">
-      <p>Nội dung chính sách vận chuyển đầy đủ sẽ được cập nhật cùng nội dung pháp lý chính thức từ khách hàng.</p>
+    <div class="max-w-2xl">
+      <p class="text-base leading-relaxed text-(--color-ink-700)">
+        Hiện tại {siteConfig.shortName} đang có các hình thức giao hàng như dưới đây:
+      </p>
+
+      <h2 class="mt-8 font-display text-xl font-semibold text-(--color-ink-950)">
+        Giao hàng thông qua đơn vị vận chuyển
+      </h2>
+
+      <div class="mt-6 space-y-6">
+        {subsections.map((sub) => (
+          <div>
+            <h3 class="font-display text-base font-semibold text-(--color-ink-950)">{sub.title}</h3>
+            <ul class="mt-3 space-y-2">
+              {sub.items.map((item) => (
+                <li class="flex items-start gap-2 text-sm leading-relaxed text-(--color-ink-700)">
+                  <span class="mt-1.5 size-1 shrink-0 rounded-full bg-(--color-gold-300)"></span>
+                  {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+
+      <p class="mt-6 text-sm leading-relaxed text-(--color-ink-700)">
+        Quý khách có thể đặt hàng qua Hotline{" "}
+        <a href={`tel:${siteConfig.hotline}`} class="font-medium text-(--color-gold-300) hover:underline">{siteConfig.hotline}</a>,
+        Website{" "}
+        <a href="https://phongthuythienanh.com/" target="_blank" rel="noopener" class="font-medium text-(--color-gold-300) hover:underline">phongthuythienanh.com</a>{" "}
+        hoặc Fanpage{" "}
+        <a href={siteConfig.social.facebook} target="_blank" rel="noopener" class="font-medium text-(--color-gold-300) hover:underline">Zhi Gong Feng Shui</a>.
+      </p>
     </div>
   </Container>
 </BaseLayout>
