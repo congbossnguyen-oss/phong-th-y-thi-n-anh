@@ -6,7 +6,7 @@ import { siteConfig } from "../../lib/site-config";
 
 export const prerender = true;
 
-type Block = string | { list: string[] } | { heading: string };
+type Block = string | { list: string[] } | { heading: string } | { bank: { label: string; value: string }[] };
 
 const sections: { title: string; body: Block[] }[] = [
   {
@@ -40,9 +40,16 @@ const sections: { title: string; body: Block[] }[] = [
       "Khách hàng có thể thanh toán bằng một hoặc nhiều hình thức sau:",
       {
         list: [
-          "Chuyển khoản ngân hàng.",
+          "Chuyển khoản ngân hàng:",
           "Thanh toán qua cổng thanh toán điện tử (nếu được hỗ trợ).",
           "Các phương thức thanh toán khác được công bố trên website tại từng thời điểm.",
+        ],
+      },
+      {
+        bank: [
+          { label: "Ngân hàng", value: "Ngân hàng Quân Đội (MB)" },
+          { label: "Chủ tài khoản", value: "Nguyễn Trí Công" },
+          { label: "Số tài khoản", value: "0836.768.768" },
         ],
       },
       "Thông tin thanh toán sẽ được cung cấp khi khách hàng xác nhận sử dụng dịch vụ.",
@@ -133,6 +140,20 @@ const sections: { title: string; body: Block[] }[] = [
                 }
                 if ("heading" in block) {
                   return <h3 class="mt-5 font-display text-sm font-semibold text-(--color-gold-400) first:mt-0">{block.heading}</h3>;
+                }
+                if ("bank" in block) {
+                  return (
+                    <div class="mt-3 rounded-(--radius-card) border border-(--color-gold-500)/30 bg-(--color-ivory-100) p-4">
+                      <dl class="space-y-1.5">
+                        {block.bank.map((row) => (
+                          <div class="flex flex-wrap gap-x-2 text-sm">
+                            <dt class="text-(--color-ink-600)">{row.label}:</dt>
+                            <dd class="font-semibold text-(--color-gold-300)">{row.value}</dd>
+                          </div>
+                        ))}
+                      </dl>
+                    </div>
+                  );
                 }
                 return (
                   <ul class="mt-2 space-y-1.5">
