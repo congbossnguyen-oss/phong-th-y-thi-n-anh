@@ -13,9 +13,25 @@ interface Props {
   breadcrumbs?: Crumb[];
 }
 const { eyebrow, title, description, breadcrumbs = [] } = Astro.props;
+
+// BreadcrumbList JSON-LD dùng lại đúng dữ liệu breadcrumb đang hiển thị — không cần khai báo hai lần.
+const breadcrumbSchema =
+  breadcrumbs.length > 0
+    ? {
+        "@context": "https://schema.org",
+        "@type": "BreadcrumbList",
+        itemListElement: breadcrumbs.map((crumb, i) => ({
+          "@type": "ListItem",
+          position: i + 1,
+          name: crumb.label,
+          item: new URL(crumb.href ?? Astro.url.pathname, Astro.site ?? Astro.url).toString(),
+        })),
+      }
+    : null;
 ---
 
 <section class="relative overflow-hidden border-b border-(--color-ivory-300) bg-(--color-ivory-100) py-14">
+  {breadcrumbSchema && <script type="application/ld+json" set:html={JSON.stringify(breadcrumbSchema)} />}
   <SacredMotif
     variant="bagua"
     class="pointer-events-none absolute -right-40 top-1/2 size-[30rem] -translate-y-1/2 text-(--color-gold-500)/10"

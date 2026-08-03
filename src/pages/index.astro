@@ -11,9 +11,23 @@ import CtaBanner from "../components/home/CtaBanner.astro";
 import { siteConfig } from "../lib/site-config";
 
 export const prerender = true;
+
+// Person cho chuyên gia Zhi Gong — đặt ở trang chủ vì đây là nơi giới thiệu chuyên gia hiện có
+// (chưa có trang bio riêng, xem checklist "30 ngày" của audit SEO).
+const siteUrl = (Astro.site ?? new URL("http://localhost:4321")).toString().replace(/\/$/, "");
+const personSchema = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: "Zhi Gong",
+  jobTitle: "Chuyên gia phong thủy",
+  worksFor: { "@type": "Organization", name: siteConfig.name },
+  url: siteUrl,
+  sameAs: [siteConfig.social.facebook].filter((href) => href && href !== "#"),
+};
 ---
 
 <BaseLayout title={siteConfig.name} description={siteConfig.description}>
+  <script type="application/ld+json" set:html={JSON.stringify(personSchema)} />
   <Hero />
   <StatsSection />
   <MasterIntro />

@@ -23,6 +23,34 @@ const {
 const pageTitle = title === siteConfig.name ? title : `${title} | ${siteConfig.name}`;
 const canonicalUrl = new URL(Astro.url.pathname, Astro.site ?? "http://localhost:4321");
 const absoluteOgImage = new URL(ogImage, Astro.site ?? "http://localhost:4321");
+const siteUrl = (Astro.site ?? new URL("http://localhost:4321")).toString().replace(/\/$/, "");
+const telephoneE164 = "+84" + siteConfig.hotline.replace(/\D/g, "").replace(/^0/, "");
+
+// Organization + WebSite: đặt ở layout gốc để có mặt trên mọi trang, dữ liệu lấy từ site-config
+// (nguồn duy nhất) nên không lệch với thông tin hiển thị thật trên site.
+const organizationSchema = {
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  name: siteConfig.name,
+  url: siteUrl,
+  telephone: telephoneE164,
+  email: siteConfig.email,
+  address: {
+    "@type": "PostalAddress",
+    streetAddress: siteConfig.address,
+    addressLocality: "Hà Nội",
+    addressCountry: "VN",
+  },
+  sameAs: [siteConfig.social.facebook].filter((href) => href && href !== "#"),
+  areaServed: "VN",
+};
+
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  name: siteConfig.name,
+  url: siteUrl,
+};
 ---
 
 <!doctype html>
@@ -52,6 +80,9 @@ const absoluteOgImage = new URL(ogImage, Astro.site ?? "http://localhost:4321");
     />
 
     <meta name="generator" content={Astro.generator} />
+
+    <script type="application/ld+json" set:html={JSON.stringify(organizationSchema)} />
+    <script type="application/ld+json" set:html={JSON.stringify(websiteSchema)} />
   </head>
   <body class="flex min-h-dvh flex-col">
     <a
