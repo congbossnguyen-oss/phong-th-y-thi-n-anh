@@ -40,6 +40,18 @@ export const COURSE_CATEGORY_ORDER = [
   "Kinh dịch",
 ];
 
+// Slug neo (anchor id) cho từng nhóm — dùng để menu điều hướng liên kết thẳng tới từng nhóm trên /khoa-hoc.
+export const COURSE_CATEGORY_SLUGS: Record<string, string> = {
+  "Bát tự": "bat-tu",
+  "Bát trạch": "bat-trach",
+  "Huyền không phi tinh": "huyen-khong-phi-tinh",
+  "Huyền không lục pháp": "huyen-khong-luc-phap",
+  "Kinh dịch": "kinh-dich",
+  "Kỳ môn": "ky-mon",
+  "Trạch nhật": "trach-nhat",
+  "Tử vi": "tu-vi",
+};
+
 const courseListProjection = `{
   "slug": slug.current,
   name,

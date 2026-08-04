@@ -3,7 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import Icon from "../../components/ui/Icon.astro";
-import { getCourses, groupCoursesByCategory } from "../../lib/cms/queries";
+import { getCourses, groupCoursesByCategory, COURSE_CATEGORY_SLUGS } from "../../lib/cms/queries";
 
 export const prerender = false;
 
@@ -35,7 +35,7 @@ const categoryBanners: Record<string, string> = {
 
   <Container class="py-16">
     {groups.map((group) => (
-      <div class="mb-14 last:mb-0">
+      <div id={COURSE_CATEGORY_SLUGS[group.category]} class="mb-14 scroll-mt-24 last:mb-0">
         {categoryBanners[group.category] ? (
           <div class="relative aspect-[21/6] overflow-hidden rounded-(--radius-card) border border-(--color-ivory-300)">
             <img src={categoryBanners[group.category]} alt={group.category} class="h-full w-full object-cover" loading="lazy" />

@@ -4,13 +4,33 @@ import Container from "../ui/Container.astro";
 import Button from "../ui/Button.astro";
 import SearchOverlay from "./SearchOverlay.astro";
 import { siteConfig, mainNav } from "../../lib/site-config";
+import { services, products } from "../../lib/placeholder-data";
+import { COURSE_CATEGORY_ORDER, COURSE_CATEGORY_SLUGS } from "../../lib/cms/queries";
 
 const currentPath = Astro.url.pathname;
 const isActive = (href: string) =>
   href === "/" ? currentPath === "/" : currentPath.startsWith(href);
+
+// Bổ sung mục con thật (dịch vụ, vật phẩm, nhóm khóa học) cho menu — giữ site-config.ts làm khung
+// điều hướng gốc, tránh trùng lặp dữ liệu bằng cách lấy trực tiếp từ nguồn dữ liệu thật.
+const navWithChildren = mainNav.map((item) => {
+  if (item.label === "Dịch vụ") {
+    return { ...item, children: services.map((s) => ({ label: s.name, href: `/dich-vu/${s.slug}` })) };
+  }
+  if (item.label === "Vật phẩm") {
+    return { ...item, children: products.map((p) => ({ label: p.name, href: `/vat-pham/${p.slug}` })) };
+  }
+  if (item.label === "Khóa học") {
+    return {
+      ...item,
+      children: COURSE_CATEGORY_ORDER.map((cat) => ({ label: cat, href: `/khoa-hoc#${COURSE_CATEGORY_SLUGS[cat]}` })),
+    };
+  }
+  return item;
+});
 ---
 
-<header class="sticky top-0 z-40 border-b border-(--color-ivory-300) bg-(--color-ivory-50)/95 backdrop-blur">
+<header class="sticky top-0 z-40 border-b border-(--color-ivory-300) bg-(--color-ivory-50)/95">
   <!-- Thanh liên hệ nhanh -->
   <div class="hidden bg-(--color-ivory-100) text-(--color-ink-700) sm:block">
     <Container class="flex h-9 items-center justify-between text-xs">
@@ -48,13 +68,19 @@ const isActive = (href: string) =>
       >
         <Icon name="menu" class="size-5.5" />
       </summary>
-      <div class="hidden fixed inset-0 top-[--header-h,0] z-30 bg-(--color-ivory-50)/70 group-open:block" />
       <nav
         aria-label="Điều hướng di động"
-        class="hidden fixed inset-y-0 left-0 z-40 w-[85vw] max-w-sm flex-col gap-1 overflow-y-auto bg-(--color-ivory-50) p-5 shadow-xl group-open:flex"
+        class="hidden fixed inset-0 z-40 w-full flex-col gap-1 overflow-y-auto bg-(--color-ivory-50) p-5 group-open:flex"
       >
         <div class="mb-4 flex items-center justify-between">
-          <span class="font-display text-base font-semibold">{siteConfig.name}</span>
+          <span class="font-display text-lg font-semibold">{siteConfig.name}</span>
+          <button
+            type="button"
+            aria-label="Đóng menu"
+            class="js-mobile-nav-close flex size-11 items-center justify-center rounded-full text-(--color-ink-800) hover:bg-(--color-ivory-200)"
+          >
+            <Icon name="close" class="size-5" />
+          </button>
         </div>
 
         <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-(--color-gold-500)">Danh mục chính</p>
@@ -78,7 +104,7 @@ const isActive = (href: string) =>
         </div>
 
         <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-(--color-gold-500)">Tất cả danh mục</p>
-        {mainNav.map((item) => (
+        {navWithChildren.map((item) => (
           <div>
             <a href={item.href} class="block rounded-(--radius-control) px-3 py-2.5 text-sm font-medium text-(--color-ink-800) hover:bg-(--color-ivory-200)">
               {item.label}
@@ -119,7 +145,7 @@ const isActive = (href: string) =>
 
     <!-- Nav desktop -->
     <nav class="hidden items-center gap-1 lg:flex" aria-label="Điều hướng chính">
-      {mainNav.map((item) =>
+      {navWithChildren.map((item) =>
         item.children ? (
           <details class="group relative">
             <summary
@@ -131,7 +157,7 @@ const isActive = (href: string) =>
               {item.label}
               <Icon name="chevron-down" class="size-3.5 transition-transform group-open:rotate-180" />
             </summary>
-            <ul class="absolute left-0 top-full z-10 mt-1 min-w-52 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-1.5 shadow-lg">
+            <ul class="absolute left-0 top-full z-10 mt-1 max-h-[70vh] min-w-56 overflow-y-auto rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-1.5 shadow-lg">
               {item.children.map((child) => (
                 <li>
                   <a
@@ -196,3 +222,11 @@ const isActive = (href: string) =>
 </header>
 
 <SearchOverlay />
+
+<script>
+  document.querySelectorAll(".js-mobile-nav-close").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      btn.closest("details")?.removeAttribute("open");
+    });
+  });
+</script>
