@@ -1,0 +1,109 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/ui/PageHero.astro";
+import Container from "../components/ui/Container.astro";
+import Button from "../components/ui/Button.astro";
+
+export const prerender = true;
+---
+
+<BaseLayout
+  title="Lập quẻ Kinh Dịch"
+  description="Gieo quẻ Kinh Dịch bằng phương pháp 3 đồng xu, xem quẻ chính, hào động và quẻ biến."
+>
+  <PageHero
+    eyebrow="Công cụ"
+    title="Lập quẻ Kinh Dịch"
+    description="Gieo quẻ theo phương pháp 3 đồng xu truyền thống — bấm nút để tung ngẫu nhiên 6 lần, xem quẻ chính và quẻ biến (nếu có hào động)."
+    breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Lập quẻ Kinh Dịch" }]}
+  />
+
+  <Container class="py-16">
+    <div class="mx-auto max-w-2xl">
+      <div class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6 text-center">
+        <p class="text-sm text-(--color-ink-600)">
+          Thành tâm nghĩ về việc muốn hỏi, sau đó bấm nút bên dưới để gieo quẻ (giả lập tung 3 đồng xu, 6 lần).
+        </p>
+        <Button id="cast-btn" type="button" size="lg" class="mt-5">Gieo quẻ</Button>
+      </div>
+
+      <div id="result" class="mt-8 hidden">
+        <div class="grid gap-6 sm:grid-cols-2">
+          <div class="rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-ivory-100) p-6 text-center">
+            <p class="text-xs font-semibold uppercase tracking-wide text-(--color-gold-500)">Quẻ chính</p>
+            <div id="primary-lines" class="mx-auto mt-4 flex w-32 flex-col-reverse gap-2.5"></div>
+            <p id="primary-name" class="mt-4 font-display text-lg font-semibold text-(--color-ink-950)"></p>
+          </div>
+          <div id="changed-box" class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6 text-center">
+            <p class="text-xs font-semibold uppercase tracking-wide text-(--color-gold-500)">Quẻ biến</p>
+            <div id="changed-lines" class="mx-auto mt-4 flex w-32 flex-col-reverse gap-2.5"></div>
+            <p id="changed-name" class="mt-4 font-display text-lg font-semibold text-(--color-ink-950)"></p>
+          </div>
+        </div>
+        <p id="changing-note" class="mt-4 text-center text-sm text-(--color-ink-600)"></p>
+      </div>
+
+      <div class="mt-10 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6">
+        <h2 class="font-display text-lg font-semibold text-(--color-ink-950)">Lưu ý về công cụ này</h2>
+        <p class="mt-2 text-sm leading-relaxed text-(--color-ink-600)">
+          Công cụ chỉ thực hiện bước <strong>lập quẻ</strong> (xác định quẻ chính, hào động và quẻ biến) theo đúng
+          phương pháp 3 đồng xu truyền thống. Phần <strong>luận giải chuyên sâu</strong> (Nạp Giáp, Lục Thân, Lục
+          Thần, Thế/Ứng, Không Vong...) đòi hỏi kiến thức chuyên môn sâu, không được tự động hóa tại đây — nếu cần
+          luận giải quẻ vừa gieo, hãy liên hệ chuyên gia của Phong Thủy Thiên Anh.
+        </p>
+        <a href="/lien-he" class="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-(--color-gold-300) hover:underline">
+          Liên hệ luận giải quẻ →
+        </a>
+      </div>
+    </div>
+  </Container>
+</BaseLayout>
+
+<script>
+  import { castHexagram, type HexagramResult } from "../lib/kinh-dich";
+
+  const castBtn = document.getElementById("cast-btn") as HTMLButtonElement;
+  const resultEl = document.getElementById("result")!;
+  const primaryLinesEl = document.getElementById("primary-lines")!;
+  const primaryNameEl = document.getElementById("primary-name")!;
+  const changedBox = document.getElementById("changed-box")!;
+  const changedLinesEl = document.getElementById("changed-lines")!;
+  const changedNameEl = document.getElementById("changed-name")!;
+  const changingNoteEl = document.getElementById("changing-note")!;
+
+  function renderLines(container: HTMLElement, lines: readonly (0 | 1)[], movingPositions: number[]) {
+    container.innerHTML = "";
+    lines.forEach((line, i) => {
+      const pos = i + 1;
+      const isMoving = movingPositions.includes(pos);
+      const bar = document.createElement("div");
+      bar.className = "relative h-2.5";
+      if (line === 1) {
+        bar.innerHTML = `<div class="h-full w-full rounded-sm ${isMoving ? "bg-(--color-cinnabar-500)" : "bg-(--color-gold-400)"}"></div>`;
+      } else {
+        bar.innerHTML = `<div class="flex h-full w-full justify-between"><div class="h-full w-[42%] rounded-sm ${isMoving ? "bg-(--color-cinnabar-500)" : "bg-(--color-gold-400)"}"></div><div class="h-full w-[42%] rounded-sm ${isMoving ? "bg-(--color-cinnabar-500)" : "bg-(--color-gold-400)"}"></div></div>`;
+      }
+      container.appendChild(bar);
+    });
+  }
+
+  castBtn.addEventListener("click", () => {
+    const result = castHexagram();
+
+    renderLines(primaryLinesEl, result.primary.lines, result.changingPositions);
+    primaryNameEl.textContent = `${result.primary.name} (${result.primary.upper.symbol}${result.primary.lower.symbol})`;
+
+    if (result.changed) {
+      changedBox.classList.remove("hidden");
+      renderLines(changedLinesEl, result.changed.lines, []);
+      changedNameEl.textContent = `${result.changed.name} (${result.changed.upper.symbol}${result.changed.lower.symbol})`;
+      changingNoteEl.textContent = `Hào động: ${result.changingPositions.map((p) => `hào ${p}`).join(", ")} — quẻ chính biến thành quẻ biến ở trên.`;
+    } else {
+      changedBox.classList.add("hidden");
+      changingNoteEl.textContent = "Không có hào động — quẻ giữ nguyên, không biến sang quẻ khác.";
+    }
+
+    resultEl.classList.remove("hidden");
+    resultEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  });
+</script>
