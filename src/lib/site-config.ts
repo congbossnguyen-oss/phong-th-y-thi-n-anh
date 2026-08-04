@@ -13,7 +13,7 @@ export const siteConfig = {
   businessRegistration: "0000000000", // TODO: số ĐKKD thật
   social: {
     facebook: "https://www.facebook.com/ZhiGongFengShui",
-    youtube: "#",
+    youtube: "https://www.youtube.com/@PhongthuyThienAnh",
     zalo: "https://zalo.me/0836768768",
     tiktok: "https://www.tiktok.com/@zhigong_fengshui",
   },

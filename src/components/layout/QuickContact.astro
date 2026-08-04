@@ -6,6 +6,15 @@ import { siteConfig } from "../../lib/site-config";
 
 <div class="fixed bottom-5 right-5 z-30 flex flex-col items-end gap-3">
   <a
+    href={siteConfig.social.youtube}
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="Kênh YouTube Phong Thủy Thiên Anh"
+    class="flex size-13 items-center justify-center rounded-full bg-(--color-cinnabar-600) text-(--color-gold-100) shadow-lg transition-transform hover:scale-105"
+  >
+    <Icon name="youtube" class="size-6" />
+  </a>
+  <a
     href={siteConfig.social.zalo}
     aria-label="Chat Zalo với Thiên Anh"
     class="flex size-13 items-center justify-center rounded-full bg-(--color-cinnabar-500) text-(--color-gold-100) shadow-lg transition-transform hover:scale-105"
