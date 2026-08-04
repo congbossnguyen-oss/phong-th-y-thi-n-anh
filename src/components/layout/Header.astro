@@ -147,29 +147,32 @@ const navWithChildren = mainNav.map((item) => {
     <nav class="hidden items-center gap-1 lg:flex" aria-label="Điều hướng chính">
       {navWithChildren.map((item) =>
         item.children ? (
-          <details class="group relative">
-            <summary
+          <div class="group relative">
+            <a
+              href={item.href}
               class:list={[
-                "flex cursor-pointer list-none items-center gap-1 rounded-(--radius-control) px-3 py-2 text-sm font-medium uppercase tracking-wide transition-colors hover:bg-(--color-ivory-200)",
+                "flex cursor-pointer items-center gap-1 rounded-(--radius-control) px-3 py-2 text-sm font-medium uppercase tracking-wide transition-colors hover:bg-(--color-ivory-200)",
                 isActive(item.href) ? "text-(--color-gold-300)" : "text-(--color-ink-800)",
               ]}
             >
               {item.label}
-              <Icon name="chevron-down" class="size-3.5 transition-transform group-open:rotate-180" />
-            </summary>
-            <ul class="absolute left-0 top-full z-10 mt-1 max-h-[70vh] min-w-56 overflow-y-auto rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-1.5 shadow-lg">
-              {item.children.map((child) => (
-                <li>
-                  <a
-                    href={child.href}
-                    class="block rounded-(--radius-control) px-3 py-2 text-sm text-(--color-ink-800) hover:bg-(--color-ivory-200) hover:text-(--color-gold-300)"
-                  >
-                    {child.label}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </details>
+              <Icon name="chevron-down" class="size-3.5 transition-transform group-hover:rotate-180 group-focus-within:rotate-180" />
+            </a>
+            <div class="absolute left-0 top-full z-10 hidden pt-1 group-hover:block group-focus-within:block">
+              <ul class="max-h-[70vh] min-w-56 overflow-y-auto rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-1.5 shadow-lg">
+                {item.children.map((child) => (
+                  <li>
+                    <a
+                      href={child.href}
+                      class="block rounded-(--radius-control) px-3 py-2 text-sm text-(--color-ink-800) hover:bg-(--color-ivory-200) hover:text-(--color-gold-300)"
+                    >
+                      {child.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
         ) : (
           <a
             href={item.href}
