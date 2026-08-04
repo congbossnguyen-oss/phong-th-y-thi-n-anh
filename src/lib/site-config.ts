@@ -45,10 +45,15 @@ export const mainNav: NavItem[] = [
     children: [
       { label: "Tất cả bài viết", href: "/kien-thuc" },
       { label: "Thuật ngữ phong thủy", href: "/kien-thuc/thuat-ngu-phong-thuy" },
+    ],
+  },
+  {
+    label: "Công cụ",
+    href: "/tra-cuu-menh",
+    children: [
       { label: "Tra cứu mệnh theo năm sinh", href: "/tra-cuu-menh" },
     ],
   },
-  { label: "Liên hệ", href: "/lien-he" },
 ];
 
 export const footerPolicyLinks = [
