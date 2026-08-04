@@ -53,9 +53,31 @@ const isActive = (href: string) =>
         aria-label="Điều hướng di động"
         class="hidden fixed inset-y-0 left-0 z-40 w-[85vw] max-w-sm flex-col gap-1 overflow-y-auto bg-(--color-ivory-50) p-5 shadow-xl group-open:flex"
       >
-        <div class="mb-3 flex items-center justify-between">
+        <div class="mb-4 flex items-center justify-between">
           <span class="font-display text-base font-semibold">{siteConfig.name}</span>
         </div>
+
+        <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-(--color-gold-500)">Danh mục chính</p>
+        <div class="mb-5 grid grid-cols-2 gap-2.5">
+          <a href="/dich-vu" class="flex flex-col items-center gap-1.5 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) py-4 text-center hover:border-(--color-gold-400)/50">
+            <Icon name="check-circle" class="size-5 text-(--color-gold-400)" />
+            <span class="text-sm font-medium text-(--color-ink-800)">Dịch vụ</span>
+          </a>
+          <a href="/vat-pham" class="flex flex-col items-center gap-1.5 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) py-4 text-center hover:border-(--color-gold-400)/50">
+            <Icon name="cart" class="size-5 text-(--color-gold-400)" />
+            <span class="text-sm font-medium text-(--color-ink-800)">Vật phẩm</span>
+          </a>
+          <a href="/khoa-hoc" class="flex flex-col items-center gap-1.5 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) py-4 text-center hover:border-(--color-gold-400)/50">
+            <Icon name="book-open" class="size-5 text-(--color-gold-400)" />
+            <span class="text-sm font-medium text-(--color-ink-800)">Khóa học</span>
+          </a>
+          <a href="/tra-cuu-menh" class="flex flex-col items-center gap-1.5 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) py-4 text-center hover:border-(--color-gold-400)/50">
+            <Icon name="star" class="size-5 text-(--color-gold-400)" />
+            <span class="text-sm font-medium text-(--color-ink-800)">Công cụ</span>
+          </a>
+        </div>
+
+        <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-(--color-gold-500)">Tất cả danh mục</p>
         {mainNav.map((item) => (
           <div>
             <a href={item.href} class="block rounded-(--radius-control) px-3 py-2.5 text-sm font-medium text-(--color-ink-800) hover:bg-(--color-ivory-200)">
