@@ -881,4 +881,16 @@ export const portfolio = [
     location: "TP. Hòa Bình",
     image: "/images/portfolio/cong-ty-thiet-bi-pccc-hoa-binh.jpg",
   },
+  {
+    slug: "bo-tri-phong-thuy-lanh-dao-vp-quoc-hoi",
+    title: "Bố trí phong thủy cho lãnh đạo Văn phòng Quốc Hội",
+    location: "Hà Nội",
+    image: "/images/portfolio/bo-tri-phong-thuy-lanh-dao-vp-quoc-hoi.jpg",
+  },
+  {
+    slug: "phong-thuy-am-trach-dai-gia-dinh-son-tay",
+    title: "Phong thủy âm trạch cho đại gia đình",
+    location: "Sơn Tây, Hà Nội",
+    image: "/images/portfolio/phong-thuy-am-trach-dai-gia-dinh-son-tay.jpg",
+  },
 ];
