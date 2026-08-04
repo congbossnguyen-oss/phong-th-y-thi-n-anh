@@ -1,0 +1,154 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/ui/PageHero.astro";
+import Container from "../components/ui/Container.astro";
+import Button from "../components/ui/Button.astro";
+
+export const prerender = true;
+---
+
+<BaseLayout
+  title="Lập lá số Bát Tự (Tứ Trụ) cơ bản"
+  description="Nhập ngày giờ sinh để lập lá số Bát Tự cơ bản: 4 trụ Can Chi, Tàng Can, Thập Thần, Trường Sinh, Nạp Âm."
+>
+  <PageHero
+    eyebrow="Công cụ"
+    title="Lập lá số Bát Tự (Tứ Trụ) cơ bản"
+    description="Nhập ngày giờ sinh (dương lịch, giờ Việt Nam) để xem 4 trụ Can Chi, Tàng Can, Thập Thần, Trường Sinh và Nạp Âm."
+    breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Lập lá số Bát Tự" }]}
+  />
+
+  <Container class="py-16">
+    <div class="mx-auto max-w-3xl">
+      <form id="battu-form" class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6">
+        <div class="grid gap-4 sm:grid-cols-4">
+          <div>
+            <label for="bt-day" class="text-sm font-medium text-(--color-ink-800)">Ngày</label>
+            <input id="bt-day" type="number" min="1" max="31" value="15" required
+              class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20" />
+          </div>
+          <div>
+            <label for="bt-month" class="text-sm font-medium text-(--color-ink-800)">Tháng</label>
+            <input id="bt-month" type="number" min="1" max="12" value="6" required
+              class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20" />
+          </div>
+          <div>
+            <label for="bt-year" class="text-sm font-medium text-(--color-ink-800)">Năm</label>
+            <input id="bt-year" type="number" min="1900" max="2100" value="1990" required
+              class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20" />
+          </div>
+          <div>
+            <label for="bt-hour" class="text-sm font-medium text-(--color-ink-800)">Giờ sinh (0-23)</label>
+            <input id="bt-hour" type="number" min="0" max="23" value="10" required
+              class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20" />
+          </div>
+        </div>
+        <p class="mt-3 text-xs text-(--color-ink-500)">
+          Giờ sinh nhập theo giờ Việt Nam (UTC+7), 24 giờ. Ngày dương lịch. Sinh từ 23h trở đi được tự động tính
+          sang trụ Ngày của ngày hôm sau theo quy ước "giờ Tý muộn".
+        </p>
+        <Button id="battu-submit" type="submit" size="lg" class="mt-5">Lập lá số</Button>
+      </form>
+
+      <div id="battu-result" class="mt-8 hidden">
+        <div class="overflow-x-auto rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50)">
+          <table class="w-full min-w-[560px] text-center text-sm">
+            <thead>
+              <tr class="border-b border-(--color-ivory-300) bg-(--color-ivory-100) text-xs uppercase tracking-wide text-(--color-gold-500)">
+                <th class="p-3 text-left">Trụ</th>
+                <th class="p-3">Năm</th>
+                <th class="p-3">Tháng</th>
+                <th class="p-3">Ngày</th>
+                <th class="p-3">Giờ</th>
+              </tr>
+            </thead>
+            <tbody id="battu-table-body" class="[&_td]:p-3 [&_tr]:border-b [&_tr]:border-(--color-ivory-300) [&_tr:last-child]:border-0">
+            </tbody>
+          </table>
+        </div>
+
+        <div class="mt-6 rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-ivory-100) p-5">
+          <p class="text-xs font-semibold uppercase tracking-wide text-(--color-gold-500)">Nhật Chủ (Bản thân)</p>
+          <p id="battu-nhatchu" class="mt-1 font-display text-lg font-semibold text-(--color-ink-950)"></p>
+        </div>
+
+        <p class="mt-6 text-sm leading-relaxed text-(--color-ink-600)">
+          <strong>Lưu ý:</strong> Đây là lá số Bát Tự <strong>cơ bản</strong> (4 trụ, Tàng Can, Thập Thần, Trường
+          Sinh, Nạp Âm). Công cụ <strong>chưa tính</strong> Đại Vận, Thần Sát đầy đủ, Mệnh Cung, Thai Nguyên — những
+          phần này cần đối chiếu nhiều trường phái và nên do chuyên gia luận giải trực tiếp để đảm bảo chính xác.
+        </p>
+        <a href="/dich-vu/bat-tu" class="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-(--color-gold-300) hover:underline">
+          Đặt lịch luận giải Bát Tự chuyên sâu →
+        </a>
+      </div>
+    </div>
+
+    <div class="mx-auto mt-10 max-w-3xl rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6">
+      <h2 class="font-display text-lg font-semibold text-(--color-ink-950)">Tìm hiểu thêm</h2>
+      <ul class="mt-3 space-y-2">
+        <li>
+          <a href="/kien-thuc/kien-thuc-ung-dung/bat-tu-la-gi" class="text-sm font-medium text-(--color-gold-300) hover:underline">
+            Bát Tự là gì? Hướng dẫn tổng quan cho người mới bắt đầu →
+          </a>
+        </li>
+        <li>
+          <a href="/kien-thuc/thuat-ngu-phong-thuy" class="text-sm font-medium text-(--color-gold-300) hover:underline">
+            Tra cứu thuật ngữ: Nhật Chủ, Tàng Can, Trường Sinh, Thập Thần... →
+          </a>
+        </li>
+      </ul>
+    </div>
+  </Container>
+</BaseLayout>
+
+<script>
+  import { tinhBatTu, type PillarInfo } from "../lib/bat-tu";
+
+  const form = document.getElementById("battu-form") as HTMLFormElement;
+  const resultEl = document.getElementById("battu-result")!;
+  const tbody = document.getElementById("battu-table-body")!;
+  const nhatChuEl = document.getElementById("battu-nhatchu")!;
+
+  function pillarCell(p: PillarInfo, isDay: boolean): string {
+    const tangCanText = p.tangCan.map((t) => `${t.can}${isDay ? "" : ` (${t.thapThan})`}`).join(", ");
+    return `
+      <td class="align-top">
+        <p class="font-display text-lg font-semibold text-(--color-ink-950)">${p.can} ${p.chi}</p>
+        ${isDay ? `<p class="mt-1 text-xs font-medium text-(--color-gold-500)">Nhật Chủ</p>` : `<p class="mt-1 text-xs text-(--color-ink-600)">${p.thapThan}</p>`}
+        <p class="mt-2 text-xs text-(--color-ink-500)">Tàng can: ${tangCanText}</p>
+        <p class="mt-1 text-xs text-(--color-ink-500)">Nạp âm: ${p.napAm}</p>
+        <p class="mt-1 text-xs text-(--color-ink-500)">Trường sinh: ${p.truongSinh}</p>
+      </td>
+    `;
+  }
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const day = parseInt((document.getElementById("bt-day") as HTMLInputElement).value, 10);
+    const month = parseInt((document.getElementById("bt-month") as HTMLInputElement).value, 10);
+    const year = parseInt((document.getElementById("bt-year") as HTMLInputElement).value, 10);
+    const hour = parseInt((document.getElementById("bt-hour") as HTMLInputElement).value, 10);
+
+    if (!day || !month || !year || Number.isNaN(hour)) return;
+
+    try {
+      const chart = tinhBatTu({ day, month, year, hour });
+
+      tbody.innerHTML = `
+        <tr>
+          <td class="p-3 text-left text-xs font-medium uppercase tracking-wide text-(--color-gold-500)">Can Chi</td>
+          ${pillarCell(chart.year, false)}
+          ${pillarCell(chart.month, false)}
+          ${pillarCell(chart.day, true)}
+          ${pillarCell(chart.hour, false)}
+        </tr>
+      `;
+      nhatChuEl.textContent = `${chart.nhatChu.can} — Mệnh ${chart.nhatChu.nguHanh} (${chart.nhatChu.amDuong})`;
+
+      resultEl.classList.remove("hidden");
+      resultEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    } catch (err) {
+      alert("Không tính được lá số cho ngày giờ này, vui lòng kiểm tra lại thông tin nhập vào.");
+    }
+  });
+</script>

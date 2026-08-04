@@ -52,6 +52,7 @@ export const mainNav: NavItem[] = [
     href: "/tra-cuu-menh",
     children: [
       { label: "Tra cứu mệnh theo năm sinh", href: "/tra-cuu-menh" },
+      { label: "Lập lá số Bát Tự", href: "/lap-la-so-bat-tu" },
       { label: "Lập quẻ Kinh Dịch", href: "/gieo-que-kinh-dich" },
     ],
   },
