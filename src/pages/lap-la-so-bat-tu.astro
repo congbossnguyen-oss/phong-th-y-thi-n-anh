@@ -8,20 +8,20 @@ export const prerender = true;
 ---
 
 <BaseLayout
-  title="Lập lá số Bát Tự (Tứ Trụ) cơ bản"
-  description="Nhập ngày giờ sinh để lập lá số Bát Tự cơ bản: 4 trụ Can Chi, Tàng Can, Thập Thần, Trường Sinh, Nạp Âm."
+  title="Lập lá số Bát Tự (Tứ Trụ) đầy đủ"
+  description="Nhập ngày giờ sinh để lập lá số Bát Tự: 4 trụ Can Chi, Tàng Can, Thập Thần, Trường Sinh, Nạp Âm, Đại Vận, Lưu Niên, Mệnh Cung, Thai Nguyên, Thần Sát."
 >
   <PageHero
     eyebrow="Công cụ"
-    title="Lập lá số Bát Tự (Tứ Trụ) cơ bản"
-    description="Nhập ngày giờ sinh (dương lịch, giờ Việt Nam) để xem 4 trụ Can Chi, Tàng Can, Thập Thần, Trường Sinh và Nạp Âm."
+    title="Lập lá số Bát Tự (Tứ Trụ)"
+    description="Nhập ngày giờ sinh (dương lịch, giờ Việt Nam) và giới tính để xem đầy đủ Tứ Trụ, Đại Vận, Lưu Niên, Mệnh Cung, Thai Nguyên và Thần Sát Nguyên Cục."
     breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Lập lá số Bát Tự" }]}
   />
 
   <Container class="py-16">
-    <div class="mx-auto max-w-3xl">
+    <div class="mx-auto max-w-5xl">
       <form id="battu-form" class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6">
-        <div class="grid gap-4 sm:grid-cols-4">
+        <div class="grid gap-4 sm:grid-cols-5">
           <div>
             <label for="bt-day" class="text-sm font-medium text-(--color-ink-800)">Ngày</label>
             <input id="bt-day" type="number" min="1" max="31" value="15" required
@@ -42,10 +42,19 @@ export const prerender = true;
             <input id="bt-hour" type="number" min="0" max="23" value="10" required
               class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20" />
           </div>
+          <div>
+            <label for="bt-gender" class="text-sm font-medium text-(--color-ink-800)">Giới tính</label>
+            <select id="bt-gender"
+              class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3.5 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20">
+              <option value="Nam">Nam</option>
+              <option value="Nữ">Nữ</option>
+            </select>
+          </div>
         </div>
         <p class="mt-3 text-xs text-(--color-ink-500)">
           Giờ sinh nhập theo giờ Việt Nam (UTC+7), 24 giờ. Ngày dương lịch. Sinh từ 23h trở đi được tự động tính
-          sang trụ Ngày của ngày hôm sau theo quy ước "giờ Tý muộn".
+          sang trụ Ngày của ngày hôm sau theo quy ước "giờ Tý muộn". Giới tính dùng để xác định chiều thuận/nghịch
+          của Đại Vận.
         </p>
         <Button id="battu-submit" type="submit" size="lg" class="mt-5">Lập lá số</Button>
       </form>
@@ -67,15 +76,55 @@ export const prerender = true;
           </table>
         </div>
 
-        <div class="mt-6 rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-ivory-100) p-5">
-          <p class="text-xs font-semibold uppercase tracking-wide text-(--color-gold-500)">Nhật Chủ (Bản thân)</p>
-          <p id="battu-nhatchu" class="mt-1 font-display text-lg font-semibold text-(--color-ink-950)"></p>
+        <div class="mt-6 grid gap-4 sm:grid-cols-2">
+          <div class="rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-ivory-100) p-5">
+            <p class="text-xs font-semibold uppercase tracking-wide text-(--color-gold-500)">Nhật Chủ (Bản thân)</p>
+            <p id="battu-nhatchu" class="mt-1 font-display text-lg font-semibold text-(--color-ink-950)"></p>
+          </div>
+          <div class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-5">
+            <p class="text-xs font-semibold uppercase tracking-wide text-(--color-gold-500)">Mệnh Cung / Thai Nguyên / Không Vong</p>
+            <p id="battu-bonus" class="mt-1 text-sm leading-relaxed text-(--color-ink-800)"></p>
+          </div>
+        </div>
+
+        <div class="mt-6 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-5">
+          <p class="text-xs font-semibold uppercase tracking-wide text-(--color-gold-500)">Bảng Thần Sát Nguyên Cục</p>
+          <div id="battu-thansat" class="mt-2 grid grid-cols-2 gap-3 text-sm sm:grid-cols-4"></div>
+          <p class="mt-3 text-xs text-(--color-ink-500)">
+            5 loại: Thiên Ất Quý Nhân, Văn Xương Quý Nhân, Tướng Tinh, Tai Sát, Kình Dương (Dương Nhận). Thần Sát là
+            lớp thông tin bổ trợ — cần đối chiếu Hỷ/Kị và trạng thái sinh khắc trước khi luận cát hung, không dùng
+            đơn lẻ.
+          </p>
+        </div>
+
+        <div class="mt-6 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-5">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <p class="text-xs font-semibold uppercase tracking-wide text-(--color-gold-500)">Đại Vận (10 vận, mỗi vận 10 năm)</p>
+            <p id="battu-daivan-chieu" class="text-xs text-(--color-ink-600)"></p>
+          </div>
+          <div class="mt-3 overflow-x-auto">
+            <table class="w-full min-w-[720px] text-center text-sm">
+              <tbody id="battu-daivan-body" class="[&_td]:cursor-pointer [&_td]:rounded-(--radius-control) [&_td]:p-2 [&_td]:transition-colors [&_td:hover]:bg-(--color-ivory-200)"></tbody>
+            </table>
+          </div>
+          <p class="mt-2 text-xs text-(--color-ink-500)">
+            Bấm vào 1 cột để xem Lưu Niên của vận đó. Ngày/tháng khởi vận là <strong>ước tính</strong> (công thức
+            thiên văn phổ thông độ chính xác trung bình) — tuổi và Can Chi từng vận đã được đối chiếu chính xác.
+          </p>
+        </div>
+
+        <div class="mt-6 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-5">
+          <p class="text-xs font-semibold uppercase tracking-wide text-(--color-gold-500)">Lưu Niên (10 năm của vận đang chọn)</p>
+          <div class="mt-3 overflow-x-auto">
+            <table class="w-full min-w-[720px] text-center text-sm">
+              <tbody id="battu-luunien-body" class="[&_td]:p-2"></tbody>
+            </table>
+          </div>
         </div>
 
         <p class="mt-6 text-sm leading-relaxed text-(--color-ink-600)">
-          <strong>Lưu ý:</strong> Đây là lá số Bát Tự <strong>cơ bản</strong> (4 trụ, Tàng Can, Thập Thần, Trường
-          Sinh, Nạp Âm). Công cụ <strong>chưa tính</strong> Đại Vận, Thần Sát đầy đủ, Mệnh Cung, Thai Nguyên — những
-          phần này cần đối chiếu nhiều trường phái và nên do chuyên gia luận giải trực tiếp để đảm bảo chính xác.
+          <strong>Lưu ý:</strong> Đây là công cụ lập lá số tự động, không thay thế luận giải chuyên sâu. Kết quả cần
+          được chuyên gia đối chiếu thêm về Dụng Thần, vượng suy, cách cục trước khi kết luận cát hung.
         </p>
         <a href="/dich-vu/bat-tu" class="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-(--color-gold-300) hover:underline">
           Đặt lịch luận giải Bát Tự chuyên sâu →
@@ -83,7 +132,7 @@ export const prerender = true;
       </div>
     </div>
 
-    <div class="mx-auto mt-10 max-w-3xl rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6">
+    <div class="mx-auto mt-10 max-w-5xl rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6">
       <h2 class="font-display text-lg font-semibold text-(--color-ink-950)">Tìm hiểu thêm</h2>
       <ul class="mt-3 space-y-2">
         <li>
@@ -102,12 +151,20 @@ export const prerender = true;
 </BaseLayout>
 
 <script>
-  import { tinhBatTu, type PillarInfo } from "../lib/bat-tu";
+  import { tinhBatTu, tinhLuuNien, type PillarInfo, type BatTuChart, type Gender } from "../lib/bat-tu";
 
   const form = document.getElementById("battu-form") as HTMLFormElement;
   const resultEl = document.getElementById("battu-result")!;
   const tbody = document.getElementById("battu-table-body")!;
   const nhatChuEl = document.getElementById("battu-nhatchu")!;
+  const bonusEl = document.getElementById("battu-bonus")!;
+  const thanSatEl = document.getElementById("battu-thansat")!;
+  const daiVanChieuEl = document.getElementById("battu-daivan-chieu")!;
+  const daiVanBody = document.getElementById("battu-daivan-body")!;
+  const luuNienBody = document.getElementById("battu-luunien-body")!;
+
+  let currentChart: BatTuChart | null = null;
+  let birthYear = 0;
 
   function pillarCell(p: PillarInfo, isDay: boolean): string {
     const tangCanText = p.tangCan.map((t) => `${t.can}${isDay ? "" : ` (${t.thapThan})`}`).join(", ");
@@ -122,17 +179,91 @@ export const prerender = true;
     `;
   }
 
+  function renderThanSat(chart: BatTuChart) {
+    const labels: { key: keyof BatTuChart["thanSat"]; label: string }[] = [
+      { key: "year", label: "Trụ Năm" },
+      { key: "month", label: "Trụ Tháng" },
+      { key: "day", label: "Trụ Ngày" },
+      { key: "hour", label: "Trụ Giờ" },
+    ];
+    thanSatEl.innerHTML = labels
+      .map(({ key, label }) => {
+        const items = chart.thanSat[key];
+        return `
+          <div class="rounded-(--radius-control) border border-(--color-ivory-300) p-3">
+            <p class="text-xs font-medium uppercase tracking-wide text-(--color-ink-500)">${label}</p>
+            <p class="mt-1 text-sm text-(--color-ink-800)">${items.length ? items.join(", ") : "—"}</p>
+          </div>
+        `;
+      })
+      .join("");
+  }
+
+  function renderLuuNien(startYear: number) {
+    const years = tinhLuuNien(startYear, birthYear, 10);
+    luuNienBody.innerHTML = `
+      <tr class="border-b border-(--color-ivory-300)">
+        ${years.map((y) => `<td class="font-display font-semibold text-(--color-ink-950)">${y.can} ${y.chi}</td>`).join("")}
+      </tr>
+      <tr>
+        ${years.map((y) => `<td class="text-xs text-(--color-ink-500)">${y.year} — ${y.tuoi}t</td>`).join("")}
+      </tr>
+    `;
+  }
+
+  function renderDaiVan(chart: BatTuChart) {
+    daiVanChieuEl.textContent = `Chiều: ${chart.daiVanForward ? "Thuận" : "Nghịch"}`;
+    const rowCanChi = chart.daiVan
+      .map(
+        (d, i) =>
+          `<td data-idx="${i}" class="js-daivan-col font-display font-semibold text-(--color-ink-950)">${d.can} ${d.chi}</td>`,
+      )
+      .join("");
+    const rowMeta = chart.daiVan
+      .map(
+        (d, i) =>
+          `<td data-idx="${i}" class="js-daivan-col text-xs text-(--color-ink-500)">${d.startAge}-${d.endAge}t<br/>~${d.startDate.d}/${d.startDate.m}/${d.startDate.y}</td>`,
+      )
+      .join("");
+    daiVanBody.innerHTML = `
+      <tr class="border-b border-(--color-ivory-300)">${rowCanChi}</tr>
+      <tr>${rowMeta}</tr>
+    `;
+
+    daiVanBody.querySelectorAll<HTMLElement>(".js-daivan-col").forEach((cell) => {
+      cell.addEventListener("click", () => {
+        const idx = parseInt(cell.dataset.idx || "0", 10);
+        selectDaiVan(idx);
+      });
+    });
+
+    selectDaiVan(0);
+  }
+
+  function selectDaiVan(idx: number) {
+    if (!currentChart) return;
+    daiVanBody.querySelectorAll<HTMLElement>(".js-daivan-col").forEach((cell) => {
+      const cellIdx = parseInt(cell.dataset.idx || "-1", 10);
+      cell.classList.toggle("bg-(--color-gold-300)/15", cellIdx === idx);
+    });
+    const period = currentChart.daiVan[idx];
+    renderLuuNien(period.startDate.y);
+  }
+
   form.addEventListener("submit", (e) => {
     e.preventDefault();
     const day = parseInt((document.getElementById("bt-day") as HTMLInputElement).value, 10);
     const month = parseInt((document.getElementById("bt-month") as HTMLInputElement).value, 10);
     const year = parseInt((document.getElementById("bt-year") as HTMLInputElement).value, 10);
     const hour = parseInt((document.getElementById("bt-hour") as HTMLInputElement).value, 10);
+    const gender = (document.getElementById("bt-gender") as HTMLSelectElement).value as Gender;
 
     if (!day || !month || !year || Number.isNaN(hour)) return;
 
     try {
-      const chart = tinhBatTu({ day, month, year, hour });
+      const chart = tinhBatTu({ day, month, year, hour, gender });
+      currentChart = chart;
+      birthYear = year;
 
       tbody.innerHTML = `
         <tr>
@@ -144,6 +275,14 @@ export const prerender = true;
         </tr>
       `;
       nhatChuEl.textContent = `${chart.nhatChu.can} — Mệnh ${chart.nhatChu.nguHanh} (${chart.nhatChu.amDuong})`;
+      bonusEl.innerHTML = `
+        Mệnh Cung: <strong>${chart.menhCung.can} ${chart.menhCung.chi}</strong> ·
+        Thai Nguyên: <strong>${chart.thaiNguyen.can} ${chart.thaiNguyen.chi}</strong><br/>
+        Niên Không: <strong>${chart.nienKhong}</strong> · Nhật Không: <strong>${chart.nhatKhong}</strong>
+      `;
+
+      renderThanSat(chart);
+      renderDaiVan(chart);
 
       resultEl.classList.remove("hidden");
       resultEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
