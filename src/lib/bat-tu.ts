@@ -213,8 +213,24 @@ export interface BatTuInput {
   month: number; // 1-12, dương lịch
   year: number;
   hour: number; // 0-23, giờ địa phương Việt Nam
+  minute?: number; // 0-59, dùng để tăng độ chính xác cho mốc khởi Đại Vận (không đổi Can Chi trụ Giờ)
   gender: Gender;
 }
+
+// Rút gọn tên Thập Thần để hiển thị trong bảng lá số (giống quy ước phần mềm chuyên dụng).
+export const THAP_THAN_ABBR: Record<string, string> = {
+  "Tỷ Kiên": "Tỷ",
+  "Kiếp Tài": "Kiếp",
+  "Thực Thần": "Thực",
+  "Thương Quan": "Thương",
+  "Thiên Tài": "T.Tài",
+  "Chính Tài": "Tài",
+  "Thất Sát": "Sát",
+  "Chính Quan": "Quan",
+  "Thiên Ấn": "Kiêu",
+  "Chính Ấn": "Ấn",
+  "Nhật Chủ": "Nhật Chủ",
+};
 
 function buildPillar(canIndex: number, chiIndex: number, nhatChuIndex: number, isNhatChu: boolean): PillarInfo {
   const napAm = napAmFor(canIndex, chiIndex);
@@ -238,6 +254,8 @@ function buildPillar(canIndex: number, chiIndex: number, nhatChuIndex: number, i
 
 export function tinhBatTu(input: BatTuInput): BatTuChart {
   const { day, month, year, hour, gender } = input;
+  const minute = input.minute ?? 0;
+  const hourFrac = hour + minute / 60;
 
   // Trụ ngày (chu kỳ 60 ngày liên tục qua Julian Day Number) — sinh từ 23h thuộc ngày hôm sau.
   let jdDay = jdFromDate(day, month, year);
@@ -247,8 +265,8 @@ export function tinhBatTu(input: BatTuInput): BatTuChart {
   const nhatChuIndex = dayCanIndex;
 
   // Trụ năm: ranh giới là Lập Xuân, không phải 1/1 dương lịch.
-  const monthChiIndexNow = getMonthChiIndex(day, month, year, hour);
-  const jdNow = jdFromDate(day, month, year) + (hour - 12) / 24 - 7 / 24;
+  const monthChiIndexNow = getMonthChiIndex(day, month, year, hourFrac);
+  const jdNow = jdFromDate(day, month, year) + (hourFrac - 12) / 24 - 7 / 24;
   const jdLapXuanNam = findLapXuanJD(year);
   const batTuYear = jdNow < jdLapXuanNam ? year - 1 : year;
 
