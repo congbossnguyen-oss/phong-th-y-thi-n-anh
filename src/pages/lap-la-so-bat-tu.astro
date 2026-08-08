@@ -71,80 +71,90 @@ export const prerender = true;
       </form>
 
       <div id="battu-result" class="mt-8 hidden">
-        <!-- Vùng chụp ảnh / xuất PDF (xem #battu-save-image / #battu-save-pdf ở script bên dưới). -->
-        <div id="battu-card" class="rounded-2xl border-2 border-amber-300 bg-white p-5 text-slate-900 sm:p-8">
-          <div class="flex flex-wrap items-start justify-between gap-4 border-b-2 border-amber-200 pb-4">
-            <div class="flex items-center gap-3">
-              <img src="/images/brand/zhi-gong-logo.png" alt="Phong Thủy Thiên Anh" class="size-12 rounded-full object-cover" />
-              <div>
-                <p class="font-serif text-xl font-bold text-blue-900 whitespace-nowrap">TỨ TRỤ MỆNH BÀN</p>
-                <p class="text-xs font-medium tracking-wide text-slate-500">PHONG THỦY THIÊN ANH</p>
+        <!-- #battu-card nằm trong khung cao 0px + overflow hidden để không hiển thị trùng lặp "2 lá số"
+             (chỉ dùng làm khuôn dựng ảnh) — không dùng display:none vì html-to-image cần phần tử có
+             layout thật để chụp được. -->
+        <div class="pointer-events-none h-0 overflow-hidden">
+          <div id="battu-card" class="rounded-2xl border-2 border-amber-300 bg-white p-5 text-slate-900 sm:p-8">
+            <div class="flex flex-wrap items-start justify-between gap-4 border-b-2 border-amber-200 pb-4">
+              <div class="flex items-center gap-3">
+                <img src="/images/brand/zhi-gong-logo.png" alt="Phong Thủy Thiên Anh" class="size-12 rounded-full object-cover" />
+                <div>
+                  <p class="font-serif text-xl font-bold text-blue-900 whitespace-nowrap">TỨ TRỤ MỆNH BÀN</p>
+                  <p class="text-xs font-medium tracking-wide text-slate-500">PHONG THỦY THIÊN ANH</p>
+                </div>
+              </div>
+              <div class="text-right text-sm text-slate-700">
+                <p>Họ tên: <strong id="card-name" class="text-slate-900"></strong></p>
+                <p>Giới tính: <strong id="card-gender" class="text-slate-900"></strong></p>
+                <p>Dương lịch (GMT+7): <strong id="card-solar" class="text-slate-900"></strong></p>
+                <p>Âm Dương hợp lịch: <strong id="card-lunar" class="text-slate-900"></strong></p>
               </div>
             </div>
-            <div class="text-right text-sm text-slate-700">
-              <p>Họ tên: <strong id="card-name" class="text-slate-900"></strong></p>
-              <p>Giới tính: <strong id="card-gender" class="text-slate-900"></strong></p>
-              <p>Dương lịch (GMT+7): <strong id="card-solar" class="text-slate-900"></strong></p>
-            </div>
-          </div>
 
-          <div class="mt-4 overflow-x-auto">
-            <table class="w-full min-w-[560px] border-collapse text-center text-sm">
-              <tbody id="battu-main-table"></tbody>
-            </table>
-          </div>
-
-          <div class="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <div class="flex flex-wrap items-center justify-between gap-2">
-              <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Đại Vận</p>
-              <p id="battu-daivan-note" class="text-xs text-slate-500"></p>
-            </div>
-            <div class="mt-2 overflow-x-auto">
-              <table class="w-full min-w-[720px] border-collapse text-center text-sm">
-                <tbody id="battu-daivan-body"></tbody>
+            <div class="mt-4 overflow-x-auto">
+              <table class="w-full min-w-[560px] border-collapse text-center text-sm">
+                <tbody id="battu-main-table"></tbody>
               </table>
             </div>
-          </div>
 
-          <div class="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Lưu Niên (vận đang chọn)</p>
-            <div class="mt-2 overflow-x-auto">
-              <table class="w-full min-w-[720px] border-collapse text-center text-sm">
-                <tbody id="battu-luunien-body"></tbody>
-              </table>
+            <div class="mt-6 rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Đại Vận</p>
+                <p id="battu-daivan-note" class="text-xs text-slate-500"></p>
+              </div>
+              <div class="mt-2 overflow-x-auto">
+                <table class="w-full min-w-[720px] border-collapse text-center text-sm">
+                  <tbody id="battu-daivan-body"></tbody>
+                </table>
+              </div>
             </div>
-          </div>
 
-          <div class="mt-4 grid gap-4 sm:grid-cols-2">
-            <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Mệnh Cung / Thai Nguyên</p>
-              <p id="battu-menh-cung" class="mt-2 text-sm text-slate-800"></p>
-              <p class="mt-3 text-xs font-bold uppercase tracking-wide text-slate-500">Niên Không / Nhật Không</p>
-              <p id="battu-khong-vong" class="mt-2 text-sm text-slate-800"></p>
+            <div class="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Lưu Niên (vận đang chọn)</p>
+              <div class="mt-2 overflow-x-auto">
+                <table class="w-full min-w-[720px] border-collapse text-center text-sm">
+                  <tbody id="battu-luunien-body"></tbody>
+                </table>
+              </div>
             </div>
-            <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Bảng Thần Sát Nguyên Cục</p>
-              <div id="battu-thansat" class="mt-2 grid grid-cols-2 gap-2 text-xs text-slate-800"></div>
-            </div>
-          </div>
 
-          <div class="mt-4 flex flex-wrap items-center gap-3 text-[11px] text-slate-500">
-            <span class="inline-flex items-center gap-1"><span class="size-2.5 rounded-full bg-emerald-500"></span>Mộc</span>
-            <span class="inline-flex items-center gap-1"><span class="size-2.5 rounded-full bg-red-500"></span>Hỏa</span>
-            <span class="inline-flex items-center gap-1"><span class="size-2.5 rounded-full bg-amber-500"></span>Thổ</span>
-            <span class="inline-flex items-center gap-1"><span class="size-2.5 rounded-full bg-slate-400"></span>Kim</span>
-            <span class="inline-flex items-center gap-1"><span class="size-2.5 rounded-full bg-blue-500"></span>Thủy</span>
+            <div class="mt-4 grid gap-4 sm:grid-cols-2">
+              <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Mệnh Cung / Thai Nguyên</p>
+                <p id="battu-menh-cung" class="mt-2 text-sm text-slate-800"></p>
+                <p class="mt-3 text-xs font-bold uppercase tracking-wide text-slate-500">Niên Không / Nhật Không</p>
+                <p id="battu-khong-vong" class="mt-2 text-sm text-slate-800"></p>
+              </div>
+              <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+                <p class="text-xs font-bold uppercase tracking-wide text-slate-500">Bảng Thần Sát Nguyên Cục</p>
+                <div id="battu-thansat" class="mt-2 grid grid-cols-2 gap-2 text-xs text-slate-800"></div>
+              </div>
+            </div>
+
+            <div class="mt-4 flex flex-wrap items-center gap-3 text-[11px] text-slate-500">
+              <span class="inline-flex items-center gap-1"><span class="size-2.5 rounded-full bg-[#16a34a]"></span>Mộc</span>
+              <span class="inline-flex items-center gap-1"><span class="size-2.5 rounded-full bg-[#dc2626]"></span>Hỏa</span>
+              <span class="inline-flex items-center gap-1"><span class="size-2.5 rounded-full bg-[#8b5a2b]"></span>Thổ</span>
+              <span class="inline-flex items-center gap-1"><span class="size-2.5 rounded-full bg-[#64748b]"></span>Kim</span>
+              <span class="inline-flex items-center gap-1"><span class="size-2.5 rounded-full bg-[#2563eb]"></span>Thủy</span>
+            </div>
           </div>
         </div>
 
-        <div class="mt-4 flex flex-wrap items-center gap-3">
+        <div id="battu-preview-wrap" class="hidden">
+          <img id="battu-preview-img" alt="Lá số Bát Tự" class="w-full rounded-2xl border-2 border-amber-300" />
+          <p class="mt-2 text-xs text-(--color-ink-500)">Chuột phải (máy tính) / nhấn giữ (điện thoại) vào ảnh để lưu trực tiếp.</p>
+        </div>
+
+        <div class="mt-4 flex flex-wrap items-end gap-3">
+          <div>
+            <label for="battu-vanchon" class="text-xs font-medium text-(--color-ink-700)">Xem Lưu Niên của vận</label>
+            <select id="battu-vanchon"
+              class="mt-1 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20"></select>
+          </div>
           <Button id="battu-save-image" type="button" variant="secondary">Lưu ảnh</Button>
           <Button id="battu-save-pdf" type="button" variant="secondary">Lưu PDF</Button>
-          <span class="text-xs text-(--color-ink-500)">hoặc chuột phải (máy tính) / nhấn giữ (điện thoại) vào ảnh bên dưới để lưu</span>
-        </div>
-
-        <div id="battu-preview-wrap" class="mt-4 hidden">
-          <img id="battu-preview-img" alt="Lá số Bát Tự" class="w-full rounded-2xl border-2 border-amber-300" />
         </div>
 
         <p class="mt-6 text-sm leading-relaxed text-(--color-ink-600)">
@@ -182,11 +192,13 @@ export const prerender = true;
     tinhLuuNien,
     THAP_THAN_ABBR,
     CAN_NGU_HANH,
+    CHI_NGU_HANH,
     CAN_AM_DUONG,
     type PillarInfo,
     type BatTuChart,
     type Gender,
   } from "../lib/bat-tu";
+  import { solarToLunar } from "../lib/lunar-calendar";
   import type { NguHanh } from "../lib/menh-nap-am";
 
   const form = document.getElementById("battu-form") as HTMLFormElement;
@@ -196,6 +208,7 @@ export const prerender = true;
   const cardNameEl = document.getElementById("card-name")!;
   const cardGenderEl = document.getElementById("card-gender")!;
   const cardSolarEl = document.getElementById("card-solar")!;
+  const cardLunarEl = document.getElementById("card-lunar")!;
   const menhCungEl = document.getElementById("battu-menh-cung")!;
   const khongVongEl = document.getElementById("battu-khong-vong")!;
   const thanSatEl = document.getElementById("battu-thansat")!;
@@ -204,6 +217,7 @@ export const prerender = true;
   const luuNienBody = document.getElementById("battu-luunien-body")!;
   const previewWrap = document.getElementById("battu-preview-wrap")!;
   const previewImg = document.getElementById("battu-preview-img") as HTMLImageElement;
+  const vanChonSelect = document.getElementById("battu-vanchon") as HTMLSelectElement;
 
   let currentChart: BatTuChart | null = null;
   let birthYear = 0;
@@ -214,7 +228,7 @@ export const prerender = true;
   // ra 1 ảnh sạch, đầy đủ, không phụ thuộc khổ màn hình đang xem trên máy người dùng.
   async function captureCardAsPng(): Promise<string> {
     const { toPng } = await import("html-to-image");
-    const EXPORT_WIDTH = 900;
+    const EXPORT_WIDTH = 750; // x2 pixelRatio = 1500px chiều rộng ảnh xuất ra
     const originalWidth = cardEl.style.width;
     const originalMaxWidth = cardEl.style.maxWidth;
     const scrollers = Array.from(cardEl.querySelectorAll<HTMLElement>(".overflow-x-auto"));
@@ -241,16 +255,22 @@ export const prerender = true;
     }
   }
 
+  // Màu tường minh (hex), không dùng tên màu Tailwind — đảm bảo html-to-image xuất ảnh ra đúng màu
+  // (bảng màu mặc định Tailwind v4 định nghĩa bằng oklch(), html-to-image không parse được oklch()).
   const NGU_HANH_CLASS: Record<NguHanh, string> = {
-    Mộc: "text-emerald-600",
-    Hỏa: "text-red-600",
-    Thổ: "text-amber-600",
-    Kim: "text-slate-500",
-    Thủy: "text-blue-600",
+    Mộc: "text-[#16a34a]", // xanh lá — Giáp Ất / Dần Mão
+    Hỏa: "text-[#dc2626]", // đỏ — Bính Đinh / Tị Ngọ
+    Thổ: "text-[#8b5a2b]", // nâu — Mậu Kỷ / Thìn Tuất Sửu Mùi
+    Kim: "text-[#64748b]", // ghi (xám) — Canh Tân / Thân Dậu
+    Thủy: "text-[#2563eb]", // xanh nước biển — Nhâm Quý / Tý Hợi
   };
 
   function canClass(canIndex: number): string {
     return NGU_HANH_CLASS[CAN_NGU_HANH[canIndex]];
+  }
+
+  function chiClass(chiIndex: number): string {
+    return NGU_HANH_CLASS[CHI_NGU_HANH[chiIndex]];
   }
 
   function thapThanLabel(p: PillarInfo, isDay: boolean): string {
@@ -298,7 +318,7 @@ export const prerender = true;
         ${pillars
           .map(
             ({ p }) =>
-              `<td class="p-2.5"><span class="font-serif text-2xl font-bold sm:text-3xl ${canClass(p.canIndex)}">${p.can}<br/>${p.chi}</span></td>`,
+              `<td class="p-2.5 font-serif text-2xl font-bold sm:text-3xl"><span class="${canClass(p.canIndex)}">${p.can}</span><br/><span class="${chiClass(p.chiIndex)}">${p.chi}</span></td>`,
           )
           .join("")}
       </tr>
@@ -387,7 +407,7 @@ export const prerender = true;
         ${years
           .map(
             (y) =>
-              `<td class="p-2 font-serif font-bold ${canClass(y.canIndex)} ${y.year === nowYear ? "rounded-md bg-amber-100" : ""}">${y.can} ${y.chi}</td>`,
+              `<td class="p-2 font-serif font-bold ${y.year === nowYear ? "rounded-md bg-amber-100" : ""}"><span class="${canClass(y.canIndex)}">${y.can}</span> <span class="${chiClass(y.chiIndex)}">${y.chi}</span></td>`,
           )
           .join("")}
       </tr>
@@ -404,18 +424,18 @@ export const prerender = true;
 
   function renderDaiVan(chart: BatTuChart) {
     const currentIdx = findCurrentDaiVanIndex(chart);
-    daiVanNoteEl.textContent = `Chiều: ${chart.daiVanForward ? "Thuận" : "Nghịch"} · bấm 1 cột để xem Lưu Niên`;
+    daiVanNoteEl.textContent = `Chiều: ${chart.daiVanForward ? "Thuận" : "Nghịch"}`;
 
     const rowCanChi = chart.daiVan
       .map(
         (d, i) =>
-          `<td data-idx="${i}" class="js-daivan-col cursor-pointer rounded-md p-2 font-serif font-bold ${canClass(d.canIndex)} ${i === currentIdx ? "outline outline-2 outline-dashed outline-red-400" : ""}">${d.can} ${d.chi}</td>`,
+          `<td data-idx="${i}" class="rounded-md p-2 font-serif font-bold ${i === currentIdx ? "outline outline-2 outline-dashed outline-red-400" : ""}"><span class="${canClass(d.canIndex)}">${d.can}</span> <span class="${chiClass(d.chiIndex)}">${d.chi}</span></td>`,
       )
       .join("");
     const rowMeta = chart.daiVan
       .map(
         (d, i) =>
-          `<td data-idx="${i}" class="js-daivan-col cursor-pointer rounded-md p-2 text-xs text-slate-500 ${i === currentIdx ? "font-semibold text-red-500" : ""}">${d.startAge}-${d.endAge}t<br/>~${d.startDate.d}/${d.startDate.m}/${d.startDate.y}</td>`,
+          `<td data-idx="${i}" class="rounded-md p-2 text-xs text-slate-500 ${i === currentIdx ? "font-semibold text-red-500" : ""}">${d.startAge}-${d.endAge}t<br/>~${d.startDate.d}/${d.startDate.m}/${d.startDate.y}</td>`,
       )
       .join("");
     daiVanBody.innerHTML = `
@@ -423,19 +443,20 @@ export const prerender = true;
       <tr>${rowMeta}</tr>
     `;
 
-    daiVanBody.querySelectorAll<HTMLElement>(".js-daivan-col").forEach((cell) => {
-      cell.addEventListener("click", () => {
-        const idx = parseInt(cell.dataset.idx || "0", 10);
-        selectDaiVan(idx);
-      });
-    });
+    vanChonSelect.innerHTML = chart.daiVan
+      .map(
+        (d, i) =>
+          `<option value="${i}">${d.can} ${d.chi} (${d.startAge}-${d.endAge}t, ${d.startDate.y})${i === currentIdx ? " — hiện tại" : ""}</option>`,
+      )
+      .join("");
 
     selectDaiVan(currentIdx >= 0 ? currentIdx : 0);
   }
 
   function selectDaiVan(idx: number) {
     if (!currentChart) return;
-    daiVanBody.querySelectorAll<HTMLElement>(".js-daivan-col").forEach((cell) => {
+    vanChonSelect.value = String(idx);
+    daiVanBody.querySelectorAll<HTMLElement>("td[data-idx]").forEach((cell) => {
       const cellIdx = parseInt(cell.dataset.idx || "-1", 10);
       cell.classList.toggle("bg-amber-100", cellIdx === idx);
     });
@@ -450,6 +471,10 @@ export const prerender = true;
   }
 
   let lastFileBase = "la-so-bat-tu";
+
+  vanChonSelect.addEventListener("change", () => {
+    selectDaiVan(parseInt(vanChonSelect.value, 10));
+  });
 
   form.addEventListener("submit", (e) => {
     e.preventDefault();
@@ -472,6 +497,8 @@ export const prerender = true;
       cardNameEl.textContent = name.trim() || "Vô danh khách";
       cardGenderEl.textContent = `${CAN_AM_DUONG[chart.year.canIndex]} ${gender}`;
       cardSolarEl.textContent = `${hour}:${String(minute).padStart(2, "0")} - ${day}/${month}/${year}`;
+      const lunar = solarToLunar(day, month, year);
+      cardLunarEl.textContent = `${hour}:${String(minute).padStart(2, "0")} - ${lunar.day}/${lunar.month}${lunar.isLeapMonth ? " (nhuận)" : ""}/${lunar.year}`;
 
       renderMainTable(chart, day, month, year, hour, minute);
       menhCungEl.innerHTML = `Mệnh Cung: <strong>${chart.menhCung.can} ${chart.menhCung.chi}</strong><br/>Thai Nguyên: <strong>${chart.thaiNguyen.can} ${chart.thaiNguyen.chi}</strong>`;
