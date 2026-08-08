@@ -84,7 +84,7 @@ const navWithChildren = mainNav.map((item) => {
         </div>
 
         <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-(--color-gold-500)">Danh mục chính</p>
-        <div class="mb-5 grid grid-cols-2 gap-2.5">
+        <div class="mb-3 grid grid-cols-2 gap-2.5">
           <a href="/dich-vu" class="flex flex-col items-center gap-1.5 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) py-4 text-center hover:border-(--color-gold-400)/50">
             <Icon name="check-circle" class="size-5 text-(--color-gold-400)" />
             <span class="text-sm font-medium text-(--color-ink-800)">Dịch vụ</span>
@@ -97,11 +97,26 @@ const navWithChildren = mainNav.map((item) => {
             <Icon name="book-open" class="size-5 text-(--color-gold-400)" />
             <span class="text-sm font-medium text-(--color-ink-800)">Khóa học</span>
           </a>
-          <a href="/tra-cuu-menh" class="flex flex-col items-center gap-1.5 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) py-4 text-center hover:border-(--color-gold-400)/50">
-            <Icon name="star" class="size-5 text-(--color-gold-400)" />
-            <span class="text-sm font-medium text-(--color-ink-800)">Công cụ</span>
+          <a href="/cong-trinh" class="flex flex-col items-center gap-1.5 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) py-4 text-center hover:border-(--color-gold-400)/50">
+            <Icon name="map-pin" class="size-5 text-(--color-gold-400)" />
+            <span class="text-sm font-medium text-(--color-ink-800)">Công trình</span>
           </a>
         </div>
+
+        <details class="group/tools mb-5 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100)">
+          <summary class="flex cursor-pointer list-none items-center justify-between gap-1.5 px-4 py-3.5 [&::-webkit-details-marker]:hidden">
+            <span class="flex items-center gap-2">
+              <Icon name="star" class="size-5 text-(--color-gold-400)" />
+              <span class="text-sm font-medium text-(--color-ink-800)">Công cụ</span>
+            </span>
+            <Icon name="chevron-down" class="size-4 text-(--color-ink-500) transition-transform group-open/tools:rotate-180" />
+          </summary>
+          <div class="flex flex-col gap-0.5 border-t border-(--color-ivory-300) p-2">
+            <a href="/tra-cuu-menh" class="rounded-(--radius-control) px-3 py-2.5 text-sm text-(--color-ink-700) hover:bg-(--color-ivory-200)">Tra cứu mệnh theo năm sinh</a>
+            <a href="/lap-la-so-bat-tu" class="rounded-(--radius-control) px-3 py-2.5 text-sm text-(--color-ink-700) hover:bg-(--color-ivory-200)">Lập lá số Bát Tự</a>
+            <a href="/gieo-que-kinh-dich" class="rounded-(--radius-control) px-3 py-2.5 text-sm text-(--color-ink-700) hover:bg-(--color-ivory-200)">Lập quẻ Kinh Dịch</a>
+          </div>
+        </details>
 
         <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-(--color-gold-500)">Tất cả danh mục</p>
         {navWithChildren.map((item) => (
