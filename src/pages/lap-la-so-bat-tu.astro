@@ -77,7 +77,7 @@ export const prerender = true;
             <div class="flex items-center gap-3">
               <img src="/images/brand/zhi-gong-logo.png" alt="Phong Thủy Thiên Anh" class="size-12 rounded-full object-cover" />
               <div>
-                <p class="font-display text-xl font-bold text-blue-900">TỨ TRỤ MỆNH BÀN</p>
+                <p class="font-serif text-xl font-bold text-blue-900 whitespace-nowrap">TỨ TRỤ MỆNH BÀN</p>
                 <p class="text-xs font-medium tracking-wide text-slate-500">PHONG THỦY THIÊN ANH</p>
               </div>
             </div>
@@ -137,9 +137,14 @@ export const prerender = true;
           </div>
         </div>
 
-        <div class="mt-4 flex flex-wrap gap-3">
+        <div class="mt-4 flex flex-wrap items-center gap-3">
           <Button id="battu-save-image" type="button" variant="secondary">Lưu ảnh</Button>
           <Button id="battu-save-pdf" type="button" variant="secondary">Lưu PDF</Button>
+          <span class="text-xs text-(--color-ink-500)">hoặc chuột phải (máy tính) / nhấn giữ (điện thoại) vào ảnh bên dưới để lưu</span>
+        </div>
+
+        <div id="battu-preview-wrap" class="mt-4 hidden">
+          <img id="battu-preview-img" alt="Lá số Bát Tự" class="w-full rounded-2xl border-2 border-amber-300" />
         </div>
 
         <p class="mt-6 text-sm leading-relaxed text-(--color-ink-600)">
@@ -197,9 +202,44 @@ export const prerender = true;
   const daiVanNoteEl = document.getElementById("battu-daivan-note")!;
   const daiVanBody = document.getElementById("battu-daivan-body")!;
   const luuNienBody = document.getElementById("battu-luunien-body")!;
+  const previewWrap = document.getElementById("battu-preview-wrap")!;
+  const previewImg = document.getElementById("battu-preview-img") as HTMLImageElement;
 
   let currentChart: BatTuChart | null = null;
   let birthYear = 0;
+  let previewDataUrl: string | null = null;
+
+  // Chụp #battu-card thành PNG ở chế độ "xuất ảnh": ép chiều rộng cố định đủ rộng và tắt scroll ngang
+  // của các bảng, để ảnh xuất ra không bị chữ tiêu đề xuống dòng chồng chữ hay lộ thanh cuộn — luôn cho
+  // ra 1 ảnh sạch, đầy đủ, không phụ thuộc khổ màn hình đang xem trên máy người dùng.
+  async function captureCardAsPng(): Promise<string> {
+    const { toPng } = await import("html-to-image");
+    const EXPORT_WIDTH = 900;
+    const originalWidth = cardEl.style.width;
+    const originalMaxWidth = cardEl.style.maxWidth;
+    const scrollers = Array.from(cardEl.querySelectorAll<HTMLElement>(".overflow-x-auto"));
+    const originalOverflow = scrollers.map((el) => el.style.overflow);
+    try {
+      cardEl.style.width = `${EXPORT_WIDTH}px`;
+      cardEl.style.maxWidth = "none";
+      scrollers.forEach((el) => (el.style.overflow = "visible"));
+      return await toPng(cardEl, { backgroundColor: "#ffffff", pixelRatio: 2, skipFonts: true, width: EXPORT_WIDTH });
+    } finally {
+      cardEl.style.width = originalWidth;
+      cardEl.style.maxWidth = originalMaxWidth;
+      scrollers.forEach((el, i) => (el.style.overflow = originalOverflow[i]));
+    }
+  }
+
+  async function refreshPreviewImage() {
+    try {
+      previewDataUrl = await captureCardAsPng();
+      previewImg.src = previewDataUrl;
+      previewWrap.classList.remove("hidden");
+    } catch (err) {
+      console.error("Không tạo được ảnh xem trước:", err);
+    }
+  }
 
   const NGU_HANH_CLASS: Record<NguHanh, string> = {
     Mộc: "text-emerald-600",
@@ -258,7 +298,7 @@ export const prerender = true;
         ${pillars
           .map(
             ({ p }) =>
-              `<td class="p-2.5"><span class="font-display text-2xl font-bold sm:text-3xl ${canClass(p.canIndex)}">${p.can}<br/>${p.chi}</span></td>`,
+              `<td class="p-2.5"><span class="font-serif text-2xl font-bold sm:text-3xl ${canClass(p.canIndex)}">${p.can}<br/>${p.chi}</span></td>`,
           )
           .join("")}
       </tr>
@@ -347,7 +387,7 @@ export const prerender = true;
         ${years
           .map(
             (y) =>
-              `<td class="p-2 font-display font-bold ${canClass(y.canIndex)} ${y.year === nowYear ? "rounded-md bg-amber-100" : ""}">${y.can} ${y.chi}</td>`,
+              `<td class="p-2 font-serif font-bold ${canClass(y.canIndex)} ${y.year === nowYear ? "rounded-md bg-amber-100" : ""}">${y.can} ${y.chi}</td>`,
           )
           .join("")}
       </tr>
@@ -369,7 +409,7 @@ export const prerender = true;
     const rowCanChi = chart.daiVan
       .map(
         (d, i) =>
-          `<td data-idx="${i}" class="js-daivan-col cursor-pointer rounded-md p-2 font-display font-bold ${canClass(d.canIndex)} ${i === currentIdx ? "outline outline-2 outline-dashed outline-red-400" : ""}">${d.can} ${d.chi}</td>`,
+          `<td data-idx="${i}" class="js-daivan-col cursor-pointer rounded-md p-2 font-serif font-bold ${canClass(d.canIndex)} ${i === currentIdx ? "outline outline-2 outline-dashed outline-red-400" : ""}">${d.can} ${d.chi}</td>`,
       )
       .join("");
     const rowMeta = chart.daiVan
@@ -401,6 +441,7 @@ export const prerender = true;
     });
     const period = currentChart.daiVan[idx];
     renderLuuNien(period.startDate.y);
+    refreshPreviewImage();
   }
 
   function fileNameSlug(name: string, year: number, month: number, day: number): string {
@@ -450,8 +491,7 @@ export const prerender = true;
   document.getElementById("battu-save-image")?.addEventListener("click", async () => {
     if (!currentChart) return;
     try {
-      const { toPng } = await import("html-to-image");
-      const dataUrl = await toPng(cardEl, { backgroundColor: "#ffffff", pixelRatio: 2, skipFonts: true });
+      const dataUrl = previewDataUrl ?? (await captureCardAsPng());
       const link = document.createElement("a");
       link.download = `${lastFileBase}.png`;
       link.href = dataUrl;
@@ -465,9 +505,8 @@ export const prerender = true;
   document.getElementById("battu-save-pdf")?.addEventListener("click", async () => {
     if (!currentChart) return;
     try {
-      const { toPng } = await import("html-to-image");
       const { jsPDF } = await import("jspdf");
-      const dataUrl = await toPng(cardEl, { backgroundColor: "#ffffff", pixelRatio: 2, skipFonts: true });
+      const dataUrl = previewDataUrl ?? (await captureCardAsPng());
       const img = new Image();
       img.src = dataUrl;
       await new Promise((resolve, reject) => {
