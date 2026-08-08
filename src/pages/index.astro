@@ -5,6 +5,7 @@ import StatsSection from "../components/home/StatsSection.astro";
 import MasterIntro from "../components/home/MasterIntro.astro";
 import FeaturedServices from "../components/home/FeaturedServices.astro";
 import FeaturedProducts from "../components/home/FeaturedProducts.astro";
+import FeaturedPortfolio from "../components/home/FeaturedPortfolio.astro";
 import Testimonials from "../components/home/Testimonials.astro";
 import FeaturedPosts from "../components/home/FeaturedPosts.astro";
 import CtaBanner from "../components/home/CtaBanner.astro";
@@ -32,7 +33,12 @@ const personSchema = {
   <StatsSection />
   <MasterIntro />
   <FeaturedServices />
-  <FeaturedProducts />
+  <div class="hidden sm:block">
+    <FeaturedProducts />
+  </div>
+  <div class="sm:hidden">
+    <FeaturedPortfolio />
+  </div>
   <Testimonials />
   <FeaturedPosts />
   <CtaBanner />
