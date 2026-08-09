@@ -23,12 +23,48 @@ const labelClass = "text-sm font-medium text-(--color-ink-800)";
   />
 
   <Container class="py-16">
-    <div class="mx-auto max-w-4xl">
-      <div id="kd-tabs" class="flex flex-wrap gap-2">
-        <button type="button" data-tab="maihoa" class="kd-tab-btn rounded-full border px-4 py-2 text-sm font-medium">Mai Hoa Dịch Số</button>
-        <button type="button" data-tab="luchao" class="kd-tab-btn rounded-full border px-4 py-2 text-sm font-medium">Lục Hào (gieo đồng xu)</button>
-        <button type="button" data-tab="serial" class="kd-tab-btn rounded-full border px-4 py-2 text-sm font-medium">Seri tiền</button>
-        <button type="button" data-tab="phone" class="kd-tab-btn rounded-full border px-4 py-2 text-sm font-medium">Số điện thoại</button>
+    <div class="mx-auto max-w-5xl">
+      <div id="kd-tabs" class="mx-auto grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <button type="button" data-tab="maihoa" class="kd-tab-btn flex h-full flex-col items-center rounded-(--radius-card) border p-6 text-center transition">
+          <span class="flex size-14 shrink-0 items-center justify-center rounded-full border border-(--color-gold-400)/30 bg-(--color-gold-400)/10">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-7 text-(--color-gold-400)">
+              <circle cx="12" cy="12" r="2.1" /><circle cx="12" cy="5.4" r="2.6" /><circle cx="17.9" cy="8.8" r="2.6" />
+              <circle cx="15.9" cy="16.1" r="2.6" /><circle cx="8.1" cy="16.1" r="2.6" /><circle cx="6.1" cy="8.8" r="2.6" />
+            </svg>
+          </span>
+          <span class="mt-4 flex min-h-[2.75rem] items-center justify-center font-display text-base font-semibold text-(--color-ink-950)">Mai Hoa Dịch Số</span>
+          <span class="mt-2 flex-1 text-sm leading-relaxed text-(--color-ink-600)">Lập quẻ theo Năm/Tháng/Ngày/Giờ tại thời điểm hỏi việc — phương pháp cổ điển của Thiệu Khang Tiết.</span>
+        </button>
+        <button type="button" data-tab="luchao" class="kd-tab-btn flex h-full flex-col items-center rounded-(--radius-card) border p-6 text-center transition">
+          <span class="flex size-14 shrink-0 items-center justify-center rounded-full border border-(--color-gold-400)/30 bg-(--color-gold-400)/10">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-7 text-(--color-gold-400)">
+              <ellipse cx="12" cy="6.5" rx="7" ry="3" />
+              <path d="M5 6.5v5c0 1.66 3.13 3 7 3s7-1.34 7-3v-5" />
+              <path d="M5 11.5v5c0 1.66 3.13 3 7 3s7-1.34 7-3v-5" />
+            </svg>
+          </span>
+          <span class="mt-4 flex min-h-[2.75rem] items-center justify-center font-display text-base font-semibold text-(--color-ink-950)">Lục Hào (gieo đồng xu)</span>
+          <span class="mt-2 flex-1 text-sm leading-relaxed text-(--color-ink-600)">Gieo 3 đồng xu 6 lần theo nghi thức truyền thống, xác định hào động trực tiếp.</span>
+        </button>
+        <button type="button" data-tab="serial" class="kd-tab-btn flex h-full flex-col items-center rounded-(--radius-card) border p-6 text-center transition">
+          <span class="flex size-14 shrink-0 items-center justify-center rounded-full border border-(--color-gold-400)/30 bg-(--color-gold-400)/10">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-7 text-(--color-gold-400)">
+              <rect x="3" y="6" width="18" height="12" rx="2" /><circle cx="12" cy="12" r="2.5" />
+              <path d="M6.5 9h.01M17.5 15h.01" stroke-linecap="round" />
+            </svg>
+          </span>
+          <span class="mt-4 flex min-h-[2.75rem] items-center justify-center font-display text-base font-semibold text-(--color-ink-950)">Seri tiền</span>
+          <span class="mt-2 flex-1 text-sm leading-relaxed text-(--color-ink-600)">Lập quẻ từ dãy số Seri trên tờ tiền — theo cách "số linh quẻ" ứng dụng Mai Hoa Dịch Số.</span>
+        </button>
+        <button type="button" data-tab="phone" class="kd-tab-btn flex h-full flex-col items-center rounded-(--radius-card) border p-6 text-center transition">
+          <span class="flex size-14 shrink-0 items-center justify-center rounded-full border border-(--color-gold-400)/30 bg-(--color-gold-400)/10">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-7 text-(--color-gold-400)">
+              <path d="M6.5 3h3l1.5 4-2 1.5a12 12 0 0 0 6.5 6.5l1.5-2 4 1.5v3a2 2 0 0 1-2.2 2A17 17 0 0 1 4.5 5.2 2 2 0 0 1 6.5 3Z" stroke-linejoin="round" />
+            </svg>
+          </span>
+          <span class="mt-4 flex min-h-[2.75rem] items-center justify-center font-display text-base font-semibold text-(--color-ink-950)">Số điện thoại</span>
+          <span class="mt-2 flex-1 text-sm leading-relaxed text-(--color-ink-600)">Lập quẻ từ dãy số điện thoại đang dùng, cùng cách "số linh quẻ" như Seri tiền.</span>
+        </button>
       </div>
 
       <!-- Mai Hoa -->
@@ -139,13 +175,15 @@ const labelClass = "text-sm font-medium text-(--color-ink-800)";
 <style>
   .kd-tab-btn {
     border-color: var(--color-ivory-300);
-    color: var(--color-ink-600);
     background: var(--color-ivory-50);
+  }
+  .kd-tab-btn:hover {
+    border-color: var(--color-gold-400);
   }
   .kd-tab-btn.active {
     border-color: var(--color-gold-400);
-    background: var(--color-gold-400);
-    color: var(--color-ink-950);
+    background: var(--color-ivory-100);
+    box-shadow: 0 0 0 1px var(--color-gold-400);
   }
 </style>
 
