@@ -163,6 +163,15 @@ function chiRelation(a: number, b: number): "hop" | "xung" | null {
   return null;
 }
 
+// Nhãn cung dùng chung cho cả quẻ chính/biến/hỗ: nếu Chi hào Thế và hào Ứng hợp/xung nhau, dùng nhãn
+// "Lục Hợp"/"Lục Xung" thay cho tên đời quái thông thường — áp dụng thống nhất cho mọi quẻ (kể cả quẻ
+// hỗ, đối chiếu khớp thực tế: quẻ hỗ "Thuần Khôn" có Thế-Ứng Dậu-Mão xung → "Khôn (Lục Xung)").
+function computeCungLabel(cungName: string, generationIndex: number, theChi: number, ungChi: number): string {
+  const relation = chiRelation(theChi, ungChi);
+  const special = relation === "hop" ? "Lục Hợp" : relation === "xung" ? "Lục Xung" : GENERATION_LABELS[generationIndex];
+  return `${cungName} (${special})`;
+}
+
 export interface QueDayDu {
   lines: [LineVal, LineVal, LineVal, LineVal, LineVal, LineVal];
   upper: TrigramDef;
@@ -302,12 +311,8 @@ export function lapQueDayDu(
     };
   });
 
-  // Nhãn đặc biệt: nếu Chi hào Thế và hào Ứng hợp/xung nhau, dùng nhãn "Lục Hợp"/"Lục Xung" thay cho
-  // tên đời quái thông thường (đối chiếu khớp thực tế: Tam Thế có Thế-Ứng Thìn-Dậu hợp → "Lục Hợp").
   const theChi = hao[theHao - 1].chiIndex;
   const ungChi = hao[ungHao - 1].chiIndex;
-  const relation = chiRelation(theChi, ungChi);
-  const specialLabel = relation === "hop" ? "Lục Hợp" : relation === "xung" ? "Lục Xung" : GENERATION_LABELS[generationIndex];
 
   return {
     lines,
@@ -315,7 +320,7 @@ export function lapQueDayDu(
     lower,
     name,
     cungTrigram: cung,
-    cungLabel: `${cung.name} (${specialLabel})`,
+    cungLabel: computeCungLabel(cung.name, generationIndex, theChi, ungChi),
     theHao,
     ungHao,
     hao,
@@ -336,16 +341,17 @@ export function queBienFromDong(
   ];
 }
 
-// Quẻ Hỗ (互卦): hào 2-3-4 của quẻ chính làm quái hạ, hào 3-4-5 làm quái thượng — chỉ dùng để tham
-// khảo diễn biến giữa quẻ chính và quẻ biến, không có Thế/Ứng/Nạp Giáp riêng. Công thức đã kiểm chứng
-// khớp với ví dụ thực tế (quẻ chính Thuần Chấn → quẻ hỗ Thủy Sơn Kiển).
+// Quẻ Hỗ (互卦): hào 2-3-4 của quẻ chính làm quái hạ, hào 3-4-5 làm quái thượng — dùng để tham khảo
+// diễn biến giữa quẻ chính và quẻ biến. Vẫn thuộc 1 cung/đời quái như bất kỳ quẻ nào khác trong 64
+// quẻ nên vẫn có Thế/Ứng + nhãn Lục Hợp/Lục Xung riêng (đối chiếu khớp thực tế: quẻ hỗ "Thuần Khôn"
+// → "Khôn (Lục Xung)"), nhưng KHÔNG hiển thị bảng Nạp Giáp/Lục Thân/Lục Thú đầy đủ như quẻ chính/biến.
 export interface QueHoInfo {
   lines: [LineVal, LineVal, LineVal, LineVal, LineVal, LineVal];
   upper: TrigramDef;
   lower: TrigramDef;
   name: string;
   cungTrigram: TrigramDef;
-  cungLabel: string; // chỉ tên cung, không kèm đời quái
+  cungLabel: string;
 }
 
 function queHoInfo(lines: [LineVal, LineVal, LineVal, LineVal, LineVal, LineVal]): QueHoInfo {
@@ -357,7 +363,15 @@ function queHoInfo(lines: [LineVal, LineVal, LineVal, LineVal, LineVal, LineVal]
   const hoLines = [...lowerBits, ...upperBits] as [LineVal, LineVal, LineVal, LineVal, LineVal, LineVal];
   const palaceInfo = PALACE_LOOKUP.get(hoLines.join(""));
   const cung = palaceInfo?.cung ?? upper;
-  return { lines: hoLines, upper, lower, name, cungTrigram: cung, cungLabel: cung.name };
+  const theHao = palaceInfo?.theHao ?? 6;
+  const generationIndex = palaceInfo?.generationIndex ?? 0;
+  const ungHao = ((theHao + 3 - 1) % 6) + 1;
+
+  const napGiapChiAt = (pos: number): number => (pos < 3 ? lower.napGiap.lower.chi[pos] : upper.napGiap.upper.chi[pos - 3]);
+  const theChi = napGiapChiAt(theHao - 1);
+  const ungChi = napGiapChiAt(ungHao - 1);
+
+  return { lines: hoLines, upper, lower, name, cungTrigram: cung, cungLabel: computeCungLabel(cung.name, generationIndex, theChi, ungChi) };
 }
 
 // Can Chi ngày Dương lịch (chu kỳ 60 ngày liên tục qua Julian Day) — dùng để khởi Lục Thú + Tuần Không.
