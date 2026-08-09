@@ -9,11 +9,18 @@ import {
 
 // Gửi email không được phép làm sập luồng nghiệp vụ chính (vd webhook thanh toán phải trả 200
 // cho SePay trong 30s) — mọi lỗi gửi email chỉ log lại, không throw ra ngoài.
-async function safeSend(to: string, subject: string, html: string, attachments?: { filename: string; content: Buffer }[]) {
+async function safeSend(
+  to: string,
+  subject: string,
+  html: string,
+  attachments?: { filename: string; content: Buffer }[],
+  cc?: string,
+) {
   try {
     await getResendClient().emails.send({
       from: getFromAddress(),
       to,
+      cc,
       subject,
       html,
       attachments,
@@ -55,8 +62,9 @@ export async function sendConsultationRequestEmail(params: {
   message: string | null;
 }) {
   const to = import.meta.env.CONTACT_NOTIFICATION_EMAIL || siteConfig.email;
+  const cc = import.meta.env.CONTACT_NOTIFICATION_CC_EMAIL || "congboss.nguyen@gmail.com";
   const { subject, html } = consultationRequestEmail(params);
-  await safeSend(to, subject, html);
+  await safeSend(to, subject, html, undefined, cc);
 }
 
 export async function sendCourseCertificateEmail(params: {
