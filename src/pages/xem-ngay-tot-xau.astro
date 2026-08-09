@@ -104,10 +104,10 @@ export const prerender = true;
           <table class="mt-3 w-full min-w-[520px] border-collapse text-center text-sm">
             <thead>
               <tr class="border-b border-slate-200 text-xs uppercase tracking-wide text-slate-500">
-                <th class="py-2 px-2">Giờ</th>
+                <th class="py-2 px-2">Thời gian</th>
                 <th class="py-2 px-2">Can Chi giờ</th>
-                <th class="py-2 px-2">Hoàng-Hắc giờ</th>
                 <th class="py-2 px-2">Tiểu Lục Nhâm</th>
+                <th class="py-2 px-2">Hoàng-Hắc giờ</th>
               </tr>
             </thead>
             <tbody id="kq-gio-12"></tbody>
@@ -168,6 +168,21 @@ export const prerender = true;
   // đúng bộ màu đã dùng cho lá số Bát Tự (src/pages/lap-la-so-bat-tu.astro) để nhất quán trên site.
   const CAN_ORDER = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"];
   const CHI_ORDER = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"];
+  // Mỗi Chi giờ phủ đúng 2 tiếng, khởi từ 23h (giờ Tý) — kiến thức nền tảng cố định.
+  const CHI_KHUNG_GIO = [
+    "23h~1h",
+    "1h~3h",
+    "3h~5h",
+    "5h~7h",
+    "7h~9h",
+    "9h~11h",
+    "11h~13h",
+    "13h~15h",
+    "15h~17h",
+    "17h~19h",
+    "19h~21h",
+    "21h~23h",
+  ];
   const CAN_NGU_HANH = ["Mộc", "Mộc", "Hỏa", "Hỏa", "Thổ", "Thổ", "Kim", "Kim", "Thủy", "Thủy"];
   const CHI_NGU_HANH = ["Thủy", "Thổ", "Mộc", "Mộc", "Thổ", "Hỏa", "Hỏa", "Thổ", "Kim", "Kim", "Thổ", "Thủy"];
   const NGU_HANH_COLOR: Record<string, string> = {
@@ -257,15 +272,17 @@ export const prerender = true;
       data.tuoiXungNgay.length > 0 ? `Tuổi ${data.tuoiXungNgay.join(", ")}` : "—";
 
     gio12Body.innerHTML = data.gio12
-      .map(
-        (g: GioTrongNgay) => `
+      .map((g: GioTrongNgay) => {
+        const chiIndex = CHI_ORDER.indexOf(g.chiGio);
+        const khungGio = chiIndex === -1 ? "—" : CHI_KHUNG_GIO[chiIndex];
+        return `
         <tr class="border-b border-slate-100">
-          <td class="py-2 px-2 font-bold text-slate-900">${g.chiGio}</td>
+          <td class="py-2 px-2 font-bold text-slate-900">${khungGio}</td>
           <td class="py-2 px-2 font-semibold">${canChiHtml(g.canChiGio.can, g.canChiGio.chi)}</td>
-          <td class="py-2 px-2">${catHungBadge(g.hoangDaoHacDaoGio.name, g.hoangDaoHacDaoGio.catHung)}</td>
           <td class="py-2 px-2">${catHungBadge(g.tieuLucNhamGio.name, g.tieuLucNhamGio.catHung)}</td>
-        </tr>`,
-      )
+          <td class="py-2 px-2">${catHungBadge(g.hoangDaoHacDaoGio.name, g.hoangDaoHacDaoGio.catHung)}</td>
+        </tr>`;
+      })
       .join("");
 
     ketQuaEl.classList.remove("hidden");
