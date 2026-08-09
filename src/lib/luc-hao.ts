@@ -177,11 +177,13 @@ export interface QueDayDu {
   upper: TrigramDef;
   lower: TrigramDef;
   name: string;
-  cungTrigram: TrigramDef; // quái chủ cung (bản cung)
+  cungTrigram: TrigramDef; // cung DÙNG ĐỂ LUẬN (Lục Thân/Thế/Ứng) — nếu là quẻ biến thì đây là cung của quẻ CHỦ, không phải cung riêng của quẻ biến (theo nguyên tắc Lục Hào: quẻ biến không tính như 1 lá độc lập)
   cungLabel: string; // "Càn", "Khảm"... + phân loại (Bát Thuần/Nhất Thế.../Du Hồn/Quy Hồn)
+  generationIndex: number; // đời quái của cung DÙNG ĐỂ LUẬN (0=Bát Thuần...7=Quy Hồn)
   theHao: number;
   ungHao: number;
   hao: HaoInfo[]; // index 0 = hào 1 (dưới), ... index5 = hào 6
+  changedPalace?: { cungTrigram: TrigramDef; cungLabel: string; theHao: number; ungHao: number }; // metadata: cung/Thế/Ứng RIÊNG thực sự của quẻ này nếu tự đứng độc lập (chỉ có khi đây là quẻ biến) — CHỈ để đối chiếu/tham khảo, KHÔNG dùng để tính Lục Thân/Thế/Ứng ở trên
 }
 
 const GENERATION_LABELS = ["Bát Thuần", "Nhất Thế", "Nhị Thế", "Tam Thế", "Tứ Thế", "Ngũ Thế", "Du Hồn", "Quy Hồn"];
@@ -232,13 +234,25 @@ const PALACE_LOOKUP = (() => {
   return lookup;
 })();
 
+// Cung/Thế/Ứng "vay mượn" từ quẻ CHỦ, dùng khi lập quẻ BIẾN — theo nguyên tắc Lục Hào: quẻ biến không
+// tự đứng thành 1 lá độc lập, Lục Thân + Thế/Ứng của nó vẫn luận theo cung của quẻ chủ ban đầu.
+export interface PalaceOverride {
+  cung: TrigramDef;
+  theHao: number;
+  ungHao: number;
+  generationIndex: number;
+}
+
 // Lập đầy đủ 1 quẻ (Nạp Giáp, Lục Thân, Lục Thú, Thế/Ứng, Phục Thần) từ 6 hào Âm/Dương (dưới lên) +
 // Can Ngày (để khởi Lục Thú) + các vị trí hào động (nếu có, riêng cho phương pháp Lục Hào thủ công).
+// `palaceOverride`: chỉ truyền khi lập QUẺ BIẾN — ép cung/Thế/Ứng dùng để luận Lục Thân theo quẻ CHỦ
+// thay vì tự tra cung riêng của quẻ biến (cung riêng vẫn được lưu lại ở `changedPalace` để đối chiếu).
 export function lapQueDayDu(
   lines: [LineVal, LineVal, LineVal, LineVal, LineVal, LineVal],
   dayCanIndex: number,
   dongPositions: number[] = [],
   monthChiIndex: number | null = null,
+  palaceOverride: PalaceOverride | null = null,
 ): QueDayDu {
   const lowerBits = [lines[0], lines[1], lines[2]] as [LineVal, LineVal, LineVal];
   const upperBits = [lines[3], lines[4], lines[5]] as [LineVal, LineVal, LineVal];
@@ -247,10 +261,18 @@ export function lapQueDayDu(
   const name = HEXAGRAM_NAMES[`${upper.name}-${lower.name}`] ?? `${upper.name} ${lower.name}`;
 
   const key = lines.join("");
-  const palaceInfo = PALACE_LOOKUP.get(key);
-  if (!palaceInfo) throw new Error("Không xác định được Bát Cung cho quẻ này");
-  const { cung, theHao, generationIndex } = palaceInfo;
-  const ungHao = ((theHao + 3 - 1) % 6) + 1;
+  const ownPalaceInfo = PALACE_LOOKUP.get(key);
+  if (!ownPalaceInfo) throw new Error("Không xác định được Bát Cung cho quẻ này");
+  const ownUngHao = ((ownPalaceInfo.theHao + 3 - 1) % 6) + 1;
+
+  // Cung/Thế/Ứng DÙNG ĐỂ LUẬN: cung của quẻ chủ (nếu có override, tức đây là quẻ biến) hoặc cung riêng
+  // của chính quẻ này (quẻ chính/quẻ độc lập khác).
+  const { cung, theHao, ungHao, generationIndex } = palaceOverride ?? {
+    cung: ownPalaceInfo.cung,
+    theHao: ownPalaceInfo.theHao,
+    ungHao: ownUngHao,
+    generationIndex: ownPalaceInfo.generationIndex,
+  };
 
   const luThuStart = LUC_THU_START[dayCanIndex] ?? 0;
 
@@ -314,6 +336,22 @@ export function lapQueDayDu(
   const theChi = hao[theHao - 1].chiIndex;
   const ungChi = hao[ungHao - 1].chiIndex;
 
+  // Metadata đối chiếu: cung/Thế/Ứng RIÊNG thực sự của quẻ này nếu nó tự đứng độc lập — chỉ tính khi
+  // có palaceOverride (tức đây là quẻ biến), không dùng để luận Lục Thân/Thế/Ứng ở trên.
+  const changedPalace = palaceOverride
+    ? {
+        cungTrigram: ownPalaceInfo.cung,
+        cungLabel: computeCungLabel(
+          ownPalaceInfo.cung.name,
+          ownPalaceInfo.generationIndex,
+          hao[ownPalaceInfo.theHao - 1].chiIndex,
+          hao[ownUngHao - 1].chiIndex,
+        ),
+        theHao: ownPalaceInfo.theHao,
+        ungHao: ownUngHao,
+      }
+    : undefined;
+
   return {
     lines,
     upper,
@@ -321,9 +359,11 @@ export function lapQueDayDu(
     name,
     cungTrigram: cung,
     cungLabel: computeCungLabel(cung.name, generationIndex, theChi, ungChi),
+    generationIndex,
     theHao,
     ungHao,
     hao,
+    changedPalace,
   };
 }
 
@@ -436,7 +476,17 @@ function finalizeCast(
   const chinh = lapQueDayDu(lines, canIndex, dongPositions, monthChiIndex);
   const hoQue = queHoInfo(lines);
   const bienLines = queBienFromDong(lines, dongPositions);
-  const bien = bienLines ? lapQueDayDu(bienLines, canIndex, [], monthChiIndex) : null;
+  // Quẻ biến KHÔNG tính như 1 lá độc lập: Lục Thân + Thế/Ứng vay mượn nguyên từ quẻ CHỦ (chinh); Nạp
+  // Giáp vẫn tính lại theo trigram thực tế sau khi biến (đã tự động đúng vì napGiapFor dùng lower/upper
+  // của chính `bienLines`, không phụ thuộc palaceOverride).
+  const bien = bienLines
+    ? lapQueDayDu(bienLines, canIndex, [], monthChiIndex, {
+        cung: chinh.cungTrigram,
+        theHao: chinh.theHao,
+        ungHao: chinh.ungHao,
+        generationIndex: chinh.generationIndex,
+      })
+    : null;
   const tietKhi = getCurrentTietKhi24Name(input.day, input.month, input.year, input.hour);
   const canChiText = `giờ ${bt.hour.can} ${bt.hour.chi}, ngày ${bt.day.can} ${bt.day.chi}, tháng ${bt.month.can} ${bt.month.chi}, năm ${bt.year.can} ${bt.year.chi}`;
   const nhatThan = `${bt.day.chi}-${CHI_NGU_HANH[bt.day.chiIndex]}`;
