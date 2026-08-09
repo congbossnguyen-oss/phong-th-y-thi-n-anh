@@ -151,6 +151,7 @@ export interface HaoInfo {
   vuongSuy: VuongSuy;
   growthDay: TruongSinhStage; // Trường Sinh của Ngũ Hành hào tại Chi Ngày gieo quẻ (Nhật thần)
   growthMonth: TruongSinhStage; // Trường Sinh của Ngũ Hành hào tại Chi Tháng gieo quẻ (Nguyệt kiến)
+  relations: HaoRelation[]; // quan hệ hào <-> Nhật Thần/Nguyệt Kiến (Phần C1); 1 hào có thể có nhiều quan hệ cùng lúc
 }
 
 // Điểm khởi Trường Sinh riêng cho Lục Hào — theo Ngũ Hành của Chi hào (KHÔNG theo Can, KHÔNG phân
@@ -186,6 +187,99 @@ function chiRelation(a: number, b: number): "hop" | "xung" | null {
   if (LUC_HOP_PAIRS.some(([x, y]) => (x === a && y === b) || (x === b && y === a))) return "hop";
   if (LUC_XUNG_PAIRS.some(([x, y]) => (x === a && y === b) || (x === b && y === a))) return "xung";
   return null;
+}
+
+// --- PHẦN C1: Quan hệ hào <-> Nhật Thần (Chi Ngày) / Nguyệt Kiến (Chi Tháng) ---
+// Nguồn: "kinh dịch lục hào sơ cấp minh việt" (2 bản OCR độc lập), Chương VI "NGUYỆT KIẾN _ NHẬT
+// THẦN" + Chương VII "MỐI TƯƠNG QUAN GIỮA CÁC HÀO" + bảng Tương Hại (Chương II, khớp cả 2 bản).
+// Chỉ dùng CHI Ngày/Chi Tháng — KHÔNG dùng Can (đã xác nhận nhất quán với Trường Sinh ở Phần B).
+
+// Lục Hại — Tý-Mùi, Sửu-Ngọ, Dần-Tị, Mão-Thìn, Thân-Hợi, Dậu-Tuất (bảng cột "Tương Hại", khớp cả 2
+// bản OCR — Gốc dòng 561-572, New dòng 685-696).
+const LUC_HAI_PAIRS: [number, number][] = [[0, 7], [1, 6], [2, 5], [3, 4], [8, 11], [9, 10]];
+
+function chiPairMatch(pairs: [number, number][], a: number, b: number): boolean {
+  return pairs.some(([x, y]) => (x === a && y === b) || (x === b && y === a));
+}
+
+// Sinh/Khắc theo chiều "Nhật/Nguyệt tác động lên hào" (khớp mọi ví dụ tìm được, vd "bị Nhật thần...
+// khắc chế" = Nhật khắc hào, "được Nguyệt kiến sinh phò" = Nguyệt sinh hào) — không tính chiều ngược
+// lại (hào sinh/khắc Nhật-Nguyệt), vì không tìm thấy ví dụ nào dùng chiều đó cho trục Ngày/Tháng.
+function elementalRelationsOf(lineNguHanh: NguHanh, targetNguHanh: NguHanh): ("Sinh" | "Khắc")[] {
+  const SINH: Record<NguHanh, NguHanh> = { Mộc: "Hỏa", Hỏa: "Thổ", Thổ: "Kim", Kim: "Thủy", Thủy: "Mộc" };
+  const KHAC: Record<NguHanh, NguHanh> = { Mộc: "Thổ", Thổ: "Thủy", Thủy: "Hỏa", Hỏa: "Kim", Kim: "Mộc" };
+  const out: ("Sinh" | "Khắc")[] = [];
+  if (SINH[targetNguHanh] === lineNguHanh) out.push("Sinh");
+  if (KHAC[targetNguHanh] === lineNguHanh) out.push("Khắc");
+  return out;
+}
+
+// TODO (Nhập Mộ — chưa implement, cần audit riêng): Chương IX "TÙY QUỶ NHẬP MỘ" chỉ mô tả Nhập Mộ
+// trong phạm vi hào Thế/Dụng Thần/Quan Quỷ (không phải mọi hào), và còn có sắc thái vượng/suy quyết
+// định mức ảnh hưởng ("Thế Dụng vượng tướng thì vô hại... suy tuyệt mới tạo ảnh hưởng xấu", dòng
+// 2087-2089 bản Gốc) — cần audit đầy đủ chương này (4 dạng: nhập mộ tại ngày/tháng, hóa mộ, nhập hào
+// mộ động, tùy quỷ nhập mộ) trước khi thiết kế `HaoRelationType` cho nó. KHÔNG dùng `growthDay`/
+// `growthMonth === "Mộ"` để tự sinh relation — dữ liệu Trường Sinh vẫn giữ nguyên, chỉ chưa surface
+// thành quan hệ ở đây (Quyết định C1, phương án A).
+export type HaoRelationType =
+  | "Sinh" | "Khắc" | "Hợp" | "Xung" | "Hại" // Sinh/Khắc/Hợp/Xung/Hại theo yêu cầu 7 loại quan hệ ban đầu (Mộ tạm hoãn, xem TODO trên)
+  | "Nhật Phá" | "Nguyệt Phá" | "Ám Động" // Phá tách riêng Ngày/Tháng theo đúng nguồn (không gộp chung điều kiện)
+  | "Lâm Nhật" | "Lâm Nguyệt"; // hào có Chi trùng đúng Chi Ngày/Chi Tháng (đương lệnh/lâm Nhật Thần)
+
+export type HaoRelationSource = "DAY" | "MONTH" | "YAO" | "CHANGED_YAO"; // YAO/CHANGED_YAO dành cho C2/C3 (Tam Hợp/Tam Hình), chưa dùng ở C1
+export type HaoRelationTarget = "HAO";
+
+export interface HaoRelation {
+  type: HaoRelationType;
+  source: HaoRelationSource;
+  target: HaoRelationTarget;
+  relatedYao?: number; // vị trí hào (1-6) gây ra quan hệ này — chỉ dùng khi source là YAO/CHANGED_YAO, chưa dùng ở C1
+}
+
+// Quan hệ hào <-> Nhật Thần (Chi Ngày). Nhật Phá vs Ám Động phân biệt theo vượng/suy CỦA HÀO so với
+// NGUYỆT LỆNH (field `monthVuongSuy` đã có sẵn, đúng theo Chương VI: "Tĩnh hào vượng tướng, bị nhật
+// thần xung làm ám động; tĩnh hào bị hưu tù, bị nhật xung là nhật phá") — không phải vượng/suy so
+// với chính Ngày. Nhóm "vượng tướng" = Vượng/Tướng; nhóm "hưu tù" = Hưu/Tù/Tử (nguồn chỉ nói rõ 2
+// nhóm "vượng tướng" và "hưu tù", việc xếp Tử vào nhóm hưu tù là suy luận hợp lý từ hệ 5 bậc đã có,
+// không phải trích dẫn trực tiếp).
+function getDayRelations(
+  lineChiIndex: number,
+  lineNguHanh: NguHanh,
+  dayChiIndex: number | null,
+  monthVuongSuy: VuongSuy,
+): HaoRelation[] {
+  if (dayChiIndex === null) return [];
+  const dayNguHanh = CHI_NGU_HANH[dayChiIndex];
+  const out: HaoRelation[] = [];
+  if (lineChiIndex === dayChiIndex) out.push({ type: "Lâm Nhật", source: "DAY", target: "HAO" });
+  for (const type of elementalRelationsOf(lineNguHanh, dayNguHanh)) out.push({ type, source: "DAY", target: "HAO" });
+  if (chiPairMatch(LUC_HOP_PAIRS, lineChiIndex, dayChiIndex)) out.push({ type: "Hợp", source: "DAY", target: "HAO" });
+  if (chiPairMatch(LUC_HAI_PAIRS, lineChiIndex, dayChiIndex)) out.push({ type: "Hại", source: "DAY", target: "HAO" });
+  if (chiPairMatch(LUC_XUNG_PAIRS, lineChiIndex, dayChiIndex)) {
+    out.push({ type: "Xung", source: "DAY", target: "HAO" });
+    const vuongTuong = monthVuongSuy === "Vượng" || monthVuongSuy === "Tướng";
+    out.push({ type: vuongTuong ? "Ám Động" : "Nhật Phá", source: "DAY", target: "HAO" });
+  }
+  return out;
+}
+
+// Quan hệ hào <-> Nguyệt Kiến (Chi Tháng). Nguyệt Phá KHÔNG có điều kiện vượng/suy như Nhật Phá —
+// nguồn nói thẳng "Nguyệt kiến xung với hào là nguyệt phá" (Chương VI, mục "NGUYỆT PHÁ"), không có
+// nhánh "ám động" tương ứng cho Nguyệt.
+function getMonthRelations(
+  lineChiIndex: number,
+  lineNguHanh: NguHanh,
+  monthChiIndex: number | null,
+): HaoRelation[] {
+  if (monthChiIndex === null) return [];
+  const monthNguHanh = CHI_NGU_HANH[monthChiIndex];
+  const out: HaoRelation[] = [];
+  if (lineChiIndex === monthChiIndex) out.push({ type: "Lâm Nguyệt", source: "MONTH", target: "HAO" });
+  for (const type of elementalRelationsOf(lineNguHanh, monthNguHanh)) out.push({ type, source: "MONTH", target: "HAO" });
+  if (chiPairMatch(LUC_HOP_PAIRS, lineChiIndex, monthChiIndex)) out.push({ type: "Hợp", source: "MONTH", target: "HAO" });
+  if (chiPairMatch(LUC_HAI_PAIRS, lineChiIndex, monthChiIndex)) out.push({ type: "Hại", source: "MONTH", target: "HAO" });
+  if (chiPairMatch(LUC_XUNG_PAIRS, lineChiIndex, monthChiIndex)) out.push({ type: "Nguyệt Phá", source: "MONTH", target: "HAO" }, { type: "Xung", source: "MONTH", target: "HAO" });
+  return out;
 }
 
 // Nhãn cung dùng chung cho cả quẻ chính/biến/hỗ: nếu Chi hào Thế và hào Ứng hợp/xung nhau, dùng nhãn
@@ -344,6 +438,9 @@ export function lapQueDayDu(
     const lucThuIdx = (luThuStart + pos) % 6;
     const phucThanType = phucThanAtPos[pos];
     const nguHanh = CHI_NGU_HANH[chiIndex];
+    const vuongSuy = monthNguHanh ? vuongSuyOf(monthNguHanh, nguHanh) : vuongSuyOf(nguHanh, nguHanh);
+    const growthDay = truongSinhLucHaoOf(nguHanh, dayChiIndex);
+    const growthMonth = truongSinhLucHaoOf(nguHanh, monthChiIndex);
     return {
       hao: haoSo,
       value: lines[pos],
@@ -355,9 +452,13 @@ export function lapQueDayDu(
       lucThu: LUC_THU[lucThuIdx],
       theUng: haoSo === theHao ? "Thế" : haoSo === ungHao ? "Ứng" : null,
       phucThan: phucThanType ? { lucThan: phucThanType, ...napGiapPure(pos) } : null,
-      vuongSuy: monthNguHanh ? vuongSuyOf(monthNguHanh, nguHanh) : vuongSuyOf(nguHanh, nguHanh),
-      growthDay: truongSinhLucHaoOf(nguHanh, dayChiIndex),
-      growthMonth: truongSinhLucHaoOf(nguHanh, monthChiIndex),
+      vuongSuy,
+      growthDay,
+      growthMonth,
+      relations: [
+        ...getDayRelations(chiIndex, nguHanh, dayChiIndex, vuongSuy),
+        ...getMonthRelations(chiIndex, nguHanh, monthChiIndex),
+      ],
     };
   });
 
