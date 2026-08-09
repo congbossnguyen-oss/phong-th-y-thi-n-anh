@@ -104,7 +104,14 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
           </p>
           <Button type="submit" size="lg" class="mt-5 w-full sm:w-auto">Lập quẻ</Button>
         </form>
-        <div id="result-maihoa" class="mt-8 hidden"></div>
+        <div id="result-maihoa" class="mt-8 hidden">
+          <div class="pointer-events-none h-0 overflow-hidden"><div id="mh-card"></div></div>
+          <img id="mh-preview-img" alt="Quẻ Kinh Dịch" class="w-full rounded-2xl border-2 border-(--color-gold-400)/60" />
+          <div class="mt-4 flex flex-wrap items-center gap-3">
+            <Button id="mh-save-image" type="button" variant="secondary">Lưu ảnh</Button>
+            <p class="text-xs text-(--color-ink-500)">Chuột phải (máy tính) / nhấn giữ (điện thoại) vào ảnh để lưu trực tiếp.</p>
+          </div>
+        </div>
       </div>
 
       <!-- Lục Hào -->
@@ -170,7 +177,14 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
           </p>
           <Button type="submit" size="lg" class="mt-5 w-full sm:w-auto">Lập quẻ</Button>
         </form>
-        <div id="result-luchao" class="mt-8 hidden"></div>
+        <div id="result-luchao" class="mt-8 hidden">
+          <div class="pointer-events-none h-0 overflow-hidden"><div id="lh-card"></div></div>
+          <img id="lh-preview-img" alt="Quẻ Kinh Dịch" class="w-full rounded-2xl border-2 border-(--color-gold-400)/60" />
+          <div class="mt-4 flex flex-wrap items-center gap-3">
+            <Button id="lh-save-image" type="button" variant="secondary">Lưu ảnh</Button>
+            <p class="text-xs text-(--color-ink-500)">Chuột phải (máy tính) / nhấn giữ (điện thoại) vào ảnh để lưu trực tiếp.</p>
+          </div>
+        </div>
       </div>
 
       <!-- Seri tiền -->
@@ -211,7 +225,14 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
           </p>
           <Button type="submit" size="lg" class="mt-5 w-full sm:w-auto">Lập quẻ</Button>
         </form>
-        <div id="result-serial" class="mt-8 hidden"></div>
+        <div id="result-serial" class="mt-8 hidden">
+          <div class="pointer-events-none h-0 overflow-hidden"><div id="sr-card"></div></div>
+          <img id="sr-preview-img" alt="Quẻ Kinh Dịch" class="w-full rounded-2xl border-2 border-(--color-gold-400)/60" />
+          <div class="mt-4 flex flex-wrap items-center gap-3">
+            <Button id="sr-save-image" type="button" variant="secondary">Lưu ảnh</Button>
+            <p class="text-xs text-(--color-ink-500)">Chuột phải (máy tính) / nhấn giữ (điện thoại) vào ảnh để lưu trực tiếp.</p>
+          </div>
+        </div>
       </div>
 
       <!-- Số điện thoại -->
@@ -252,7 +273,14 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
           </p>
           <Button type="submit" size="lg" class="mt-5 w-full sm:w-auto">Lập quẻ</Button>
         </form>
-        <div id="result-phone" class="mt-8 hidden"></div>
+        <div id="result-phone" class="mt-8 hidden">
+          <div class="pointer-events-none h-0 overflow-hidden"><div id="ph-card"></div></div>
+          <img id="ph-preview-img" alt="Quẻ Kinh Dịch" class="w-full rounded-2xl border-2 border-(--color-gold-400)/60" />
+          <div class="mt-4 flex flex-wrap items-center gap-3">
+            <Button id="ph-save-image" type="button" variant="secondary">Lưu ảnh</Button>
+            <p class="text-xs text-(--color-ink-500)">Chuột phải (máy tính) / nhấn giữ (điện thoại) vào ảnh để lưu trực tiếp.</p>
+          </div>
+        </div>
       </div>
 
       <div class="mt-10 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6">
@@ -368,57 +396,74 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
     return { day, month, year, hour, minute };
   }
 
-  // --- Vẽ hình quẻ (6 vạch, hào 1 dưới cùng) ---
-  function renderHexGraphic(lines: readonly (0 | 1)[], dongPositions: number[]): string {
-    const bars = lines
-      .map((line, i) => {
-        const pos = i + 1;
-        const isDong = dongPositions.includes(pos);
-        const color = isDong ? "bg-(--color-cinnabar-500)" : "bg-(--color-gold-400)";
-        if (line === 1) return `<div class="h-2.5 w-full rounded-sm ${color}"></div>`;
-        return `<div class="flex h-2.5 w-full justify-between"><div class="h-full w-[42%] rounded-sm ${color}"></div><div class="h-full w-[42%] rounded-sm ${color}"></div></div>`;
-      })
-      .join("");
-    return `<div class="mx-auto flex w-28 flex-col-reverse gap-2">${bars}</div>`;
-  }
-
   function tuanKhongChiIndices(tuanKhong: string): number[] {
     return tuanKhong.split(" - ").map((s) => CHI.indexOf(s.trim())).filter((i) => i >= 0);
   }
 
-  const VS_CLASS: Record<string, string> = {
-    "Vượng": "text-(--color-gold-300)",
-    "Tướng": "text-(--color-gold-500)",
-    "Hưu": "text-(--color-ink-600)",
-    "Tù": "text-(--color-ink-500)",
-    "Tử": "text-(--color-cinnabar-400)",
+  // --- Thẻ kết quả màu sáng (be/đỏ/đen) để xuất ảnh PNG — bám theo đúng bảng màu/bố cục tham khảo ---
+  const LIGHT = {
+    bg: "#f6efe0",
+    border: "#d9c48f",
+    borderLight: "#e6d9ae",
+    text: "#2b2116",
+    textMuted: "#6b5a3d",
+    red: "#b3311f",
+    gold: "#c9a256",
+    dong: "#c0392b",
+    headerBg: "#efe1b8",
   };
+  const CARD_WIDTH = 820;
 
-  function renderHexTable(q: QueDayDu, tuanKhongChi: number[]): string {
-    const rows = [...q.hao].reverse(); // hiển thị từ hào 6 xuống hào 1
+  function lightHexBars(lines: readonly (0 | 1)[], dongPositions: number[]): string {
+    const rows = lines.map((line, i) => ({ line, pos: i + 1 })).reverse();
+    const bars = rows
+      .map(({ line, pos }) => {
+        const isDong = dongPositions.includes(pos);
+        const color = isDong ? LIGHT.dong : LIGHT.gold;
+        if (line === 1) return `<div style="height:7px;border-radius:2px;background:${color};"></div>`;
+        return `<div style="height:7px;display:flex;justify-content:space-between;"><div style="width:42%;height:100%;border-radius:2px;background:${color};"></div><div style="width:42%;height:100%;border-radius:2px;background:${color};"></div></div>`;
+      })
+      .join("");
+    return `<div style="display:flex;flex-direction:column;gap:5px;width:110px;margin:0 auto;">${bars}</div>`;
+  }
+
+  function lightQueBlock(title: string, name: string, symbol: string, lines: readonly (0 | 1)[], dongPositions: number[], cungText: string): string {
+    return `
+      <div style="border:1.5px solid ${LIGHT.borderLight};border-radius:10px;padding:10px;text-align:center;">
+        <p style="margin:0;font-size:10px;font-weight:800;letter-spacing:.04em;color:${LIGHT.red};">${title}</p>
+        <div style="margin-top:8px;">${lightHexBars(lines, dongPositions)}</div>
+        <p style="margin:8px 0 0;font-size:12px;font-weight:700;">${name} <span style="color:${LIGHT.textMuted};font-weight:500;">(${symbol})</span></p>
+        <p style="margin:2px 0 0;font-size:10px;color:${LIGHT.textMuted};">${cungText}</p>
+      </div>
+    `;
+  }
+
+  function lightHaoTable(title: string, q: QueDayDu, tuanKhongChi: number[]): string {
+    const rows = [...q.hao].reverse();
     const trs = rows
       .map((h) => {
         const isK = tuanKhongChi.includes(h.chiIndex);
-        const rowBg = h.isDong ? "bg-(--color-cinnabar-500)/10" : "";
+        const rowColor = h.isDong ? LIGHT.red : LIGHT.text;
         return `
-          <tr class="${rowBg} border-b border-(--color-ivory-300)">
-            <td class="p-2 text-center font-semibold text-(--color-ink-800)">${h.hao}${h.isDong ? ' <span class="text-(--color-cinnabar-500)">●</span>' : ""}</td>
-            <td class="p-2 text-center font-medium text-(--color-gold-500)">${h.theUng ?? ""}</td>
-            <td class="p-2 text-center text-(--color-ink-700)">${h.lucThan}</td>
-            <td class="p-2 text-center font-medium ${VS_CLASS[h.vuongSuy] ?? "text-(--color-ink-700)"}">${h.vuongSuy}</td>
-            <td class="p-2 text-center font-medium text-(--color-ink-950)">${CAN[h.canIndex]} ${CHI[h.chiIndex]}${isK ? ' <span class="ml-1 rounded bg-(--color-ivory-300) px-1 text-[10px] text-(--color-ink-600)">Không</span>' : ""}</td>
-            <td class="p-2 text-center text-(--color-ink-500)">${h.phucThan ? `${h.phucThan.lucThan} ${CAN[h.phucThan.canIndex]} ${CHI[h.phucThan.chiIndex]}` : "—"}</td>
-            <td class="p-2 text-center text-(--color-ink-700)">${h.lucThu}</td>
+          <tr style="border-bottom:1px solid ${LIGHT.borderLight};">
+            <td style="padding:3px 4px;text-align:center;font-weight:700;color:${rowColor};">${h.hao}${h.isDong ? " ●" : ""}</td>
+            <td style="padding:3px 4px;text-align:center;color:${LIGHT.red};font-weight:600;">${h.theUng ?? ""}</td>
+            <td style="padding:3px 4px;text-align:center;">${h.lucThan}</td>
+            <td style="padding:3px 4px;text-align:center;">${h.vuongSuy}</td>
+            <td style="padding:3px 4px;text-align:center;font-weight:700;white-space:nowrap;">${CAN[h.canIndex]} ${CHI[h.chiIndex]}${isK ? ` <span style="font-size:8px;background:${LIGHT.headerBg};padding:0 3px;border-radius:3px;">Không</span>` : ""}</td>
+            <td style="padding:3px 4px;text-align:center;color:${LIGHT.textMuted};white-space:nowrap;">${h.phucThan ? `${h.phucThan.lucThan} ${CAN[h.phucThan.canIndex]} ${CHI[h.phucThan.chiIndex]}` : "—"}</td>
+            <td style="padding:3px 4px;text-align:center;">${h.lucThu}</td>
           </tr>
         `;
       })
       .join("");
     return `
-      <div class="mt-4 overflow-x-auto rounded-(--radius-control) border border-(--color-ivory-300)">
-        <table class="w-full min-w-[640px] border-collapse text-sm">
+      <div>
+        <p style="margin:0 0 4px;font-size:10px;font-weight:800;color:${LIGHT.red};text-align:center;">${title}</p>
+        <table style="width:100%;border-collapse:collapse;font-size:9px;">
           <thead>
-            <tr class="border-b border-(--color-ivory-300) bg-(--color-ivory-200) text-xs uppercase tracking-wide text-(--color-ink-600)">
-              <th class="p-2">Hào</th><th class="p-2">Thế/Ứng</th><th class="p-2">Lục Thân</th><th class="p-2">Vượng Suy</th><th class="p-2">Can Chi</th><th class="p-2">Phục Thần</th><th class="p-2">Lục Thú</th>
+            <tr style="background:${LIGHT.headerBg};">
+              <th style="padding:3px 2px;">Hào</th><th style="padding:3px 2px;">T/Ư</th><th style="padding:3px 2px;">Lục Thân</th><th style="padding:3px 2px;">V-S</th><th style="padding:3px 2px;">Can Chi</th><th style="padding:3px 2px;">P.Thần</th><th style="padding:3px 2px;">Lục Thú</th>
             </tr>
           </thead>
           <tbody>${trs}</tbody>
@@ -427,70 +472,81 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
     `;
   }
 
-  function renderQueBlock(title: string, q: QueDayDu, dongPositions: number[], tuanKhongChi: number[]): string {
-    return `
-      <div class="min-w-0 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-5">
-        <p class="text-center text-xs font-semibold uppercase tracking-wide text-(--color-gold-500)">${title}</p>
-        ${renderHexGraphic(q.lines, dongPositions)}
-        <p class="mt-4 text-center font-display text-lg font-semibold text-(--color-ink-950)">${q.name} <span class="text-(--color-ink-500)">(${q.upper.symbol}${q.lower.symbol})</span></p>
-        <p class="text-center text-sm text-(--color-ink-600)">Quái ${q.cungTrigram.name} — ${q.cungLabel}</p>
-        ${renderHexTable(q, tuanKhongChi)}
-      </div>
-    `;
-  }
-
-  function renderHoQueBlock(hoQue: FullCastResult["hoQue"]): string {
-    return `
-      <div class="min-w-0 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-5">
-        <p class="text-center text-xs font-semibold uppercase tracking-wide text-(--color-gold-500)">Quẻ hỗ</p>
-        ${renderHexGraphic(hoQue.lines, [])}
-        <p class="mt-4 text-center font-display text-lg font-semibold text-(--color-ink-950)">${hoQue.name} <span class="text-(--color-ink-500)">(${hoQue.upper.symbol}${hoQue.lower.symbol})</span></p>
-        <p class="text-center text-sm text-(--color-ink-600)">Quái ${hoQue.cungLabel}</p>
-        <p class="mt-3 text-center text-xs text-(--color-ink-500)">Quẻ hỗ chỉ mang tính tham khảo diễn biến, không có Nạp Giáp/Thế Ứng riêng.</p>
-      </div>
-    `;
-  }
-
-  function renderCastResult(container: HTMLElement, cast: FullCastResult, methodLabel: string, viecCanXem: string, timeLabel: string) {
+  function buildExportCardHtml(cast: FullCastResult, methodLabel: string, viecCanXem: string, timeLabel: string): string {
     const tuanKhongChi = tuanKhongChiIndices(cast.tuanKhong);
-    const header = `
-      <div class="rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-ivory-50) p-5">
-        <div class="flex flex-wrap items-start justify-between gap-3 border-b border-(--color-ivory-300) pb-3">
+    const queCols = cast.bien ? 3 : 2;
+    const blocks = [
+      lightQueBlock("QUẺ CHÍNH", cast.chinh.name, `${cast.chinh.upper.symbol}${cast.chinh.lower.symbol}`, cast.chinh.lines, cast.dongPositions, `Quái ${cast.chinh.cungTrigram.name} — ${cast.chinh.cungLabel}`),
+      lightQueBlock("QUẺ HỖ", cast.hoQue.name, `${cast.hoQue.upper.symbol}${cast.hoQue.lower.symbol}`, cast.hoQue.lines, [], `Quái ${cast.hoQue.cungLabel}`),
+    ];
+    if (cast.bien) {
+      blocks.push(lightQueBlock("QUẺ BIẾN", cast.bien.name, `${cast.bien.upper.symbol}${cast.bien.lower.symbol}`, cast.bien.lines, [], `Quái ${cast.bien.cungTrigram.name} — ${cast.bien.cungLabel}`));
+    }
+    const tables = cast.bien
+      ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">${lightHaoTable("Quẻ chính", cast.chinh, tuanKhongChi)}${lightHaoTable("Quẻ biến", cast.bien, tuanKhongChi)}</div>`
+      : lightHaoTable("Quẻ chính", cast.chinh, tuanKhongChi);
+
+    return `
+      <div style="width:${CARD_WIDTH}px;font-family:Arial,'Helvetica Neue',sans-serif;background:${LIGHT.bg};color:${LIGHT.text};border:3px solid ${LIGHT.border};border-radius:16px;padding:20px;box-sizing:border-box;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid ${LIGHT.borderLight};padding-bottom:10px;">
           <div>
-            <p class="font-display text-base font-bold text-(--color-cinnabar-400)">PHONGTHUYTHIENANH.COM</p>
-            <p class="text-xs font-semibold uppercase tracking-wide text-(--color-ink-600)">Phần mềm lập quẻ Kinh Dịch</p>
+            <p style="margin:0;font-size:16px;font-weight:800;letter-spacing:.02em;color:${LIGHT.red};">PHONGTHUYTHIENANH.COM</p>
+            <p style="margin:3px 0 0;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:${LIGHT.textMuted};">Phần mềm lập quẻ Kinh Dịch</p>
           </div>
-          <img src="/images/brand/zhi-gong-logo.png" alt="Phong Thủy Thiên Anh" class="size-11 rounded-full border border-(--color-gold-400)/40 object-cover" />
+          <img src="/images/brand/zhi-gong-logo.png" style="width:44px;height:44px;border-radius:9999px;border:2px solid ${LIGHT.border};object-fit:cover;" />
         </div>
-        <div class="mt-3 grid gap-x-6 gap-y-1.5 text-sm text-(--color-ink-700) sm:grid-cols-2">
-          <p><strong class="text-(--color-ink-950)">Phương pháp lập quẻ:</strong> ${methodLabel}</p>
-          <p><strong class="text-(--color-ink-950)">Việc cần xem:</strong> ${viecCanXem || "—"}</p>
-          <p><strong class="text-(--color-ink-950)">Thời gian lập quẻ:</strong> ${timeLabel}</p>
-          <p><strong class="text-(--color-ink-950)">Theo Âm lịch:</strong> ${cast.amLichText}</p>
-          <p class="sm:col-span-2"><strong class="text-(--color-ink-950)">Can Chi:</strong> ${cast.canChiText}</p>
-          <p><strong class="text-(--color-ink-950)">Tiết khí:</strong> ${cast.tietKhi}</p>
-          <p><strong class="text-(--color-ink-950)">Tuần Không:</strong> ${cast.tuanKhong}</p>
-          <p><strong class="text-(--color-ink-950)">Nhật thần:</strong> ${cast.nhatThan}</p>
-          <p><strong class="text-(--color-ink-950)">Nguyệt lệnh:</strong> ${cast.nguyetLenh}</p>
+        <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;font-size:11px;line-height:1.7;">
+          <p style="margin:0;"><strong>Phương pháp lập quẻ:</strong> ${methodLabel}</p>
+          <p style="margin:0;"><strong>Việc cần xem:</strong> ${viecCanXem || "—"}</p>
+          <p style="margin:0;"><strong>Thời gian lập quẻ:</strong> ${timeLabel}</p>
+          <p style="margin:0;"><strong>Theo Âm lịch:</strong> ${cast.amLichText}</p>
+          <p style="margin:0;grid-column:1 / -1;"><strong>Can Chi:</strong> ${cast.canChiText}</p>
+          <p style="margin:0;"><strong>Tiết khí:</strong> ${cast.tietKhi}</p>
+          <p style="margin:0;"><strong>Tuần Không:</strong> ${cast.tuanKhong}</p>
+          <p style="margin:0;"><strong>Nhật thần:</strong> ${cast.nhatThan}</p>
+          <p style="margin:0;"><strong>Nguyệt lệnh:</strong> ${cast.nguyetLenh}</p>
         </div>
-        <p class="mt-3 text-sm text-(--color-ink-600)">${cast.methodNote}</p>
+        <div style="margin-top:16px;display:grid;grid-template-columns:repeat(${queCols}, 1fr);gap:10px;">${blocks.join("")}</div>
+        <div style="margin-top:16px;">${tables}</div>
+        <p style="margin:12px 0 0;font-size:9px;color:${LIGHT.textMuted};text-align:center;">Lập quẻ Kinh Dịch tại Phong Thủy Thiên Anh — phongthuythienanh.com</p>
       </div>
     `;
-    const blocks = `
-      <div class="mt-6 grid min-w-0 gap-6 ${cast.bien ? "md:grid-cols-3" : "md:grid-cols-2"}">
-        ${renderQueBlock("Quẻ chính", cast.chinh, cast.dongPositions, tuanKhongChi)}
-        ${renderHoQueBlock(cast.hoQue)}
-        ${cast.bien ? renderQueBlock("Quẻ biến", cast.bien, [], tuanKhongChi) : ""}
-      </div>
-      ${
-        cast.dongPositions.length > 0
-          ? `<p class="mt-4 text-center text-sm text-(--color-ink-600)">Hào động: ${cast.dongPositions.map((p) => `hào ${p}`).join(", ")} — quẻ chính biến thành quẻ biến ở trên.</p>`
-          : `<p class="mt-4 text-center text-sm text-(--color-ink-600)">Không có hào động — quẻ giữ nguyên, không biến sang quẻ khác.</p>`
-      }
-    `;
-    container.innerHTML = header + blocks;
-    container.classList.remove("hidden");
-    container.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  async function captureCardAsPng(cardEl: HTMLElement): Promise<string> {
+    const { toPng } = await import("html-to-image");
+    return await toPng(cardEl, { backgroundColor: LIGHT.bg, pixelRatio: 2, skipFonts: true, width: CARD_WIDTH });
+  }
+
+  async function renderExportCard(
+    prefix: string,
+    resultId: string,
+    cast: FullCastResult,
+    methodLabel: string,
+    viecCanXem: string,
+    timeLabel: string,
+    fileBase: string,
+  ) {
+    const resultEl = document.getElementById(resultId)!;
+    const cardEl = document.getElementById(`${prefix}-card`)!;
+    cardEl.innerHTML = buildExportCardHtml(cast, methodLabel, viecCanXem, timeLabel);
+    resultEl.classList.remove("hidden");
+    try {
+      const dataUrl = await captureCardAsPng(cardEl);
+      const img = document.getElementById(`${prefix}-preview-img`) as HTMLImageElement;
+      img.src = dataUrl;
+      const saveBtn = document.getElementById(`${prefix}-save-image`) as HTMLButtonElement;
+      saveBtn.onclick = () => {
+        const link = document.createElement("a");
+        link.download = `${fileBase}.png`;
+        link.href = dataUrl;
+        link.click();
+      };
+    } catch (err) {
+      console.error("Không tạo được ảnh kết quả:", err);
+      alert("Đã lập quẻ xong nhưng không tạo được ảnh, vui lòng thử lại.");
+    }
+    resultEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
   function formatTimeLabel(input: CastInput): string {
@@ -506,14 +562,18 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
     return false;
   }
 
+  function fileDateSlug(input: CastInput): string {
+    return `${input.year}-${String(input.month).padStart(2, "0")}-${String(input.day).padStart(2, "0")}`;
+  }
+
   // --- Mai Hoa ---
-  document.getElementById("form-maihoa")?.addEventListener("submit", (e) => {
+  document.getElementById("form-maihoa")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const label = (document.getElementById("mh-label") as HTMLInputElement).value.trim();
     try {
       const input = readCastInput("mh");
       const cast = maiHoaCast(input);
-      renderCastResult(document.getElementById("result-maihoa")!, cast, "Gieo quẻ Mai Hoa Dịch Số", label, formatTimeLabel(input));
+      await renderExportCard("mh", "result-maihoa", cast, "Gieo quẻ Mai Hoa Dịch Số", label, formatTimeLabel(input), `mai-hoa-${fileDateSlug(input)}`);
     } catch (err) {
       console.error(err);
       if (!handleLunarError(err)) alert("Không lập được quẻ, vui lòng kiểm tra lại thời gian nhập vào.");
@@ -521,7 +581,7 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
   });
 
   // --- Lục Hào (nhập tay) ---
-  document.getElementById("form-luchao")?.addEventListener("submit", (e) => {
+  document.getElementById("form-luchao")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const label = (document.getElementById("lh-label") as HTMLInputElement).value.trim();
     try {
@@ -534,7 +594,7 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
         if ((document.getElementById(`lh-hao-${n}-dong`) as HTMLInputElement).checked) dongPositions.push(n);
       }
       const cast = lucHaoCastManual(values, dongPositions, input);
-      renderCastResult(document.getElementById("result-luchao")!, cast, "Lục Hào — nhập tay", label, formatTimeLabel(input));
+      await renderExportCard("lh", "result-luchao", cast, "Lục Hào — nhập tay", label, formatTimeLabel(input), `luc-hao-${fileDateSlug(input)}`);
     } catch (err) {
       console.error(err);
       if (!handleLunarError(err)) alert("Không lập được quẻ, vui lòng kiểm tra lại thông tin đã nhập.");
@@ -542,14 +602,14 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
   });
 
   // --- Seri tiền ---
-  document.getElementById("form-serial")?.addEventListener("submit", (e) => {
+  document.getElementById("form-serial")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const label = (document.getElementById("sr-label") as HTMLInputElement).value.trim();
     const serial = (document.getElementById("sr-serial") as HTMLInputElement).value.trim();
     try {
       const input = readCastInput("sr");
       const cast = seriTienCast(serial, input);
-      renderCastResult(document.getElementById("result-serial")!, cast, `Lập quẻ bằng Seri tiền - ${serial}`, label, formatTimeLabel(input));
+      await renderExportCard("sr", "result-serial", cast, `Lập quẻ bằng Seri tiền - ${serial}`, label, formatTimeLabel(input), `seri-tien-${fileDateSlug(input)}`);
     } catch (err) {
       console.error(err);
       if (!handleLunarError(err)) alert("Vui lòng nhập số Seri hợp lệ (ít nhất 2 chữ số).");
@@ -557,14 +617,14 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
   });
 
   // --- Số điện thoại ---
-  document.getElementById("form-phone")?.addEventListener("submit", (e) => {
+  document.getElementById("form-phone")?.addEventListener("submit", async (e) => {
     e.preventDefault();
     const label = (document.getElementById("ph-label") as HTMLInputElement).value.trim();
     const phone = (document.getElementById("ph-phone") as HTMLInputElement).value.trim();
     try {
       const input = readCastInput("ph");
       const cast = soDienThoaiCast(phone, input);
-      renderCastResult(document.getElementById("result-phone")!, cast, `Lập quẻ bằng Số điện thoại - ${phone}`, label, formatTimeLabel(input));
+      await renderExportCard("ph", "result-phone", cast, `Lập quẻ bằng Số điện thoại - ${phone}`, label, formatTimeLabel(input), `so-dien-thoai-${fileDateSlug(input)}`);
     } catch (err) {
       console.error(err);
       if (!handleLunarError(err)) alert("Vui lòng nhập số điện thoại hợp lệ (ít nhất 2 chữ số).");
