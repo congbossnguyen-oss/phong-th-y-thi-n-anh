@@ -5,22 +5,32 @@ import { appendConsultationRequestToSheet } from "../../../lib/google-sheets";
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request, redirect }) => {
-  const form = await request.formData();
-
-  // Honeypot: bot thường điền cả field ẩn này, người dùng thật để trống.
-  if (form.get("website")) {
-    return redirect("/lien-he?status=success", 303);
+export const POST: APIRoute = async ({ request }) => {
+  // Form gửi bằng fetch()/JSON (thay vì HTML form POST thuần) để tránh bị Astro CSRF
+  // (security.checkOrigin) chặn nhầm trên trình duyệt trong app (Zalo/Facebook) không gửi
+  // header Origin — checkOrigin chỉ kiểm tra Content-Type form-urlencoded/multipart/text,
+  // không kiểm tra application/json.
+  let body: Record<string, unknown>;
+  try {
+    body = await request.json();
+  } catch {
+    return Response.json({ ok: false, error: "invalid_json" }, { status: 400 });
   }
 
-  const name = form.get("name")?.toString().trim();
-  const phone = form.get("phone")?.toString().trim();
-  const email = form.get("email")?.toString().trim() || null;
-  const topic = form.get("topic")?.toString().trim() || null;
-  const message = form.get("message")?.toString().trim() || null;
+  // Honeypot: bot gọi thẳng API (bỏ qua JS) thường điền cả field ẩn này, người dùng thật
+  // để trống — âm thầm trả về thành công, không lưu/gửi gì, để không lộ bị chặn.
+  if (typeof body.website === "string" && body.website.trim()) {
+    return Response.json({ ok: true });
+  }
+
+  const name = typeof body.name === "string" ? body.name.trim() : "";
+  const phone = typeof body.phone === "string" ? body.phone.trim() : "";
+  const email = typeof body.email === "string" ? body.email.trim() || null : null;
+  const topic = typeof body.topic === "string" ? body.topic.trim() || null : null;
+  const message = typeof body.message === "string" ? body.message.trim() || null : null;
 
   if (!name || !phone) {
-    return redirect("/lien-he?status=error", 303);
+    return Response.json({ ok: false, error: "missing_fields" }, { status: 400 });
   }
 
   // Lưu DB và gửi email thông báo không được phép làm hỏng trải nghiệm gửi form của khách —
@@ -46,5 +56,5 @@ export const POST: APIRoute = async ({ request, redirect }) => {
 
   console.log("[contact-form] Yêu cầu tư vấn mới:", { name, phone, email, topic, message });
 
-  return redirect("/lien-he?status=success", 303);
+  return Response.json({ ok: true });
 };

@@ -9,7 +9,6 @@ import { getCourseBySlug } from "../lib/cms/queries";
 
 export const prerender = false;
 
-const status = Astro.url.searchParams.get("status");
 const courseSlug = Astro.url.searchParams.get("khoa-hoc");
 const requestedCourse = courseSlug ? await getCourseBySlug(courseSlug) : null;
 const prefilledMessage = requestedCourse
@@ -27,21 +26,15 @@ const prefilledMessage = requestedCourse
 
   <Container class="grid gap-10 py-16 lg:grid-cols-5">
     <div class="lg:col-span-3">
-      {status === "success" && (
-        <div class="mb-5 flex items-center gap-2.5 rounded-(--radius-control) border border-(--color-success-500)/30 bg-(--color-success-500)/10 px-4 py-3 text-sm text-(--color-success-500)">
-          <Icon name="check-circle" class="size-5 shrink-0" />
-          Cảm ơn bạn đã gửi yêu cầu! Thiên Anh sẽ liên hệ lại trong vòng 24 giờ làm việc.
-        </div>
-      )}
-      {status === "error" && (
-        <div class="mb-5 rounded-(--radius-control) border border-(--color-danger-500)/30 bg-(--color-danger-500)/10 px-4 py-3 text-sm text-(--color-danger-500)">
-          Vui lòng điền đầy đủ Họ tên và Số điện thoại.
-        </div>
-      )}
+      <div id="form-success" class="mb-5 hidden items-center gap-2.5 rounded-(--radius-control) border border-(--color-success-500)/30 bg-(--color-success-500)/10 px-4 py-3 text-sm text-(--color-success-500)">
+        <Icon name="check-circle" class="size-5 shrink-0" />
+        Cảm ơn bạn đã gửi yêu cầu! Thiên Anh sẽ liên hệ lại trong vòng 24 giờ làm việc.
+      </div>
+      <div id="form-error" class="mb-5 hidden rounded-(--radius-control) border border-(--color-danger-500)/30 bg-(--color-danger-500)/10 px-4 py-3 text-sm text-(--color-danger-500)">
+        <span id="form-error-text">Vui lòng điền đầy đủ Họ tên và Số điện thoại.</span>
+      </div>
       <form
         id="contact-form"
-        method="post"
-        action="/api/contact/submit"
         class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6 sm:p-8"
       >
         <div class="grid gap-5 sm:grid-cols-2">
@@ -128,4 +121,70 @@ const prefilledMessage = requestedCourse
       </div>
     </aside>
   </Container>
+
+  <script>
+    const form = document.getElementById("contact-form") as HTMLFormElement | null;
+    const successBox = document.getElementById("form-success");
+    const errorBox = document.getElementById("form-error");
+    const errorText = document.getElementById("form-error-text");
+
+    form?.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      successBox?.classList.remove("flex");
+      successBox?.classList.add("hidden");
+      errorBox?.classList.add("hidden");
+
+      const data = new FormData(form);
+
+      // Honeypot: bot thường điền cả field ẩn này, người dùng thật để trống — âm thầm
+      // giả vờ thành công, không gọi API thật, để không lộ cho bot biết bị chặn.
+      if (data.get("website")) {
+        successBox?.classList.remove("hidden");
+        successBox?.classList.add("flex");
+        form.reset();
+        return;
+      }
+
+      const name = data.get("name")?.toString().trim();
+      const phone = data.get("phone")?.toString().trim();
+
+      if (!name || !phone) {
+        if (errorText) errorText.textContent = "Vui lòng điền đầy đủ Họ tên và Số điện thoại.";
+        errorBox?.classList.remove("hidden");
+        return;
+      }
+
+      const submitButton = form.querySelector('button[type="submit"]') as HTMLButtonElement | null;
+      if (submitButton) submitButton.disabled = true;
+
+      try {
+        const res = await fetch("/api/contact/submit", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name,
+            phone,
+            email: data.get("email")?.toString().trim() || null,
+            topic: data.get("topic")?.toString().trim() || null,
+            message: data.get("message")?.toString().trim() || null,
+          }),
+        });
+        const json = await res.json().catch(() => null);
+
+        if (res.ok && json?.ok) {
+          successBox?.classList.remove("hidden");
+          successBox?.classList.add("flex");
+          form.reset();
+        } else {
+          if (errorText) errorText.textContent = "Có lỗi xảy ra, vui lòng thử lại hoặc gọi hotline.";
+          errorBox?.classList.remove("hidden");
+        }
+      } catch {
+        if (errorText) errorText.textContent = "Không thể kết nối, vui lòng kiểm tra mạng và thử lại.";
+        errorBox?.classList.remove("hidden");
+      } finally {
+        if (submitButton) submitButton.disabled = false;
+      }
+    });
+  </script>
 </BaseLayout>
