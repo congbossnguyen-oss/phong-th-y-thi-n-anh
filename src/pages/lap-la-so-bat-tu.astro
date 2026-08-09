@@ -104,17 +104,16 @@ export const prerender = true;
                 <p id="battu-daivan-note" class="text-xs font-medium text-slate-600"></p>
               </div>
               <div class="mt-2 overflow-x-auto">
-                <table class="w-full min-w-[520px] border-collapse text-center text-sm">
+                <table class="w-full min-w-[720px] border-collapse text-center text-sm">
                   <tbody id="battu-daivan-body"></tbody>
                 </table>
               </div>
             </div>
 
-            <div class="mt-2 rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <div class="mt-4 rounded-xl border border-slate-200 bg-slate-50 p-4">
               <p class="text-xs font-bold uppercase tracking-wide text-slate-600">Lưu Niên (vận đang chọn)</p>
-              <p id="battu-luunien-note" class="mt-0.5 text-xs text-slate-500"></p>
               <div class="mt-2 overflow-x-auto">
-                <table class="w-full min-w-[520px] border-collapse text-center text-sm">
+                <table class="w-full min-w-[720px] border-collapse text-center text-sm">
                   <tbody id="battu-luunien-body"></tbody>
                 </table>
               </div>
@@ -215,7 +214,6 @@ export const prerender = true;
   const thanSatEl = document.getElementById("battu-thansat")!;
   const daiVanNoteEl = document.getElementById("battu-daivan-note")!;
   const daiVanBody = document.getElementById("battu-daivan-body")!;
-  const luuNienNoteEl = document.getElementById("battu-luunien-note")!;
   const luuNienBody = document.getElementById("battu-luunien-body")!;
   const previewWrap = document.getElementById("battu-preview-wrap")!;
   const previewImg = document.getElementById("battu-preview-img") as HTMLImageElement;
@@ -225,11 +223,10 @@ export const prerender = true;
   let birthYear = 0;
   let previewDataUrl: string | null = null;
 
-  // Chụp #battu-card thành PNG ở chế độ "xuất ảnh": khổ chuẩn 750px logic (=1500px thực tế @2x) để vừa
-  // khít nội dung (Can/Chi Đại Vận/Lưu Niên đã xếp dọc nên mỗi cột hẹp hơn nhiều so với trước). Vẫn ĐO
-  // LẠI chiều rộng thật cần thiết làm lưới an toàn — nếu nội dung tương lai rộng hơn 750px thì tự nới
-  // ra chứ không bao giờ cắt chữ.
-  const BASE_EXPORT_WIDTH = 750;
+  // Chụp #battu-card thành PNG ở chế độ "xuất ảnh": tắt scroll ngang của các bảng rồi ĐO LẠI chiều rộng
+  // thật sự cần thiết (thay vì áp 1 số cố định) — bảng Đại Vận/Lưu Niên có 10 cột, min-width 720px, nếu ép
+  // khung hẹp hơn mức đó chữ cột cuối (vd "Quý Tỵ") sẽ bị cắt mất ở lề phải. Đo động đảm bảo không bao giờ
+  // cắt chữ dù nội dung thay đổi sau này, đồng thời vẫn cho ảnh rộng rãi (tối thiểu 900px, ~1800px @2x).
   async function captureCardAsPng(): Promise<string> {
     const { toPng } = await import("html-to-image");
     const originalWidth = cardEl.style.width;
@@ -240,7 +237,7 @@ export const prerender = true;
       cardEl.style.width = "max-content";
       cardEl.style.maxWidth = "none";
       scrollers.forEach((el) => (el.style.overflow = "visible"));
-      const exportWidth = Math.max(cardEl.scrollWidth, BASE_EXPORT_WIDTH);
+      const exportWidth = Math.max(cardEl.scrollWidth, 900);
       cardEl.style.width = `${exportWidth}px`;
       return await toPng(cardEl, { backgroundColor: "#ffffff", pixelRatio: 2, skipFonts: true, width: exportWidth });
     } finally {
@@ -404,8 +401,6 @@ export const prerender = true;
     return idx;
   }
 
-  const colDivider = "border-r border-slate-200";
-
   function renderLuuNien(startYear: number) {
     const years = tinhLuuNien(startYear, birthYear, 10);
     const nowYear = new Date().getFullYear();
@@ -413,16 +408,16 @@ export const prerender = true;
       <tr class="border-b border-slate-200">
         ${years
           .map(
-            (y, i) =>
-              `<td class="p-2 font-serif font-bold ${i < years.length - 1 ? colDivider : ""} ${y.year === nowYear ? "rounded-md bg-amber-100" : ""}"><span class="${canClass(y.canIndex)}">${y.can}</span><br/><span class="${chiClass(y.chiIndex)}">${y.chi}</span></td>`,
+            (y) =>
+              `<td class="p-2 font-serif font-bold ${y.year === nowYear ? "rounded-md bg-amber-100" : ""}"><span class="${canClass(y.canIndex)}">${y.can}</span> <span class="${chiClass(y.chiIndex)}">${y.chi}</span></td>`,
           )
           .join("")}
       </tr>
       <tr>
         ${years
           .map(
-            (y, i) =>
-              `<td class="p-2 text-xs font-semibold text-slate-600 ${i < years.length - 1 ? colDivider : ""} ${y.year === nowYear ? "rounded-md bg-amber-100 text-slate-800" : ""}">${y.year}<br/>${y.tuoi}t</td>`,
+            (y) =>
+              `<td class="p-2 text-xs font-semibold text-slate-600 ${y.year === nowYear ? "rounded-md bg-amber-100 text-slate-800" : ""}">${y.year} — ${y.tuoi}t</td>`,
           )
           .join("")}
       </tr>
@@ -436,13 +431,13 @@ export const prerender = true;
     const rowCanChi = chart.daiVan
       .map(
         (d, i) =>
-          `<td data-idx="${i}" class="rounded-md p-2 font-serif font-bold ${i < chart.daiVan.length - 1 ? colDivider : ""} ${i === currentIdx ? "outline outline-2 outline-dashed outline-red-400" : ""}"><span class="${canClass(d.canIndex)}">${d.can}</span><br/><span class="${chiClass(d.chiIndex)}">${d.chi}</span></td>`,
+          `<td data-idx="${i}" class="rounded-md p-2 font-serif font-bold ${i === currentIdx ? "outline outline-2 outline-dashed outline-red-400" : ""}"><span class="${canClass(d.canIndex)}">${d.can}</span> <span class="${chiClass(d.chiIndex)}">${d.chi}</span></td>`,
       )
       .join("");
     const rowMeta = chart.daiVan
       .map(
         (d, i) =>
-          `<td data-idx="${i}" class="rounded-md p-2 text-xs font-semibold text-slate-600 ${i < chart.daiVan.length - 1 ? colDivider : ""} ${i === currentIdx ? "text-red-500" : ""}">${d.startAge}-${d.endAge}t<br/>~${d.startDate.y}</td>`,
+          `<td data-idx="${i}" class="rounded-md p-2 text-xs font-semibold text-slate-600 ${i === currentIdx ? "text-red-500" : ""}">${d.startAge}-${d.endAge}t<br/>~${d.startDate.d}/${d.startDate.m}/${d.startDate.y}</td>`,
       )
       .join("");
     daiVanBody.innerHTML = `
@@ -468,7 +463,6 @@ export const prerender = true;
       cell.classList.toggle("bg-amber-100", cellIdx === idx);
     });
     const period = currentChart.daiVan[idx];
-    luuNienNoteEl.textContent = `Lưu niên đang xem: đại vận ${period.can} ${period.chi} (${period.startDate.y}−${period.startDate.y + 9}, ${period.startAge}-${period.endAge} tuổi) · bấm một cột đại vận để đổi`;
     renderLuuNien(period.startDate.y);
     refreshPreviewImage();
   }
