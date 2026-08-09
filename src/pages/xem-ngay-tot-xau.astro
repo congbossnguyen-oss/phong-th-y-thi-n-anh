@@ -48,8 +48,6 @@ export const prerender = true;
           <span class="inline-flex items-center gap-1"><span class="size-2 rounded-full bg-[#64748b]"></span>Kim</span>
           <span class="inline-flex items-center gap-1"><span class="size-2 rounded-full bg-[#2563eb]"></span>Thủy</span>
         </span>
-        <span class="hidden sm:inline text-(--color-ink-500)">·</span>
-        <span>● Dương &nbsp; ○ Âm</span>
       </div>
 
       <div id="loi" class="mt-6 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm text-(--color-danger-500)"></div>
@@ -180,22 +178,18 @@ export const prerender = true;
     Thủy: "#2563eb",
   };
 
-  function amDuongKyHieu(index: number): string {
-    return index % 2 === 0 ? "●" : "○";
-  }
-
   function canHtml(can: string): string {
     const i = CAN_ORDER.indexOf(can);
     if (i === -1) return can;
     const nguHanh = CAN_NGU_HANH[i]!;
-    return `<span style="color:${NGU_HANH_COLOR[nguHanh]}" title="${nguHanh} · ${i % 2 === 0 ? "Dương" : "Âm"}">${amDuongKyHieu(i)}${can}</span>`;
+    return `<span style="color:${NGU_HANH_COLOR[nguHanh]}" title="${nguHanh} · ${i % 2 === 0 ? "Dương" : "Âm"}">${can}</span>`;
   }
 
   function chiHtml(chi: string): string {
     const i = CHI_ORDER.indexOf(chi);
     if (i === -1) return chi;
     const nguHanh = CHI_NGU_HANH[i]!;
-    return `<span style="color:${NGU_HANH_COLOR[nguHanh]}" title="${nguHanh} · ${i % 2 === 0 ? "Dương" : "Âm"}">${amDuongKyHieu(i)}${chi}</span>`;
+    return `<span style="color:${NGU_HANH_COLOR[nguHanh]}" title="${nguHanh} · ${i % 2 === 0 ? "Dương" : "Âm"}">${chi}</span>`;
   }
 
   function canChiHtml(can: string, chi: string): string {
