@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { createConsultationRequest } from "../../../lib/db/consultationRequests";
 import { sendConsultationRequestEmail } from "../../../lib/email/send";
+import { appendConsultationRequestToSheet } from "../../../lib/google-sheets";
 
 export const prerender = false;
 
@@ -35,6 +36,12 @@ export const POST: APIRoute = async ({ request, redirect }) => {
     await sendConsultationRequestEmail({ name, phone, email, topic, message });
   } catch (err) {
     console.error("[contact-form] Gửi email thông báo thất bại:", err);
+  }
+
+  try {
+    await appendConsultationRequestToSheet({ name, phone, email, topic, message });
+  } catch (err) {
+    console.error("[contact-form] Lưu Google Sheet thất bại:", err);
   }
 
   console.log("[contact-form] Yêu cầu tư vấn mới:", { name, phone, email, topic, message });
