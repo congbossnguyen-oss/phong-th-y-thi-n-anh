@@ -5,105 +5,361 @@ import Container from "../components/ui/Container.astro";
 import Button from "../components/ui/Button.astro";
 
 export const prerender = true;
+
+const inputClass =
+  "mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20";
+const labelClass = "text-sm font-medium text-(--color-ink-800)";
 ---
 
 <BaseLayout
-  title="Lập quẻ Kinh Dịch"
-  description="Gieo quẻ Kinh Dịch bằng phương pháp 3 đồng xu, xem quẻ chính, hào động và quẻ biến."
+  title="Lập quẻ Kinh Dịch — Mai Hoa, Lục Hào, Seri tiền, Số điện thoại"
+  description="Lập quẻ Kinh Dịch đầy đủ theo 4 phương pháp: Mai Hoa Dịch Số, Lục Hào (gieo đồng xu), Seri tiền, Số điện thoại — luận giải Nạp Giáp, Lục Thân, Lục Thú, Thế Ứng, Tuần Không."
 >
   <PageHero
     eyebrow="Công cụ"
     title="Lập quẻ Kinh Dịch"
-    description="Gieo quẻ theo phương pháp 3 đồng xu truyền thống — bấm nút để tung ngẫu nhiên 6 lần, xem quẻ chính và quẻ biến (nếu có hào động)."
+    description="Chọn 1 trong 4 phương pháp lập quẻ bên dưới. Kết quả hiển thị đầy đủ: quẻ chính, quẻ biến (nếu có hào động), Nạp Giáp Can Chi từng hào, Lục Thân, Lục Thú, Thế/Ứng và Tuần Không."
     breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Lập quẻ Kinh Dịch" }]}
   />
 
   <Container class="py-16">
-    <div class="mx-auto max-w-2xl">
-      <div class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6 text-center">
-        <p class="text-sm text-(--color-ink-600)">
-          Thành tâm nghĩ về việc muốn hỏi, sau đó bấm nút bên dưới để gieo quẻ (giả lập tung 3 đồng xu, 6 lần).
-        </p>
-        <Button id="cast-btn" type="button" size="lg" class="mt-5">Gieo quẻ</Button>
+    <div class="mx-auto max-w-4xl">
+      <div id="kd-tabs" class="flex flex-wrap gap-2">
+        <button type="button" data-tab="maihoa" class="kd-tab-btn rounded-full border px-4 py-2 text-sm font-medium">Mai Hoa Dịch Số</button>
+        <button type="button" data-tab="luchao" class="kd-tab-btn rounded-full border px-4 py-2 text-sm font-medium">Lục Hào (gieo đồng xu)</button>
+        <button type="button" data-tab="serial" class="kd-tab-btn rounded-full border px-4 py-2 text-sm font-medium">Seri tiền</button>
+        <button type="button" data-tab="phone" class="kd-tab-btn rounded-full border px-4 py-2 text-sm font-medium">Số điện thoại</button>
       </div>
 
-      <div id="result" class="mt-8 hidden">
-        <div class="grid gap-6 sm:grid-cols-2">
-          <div class="rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-ivory-100) p-6 text-center">
-            <p class="text-xs font-semibold uppercase tracking-wide text-(--color-gold-500)">Quẻ chính</p>
-            <div id="primary-lines" class="mx-auto mt-4 flex w-32 flex-col-reverse gap-2.5"></div>
-            <p id="primary-name" class="mt-4 font-display text-lg font-semibold text-(--color-ink-950)"></p>
+      <!-- Mai Hoa -->
+      <div id="panel-maihoa" class="kd-panel mt-6">
+        <form id="form-maihoa" class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6">
+          <div>
+            <label for="mh-label" class={labelClass}>Việc cần xem (không bắt buộc)</label>
+            <input id="mh-label" type="text" placeholder="Ví dụ: Công việc làm ăn" class={inputClass} />
           </div>
-          <div id="changed-box" class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6 text-center">
-            <p class="text-xs font-semibold uppercase tracking-wide text-(--color-gold-500)">Quẻ biến</p>
-            <div id="changed-lines" class="mx-auto mt-4 flex w-32 flex-col-reverse gap-2.5"></div>
-            <p id="changed-name" class="mt-4 font-display text-lg font-semibold text-(--color-ink-950)"></p>
+          <div class="mt-4">
+            <label for="mh-time" class={labelClass}>Thời gian lập quẻ (dương lịch, giờ Việt Nam)</label>
+            <input id="mh-time" type="datetime-local" required class={inputClass} />
           </div>
-        </div>
-        <p id="changing-note" class="mt-4 text-center text-sm text-(--color-ink-600)"></p>
+          <p class="mt-3 text-xs text-(--color-ink-500)">
+            Mai Hoa Dịch Số dùng Năm/Tháng/Ngày/Giờ Âm lịch tại thời điểm lập quẻ để tính ra quẻ Thượng, quẻ Hạ và hào động theo đúng công thức của Thiệu Khang Tiết.
+          </p>
+          <Button type="submit" size="lg" class="mt-5">Lập quẻ Mai Hoa</Button>
+        </form>
+        <div id="result-maihoa" class="mt-8 hidden"></div>
+      </div>
+
+      <!-- Lục Hào -->
+      <div id="panel-luchao" class="kd-panel mt-6 hidden">
+        <form id="form-luchao" class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6">
+          <div>
+            <label for="lh-label" class={labelClass}>Việc cần xem (không bắt buộc)</label>
+            <input id="lh-label" type="text" placeholder="Ví dụ: Hôn nhân, gia đạo" class={inputClass} />
+          </div>
+          <div class="mt-4">
+            <label for="lh-time" class={labelClass}>Thời gian lập quẻ (dương lịch, giờ Việt Nam)</label>
+            <input id="lh-time" type="datetime-local" required class={inputClass} />
+          </div>
+          <p class="mt-3 text-xs text-(--color-ink-500)">
+            Thành tâm nghĩ về việc muốn hỏi, sau đó bấm nút bên dưới để gieo quẻ (giả lập tung 3 đồng xu, 6 lần liên tiếp từ hào 1 đến hào 6).
+          </p>
+          <Button type="submit" size="lg" class="mt-5">Gieo quẻ (3 đồng xu × 6 lần)</Button>
+        </form>
+        <div id="luchao-tosses" class="mt-5 hidden flex-wrap gap-2"></div>
+        <div id="result-luchao" class="mt-8 hidden"></div>
+      </div>
+
+      <!-- Seri tiền -->
+      <div id="panel-serial" class="kd-panel mt-6 hidden">
+        <form id="form-serial" class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6">
+          <div>
+            <label for="sr-serial" class={labelClass}>Số Seri tờ tiền</label>
+            <input id="sr-serial" type="text" inputmode="numeric" placeholder="Ví dụ: 19228888" required class={inputClass} />
+          </div>
+          <div class="mt-4 grid gap-4 sm:grid-cols-2">
+            <div>
+              <label for="sr-label" class={labelClass}>Việc cần xem (không bắt buộc)</label>
+              <input id="sr-label" type="text" placeholder="Ví dụ: Tài lộc" class={inputClass} />
+            </div>
+            <div>
+              <label for="sr-time" class={labelClass}>Thời gian lập quẻ</label>
+              <input id="sr-time" type="datetime-local" required class={inputClass} />
+            </div>
+          </div>
+          <p class="mt-3 text-xs text-(--color-ink-500)">
+            Chia dãy số Seri làm 2 nửa: tổng chữ số nửa đầu (dư 8) ra quẻ Thượng, tổng chữ số nửa sau (dư 8) ra quẻ Hạ, tổng tất cả chữ số (dư 6) ra hào động — theo cách "số linh quẻ" ứng dụng Mai Hoa Dịch Số cho số bất kỳ.
+          </p>
+          <Button type="submit" size="lg" class="mt-5">Lập quẻ theo Seri tiền</Button>
+        </form>
+        <div id="result-serial" class="mt-8 hidden"></div>
+      </div>
+
+      <!-- Số điện thoại -->
+      <div id="panel-phone" class="kd-panel mt-6 hidden">
+        <form id="form-phone" class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6">
+          <div>
+            <label for="ph-phone" class={labelClass}>Số điện thoại</label>
+            <input id="ph-phone" type="text" inputmode="numeric" placeholder="Ví dụ: 0912345678" required class={inputClass} />
+          </div>
+          <div class="mt-4 grid gap-4 sm:grid-cols-2">
+            <div>
+              <label for="ph-label" class={labelClass}>Việc cần xem (không bắt buộc)</label>
+              <input id="ph-label" type="text" placeholder="Ví dụ: Công việc, đối tác" class={inputClass} />
+            </div>
+            <div>
+              <label for="ph-time" class={labelClass}>Thời gian lập quẻ</label>
+              <input id="ph-time" type="datetime-local" required class={inputClass} />
+            </div>
+          </div>
+          <p class="mt-3 text-xs text-(--color-ink-500)">
+            Áp dụng cùng cách "số linh quẻ" như Seri tiền, tính trên toàn bộ dãy số điện thoại đã nhập.
+          </p>
+          <Button type="submit" size="lg" class="mt-5">Lập quẻ theo Số điện thoại</Button>
+        </form>
+        <div id="result-phone" class="mt-8 hidden"></div>
       </div>
 
       <div class="mt-10 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6">
         <h2 class="font-display text-lg font-semibold text-(--color-ink-950)">Lưu ý về công cụ này</h2>
         <p class="mt-2 text-sm leading-relaxed text-(--color-ink-600)">
-          Công cụ chỉ thực hiện bước <strong>lập quẻ</strong> (xác định quẻ chính, hào động và quẻ biến) theo đúng
-          phương pháp 3 đồng xu truyền thống. Phần <strong>luận giải chuyên sâu</strong> (Nạp Giáp, Lục Thân, Lục
-          Thần, Thế/Ứng, Không Vong...) đòi hỏi kiến thức chuyên môn sâu, không được tự động hóa tại đây — nếu cần
-          luận giải quẻ vừa gieo, hãy liên hệ chuyên gia của Phong Thủy Thiên Anh.
+          Công cụ lập quẻ và tính toán Nạp Giáp, Lục Thân, Lục Thú, Thế/Ứng, Tuần Không theo đúng phương pháp Nạp
+          Giáp Kinh Phòng cổ điển. Kết quả mang tính tham khảo — việc luận đoán cát hung cụ thể (vượng suy Dụng
+          Thần, phối hợp Nhật/Nguyệt kiến, Động biến sinh khắc...) đòi hỏi kiến thức chuyên sâu, nên tham vấn chuyên
+          gia để có kết luận chính xác nhất.
         </p>
         <a href="/lien-he" class="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-(--color-gold-300) hover:underline">
-          Liên hệ luận giải quẻ →
+          Liên hệ luận giải quẻ chuyên sâu →
         </a>
       </div>
     </div>
   </Container>
 </BaseLayout>
 
+<style>
+  .kd-tab-btn {
+    border-color: var(--color-ivory-300);
+    color: var(--color-ink-600);
+    background: var(--color-ivory-50);
+  }
+  .kd-tab-btn.active {
+    border-color: var(--color-gold-400);
+    background: var(--color-gold-400);
+    color: var(--color-ink-950);
+  }
+</style>
+
 <script>
-  import { castHexagram, type HexagramResult } from "../lib/kinh-dich";
+  import {
+    maiHoaCast,
+    lucHaoCastFromTosses,
+    tossCoinLine,
+    seriTienCast,
+    soDienThoaiCast,
+    type FullCastResult,
+    type QueDayDu,
+    type CastInput,
+    type CoinLineValue,
+  } from "../lib/luc-hao";
+  import { CAN, CHI } from "../lib/menh-nap-am";
 
-  const castBtn = document.getElementById("cast-btn") as HTMLButtonElement;
-  const resultEl = document.getElementById("result")!;
-  const primaryLinesEl = document.getElementById("primary-lines")!;
-  const primaryNameEl = document.getElementById("primary-name")!;
-  const changedBox = document.getElementById("changed-box")!;
-  const changedLinesEl = document.getElementById("changed-lines")!;
-  const changedNameEl = document.getElementById("changed-name")!;
-  const changingNoteEl = document.getElementById("changing-note")!;
+  // --- Tabs ---
+  const tabButtons = Array.from(document.querySelectorAll<HTMLButtonElement>(".kd-tab-btn"));
+  const panels: Record<string, HTMLElement> = {
+    maihoa: document.getElementById("panel-maihoa")!,
+    luchao: document.getElementById("panel-luchao")!,
+    serial: document.getElementById("panel-serial")!,
+    phone: document.getElementById("panel-phone")!,
+  };
+  function activateTab(tab: string) {
+    tabButtons.forEach((btn) => btn.classList.toggle("active", btn.dataset.tab === tab));
+    Object.entries(panels).forEach(([key, el]) => el.classList.toggle("hidden", key !== tab));
+  }
+  tabButtons.forEach((btn) => btn.addEventListener("click", () => activateTab(btn.dataset.tab!)));
+  activateTab("maihoa");
 
-  function renderLines(container: HTMLElement, lines: readonly (0 | 1)[], movingPositions: number[]) {
-    container.innerHTML = "";
-    lines.forEach((line, i) => {
-      const pos = i + 1;
-      const isMoving = movingPositions.includes(pos);
-      const bar = document.createElement("div");
-      bar.className = "relative h-2.5";
-      if (line === 1) {
-        bar.innerHTML = `<div class="h-full w-full rounded-sm ${isMoving ? "bg-(--color-cinnabar-500)" : "bg-(--color-gold-400)"}"></div>`;
-      } else {
-        bar.innerHTML = `<div class="flex h-full w-full justify-between"><div class="h-full w-[42%] rounded-sm ${isMoving ? "bg-(--color-cinnabar-500)" : "bg-(--color-gold-400)"}"></div><div class="h-full w-[42%] rounded-sm ${isMoving ? "bg-(--color-cinnabar-500)" : "bg-(--color-gold-400)"}"></div></div>`;
-      }
-      container.appendChild(bar);
-    });
+  // --- Thời gian mặc định = hiện tại (giờ Việt Nam theo trình duyệt) ---
+  function nowLocalValue(): string {
+    const d = new Date();
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+  ["mh-time", "lh-time", "sr-time", "ph-time"].forEach((id) => {
+    const el = document.getElementById(id) as HTMLInputElement;
+    el.value = nowLocalValue();
+  });
+
+  function readCastInput(timeId: string): CastInput {
+    const raw = (document.getElementById(timeId) as HTMLInputElement).value;
+    const d = raw ? new Date(raw) : new Date();
+    return { day: d.getDate(), month: d.getMonth() + 1, year: d.getFullYear(), hour: d.getHours(), minute: d.getMinutes() };
   }
 
-  castBtn.addEventListener("click", () => {
-    const result = castHexagram();
+  // --- Vẽ hình quẻ (6 vạch, hào 1 dưới cùng) ---
+  function renderHexGraphic(lines: readonly (0 | 1)[], dongPositions: number[]): string {
+    const bars = lines
+      .map((line, i) => {
+        const pos = i + 1;
+        const isDong = dongPositions.includes(pos);
+        const color = isDong ? "bg-(--color-cinnabar-500)" : "bg-(--color-gold-400)";
+        if (line === 1) return `<div class="h-2.5 w-full rounded-sm ${color}"></div>`;
+        return `<div class="flex h-2.5 w-full justify-between"><div class="h-full w-[42%] rounded-sm ${color}"></div><div class="h-full w-[42%] rounded-sm ${color}"></div></div>`;
+      })
+      .join("");
+    return `<div class="mx-auto flex w-28 flex-col-reverse gap-2">${bars}</div>`;
+  }
 
-    renderLines(primaryLinesEl, result.primary.lines, result.changingPositions);
-    primaryNameEl.textContent = `${result.primary.name} (${result.primary.upper.symbol}${result.primary.lower.symbol})`;
+  function tuanKhongChiIndices(tuanKhong: string): number[] {
+    return tuanKhong.split(" - ").map((s) => CHI.indexOf(s.trim())).filter((i) => i >= 0);
+  }
 
-    if (result.changed) {
-      changedBox.classList.remove("hidden");
-      renderLines(changedLinesEl, result.changed.lines, []);
-      changedNameEl.textContent = `${result.changed.name} (${result.changed.upper.symbol}${result.changed.lower.symbol})`;
-      changingNoteEl.textContent = `Hào động: ${result.changingPositions.map((p) => `hào ${p}`).join(", ")} — quẻ chính biến thành quẻ biến ở trên.`;
-    } else {
-      changedBox.classList.add("hidden");
-      changingNoteEl.textContent = "Không có hào động — quẻ giữ nguyên, không biến sang quẻ khác.";
+  function renderHexTable(q: QueDayDu, tuanKhongChi: number[]): string {
+    const rows = [...q.hao].reverse(); // hiển thị từ hào 6 xuống hào 1
+    const trs = rows
+      .map((h) => {
+        const isK = tuanKhongChi.includes(h.chiIndex);
+        const rowBg = h.isDong ? "bg-(--color-cinnabar-500)/10" : "";
+        return `
+          <tr class="${rowBg} border-b border-(--color-ivory-300)">
+            <td class="p-2 text-center font-semibold text-(--color-ink-800)">${h.hao}${h.isDong ? ' <span class="text-(--color-cinnabar-500)">●</span>' : ""}</td>
+            <td class="p-2 text-center font-medium text-(--color-gold-500)">${h.theUng ?? ""}</td>
+            <td class="p-2 text-center text-(--color-ink-700)">${h.lucThan}</td>
+            <td class="p-2 text-center font-medium text-(--color-ink-950)">${CAN[h.canIndex]} ${CHI[h.chiIndex]}${isK ? ' <span class="ml-1 rounded bg-(--color-ivory-300) px-1 text-[10px] text-(--color-ink-600)">Không</span>' : ""}</td>
+            <td class="p-2 text-center text-(--color-ink-500)">${h.phucThan ? `${h.phucThan.lucThan} ${CAN[h.phucThan.canIndex]}${CHI[h.phucThan.chiIndex]}` : "—"}</td>
+            <td class="p-2 text-center text-(--color-ink-700)">${h.lucThu}</td>
+          </tr>
+        `;
+      })
+      .join("");
+    return `
+      <div class="mt-4 overflow-x-auto rounded-(--radius-control) border border-(--color-ivory-300)">
+        <table class="w-full min-w-[560px] border-collapse text-sm">
+          <thead>
+            <tr class="border-b border-(--color-ivory-300) bg-(--color-ivory-100) text-xs uppercase tracking-wide text-(--color-ink-600)">
+              <th class="p-2">Hào</th><th class="p-2">Thế/Ứng</th><th class="p-2">Lục Thân</th><th class="p-2">Can Chi</th><th class="p-2">Phục Thần</th><th class="p-2">Lục Thú</th>
+            </tr>
+          </thead>
+          <tbody>${trs}</tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  function renderQueBlock(title: string, q: QueDayDu, dongPositions: number[], tuanKhongChi: number[]): string {
+    return `
+      <div class="min-w-0 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-5">
+        <p class="text-center text-xs font-semibold uppercase tracking-wide text-(--color-gold-500)">${title}</p>
+        ${renderHexGraphic(q.lines, dongPositions)}
+        <p class="mt-4 text-center font-display text-lg font-semibold text-(--color-ink-950)">${q.name} <span class="text-(--color-ink-500)">(${q.upper.symbol}${q.lower.symbol})</span></p>
+        <p class="text-center text-sm text-(--color-ink-600)">Quái ${q.cungTrigram.name} — ${q.cungLabel}</p>
+        ${renderHexTable(q, tuanKhongChi)}
+      </div>
+    `;
+  }
+
+  function renderCastResult(container: HTMLElement, cast: FullCastResult, label: string) {
+    const tuanKhongChi = tuanKhongChiIndices(cast.tuanKhong);
+    const header = `
+      <div class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-5 text-sm text-(--color-ink-700)">
+        ${label ? `<p><strong class="text-(--color-ink-950)">Việc cần xem:</strong> ${label}</p>` : ""}
+        <p class="mt-1"><strong class="text-(--color-ink-950)">Ngày lập quẻ:</strong> ${cast.dayCan} ${cast.dayChi} — <strong class="text-(--color-ink-950)">Tuần Không:</strong> ${cast.tuanKhong}</p>
+        <p class="mt-1 text-(--color-ink-600)">${cast.methodNote}</p>
+      </div>
+    `;
+    const blocks = `
+      <div class="mt-6 grid min-w-0 gap-6 ${cast.bien ? "md:grid-cols-2" : ""}">
+        ${renderQueBlock("Quẻ chính", cast.chinh, cast.dongPositions, tuanKhongChi)}
+        ${cast.bien ? renderQueBlock("Quẻ biến", cast.bien, [], tuanKhongChi) : ""}
+      </div>
+      ${
+        cast.dongPositions.length > 0
+          ? `<p class="mt-4 text-center text-sm text-(--color-ink-600)">Hào động: ${cast.dongPositions.map((p) => `hào ${p}`).join(", ")} — quẻ chính biến thành quẻ biến ở trên.</p>`
+          : `<p class="mt-4 text-center text-sm text-(--color-ink-600)">Không có hào động — quẻ giữ nguyên, không biến sang quẻ khác.</p>`
+      }
+    `;
+    container.innerHTML = header + blocks;
+    container.classList.remove("hidden");
+    container.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  // --- Mai Hoa ---
+  document.getElementById("form-maihoa")?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const label = (document.getElementById("mh-label") as HTMLInputElement).value.trim();
+    const input = readCastInput("mh-time");
+    try {
+      const cast = maiHoaCast(input);
+      renderCastResult(document.getElementById("result-maihoa")!, cast, label);
+    } catch (err) {
+      console.error(err);
+      alert("Không lập được quẻ, vui lòng kiểm tra lại thời gian nhập vào.");
+    }
+  });
+
+  // --- Lục Hào (gieo đồng xu, có hiệu ứng) ---
+  const tossesEl = document.getElementById("luchao-tosses")!;
+  const COIN_LABEL: Record<CoinLineValue, string> = { 6: "Lão Âm (động)", 7: "Thiếu Dương", 8: "Thiếu Âm", 9: "Lão Dương (động)" };
+  function sleep(ms: number) {
+    return new Promise((r) => setTimeout(r, ms));
+  }
+  document.getElementById("form-luchao")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const label = (document.getElementById("lh-label") as HTMLInputElement).value.trim();
+    const input = readCastInput("lh-time");
+    const submitBtn = (e.target as HTMLFormElement).querySelector("button[type=submit]") as HTMLButtonElement;
+    submitBtn.disabled = true;
+    tossesEl.classList.remove("hidden");
+    tossesEl.classList.add("flex");
+    tossesEl.innerHTML = "";
+    document.getElementById("result-luchao")?.classList.add("hidden");
+
+    const rawLines: CoinLineValue[] = [];
+    for (let i = 0; i < 6; i++) {
+      await sleep(220);
+      const v = tossCoinLine();
+      rawLines.push(v);
+      const chip = document.createElement("div");
+      chip.className = "rounded-full border border-(--color-gold-400)/40 bg-(--color-ivory-100) px-3 py-1.5 text-xs font-medium text-(--color-ink-700)";
+      chip.textContent = `Hào ${i + 1}: ${v} điểm — ${COIN_LABEL[v]}`;
+      tossesEl.appendChild(chip);
     }
 
-    resultEl.classList.remove("hidden");
-    resultEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    try {
+      const cast = lucHaoCastFromTosses(rawLines, input);
+      renderCastResult(document.getElementById("result-luchao")!, cast, label);
+    } catch (err) {
+      console.error(err);
+      alert("Không lập được quẻ, vui lòng thử lại.");
+    } finally {
+      submitBtn.disabled = false;
+    }
+  });
+
+  // --- Seri tiền ---
+  document.getElementById("form-serial")?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const label = (document.getElementById("sr-label") as HTMLInputElement).value.trim();
+    const serial = (document.getElementById("sr-serial") as HTMLInputElement).value.trim();
+    const input = readCastInput("sr-time");
+    try {
+      const cast = seriTienCast(serial, input);
+      renderCastResult(document.getElementById("result-serial")!, cast, label);
+    } catch (err) {
+      alert("Vui lòng nhập số Seri hợp lệ (ít nhất 2 chữ số).");
+    }
+  });
+
+  // --- Số điện thoại ---
+  document.getElementById("form-phone")?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const label = (document.getElementById("ph-label") as HTMLInputElement).value.trim();
+    const phone = (document.getElementById("ph-phone") as HTMLInputElement).value.trim();
+    const input = readCastInput("ph-time");
+    try {
+      const cast = soDienThoaiCast(phone, input);
+      renderCastResult(document.getElementById("result-phone")!, cast, label);
+    } catch (err) {
+      alert("Vui lòng nhập số điện thoại hợp lệ (ít nhất 2 chữ số).");
+    }
   });
 </script>

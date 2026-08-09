@@ -617,4 +617,4 @@ function findLapXuanJD(year: number): number {
   return lapXuan.jd;
 }
 
-export { CAN_NGU_HANH, CAN_AM_DUONG, CHI_NGU_HANH, CHI_AM_DUONG };
+export { CAN_NGU_HANH, CAN_AM_DUONG, CHI_NGU_HANH, CHI_AM_DUONG, khongVongOf };

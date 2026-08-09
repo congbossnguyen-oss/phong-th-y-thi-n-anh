@@ -1,0 +1,454 @@
+// Hệ thống Lục Hào (Nạp Giáp - Kinh Phòng Bát Cung) đầy đủ: 64 quẻ, Bát Cung/Thế-Ứng, Nạp Giáp
+// Can Chi từng hào, Lục Thân, Lục Thú, Phục Thần, Tuần Không — dùng chung cho cả 4 phương pháp lập
+// quẻ (Mai Hoa, Lục Hào, Seri tiền, Số điện thoại), vì phần LUẬN GIẢI (Nạp Giáp/Lục Thân/Lục Thú)
+// vốn không phụ thuộc vào cách lập quẻ, chỉ phụ thuộc vào 6 hào Âm/Dương cuối cùng.
+//
+// Công thức đã được đối chiếu và xác nhận khớp 100% với 2 ví dụ tham chiếu độc lập từ quekinhdich.com
+// (Học Viện Phong Thủy Minh Việt): "Thủy Địa Tỷ" (Khôn cung, Quy Hồn) và "Địa Thiên Thái" (Khôn cung,
+// Tam Thế) — khớp đúng: quẻ cung, Thế/Ứng hào, Nạp Giáp Can Chi từng hào (Càn, Khôn, Khảm đã xác minh
+// trực tiếp), Lục Thân từng hào (khớp cả 6/6 hào cả 2 ví dụ), Lục Thú (khớp cả 6/6 hào), Tuần Không.
+// Nạp Giáp Can của 8 quái đã đối chiếu thêm với bảng "Stem-Trigram" trên Wikipedia (mục Wenwanggua).
+// Nạp Giáp Chi của Chấn/Tốn/Cấn/Ly/Đoài (5/8 quái) lấy theo ca quyết "Nạp Giáp" cổ điển (Kinh Phòng),
+// chưa có ví dụ thực tế độc lập để đối chiếu riêng — nhưng tuân theo đúng quy luật đối xứng nhất quán
+// đã được xác nhận ở 3 quái kia (nhóm Dương thuận hành, nhóm Âm nghịch hành, mỗi 2 quái cách nhau đúng
+// 2 Chi).
+
+import { CAN, CHI } from "./menh-nap-am";
+import { CHI_NGU_HANH, khongVongOf } from "./bat-tu";
+import type { NguHanh } from "./menh-nap-am";
+import { jdFromDate } from "./solar-term";
+import { solarToLunar } from "./lunar-calendar";
+
+export type LineVal = 0 | 1; // 0 = Âm (đứt), 1 = Dương (liền)
+
+export interface TrigramDef {
+  id: number; // 1-8, theo đúng thứ tự tài liệu tham khảo
+  name: string;
+  symbol: string;
+  bits: [LineVal, LineVal, LineVal]; // hào 1-2-3 (dưới lên)
+  nguHanh: NguHanh;
+  napGiap: {
+    lower: { canIndex: number; chi: [number, number, number] };
+    upper: { canIndex: number; chi: [number, number, number] };
+  };
+}
+
+const G = (name: string) => CAN.indexOf(name);
+const C = (name: string) => CHI.indexOf(name);
+
+export const TRIGRAMS: TrigramDef[] = [
+  {
+    id: 1, name: "Càn", symbol: "☰", bits: [1, 1, 1], nguHanh: "Kim",
+    napGiap: { lower: { canIndex: G("Giáp"), chi: [C("Tý"), C("Dần"), C("Thìn")] }, upper: { canIndex: G("Nhâm"), chi: [C("Ngọ"), C("Thân"), C("Tuất")] } },
+  },
+  {
+    id: 2, name: "Đoài", symbol: "☱", bits: [1, 1, 0], nguHanh: "Kim",
+    napGiap: { lower: { canIndex: G("Đinh"), chi: [C("Tỵ"), C("Mão"), C("Sửu")] }, upper: { canIndex: G("Đinh"), chi: [C("Hợi"), C("Dậu"), C("Mùi")] } },
+  },
+  {
+    id: 3, name: "Ly", symbol: "☲", bits: [1, 0, 1], nguHanh: "Hỏa",
+    napGiap: { lower: { canIndex: G("Kỷ"), chi: [C("Mão"), C("Sửu"), C("Hợi")] }, upper: { canIndex: G("Kỷ"), chi: [C("Dậu"), C("Mùi"), C("Tỵ")] } },
+  },
+  {
+    id: 4, name: "Chấn", symbol: "☳", bits: [1, 0, 0], nguHanh: "Mộc",
+    napGiap: { lower: { canIndex: G("Canh"), chi: [C("Tý"), C("Dần"), C("Thìn")] }, upper: { canIndex: G("Canh"), chi: [C("Ngọ"), C("Thân"), C("Tuất")] } },
+  },
+  {
+    id: 5, name: "Tốn", symbol: "☴", bits: [0, 1, 1], nguHanh: "Mộc",
+    napGiap: { lower: { canIndex: G("Tân"), chi: [C("Sửu"), C("Hợi"), C("Dậu")] }, upper: { canIndex: G("Tân"), chi: [C("Mùi"), C("Tỵ"), C("Mão")] } },
+  },
+  {
+    id: 6, name: "Khảm", symbol: "☵", bits: [0, 1, 0], nguHanh: "Thủy",
+    napGiap: { lower: { canIndex: G("Mậu"), chi: [C("Dần"), C("Thìn"), C("Ngọ")] }, upper: { canIndex: G("Mậu"), chi: [C("Thân"), C("Tuất"), C("Tý")] } },
+  },
+  {
+    id: 7, name: "Cấn", symbol: "☶", bits: [0, 0, 1], nguHanh: "Thổ",
+    napGiap: { lower: { canIndex: G("Bính"), chi: [C("Thìn"), C("Ngọ"), C("Thân")] }, upper: { canIndex: G("Bính"), chi: [C("Tuất"), C("Tý"), C("Dần")] } },
+  },
+  {
+    id: 8, name: "Khôn", symbol: "☷", bits: [0, 0, 0], nguHanh: "Thổ",
+    napGiap: { lower: { canIndex: G("Ất"), chi: [C("Mùi"), C("Tỵ"), C("Mão")] }, upper: { canIndex: G("Quý"), chi: [C("Sửu"), C("Hợi"), C("Dậu")] } },
+  },
+];
+
+function trigramByBits(bits: [LineVal, LineVal, LineVal]): TrigramDef {
+  const t = TRIGRAMS.find((tr) => tr.bits[0] === bits[0] && tr.bits[1] === bits[1] && tr.bits[2] === bits[2]);
+  if (!t) throw new Error("Bát quái không hợp lệ");
+  return t;
+}
+
+// Bảng 64 quẻ (Thượng-Hạ → tên) — đối chiếu theo tài liệu "Nhập môn Chu Dịch Dự đoán học" (Trần Viên).
+export const HEXAGRAM_NAMES: Record<string, string> = {
+  "Càn-Càn": "Thuần Càn", "Càn-Đoài": "Thiên Trạch Lý", "Càn-Ly": "Thiên Hỏa Đồng Nhân", "Càn-Chấn": "Thiên Lôi Vô Vọng",
+  "Càn-Tốn": "Thiên Phong Cấu", "Càn-Khảm": "Thiên Thủy Tụng", "Càn-Cấn": "Thiên Sơn Độn", "Càn-Khôn": "Thiên Địa Bĩ",
+  "Đoài-Càn": "Trạch Thiên Quải", "Đoài-Đoài": "Thuần Đoài", "Đoài-Ly": "Trạch Hỏa Cách", "Đoài-Chấn": "Trạch Lôi Tùy",
+  "Đoài-Tốn": "Trạch Phong Đại Quá", "Đoài-Khảm": "Trạch Thủy Khốn", "Đoài-Cấn": "Trạch Sơn Hàm", "Đoài-Khôn": "Trạch Địa Tụy",
+  "Ly-Càn": "Hỏa Thiên Đại Hữu", "Ly-Đoài": "Hỏa Trạch Khuê", "Ly-Ly": "Thuần Ly", "Ly-Chấn": "Hỏa Lôi Phệ Hạp",
+  "Ly-Tốn": "Hỏa Phong Đỉnh", "Ly-Khảm": "Hỏa Thủy Vị Tế", "Ly-Cấn": "Hỏa Sơn Lữ", "Ly-Khôn": "Hỏa Địa Tấn",
+  "Chấn-Càn": "Lôi Thiên Đại Tráng", "Chấn-Đoài": "Lôi Trạch Quy Muội", "Chấn-Ly": "Lôi Hỏa Phong", "Chấn-Chấn": "Thuần Chấn",
+  "Chấn-Tốn": "Lôi Phong Hằng", "Chấn-Khảm": "Lôi Thủy Giải", "Chấn-Cấn": "Lôi Sơn Tiểu Quá", "Chấn-Khôn": "Lôi Địa Dự",
+  "Tốn-Càn": "Phong Thiên Tiểu Súc", "Tốn-Đoài": "Phong Trạch Trung Phu", "Tốn-Ly": "Phong Hỏa Gia Nhân", "Tốn-Chấn": "Phong Lôi Ích",
+  "Tốn-Tốn": "Thuần Tốn", "Tốn-Khảm": "Phong Thủy Hoán", "Tốn-Cấn": "Phong Sơn Tiệm", "Tốn-Khôn": "Phong Địa Quán",
+  "Khảm-Càn": "Thủy Thiên Nhu", "Khảm-Đoài": "Thủy Trạch Tiết", "Khảm-Ly": "Thủy Hỏa Ký Tế", "Khảm-Chấn": "Thủy Lôi Truân",
+  "Khảm-Tốn": "Thủy Phong Tỉnh", "Khảm-Khảm": "Thuần Khảm", "Khảm-Cấn": "Thủy Sơn Kiển", "Khảm-Khôn": "Thủy Địa Tỷ",
+  "Cấn-Càn": "Sơn Thiên Đại Súc", "Cấn-Đoài": "Sơn Trạch Tổn", "Cấn-Ly": "Sơn Hỏa Bí", "Cấn-Chấn": "Sơn Lôi Di",
+  "Cấn-Tốn": "Sơn Phong Cổ", "Cấn-Khảm": "Sơn Thủy Mông", "Cấn-Cấn": "Thuần Cấn", "Cấn-Khôn": "Sơn Địa Bác",
+  "Khôn-Càn": "Địa Thiên Thái", "Khôn-Đoài": "Địa Trạch Lâm", "Khôn-Ly": "Địa Hỏa Minh Di", "Khôn-Chấn": "Địa Lôi Phục",
+  "Khôn-Tốn": "Địa Phong Thăng", "Khôn-Khảm": "Địa Thủy Sư", "Khôn-Cấn": "Địa Sơn Khiêm", "Khôn-Khôn": "Thuần Khôn",
+};
+
+// --- Lục Thân (so ngũ hành Nạp Giáp của hào với ngũ hành BẢN CUNG — quẻ thuần của quái chủ cung) ---
+export type LucThan = "Huynh Đệ" | "Phụ Mẫu" | "Tử Tôn" | "Quan Quỷ" | "Thê Tài";
+
+function lucThanOf(palaceNguHanh: NguHanh, lineNguHanh: NguHanh): LucThan {
+  const SINH: Record<NguHanh, NguHanh> = { Mộc: "Hỏa", Hỏa: "Thổ", Thổ: "Kim", Kim: "Thủy", Thủy: "Mộc" };
+  const KHAC: Record<NguHanh, NguHanh> = { Mộc: "Thổ", Thổ: "Thủy", Thủy: "Hỏa", Hỏa: "Kim", Kim: "Mộc" };
+  if (lineNguHanh === palaceNguHanh) return "Huynh Đệ";
+  if (SINH[lineNguHanh] === palaceNguHanh) return "Phụ Mẫu"; // hào sinh cung => cung là "con" của hào => hào là Phụ Mẫu
+  if (SINH[palaceNguHanh] === lineNguHanh) return "Tử Tôn"; // cung sinh hào => hào là Tử Tôn
+  if (KHAC[lineNguHanh] === palaceNguHanh) return "Quan Quỷ"; // hào khắc cung => hào là Quan Quỷ
+  return "Thê Tài"; // cung khắc hào => hào là Thê Tài
+}
+
+// --- Lục Thú (khởi từ hào 1 theo Can ngày, đi lên) ---
+const LUC_THU = ["Thanh Long", "Chu Tước", "Câu Trần", "Đằng Xà", "Bạch Hổ", "Huyền Vũ"];
+const LUC_THU_START: Record<number, number> = {
+  0: 0, 1: 0, // Giáp, Ất
+  2: 1, 3: 1, // Bính, Đinh
+  4: 2, // Mậu
+  5: 3, // Kỷ
+  6: 4, 7: 4, // Canh, Tân
+  8: 5, 9: 5, // Nhâm, Quý
+};
+
+export interface HaoInfo {
+  hao: number; // 1-6, từ dưới lên
+  value: LineVal;
+  isDong: boolean; // hào động (từ cách lập quẻ Lục Hào thủ công) — không áp dụng cho 3 pp còn lại
+  canIndex: number;
+  chiIndex: number;
+  nguHanh: NguHanh;
+  lucThan: LucThan;
+  lucThu: string;
+  theUng: "Thế" | "Ứng" | null;
+  phucThan: { lucThan: LucThan; canIndex: number; chiIndex: number } | null; // Lục Thân ẩn (mượn từ quẻ thuần bản cung), nếu loại đó không có mặt trong quẻ hiện tại
+}
+
+// Lục Hợp / Lục Xung giữa 2 Chi — dùng để xác định nhãn đặc biệt thay cho tên đời quái, khi Chi của
+// hào Thế và hào Ứng hợp nhau hoặc xung nhau (đối chiếu khớp với 2 ví dụ thực tế: Thìn-Dậu hợp → nhãn
+// "Lục Hợp" thay cho "Tam Thế"; Mão-Tý không hợp không xung → giữ nguyên tên đời quái "Quy Hồn").
+const LUC_HOP_PAIRS: [number, number][] = [[0, 1], [2, 11], [3, 10], [4, 9], [5, 8], [6, 7]]; // Tý-Sửu, Dần-Hợi, Mão-Tuất, Thìn-Dậu, Tỵ-Thân, Ngọ-Mùi (theo index CHI)
+const LUC_XUNG_PAIRS: [number, number][] = [[0, 6], [1, 7], [2, 8], [3, 9], [4, 10], [5, 11]];
+
+function chiRelation(a: number, b: number): "hop" | "xung" | null {
+  if (LUC_HOP_PAIRS.some(([x, y]) => (x === a && y === b) || (x === b && y === a))) return "hop";
+  if (LUC_XUNG_PAIRS.some(([x, y]) => (x === a && y === b) || (x === b && y === a))) return "xung";
+  return null;
+}
+
+export interface QueDayDu {
+  lines: [LineVal, LineVal, LineVal, LineVal, LineVal, LineVal];
+  upper: TrigramDef;
+  lower: TrigramDef;
+  name: string;
+  cungTrigram: TrigramDef; // quái chủ cung (bản cung)
+  cungLabel: string; // "Càn", "Khảm"... + phân loại (Bát Thuần/Nhất Thế.../Du Hồn/Quy Hồn)
+  theHao: number;
+  ungHao: number;
+  hao: HaoInfo[]; // index 0 = hào 1 (dưới), ... index5 = hào 6
+}
+
+const GENERATION_LABELS = ["Bát Thuần", "Nhất Thế", "Nhị Thế", "Tam Thế", "Tứ Thế", "Ngũ Thế", "Du Hồn", "Quy Hồn"];
+
+// Sinh 8 quẻ (bao gồm bản cung) của 1 quái chủ cung theo đúng luật biến hào Kinh Phòng, trả về
+// map "6 bit string" -> { theHao, generationIndex }.
+function buildPalaceHexagrams(cung: TrigramDef): Map<string, { theHao: number; generationIndex: number }> {
+  const pure = cung.bits; // dùng chung cho cả lower & upper ban đầu
+  const map = new Map<string, { theHao: number; generationIndex: number }>();
+  const toKey = (lower: LineVal[], upper: LineVal[]) => [...lower, ...upper].join("");
+
+  // Bát Thuần (thế hào 6)
+  map.set(toKey(pure, pure), { theHao: 6, generationIndex: 0 });
+
+  // Nhất Thế .. Ngũ Thế (thế hào 1..5): lật dần từng hào từ hào 1 lên, hào 4-5 thuộc quái thượng.
+  let lower: LineVal[] = [...pure];
+  let upper: LineVal[] = [...pure];
+  const flip = (v: LineVal): LineVal => (v === 1 ? 0 : 1);
+  for (let gen = 1; gen <= 5; gen++) {
+    const pos = gen - 1; // 0-based trong mảng 6 hào (0..5)
+    if (pos < 3) lower[pos] = flip(lower[pos]);
+    else upper[pos - 3] = flip(upper[pos - 3]);
+    map.set(toKey(lower, upper), { theHao: gen, generationIndex: gen });
+  }
+  // lower/upper hiện tại = trạng thái Ngũ Thế (5 hào đã lật, hào 6 còn nguyên bản cung)
+
+  // Du Hồn: lật lại hào 4 (upper[0]) về nguyên bản (undo), thế hào 4.
+  const duHonUpper: LineVal[] = [...upper];
+  duHonUpper[0] = pure[0];
+  map.set(toKey(lower, duHonUpper), { theHao: 4, generationIndex: 6 });
+
+  // Quy Hồn: từ Du Hồn, trả nguyên cả quái hạ (hào 1-2-3) về bản cung, giữ nguyên quái thượng của Du Hồn.
+  const quyHonLower: LineVal[] = [...pure];
+  map.set(toKey(quyHonLower, duHonUpper), { theHao: 3, generationIndex: 7 });
+
+  return map;
+}
+
+// Tiền xử lý: với mỗi quẻ trong 64 quẻ, xác định nó thuộc cung nào + thế hào bao nhiêu — tính 1 lần.
+const PALACE_LOOKUP = (() => {
+  const lookup = new Map<string, { cung: TrigramDef; theHao: number; generationIndex: number }>();
+  for (const cung of TRIGRAMS) {
+    const hexes = buildPalaceHexagrams(cung);
+    hexes.forEach((info, key) => {
+      lookup.set(key, { cung, theHao: info.theHao, generationIndex: info.generationIndex });
+    });
+  }
+  return lookup;
+})();
+
+// Lập đầy đủ 1 quẻ (Nạp Giáp, Lục Thân, Lục Thú, Thế/Ứng, Phục Thần) từ 6 hào Âm/Dương (dưới lên) +
+// Can Ngày (để khởi Lục Thú) + các vị trí hào động (nếu có, riêng cho phương pháp Lục Hào thủ công).
+export function lapQueDayDu(
+  lines: [LineVal, LineVal, LineVal, LineVal, LineVal, LineVal],
+  dayCanIndex: number,
+  dongPositions: number[] = [],
+): QueDayDu {
+  const lowerBits = [lines[0], lines[1], lines[2]] as [LineVal, LineVal, LineVal];
+  const upperBits = [lines[3], lines[4], lines[5]] as [LineVal, LineVal, LineVal];
+  const lower = trigramByBits(lowerBits);
+  const upper = trigramByBits(upperBits);
+  const name = HEXAGRAM_NAMES[`${upper.name}-${lower.name}`] ?? `${upper.name} ${lower.name}`;
+
+  const key = lines.join("");
+  const palaceInfo = PALACE_LOOKUP.get(key);
+  if (!palaceInfo) throw new Error("Không xác định được Bát Cung cho quẻ này");
+  const { cung, theHao, generationIndex } = palaceInfo;
+  const ungHao = ((theHao + 3 - 1) % 6) + 1;
+
+  const luThuStart = LUC_THU_START[dayCanIndex] ?? 0;
+
+  // Nạp Giáp Can Chi cho từng hào theo trigram THỰC TẾ đang chiếm vị trí đó (không phụ thuộc cung).
+  const napGiapFor = (pos: number): { canIndex: number; chiIndex: number } => {
+    if (pos < 3) return { canIndex: lower.napGiap.lower.canIndex, chiIndex: lower.napGiap.lower.chi[pos] };
+    return { canIndex: upper.napGiap.upper.canIndex, chiIndex: upper.napGiap.upper.chi[pos - 3] };
+  };
+
+  // Lục Thân nguyên bản theo Nạp Giáp thực tế + xác định các loại Lục Thân đang CÓ MẶT.
+  const rawLucThan: LucThan[] = [0, 1, 2, 3, 4, 5].map((pos) => {
+    const { chiIndex } = napGiapFor(pos);
+    return lucThanOf(cung.nguHanh, CHI_NGU_HANH[chiIndex]);
+  });
+  const present = new Set(rawLucThan);
+  const ALL_LUC_THAN: LucThan[] = ["Huynh Đệ", "Phụ Mẫu", "Tử Tôn", "Quan Quỷ", "Thê Tài"];
+  const missing = ALL_LUC_THAN.filter((t) => !present.has(t));
+
+  // Phục Thần: nếu quẻ hiện tại thiếu 1 (hoặc vài) loại Lục Thân, tra trong quẻ THUẦN của bản cung
+  // (cung/cung) xem loại đó nằm ở hào nào — "mượn" Can Chi + gắn nhãn Phục Thần vào đúng hào đó.
+  const phucThanAtPos: (LucThan | null)[] = [null, null, null, null, null, null];
+  if (missing.length > 0) {
+    const pureLucThan: LucThan[] = [0, 1, 2, 3, 4, 5].map((pos) => {
+      const { chiIndex } = pos < 3 ? { chiIndex: cung.napGiap.lower.chi[pos] } : { chiIndex: cung.napGiap.upper.chi[pos - 3] };
+      return lucThanOf(cung.nguHanh, CHI_NGU_HANH[chiIndex]);
+    });
+    missing.forEach((type) => {
+      const pos = pureLucThan.indexOf(type);
+      if (pos >= 0) phucThanAtPos[pos] = type;
+    });
+  }
+
+  const napGiapPure = (pos: number): { canIndex: number; chiIndex: number } => {
+    if (pos < 3) return { canIndex: cung.napGiap.lower.canIndex, chiIndex: cung.napGiap.lower.chi[pos] };
+    return { canIndex: cung.napGiap.upper.canIndex, chiIndex: cung.napGiap.upper.chi[pos - 3] };
+  };
+
+  const hao: HaoInfo[] = [0, 1, 2, 3, 4, 5].map((pos) => {
+    const haoSo = pos + 1;
+    const { canIndex, chiIndex } = napGiapFor(pos);
+    const lucThuIdx = (luThuStart + pos) % 6;
+    const phucThanType = phucThanAtPos[pos];
+    return {
+      hao: haoSo,
+      value: lines[pos],
+      isDong: dongPositions.includes(haoSo),
+      canIndex,
+      chiIndex,
+      nguHanh: CHI_NGU_HANH[chiIndex],
+      lucThan: rawLucThan[pos],
+      lucThu: LUC_THU[lucThuIdx],
+      theUng: haoSo === theHao ? "Thế" : haoSo === ungHao ? "Ứng" : null,
+      phucThan: phucThanType ? { lucThan: phucThanType, ...napGiapPure(pos) } : null,
+    };
+  });
+
+  // Nhãn đặc biệt: nếu Chi hào Thế và hào Ứng hợp/xung nhau, dùng nhãn "Lục Hợp"/"Lục Xung" thay cho
+  // tên đời quái thông thường (đối chiếu khớp thực tế: Tam Thế có Thế-Ứng Thìn-Dậu hợp → "Lục Hợp").
+  const theChi = hao[theHao - 1].chiIndex;
+  const ungChi = hao[ungHao - 1].chiIndex;
+  const relation = chiRelation(theChi, ungChi);
+  const specialLabel = relation === "hop" ? "Lục Hợp" : relation === "xung" ? "Lục Xung" : GENERATION_LABELS[generationIndex];
+
+  return {
+    lines,
+    upper,
+    lower,
+    name,
+    cungTrigram: cung,
+    cungLabel: `${cung.name} (${specialLabel})`,
+    theHao,
+    ungHao,
+    hao,
+  };
+}
+
+// Tuần Không của Can Chi ngày lập quẻ — dùng lại đúng thuật toán đã kiểm chứng ở Bát Tự.
+export { khongVongOf };
+
+// Quẻ biến: áp dụng cho các hào có isDong = true (đảo Âm <-> Dương).
+export function queBienFromDong(
+  lines: [LineVal, LineVal, LineVal, LineVal, LineVal, LineVal],
+  dongPositions: number[],
+): [LineVal, LineVal, LineVal, LineVal, LineVal, LineVal] | null {
+  if (dongPositions.length === 0) return null;
+  return lines.map((v, i) => (dongPositions.includes(i + 1) ? ((v === 1 ? 0 : 1) as LineVal) : v)) as [
+    LineVal, LineVal, LineVal, LineVal, LineVal, LineVal,
+  ];
+}
+
+// Can Chi ngày Dương lịch (chu kỳ 60 ngày liên tục qua Julian Day) — dùng để khởi Lục Thú + Tuần Không.
+// Đối chiếu đúng công thức đã kiểm chứng trong bat-tu.ts (trụ ngày Bát Tự): 23h tính sang ngày hôm sau.
+export function dayCanChiOf(day: number, month: number, year: number, hour: number): { canIndex: number; chiIndex: number } {
+  let jdDay = jdFromDate(day, month, year);
+  if (hour >= 23) jdDay += 1;
+  return { canIndex: (jdDay + 9) % 10, chiIndex: (jdDay + 1) % 12 };
+}
+
+export interface CastInput {
+  day: number;
+  month: number;
+  year: number;
+  hour: number;
+  minute?: number;
+}
+
+export interface FullCastResult {
+  chinh: QueDayDu;
+  bien: QueDayDu | null;
+  dongPositions: number[];
+  tuanKhong: string;
+  dayCan: string;
+  dayChi: string;
+  methodNote: string;
+}
+
+function trigramById(id: number): TrigramDef {
+  const t = TRIGRAMS.find((tr) => tr.id === id);
+  if (!t) throw new Error("ID quái không hợp lệ");
+  return t;
+}
+
+function finalizeCast(
+  lower: TrigramDef,
+  upper: TrigramDef,
+  dongPositions: number[],
+  input: CastInput,
+  methodNote: string,
+): FullCastResult {
+  const lines = [...lower.bits, ...upper.bits] as [LineVal, LineVal, LineVal, LineVal, LineVal, LineVal];
+  const { canIndex, chiIndex } = dayCanChiOf(input.day, input.month, input.year, input.hour);
+  const chinh = lapQueDayDu(lines, canIndex, dongPositions);
+  const bienLines = queBienFromDong(lines, dongPositions);
+  const bien = bienLines ? lapQueDayDu(bienLines, canIndex, []) : null;
+  return {
+    chinh,
+    bien,
+    dongPositions,
+    tuanKhong: khongVongOf(canIndex, chiIndex),
+    dayCan: CAN[canIndex],
+    dayChi: CHI[chiIndex],
+    methodNote,
+  };
+}
+
+// --- Phương pháp 1: Mai Hoa Dịch Số (Thiệu Khang Tiết) — dùng Năm/Tháng/Ngày/Giờ ÂM LỊCH của thời
+// điểm lập quẻ. Công thức đã kiểm chứng khớp chính xác với ví dụ thực tế tham chiếu.
+export function maiHoaCast(input: CastInput): FullCastResult {
+  const lunar = solarToLunar(input.day, input.month, input.year);
+  const yearChiIndex = ((lunar.year - 4) % 12 + 12) % 12;
+  const soNam = yearChiIndex + 1; // Tý=1...Hợi=12
+  const soThang = lunar.month;
+  const soNgay = lunar.day;
+  const hourChiIndex = Math.floor((((input.hour + 1) % 24) + 24) % 24 / 2);
+  const soGio = hourChiIndex + 1;
+
+  let queThuong = (soNam + soThang + soNgay) % 8;
+  if (queThuong === 0) queThuong = 8;
+  let queHa = (soNam + soThang + soNgay + soGio) % 8;
+  if (queHa === 0) queHa = 8;
+  let haoDong = (soNam + soThang + soNgay + soGio) % 6;
+  if (haoDong === 0) haoDong = 6;
+
+  const upper = trigramById(queThuong);
+  const lower = trigramById(queHa);
+  const note = `Mai Hoa Dịch Số — Âm lịch ngày ${soNgay} tháng ${soThang} năm ${CHI[yearChiIndex]}, giờ ${CHI[hourChiIndex]}. Quẻ thượng số ${queThuong}, quẻ hạ số ${queHa}, hào động số ${haoDong}.`;
+  return finalizeCast(lower, upper, [haoDong], input, note);
+}
+
+// --- Phương pháp 2: Lục Hào (gieo 3 đồng xu, 6 lần) — mô phỏng ngẫu nhiên, cho ra Lão/Thiếu Âm Dương
+// và xác định hào động (Lão Âm 6, Lão Dương 9) đúng theo nghi thức truyền thống.
+export type CoinLineValue = 6 | 7 | 8 | 9;
+
+export function tossCoinLine(rng: () => number = Math.random): CoinLineValue {
+  let sum = 0;
+  for (let i = 0; i < 3; i++) sum += rng() < 0.5 ? 2 : 3;
+  return sum as CoinLineValue;
+}
+
+export function lucHaoCastFromTosses(rawLines: CoinLineValue[], input: CastInput): FullCastResult {
+  const bits = rawLines.map((v) => (v === 6 || v === 8 ? 0 : 1)) as LineVal[];
+  const dongPositions = rawLines.map((v, i) => ({ v, pos: i + 1 })).filter((x) => x.v === 6 || x.v === 9).map((x) => x.pos);
+  const lower = trigramByBits([bits[0], bits[1], bits[2]]);
+  const upper = trigramByBits([bits[3], bits[4], bits[5]]);
+  const note = "Lục Hào — gieo 3 đồng xu, 6 lần (sấp 2 điểm, ngửa 3 điểm; tổng 6/9 là hào động).";
+  return finalizeCast(lower, upper, dongPositions, input, note);
+}
+
+export function lucHaoCastRandom(input: CastInput, rng: () => number = Math.random): FullCastResult {
+  const rawLines: CoinLineValue[] = [];
+  for (let i = 0; i < 6; i++) rawLines.push(tossCoinLine(rng));
+  return lucHaoCastFromTosses(rawLines, input);
+}
+
+// --- Phương pháp 3 & 4: Lập quẻ theo dãy số (Seri tiền / Số điện thoại) — áp dụng cách "số linh quẻ"
+// cổ điển (Thiệu Vĩ Hoa, ứng dụng Mai Hoa Dịch Số cho số bất kỳ): chia dãy số làm 2 nửa, tổng chữ số
+// nửa đầu %8 = quẻ thượng, tổng chữ số nửa sau %8 = quẻ hạ, tổng tất cả chữ số %6 = hào động.
+function digitSum(digits: string): number {
+  return digits.split("").reduce((s, d) => s + (Number(d) || 0), 0);
+}
+
+export function queFromNumberString(raw: string, input: CastInput, label: string): FullCastResult {
+  const digits = raw.replace(/\D/g, "");
+  if (digits.length < 2) throw new Error("Cần ít nhất 2 chữ số để lập quẻ");
+  const mid = Math.ceil(digits.length / 2);
+  const firstHalf = digits.slice(0, mid);
+  const secondHalf = digits.slice(mid);
+
+  let queThuong = digitSum(firstHalf) % 8;
+  if (queThuong === 0) queThuong = 8;
+  let queHa = digitSum(secondHalf) % 8;
+  if (queHa === 0) queHa = 8;
+  let haoDong = digitSum(digits) % 6;
+  if (haoDong === 0) haoDong = 6;
+
+  const upper = trigramById(queThuong);
+  const lower = trigramById(queHa);
+  const note = `${label} "${digits}" — chia nửa đầu "${firstHalf}" (quẻ thượng số ${queThuong}), nửa sau "${secondHalf}" (quẻ hạ số ${queHa}), tổng chữ số (hào động số ${haoDong}).`;
+  return finalizeCast(lower, upper, [haoDong], input, note);
+}
+
+export function seriTienCast(serial: string, input: CastInput): FullCastResult {
+  return queFromNumberString(serial, input, "Seri tiền");
+}
+
+export function soDienThoaiCast(phone: string, input: CastInput): FullCastResult {
+  return queFromNumberString(phone, input, "Số điện thoại");
+}
