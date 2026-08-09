@@ -516,6 +516,9 @@ export function lucHaoCastManual(values: LineVal[], dongPositions: number[], inp
 // --- Phương pháp 3 & 4: Lập quẻ theo dãy số (Seri tiền / Số điện thoại) — áp dụng cách "số linh quẻ"
 // cổ điển (Thiệu Vĩ Hoa, ứng dụng Mai Hoa Dịch Số cho số bất kỳ): chia dãy số làm 2 nửa, tổng chữ số
 // nửa đầu %8 = quẻ thượng, tổng chữ số nửa sau %8 = quẻ hạ, tổng tất cả chữ số %6 = hào động.
+// Số lượng chữ số LẺ (ví dụ Seri 7 số): nửa đầu lấy PHẦN NGẮN HƠN (3 số đầu), nửa sau lấy PHẦN DÀI
+// HƠN (4 số sau) — ví dụ 7 số: 3 số đầu :8 ra quẻ thượng, 4 số sau :8 ra quẻ hạ, tổng cả 7 số :6 ra
+// hào động (không đổi).
 function digitSum(digits: string): number {
   return digits.split("").reduce((s, d) => s + (Number(d) || 0), 0);
 }
@@ -523,7 +526,7 @@ function digitSum(digits: string): number {
 export function queFromNumberString(raw: string, input: CastInput, label: string): FullCastResult {
   const digits = raw.replace(/\D/g, "");
   if (digits.length < 2) throw new Error("Cần ít nhất 2 chữ số để lập quẻ");
-  const mid = Math.ceil(digits.length / 2);
+  const mid = Math.floor(digits.length / 2);
   const firstHalf = digits.slice(0, mid);
   const secondHalf = digits.slice(mid);
 
