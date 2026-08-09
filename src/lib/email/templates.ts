@@ -115,6 +115,31 @@ export function courseOrderConfirmedEmail(params: {
   };
 }
 
+export function consultationRequestEmail(params: {
+  name: string;
+  phone: string;
+  email: string | null;
+  topic: string | null;
+  message: string | null;
+}): { subject: string; html: string } {
+  const bodyHtml = `
+    <p>Có 1 yêu cầu đặt lịch tư vấn mới từ website.</p>
+    <table role="presentation" width="100%" style="margin-top:16px;border-top:1px solid #e8dfcd;padding-top:12px;">
+      ${infoRow("Họ tên", params.name)}
+      ${infoRow("Số điện thoại", params.phone)}
+      ${params.email ? infoRow("Email", params.email) : ""}
+      ${params.topic ? infoRow("Nhu cầu tư vấn", params.topic) : ""}
+    </table>
+    ${params.message ? `<p style="margin-top:16px;color:${BRAND.ink};"><strong>Nội dung:</strong><br/>${params.message.replace(/\n/g, "<br/>")}</p>` : ""}
+    <p style="margin-top:20px;">Vui lòng liên hệ lại khách trong vòng 24 giờ làm việc.</p>
+  `;
+
+  return {
+    subject: `Yêu cầu tư vấn mới: ${params.name} (${params.phone})`,
+    html: layout({ previewText: `${params.name} — ${params.phone} vừa gửi yêu cầu tư vấn.`, title: "Yêu cầu đặt lịch tư vấn mới", bodyHtml }),
+  };
+}
+
 export function courseCertificateEmail(params: {
   customerName: string;
   courseName: string;

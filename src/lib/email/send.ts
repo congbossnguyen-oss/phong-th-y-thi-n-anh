@@ -1,8 +1,10 @@
 import { getResendClient, getFromAddress } from "./client";
+import { siteConfig } from "../site-config";
 import {
   productOrderConfirmedEmail,
   courseOrderConfirmedEmail,
   courseCertificateEmail,
+  consultationRequestEmail,
 } from "./templates";
 
 // Gửi email không được phép làm sập luồng nghiệp vụ chính (vd webhook thanh toán phải trả 200
@@ -43,6 +45,18 @@ export async function sendCourseOrderConfirmedEmail(params: {
 }) {
   const { subject, html } = courseOrderConfirmedEmail(params);
   await safeSend(params.to, subject, html);
+}
+
+export async function sendConsultationRequestEmail(params: {
+  name: string;
+  phone: string;
+  email: string | null;
+  topic: string | null;
+  message: string | null;
+}) {
+  const to = import.meta.env.CONTACT_NOTIFICATION_EMAIL || siteConfig.email;
+  const { subject, html } = consultationRequestEmail(params);
+  await safeSend(to, subject, html);
 }
 
 export async function sendCourseCertificateEmail(params: {

@@ -115,6 +115,18 @@ export const sepayWebhookLogs = pgTable("sepay_webhook_logs", {
   receivedAt: timestamp("received_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// --- Yêu cầu đặt lịch tư vấn (form /lien-he) ---
+
+export const consultationRequests = pgTable("consultation_requests", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  name: text("name").notNull(),
+  phone: text("phone").notNull(),
+  email: text("email"),
+  topic: text("topic"),
+  message: text("message"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // --- Chứng chỉ hoàn thành khóa học ---
 
 export const courseCertificates = pgTable("course_certificates", {
