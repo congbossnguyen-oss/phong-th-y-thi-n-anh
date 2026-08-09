@@ -22,7 +22,6 @@ export async function appendConsultationRequestToSheet(params: {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         secret,
-        timestamp: new Date().toISOString(),
         name: params.name,
         phone: params.phone,
         email: params.email ?? "",

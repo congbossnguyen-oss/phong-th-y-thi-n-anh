@@ -36,7 +36,7 @@ function doPost(e) {
 
     const sheet = SpreadsheetApp.getActiveSpreadsheet().getActiveSheet();
     sheet.appendRow([
-      body.timestamp || new Date().toISOString(),
+      Utilities.formatDate(new Date(), "Asia/Ho_Chi_Minh", "dd/MM/yyyy HH:mm:ss"),
       body.name || "",
       body.phone || "",
       body.email || "",
