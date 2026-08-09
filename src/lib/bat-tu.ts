@@ -117,10 +117,15 @@ export function thapThanOf(canIndex: number, nhatChuIndex: number): string {
   return "?";
 }
 
-const TRUONG_SINH_STAGES = [
+// Thứ tự 12 giai đoạn Trường Sinh — dùng chung cho cả Bát Tự (Can, thuận/nghịch, xem TRUONG_SINH_START
+// bên dưới) và Lục Hào (Ngũ Hành, luôn thuận, xem LUC_HAO_TAM_HOP_START trong luc-hao.ts). Chỉ THỨ TỰ
+// 12 giai đoạn là dùng chung; điểm khởi Trường Sinh của 2 hệ thống KHÁC NHAU (đặc biệt Thổ) nên không
+// được dùng chung TRUONG_SINH_START.
+export const TRUONG_SINH_STAGES = [
   "Trường Sinh", "Mộc Dục", "Quan Đới", "Lâm Quan", "Đế Vượng", "Suy",
   "Bệnh", "Tử", "Mộ", "Tuyệt", "Thai", "Dưỡng",
-];
+] as const;
+export type TruongSinhStage = (typeof TRUONG_SINH_STAGES)[number];
 
 // Vị trí Chi khởi đầu Trường Sinh và chiều đi (thuận/nghịch) theo từng Can.
 const TRUONG_SINH_START: { chiIndex: number; forward: boolean }[] = [

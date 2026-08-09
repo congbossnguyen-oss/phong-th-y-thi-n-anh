@@ -14,7 +14,7 @@
 // 2 Chi).
 
 import { CAN, CHI } from "./menh-nap-am";
-import { CHI_NGU_HANH, khongVongOf, tinhBatTu } from "./bat-tu";
+import { CHI_NGU_HANH, khongVongOf, tinhBatTu, TRUONG_SINH_STAGES, type TruongSinhStage } from "./bat-tu";
 import type { NguHanh } from "./menh-nap-am";
 import { jdFromDate, getCurrentTietKhi24Name } from "./solar-term";
 import { solarToLunar } from "./lunar-calendar";
@@ -149,6 +149,31 @@ export interface HaoInfo {
   theUng: "Thế" | "Ứng" | null;
   phucThan: { lucThan: LucThan; canIndex: number; chiIndex: number } | null; // Lục Thân ẩn (mượn từ quẻ thuần bản cung), nếu loại đó không có mặt trong quẻ hiện tại
   vuongSuy: VuongSuy;
+  growthDay: TruongSinhStage; // Trường Sinh của Ngũ Hành hào tại Chi Ngày gieo quẻ (Nhật thần)
+  growthMonth: TruongSinhStage; // Trường Sinh của Ngũ Hành hào tại Chi Tháng gieo quẻ (Nguyệt kiến)
+}
+
+// Điểm khởi Trường Sinh riêng cho Lục Hào — theo Ngũ Hành của Chi hào (KHÔNG theo Can, KHÔNG phân
+// biệt Âm/Dương để đi thuận/nghịch — luôn đi THUẬN). Nguồn: "kinh dịch lục hào sơ cấp minh việt"
+// (2 bản OCR độc lập, mục "VI. AN VÒNG TRƯỜNG SINH", số liệu khớp nhau tuyệt đối).
+// LƯU Ý: Thổ ở đây khởi tại THÂN (dùng chung Tam Hợp Thủy cục, vì "không có tam hợp Thổ cục") —
+// KHÁC với quy ước Thổ trong Bát Tự (TRUONG_SINH_START ở bat-tu.ts, Thổ khởi tại Dần, dùng chung cung
+// Hỏa). Đây là 2 hệ thống khác nhau, KHÔNG được dùng chung bảng khởi.
+const LUC_HAO_TAM_HOP_START: Record<NguHanh, number> = {
+  Thủy: C("Thân"),
+  Kim: C("Tỵ"),
+  Hỏa: C("Dần"),
+  Mộc: C("Hợi"),
+  Thổ: C("Thân"),
+};
+
+// Trường Sinh Lục Hào: Ngũ Hành hào -> khởi điểm (bảng trên) -> đi thuận 12 vị trí -> giai đoạn tại
+// targetChiIndex (Chi Ngày hoặc Chi Tháng gieo quẻ).
+function truongSinhLucHaoOf(nguHanh: NguHanh, targetChiIndex: number | null): TruongSinhStage {
+  const start = LUC_HAO_TAM_HOP_START[nguHanh];
+  const target = targetChiIndex ?? start;
+  const diff = (target - start + 12) % 12;
+  return TRUONG_SINH_STAGES[diff];
 }
 
 // Lục Hợp / Lục Xung giữa 2 Chi — dùng để xác định nhãn đặc biệt thay cho tên đời quái, khi Chi của
@@ -253,6 +278,7 @@ export function lapQueDayDu(
   dongPositions: number[] = [],
   monthChiIndex: number | null = null,
   palaceOverride: PalaceOverride | null = null,
+  dayChiIndex: number | null = null,
 ): QueDayDu {
   const lowerBits = [lines[0], lines[1], lines[2]] as [LineVal, LineVal, LineVal];
   const upperBits = [lines[3], lines[4], lines[5]] as [LineVal, LineVal, LineVal];
@@ -330,6 +356,8 @@ export function lapQueDayDu(
       theUng: haoSo === theHao ? "Thế" : haoSo === ungHao ? "Ứng" : null,
       phucThan: phucThanType ? { lucThan: phucThanType, ...napGiapPure(pos) } : null,
       vuongSuy: monthNguHanh ? vuongSuyOf(monthNguHanh, nguHanh) : vuongSuyOf(nguHanh, nguHanh),
+      growthDay: truongSinhLucHaoOf(nguHanh, dayChiIndex),
+      growthMonth: truongSinhLucHaoOf(nguHanh, monthChiIndex),
     };
   });
 
@@ -473,19 +501,27 @@ function finalizeCast(
   const bt = tinhBatTu({ day: input.day, month: input.month, year: input.year, hour: input.hour, minute: input.minute, gender: "Nam" });
   const monthChiIndex = bt.month.chiIndex;
 
-  const chinh = lapQueDayDu(lines, canIndex, dongPositions, monthChiIndex);
+  const chinh = lapQueDayDu(lines, canIndex, dongPositions, monthChiIndex, null, chiIndex);
   const hoQue = queHoInfo(lines);
   const bienLines = queBienFromDong(lines, dongPositions);
   // Quẻ biến KHÔNG tính như 1 lá độc lập: Lục Thân + Thế/Ứng vay mượn nguyên từ quẻ CHỦ (chinh); Nạp
   // Giáp vẫn tính lại theo trigram thực tế sau khi biến (đã tự động đúng vì napGiapFor dùng lower/upper
-  // của chính `bienLines`, không phụ thuộc palaceOverride).
+  // của chính `bienLines`, không phụ thuộc palaceOverride). Trường Sinh Ngày/Tháng dùng cùng thời điểm
+  // gieo quẻ như quẻ chính (chỉ Ngũ Hành của hào biến thay đổi theo trigram mới).
   const bien = bienLines
-    ? lapQueDayDu(bienLines, canIndex, [], monthChiIndex, {
-        cung: chinh.cungTrigram,
-        theHao: chinh.theHao,
-        ungHao: chinh.ungHao,
-        generationIndex: chinh.generationIndex,
-      })
+    ? lapQueDayDu(
+        bienLines,
+        canIndex,
+        [],
+        monthChiIndex,
+        {
+          cung: chinh.cungTrigram,
+          theHao: chinh.theHao,
+          ungHao: chinh.ungHao,
+          generationIndex: chinh.generationIndex,
+        },
+        chiIndex,
+      )
     : null;
   const tietKhi = getCurrentTietKhi24Name(input.day, input.month, input.year, input.hour);
   const canChiText = `giờ ${bt.hour.can} ${bt.hour.chi}, ngày ${bt.day.can} ${bt.day.chi}, tháng ${bt.month.can} ${bt.month.chi}, năm ${bt.year.can} ${bt.year.chi}`;
