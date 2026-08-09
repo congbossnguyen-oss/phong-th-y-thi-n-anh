@@ -481,13 +481,13 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
     "Hỏa Thủy Vị Tế": "Thái Tuế Nguyệt Kiến / Tiểu Hồ Ngật Tế",
   };
 
-  function lightQueBlock(name: string, symbol: string, lines: readonly (0 | 1)[], dongPositions: number[], cungText: string, tenTuong?: string): string {
+  function lightQueBlock(name: string, lines: readonly (0 | 1)[], dongPositions: number[], cungText: string, tenTuong?: string): string {
     return `
       <div style="border:1.5px solid ${LIGHT.borderLight};border-radius:10px;padding:10px;text-align:center;">
-        <p style="margin:0;font-size:13px;font-weight:800;letter-spacing:.02em;color:${LIGHT.red};">${name} <span style="font-size:11px;font-weight:500;color:${LIGHT.textMuted};">(${symbol})</span></p>
+        <p style="margin:0;font-size:13px;font-weight:800;letter-spacing:.02em;color:${LIGHT.red};">${name}</p>
         <div style="margin-top:8px;">${lightHexBars(lines, dongPositions)}</div>
-        <p style="margin:8px 0 0;font-size:10px;font-weight:700;color:${LIGHT.text};">${cungText}</p>
-        ${tenTuong ? `<p style="margin:2px 0 0;font-size:9px;font-weight:600;color:${LIGHT.textMuted};">${tenTuong}</p>` : ""}
+        <p style="margin:8px 0 0;font-size:10px;font-weight:700;letter-spacing:.02em;color:${LIGHT.text};">${cungText}</p>
+        ${tenTuong ? `<p style="margin:3px 0 0;font-size:10px;font-weight:700;letter-spacing:.02em;color:${LIGHT.textMuted};">${tenTuong}</p>` : ""}
       </div>
     `;
   }
@@ -505,13 +505,14 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
   // bảng trên (Nạp Giáp/Lục Thân/Tuần Không...) + bảng dưới (Vượng Suy/Trường Sinh). Chỉ đọc field có
   // sẵn từ engine (`h.xunKong`, `h.growthDay`, `h.growthMonth`, `h.nguHanh`...), không tự tính lại gì.
   // `Q.Thần` chưa có nguồn xác nhận công thức nên luôn hiện "-" (theo đúng chỉ thị, không tự suy đoán).
-  // T/Ư + Lục Thú chỉ hiện ở bên Biến; P.Thần chỉ hiện ở bên Chính — theo đúng yêu cầu rút gọn cột.
+  // T/Ư chỉ hiện ở bên Chính (Thế/Ứng an tại quẻ chính); Lục Thú chỉ hiện ở bên Biến; P.Thần chỉ hiện
+  // ở bên Chính — theo đúng yêu cầu rút gọn cột.
   function sideHaoTables(sectionLabel: string, q: QueDayDu, isBien: boolean): string {
     const rows = [...q.hao].reverse();
 
     const headerLabels = [
       "Hào",
-      ...(isBien ? ["T/Ư"] : []),
+      ...(isBien ? [] : ["T/Ư"]),
       "Lục Thân",
       "Địa Chi",
       ...(isBien ? [] : ["P.Thần"]),
@@ -525,7 +526,7 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
         const rowColor = h.isDong ? LIGHT.dong : LIGHT.text;
         const cells = [
           `<td style="padding:3px 4px;text-align:center;font-weight:700;color:${rowColor};">${h.value === 1 ? "&mdash;" : "&#8212;&nbsp;&#8212;"}</td>`,
-          ...(isBien ? [`<td style="padding:3px 4px;text-align:center;color:${rowColor};font-weight:600;">${h.theUng ?? ""}</td>`] : []),
+          ...(isBien ? [] : [`<td style="padding:3px 4px;text-align:center;color:${rowColor};font-weight:600;">${h.theUng ?? ""}</td>`]),
           `<td style="padding:3px 4px;text-align:center;color:${rowColor};font-weight:${h.isDong ? "700" : "400"};">${h.lucThan}</td>`,
           `<td style="padding:3px 4px;text-align:center;color:${rowColor};font-weight:700;white-space:nowrap;">${CHI[h.chiIndex]} - ${h.nguHanh}</td>`,
           ...(isBien ? [] : [`<td style="padding:3px 4px;text-align:center;color:${rowColor};">${h.phucThan ? LUC_THAN_ABBREV[h.phucThan.lucThan] : "-"}</td>`]),
@@ -575,11 +576,11 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
   function buildExportCardHtml(cast: FullCastResult, methodLabel: string, viecCanXem: string, timeLabel: string): string {
     const queCols = cast.bien ? 3 : 2;
     const blocks = [
-      lightQueBlock(cast.chinh.name, `${cast.chinh.upper.symbol}${cast.chinh.lower.symbol}`, cast.chinh.lines, cast.dongPositions, `Quái ${cast.chinh.cungLabel}`, TEN_TUONG_QUE[cast.chinh.name]),
-      lightQueBlock(cast.hoQue.name, `${cast.hoQue.upper.symbol}${cast.hoQue.lower.symbol}`, cast.hoQue.lines, [], `Quái ${cast.hoQue.cungLabel}`),
+      lightQueBlock(cast.chinh.name, cast.chinh.lines, cast.dongPositions, `Quái ${cast.chinh.cungLabel}`, TEN_TUONG_QUE[cast.chinh.name]),
+      lightQueBlock(cast.hoQue.name, cast.hoQue.lines, [], `Quái ${cast.hoQue.cungLabel}`),
     ];
     if (cast.bien) {
-      blocks.push(lightQueBlock(cast.bien.name, `${cast.bien.upper.symbol}${cast.bien.lower.symbol}`, cast.bien.lines, [], `Quái ${cast.bien.cungLabel}`, TEN_TUONG_QUE[cast.bien.name]));
+      blocks.push(lightQueBlock(cast.bien.name, cast.bien.lines, [], `Quái ${cast.bien.cungLabel}`, TEN_TUONG_QUE[cast.bien.name]));
     }
     // Bảng hào theo đúng bố cục ảnh mẫu (simkinhdich.com): Chính/Biến đặt song song 2 cột, mỗi bên tách
     // 2 bảng xếp chồng (không đưa Ngũ Hành/Quan hệ Nhật-Nguyệt thành cột riêng theo yêu cầu).
