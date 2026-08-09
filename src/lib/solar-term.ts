@@ -55,7 +55,7 @@ export const MONTH_TIET: { name: string; longitude: number; monthChiIndex: numbe
 
 // Dò nhị phân trong khoảng [jdLow, jdHigh] (đều là JD số nguyên, UT) tìm thời điểm hoàng kinh
 // Mặt Trời đạt đúng targetLongitude (độ), trả về JD (số thực) chính xác tới ~1 phút.
-function findLongitudeCrossing(targetLongitude: number, jdLow: number, jdHigh: number): number {
+export function findLongitudeCrossing(targetLongitude: number, jdLow: number, jdHigh: number): number {
   const target = normalizeDeg(targetLongitude);
   const diffAt = (jd: number) => {
     let d = sunLongitude(jd) - target;
@@ -118,6 +118,66 @@ function approxDateForLongitude(longitude: number, year: number): { m: number; d
     285: { m: 1, d: 6 },
   };
   return table[longitude];
+}
+
+// Đầy đủ 24 Tiết Khí (12 "tiết" + 12 "trung khí" xen giữa, cách nhau đúng 15° hoàng kinh) — dùng để
+// hiển thị tên Tiết Khí hiện hành (khác với MONTH_TIET chỉ có 12 "tiết" dùng riêng cho đổi tháng Bát Tự).
+export const FULL_24_TIET: { name: string; longitude: number }[] = [
+  { name: "Lập Xuân", longitude: 315 },
+  { name: "Vũ Thủy", longitude: 330 },
+  { name: "Kinh Trập", longitude: 345 },
+  { name: "Xuân Phân", longitude: 0 },
+  { name: "Thanh Minh", longitude: 15 },
+  { name: "Cốc Vũ", longitude: 30 },
+  { name: "Lập Hạ", longitude: 45 },
+  { name: "Tiểu Mãn", longitude: 60 },
+  { name: "Mang Chủng", longitude: 75 },
+  { name: "Hạ Chí", longitude: 90 },
+  { name: "Tiểu Thử", longitude: 105 },
+  { name: "Đại Thử", longitude: 120 },
+  { name: "Lập Thu", longitude: 135 },
+  { name: "Xử Thử", longitude: 150 },
+  { name: "Bạch Lộ", longitude: 165 },
+  { name: "Thu Phân", longitude: 180 },
+  { name: "Hàn Lộ", longitude: 195 },
+  { name: "Sương Giáng", longitude: 210 },
+  { name: "Lập Đông", longitude: 225 },
+  { name: "Tiểu Tuyết", longitude: 240 },
+  { name: "Đại Tuyết", longitude: 255 },
+  { name: "Đông Chí", longitude: 270 },
+  { name: "Tiểu Hàn", longitude: 285 },
+  { name: "Đại Hàn", longitude: 300 },
+];
+
+const APPROX_DATE_24: Record<number, { m: number; d: number }> = {
+  315: { m: 2, d: 4 }, 330: { m: 2, d: 19 }, 345: { m: 3, d: 6 }, 0: { m: 3, d: 21 },
+  15: { m: 4, d: 5 }, 30: { m: 4, d: 20 }, 45: { m: 5, d: 6 }, 60: { m: 5, d: 21 },
+  75: { m: 6, d: 6 }, 90: { m: 6, d: 21 }, 105: { m: 7, d: 7 }, 120: { m: 7, d: 23 },
+  135: { m: 8, d: 8 }, 150: { m: 8, d: 23 }, 165: { m: 9, d: 8 }, 180: { m: 9, d: 23 },
+  195: { m: 10, d: 8 }, 210: { m: 10, d: 23 }, 225: { m: 11, d: 7 }, 240: { m: 11, d: 22 },
+  255: { m: 12, d: 7 }, 270: { m: 12, d: 22 }, 285: { m: 1, d: 6 }, 300: { m: 1, d: 20 },
+};
+
+// Tên Tiết Khí (trong 24) đang hiện hành tại 1 thời điểm dương lịch (giờ Việt Nam).
+export function getCurrentTietKhi24Name(dd: number, mm: number, yy: number, hour = 12): string {
+  const VN_UTC_OFFSET_HOURS = 7;
+  const jd = jdFromDate(dd, mm, yy) + (hour - 12) / 24 - VN_UTC_OFFSET_HOURS / 24;
+  const results: { name: string; jd: number }[] = [];
+  for (let year = yy - 1; year <= yy + 1; year++) {
+    for (const t of FULL_24_TIET) {
+      const approx = APPROX_DATE_24[t.longitude];
+      const jdApprox = jdFromDate(approx.d, approx.m, year);
+      const crossJd = findLongitudeCrossing(t.longitude, jdApprox - 10, jdApprox + 10);
+      results.push({ name: t.name, jd: crossJd });
+    }
+  }
+  results.sort((a, b) => a.jd - b.jd);
+  let current = results[0];
+  for (const c of results) {
+    if (c.jd <= jd) current = c;
+    else break;
+  }
+  return current.name;
 }
 
 // Xác định Chi của tháng Bát Tự cho một ngày dương lịch cụ thể (dd/mm/yy, hour theo GIỜ ĐỊA PHƯƠNG

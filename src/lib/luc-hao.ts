@@ -14,9 +14,9 @@
 // 2 Chi).
 
 import { CAN, CHI } from "./menh-nap-am";
-import { CHI_NGU_HANH, khongVongOf } from "./bat-tu";
+import { CHI_NGU_HANH, khongVongOf, tinhBatTu } from "./bat-tu";
 import type { NguHanh } from "./menh-nap-am";
-import { jdFromDate } from "./solar-term";
+import { jdFromDate, getCurrentTietKhi24Name } from "./solar-term";
 import { solarToLunar } from "./lunar-calendar";
 
 export type LineVal = 0 | 1; // 0 = Âm (đứt), 1 = Dương (liền)
@@ -110,6 +110,22 @@ function lucThanOf(palaceNguHanh: NguHanh, lineNguHanh: NguHanh): LucThan {
   return "Thê Tài"; // cung khắc hào => hào là Thê Tài
 }
 
+// --- Vượng Suy theo Nguyệt Lệnh (so ngũ hành Nguyệt Lệnh — Chi tháng lập quẻ — với ngũ hành Nạp Giáp
+// của hào) — công thức đã giải mã và đối chiếu khớp cả 12/12 hào (2 bảng) trong ảnh tham chiếu thực tế:
+// hào cùng hành Nguyệt Lệnh = Vượng; Nguyệt Lệnh sinh hào = Tướng; hào sinh Nguyệt Lệnh (hào là "mẹ")
+// = Hưu; hào khắc Nguyệt Lệnh = Tù; Nguyệt Lệnh khắc hào = Tử.
+export type VuongSuy = "Vượng" | "Tướng" | "Hưu" | "Tù" | "Tử";
+
+function vuongSuyOf(monthNguHanh: NguHanh, lineNguHanh: NguHanh): VuongSuy {
+  const SINH: Record<NguHanh, NguHanh> = { Mộc: "Hỏa", Hỏa: "Thổ", Thổ: "Kim", Kim: "Thủy", Thủy: "Mộc" };
+  const KHAC: Record<NguHanh, NguHanh> = { Mộc: "Thổ", Thổ: "Thủy", Thủy: "Hỏa", Hỏa: "Kim", Kim: "Mộc" };
+  if (lineNguHanh === monthNguHanh) return "Vượng";
+  if (SINH[monthNguHanh] === lineNguHanh) return "Tướng";
+  if (SINH[lineNguHanh] === monthNguHanh) return "Hưu";
+  if (KHAC[lineNguHanh] === monthNguHanh) return "Tù";
+  return "Tử";
+}
+
 // --- Lục Thú (khởi từ hào 1 theo Can ngày, đi lên) ---
 const LUC_THU = ["Thanh Long", "Chu Tước", "Câu Trần", "Đằng Xà", "Bạch Hổ", "Huyền Vũ"];
 const LUC_THU_START: Record<number, number> = {
@@ -132,6 +148,7 @@ export interface HaoInfo {
   lucThu: string;
   theUng: "Thế" | "Ứng" | null;
   phucThan: { lucThan: LucThan; canIndex: number; chiIndex: number } | null; // Lục Thân ẩn (mượn từ quẻ thuần bản cung), nếu loại đó không có mặt trong quẻ hiện tại
+  vuongSuy: VuongSuy;
 }
 
 // Lục Hợp / Lục Xung giữa 2 Chi — dùng để xác định nhãn đặc biệt thay cho tên đời quái, khi Chi của
@@ -212,6 +229,7 @@ export function lapQueDayDu(
   lines: [LineVal, LineVal, LineVal, LineVal, LineVal, LineVal],
   dayCanIndex: number,
   dongPositions: number[] = [],
+  monthChiIndex: number | null = null,
 ): QueDayDu {
   const lowerBits = [lines[0], lines[1], lines[2]] as [LineVal, LineVal, LineVal];
   const upperBits = [lines[3], lines[4], lines[5]] as [LineVal, LineVal, LineVal];
@@ -261,22 +279,26 @@ export function lapQueDayDu(
     return { canIndex: cung.napGiap.upper.canIndex, chiIndex: cung.napGiap.upper.chi[pos - 3] };
   };
 
+  const monthNguHanh = monthChiIndex !== null ? CHI_NGU_HANH[monthChiIndex] : null;
+
   const hao: HaoInfo[] = [0, 1, 2, 3, 4, 5].map((pos) => {
     const haoSo = pos + 1;
     const { canIndex, chiIndex } = napGiapFor(pos);
     const lucThuIdx = (luThuStart + pos) % 6;
     const phucThanType = phucThanAtPos[pos];
+    const nguHanh = CHI_NGU_HANH[chiIndex];
     return {
       hao: haoSo,
       value: lines[pos],
       isDong: dongPositions.includes(haoSo),
       canIndex,
       chiIndex,
-      nguHanh: CHI_NGU_HANH[chiIndex],
+      nguHanh,
       lucThan: rawLucThan[pos],
       lucThu: LUC_THU[lucThuIdx],
       theUng: haoSo === theHao ? "Thế" : haoSo === ungHao ? "Ứng" : null,
       phucThan: phucThanType ? { lucThan: phucThanType, ...napGiapPure(pos) } : null,
+      vuongSuy: monthNguHanh ? vuongSuyOf(monthNguHanh, nguHanh) : vuongSuyOf(nguHanh, nguHanh),
     };
   });
 
@@ -314,6 +336,30 @@ export function queBienFromDong(
   ];
 }
 
+// Quẻ Hỗ (互卦): hào 2-3-4 của quẻ chính làm quái hạ, hào 3-4-5 làm quái thượng — chỉ dùng để tham
+// khảo diễn biến giữa quẻ chính và quẻ biến, không có Thế/Ứng/Nạp Giáp riêng. Công thức đã kiểm chứng
+// khớp với ví dụ thực tế (quẻ chính Thuần Chấn → quẻ hỗ Thủy Sơn Kiển).
+export interface QueHoInfo {
+  lines: [LineVal, LineVal, LineVal, LineVal, LineVal, LineVal];
+  upper: TrigramDef;
+  lower: TrigramDef;
+  name: string;
+  cungTrigram: TrigramDef;
+  cungLabel: string; // chỉ tên cung, không kèm đời quái
+}
+
+function queHoInfo(lines: [LineVal, LineVal, LineVal, LineVal, LineVal, LineVal]): QueHoInfo {
+  const lowerBits = [lines[1], lines[2], lines[3]] as [LineVal, LineVal, LineVal]; // hào 2-3-4
+  const upperBits = [lines[2], lines[3], lines[4]] as [LineVal, LineVal, LineVal]; // hào 3-4-5
+  const lower = trigramByBits(lowerBits);
+  const upper = trigramByBits(upperBits);
+  const name = HEXAGRAM_NAMES[`${upper.name}-${lower.name}`] ?? `${upper.name} ${lower.name}`;
+  const hoLines = [...lowerBits, ...upperBits] as [LineVal, LineVal, LineVal, LineVal, LineVal, LineVal];
+  const palaceInfo = PALACE_LOOKUP.get(hoLines.join(""));
+  const cung = palaceInfo?.cung ?? upper;
+  return { lines: hoLines, upper, lower, name, cungTrigram: cung, cungLabel: cung.name };
+}
+
 // Can Chi ngày Dương lịch (chu kỳ 60 ngày liên tục qua Julian Day) — dùng để khởi Lục Thú + Tuần Không.
 // Đối chiếu đúng công thức đã kiểm chứng trong bat-tu.ts (trụ ngày Bát Tự): 23h tính sang ngày hôm sau.
 export function dayCanChiOf(day: number, month: number, year: number, hour: number): { canIndex: number; chiIndex: number } {
@@ -332,11 +378,23 @@ export interface CastInput {
 
 export interface FullCastResult {
   chinh: QueDayDu;
+  hoQue: QueHoInfo;
   bien: QueDayDu | null;
   dongPositions: number[];
   tuanKhong: string;
   dayCan: string;
   dayChi: string;
+  monthCan: string;
+  monthChi: string;
+  yearCan: string;
+  yearChi: string;
+  hourCan: string;
+  hourChi: string;
+  tietKhi: string;
+  canChiText: string; // "giờ X, ngày Y, tháng Z, năm W"
+  nhatThan: string; // "Chi-NgũHành" của Ngày, ví dụ "Tuất-Thổ"
+  nguyetLenh: string; // "Chi-NgũHành" của Tháng, ví dụ "Mùi-Thổ"
+  amLichText: string; // "giờ Chi, ngày/tháng/năm âm lịch"
   methodNote: string;
 }
 
@@ -355,16 +413,44 @@ function finalizeCast(
 ): FullCastResult {
   const lines = [...lower.bits, ...upper.bits] as [LineVal, LineVal, LineVal, LineVal, LineVal, LineVal];
   const { canIndex, chiIndex } = dayCanChiOf(input.day, input.month, input.year, input.hour);
-  const chinh = lapQueDayDu(lines, canIndex, dongPositions);
+
+  // Tái dùng tinhBatTu() để lấy Can Chi Năm/Tháng/Giờ (đã được kiểm chứng kỹ ở công cụ Bát Tự) thay vì
+  // cài lại logic — giới tính không ảnh hưởng Can Chi các trụ, chỉ ảnh hưởng chiều Đại Vận (không dùng ở đây).
+  const bt = tinhBatTu({ day: input.day, month: input.month, year: input.year, hour: input.hour, minute: input.minute, gender: "Nam" });
+  const monthChiIndex = bt.month.chiIndex;
+
+  const chinh = lapQueDayDu(lines, canIndex, dongPositions, monthChiIndex);
+  const hoQue = queHoInfo(lines);
   const bienLines = queBienFromDong(lines, dongPositions);
-  const bien = bienLines ? lapQueDayDu(bienLines, canIndex, []) : null;
+  const bien = bienLines ? lapQueDayDu(bienLines, canIndex, [], monthChiIndex) : null;
+  const tietKhi = getCurrentTietKhi24Name(input.day, input.month, input.year, input.hour);
+  const canChiText = `giờ ${bt.hour.can} ${bt.hour.chi}, ngày ${bt.day.can} ${bt.day.chi}, tháng ${bt.month.can} ${bt.month.chi}, năm ${bt.year.can} ${bt.year.chi}`;
+  const nhatThan = `${bt.day.chi}-${CHI_NGU_HANH[bt.day.chiIndex]}`;
+  const nguyetLenh = `${bt.month.chi}-${CHI_NGU_HANH[bt.month.chiIndex]}`;
+
+  const lunar = solarToLunar(input.day, input.month, input.year);
+  const hourChiIndex = Math.floor((((input.hour + 1) % 24) + 24) % 24 / 2);
+  const amLichText = `giờ ${CHI[hourChiIndex]}, ${lunar.day}/${lunar.month}${lunar.isLeapMonth ? " (nhuận)" : ""}/${lunar.year}`;
+
   return {
     chinh,
+    hoQue,
     bien,
     dongPositions,
     tuanKhong: khongVongOf(canIndex, chiIndex),
     dayCan: CAN[canIndex],
     dayChi: CHI[chiIndex],
+    monthCan: bt.month.can,
+    monthChi: bt.month.chi,
+    yearCan: bt.year.can,
+    yearChi: bt.year.chi,
+    hourCan: bt.hour.can,
+    hourChi: bt.hour.chi,
+    tietKhi,
+    canChiText,
+    nhatThan,
+    nguyetLenh,
+    amLichText,
     methodNote,
   };
 }

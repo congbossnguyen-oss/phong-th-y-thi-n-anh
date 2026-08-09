@@ -213,6 +213,14 @@ const labelClass = "text-sm font-medium text-(--color-ink-800)";
     return tuanKhong.split(" - ").map((s) => CHI.indexOf(s.trim())).filter((i) => i >= 0);
   }
 
+  const VS_CLASS: Record<string, string> = {
+    "Vượng": "text-(--color-gold-300)",
+    "Tướng": "text-(--color-gold-500)",
+    "Hưu": "text-(--color-ink-600)",
+    "Tù": "text-(--color-ink-500)",
+    "Tử": "text-(--color-cinnabar-400)",
+  };
+
   function renderHexTable(q: QueDayDu, tuanKhongChi: number[]): string {
     const rows = [...q.hao].reverse(); // hiển thị từ hào 6 xuống hào 1
     const trs = rows
@@ -224,8 +232,9 @@ const labelClass = "text-sm font-medium text-(--color-ink-800)";
             <td class="p-2 text-center font-semibold text-(--color-ink-800)">${h.hao}${h.isDong ? ' <span class="text-(--color-cinnabar-500)">●</span>' : ""}</td>
             <td class="p-2 text-center font-medium text-(--color-gold-500)">${h.theUng ?? ""}</td>
             <td class="p-2 text-center text-(--color-ink-700)">${h.lucThan}</td>
+            <td class="p-2 text-center font-medium ${VS_CLASS[h.vuongSuy] ?? "text-(--color-ink-700)"}">${h.vuongSuy}</td>
             <td class="p-2 text-center font-medium text-(--color-ink-950)">${CAN[h.canIndex]} ${CHI[h.chiIndex]}${isK ? ' <span class="ml-1 rounded bg-(--color-ivory-300) px-1 text-[10px] text-(--color-ink-600)">Không</span>' : ""}</td>
-            <td class="p-2 text-center text-(--color-ink-500)">${h.phucThan ? `${h.phucThan.lucThan} ${CAN[h.phucThan.canIndex]}${CHI[h.phucThan.chiIndex]}` : "—"}</td>
+            <td class="p-2 text-center text-(--color-ink-500)">${h.phucThan ? `${h.phucThan.lucThan} ${CAN[h.phucThan.canIndex]} ${CHI[h.phucThan.chiIndex]}` : "—"}</td>
             <td class="p-2 text-center text-(--color-ink-700)">${h.lucThu}</td>
           </tr>
         `;
@@ -233,10 +242,10 @@ const labelClass = "text-sm font-medium text-(--color-ink-800)";
       .join("");
     return `
       <div class="mt-4 overflow-x-auto rounded-(--radius-control) border border-(--color-ivory-300)">
-        <table class="w-full min-w-[560px] border-collapse text-sm">
+        <table class="w-full min-w-[640px] border-collapse text-sm">
           <thead>
-            <tr class="border-b border-(--color-ivory-300) bg-(--color-ivory-100) text-xs uppercase tracking-wide text-(--color-ink-600)">
-              <th class="p-2">Hào</th><th class="p-2">Thế/Ứng</th><th class="p-2">Lục Thân</th><th class="p-2">Can Chi</th><th class="p-2">Phục Thần</th><th class="p-2">Lục Thú</th>
+            <tr class="border-b border-(--color-ivory-300) bg-(--color-ivory-200) text-xs uppercase tracking-wide text-(--color-ink-600)">
+              <th class="p-2">Hào</th><th class="p-2">Thế/Ứng</th><th class="p-2">Lục Thân</th><th class="p-2">Vượng Suy</th><th class="p-2">Can Chi</th><th class="p-2">Phục Thần</th><th class="p-2">Lục Thú</th>
             </tr>
           </thead>
           <tbody>${trs}</tbody>
@@ -257,18 +266,47 @@ const labelClass = "text-sm font-medium text-(--color-ink-800)";
     `;
   }
 
-  function renderCastResult(container: HTMLElement, cast: FullCastResult, label: string) {
+  function renderHoQueBlock(hoQue: FullCastResult["hoQue"]): string {
+    return `
+      <div class="min-w-0 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-5">
+        <p class="text-center text-xs font-semibold uppercase tracking-wide text-(--color-gold-500)">Quẻ hỗ</p>
+        ${renderHexGraphic(hoQue.lines, [])}
+        <p class="mt-4 text-center font-display text-lg font-semibold text-(--color-ink-950)">${hoQue.name} <span class="text-(--color-ink-500)">(${hoQue.upper.symbol}${hoQue.lower.symbol})</span></p>
+        <p class="text-center text-sm text-(--color-ink-600)">Quái ${hoQue.cungLabel}</p>
+        <p class="mt-3 text-center text-xs text-(--color-ink-500)">Quẻ hỗ chỉ mang tính tham khảo diễn biến, không có Nạp Giáp/Thế Ứng riêng.</p>
+      </div>
+    `;
+  }
+
+  function renderCastResult(container: HTMLElement, cast: FullCastResult, methodLabel: string, viecCanXem: string, timeLabel: string) {
     const tuanKhongChi = tuanKhongChiIndices(cast.tuanKhong);
     const header = `
-      <div class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-5 text-sm text-(--color-ink-700)">
-        ${label ? `<p><strong class="text-(--color-ink-950)">Việc cần xem:</strong> ${label}</p>` : ""}
-        <p class="mt-1"><strong class="text-(--color-ink-950)">Ngày lập quẻ:</strong> ${cast.dayCan} ${cast.dayChi} — <strong class="text-(--color-ink-950)">Tuần Không:</strong> ${cast.tuanKhong}</p>
-        <p class="mt-1 text-(--color-ink-600)">${cast.methodNote}</p>
+      <div class="rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-ivory-50) p-5">
+        <div class="flex flex-wrap items-start justify-between gap-3 border-b border-(--color-ivory-300) pb-3">
+          <div>
+            <p class="font-display text-base font-bold text-(--color-cinnabar-400)">PHONGTHUYTHIENANH.COM</p>
+            <p class="text-xs font-semibold uppercase tracking-wide text-(--color-ink-600)">Phần mềm lập quẻ Kinh Dịch</p>
+          </div>
+          <img src="/images/brand/zhi-gong-logo.png" alt="Phong Thủy Thiên Anh" class="size-11 rounded-full border border-(--color-gold-400)/40 object-cover" />
+        </div>
+        <div class="mt-3 grid gap-x-6 gap-y-1.5 text-sm text-(--color-ink-700) sm:grid-cols-2">
+          <p><strong class="text-(--color-ink-950)">Phương pháp lập quẻ:</strong> ${methodLabel}</p>
+          <p><strong class="text-(--color-ink-950)">Việc cần xem:</strong> ${viecCanXem || "—"}</p>
+          <p><strong class="text-(--color-ink-950)">Thời gian lập quẻ:</strong> ${timeLabel}</p>
+          <p><strong class="text-(--color-ink-950)">Theo Âm lịch:</strong> ${cast.amLichText}</p>
+          <p class="sm:col-span-2"><strong class="text-(--color-ink-950)">Can Chi:</strong> ${cast.canChiText}</p>
+          <p><strong class="text-(--color-ink-950)">Tiết khí:</strong> ${cast.tietKhi}</p>
+          <p><strong class="text-(--color-ink-950)">Tuần Không:</strong> ${cast.tuanKhong}</p>
+          <p><strong class="text-(--color-ink-950)">Nhật thần:</strong> ${cast.nhatThan}</p>
+          <p><strong class="text-(--color-ink-950)">Nguyệt lệnh:</strong> ${cast.nguyetLenh}</p>
+        </div>
+        <p class="mt-3 text-sm text-(--color-ink-600)">${cast.methodNote}</p>
       </div>
     `;
     const blocks = `
-      <div class="mt-6 grid min-w-0 gap-6 ${cast.bien ? "md:grid-cols-2" : ""}">
+      <div class="mt-6 grid min-w-0 gap-6 ${cast.bien ? "md:grid-cols-3" : "md:grid-cols-2"}">
         ${renderQueBlock("Quẻ chính", cast.chinh, cast.dongPositions, tuanKhongChi)}
+        ${renderHoQueBlock(cast.hoQue)}
         ${cast.bien ? renderQueBlock("Quẻ biến", cast.bien, [], tuanKhongChi) : ""}
       </div>
       ${
@@ -282,6 +320,11 @@ const labelClass = "text-sm font-medium text-(--color-ink-800)";
     container.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
+  function formatTimeLabel(input: CastInput): string {
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${pad(input.day)}/${pad(input.month)}/${input.year} ${pad(input.hour)}:${pad(input.minute ?? 0)}`;
+  }
+
   // --- Mai Hoa ---
   document.getElementById("form-maihoa")?.addEventListener("submit", (e) => {
     e.preventDefault();
@@ -289,7 +332,7 @@ const labelClass = "text-sm font-medium text-(--color-ink-800)";
     const input = readCastInput("mh-time");
     try {
       const cast = maiHoaCast(input);
-      renderCastResult(document.getElementById("result-maihoa")!, cast, label);
+      renderCastResult(document.getElementById("result-maihoa")!, cast, "Gieo quẻ Mai Hoa Dịch Số", label, formatTimeLabel(input));
     } catch (err) {
       console.error(err);
       alert("Không lập được quẻ, vui lòng kiểm tra lại thời gian nhập vào.");
@@ -326,7 +369,7 @@ const labelClass = "text-sm font-medium text-(--color-ink-800)";
 
     try {
       const cast = lucHaoCastFromTosses(rawLines, input);
-      renderCastResult(document.getElementById("result-luchao")!, cast, label);
+      renderCastResult(document.getElementById("result-luchao")!, cast, "Lục Hào — gieo 3 đồng xu", label, formatTimeLabel(input));
     } catch (err) {
       console.error(err);
       alert("Không lập được quẻ, vui lòng thử lại.");
@@ -343,7 +386,7 @@ const labelClass = "text-sm font-medium text-(--color-ink-800)";
     const input = readCastInput("sr-time");
     try {
       const cast = seriTienCast(serial, input);
-      renderCastResult(document.getElementById("result-serial")!, cast, label);
+      renderCastResult(document.getElementById("result-serial")!, cast, `Lập quẻ bằng Seri tiền - ${serial}`, label, formatTimeLabel(input));
     } catch (err) {
       alert("Vui lòng nhập số Seri hợp lệ (ít nhất 2 chữ số).");
     }
@@ -357,7 +400,7 @@ const labelClass = "text-sm font-medium text-(--color-ink-800)";
     const input = readCastInput("ph-time");
     try {
       const cast = soDienThoaiCast(phone, input);
-      renderCastResult(document.getElementById("result-phone")!, cast, label);
+      renderCastResult(document.getElementById("result-phone")!, cast, `Lập quẻ bằng Số điện thoại - ${phone}`, label, formatTimeLabel(input));
     } catch (err) {
       alert("Vui lòng nhập số điện thoại hợp lệ (ít nhất 2 chữ số).");
     }
