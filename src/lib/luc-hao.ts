@@ -14,7 +14,7 @@
 // 2 Chi).
 
 import { CAN, CHI } from "./menh-nap-am";
-import { CHI_NGU_HANH, khongVongOf, tinhBatTu, TRUONG_SINH_STAGES, type TruongSinhStage } from "./bat-tu";
+import { CHI_NGU_HANH, khongVongOf, khongVongIndicesOf, tinhBatTu, TRUONG_SINH_STAGES, type TruongSinhStage } from "./bat-tu";
 import type { NguHanh } from "./menh-nap-am";
 import { jdFromDate, getCurrentTietKhi24Name } from "./solar-term";
 import { solarToLunar } from "./lunar-calendar";
@@ -152,6 +152,7 @@ export interface HaoInfo {
   growthDay: TruongSinhStage; // Trường Sinh của Ngũ Hành hào tại Chi Ngày gieo quẻ (Nhật thần)
   growthMonth: TruongSinhStage; // Trường Sinh của Ngũ Hành hào tại Chi Tháng gieo quẻ (Nguyệt kiến)
   relations: HaoRelation[]; // quan hệ hào <-> Nhật Thần/Nguyệt Kiến (Phần C1); 1 hào có thể có nhiều quan hệ cùng lúc
+  xunKong: boolean; // hào này có Chi rơi vào Tuần Không của Ngày gieo quẻ hay không — engine tự tính, UI không tự parse lại `tuanKhong`
 }
 
 // Điểm khởi Trường Sinh riêng cho Lục Hào — theo Ngũ Hành của Chi hào (KHÔNG theo Can, KHÔNG phân
@@ -432,6 +433,11 @@ export function lapQueDayDu(
 
   const monthNguHanh = monthChiIndex !== null ? CHI_NGU_HANH[monthChiIndex] : null;
 
+  // Tuần Không của Ngày gieo quẻ — công thức giữ nguyên (khongVongIndicesOf tách ra từ khongVongOf đã
+  // có sẵn, không đổi thuật toán), chỉ để engine tự gắn cờ xunKong cho từng hào thay vì để UI tự parse
+  // ngược chuỗi `tuanKhong` hiển thị.
+  const voidChiIndices = dayChiIndex !== null ? khongVongIndicesOf(dayCanIndex, dayChiIndex) : null;
+
   const hao: HaoInfo[] = [0, 1, 2, 3, 4, 5].map((pos) => {
     const haoSo = pos + 1;
     const { canIndex, chiIndex } = napGiapFor(pos);
@@ -459,6 +465,7 @@ export function lapQueDayDu(
         ...getDayRelations(chiIndex, nguHanh, dayChiIndex, vuongSuy),
         ...getMonthRelations(chiIndex, nguHanh, monthChiIndex),
       ],
+      xunKong: voidChiIndices !== null && (chiIndex === voidChiIndices[0] || chiIndex === voidChiIndices[1]),
     };
   });
 

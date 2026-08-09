@@ -352,13 +352,20 @@ function addThienLaDiaVongMatches(result: Record<PillarKey, string[]>, pillars: 
   }
 }
 
-// Không Vong (Tuần Không): 2 Chi "dư" của tuần Giáp Tý chứa Can Chi này.
-function khongVongOf(canIndex: number, chiIndex: number): string {
+// Không Vong (Tuần Không): 2 Chi "dư" của tuần Giáp Tý chứa Can Chi này — công thức giữ nguyên như cũ,
+// chỉ tách phần tính chỉ số Chi ra riêng (`khongVongIndicesOf`) để nơi khác (vd Lục Hào, xét từng hào
+// có rơi vào Tuần Không hay không) dùng lại được 2 chỉ số thô thay vì phải tự parse ngược chuỗi hiển thị.
+function khongVongIndicesOf(canIndex: number, chiIndex: number): [number, number] {
   const cycle = cycleIndexOf(canIndex, chiIndex);
   const tuanStartCycle = Math.floor(cycle / 10) * 10;
   const tuanStartChi = tuanStartCycle % 12;
   const a = (tuanStartChi + 10) % 12;
   const b = (tuanStartChi + 11) % 12;
+  return [a, b];
+}
+
+function khongVongOf(canIndex: number, chiIndex: number): string {
+  const [a, b] = khongVongIndicesOf(canIndex, chiIndex);
   return `${CHI[a]} - ${CHI[b]}`;
 }
 
@@ -622,4 +629,4 @@ function findLapXuanJD(year: number): number {
   return lapXuan.jd;
 }
 
-export { CAN_NGU_HANH, CAN_AM_DUONG, CHI_NGU_HANH, CHI_AM_DUONG, khongVongOf };
+export { CAN_NGU_HANH, CAN_AM_DUONG, CHI_NGU_HANH, CHI_AM_DUONG, khongVongOf, khongVongIndicesOf };
