@@ -29,41 +29,29 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
     <div class="mx-auto max-w-5xl">
       <div id="kd-tabs" class="mx-auto grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <button type="button" data-tab="maihoa" class="kd-tab-btn flex h-full flex-col items-center rounded-(--radius-card) border p-6 text-center transition">
-          <span class="flex size-14 shrink-0 items-center justify-center rounded-full border border-(--color-gold-400)/30 bg-(--color-gold-400)/10">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-7 text-(--color-gold-400)">
-              <circle cx="12" cy="12" r="2.1" /><circle cx="12" cy="5.4" r="2.6" /><circle cx="17.9" cy="8.8" r="2.6" />
-              <circle cx="15.9" cy="16.1" r="2.6" /><circle cx="8.1" cy="16.1" r="2.6" /><circle cx="6.1" cy="8.8" r="2.6" />
-            </svg>
+          <span class="size-14 shrink-0 overflow-hidden rounded-full border border-(--color-gold-400)/30">
+            <img src="/images/tools/mai-hoa.jpg" alt="Mai Hoa Dịch Số" class="size-full object-cover" />
           </span>
           <span class="mt-4 flex min-h-[2.75rem] items-center justify-center font-display text-base font-semibold text-(--color-ink-950)">Mai Hoa Dịch Số</span>
           <span class="mt-2 flex-1 text-sm leading-relaxed text-(--color-ink-600)">Lập quẻ theo Năm/Tháng/Ngày/Giờ tại thời điểm hỏi việc — phương pháp cổ điển của Thiệu Khang Tiết.</span>
         </button>
         <button type="button" data-tab="luchao" class="kd-tab-btn flex h-full flex-col items-center rounded-(--radius-card) border p-6 text-center transition">
-          <span class="flex size-14 shrink-0 items-center justify-center rounded-full border border-(--color-gold-400)/30 bg-(--color-gold-400)/10">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-7 text-(--color-gold-400)">
-              <ellipse cx="12" cy="6.5" rx="7" ry="3" />
-              <path d="M5 6.5v5c0 1.66 3.13 3 7 3s7-1.34 7-3v-5" />
-              <path d="M5 11.5v5c0 1.66 3.13 3 7 3s7-1.34 7-3v-5" />
-            </svg>
+          <span class="size-14 shrink-0 overflow-hidden rounded-full border border-(--color-gold-400)/30">
+            <img src="/images/tools/luc-hao.jpg" alt="Lục Hào" class="size-full object-cover" />
           </span>
           <span class="mt-4 flex min-h-[2.75rem] items-center justify-center font-display text-base font-semibold text-(--color-ink-950)">Lục Hào (gieo đồng xu)</span>
           <span class="mt-2 flex-1 text-sm leading-relaxed text-(--color-ink-600)">Tự gieo 3 đồng xu 6 lần theo nghi thức truyền thống, rồi nhập lại kết quả từng hào.</span>
         </button>
         <button type="button" data-tab="serial" class="kd-tab-btn flex h-full flex-col items-center rounded-(--radius-card) border p-6 text-center transition">
-          <span class="flex size-14 shrink-0 items-center justify-center rounded-full border border-(--color-gold-400)/30 bg-(--color-gold-400)/10">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-7 text-(--color-gold-400)">
-              <rect x="3" y="6" width="18" height="12" rx="2" /><circle cx="12" cy="12" r="2.5" />
-              <path d="M6.5 9h.01M17.5 15h.01" stroke-linecap="round" />
-            </svg>
+          <span class="size-14 shrink-0 overflow-hidden rounded-full border border-(--color-gold-400)/30">
+            <img src="/images/tools/tien.jpg" alt="Seri tiền" class="size-full object-cover" />
           </span>
           <span class="mt-4 flex min-h-[2.75rem] items-center justify-center font-display text-base font-semibold text-(--color-ink-950)">Seri tiền</span>
           <span class="mt-2 flex-1 text-sm leading-relaxed text-(--color-ink-600)">Lập quẻ từ dãy số Seri trên tờ tiền — theo cách "số linh quẻ" ứng dụng Mai Hoa Dịch Số.</span>
         </button>
         <button type="button" data-tab="phone" class="kd-tab-btn flex h-full flex-col items-center rounded-(--radius-card) border p-6 text-center transition">
-          <span class="flex size-14 shrink-0 items-center justify-center rounded-full border border-(--color-gold-400)/30 bg-(--color-gold-400)/10">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="size-7 text-(--color-gold-400)">
-              <path d="M6.5 3h3l1.5 4-2 1.5a12 12 0 0 0 6.5 6.5l1.5-2 4 1.5v3a2 2 0 0 1-2.2 2A17 17 0 0 1 4.5 5.2 2 2 0 0 1 6.5 3Z" stroke-linejoin="round" />
-            </svg>
+          <span class="size-14 shrink-0 overflow-hidden rounded-full border border-(--color-gold-400)/30">
+            <img src="/images/tools/so-dien-thoai.jpg" alt="Số điện thoại" class="size-full object-cover" />
           </span>
           <span class="mt-4 flex min-h-[2.75rem] items-center justify-center font-display text-base font-semibold text-(--color-ink-950)">Số điện thoại</span>
           <span class="mt-2 flex-1 text-sm leading-relaxed text-(--color-ink-600)">Lập quẻ từ dãy số điện thoại đang dùng, cùng cách "số linh quẻ" như Seri tiền.</span>
@@ -415,7 +403,7 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
     const bars = rows
       .map(({ line, pos }) => {
         const isDong = dongPositions.includes(pos);
-        const color = isDong ? LIGHT.dong : LIGHT.gold;
+        const color = isDong ? LIGHT.dong : LIGHT.text;
         if (line === 1) return `<div style="height:7px;border-radius:2px;background:${color};"></div>`;
         return `<div style="height:7px;display:flex;justify-content:space-between;"><div style="width:42%;height:100%;border-radius:2px;background:${color};"></div><div style="width:42%;height:100%;border-radius:2px;background:${color};"></div></div>`;
       })
@@ -434,34 +422,63 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
     `;
   }
 
-  function lightHaoTable(title: string, q: QueDayDu): string {
+  // Bảng hào cho 1 bên (Chính hoặc Biến), đúng bố cục ảnh mẫu simkinhdich.com: tách 2 bảng xếp chồng —
+  // bảng trên (Nạp Giáp/Lục Thân/Tuần Không/Lục Thú) + bảng dưới (Vượng Suy/Trường Sinh). Chỉ đọc field
+  // có sẵn từ engine (`h.xunKong`, `h.growthDay`, `h.growthMonth`...), không tự tính lại gì.
+  // `Q.Thần` chưa có nguồn xác nhận công thức nên luôn hiện "-" (theo đúng chỉ thị, không tự suy đoán).
+  function sideHaoTables(sectionLabel: string, q: QueDayDu): string {
     const rows = [...q.hao].reverse();
-    const trs = rows
+
+    const upperRows = rows
       .map((h) => {
-        const rowColor = h.isDong ? LIGHT.red : LIGHT.text;
+        const rowColor = h.isDong ? LIGHT.dong : LIGHT.text;
         return `
           <tr style="border-bottom:1px solid ${LIGHT.borderLight};">
-            <td style="padding:3px 4px;text-align:center;font-weight:700;color:${rowColor};">${h.hao}${h.isDong ? " ●" : ""}</td>
-            <td style="padding:3px 4px;text-align:center;color:${LIGHT.red};font-weight:600;">${h.theUng ?? ""}</td>
-            <td style="padding:3px 4px;text-align:center;">${h.lucThan}</td>
-            <td style="padding:3px 4px;text-align:center;">${h.vuongSuy}</td>
-            <td style="padding:3px 4px;text-align:center;font-weight:700;white-space:nowrap;">${CAN[h.canIndex]} ${CHI[h.chiIndex]}${h.xunKong ? ` <span style="font-size:8px;background:${LIGHT.headerBg};padding:0 3px;border-radius:3px;">Không</span>` : ""}</td>
-            <td style="padding:3px 4px;text-align:center;color:${LIGHT.textMuted};white-space:nowrap;">${h.phucThan ? `${h.phucThan.lucThan} ${CAN[h.phucThan.canIndex]} ${CHI[h.phucThan.chiIndex]}` : "—"}</td>
-            <td style="padding:3px 4px;text-align:center;">${h.lucThu}</td>
+            <td style="padding:3px 4px;text-align:center;font-weight:700;color:${rowColor};">${h.value === 1 ? "&mdash;" : "&#8212;&nbsp;&#8212;"}</td>
+            <td style="padding:3px 4px;text-align:center;color:${rowColor};font-weight:600;">${h.theUng ?? ""}</td>
+            <td style="padding:3px 4px;text-align:center;color:${rowColor};font-weight:${h.isDong ? "700" : "400"};">${h.lucThan}</td>
+            <td style="padding:3px 4px;text-align:center;color:${rowColor};font-weight:700;white-space:nowrap;">${CAN[h.canIndex]} ${CHI[h.chiIndex]}</td>
+            <td style="padding:3px 4px;text-align:center;color:${rowColor};white-space:nowrap;">${h.phucThan ? `${h.phucThan.lucThan} ${CAN[h.phucThan.canIndex]} ${CHI[h.phucThan.chiIndex]}` : "-"}</td>
+            <td style="padding:3px 4px;text-align:center;color:${rowColor};">${h.xunKong ? "K" : "-"}</td>
+            <td style="padding:3px 4px;text-align:center;color:${rowColor};">${h.lucThu}</td>
           </tr>
         `;
       })
       .join("");
+
+    const lowerRows = rows
+      .map((h) => {
+        const rowColor = h.isDong ? LIGHT.dong : LIGHT.text;
+        return `
+          <tr style="border-bottom:1px solid ${LIGHT.borderLight};">
+            <td style="padding:3px 4px;text-align:center;font-weight:700;color:${rowColor};white-space:nowrap;">${CAN[h.canIndex]} ${CHI[h.chiIndex]}</td>
+            <td style="padding:3px 4px;text-align:center;color:${rowColor};">${h.vuongSuy}</td>
+            <td style="padding:3px 4px;text-align:center;color:${rowColor};">-</td>
+            <td style="padding:3px 4px;text-align:center;color:${rowColor};">${h.growthDay}</td>
+            <td style="padding:3px 4px;text-align:center;color:${rowColor};">${h.growthMonth}</td>
+          </tr>
+        `;
+      })
+      .join("");
+
     return `
       <div>
-        <p style="margin:0 0 4px;font-size:10px;font-weight:800;color:${LIGHT.red};text-align:center;">${title}</p>
+        <p style="margin:0 0 6px;font-size:11px;font-weight:800;color:${LIGHT.text};text-align:center;letter-spacing:.02em;">${sectionLabel}</p>
         <table style="width:100%;border-collapse:collapse;font-size:9px;">
           <thead>
             <tr style="background:${LIGHT.headerBg};">
-              <th style="padding:3px 2px;">Hào</th><th style="padding:3px 2px;">T/Ư</th><th style="padding:3px 2px;">Lục Thân</th><th style="padding:3px 2px;">V-S</th><th style="padding:3px 2px;">Can Chi</th><th style="padding:3px 2px;">P.Thần</th><th style="padding:3px 2px;">Lục Thú</th>
+              <th style="padding:3px 2px;">Hào</th><th style="padding:3px 2px;">T/Ư</th><th style="padding:3px 2px;">Lục Thân</th><th style="padding:3px 2px;">Can Chi</th><th style="padding:3px 2px;">P.Thần</th><th style="padding:3px 2px;">T.K</th><th style="padding:3px 2px;">Lục Thú</th>
             </tr>
           </thead>
-          <tbody>${trs}</tbody>
+          <tbody>${upperRows}</tbody>
+        </table>
+        <table style="width:100%;border-collapse:collapse;font-size:9px;margin-top:6px;">
+          <thead>
+            <tr style="background:${LIGHT.headerBg};">
+              <th style="padding:3px 2px;">Hào</th><th style="padding:3px 2px;">V-S</th><th style="padding:3px 2px;">Q.Thần</th><th style="padding:3px 2px;">TS Ngày</th><th style="padding:3px 2px;">TS Tháng</th>
+            </tr>
+          </thead>
+          <tbody>${lowerRows}</tbody>
         </table>
       </div>
     `;
@@ -470,15 +487,17 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
   function buildExportCardHtml(cast: FullCastResult, methodLabel: string, viecCanXem: string, timeLabel: string): string {
     const queCols = cast.bien ? 3 : 2;
     const blocks = [
-      lightQueBlock("QUẺ CHÍNH", cast.chinh.name, `${cast.chinh.upper.symbol}${cast.chinh.lower.symbol}`, cast.chinh.lines, cast.dongPositions, `Quái ${cast.chinh.cungTrigram.name} — ${cast.chinh.cungLabel}`),
+      lightQueBlock("QUẺ CHÍNH", cast.chinh.name, `${cast.chinh.upper.symbol}${cast.chinh.lower.symbol}`, cast.chinh.lines, cast.dongPositions, `Quái ${cast.chinh.cungLabel}`),
       lightQueBlock("QUẺ HỖ", cast.hoQue.name, `${cast.hoQue.upper.symbol}${cast.hoQue.lower.symbol}`, cast.hoQue.lines, [], `Quái ${cast.hoQue.cungLabel}`),
     ];
     if (cast.bien) {
-      blocks.push(lightQueBlock("QUẺ BIẾN", cast.bien.name, `${cast.bien.upper.symbol}${cast.bien.lower.symbol}`, cast.bien.lines, [], `Quái ${cast.bien.cungTrigram.name} — ${cast.bien.cungLabel}`));
+      blocks.push(lightQueBlock("QUẺ BIẾN", cast.bien.name, `${cast.bien.upper.symbol}${cast.bien.lower.symbol}`, cast.bien.lines, [], `Quái ${cast.bien.cungLabel}`));
     }
+    // Bảng hào theo đúng bố cục ảnh mẫu (simkinhdich.com): Chính/Biến đặt song song 2 cột, mỗi bên tách
+    // 2 bảng xếp chồng (không đưa Ngũ Hành/Quan hệ Nhật-Nguyệt thành cột riêng theo yêu cầu).
     const tables = cast.bien
-      ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">${lightHaoTable("Quẻ chính", cast.chinh)}${lightHaoTable("Quẻ biến", cast.bien)}</div>`
-      : lightHaoTable("Quẻ chính", cast.chinh);
+      ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">${sideHaoTables("Quẻ chính", cast.chinh)}${sideHaoTables("Quẻ biến", cast.bien)}</div>`
+      : sideHaoTables("Quẻ chính", cast.chinh);
 
     return `
       <div style="width:${CARD_WIDTH}px;font-family:Arial,'Helvetica Neue',sans-serif;background:${LIGHT.bg};color:${LIGHT.text};border:3px solid ${LIGHT.border};border-radius:16px;padding:20px;box-sizing:border-box;">
