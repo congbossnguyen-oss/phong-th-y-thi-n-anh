@@ -504,6 +504,15 @@ export function lucHaoCastRandom(input: CastInput, rng: () => number = Math.rand
   return lucHaoCastFromTosses(rawLines, input);
 }
 
+// Lục Hào — nhập tay: người dùng tự gieo đồng xu thật (hoặc tự chọn) rồi ghi lại Âm/Dương + hào động
+// cho từng hào, đúng theo cách hành nghề truyền thống (không dùng RNG của phần mềm).
+export function lucHaoCastManual(values: LineVal[], dongPositions: number[], input: CastInput): FullCastResult {
+  const lower = trigramByBits([values[0], values[1], values[2]]);
+  const upper = trigramByBits([values[3], values[4], values[5]]);
+  const note = "Lục Hào — nhập tay theo kết quả gieo đồng xu thực tế của người xem.";
+  return finalizeCast(lower, upper, dongPositions, input, note);
+}
+
 // --- Phương pháp 3 & 4: Lập quẻ theo dãy số (Seri tiền / Số điện thoại) — áp dụng cách "số linh quẻ"
 // cổ điển (Thiệu Vĩ Hoa, ứng dụng Mai Hoa Dịch Số cho số bất kỳ): chia dãy số làm 2 nửa, tổng chữ số
 // nửa đầu %8 = quẻ thượng, tổng chữ số nửa sau %8 = quẻ hạ, tổng tất cả chữ số %6 = hào động.

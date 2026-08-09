@@ -8,7 +8,10 @@ export const prerender = true;
 
 const inputClass =
   "mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20";
+const selectClass =
+  "w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20";
 const labelClass = "text-sm font-medium text-(--color-ink-800)";
+const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam", 4: "Tứ", 5: "Ngũ", 6: "Thượng" };
 ---
 
 <BaseLayout
@@ -44,7 +47,7 @@ const labelClass = "text-sm font-medium text-(--color-ink-800)";
             </svg>
           </span>
           <span class="mt-4 flex min-h-[2.75rem] items-center justify-center font-display text-base font-semibold text-(--color-ink-950)">Lục Hào (gieo đồng xu)</span>
-          <span class="mt-2 flex-1 text-sm leading-relaxed text-(--color-ink-600)">Gieo 3 đồng xu 6 lần theo nghi thức truyền thống, xác định hào động trực tiếp.</span>
+          <span class="mt-2 flex-1 text-sm leading-relaxed text-(--color-ink-600)">Tự gieo 3 đồng xu 6 lần theo nghi thức truyền thống, rồi nhập lại kết quả từng hào.</span>
         </button>
         <button type="button" data-tab="serial" class="kd-tab-btn flex h-full flex-col items-center rounded-(--radius-card) border p-6 text-center transition">
           <span class="flex size-14 shrink-0 items-center justify-center rounded-full border border-(--color-gold-400)/30 bg-(--color-gold-400)/10">
@@ -68,90 +71,186 @@ const labelClass = "text-sm font-medium text-(--color-ink-800)";
       </div>
 
       <!-- Mai Hoa -->
-      <div id="panel-maihoa" class="kd-panel mt-6">
-        <form id="form-maihoa" class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6">
-          <div>
-            <label for="mh-label" class={labelClass}>Việc cần xem (không bắt buộc)</label>
-            <input id="mh-label" type="text" placeholder="Ví dụ: Công việc làm ăn" class={inputClass} />
+      <div id="panel-maihoa" class="kd-panel mt-6 hidden">
+        <button type="button" class="kd-back-link mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-(--color-gold-300) hover:underline">← Đổi phương pháp lập quẻ</button>
+        <form id="form-maihoa" class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6 sm:p-8">
+          <h2 class="font-display text-2xl font-bold text-(--color-ink-950)">Lập quẻ Mai Hoa</h2>
+          <div class="mt-5 border-t border-(--color-ivory-300) pt-5">
+            <label for="mh-label" class={labelClass}>Việc cần xem</label>
+            <input id="mh-label" type="text" placeholder="Việc cần xem...." class={inputClass} />
           </div>
           <div class="mt-4">
-            <label for="mh-time" class={labelClass}>Thời gian lập quẻ (dương lịch, giờ Việt Nam)</label>
-            <input id="mh-time" type="datetime-local" required class={inputClass} />
+            <p class={labelClass}>Ngày lập quẻ:</p>
+            <div class="mt-1.5 grid grid-cols-3 gap-3">
+              <select id="mh-day" class={selectClass}></select>
+              <select id="mh-month" class={selectClass}></select>
+              <select id="mh-year" class={selectClass}></select>
+            </div>
           </div>
-          <p class="mt-3 text-xs text-(--color-ink-500)">
+          <div class="mt-4">
+            <p class={labelClass}>Giờ lập quẻ:</p>
+            <div class="mt-1.5 flex flex-wrap items-center gap-2">
+              <select id="mh-hour" class={`${selectClass} w-24`}></select>
+              <span class="text-sm text-(--color-ink-600)">Giờ</span>
+              <select id="mh-minute" class={`${selectClass} w-24`}></select>
+              <span class="text-sm text-(--color-ink-600)">Phút</span>
+            </div>
+          </div>
+          <label class="mt-4 flex items-center gap-2 text-sm text-(--color-ink-700)">
+            <input id="mh-lunar" type="checkbox" class="size-4 rounded border-(--color-ivory-300)" /> Ngày Âm lịch
+          </label>
+          <p class="mt-4 text-xs text-(--color-ink-500)">
             Mai Hoa Dịch Số dùng Năm/Tháng/Ngày/Giờ Âm lịch tại thời điểm lập quẻ để tính ra quẻ Thượng, quẻ Hạ và hào động theo đúng công thức của Thiệu Khang Tiết.
           </p>
-          <Button type="submit" size="lg" class="mt-5">Lập quẻ Mai Hoa</Button>
+          <Button type="submit" size="lg" class="mt-5 w-full sm:w-auto">Lập quẻ</Button>
         </form>
         <div id="result-maihoa" class="mt-8 hidden"></div>
       </div>
 
       <!-- Lục Hào -->
       <div id="panel-luchao" class="kd-panel mt-6 hidden">
-        <form id="form-luchao" class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6">
-          <div>
-            <label for="lh-label" class={labelClass}>Việc cần xem (không bắt buộc)</label>
-            <input id="lh-label" type="text" placeholder="Ví dụ: Hôn nhân, gia đạo" class={inputClass} />
+        <button type="button" class="kd-back-link mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-(--color-gold-300) hover:underline">← Đổi phương pháp lập quẻ</button>
+        <form id="form-luchao" class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6 sm:p-8">
+          <h2 class="font-display text-2xl font-bold text-(--color-ink-950)">Lập quẻ Lục Hào</h2>
+          <div class="mt-5 border-t border-(--color-ivory-300) pt-5">
+            <label for="lh-label" class={labelClass}>Việc cần xem</label>
+            <input id="lh-label" type="text" placeholder="Việc cần xem...." class={inputClass} />
           </div>
           <div class="mt-4">
-            <label for="lh-time" class={labelClass}>Thời gian lập quẻ (dương lịch, giờ Việt Nam)</label>
-            <input id="lh-time" type="datetime-local" required class={inputClass} />
+            <p class={labelClass}>Ngày lập quẻ:</p>
+            <div class="mt-1.5 grid grid-cols-3 gap-3">
+              <select id="lh-day" class={selectClass}></select>
+              <select id="lh-month" class={selectClass}></select>
+              <select id="lh-year" class={selectClass}></select>
+            </div>
           </div>
+          <div class="mt-4">
+            <p class={labelClass}>Giờ lập quẻ:</p>
+            <div class="mt-1.5 flex flex-wrap items-center gap-2">
+              <select id="lh-hour" class={`${selectClass} w-24`}></select>
+              <span class="text-sm text-(--color-ink-600)">Giờ</span>
+              <select id="lh-minute" class={`${selectClass} w-24`}></select>
+              <span class="text-sm text-(--color-ink-600)">Phút</span>
+            </div>
+          </div>
+          <label class="mt-4 flex items-center gap-2 text-sm text-(--color-ink-700)">
+            <input id="lh-lunar" type="checkbox" class="size-4 rounded border-(--color-ivory-300)" /> Ngày Âm lịch
+          </label>
+
+          <div class="mt-6 overflow-x-auto rounded-(--radius-control) border border-(--color-ivory-300)">
+            <table class="w-full min-w-[420px] border-collapse text-sm">
+              <thead>
+                <tr class="border-b border-(--color-ivory-300) bg-(--color-ivory-100) text-xs uppercase tracking-wide text-(--color-ink-600)">
+                  <th class="p-2 text-left">Hào</th>
+                  <th class="p-2">Âm - Dương</th>
+                  <th class="p-2">Động</th>
+                </tr>
+              </thead>
+              <tbody>
+                {[6, 5, 4, 3, 2, 1].map((n) => (
+                  <tr class="border-b border-(--color-ivory-300) last:border-b-0">
+                    <td class="p-2 text-(--color-ink-700)">{n} - {haoPositionName[n]}</td>
+                    <td class="p-2">
+                      <select id={`lh-hao-${n}-value`} class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-2 py-1.5 text-center text-sm">
+                        <option value="1">——————</option>
+                        <option value="0">—— ——</option>
+                      </select>
+                    </td>
+                    <td class="p-2 text-center">
+                      <input id={`lh-hao-${n}-dong`} type="checkbox" class="size-4 rounded border-(--color-ivory-300)" />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
           <p class="mt-3 text-xs text-(--color-ink-500)">
-            Thành tâm nghĩ về việc muốn hỏi, sau đó bấm nút bên dưới để gieo quẻ (giả lập tung 3 đồng xu, 6 lần liên tiếp từ hào 1 đến hào 6).
+            Thành tâm nghĩ về việc muốn hỏi, tự gieo 3 đồng xu (hoặc dùng vật tương đương) 6 lần từ hào 1 đến hào 6, rồi chọn đúng Âm/Dương và đánh dấu hào động (nếu có) vào bảng trên.
           </p>
-          <Button type="submit" size="lg" class="mt-5">Gieo quẻ (3 đồng xu × 6 lần)</Button>
+          <Button type="submit" size="lg" class="mt-5 w-full sm:w-auto">Lập quẻ</Button>
         </form>
-        <div id="luchao-tosses" class="mt-5 hidden flex-wrap gap-2"></div>
         <div id="result-luchao" class="mt-8 hidden"></div>
       </div>
 
       <!-- Seri tiền -->
       <div id="panel-serial" class="kd-panel mt-6 hidden">
-        <form id="form-serial" class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6">
-          <div>
-            <label for="sr-serial" class={labelClass}>Số Seri tờ tiền</label>
-            <input id="sr-serial" type="text" inputmode="numeric" placeholder="Ví dụ: 19228888" required class={inputClass} />
+        <button type="button" class="kd-back-link mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-(--color-gold-300) hover:underline">← Đổi phương pháp lập quẻ</button>
+        <form id="form-serial" class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6 sm:p-8">
+          <h2 class="font-display text-2xl font-bold text-(--color-ink-950)">Lập quẻ bằng Serial Tiền</h2>
+          <div class="mt-5 border-t border-(--color-ivory-300) pt-5">
+            <label for="sr-label" class={labelClass}>Việc cần xem</label>
+            <input id="sr-label" type="text" placeholder="Việc cần xem...." class={inputClass} />
           </div>
-          <div class="mt-4 grid gap-4 sm:grid-cols-2">
-            <div>
-              <label for="sr-label" class={labelClass}>Việc cần xem (không bắt buộc)</label>
-              <input id="sr-label" type="text" placeholder="Ví dụ: Tài lộc" class={inputClass} />
-            </div>
-            <div>
-              <label for="sr-time" class={labelClass}>Thời gian lập quẻ</label>
-              <input id="sr-time" type="datetime-local" required class={inputClass} />
+          <div class="mt-4">
+            <label for="sr-serial" class={labelClass}>Số Serial Tiền: <span class="text-(--color-cinnabar-400)">*</span></label>
+            <input id="sr-serial" type="text" inputmode="numeric" placeholder="19228888" required class={inputClass} />
+          </div>
+          <div class="mt-4">
+            <p class={labelClass}>Ngày lập quẻ:</p>
+            <div class="mt-1.5 grid grid-cols-3 gap-3">
+              <select id="sr-day" class={selectClass}></select>
+              <select id="sr-month" class={selectClass}></select>
+              <select id="sr-year" class={selectClass}></select>
             </div>
           </div>
-          <p class="mt-3 text-xs text-(--color-ink-500)">
+          <div class="mt-4">
+            <p class={labelClass}>Giờ lập quẻ:</p>
+            <div class="mt-1.5 flex flex-wrap items-center gap-2">
+              <select id="sr-hour" class={`${selectClass} w-24`}></select>
+              <span class="text-sm text-(--color-ink-600)">Giờ</span>
+              <select id="sr-minute" class={`${selectClass} w-24`}></select>
+              <span class="text-sm text-(--color-ink-600)">Phút</span>
+            </div>
+          </div>
+          <label class="mt-4 flex items-center gap-2 text-sm text-(--color-ink-700)">
+            <input id="sr-lunar" type="checkbox" class="size-4 rounded border-(--color-ivory-300)" /> Ngày Âm lịch
+          </label>
+          <p class="mt-4 text-xs text-(--color-ink-500)">
             Chia dãy số Seri làm 2 nửa: tổng chữ số nửa đầu (dư 8) ra quẻ Thượng, tổng chữ số nửa sau (dư 8) ra quẻ Hạ, tổng tất cả chữ số (dư 6) ra hào động — theo cách "số linh quẻ" ứng dụng Mai Hoa Dịch Số cho số bất kỳ.
           </p>
-          <Button type="submit" size="lg" class="mt-5">Lập quẻ theo Seri tiền</Button>
+          <Button type="submit" size="lg" class="mt-5 w-full sm:w-auto">Lập quẻ</Button>
         </form>
         <div id="result-serial" class="mt-8 hidden"></div>
       </div>
 
       <!-- Số điện thoại -->
       <div id="panel-phone" class="kd-panel mt-6 hidden">
-        <form id="form-phone" class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6">
-          <div>
-            <label for="ph-phone" class={labelClass}>Số điện thoại</label>
-            <input id="ph-phone" type="text" inputmode="numeric" placeholder="Ví dụ: 0912345678" required class={inputClass} />
+        <button type="button" class="kd-back-link mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-(--color-gold-300) hover:underline">← Đổi phương pháp lập quẻ</button>
+        <form id="form-phone" class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6 sm:p-8">
+          <h2 class="font-display text-2xl font-bold text-(--color-ink-950)">Lập quẻ bằng Số Điện Thoại</h2>
+          <div class="mt-5 border-t border-(--color-ivory-300) pt-5">
+            <label for="ph-label" class={labelClass}>Việc cần xem</label>
+            <input id="ph-label" type="text" placeholder="Việc cần xem...." class={inputClass} />
           </div>
-          <div class="mt-4 grid gap-4 sm:grid-cols-2">
-            <div>
-              <label for="ph-label" class={labelClass}>Việc cần xem (không bắt buộc)</label>
-              <input id="ph-label" type="text" placeholder="Ví dụ: Công việc, đối tác" class={inputClass} />
-            </div>
-            <div>
-              <label for="ph-time" class={labelClass}>Thời gian lập quẻ</label>
-              <input id="ph-time" type="datetime-local" required class={inputClass} />
+          <div class="mt-4">
+            <label for="ph-phone" class={labelClass}>Số điện thoại: <span class="text-(--color-cinnabar-400)">*</span></label>
+            <input id="ph-phone" type="text" inputmode="numeric" placeholder="0912345678" required class={inputClass} />
+          </div>
+          <div class="mt-4">
+            <p class={labelClass}>Ngày lập quẻ:</p>
+            <div class="mt-1.5 grid grid-cols-3 gap-3">
+              <select id="ph-day" class={selectClass}></select>
+              <select id="ph-month" class={selectClass}></select>
+              <select id="ph-year" class={selectClass}></select>
             </div>
           </div>
-          <p class="mt-3 text-xs text-(--color-ink-500)">
+          <div class="mt-4">
+            <p class={labelClass}>Giờ lập quẻ:</p>
+            <div class="mt-1.5 flex flex-wrap items-center gap-2">
+              <select id="ph-hour" class={`${selectClass} w-24`}></select>
+              <span class="text-sm text-(--color-ink-600)">Giờ</span>
+              <select id="ph-minute" class={`${selectClass} w-24`}></select>
+              <span class="text-sm text-(--color-ink-600)">Phút</span>
+            </div>
+          </div>
+          <label class="mt-4 flex items-center gap-2 text-sm text-(--color-ink-700)">
+            <input id="ph-lunar" type="checkbox" class="size-4 rounded border-(--color-ivory-300)" /> Ngày Âm lịch
+          </label>
+          <p class="mt-4 text-xs text-(--color-ink-500)">
             Áp dụng cùng cách "số linh quẻ" như Seri tiền, tính trên toàn bộ dãy số điện thoại đã nhập.
           </p>
-          <Button type="submit" size="lg" class="mt-5">Lập quẻ theo Số điện thoại</Button>
+          <Button type="submit" size="lg" class="mt-5 w-full sm:w-auto">Lập quẻ</Button>
         </form>
         <div id="result-phone" class="mt-8 hidden"></div>
       </div>
@@ -190,18 +289,19 @@ const labelClass = "text-sm font-medium text-(--color-ink-800)";
 <script>
   import {
     maiHoaCast,
-    lucHaoCastFromTosses,
-    tossCoinLine,
+    lucHaoCastManual,
     seriTienCast,
     soDienThoaiCast,
     type FullCastResult,
     type QueDayDu,
     type CastInput,
-    type CoinLineValue,
+    type LineVal,
   } from "../lib/luc-hao";
   import { CAN, CHI } from "../lib/menh-nap-am";
+  import { lunarToSolar } from "../lib/lunar-calendar";
 
-  // --- Tabs ---
+  // --- Bộ chọn phương pháp (4 thẻ) <-> panel form ---
+  const selectorEl = document.getElementById("kd-tabs")!;
   const tabButtons = Array.from(document.querySelectorAll<HTMLButtonElement>(".kd-tab-btn"));
   const panels: Record<string, HTMLElement> = {
     maihoa: document.getElementById("panel-maihoa")!,
@@ -212,25 +312,60 @@ const labelClass = "text-sm font-medium text-(--color-ink-800)";
   function activateTab(tab: string) {
     tabButtons.forEach((btn) => btn.classList.toggle("active", btn.dataset.tab === tab));
     Object.entries(panels).forEach(([key, el]) => el.classList.toggle("hidden", key !== tab));
+    selectorEl.classList.add("hidden");
+    panels[tab]?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+  function showSelector() {
+    selectorEl.classList.remove("hidden");
+    Object.values(panels).forEach((el) => el.classList.add("hidden"));
+    selectorEl.scrollIntoView({ behavior: "smooth", block: "start" });
   }
   tabButtons.forEach((btn) => btn.addEventListener("click", () => activateTab(btn.dataset.tab!)));
-  activateTab("maihoa");
+  document.querySelectorAll<HTMLButtonElement>(".kd-back-link").forEach((btn) => btn.addEventListener("click", showSelector));
 
-  // --- Thời gian mặc định = hiện tại (giờ Việt Nam theo trình duyệt) ---
-  function nowLocalValue(): string {
-    const d = new Date();
-    const pad = (n: number) => String(n).padStart(2, "0");
-    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  // --- Sinh danh sách lựa chọn Ngày/Tháng/Năm/Giờ/Phút cho cả 4 form ---
+  function populateSelect(el: HTMLSelectElement, options: [string | number, string][]) {
+    el.innerHTML = options.map(([v, l]) => `<option value="${v}">${l}</option>`).join("");
   }
-  ["mh-time", "lh-time", "sr-time", "ph-time"].forEach((id) => {
-    const el = document.getElementById(id) as HTMLInputElement;
-    el.value = nowLocalValue();
+  const DAY_OPTIONS: [number, string][] = Array.from({ length: 31 }, (_, i) => [i + 1, String(i + 1).padStart(2, "0")]);
+  const MONTH_OPTIONS: [number, string][] = Array.from({ length: 12 }, (_, i) => [i + 1, `Tháng ${i + 1}`]);
+  const nowYear = new Date().getFullYear();
+  const YEAR_OPTIONS: [number, string][] = Array.from({ length: 9 }, (_, i) => nowYear - 5 + i).map((y) => [y, String(y)]);
+  const HOUR_OPTIONS: [number, string][] = Array.from({ length: 24 }, (_, i) => [i, String(i).padStart(2, "0")]);
+  const MINUTE_OPTIONS: [number, string][] = Array.from({ length: 60 }, (_, i) => [i, String(i).padStart(2, "0")]);
+
+  const PREFIXES = ["mh", "lh", "sr", "ph"];
+  const now = new Date();
+  PREFIXES.forEach((p) => {
+    const daySel = document.getElementById(`${p}-day`) as HTMLSelectElement;
+    const monthSel = document.getElementById(`${p}-month`) as HTMLSelectElement;
+    const yearSel = document.getElementById(`${p}-year`) as HTMLSelectElement;
+    const hourSel = document.getElementById(`${p}-hour`) as HTMLSelectElement;
+    const minuteSel = document.getElementById(`${p}-minute`) as HTMLSelectElement;
+    populateSelect(daySel, DAY_OPTIONS.map(([v, l]) => [v, l]));
+    populateSelect(monthSel, MONTH_OPTIONS.map(([v, l]) => [v, l]));
+    populateSelect(yearSel, YEAR_OPTIONS.map(([v, l]) => [v, l]));
+    populateSelect(hourSel, HOUR_OPTIONS.map(([v, l]) => [v, l]));
+    populateSelect(minuteSel, MINUTE_OPTIONS.map(([v, l]) => [v, l]));
+    daySel.value = String(now.getDate());
+    monthSel.value = String(now.getMonth() + 1);
+    yearSel.value = String(now.getFullYear());
+    hourSel.value = String(now.getHours());
+    minuteSel.value = String(now.getMinutes());
   });
 
-  function readCastInput(timeId: string): CastInput {
-    const raw = (document.getElementById(timeId) as HTMLInputElement).value;
-    const d = raw ? new Date(raw) : new Date();
-    return { day: d.getDate(), month: d.getMonth() + 1, year: d.getFullYear(), hour: d.getHours(), minute: d.getMinutes() };
+  function readCastInput(prefix: string): CastInput {
+    const day = parseInt((document.getElementById(`${prefix}-day`) as HTMLSelectElement).value, 10);
+    const month = parseInt((document.getElementById(`${prefix}-month`) as HTMLSelectElement).value, 10);
+    const year = parseInt((document.getElementById(`${prefix}-year`) as HTMLSelectElement).value, 10);
+    const hour = parseInt((document.getElementById(`${prefix}-hour`) as HTMLSelectElement).value, 10);
+    const minute = parseInt((document.getElementById(`${prefix}-minute`) as HTMLSelectElement).value, 10);
+    const lunarCheckbox = document.getElementById(`${prefix}-lunar`) as HTMLInputElement | null;
+    if (lunarCheckbox?.checked) {
+      const solar = lunarToSolar(day, month, year);
+      return { day: solar.d, month: solar.m, year: solar.y, hour, minute };
+    }
+    return { day, month, year, hour, minute };
   }
 
   // --- Vẽ hình quẻ (6 vạch, hào 1 dưới cùng) ---
@@ -363,56 +498,46 @@ const labelClass = "text-sm font-medium text-(--color-ink-800)";
     return `${pad(input.day)}/${pad(input.month)}/${input.year} ${pad(input.hour)}:${pad(input.minute ?? 0)}`;
   }
 
+  function handleLunarError(err: unknown): boolean {
+    if (err instanceof Error && err.message.includes("Âm lịch")) {
+      alert(err.message);
+      return true;
+    }
+    return false;
+  }
+
   // --- Mai Hoa ---
   document.getElementById("form-maihoa")?.addEventListener("submit", (e) => {
     e.preventDefault();
     const label = (document.getElementById("mh-label") as HTMLInputElement).value.trim();
-    const input = readCastInput("mh-time");
     try {
+      const input = readCastInput("mh");
       const cast = maiHoaCast(input);
       renderCastResult(document.getElementById("result-maihoa")!, cast, "Gieo quẻ Mai Hoa Dịch Số", label, formatTimeLabel(input));
     } catch (err) {
       console.error(err);
-      alert("Không lập được quẻ, vui lòng kiểm tra lại thời gian nhập vào.");
+      if (!handleLunarError(err)) alert("Không lập được quẻ, vui lòng kiểm tra lại thời gian nhập vào.");
     }
   });
 
-  // --- Lục Hào (gieo đồng xu, có hiệu ứng) ---
-  const tossesEl = document.getElementById("luchao-tosses")!;
-  const COIN_LABEL: Record<CoinLineValue, string> = { 6: "Lão Âm (động)", 7: "Thiếu Dương", 8: "Thiếu Âm", 9: "Lão Dương (động)" };
-  function sleep(ms: number) {
-    return new Promise((r) => setTimeout(r, ms));
-  }
-  document.getElementById("form-luchao")?.addEventListener("submit", async (e) => {
+  // --- Lục Hào (nhập tay) ---
+  document.getElementById("form-luchao")?.addEventListener("submit", (e) => {
     e.preventDefault();
     const label = (document.getElementById("lh-label") as HTMLInputElement).value.trim();
-    const input = readCastInput("lh-time");
-    const submitBtn = (e.target as HTMLFormElement).querySelector("button[type=submit]") as HTMLButtonElement;
-    submitBtn.disabled = true;
-    tossesEl.classList.remove("hidden");
-    tossesEl.classList.add("flex");
-    tossesEl.innerHTML = "";
-    document.getElementById("result-luchao")?.classList.add("hidden");
-
-    const rawLines: CoinLineValue[] = [];
-    for (let i = 0; i < 6; i++) {
-      await sleep(220);
-      const v = tossCoinLine();
-      rawLines.push(v);
-      const chip = document.createElement("div");
-      chip.className = "rounded-full border border-(--color-gold-400)/40 bg-(--color-ivory-100) px-3 py-1.5 text-xs font-medium text-(--color-ink-700)";
-      chip.textContent = `Hào ${i + 1}: ${v} điểm — ${COIN_LABEL[v]}`;
-      tossesEl.appendChild(chip);
-    }
-
     try {
-      const cast = lucHaoCastFromTosses(rawLines, input);
-      renderCastResult(document.getElementById("result-luchao")!, cast, "Lục Hào — gieo 3 đồng xu", label, formatTimeLabel(input));
+      const input = readCastInput("lh");
+      const values: LineVal[] = [];
+      const dongPositions: number[] = [];
+      for (let n = 1; n <= 6; n++) {
+        const v = parseInt((document.getElementById(`lh-hao-${n}-value`) as HTMLSelectElement).value, 10) as LineVal;
+        values.push(v);
+        if ((document.getElementById(`lh-hao-${n}-dong`) as HTMLInputElement).checked) dongPositions.push(n);
+      }
+      const cast = lucHaoCastManual(values, dongPositions, input);
+      renderCastResult(document.getElementById("result-luchao")!, cast, "Lục Hào — nhập tay", label, formatTimeLabel(input));
     } catch (err) {
       console.error(err);
-      alert("Không lập được quẻ, vui lòng thử lại.");
-    } finally {
-      submitBtn.disabled = false;
+      if (!handleLunarError(err)) alert("Không lập được quẻ, vui lòng kiểm tra lại thông tin đã nhập.");
     }
   });
 
@@ -421,12 +546,13 @@ const labelClass = "text-sm font-medium text-(--color-ink-800)";
     e.preventDefault();
     const label = (document.getElementById("sr-label") as HTMLInputElement).value.trim();
     const serial = (document.getElementById("sr-serial") as HTMLInputElement).value.trim();
-    const input = readCastInput("sr-time");
     try {
+      const input = readCastInput("sr");
       const cast = seriTienCast(serial, input);
       renderCastResult(document.getElementById("result-serial")!, cast, `Lập quẻ bằng Seri tiền - ${serial}`, label, formatTimeLabel(input));
     } catch (err) {
-      alert("Vui lòng nhập số Seri hợp lệ (ít nhất 2 chữ số).");
+      console.error(err);
+      if (!handleLunarError(err)) alert("Vui lòng nhập số Seri hợp lệ (ít nhất 2 chữ số).");
     }
   });
 
@@ -435,12 +561,13 @@ const labelClass = "text-sm font-medium text-(--color-ink-800)";
     e.preventDefault();
     const label = (document.getElementById("ph-label") as HTMLInputElement).value.trim();
     const phone = (document.getElementById("ph-phone") as HTMLInputElement).value.trim();
-    const input = readCastInput("ph-time");
     try {
+      const input = readCastInput("ph");
       const cast = soDienThoaiCast(phone, input);
       renderCastResult(document.getElementById("result-phone")!, cast, `Lập quẻ bằng Số điện thoại - ${phone}`, label, formatTimeLabel(input));
     } catch (err) {
-      alert("Vui lòng nhập số điện thoại hợp lệ (ít nhất 2 chữ số).");
+      console.error(err);
+      if (!handleLunarError(err)) alert("Vui lòng nhập số điện thoại hợp lệ (ít nhất 2 chữ số).");
     }
   });
 </script>

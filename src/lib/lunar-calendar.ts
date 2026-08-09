@@ -9,7 +9,7 @@
 // Độ chính xác: đủ dùng cho xác định NGÀY âm lịch (sai số điểm Sóc cỡ vài phút, không ảnh hưởng
 // tới ranh giới ngày trừ trường hợp cực hiếm sinh đúng lúc nửa đêm giao Sóc).
 
-import { jdFromDate, sunLongitude } from "./solar-term";
+import { jdFromDate, sunLongitude, dateFromJD } from "./solar-term";
 
 const VN_TIMEZONE = 7;
 
@@ -123,6 +123,22 @@ export interface LunarDate {
   month: number;
   year: number;
   isLeapMonth: boolean;
+}
+
+// Đổi 1 ngày Âm lịch về Dương lịch — dò tìm trong cửa sổ ±60 ngày quanh mốc ước lượng, so khớp
+// solarToLunar() ngược lại (đáng tin cậy hơn tự cài lại thuật toán nghịch đảo Sóc/Trung Khí).
+export function lunarToSolar(lunarDay: number, lunarMonth: number, lunarYear: number, isLeapMonth = false): { d: number; m: number; y: number } {
+  const approxJd = Math.round(jdFromDate(lunarDay, lunarMonth, lunarYear) + 15); // tháng âm lệch dương ~0-1 tháng
+  for (let delta = -60; delta <= 60; delta++) {
+    const jd = approxJd + delta;
+    const { d, m, y } = dateFromJD(jd);
+    const dd = Math.round(d);
+    const lunar = solarToLunar(dd, m, y);
+    if (lunar.day === lunarDay && lunar.month === lunarMonth && lunar.year === lunarYear && lunar.isLeapMonth === isLeapMonth) {
+      return { d: dd, m, y };
+    }
+  }
+  throw new Error("Không đổi được ngày Âm lịch này sang Dương lịch — vui lòng kiểm tra lại ngày/tháng/năm.");
 }
 
 // Đổi 1 ngày Dương lịch (giờ Việt Nam) sang Âm lịch Việt Nam.
