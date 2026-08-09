@@ -1,0 +1,41 @@
+{
+  "name": "@thien-anh/calendar-core",
+  "version": "0.1.0",
+  "description": "Core Calendar Engine: Julian Day, Solar Terms, Vietnamese Lunar Calendar, Can Chi (Ganzhi), Timezone — nền tảng dùng chung cho Bát Tự, Tử Vi, Kinh Dịch, Mai Hoa Dịch Số, Lục Hào, Kỳ Môn Độn Giáp, Trạch Nhật, Huyền Không.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:unit": "vitest run tests/unit",
+    "test:integration": "vitest run tests/integration"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4"
+  },
+  "keywords": [
+    "julian-day",
+    "solar-terms",
+    "lunar-calendar",
+    "can-chi",
+    "ganzhi",
+    "bazi",
+    "feng-shui",
+    "astronomy"
+  ],
+  "license": "UNLICENSED",
+  "private": true
+}

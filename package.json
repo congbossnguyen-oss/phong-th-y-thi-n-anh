@@ -5,9 +5,13 @@
   "engines": {
     "node": ">=22.12.0"
   },
+  "workspaces": [
+    "packages/*"
+  ],
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build:packages": "npm run build -w packages/calendar-core && npm run build -w packages/engine-contract && npm run build -w packages/rule-engine && npm run build -w packages/trachnhat-engine",
+    "build": "npm run build:packages && astro build",
     "preview": "astro preview",
     "start": "node ./dist/server/entry.mjs",
     "astro": "astro",
@@ -16,6 +20,7 @@
     "db:studio": "drizzle-kit studio --config db/drizzle.config.ts"
   },
   "dependencies": {
+    "@thien-anh/trachnhat-engine": "*",
     "@astrojs/node": "^11.0.3",
     "@astrojs/sitemap": "^3.7.3",
     "@neondatabase/serverless": "^1.1.0",

@@ -1,0 +1,28 @@
+{
+  "name": "@thien-anh/engine-contract",
+  "version": "0.1.0",
+  "description": "Quy ước kỹ thuật dùng chung cho mọi Engine bộ môn: EngineResult<T>, EngineMeta, EngineError, EngineCalculate<TInput,TOutput>. Thuần kiểu dữ liệu, không chứa business logic của bất kỳ bộ môn nào.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4"
+  },
+  "license": "UNLICENSED",
+  "private": true
+}

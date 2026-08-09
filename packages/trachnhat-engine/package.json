@@ -1,0 +1,40 @@
+{
+  "name": "@thien-anh/trachnhat-engine",
+  "version": "0.1.0",
+  "description": "Trạch Nhật Engine: Lịch Vạn Sự phổ thông — Tứ Trụ, Âm lịch, Tiết Khí, Trực, 28 Tú, Hoàng Đạo/Hắc Đạo, Thần Sát, Tiểu Lục Nhâm theo ngày dương lịch. Chỉ dữ kiện đã tính, không luận giải, không giao diện, không AI.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:unit": "vitest run tests/unit"
+  },
+  "dependencies": {
+    "@thien-anh/calendar-core": "*",
+    "@thien-anh/rule-engine": "*",
+    "@thien-anh/engine-contract": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4"
+  },
+  "keywords": [
+    "trach-nhat",
+    "lich-van-su",
+    "hoang-dao-hac-dao"
+  ],
+  "license": "UNLICENSED",
+  "private": true
+}

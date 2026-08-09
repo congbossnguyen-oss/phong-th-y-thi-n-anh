@@ -1,0 +1,40 @@
+{
+  "name": "@thien-anh/rule-engine",
+  "version": "0.1.0",
+  "description": "Rule Engine: quy tắc/dữ liệu cổ điển thuần túy dùng chung giữa các Engine bộ môn (12 Trực, 28 Tú, Hoàng Đạo/Hắc Đạo, Thần Sát, Lục Xung...). Không chứa business logic riêng của bất kỳ bộ môn nào.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:unit": "vitest run tests/unit"
+  },
+  "dependencies": {
+    "@thien-anh/calendar-core": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4"
+  },
+  "keywords": [
+    "rule-engine",
+    "trach-nhat",
+    "than-sat",
+    "nhi-thap-bat-tu",
+    "hoang-dao-hac-dao"
+  ],
+  "license": "UNLICENSED",
+  "private": true
+}
