@@ -1,9 +1,13 @@
 // Lập lá số Bát Tự (Tứ Trụ) đầy đủ: 4 trụ Can Chi, Tàng Can, Trường Sinh, Thập Thần, Nạp Âm,
-// Đại Vận, Lưu Niên, Mệnh Cung, Thai Nguyên, Niên/Nhật Không, Thần Sát Nguyên Cục (5 loại).
+// Đại Vận, Lưu Niên, Mệnh Cung, Thai Nguyên, Niên/Nhật Không, Thần Sát Nguyên Cục (~30 loại).
 // Công thức Đại Vận/Mệnh Cung/Thai Nguyên/Không Vong lấy từ tài liệu "Bát Tự Nền Tảng" (Vũ Thiện Minh)
 // và cross-check khớp 100% với ví dụ tham chiếu (31/8/1980 11:50, Dương Nam, GMT+7) từ hocvienlyso.org.
-// Thần Sát: 5 loại (Thiên Ất, Văn Xương, Tướng Tinh, Tai Sát, Kình Dương) — Kình Dương dùng bảng đủ
-// 10 Thiên Can do người dùng cung cấp bổ sung (tài liệu gốc chỉ chắc chắn 5 Dương Can).
+// Thần Sát: bảng tra lấy từ "Bát Tự Nền Tảng - Phần 3: Bát tự Thần sát" (Vũ Thiện Minh, 2022), mỗi
+// bảng đã được đối chiếu lại từng ô số với tài liệu gốc trước khi đưa vào code (xem chi tiết ở khối
+// "Bảng tra Thần Sát Nguyên Cục" bên dưới). Một số thần sát trong tài liệu (Học Đường/Từ Quán, Phúc
+// Tinh Quý Nhân, Kim Thần, 13 biến thể chi tiết của Đào Hoa, Triệt Lộ/Tứ Đại Không Vong) bị CHỦ ĐỘNG
+// BỎ QUA vì bảng OCR gốc bị rách/mâu thuẫn hoặc đòi hỏi phân tích cấu trúc nhiều điều kiện — không
+// đoán ẩu công thức phong thủy khi nguồn không rõ ràng.
 
 import { CAN, CHI, NAP_AM, type NguHanh } from "./menh-nap-am";
 import { jdFromDate, getMonthChiIndex, getTietKhiAround } from "./solar-term";
@@ -170,6 +174,60 @@ const TUONG_TINH: number[] = [0, 9, 6, 3, 0, 9, 6, 3, 0, 9, 6, 3];
 const TAI_SAT: number[] = [6, 3, 0, 9, 6, 3, 0, 9, 6, 3, 0, 9];
 // Kình Dương (Dương Nhận): tra theo Can Ngày — Địa Chi Đế Vượng của Nhật Can, đủ 10 Can.
 const KINH_DUONG: number[] = [3, 2, 6, 5, 6, 5, 9, 8, 0, 11];
+// Thái Cực Quý Nhân: Can Năm/Ngày → nhóm Chi (2 hoặc 4 Chi).
+const THAI_CUC: number[][] = [
+  [0, 6], [0, 6], [3, 9], [3, 9], [4, 10, 1, 7], [4, 10, 1, 7], [2, 11], [2, 11], [5, 8], [5, 8],
+];
+// Hoa Cái: Chi Năm/Ngày (nhóm Tam Hợp) → 1 Chi Thổ cố định.
+const HOA_CAI: number[] = [4, 1, 10, 7, 4, 1, 10, 7, 4, 1, 10, 7];
+// Nguyệt Đức Quý Nhân: Chi Tháng → 1 Can (chu kỳ 4 tháng).
+const NGUYET_DUC: number[] = [8, 6, 2, 0, 8, 6, 2, 0, 8, 6, 2, 0];
+// Thiên Đức Quý Nhân: Chi Tháng → mục tiêu (loại mục tiêu đổi giữa Can và Chi tùy theo tháng — theo
+// đúng bảng cổ điển, không phải lỗi OCR).
+const THIEN_DUC: { type: "can" | "chi"; idx: number }[] = [
+  { type: "chi", idx: 5 }, // Tý → Tị
+  { type: "can", idx: 6 }, // Sửu → Canh
+  { type: "can", idx: 3 }, // Dần → Đinh
+  { type: "chi", idx: 8 }, // Mão → Thân
+  { type: "can", idx: 8 }, // Thìn → Nhâm
+  { type: "can", idx: 7 }, // Tị → Tân
+  { type: "chi", idx: 11 }, // Ngọ → Hợi
+  { type: "can", idx: 0 }, // Mùi → Giáp
+  { type: "can", idx: 9 }, // Thân → Quý
+  { type: "chi", idx: 2 }, // Dậu → Dần
+  { type: "can", idx: 2 }, // Tuất → Bính
+  { type: "can", idx: 1 }, // Hợi → Ất
+];
+// Quốc Ấn Quý Nhân: Can Năm/Ngày → Chi.
+const QUOC_AN: number[] = [10, 11, 1, 2, 1, 2, 4, 5, 7, 8];
+// Dịch Mã: Chi Năm/Ngày (nhóm Tứ Sinh/Vượng/Mộ) → 1 Chi.
+const DICH_MA: number[] = [2, 11, 8, 5, 2, 11, 8, 5, 2, 11, 8, 5];
+// Kim Dư: Can Năm/Ngày → Chi.
+const KIM_DU: number[] = [4, 5, 7, 8, 7, 8, 10, 11, 1, 2];
+// Thiên Y Quý Nhân: Chi Tháng → Chi (lùi 1 vị).
+const THIEN_Y: number[] = [11, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+// Lộc Thần: Can Ngày → Chi (vị trí Lâm Quan của Can).
+const LOC_THAN: number[] = [2, 3, 5, 6, 5, 6, 8, 9, 11, 0];
+// Âm Chú Dương Thụ: Chi Tháng → Chi.
+const AM_CHU_DUONG_THU: number[] = [2, 1, 0, 11, 10, 9, 10, 11, 0, 1, 2, 3];
+// Hồng Diễm: Can Năm/Ngày → Chi.
+const HONG_DIEM: number[] = [6, 8, 2, 7, 4, 4, 8, 9, 0, 10];
+// Hồng Loan: Chi Năm → Chi.
+const HONG_LOAN: number[] = [3, 2, 1, 0, 11, 10, 9, 8, 7, 6, 5, 4];
+// Thiên Hỷ: Chi Năm → Chi.
+const THIEN_HY: number[] = [11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0];
+// Cô Thần: Chi Năm → Chi.
+const CO_THAN: number[] = [2, 2, 5, 5, 5, 8, 8, 8, 11, 11, 11, 2];
+// Quả Tú: Chi Năm → Chi.
+const QUA_TU: number[] = [10, 10, 1, 1, 1, 4, 4, 4, 7, 7, 7, 10];
+// Kiếp Sát: Chi Năm/Ngày (nhóm Tứ Sinh) → 1 Chi.
+const KIEP_SAT: number[] = [5, 2, 11, 8, 5, 2, 11, 8, 5, 2, 11, 8];
+// Vong Thần: Chi Năm/Ngày (nhóm Tứ Sinh/Vượng/Mộ) → 1 Chi.
+const VONG_THAN: number[] = [11, 8, 5, 2, 11, 8, 5, 2, 11, 8, 5, 2];
+// Huyết Nhẫn: Chi Năm → Chi.
+const HUYET_NHAN: number[] = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0, 11];
+// Đào Hoa (bảng gốc, chưa gồm 13 biến thể chi tiết): Chi Năm/Ngày (nhóm Tam Hợp) → 1 Chi.
+const DAO_HOA: number[] = [9, 6, 3, 0, 9, 6, 3, 0, 9, 6, 3, 0];
 
 function addThanSatMatches(
   result: Record<PillarKey, string[]>,
@@ -186,6 +244,107 @@ function addThanSatMatches(
       result[key].push(`${name} (năm)`);
     }
   });
+}
+
+function addThanSatCanMatches(
+  result: Record<PillarKey, string[]>,
+  pillars: Record<PillarKey, { canIndex: number }>,
+  name: string,
+  primaryTargets: number[],
+  secondaryTargets?: number[],
+) {
+  (["year", "month", "day", "hour"] as PillarKey[]).forEach((key) => {
+    const can = pillars[key].canIndex;
+    if (primaryTargets.includes(can)) {
+      result[key].push(name);
+    } else if (secondaryTargets?.includes(can)) {
+      result[key].push(`${name} (năm)`);
+    }
+  });
+}
+
+// Thiên Đức Quý Nhân dùng riêng vì mục tiêu đổi loại Can/Chi tùy theo Chi Tháng.
+function addThienDucMatch(
+  result: Record<PillarKey, string[]>,
+  pillars: Record<PillarKey, { canIndex: number; chiIndex: number }>,
+  monthChiIndex: number,
+) {
+  const target = THIEN_DUC[monthChiIndex];
+  (["year", "month", "day", "hour"] as PillarKey[]).forEach((key) => {
+    const p = pillars[key];
+    const hit = target.type === "can" ? p.canIndex === target.idx : p.chiIndex === target.idx;
+    if (hit) result[key].push("Thiên Đức");
+  });
+}
+
+// Tam Kỳ Quý Nhân: 3 Thiên Can cụ thể cùng xuất hiện trong tứ trụ (không đòi hỏi liền kề vị trí).
+const TAM_KY_GROUPS: { label: string; cans: number[] }[] = [
+  { label: "Tam Kỳ (Thiên Thượng)", cans: [0, 4, 6] }, // Giáp Mậu Canh
+  { label: "Tam Kỳ (Địa Hạ)", cans: [1, 2, 3] }, // Ất Bính Đinh
+  { label: "Tam Kỳ (Nhân Trung)", cans: [9, 7, 8] }, // Quý Tân Nhâm
+];
+function addTamKyMatches(result: Record<PillarKey, string[]>, pillars: Record<PillarKey, { canIndex: number }>) {
+  const keys: PillarKey[] = ["year", "month", "day", "hour"];
+  const canSet = new Set(keys.map((k) => pillars[k].canIndex));
+  TAM_KY_GROUPS.forEach((group) => {
+    if (group.cans.every((c) => canSet.has(c))) {
+      keys.forEach((k) => {
+        if (group.cans.includes(pillars[k].canIndex)) result[k].push(group.label);
+      });
+    }
+  });
+}
+
+// Khôi Cương / Thập Ác Đại Bại / Âm Dương Sai Thố: cách cục cố định, chỉ xét riêng Trụ Ngày.
+const KHOI_CUONG_DAY: [number, number][] = [
+  [6, 4], [8, 4], [6, 10], [4, 10], // Canh Thìn, Nhâm Thìn, Canh Tuất, Mậu Tuất
+];
+const THAP_AC_DAI_BAI_DAY: [number, number][] = [
+  [0, 4], [1, 5], [2, 8], [3, 11], [4, 10], [5, 1], [6, 4], [7, 5], [8, 8], [9, 11],
+]; // Giáp Thìn, Ất Tị, Bính Thân, Đinh Hợi, Mậu Tuất, Kỷ Sửu, Canh Thìn, Tân Tị, Nhâm Thân, Quý Hợi
+const AM_DUONG_SAI_THO_DAY: [number, number][] = [
+  [2, 0], [3, 1], [4, 2], [7, 3], [8, 4], [9, 5], [2, 6], [3, 7], [4, 8], [7, 9], [8, 10], [9, 11],
+]; // Bính Tý, Đinh Sửu, Mậu Dần, Tân Mão, Nhâm Thìn, Quý Tị, Bính Ngọ, Đinh Mùi, Mậu Thân, Tân Dậu, Nhâm Tuất, Quý Hợi
+
+function addDayPillarPatternMatch(
+  result: Record<PillarKey, string[]>,
+  dayCanIndex: number,
+  dayChiIndex: number,
+  name: string,
+  combos: [number, number][],
+) {
+  if (combos.some(([c, h]) => c === dayCanIndex && h === dayChiIndex)) {
+    result.day.push(name);
+  }
+}
+
+// Thiên Xá Quý Nhân: mùa sinh (theo Chi Tháng) → 1 tổ hợp Can Chi Ngày cụ thể phải khớp đúng
+// ("chỉ đứng ở trụ ngày mà thôi" theo tài liệu gốc).
+function addThienXaMatch(
+  result: Record<PillarKey, string[]>,
+  monthChiIndex: number,
+  dayCanIndex: number,
+  dayChiIndex: number,
+) {
+  let target: [number, number];
+  if ([2, 3, 4].includes(monthChiIndex)) target = [4, 2]; // Xuân (Dần Mão Thìn) → Mậu Dần
+  else if ([5, 6, 7].includes(monthChiIndex)) target = [0, 6]; // Hạ (Tị Ngọ Mùi) → Giáp Ngọ
+  else if ([8, 9, 10].includes(monthChiIndex)) target = [4, 8]; // Thu (Thân Dậu Tuất) → Mậu Thân
+  else target = [0, 0]; // Đông (Hợi Tý Sửu) → Giáp Tý
+  if (target[0] === dayCanIndex && target[1] === dayChiIndex) result.day.push("Thiên Xá");
+}
+
+// Thiên La / Địa Võng: xét sự CÓ MẶT đồng thời của 1 cặp Chi cụ thể trong tứ trụ (không phải lookup
+// theo 1 nguồn duy nhất — "Tuất gặp Hợi là Thiên La", "Thìn gặp Tị là Địa Võng").
+function addThienLaDiaVongMatches(result: Record<PillarKey, string[]>, pillars: Record<PillarKey, { chiIndex: number }>) {
+  const keys: PillarKey[] = ["year", "month", "day", "hour"];
+  const chiSet = new Set(keys.map((k) => pillars[k].chiIndex));
+  if (chiSet.has(10) && chiSet.has(11)) {
+    keys.forEach((k) => { if (pillars[k].chiIndex === 10) result[k].push("Thiên La"); });
+  }
+  if (chiSet.has(4) && chiSet.has(5)) {
+    keys.forEach((k) => { if (pillars[k].chiIndex === 4) result[k].push("Địa Võng"); });
+  }
 }
 
 // Không Vong (Tuần Không): 2 Chi "dư" của tuần Giáp Tý chứa Can Chi này.
@@ -274,6 +433,11 @@ export function tinhBatTu(input: BatTuInput): BatTuChart {
   const yearCanIndex = yearCycleIndex % 10;
   const yearChiIndex = yearCycleIndex % 12;
 
+  // Chiều thuận/nghịch dùng chung cho Đại Vận và các thần sát phụ thuộc giới tính (Nguyên Thần, Câu
+  // Giảo Sát): Dương Nam/Âm Nữ đi thuận, Âm Nam/Dương Nữ đi nghịch.
+  const yearIsDuong = CAN_AM_DUONG[yearCanIndex] === "Dương";
+  const forward = (yearIsDuong && gender === "Nam") || (!yearIsDuong && gender === "Nữ");
+
   // Trụ tháng
   const monthChiIndex = monthChiIndexNow;
   const danCan = thangDanCanIndex(yearCanIndex);
@@ -310,22 +474,56 @@ export function tinhBatTu(input: BatTuInput): BatTuChart {
   const nhatKhong = khongVongOf(dayCanIndex, dayChiIndex);
 
   // --- Thần Sát Nguyên Cục ---
-  const pillarsMap: Record<PillarKey, { chiIndex: number }> = {
+  const pillarsMap: Record<PillarKey, PillarInfo> = {
     year: yearPillar,
     month: monthPillar,
     day: dayPillar,
     hour: hourPillar,
   };
   const thanSat: Record<PillarKey, string[]> = { year: [], month: [], day: [], hour: [] };
+
+  // Cát thần
   addThanSatMatches(thanSat, pillarsMap, "Thiên Ất", THIEN_AT[dayCanIndex], THIEN_AT[yearCanIndex]);
+  addThanSatMatches(thanSat, pillarsMap, "Thái Cực", THAI_CUC[dayCanIndex], THAI_CUC[yearCanIndex]);
+  addThanSatMatches(thanSat, pillarsMap, "Hoa Cái", [HOA_CAI[dayChiIndex]], [HOA_CAI[yearChiIndex]]);
+  addThienDucMatch(thanSat, pillarsMap, monthChiIndex);
+  addThanSatCanMatches(thanSat, pillarsMap, "Nguyệt Đức", [NGUYET_DUC[monthChiIndex]]);
   addThanSatMatches(thanSat, pillarsMap, "Văn Xương", [VAN_XUONG[dayCanIndex]]);
+  addTamKyMatches(thanSat, pillarsMap);
   addThanSatMatches(thanSat, pillarsMap, "Tướng Tinh", [TUONG_TINH[dayChiIndex]]);
+  addThanSatMatches(thanSat, pillarsMap, "Quốc Ấn", [QUOC_AN[dayCanIndex]], [QUOC_AN[yearCanIndex]]);
+  addThanSatMatches(thanSat, pillarsMap, "Dịch Mã", [DICH_MA[dayChiIndex]], [DICH_MA[yearChiIndex]]);
+  addThanSatMatches(thanSat, pillarsMap, "Kim Dư", [KIM_DU[dayCanIndex]], [KIM_DU[yearCanIndex]]);
+  addThanSatMatches(thanSat, pillarsMap, "Thiên Y", [THIEN_Y[monthChiIndex]]);
+  addThanSatMatches(thanSat, pillarsMap, "Lộc Thần", [LOC_THAN[dayCanIndex]]);
+  addThienXaMatch(thanSat, monthChiIndex, dayCanIndex, dayChiIndex);
+  addThanSatMatches(thanSat, pillarsMap, "Âm Chú Dương Thụ", [AM_CHU_DUONG_THU[monthChiIndex]]);
+  addDayPillarPatternMatch(thanSat, dayCanIndex, dayChiIndex, "Khôi Cương", KHOI_CUONG_DAY);
+  addThanSatMatches(thanSat, pillarsMap, "Hồng Diễm", [HONG_DIEM[dayCanIndex]], [HONG_DIEM[yearCanIndex]]);
+  addThanSatMatches(thanSat, pillarsMap, "Hồng Loan", [HONG_LOAN[yearChiIndex]]);
+  addThanSatMatches(thanSat, pillarsMap, "Thiên Hỷ", [THIEN_HY[yearChiIndex]]);
+
+  // Hung thần
   addThanSatMatches(thanSat, pillarsMap, "Tai Sát", [TAI_SAT[dayChiIndex]]);
   addThanSatMatches(thanSat, pillarsMap, "Kình Dương", [KINH_DUONG[dayCanIndex]]);
+  addThanSatMatches(thanSat, pillarsMap, "Kiếp Sát", [KIEP_SAT[dayChiIndex]], [KIEP_SAT[yearChiIndex]]);
+  addThanSatMatches(thanSat, pillarsMap, "Vong Thần", [VONG_THAN[dayChiIndex]], [VONG_THAN[yearChiIndex]]);
+  addThienLaDiaVongMatches(thanSat, pillarsMap);
+  addDayPillarPatternMatch(thanSat, dayCanIndex, dayChiIndex, "Thập Ác Đại Bại", THAP_AC_DAI_BAI_DAY);
+  addThanSatMatches(thanSat, pillarsMap, "Cô Thần", [CO_THAN[yearChiIndex]]);
+  addThanSatMatches(thanSat, pillarsMap, "Quả Tú", [QUA_TU[yearChiIndex]]);
+  addDayPillarPatternMatch(thanSat, dayCanIndex, dayChiIndex, "Âm Dương Sai Thố", AM_DUONG_SAI_THO_DAY);
+  addThanSatMatches(thanSat, pillarsMap, "Tang Môn", [(yearChiIndex + 2) % 12]);
+  addThanSatMatches(thanSat, pillarsMap, "Điếu Khách", [(yearChiIndex + 10) % 12]);
+  addThanSatMatches(thanSat, pillarsMap, "Nguyên Thần", [forward ? (yearChiIndex + 7) % 12 : (yearChiIndex + 5) % 12]);
+  addThanSatMatches(thanSat, pillarsMap, "Câu Sát", [forward ? (yearChiIndex + 3) % 12 : (yearChiIndex + 9) % 12]);
+  addThanSatMatches(thanSat, pillarsMap, "Giảo Sát", [forward ? (yearChiIndex + 9) % 12 : (yearChiIndex + 3) % 12]);
+  addThanSatMatches(thanSat, pillarsMap, "Huyết Nhẫn", [HUYET_NHAN[yearChiIndex]]);
+  addThanSatMatches(thanSat, pillarsMap, "Quan Phù", [(yearChiIndex + 4) % 12]);
+  addThanSatMatches(thanSat, pillarsMap, "Cách Góc", [(dayChiIndex + 2) % 12]);
+  addThanSatMatches(thanSat, pillarsMap, "Đào Hoa", [DAO_HOA[dayChiIndex]], [DAO_HOA[yearChiIndex]]);
 
   // --- Đại Vận ---
-  const yearIsDuong = CAN_AM_DUONG[yearCanIndex] === "Dương";
-  const forward = (yearIsDuong && gender === "Nam") || (!yearIsDuong && gender === "Nữ");
   const crossings = getTietKhiAround(year);
   const nearestTietJD = forward
     ? crossings.find((c) => c.jd > jdNow)?.jd
