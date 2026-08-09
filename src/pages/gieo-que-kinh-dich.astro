@@ -313,7 +313,7 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
     type CastInput,
     type LineVal,
   } from "../lib/luc-hao";
-  import { CAN, CHI } from "../lib/menh-nap-am";
+  import { CHI } from "../lib/menh-nap-am";
   import { lunarToSolar } from "../lib/lunar-calendar";
 
   // --- Bộ chọn phương pháp (4 thẻ) <-> panel form ---
@@ -396,7 +396,8 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
     dong: "#c0392b",
     headerBg: "#efe1b8",
   };
-  const CARD_WIDTH = 820;
+  const CARD_WIDTH = 841;
+  const CARD_HEIGHT = 786;
 
   function lightHexBars(lines: readonly (0 | 1)[], dongPositions: number[]): string {
     const rows = lines.map((line, i) => ({ line, pos: i + 1 })).reverse();
@@ -411,38 +412,127 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
     return `<div style="display:flex;flex-direction:column;gap:5px;width:110px;margin:0 auto;">${bars}</div>`;
   }
 
-  function lightQueBlock(title: string, name: string, symbol: string, lines: readonly (0 | 1)[], dongPositions: number[], cungText: string): string {
+  // Tên tượng quẻ (điềm triệu) theo tên 64 quẻ — do người dùng cung cấp trực tiếp (đã sửa 3 chỗ lệch
+  // dòng so với bảng gốc: Trạch Hỏa Cách, Địa Lôi Phục, Thiên Sơn Độn). Chỉ hiện cho Quẻ Chính/Quẻ Biến.
+  const TEN_TUONG_QUE: Record<string, string> = {
+    "Thuần Càn": "Khốn Long Đắc Thủy",
+    "Thuần Khôn": "Ngạ Hổ Đắc Thực",
+    "Thủy Lôi Truân": "Đương Phong Trúc Diệp",
+    "Sơn Thủy Mông": "Phụ Cơ Đăng Trình",
+    "Thủy Thiên Nhu": "Minh Châu Xuất Hải",
+    "Thiên Thủy Tụng": "Nhị Nhân Tranh Lộ",
+    "Địa Thủy Sư": "Mã Đáo Thành Công",
+    "Thủy Địa Tỷ": "Thuyền Đắc Thuận Phong",
+    "Phong Thiên Tiểu Súc": "Mật Vân Bất Vũ",
+    "Thiên Trạch Lý": "Phương Hạc Xuất Lung",
+    "Địa Thiên Thái": "Hiền Nhơn Tụ Hội",
+    "Thiên Địa Bĩ": "Hổ Lạc Bình Dương",
+    "Thiên Hỏa Đồng Nhân": "Tiên Nhân Chỉ Lộ",
+    "Hỏa Thiên Đại Hữu": "Chước Lộc Đắc Tuyền",
+    "Địa Sơn Khiêm": "Môn Tiền Sinh Lộc",
+    "Lôi Địa Dự": "Thanh Long Đắc Vị",
+    "Trạch Lôi Tùy": "Thôi Xa Xuất Khấu",
+    "Sơn Phong Cổ": "Khuyển Ngộ Sinh Nhục",
+    "Địa Trạch Lâm": "Phát Chính Thi Nhân",
+    "Phong Địa Quán": "Hạn Bồng Đắc Vũ / Hạn Miêu Đắc Vũ",
+    "Hỏa Lôi Phệ Hạp": "Hung Ngạ Đắc Thực",
+    "Sơn Hỏa Bí": "Luy Độc Đắc Nhục",
+    "Sơn Địa Bác": "Ưng Điểu Đọa Sào",
+    "Địa Lôi Phục": "Phu Thê Phản Mục",
+    "Thiên Lôi Vô Vọng": "Điểu Nhập La Võng",
+    "Sơn Thiên Đại Súc": "Trận Thế Đắc Phong",
+    "Sơn Lôi Di": "Vị Thủy Điếu Ngư",
+    "Trạch Phong Đại Quá": "Bộ Mã Đắc Thực",
+    "Thuần Khảm": "Hải Để Lao Nguyệt",
+    "Thuần Ly": "Thiên Quan Tứ Phúc",
+    "Trạch Sơn Hàm": "Kim Sức Nghênh Tân",
+    "Lôi Phong Hằng": "Ngư Giả Đắc Ngư",
+    "Thiên Sơn Độn": "Nùng Vân Tế Nhật",
+    "Lôi Thiên Đại Tráng": "Mã Đáo Đắc Lộc / Đê Dương Xúc Phiên",
+    "Hỏa Địa Tấn": "Chu Điểu Xuất Lung",
+    "Địa Hỏa Minh Di": "Phi Điểu Thương Cánh",
+    "Phong Hỏa Gia Nhân": "Kính Lý Khai Hoa",
+    "Hỏa Trạch Khuê": "Thái Ngư Hải Để",
+    "Thủy Sơn Kiển": "Vũ Tuyết Di Đồ",
+    "Lôi Thủy Giải": "Ngũ Nhật Cựu Phong",
+    "Sơn Trạch Tổn": "Thao Sa Đắc Kim",
+    "Phong Lôi Ích": "Khô Mộc Khai Hoa",
+    "Trạch Thiên Quải": "Nhạn Quá Hàn Đàm",
+    "Thiên Phong Cấu": "Tha Hương Ngộ Hữu / Hạn Đắc Cam Lâm",
+    "Trạch Địa Tụy": "Ngư Long Tụ Hội",
+    "Địa Phong Thăng": "Chỉ Nhật Cao Thăng / Nhất Bộ Đăng Thiên",
+    "Trạch Thủy Khốn": "Hạn Đao Khốn Độc",
+    "Thủy Phong Tỉnh": "Khô Tỉnh Đắc Tuyền",
+    "Trạch Hỏa Cách": "Cửu Hạn Đắc Vũ / Hạn Miêu Đắc Vũ",
+    "Hỏa Phong Đỉnh": "Hỷ Khí Doanh Môn",
+    "Thuần Chấn": "Kim Chung Dạ Tràng",
+    "Thuần Cấn": "Quá Kiều Trừu Bản",
+    "Phong Sơn Tiệm": "Phi Hạc Xung Thiên",
+    "Lôi Trạch Quy Muội": "Duyên Mộc Cầu Ngư",
+    "Lôi Hỏa Phong": "Cổ Kính Trùng Quang",
+    "Hỏa Sơn Lữ": "Điểu Phần Kỳ Sào",
+    "Thuần Tốn": "Cô Chu Đắc Phong",
+    "Thuần Đoài": "Lưỡng Hỷ Lâm Môn",
+    "Phong Thủy Hoán": "Cách Hà Ngộ Đò",
+    "Thủy Trạch Tiết": "Chước Lộc Tầm Đường",
+    "Phong Trạch Trung Phu": "Hành Tẩu Bạc Băng",
+    "Lôi Sơn Tiểu Quá": "Cấp Quá Độc Kiều / Phi Điểu Di Âm",
+    "Thủy Hỏa Ký Tế": "Kim Bảng Đề Danh",
+    "Hỏa Thủy Vị Tế": "Thái Tuế Nguyệt Kiến / Tiểu Hồ Ngật Tế",
+  };
+
+  function lightQueBlock(name: string, symbol: string, lines: readonly (0 | 1)[], dongPositions: number[], cungText: string, tenTuong?: string): string {
     return `
       <div style="border:1.5px solid ${LIGHT.borderLight};border-radius:10px;padding:10px;text-align:center;">
-        <p style="margin:0;font-size:10px;font-weight:800;letter-spacing:.04em;color:${LIGHT.red};">${title}</p>
+        <p style="margin:0;font-size:13px;font-weight:800;letter-spacing:.02em;color:${LIGHT.red};">${name} <span style="font-size:11px;font-weight:500;color:${LIGHT.textMuted};">(${symbol})</span></p>
         <div style="margin-top:8px;">${lightHexBars(lines, dongPositions)}</div>
-        <p style="margin:8px 0 0;font-size:12px;font-weight:700;">${name} <span style="color:${LIGHT.textMuted};font-weight:500;">(${symbol})</span></p>
-        <p style="margin:2px 0 0;font-size:10px;color:${LIGHT.textMuted};">${cungText}</p>
+        <p style="margin:8px 0 0;font-size:10px;font-weight:700;color:${LIGHT.text};">${cungText}</p>
+        ${tenTuong ? `<p style="margin:2px 0 0;font-size:9px;font-weight:600;color:${LIGHT.textMuted};">${tenTuong}</p>` : ""}
       </div>
     `;
   }
 
+  // Rút gọn Lục Thân cho ô Phục Thần: "Huynh Đệ" -> "Huynh", v.v.
+  const LUC_THAN_ABBREV: Record<string, string> = {
+    "Huynh Đệ": "Huynh",
+    "Tử Tôn": "Tử",
+    "Thê Tài": "Thê",
+    "Quan Quỷ": "Quan",
+    "Phụ Mẫu": "Phụ",
+  };
+
   // Bảng hào cho 1 bên (Chính hoặc Biến), đúng bố cục ảnh mẫu simkinhdich.com: tách 2 bảng xếp chồng —
-  // bảng trên (Nạp Giáp/Lục Thân/Tuần Không/Lục Thú) + bảng dưới (Vượng Suy/Trường Sinh). Chỉ đọc field
-  // có sẵn từ engine (`h.xunKong`, `h.growthDay`, `h.growthMonth`...), không tự tính lại gì.
+  // bảng trên (Nạp Giáp/Lục Thân/Tuần Không...) + bảng dưới (Vượng Suy/Trường Sinh). Chỉ đọc field có
+  // sẵn từ engine (`h.xunKong`, `h.growthDay`, `h.growthMonth`, `h.nguHanh`...), không tự tính lại gì.
   // `Q.Thần` chưa có nguồn xác nhận công thức nên luôn hiện "-" (theo đúng chỉ thị, không tự suy đoán).
-  function sideHaoTables(sectionLabel: string, q: QueDayDu): string {
+  // T/Ư + Lục Thú chỉ hiện ở bên Biến; P.Thần chỉ hiện ở bên Chính — theo đúng yêu cầu rút gọn cột.
+  function sideHaoTables(sectionLabel: string, q: QueDayDu, isBien: boolean): string {
     const rows = [...q.hao].reverse();
+
+    const headerLabels = [
+      "Hào",
+      ...(isBien ? ["T/Ư"] : []),
+      "Lục Thân",
+      "Địa Chi",
+      ...(isBien ? [] : ["P.Thần"]),
+      "T.K",
+      ...(isBien ? ["Lục Thú"] : []),
+    ];
+    const upperHeader = headerLabels.map((label) => `<th style="padding:3px 2px;">${label}</th>`).join("");
 
     const upperRows = rows
       .map((h) => {
         const rowColor = h.isDong ? LIGHT.dong : LIGHT.text;
-        return `
-          <tr style="border-bottom:1px solid ${LIGHT.borderLight};">
-            <td style="padding:3px 4px;text-align:center;font-weight:700;color:${rowColor};">${h.value === 1 ? "&mdash;" : "&#8212;&nbsp;&#8212;"}</td>
-            <td style="padding:3px 4px;text-align:center;color:${rowColor};font-weight:600;">${h.theUng ?? ""}</td>
-            <td style="padding:3px 4px;text-align:center;color:${rowColor};font-weight:${h.isDong ? "700" : "400"};">${h.lucThan}</td>
-            <td style="padding:3px 4px;text-align:center;color:${rowColor};font-weight:700;white-space:nowrap;">${CAN[h.canIndex]} ${CHI[h.chiIndex]}</td>
-            <td style="padding:3px 4px;text-align:center;color:${rowColor};white-space:nowrap;">${h.phucThan ? `${h.phucThan.lucThan} ${CAN[h.phucThan.canIndex]} ${CHI[h.phucThan.chiIndex]}` : "-"}</td>
-            <td style="padding:3px 4px;text-align:center;color:${rowColor};">${h.xunKong ? "K" : "-"}</td>
-            <td style="padding:3px 4px;text-align:center;color:${rowColor};">${h.lucThu}</td>
-          </tr>
-        `;
+        const cells = [
+          `<td style="padding:3px 4px;text-align:center;font-weight:700;color:${rowColor};">${h.value === 1 ? "&mdash;" : "&#8212;&nbsp;&#8212;"}</td>`,
+          ...(isBien ? [`<td style="padding:3px 4px;text-align:center;color:${rowColor};font-weight:600;">${h.theUng ?? ""}</td>`] : []),
+          `<td style="padding:3px 4px;text-align:center;color:${rowColor};font-weight:${h.isDong ? "700" : "400"};">${h.lucThan}</td>`,
+          `<td style="padding:3px 4px;text-align:center;color:${rowColor};font-weight:700;white-space:nowrap;">${CHI[h.chiIndex]} - ${h.nguHanh}</td>`,
+          ...(isBien ? [] : [`<td style="padding:3px 4px;text-align:center;color:${rowColor};">${h.phucThan ? LUC_THAN_ABBREV[h.phucThan.lucThan] : "-"}</td>`]),
+          `<td style="padding:3px 4px;text-align:center;color:${rowColor};">${h.xunKong ? "K" : "-"}</td>`,
+          ...(isBien ? [`<td style="padding:3px 4px;text-align:center;color:${rowColor};">${h.lucThu}</td>`] : []),
+        ];
+        return `<tr style="border-bottom:1px solid ${LIGHT.borderLight};">${cells.join("")}</tr>`;
       })
       .join("");
 
@@ -451,7 +541,7 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
         const rowColor = h.isDong ? LIGHT.dong : LIGHT.text;
         return `
           <tr style="border-bottom:1px solid ${LIGHT.borderLight};">
-            <td style="padding:3px 4px;text-align:center;font-weight:700;color:${rowColor};white-space:nowrap;">${CAN[h.canIndex]} ${CHI[h.chiIndex]}</td>
+            <td style="padding:3px 4px;text-align:center;font-weight:700;color:${rowColor};white-space:nowrap;">${CHI[h.chiIndex]} - ${h.nguHanh}</td>
             <td style="padding:3px 4px;text-align:center;color:${rowColor};">${h.vuongSuy}</td>
             <td style="padding:3px 4px;text-align:center;color:${rowColor};">-</td>
             <td style="padding:3px 4px;text-align:center;color:${rowColor};">${h.growthDay}</td>
@@ -466,9 +556,7 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
         <p style="margin:0 0 6px;font-size:11px;font-weight:800;color:${LIGHT.text};text-align:center;letter-spacing:.02em;">${sectionLabel}</p>
         <table style="width:100%;border-collapse:collapse;font-size:9px;">
           <thead>
-            <tr style="background:${LIGHT.headerBg};">
-              <th style="padding:3px 2px;">Hào</th><th style="padding:3px 2px;">T/Ư</th><th style="padding:3px 2px;">Lục Thân</th><th style="padding:3px 2px;">Can Chi</th><th style="padding:3px 2px;">P.Thần</th><th style="padding:3px 2px;">T.K</th><th style="padding:3px 2px;">Lục Thú</th>
-            </tr>
+            <tr style="background:${LIGHT.headerBg};">${upperHeader}</tr>
           </thead>
           <tbody>${upperRows}</tbody>
         </table>
@@ -487,26 +575,26 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
   function buildExportCardHtml(cast: FullCastResult, methodLabel: string, viecCanXem: string, timeLabel: string): string {
     const queCols = cast.bien ? 3 : 2;
     const blocks = [
-      lightQueBlock("QUẺ CHÍNH", cast.chinh.name, `${cast.chinh.upper.symbol}${cast.chinh.lower.symbol}`, cast.chinh.lines, cast.dongPositions, `Quái ${cast.chinh.cungLabel}`),
-      lightQueBlock("QUẺ HỖ", cast.hoQue.name, `${cast.hoQue.upper.symbol}${cast.hoQue.lower.symbol}`, cast.hoQue.lines, [], `Quái ${cast.hoQue.cungLabel}`),
+      lightQueBlock(cast.chinh.name, `${cast.chinh.upper.symbol}${cast.chinh.lower.symbol}`, cast.chinh.lines, cast.dongPositions, `Quái ${cast.chinh.cungLabel}`, TEN_TUONG_QUE[cast.chinh.name]),
+      lightQueBlock(cast.hoQue.name, `${cast.hoQue.upper.symbol}${cast.hoQue.lower.symbol}`, cast.hoQue.lines, [], `Quái ${cast.hoQue.cungLabel}`),
     ];
     if (cast.bien) {
-      blocks.push(lightQueBlock("QUẺ BIẾN", cast.bien.name, `${cast.bien.upper.symbol}${cast.bien.lower.symbol}`, cast.bien.lines, [], `Quái ${cast.bien.cungLabel}`));
+      blocks.push(lightQueBlock(cast.bien.name, `${cast.bien.upper.symbol}${cast.bien.lower.symbol}`, cast.bien.lines, [], `Quái ${cast.bien.cungLabel}`, TEN_TUONG_QUE[cast.bien.name]));
     }
     // Bảng hào theo đúng bố cục ảnh mẫu (simkinhdich.com): Chính/Biến đặt song song 2 cột, mỗi bên tách
     // 2 bảng xếp chồng (không đưa Ngũ Hành/Quan hệ Nhật-Nguyệt thành cột riêng theo yêu cầu).
     const tables = cast.bien
-      ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">${sideHaoTables("Quẻ chính", cast.chinh)}${sideHaoTables("Quẻ biến", cast.bien)}</div>`
-      : sideHaoTables("Quẻ chính", cast.chinh);
+      ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">${sideHaoTables("Quẻ chính", cast.chinh, false)}${sideHaoTables("Quẻ biến", cast.bien, true)}</div>`
+      : sideHaoTables("Quẻ chính", cast.chinh, false);
 
     return `
-      <div style="width:${CARD_WIDTH}px;font-family:Arial,'Helvetica Neue',sans-serif;background:${LIGHT.bg};color:${LIGHT.text};border:3px solid ${LIGHT.border};border-radius:16px;padding:20px;box-sizing:border-box;">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;border-bottom:2px solid ${LIGHT.borderLight};padding-bottom:10px;">
+      <div style="width:${CARD_WIDTH}px;height:${CARD_HEIGHT}px;overflow:hidden;font-family:Arial,'Helvetica Neue',sans-serif;background:${LIGHT.bg};color:${LIGHT.text};border:3px solid ${LIGHT.border};border-radius:16px;padding:20px;box-sizing:border-box;">
+        <div style="display:flex;justify-content:flex-start;align-items:center;gap:10px;border-bottom:2px solid ${LIGHT.borderLight};padding-bottom:10px;">
+          <img src="/images/brand/zhi-gong-logo.png" style="width:44px;height:44px;border-radius:9999px;border:2px solid ${LIGHT.border};object-fit:cover;flex-shrink:0;" />
           <div>
             <p style="margin:0;font-size:16px;font-weight:800;letter-spacing:.02em;color:${LIGHT.red};">PHONGTHUYTHIENANH.COM</p>
             <p style="margin:3px 0 0;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:${LIGHT.textMuted};">Phần mềm lập quẻ Kinh Dịch</p>
           </div>
-          <img src="/images/brand/zhi-gong-logo.png" style="width:44px;height:44px;border-radius:9999px;border:2px solid ${LIGHT.border};object-fit:cover;" />
         </div>
         <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;font-size:11px;line-height:1.7;">
           <p style="margin:0;"><strong>Phương pháp lập quẻ:</strong> ${methodLabel}</p>
@@ -528,7 +616,7 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
 
   async function captureCardAsPng(cardEl: HTMLElement): Promise<string> {
     const { toPng } = await import("html-to-image");
-    return await toPng(cardEl, { backgroundColor: LIGHT.bg, pixelRatio: 2, skipFonts: true, width: CARD_WIDTH });
+    return await toPng(cardEl, { backgroundColor: LIGHT.bg, pixelRatio: 2, skipFonts: true, width: CARD_WIDTH, height: CARD_HEIGHT });
   }
 
   async function renderExportCard(
