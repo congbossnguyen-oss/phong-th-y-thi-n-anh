@@ -313,8 +313,7 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
     type CastInput,
     type LineVal,
   } from "../lib/luc-hao";
-  import { CHI } from "../lib/menh-nap-am";
-  import { CHI_NGU_HANH } from "../lib/bat-tu";
+  import { CAN, CHI } from "../lib/menh-nap-am";
   import { lunarToSolar } from "../lib/lunar-calendar";
 
   // --- Bộ chọn phương pháp (4 thẻ) <-> panel form ---
@@ -507,14 +506,24 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
         <p style="margin:0;font-size:16px;font-weight:800;letter-spacing:.02em;text-transform:${nameTransform};color:${LIGHT.red};">${name}</p>
         <div style="margin-top:10px;">${lightHexBars(lines, dongPositions)}</div>
         <p style="margin:10px 0 0;font-size:12px;font-weight:700;letter-spacing:.02em;color:${subColor};">${cungText}</p>
-        ${tenTuong ? `<p style="margin:4px 0 0;font-size:10px;font-weight:700;letter-spacing:.02em;color:${tenTuongColor};">${tenTuong}</p>` : ""}
+        ${tenTuong ? `<p style="margin:4px 0 0;font-size:12px;font-weight:700;letter-spacing:.02em;color:${tenTuongColor};">${tenTuong}</p>` : ""}
       </div>
     `;
   }
 
+  // Rút gọn Lục Thân cho ô Phục Thần: "Huynh Đệ" -> "Huynh", v.v.
+  const LUC_THAN_ABBREV: Record<string, string> = {
+    "Huynh Đệ": "Huynh",
+    "Tử Tôn": "Tử",
+    "Thê Tài": "Thê",
+    "Quan Quỷ": "Quan",
+    "Phụ Mẫu": "Phụ",
+  };
+
   // Bảng hào cho 1 bên (Chính hoặc Biến), đúng bố cục ảnh mẫu simkinhdich.com: tách 2 bảng xếp chồng —
   // bảng trên (Nạp Giáp/Lục Thân/Tuần Không...) + bảng dưới (Vượng Suy/Trường Sinh). Chỉ đọc field có
-  // sẵn từ engine (`h.xunKong`, `h.growthDay`, `h.growthMonth`, `h.nguHanh`...), không tự tính lại gì.
+  // sẵn từ engine (`h.xunKong`, `h.growthDay`, `h.growthMonth`, `h.canIndex`...), không tự tính lại gì.
+  // Cột "Can Chi" hiện Thiên Can + Địa Chi (Nạp Giáp đầy đủ), không hiện riêng Ngũ Hành.
   // `Q.Thần` chưa có nguồn xác nhận công thức nên luôn hiện "-" (theo đúng chỉ thị, không tự suy đoán).
   // T/Ư chỉ hiện ở bên Chính (Thế/Ứng an tại quẻ chính); Lục Thú chỉ hiện ở bên Biến; P.Thần chỉ hiện
   // ở bên Chính — theo đúng yêu cầu rút gọn cột.
@@ -527,7 +536,7 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
       "Hào",
       ...(isBien ? [] : ["T/Ư"]),
       "Lục Thân",
-      "Địa Chi",
+      "Can Chi",
       ...(isBien ? [] : ["P.Thần"]),
       "T.K",
       ...(isBien ? ["Lục Thú"] : []),
@@ -544,8 +553,8 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
           `<td style="padding:7px 5px;text-align:center;font-weight:700;color:${rowColor};">${h.value === 1 ? "&mdash;" : "&#8212;&nbsp;&#8212;"}</td>`,
           ...(isBien ? [] : [`<td style="padding:7px 5px;text-align:center;color:${rowColor};font-weight:600;">${h.theUng ?? ""}</td>`]),
           `<td style="padding:7px 5px;text-align:center;color:${rowColor};font-weight:${isRowDong ? "700" : "400"};white-space:nowrap;">${h.lucThan}</td>`,
-          `<td style="padding:7px 5px;text-align:center;color:${rowColor};font-weight:${isRowDong ? "700" : "400"};white-space:nowrap;">${CHI[h.chiIndex]} - ${h.nguHanh}</td>`,
-          ...(isBien ? [] : [`<td style="padding:7px 5px;text-align:center;color:${LIGHT.text};white-space:nowrap;">${h.phucThan ? `${CHI[h.phucThan.chiIndex]} - ${CHI_NGU_HANH[h.phucThan.chiIndex]}` : "-"}</td>`]),
+          `<td style="padding:7px 5px;text-align:center;color:${rowColor};font-weight:${isRowDong ? "700" : "400"};white-space:nowrap;">${CHI[h.chiIndex]}-${h.nguHanh}</td>`,
+          ...(isBien ? [] : [`<td style="padding:7px 5px;text-align:center;color:${LIGHT.text};white-space:nowrap;">${h.phucThan ? `${LUC_THAN_ABBREV[h.phucThan.lucThan]}-${CHI[h.phucThan.chiIndex]}` : "-"}</td>`]),
           `<td style="padding:7px 5px;text-align:center;color:${rowColor};">${h.xunKong ? "K" : "-"}</td>`,
           ...(isBien ? [`<td style="padding:7px 5px;text-align:center;color:${rowColor};font-weight:${isRowDong ? "700" : "400"};white-space:nowrap;">${h.lucThu}</td>`] : []),
         ];
@@ -559,7 +568,7 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
         const rowColor = isRowDong ? LIGHT.dong : LIGHT.text;
         return `
           <tr style="border-bottom:1px solid ${LIGHT.borderLight};">
-            <td style="padding:7px 2px;text-align:center;font-weight:${isRowDong ? "700" : "400"};color:${rowColor};white-space:nowrap;">${CHI[h.chiIndex]} - ${h.nguHanh}</td>
+            <td style="padding:7px 2px;text-align:center;font-weight:${isRowDong ? "700" : "400"};color:${rowColor};white-space:nowrap;">${CAN[h.canIndex]} ${CHI[h.chiIndex]}</td>
             <td style="padding:7px 2px;text-align:center;color:${rowColor};white-space:nowrap;">${h.vuongSuy}</td>
             <td style="padding:7px 2px;text-align:center;color:${rowColor};white-space:nowrap;">-</td>
             <td style="padding:7px 2px;text-align:center;color:${rowColor};white-space:nowrap;">${h.growthDay}</td>
@@ -605,21 +614,22 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
       : sideHaoTables(cast.chinh, false);
 
     return `
-      <div style="width:${CARD_WIDTH}px;min-height:${CARD_HEIGHT}px;font-family:Tahoma,'Segoe UI',Arial,sans-serif;background:${LIGHT.bg};color:${LIGHT.text};border:3px solid ${LIGHT.border};border-radius:16px;padding:20px;box-sizing:border-box;">
-        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:2px solid ${LIGHT.borderLight};padding-bottom:10px;">
-          <p style="margin:0;font-size:16px;font-weight:800;letter-spacing:.02em;color:${LIGHT.red};">PHONGTHUYTHIENANH.COM</p>
+      <div style="position:relative;width:${CARD_WIDTH}px;min-height:${CARD_HEIGHT}px;font-family:Tahoma,'Segoe UI',Arial,sans-serif;background:${LIGHT.bg};color:${LIGHT.text};border:3px solid ${LIGHT.border};border-radius:16px;padding:20px;box-sizing:border-box;overflow:hidden;">
+        <img src="/images/brand/chim-hac-vector.png" style="position:absolute;right:2px;top:14px;width:220px;opacity:.35;pointer-events:none;" />
+        <div style="display:flex;align-items:center;gap:10px;border-bottom:2px solid ${LIGHT.borderLight};padding-bottom:10px;">
           <img src="/images/brand/zhi-gong-logo.png" style="width:44px;height:44px;border-radius:9999px;border:2px solid ${LIGHT.border};object-fit:cover;flex-shrink:0;" />
+          <p style="margin:0;font-size:16px;font-weight:800;letter-spacing:.02em;color:${LIGHT.red};">PHONGTHUYTHIENANH.COM</p>
         </div>
         <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;font-size:11px;line-height:1.7;">
           <p style="margin:0;">Phương pháp lập quẻ: <strong style="color:${LIGHT.text};">${methodLabel}</strong></p>
           <p style="margin:0;">Việc cần xem: <strong style="color:${LIGHT.text};">${viecCanXem || "—"}</strong></p>
           <p style="margin:0;">Thời gian lập quẻ: <strong style="color:${LIGHT.text};">${timeLabel}</strong></p>
-          <p style="margin:0;">Theo Âm lịch: <strong style="color:${LIGHT.text};">${cast.amLichText}</strong></p>
+          <p id="am-lich-row" style="margin:0;">Theo Âm lịch: <strong style="color:${LIGHT.text};">${cast.amLichText}</strong></p>
           <p style="margin:0;grid-column:1 / -1;">Can Chi: <strong style="color:${LIGHT.text};">${cast.canChiText}</strong></p>
-          <p style="margin:0;">Tiết khí: <strong style="color:${LIGHT.red};">${cast.tietKhi}</strong></p>
-          <p style="margin:0;">Tuần Không: <strong style="color:${LIGHT.text};">${cast.tuanKhong}</strong></p>
-          <p style="margin:0;">Nhật thần: <strong style="color:${LIGHT.text};">${cast.nhatThan}</strong></p>
-          <p style="margin:0;">Nguyệt lệnh: <strong style="color:${LIGHT.text};">${cast.nguyetLenh}</strong></p>
+          <p style="margin:0;font-size:13px;">Tiết khí: <strong style="color:${LIGHT.red};">${cast.tietKhi}</strong></p>
+          <p style="margin:0;font-size:13px;">Tuần Không: <strong style="color:${LIGHT.text};">${cast.tuanKhong}</strong></p>
+          <p style="margin:0;font-size:13px;">Nhật thần: <strong style="color:${LIGHT.text};">${cast.nhatThan}</strong></p>
+          <p style="margin:0;font-size:13px;">Nguyệt lệnh: <strong style="color:${LIGHT.text};">${cast.nguyetLenh}</strong></p>
         </div>
         <div style="margin-top:20px;display:grid;grid-template-columns:repeat(${queCols}, 1fr);gap:14px;">${blocks.join("")}</div>
         <div style="margin-top:22px;">${tables}</div>
