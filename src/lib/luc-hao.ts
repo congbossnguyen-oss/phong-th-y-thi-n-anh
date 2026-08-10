@@ -160,6 +160,72 @@ export function calculateFanYin(
   };
 }
 
+// --- Quái Phục Ngâm (cấp quái, KHÔNG xét địa chi/nạp giáp/hào phục-phản ngâm/cát hung) ---
+// Nguồn sự thật (source of truth) là bảng 14 cặp cố định dưới đây — KHÔNG được tự suy diễn từ đối quái
+// (vd "Càn ↔ Chấn" ở cấp quái đơn không đủ để xác định Phục Ngâm, phải khớp đúng CẶP QUẺ trong bảng).
+// Engine hiện chưa có số thứ tự 1-64 cho quẻ (chỉ TrigramDef.id 1-8 cho 8 quái đơn) — dùng TÊN QUẺ
+// (chuỗi, giống hệt cách TEN_TUONG_QUE trong gieo-que-kinh-dich.astro đang tra cứu) làm khóa duy nhất,
+// tái sử dụng đúng quy ước định danh quẻ đã có sẵn, không tạo hệ thống đánh số hexagram thứ hai.
+export type FuYinType = "none" | "inner" | "outer" | "inner_outer";
+
+export interface FuYinResult {
+  enabled: boolean;
+  type: FuYinType;
+  label: string;
+  originalHexagram: string;
+  changedHexagram: string;
+}
+
+const FU_YIN_LABELS: Record<Exclude<FuYinType, "none">, string> = {
+  inner: "Nội Quái Phục Ngâm",
+  outer: "Ngoại Quái Phục Ngâm",
+  inner_outer: "Toàn Quái Phục Ngâm",
+};
+
+// 14 cặp Phục Ngâm, mỗi cặp lưu CẢ HAI CHIỀU (không chỉ 1 chiều).
+const FU_YIN_PAIRS: [string, string, Exclude<FuYinType, "none">][] = [
+  // A. Toàn Quái Phục Ngâm
+  ["Thuần Càn", "Thuần Chấn", "inner_outer"],
+  ["Thiên Lôi Vô Vọng", "Lôi Thiên Đại Tráng", "inner_outer"],
+  // B. Ngoại Quái Phục Ngâm
+  ["Thiên Phong Cấu", "Lôi Phong Hằng", "outer"],
+  ["Thiên Sơn Độn", "Lôi Sơn Tiểu Quá", "outer"],
+  ["Thiên Địa Bĩ", "Lôi Địa Dự", "outer"],
+  ["Lôi Hỏa Phong", "Thiên Hỏa Đồng Nhân", "outer"],
+  ["Thiên Trạch Lý", "Lôi Trạch Quy Muội", "outer"],
+  ["Lôi Thủy Giải", "Thiên Thủy Tụng", "outer"],
+  // C. Nội Quái Phục Ngâm
+  ["Hỏa Thiên Đại Hữu", "Hỏa Lôi Phệ Hạp", "inner"],
+  ["Thủy Lôi Truân", "Thủy Thiên Nhu", "inner"],
+  ["Sơn Thiên Đại Súc", "Sơn Lôi Di", "inner"],
+  ["Trạch Thiên Quải", "Trạch Lôi Tùy", "inner"],
+  ["Phong Thiên Tiểu Súc", "Phong Lôi Ích", "inner"],
+  ["Địa Thiên Thái", "Địa Lôi Phục", "inner"],
+];
+
+const FU_YIN_MAP: Map<string, Exclude<FuYinType, "none">> = (() => {
+  const map = new Map<string, Exclude<FuYinType, "none">>();
+  for (const [a, b, type] of FU_YIN_PAIRS) {
+    map.set(`${a}->${b}`, type);
+    map.set(`${b}->${a}`, type);
+  }
+  return map;
+})();
+
+// Nhận diện Quái Phục Ngâm giữa Quẻ Chính (originalHexagram) và Quẻ Biến (changedHexagram) — tra thẳng
+// bảng 14 cặp (2 chiều) ở trên bằng tên quẻ, KHÔNG suy diễn bằng "Quẻ Chính = Quẻ Biến" hay bằng quan hệ
+// đối quái cấp đơn.
+export function calculateFuYin(originalHexagram: string, changedHexagram: string): FuYinResult {
+  const type = FU_YIN_MAP.get(`${originalHexagram}->${changedHexagram}`) ?? "none";
+  return {
+    enabled: type !== "none",
+    type,
+    label: type === "none" ? "" : FU_YIN_LABELS[type],
+    originalHexagram,
+    changedHexagram,
+  };
+}
+
 // --- Lục Thân (so ngũ hành Nạp Giáp của hào với ngũ hành BẢN CUNG — quẻ thuần của quái chủ cung) ---
 export type LucThan = "Huynh Đệ" | "Phụ Mẫu" | "Tử Tôn" | "Quan Quỷ" | "Thê Tài";
 
@@ -650,6 +716,7 @@ export interface FullCastResult {
   amLichText: string; // "giờ Chi, ngày/tháng/năm âm lịch"
   methodNote: string;
   fanYin: FanYinResult; // Quái Phản Ngâm giữa Quẻ Chính và Quẻ Biến (fanYin.enabled=false nếu không có hào động)
+  fuYin: FuYinResult; // Quái Phục Ngâm giữa Quẻ Chính và Quẻ Biến — độc lập với fanYin, không suy ra lẫn nhau
 }
 
 function trigramById(id: number): TrigramDef {
@@ -722,11 +789,17 @@ function finalizeCast(
         outerFanYin: false,
       };
 
+  // Không có hào động (bien=null) => không có Quẻ Biến để đối chiếu, KHÔNG tự động coi là Phục Ngâm.
+  const fuYin: FuYinResult = bien
+    ? calculateFuYin(chinh.name, bien.name)
+    : { enabled: false, type: "none", label: "", originalHexagram: chinh.name, changedHexagram: chinh.name };
+
   return {
     chinh,
     hoQue,
     bien,
     fanYin,
+    fuYin,
     dongPositions,
     tuanKhong: khongVongOf(canIndex, chiIndex),
     dayCan: CAN[canIndex],

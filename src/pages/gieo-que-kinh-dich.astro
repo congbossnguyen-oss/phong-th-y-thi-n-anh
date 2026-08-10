@@ -631,6 +631,7 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
           <p style="margin:0;font-size:15px;">Nhật thần: <strong style="color:${LIGHT.text};">${cast.nhatThan}</strong></p>
           <p style="margin:0;font-size:15px;">Nguyệt lệnh: <strong style="color:${LIGHT.text};">${cast.nguyetLenh}</strong></p>
           ${cast.fanYin.enabled ? `<p style="margin:0;grid-column:1 / -1;">Phản Ngâm: <strong style="color:${LIGHT.red};">${cast.fanYin.label}</strong></p>` : ""}
+          ${cast.fuYin.enabled ? `<p style="margin:0;grid-column:1 / -1;">Phục Ngâm: <strong style="color:${LIGHT.red};">${cast.fuYin.label}</strong></p>` : ""}
         </div>
         <div style="margin-top:20px;display:grid;grid-template-columns:repeat(${queCols}, 1fr);gap:14px;">${blocks.join("")}</div>
         <div style="margin-top:22px;">${tables}</div>
