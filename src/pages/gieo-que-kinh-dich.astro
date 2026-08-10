@@ -638,8 +638,28 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
     `;
   }
 
+  // Đợi toàn bộ <img> bên trong card tải + decode xong trước khi chụp — nếu không, trên mạng thật
+  // (đặc biệt mobile) ảnh nặng như chim hạc (~950KB) có thể chưa tải kịp lúc `toPng()` chụp, khiến
+  // ảnh xuất ra bị thiếu dù DOM vẫn hiển thị đúng khi xem trực tiếp (chỉ lộ ra khi mạng chậm hơn
+  // localhost, nên không phát hiện được lúc test local).
+  async function waitForImagesToLoad(cardEl: HTMLElement): Promise<void> {
+    const imgs = Array.from(cardEl.querySelectorAll("img"));
+    await Promise.all(
+      imgs.map((img) => {
+        if (img.complete && img.naturalWidth > 0) {
+          return img.decode().catch(() => undefined);
+        }
+        return new Promise<void>((resolve) => {
+          img.addEventListener("load", () => img.decode().then(() => resolve()).catch(() => resolve()), { once: true });
+          img.addEventListener("error", () => resolve(), { once: true });
+        });
+      }),
+    );
+  }
+
   async function captureCardAsPng(cardEl: HTMLElement): Promise<string> {
     const { toPng } = await import("html-to-image");
+    await waitForImagesToLoad(cardEl);
     // Không ép `height` cứng — thẻ dùng `min-height` nên chiều cao thật có thể lớn hơn CARD_HEIGHT tuỳ
     // nội dung; để html-to-image tự đo chiều cao thật (offsetHeight) của phần tử, tránh cắt mất nội dung.
     return await toPng(cardEl, { backgroundColor: LIGHT.bg, pixelRatio: 2, skipFonts: true, width: CARD_WIDTH, height: cardEl.offsetHeight });
