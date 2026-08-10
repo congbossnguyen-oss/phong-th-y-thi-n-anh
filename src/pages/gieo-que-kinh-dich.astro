@@ -133,7 +133,7 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
           </label>
 
           <div class="mt-6 overflow-x-auto rounded-(--radius-control) border border-(--color-ivory-300)">
-            <table class="w-full min-w-[420px] border-collapse text-sm">
+            <table class="w-full border-collapse text-sm">
               <thead>
                 <tr class="border-b border-(--color-ivory-300) bg-(--color-ivory-100) text-xs uppercase tracking-wide text-(--color-ink-600)">
                   <th class="p-2 text-left">Hào</th>
@@ -147,8 +147,8 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
                     <td class="p-2 text-(--color-ink-700)">{n} - {haoPositionName[n]}</td>
                     <td class="p-2">
                       <select id={`lh-hao-${n}-value`} class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-2 py-1.5 text-center text-sm">
-                        <option value="1">——————</option>
-                        <option value="0">—— ——</option>
+                        <option value="1">————</option>
+                        <option value="0">— —</option>
                       </select>
                     </td>
                     <td class="p-2 text-center">
