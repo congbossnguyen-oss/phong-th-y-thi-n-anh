@@ -397,20 +397,22 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
     dong: "#c0392b",
     headerBg: "#efe1b8",
   };
-  const CARD_WIDTH = 841;
-  const CARD_HEIGHT = 786;
+  const CARD_WIDTH = 860;
+  const CARD_HEIGHT = 1030;
 
+  // Khung tượng quẻ thu hẹp lại (130px -> 108px) để nhường chỗ cho bảng hào; từng hào vị dày hơn
+  // (9px -> 12px) cho rõ ràng hơn khi xem trên điện thoại.
   function lightHexBars(lines: readonly (0 | 1)[], dongPositions: number[]): string {
     const rows = lines.map((line, i) => ({ line, pos: i + 1 })).reverse();
     const bars = rows
       .map(({ line, pos }) => {
         const isDong = dongPositions.includes(pos);
         const color = isDong ? LIGHT.dong : LIGHT.text;
-        if (line === 1) return `<div style="height:9px;border-radius:2px;background:${color};"></div>`;
-        return `<div style="height:9px;display:flex;justify-content:space-between;"><div style="width:42%;height:100%;border-radius:2px;background:${color};"></div><div style="width:42%;height:100%;border-radius:2px;background:${color};"></div></div>`;
+        if (line === 1) return `<div style="height:12px;border-radius:2px;background:${color};"></div>`;
+        return `<div style="height:12px;display:flex;justify-content:space-between;"><div style="width:42%;height:100%;border-radius:2px;background:${color};"></div><div style="width:42%;height:100%;border-radius:2px;background:${color};"></div></div>`;
       })
       .join("");
-    return `<div style="display:flex;flex-direction:column;gap:7px;width:130px;margin:0 auto;">${bars}</div>`;
+    return `<div style="display:flex;flex-direction:column;gap:7px;width:108px;margin:0 auto;">${bars}</div>`;
   }
 
   // Tên tượng quẻ (điềm triệu) theo tên 64 quẻ — do người dùng cung cấp trực tiếp (đã sửa 3 chỗ lệch
@@ -493,16 +495,19 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
   }
 
   // Chữ Họ quẻ và tên tượng quẻ LUÔN giữ màu cố định (ghi/đen), không đổi theo hào động — chỉ vạch hào
-  // (`dongPositions`, dùng riêng cho `lightHexBars`) mới đổi màu đỏ khi động.
+  // (`dongPositions`, dùng riêng cho `lightHexBars`) mới đổi màu đỏ khi động. In hoa chỉ áp dụng cho
+  // TÊN QUẺ, và chỉ khi quẻ đó có hào động (Chính có hào động / Biến luôn có vì chỉ tồn tại khi động) —
+  // Hỗ không bao giờ in hoa. Họ quẻ và tên tượng không còn in hoa (giữ nguyên dạng chữ thường).
   function lightQueBlock(name: string, lines: readonly (0 | 1)[], dongPositions: number[], cungText: string, tenTuong?: string): string {
     const subColor = LIGHT.textMuted;
     const tenTuongColor = LIGHT.text;
+    const nameTransform = dongPositions.length > 0 ? "uppercase" : "none";
     return `
       <div style="border:1.5px solid ${LIGHT.borderLight};border-radius:10px;padding:14px 10px;text-align:center;">
-        <p style="margin:0;font-size:16px;font-weight:800;letter-spacing:.02em;text-transform:uppercase;color:${LIGHT.red};">${name}</p>
+        <p style="margin:0;font-size:16px;font-weight:800;letter-spacing:.02em;text-transform:${nameTransform};color:${LIGHT.red};">${name}</p>
         <div style="margin-top:10px;">${lightHexBars(lines, dongPositions)}</div>
-        <p style="margin:10px 0 0;font-size:12px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;color:${subColor};">${cungText}</p>
-        ${tenTuong ? `<p style="margin:4px 0 0;font-size:10px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;color:${tenTuongColor};">${tenTuong}</p>` : ""}
+        <p style="margin:10px 0 0;font-size:12px;font-weight:700;letter-spacing:.02em;color:${subColor};">${cungText}</p>
+        ${tenTuong ? `<p style="margin:4px 0 0;font-size:10px;font-weight:700;letter-spacing:.02em;color:${tenTuongColor};">${tenTuong}</p>` : ""}
       </div>
     `;
   }
@@ -527,7 +532,7 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
       "T.K",
       ...(isBien ? ["Lục Thú"] : []),
     ];
-    const upperHeader = headerLabels.map((label) => `<th style="padding:5px 3px;">${label}</th>`).join("");
+    const upperHeader = headerLabels.map((label) => `<th style="padding:7px 4px;white-space:nowrap;">${label}</th>`).join("");
 
     // P.Thần (Phục Thần) KHÔNG được tô đỏ dù hào đó có động hay không — Phục Thần là hào ẩn mượn từ
     // quẻ thuần bản cung, không phải hào thật đang động trong quẻ hiện tại, nên giữ nguyên màu chữ.
@@ -536,13 +541,13 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
         const isRowDong = h.isDong || dongPositions.includes(h.hao);
         const rowColor = isRowDong ? LIGHT.dong : LIGHT.text;
         const cells = [
-          `<td style="padding:5px 4px;text-align:center;font-weight:700;color:${rowColor};">${h.value === 1 ? "&mdash;" : "&#8212;&nbsp;&#8212;"}</td>`,
-          ...(isBien ? [] : [`<td style="padding:5px 4px;text-align:center;color:${rowColor};font-weight:600;">${h.theUng ?? ""}</td>`]),
-          `<td style="padding:5px 4px;text-align:center;color:${rowColor};font-weight:${isRowDong ? "700" : "400"};">${h.lucThan}</td>`,
-          `<td style="padding:5px 4px;text-align:center;color:${rowColor};font-weight:700;white-space:nowrap;">${CHI[h.chiIndex]} - ${h.nguHanh}</td>`,
-          ...(isBien ? [] : [`<td style="padding:5px 4px;text-align:center;color:${LIGHT.text};white-space:nowrap;">${h.phucThan ? `${CHI[h.phucThan.chiIndex]} - ${CHI_NGU_HANH[h.phucThan.chiIndex]}` : "-"}</td>`]),
-          `<td style="padding:5px 4px;text-align:center;color:${rowColor};">${h.xunKong ? "K" : "-"}</td>`,
-          ...(isBien ? [`<td style="padding:5px 4px;text-align:center;color:${rowColor};">${h.lucThu}</td>`] : []),
+          `<td style="padding:7px 5px;text-align:center;font-weight:700;color:${rowColor};">${h.value === 1 ? "&mdash;" : "&#8212;&nbsp;&#8212;"}</td>`,
+          ...(isBien ? [] : [`<td style="padding:7px 5px;text-align:center;color:${rowColor};font-weight:600;">${h.theUng ?? ""}</td>`]),
+          `<td style="padding:7px 5px;text-align:center;color:${rowColor};font-weight:${isRowDong ? "700" : "400"};white-space:nowrap;">${h.lucThan}</td>`,
+          `<td style="padding:7px 5px;text-align:center;color:${rowColor};font-weight:${isRowDong ? "700" : "400"};white-space:nowrap;">${CHI[h.chiIndex]} - ${h.nguHanh}</td>`,
+          ...(isBien ? [] : [`<td style="padding:7px 5px;text-align:center;color:${LIGHT.text};white-space:nowrap;">${h.phucThan ? `${CHI[h.phucThan.chiIndex]} - ${CHI_NGU_HANH[h.phucThan.chiIndex]}` : "-"}</td>`]),
+          `<td style="padding:7px 5px;text-align:center;color:${rowColor};">${h.xunKong ? "K" : "-"}</td>`,
+          ...(isBien ? [`<td style="padding:7px 5px;text-align:center;color:${rowColor};font-weight:${isRowDong ? "700" : "400"};white-space:nowrap;">${h.lucThu}</td>`] : []),
         ];
         return `<tr style="border-bottom:1px solid ${LIGHT.borderLight};">${cells.join("")}</tr>`;
       })
@@ -550,14 +555,15 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
 
     const lowerRows = rows
       .map((h) => {
-        const rowColor = h.isDong || dongPositions.includes(h.hao) ? LIGHT.dong : LIGHT.text;
+        const isRowDong = h.isDong || dongPositions.includes(h.hao);
+        const rowColor = isRowDong ? LIGHT.dong : LIGHT.text;
         return `
           <tr style="border-bottom:1px solid ${LIGHT.borderLight};">
-            <td style="padding:5px 4px;text-align:center;font-weight:700;color:${rowColor};white-space:nowrap;">${CHI[h.chiIndex]} - ${h.nguHanh}</td>
-            <td style="padding:5px 4px;text-align:center;color:${rowColor};">${h.vuongSuy}</td>
-            <td style="padding:5px 4px;text-align:center;color:${rowColor};">-</td>
-            <td style="padding:5px 4px;text-align:center;color:${rowColor};">${h.growthDay}</td>
-            <td style="padding:5px 4px;text-align:center;color:${rowColor};">${h.growthMonth}</td>
+            <td style="padding:7px 2px;text-align:center;font-weight:${isRowDong ? "700" : "400"};color:${rowColor};white-space:nowrap;">${CHI[h.chiIndex]} - ${h.nguHanh}</td>
+            <td style="padding:7px 2px;text-align:center;color:${rowColor};white-space:nowrap;">${h.vuongSuy}</td>
+            <td style="padding:7px 2px;text-align:center;color:${rowColor};white-space:nowrap;">-</td>
+            <td style="padding:7px 2px;text-align:center;color:${rowColor};white-space:nowrap;">${h.growthDay}</td>
+            <td style="padding:7px 2px;text-align:center;color:${rowColor};white-space:nowrap;">${h.growthMonth}</td>
           </tr>
         `;
       })
@@ -565,16 +571,16 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
 
     return `
       <div>
-        <table style="width:100%;border-collapse:collapse;font-size:15px;">
+        <table style="width:100%;border-collapse:collapse;font-size:18px;">
           <thead>
             <tr style="background:${LIGHT.headerBg};">${upperHeader}</tr>
           </thead>
           <tbody>${upperRows}</tbody>
         </table>
-        <table style="width:100%;border-collapse:collapse;font-size:15px;margin-top:10px;">
+        <table style="width:100%;table-layout:fixed;border-collapse:collapse;font-size:14px;margin-top:10px;">
           <thead>
             <tr style="background:${LIGHT.headerBg};">
-              <th style="padding:5px 3px;">Hào</th><th style="padding:5px 3px;">V-S</th><th style="padding:5px 3px;">Q.Thần</th><th style="padding:5px 3px;">TS Ngày</th><th style="padding:5px 3px;">TS Tháng</th>
+              <th style="padding:7px 2px;width:20%;white-space:nowrap;">Hào</th><th style="padding:7px 2px;width:20%;white-space:nowrap;">V-S</th><th style="padding:7px 2px;width:20%;white-space:nowrap;">Q.Thần</th><th style="padding:7px 2px;width:20%;white-space:nowrap;">TS Ngày</th><th style="padding:7px 2px;width:20%;white-space:nowrap;">TS Tháng</th>
             </tr>
           </thead>
           <tbody>${lowerRows}</tbody>
