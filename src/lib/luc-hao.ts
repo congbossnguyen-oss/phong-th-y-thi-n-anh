@@ -97,6 +97,69 @@ export const HEXAGRAM_NAMES: Record<string, string> = {
   "Khôn-Tốn": "Địa Phong Thăng", "Khôn-Khảm": "Địa Thủy Sư", "Khôn-Cấn": "Địa Sơn Khiêm", "Khôn-Khôn": "Thuần Khôn",
 };
 
+// --- Quái Phản Ngâm (cấp quái, KHÔNG xét địa chi/nạp giáp/hào động/hào phản-phục ngâm/cát hung) ---
+// 4 cặp đối quái phản ngâm cố định: Càn↔Tốn, Khảm↔Ly, Cấn↔Khôn, Chấn↔Đoài.
+const FAN_YIN_OPPOSITE: Record<string, string> = {
+  "Càn": "Tốn", "Tốn": "Càn",
+  "Khảm": "Ly", "Ly": "Khảm",
+  "Cấn": "Khôn", "Khôn": "Cấn",
+  "Chấn": "Đoài", "Đoài": "Chấn",
+};
+
+function oppositeTrigram(name: string): string | undefined {
+  return FAN_YIN_OPPOSITE[name];
+}
+
+export type FanYinType = "none" | "inner" | "outer" | "inner_outer";
+
+export interface FanYinResult {
+  enabled: boolean;
+  type: FanYinType;
+  label: string;
+  originalUpper: string;
+  originalLower: string;
+  changedUpper: string;
+  changedLower: string;
+  innerFanYin: boolean;
+  outerFanYin: boolean;
+}
+
+// Nhận diện Quái Phản Ngâm giữa Quẻ Chính (originalHexagram) và Quẻ Biến (changedHexagram), thuần theo
+// đối chiếu Thượng Quái/Hạ Quái với bảng 4 cặp đối quái ở trên — KHÔNG tra theo tên quẻ (không có danh
+// sách "Quẻ A → Quẻ B = Phản Ngâm" cứng), tính động hoàn toàn từ upperTrigram/lowerTrigram truyền vào.
+export function calculateFanYin(
+  originalHexagram: { upperTrigram: string; lowerTrigram: string },
+  changedHexagram: { upperTrigram: string; lowerTrigram: string },
+): FanYinResult {
+  const outerFanYin = changedHexagram.upperTrigram === oppositeTrigram(originalHexagram.upperTrigram);
+  const innerFanYin = changedHexagram.lowerTrigram === oppositeTrigram(originalHexagram.lowerTrigram);
+
+  let type: FanYinType = "none";
+  let label = "";
+  if (innerFanYin && outerFanYin) {
+    type = "inner_outer";
+    label = "Toàn Quái Phản Ngâm";
+  } else if (innerFanYin) {
+    type = "inner";
+    label = "Nội Quái Phản Ngâm";
+  } else if (outerFanYin) {
+    type = "outer";
+    label = "Ngoại Quái Phản Ngâm";
+  }
+
+  return {
+    enabled: type !== "none",
+    type,
+    label,
+    originalUpper: originalHexagram.upperTrigram,
+    originalLower: originalHexagram.lowerTrigram,
+    changedUpper: changedHexagram.upperTrigram,
+    changedLower: changedHexagram.lowerTrigram,
+    innerFanYin,
+    outerFanYin,
+  };
+}
+
 // --- Lục Thân (so ngũ hành Nạp Giáp của hào với ngũ hành BẢN CUNG — quẻ thuần của quái chủ cung) ---
 export type LucThan = "Huynh Đệ" | "Phụ Mẫu" | "Tử Tôn" | "Quan Quỷ" | "Thê Tài";
 
@@ -586,6 +649,7 @@ export interface FullCastResult {
   nguyetLenh: string; // "Chi-NgũHành" của Tháng, ví dụ "Mùi-Thổ"
   amLichText: string; // "giờ Chi, ngày/tháng/năm âm lịch"
   methodNote: string;
+  fanYin: FanYinResult; // Quái Phản Ngâm giữa Quẻ Chính và Quẻ Biến (fanYin.enabled=false nếu không có hào động)
 }
 
 function trigramById(id: number): TrigramDef {
@@ -640,10 +704,29 @@ function finalizeCast(
   const hourChiIndex = Math.floor((((input.hour + 1) % 24) + 24) % 24 / 2);
   const amLichText = `giờ ${CHI[hourChiIndex]}, ${lunar.day}/${lunar.month}${lunar.isLeapMonth ? " (nhuận)" : ""}/${lunar.year}`;
 
+  // Không có hào động (bien=null) => Quẻ Chính = Quẻ Biến về cấu trúc, KHÔNG tự động coi là Phản Ngâm.
+  const fanYin: FanYinResult = bien
+    ? calculateFanYin(
+        { upperTrigram: chinh.upper.name, lowerTrigram: chinh.lower.name },
+        { upperTrigram: bien.upper.name, lowerTrigram: bien.lower.name },
+      )
+    : {
+        enabled: false,
+        type: "none",
+        label: "",
+        originalUpper: chinh.upper.name,
+        originalLower: chinh.lower.name,
+        changedUpper: chinh.upper.name,
+        changedLower: chinh.lower.name,
+        innerFanYin: false,
+        outerFanYin: false,
+      };
+
   return {
     chinh,
     hoQue,
     bien,
+    fanYin,
     dongPositions,
     tuanKhong: khongVongOf(canIndex, chiIndex),
     dayCan: CAN[canIndex],
