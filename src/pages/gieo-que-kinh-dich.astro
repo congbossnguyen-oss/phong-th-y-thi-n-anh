@@ -314,6 +314,7 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
     type LineVal,
   } from "../lib/luc-hao";
   import { CHI } from "../lib/menh-nap-am";
+  import { CHI_NGU_HANH } from "../lib/bat-tu";
   import { lunarToSolar } from "../lib/lunar-calendar";
 
   // --- Bộ chọn phương pháp (4 thẻ) <-> panel form ---
@@ -405,11 +406,11 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
       .map(({ line, pos }) => {
         const isDong = dongPositions.includes(pos);
         const color = isDong ? LIGHT.dong : LIGHT.text;
-        if (line === 1) return `<div style="height:7px;border-radius:2px;background:${color};"></div>`;
-        return `<div style="height:7px;display:flex;justify-content:space-between;"><div style="width:42%;height:100%;border-radius:2px;background:${color};"></div><div style="width:42%;height:100%;border-radius:2px;background:${color};"></div></div>`;
+        if (line === 1) return `<div style="height:9px;border-radius:2px;background:${color};"></div>`;
+        return `<div style="height:9px;display:flex;justify-content:space-between;"><div style="width:42%;height:100%;border-radius:2px;background:${color};"></div><div style="width:42%;height:100%;border-radius:2px;background:${color};"></div></div>`;
       })
       .join("");
-    return `<div style="display:flex;flex-direction:column;gap:5px;width:110px;margin:0 auto;">${bars}</div>`;
+    return `<div style="display:flex;flex-direction:column;gap:7px;width:130px;margin:0 auto;">${bars}</div>`;
   }
 
   // Tên tượng quẻ (điềm triệu) theo tên 64 quẻ — do người dùng cung cấp trực tiếp (đã sửa 3 chỗ lệch
@@ -481,25 +482,30 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
     "Hỏa Thủy Vị Tế": "Thái Tuế Nguyệt Kiến / Tiểu Hồ Ngật Tế",
   };
 
+  // Nhãn đời quái chỉ giữ lại khi thuộc nhóm "đáng chú ý" (Lục Hợp/Lục Xung/Du Hồn/Quy Hồn) — bỏ các
+  // nhãn thông thường (Bát Thuần/Nhất Thế..Ngũ Thế) theo đúng yêu cầu, chỉ xử lý chuỗi hiển thị
+  // `cungLabel` đã có sẵn từ engine, không tính lại giá trị.
+  const NOTABLE_CUNG_TAGS = new Set(["Lục Hợp", "Lục Xung", "Du Hồn", "Quy Hồn"]);
+  function formatHoQue(cungName: string, cungLabel: string): string {
+    const m = cungLabel.match(/\(([^)]+)\)/);
+    const tag = m ? m[1] : null;
+    return tag && NOTABLE_CUNG_TAGS.has(tag) ? `Họ ${cungName} (${tag})` : `Họ ${cungName}`;
+  }
+
+  // Chữ Họ quẻ và tên tượng quẻ LUÔN giữ màu cố định (ghi/đen), không đổi theo hào động — chỉ vạch hào
+  // (`dongPositions`, dùng riêng cho `lightHexBars`) mới đổi màu đỏ khi động.
   function lightQueBlock(name: string, lines: readonly (0 | 1)[], dongPositions: number[], cungText: string, tenTuong?: string): string {
+    const subColor = LIGHT.textMuted;
+    const tenTuongColor = LIGHT.text;
     return `
-      <div style="border:1.5px solid ${LIGHT.borderLight};border-radius:10px;padding:10px;text-align:center;">
-        <p style="margin:0;font-size:13px;font-weight:800;letter-spacing:.02em;color:${LIGHT.red};">${name}</p>
-        <div style="margin-top:8px;">${lightHexBars(lines, dongPositions)}</div>
-        <p style="margin:8px 0 0;font-size:10px;font-weight:700;letter-spacing:.02em;color:${LIGHT.text};">${cungText}</p>
-        ${tenTuong ? `<p style="margin:3px 0 0;font-size:10px;font-weight:700;letter-spacing:.02em;color:${LIGHT.textMuted};">${tenTuong}</p>` : ""}
+      <div style="border:1.5px solid ${LIGHT.borderLight};border-radius:10px;padding:14px 10px;text-align:center;">
+        <p style="margin:0;font-size:16px;font-weight:800;letter-spacing:.02em;text-transform:uppercase;color:${LIGHT.red};">${name}</p>
+        <div style="margin-top:10px;">${lightHexBars(lines, dongPositions)}</div>
+        <p style="margin:10px 0 0;font-size:12px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;color:${subColor};">${cungText}</p>
+        ${tenTuong ? `<p style="margin:4px 0 0;font-size:10px;font-weight:700;letter-spacing:.02em;text-transform:uppercase;color:${tenTuongColor};">${tenTuong}</p>` : ""}
       </div>
     `;
   }
-
-  // Rút gọn Lục Thân cho ô Phục Thần: "Huynh Đệ" -> "Huynh", v.v.
-  const LUC_THAN_ABBREV: Record<string, string> = {
-    "Huynh Đệ": "Huynh",
-    "Tử Tôn": "Tử",
-    "Thê Tài": "Thê",
-    "Quan Quỷ": "Quan",
-    "Phụ Mẫu": "Phụ",
-  };
 
   // Bảng hào cho 1 bên (Chính hoặc Biến), đúng bố cục ảnh mẫu simkinhdich.com: tách 2 bảng xếp chồng —
   // bảng trên (Nạp Giáp/Lục Thân/Tuần Không...) + bảng dưới (Vượng Suy/Trường Sinh). Chỉ đọc field có
@@ -507,7 +513,9 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
   // `Q.Thần` chưa có nguồn xác nhận công thức nên luôn hiện "-" (theo đúng chỉ thị, không tự suy đoán).
   // T/Ư chỉ hiện ở bên Chính (Thế/Ứng an tại quẻ chính); Lục Thú chỉ hiện ở bên Biến; P.Thần chỉ hiện
   // ở bên Chính — theo đúng yêu cầu rút gọn cột.
-  function sideHaoTables(sectionLabel: string, q: QueDayDu, isBien: boolean): string {
+  // `dongPositions`: engine không đánh dấu `isDong` cho hào bên Biến (biến không tự mang trạng thái
+  // động), nên bên Biến cần vị trí hào động của Chính truyền vào để tô đỏ đúng hào đã "hóa ra".
+  function sideHaoTables(q: QueDayDu, isBien: boolean, dongPositions: number[] = []): string {
     const rows = [...q.hao].reverse();
 
     const headerLabels = [
@@ -519,19 +527,22 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
       "T.K",
       ...(isBien ? ["Lục Thú"] : []),
     ];
-    const upperHeader = headerLabels.map((label) => `<th style="padding:3px 2px;">${label}</th>`).join("");
+    const upperHeader = headerLabels.map((label) => `<th style="padding:5px 3px;">${label}</th>`).join("");
 
+    // P.Thần (Phục Thần) KHÔNG được tô đỏ dù hào đó có động hay không — Phục Thần là hào ẩn mượn từ
+    // quẻ thuần bản cung, không phải hào thật đang động trong quẻ hiện tại, nên giữ nguyên màu chữ.
     const upperRows = rows
       .map((h) => {
-        const rowColor = h.isDong ? LIGHT.dong : LIGHT.text;
+        const isRowDong = h.isDong || dongPositions.includes(h.hao);
+        const rowColor = isRowDong ? LIGHT.dong : LIGHT.text;
         const cells = [
-          `<td style="padding:3px 4px;text-align:center;font-weight:700;color:${rowColor};">${h.value === 1 ? "&mdash;" : "&#8212;&nbsp;&#8212;"}</td>`,
-          ...(isBien ? [] : [`<td style="padding:3px 4px;text-align:center;color:${rowColor};font-weight:600;">${h.theUng ?? ""}</td>`]),
-          `<td style="padding:3px 4px;text-align:center;color:${rowColor};font-weight:${h.isDong ? "700" : "400"};">${h.lucThan}</td>`,
-          `<td style="padding:3px 4px;text-align:center;color:${rowColor};font-weight:700;white-space:nowrap;">${CHI[h.chiIndex]} - ${h.nguHanh}</td>`,
-          ...(isBien ? [] : [`<td style="padding:3px 4px;text-align:center;color:${rowColor};">${h.phucThan ? LUC_THAN_ABBREV[h.phucThan.lucThan] : "-"}</td>`]),
-          `<td style="padding:3px 4px;text-align:center;color:${rowColor};">${h.xunKong ? "K" : "-"}</td>`,
-          ...(isBien ? [`<td style="padding:3px 4px;text-align:center;color:${rowColor};">${h.lucThu}</td>`] : []),
+          `<td style="padding:5px 4px;text-align:center;font-weight:700;color:${rowColor};">${h.value === 1 ? "&mdash;" : "&#8212;&nbsp;&#8212;"}</td>`,
+          ...(isBien ? [] : [`<td style="padding:5px 4px;text-align:center;color:${rowColor};font-weight:600;">${h.theUng ?? ""}</td>`]),
+          `<td style="padding:5px 4px;text-align:center;color:${rowColor};font-weight:${isRowDong ? "700" : "400"};">${h.lucThan}</td>`,
+          `<td style="padding:5px 4px;text-align:center;color:${rowColor};font-weight:700;white-space:nowrap;">${CHI[h.chiIndex]} - ${h.nguHanh}</td>`,
+          ...(isBien ? [] : [`<td style="padding:5px 4px;text-align:center;color:${LIGHT.text};white-space:nowrap;">${h.phucThan ? `${CHI[h.phucThan.chiIndex]} - ${CHI_NGU_HANH[h.phucThan.chiIndex]}` : "-"}</td>`]),
+          `<td style="padding:5px 4px;text-align:center;color:${rowColor};">${h.xunKong ? "K" : "-"}</td>`,
+          ...(isBien ? [`<td style="padding:5px 4px;text-align:center;color:${rowColor};">${h.lucThu}</td>`] : []),
         ];
         return `<tr style="border-bottom:1px solid ${LIGHT.borderLight};">${cells.join("")}</tr>`;
       })
@@ -539,14 +550,14 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
 
     const lowerRows = rows
       .map((h) => {
-        const rowColor = h.isDong ? LIGHT.dong : LIGHT.text;
+        const rowColor = h.isDong || dongPositions.includes(h.hao) ? LIGHT.dong : LIGHT.text;
         return `
           <tr style="border-bottom:1px solid ${LIGHT.borderLight};">
-            <td style="padding:3px 4px;text-align:center;font-weight:700;color:${rowColor};white-space:nowrap;">${CHI[h.chiIndex]} - ${h.nguHanh}</td>
-            <td style="padding:3px 4px;text-align:center;color:${rowColor};">${h.vuongSuy}</td>
-            <td style="padding:3px 4px;text-align:center;color:${rowColor};">-</td>
-            <td style="padding:3px 4px;text-align:center;color:${rowColor};">${h.growthDay}</td>
-            <td style="padding:3px 4px;text-align:center;color:${rowColor};">${h.growthMonth}</td>
+            <td style="padding:5px 4px;text-align:center;font-weight:700;color:${rowColor};white-space:nowrap;">${CHI[h.chiIndex]} - ${h.nguHanh}</td>
+            <td style="padding:5px 4px;text-align:center;color:${rowColor};">${h.vuongSuy}</td>
+            <td style="padding:5px 4px;text-align:center;color:${rowColor};">-</td>
+            <td style="padding:5px 4px;text-align:center;color:${rowColor};">${h.growthDay}</td>
+            <td style="padding:5px 4px;text-align:center;color:${rowColor};">${h.growthMonth}</td>
           </tr>
         `;
       })
@@ -554,17 +565,16 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
 
     return `
       <div>
-        <p style="margin:0 0 6px;font-size:11px;font-weight:800;color:${LIGHT.text};text-align:center;letter-spacing:.02em;">${sectionLabel}</p>
-        <table style="width:100%;border-collapse:collapse;font-size:9px;">
+        <table style="width:100%;border-collapse:collapse;font-size:15px;">
           <thead>
             <tr style="background:${LIGHT.headerBg};">${upperHeader}</tr>
           </thead>
           <tbody>${upperRows}</tbody>
         </table>
-        <table style="width:100%;border-collapse:collapse;font-size:9px;margin-top:6px;">
+        <table style="width:100%;border-collapse:collapse;font-size:15px;margin-top:10px;">
           <thead>
             <tr style="background:${LIGHT.headerBg};">
-              <th style="padding:3px 2px;">Hào</th><th style="padding:3px 2px;">V-S</th><th style="padding:3px 2px;">Q.Thần</th><th style="padding:3px 2px;">TS Ngày</th><th style="padding:3px 2px;">TS Tháng</th>
+              <th style="padding:5px 3px;">Hào</th><th style="padding:5px 3px;">V-S</th><th style="padding:5px 3px;">Q.Thần</th><th style="padding:5px 3px;">TS Ngày</th><th style="padding:5px 3px;">TS Tháng</th>
             </tr>
           </thead>
           <tbody>${lowerRows}</tbody>
@@ -576,40 +586,37 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
   function buildExportCardHtml(cast: FullCastResult, methodLabel: string, viecCanXem: string, timeLabel: string): string {
     const queCols = cast.bien ? 3 : 2;
     const blocks = [
-      lightQueBlock(cast.chinh.name, cast.chinh.lines, cast.dongPositions, `Quái ${cast.chinh.cungLabel}`, TEN_TUONG_QUE[cast.chinh.name]),
-      lightQueBlock(cast.hoQue.name, cast.hoQue.lines, [], `Quái ${cast.hoQue.cungLabel}`),
+      lightQueBlock(cast.chinh.name, cast.chinh.lines, cast.dongPositions, formatHoQue(cast.chinh.cungTrigram.name, cast.chinh.cungLabel), TEN_TUONG_QUE[cast.chinh.name]),
+      lightQueBlock(cast.hoQue.name, cast.hoQue.lines, [], formatHoQue(cast.hoQue.cungTrigram.name, cast.hoQue.cungLabel)),
     ];
     if (cast.bien) {
-      blocks.push(lightQueBlock(cast.bien.name, cast.bien.lines, [], `Quái ${cast.bien.cungLabel}`, TEN_TUONG_QUE[cast.bien.name]));
+      blocks.push(lightQueBlock(cast.bien.name, cast.bien.lines, cast.dongPositions, formatHoQue(cast.bien.cungTrigram.name, cast.bien.cungLabel), TEN_TUONG_QUE[cast.bien.name]));
     }
     // Bảng hào theo đúng bố cục ảnh mẫu (simkinhdich.com): Chính/Biến đặt song song 2 cột, mỗi bên tách
     // 2 bảng xếp chồng (không đưa Ngũ Hành/Quan hệ Nhật-Nguyệt thành cột riêng theo yêu cầu).
     const tables = cast.bien
-      ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">${sideHaoTables("Quẻ chính", cast.chinh, false)}${sideHaoTables("Quẻ biến", cast.bien, true)}</div>`
-      : sideHaoTables("Quẻ chính", cast.chinh, false);
+      ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;"><div style="border-right:1px solid ${LIGHT.border};">${sideHaoTables(cast.chinh, false)}</div><div>${sideHaoTables(cast.bien, true, cast.dongPositions)}</div></div>`
+      : sideHaoTables(cast.chinh, false);
 
     return `
-      <div style="width:${CARD_WIDTH}px;height:${CARD_HEIGHT}px;overflow:hidden;font-family:Arial,'Helvetica Neue',sans-serif;background:${LIGHT.bg};color:${LIGHT.text};border:3px solid ${LIGHT.border};border-radius:16px;padding:20px;box-sizing:border-box;">
-        <div style="display:flex;justify-content:flex-start;align-items:center;gap:10px;border-bottom:2px solid ${LIGHT.borderLight};padding-bottom:10px;">
+      <div style="width:${CARD_WIDTH}px;min-height:${CARD_HEIGHT}px;font-family:Tahoma,'Segoe UI',Arial,sans-serif;background:${LIGHT.bg};color:${LIGHT.text};border:3px solid ${LIGHT.border};border-radius:16px;padding:20px;box-sizing:border-box;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:2px solid ${LIGHT.borderLight};padding-bottom:10px;">
+          <p style="margin:0;font-size:16px;font-weight:800;letter-spacing:.02em;color:${LIGHT.red};">PHONGTHUYTHIENANH.COM</p>
           <img src="/images/brand/zhi-gong-logo.png" style="width:44px;height:44px;border-radius:9999px;border:2px solid ${LIGHT.border};object-fit:cover;flex-shrink:0;" />
-          <div>
-            <p style="margin:0;font-size:16px;font-weight:800;letter-spacing:.02em;color:${LIGHT.red};">PHONGTHUYTHIENANH.COM</p>
-            <p style="margin:3px 0 0;font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:${LIGHT.textMuted};">Phần mềm lập quẻ Kinh Dịch</p>
-          </div>
         </div>
         <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;font-size:11px;line-height:1.7;">
-          <p style="margin:0;"><strong>Phương pháp lập quẻ:</strong> ${methodLabel}</p>
-          <p style="margin:0;"><strong>Việc cần xem:</strong> ${viecCanXem || "—"}</p>
-          <p style="margin:0;"><strong>Thời gian lập quẻ:</strong> ${timeLabel}</p>
-          <p style="margin:0;"><strong>Theo Âm lịch:</strong> ${cast.amLichText}</p>
-          <p style="margin:0;grid-column:1 / -1;"><strong>Can Chi:</strong> ${cast.canChiText}</p>
-          <p style="margin:0;"><strong>Tiết khí:</strong> ${cast.tietKhi}</p>
-          <p style="margin:0;"><strong>Tuần Không:</strong> ${cast.tuanKhong}</p>
-          <p style="margin:0;"><strong>Nhật thần:</strong> ${cast.nhatThan}</p>
-          <p style="margin:0;"><strong>Nguyệt lệnh:</strong> ${cast.nguyetLenh}</p>
+          <p style="margin:0;">Phương pháp lập quẻ: <strong style="color:${LIGHT.text};">${methodLabel}</strong></p>
+          <p style="margin:0;">Việc cần xem: <strong style="color:${LIGHT.text};">${viecCanXem || "—"}</strong></p>
+          <p style="margin:0;">Thời gian lập quẻ: <strong style="color:${LIGHT.text};">${timeLabel}</strong></p>
+          <p style="margin:0;">Theo Âm lịch: <strong style="color:${LIGHT.text};">${cast.amLichText}</strong></p>
+          <p style="margin:0;grid-column:1 / -1;">Can Chi: <strong style="color:${LIGHT.text};">${cast.canChiText}</strong></p>
+          <p style="margin:0;">Tiết khí: <strong style="color:${LIGHT.red};">${cast.tietKhi}</strong></p>
+          <p style="margin:0;">Tuần Không: <strong style="color:${LIGHT.text};">${cast.tuanKhong}</strong></p>
+          <p style="margin:0;">Nhật thần: <strong style="color:${LIGHT.text};">${cast.nhatThan}</strong></p>
+          <p style="margin:0;">Nguyệt lệnh: <strong style="color:${LIGHT.text};">${cast.nguyetLenh}</strong></p>
         </div>
-        <div style="margin-top:16px;display:grid;grid-template-columns:repeat(${queCols}, 1fr);gap:10px;">${blocks.join("")}</div>
-        <div style="margin-top:16px;">${tables}</div>
+        <div style="margin-top:20px;display:grid;grid-template-columns:repeat(${queCols}, 1fr);gap:14px;">${blocks.join("")}</div>
+        <div style="margin-top:22px;">${tables}</div>
         <p style="margin:12px 0 0;font-size:9px;color:${LIGHT.textMuted};text-align:center;">Lập quẻ Kinh Dịch tại Phong Thủy Thiên Anh — phongthuythienanh.com</p>
       </div>
     `;
@@ -617,7 +624,9 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
 
   async function captureCardAsPng(cardEl: HTMLElement): Promise<string> {
     const { toPng } = await import("html-to-image");
-    return await toPng(cardEl, { backgroundColor: LIGHT.bg, pixelRatio: 2, skipFonts: true, width: CARD_WIDTH, height: CARD_HEIGHT });
+    // Không ép `height` cứng — thẻ dùng `min-height` nên chiều cao thật có thể lớn hơn CARD_HEIGHT tuỳ
+    // nội dung; để html-to-image tự đo chiều cao thật (offsetHeight) của phần tử, tránh cắt mất nội dung.
+    return await toPng(cardEl, { backgroundColor: LIGHT.bg, pixelRatio: 2, skipFonts: true, width: CARD_WIDTH, height: cardEl.offsetHeight });
   }
 
   async function renderExportCard(
