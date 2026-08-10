@@ -97,6 +97,21 @@ export const prerender = true;
             <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Tuổi xung ngày này</p>
             <p id="kq-tuoi-xung" class="mt-1 text-sm font-semibold text-slate-800"></p>
           </div>
+
+          <div class="mt-5 border-t border-slate-200 pt-5">
+            <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Ngày kỵ đặc biệt</p>
+            <div id="kq-ngay-ky" class="mt-2 flex flex-wrap gap-2"></div>
+          </div>
+
+          <div id="kq-kim-than-that-sat-wrap" class="mt-5 hidden border-t border-slate-200 pt-5">
+            <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Kim Thần Thất Sát — kỵ động thổ, tu tạo với tuổi</p>
+            <p id="kq-kim-than-that-sat" class="mt-1 text-sm font-semibold text-slate-800"></p>
+          </div>
+
+          <div id="kq-tam-tai-wrap" class="mt-5 hidden border-t border-slate-200 pt-5">
+            <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Năm nay phạm hạn Tam Tai — tuổi thuộc nhóm</p>
+            <p id="kq-tam-tai" class="mt-1 text-sm font-semibold text-slate-800"></p>
+          </div>
         </div>
 
         <div class="mt-6 overflow-x-auto rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
@@ -149,6 +164,12 @@ export const prerender = true;
     hoangDaoHacDaoNgay: "hoàng đạo" | "hắc đạo" | "không xác định";
     thanSat: CatHungValue[];
     tuoiXungNgay: string[];
+    nguyetKy: boolean;
+    tamNuong: boolean;
+    duongCongKyNhat: boolean;
+    satChu: boolean;
+    nhomTuoiPhamTamTai: string[][];
+    canNamSinhKyKimThanThatSat: string[];
     gio12: GioTrongNgay[];
   }
 
@@ -270,6 +291,35 @@ export const prerender = true;
 
     document.getElementById("kq-tuoi-xung")!.textContent =
       data.tuoiXungNgay.length > 0 ? `Tuổi ${data.tuoiXungNgay.join(", ")}` : "—";
+
+    const ngayKyBadges: string[] = [];
+    if (data.nguyetKy) ngayKyBadges.push(catHungBadge("Nguyệt Kỵ (Ngũ Quỷ)", "hung"));
+    if (data.tamNuong) ngayKyBadges.push(catHungBadge("Tam Nương Sát", "hung"));
+    if (data.duongCongKyNhat) ngayKyBadges.push(catHungBadge("Dương Công Kỵ Nhật", "hung"));
+    if (data.satChu) ngayKyBadges.push(catHungBadge("Sát Chủ", "hung"));
+    document.getElementById("kq-ngay-ky")!.innerHTML =
+      ngayKyBadges.length > 0
+        ? ngayKyBadges.join("")
+        : '<span class="text-sm text-slate-500">Ngày này không phạm ngày kỵ đặc biệt nào trong dữ liệu hiện có.</span>';
+
+    const kimThanWrap = document.getElementById("kq-kim-than-that-sat-wrap")!;
+    if (data.canNamSinhKyKimThanThatSat.length > 0) {
+      document.getElementById("kq-kim-than-that-sat")!.textContent =
+        `Tuổi có Can ${data.canNamSinhKyKimThanThatSat.join(", ")}`;
+      kimThanWrap.classList.remove("hidden");
+    } else {
+      kimThanWrap.classList.add("hidden");
+    }
+
+    const tamTaiWrap = document.getElementById("kq-tam-tai-wrap")!;
+    if (data.nhomTuoiPhamTamTai.length > 0) {
+      document.getElementById("kq-tam-tai")!.textContent = data.nhomTuoiPhamTamTai
+        .map((nhom) => `${nhom.join("-")}`)
+        .join(" · ");
+      tamTaiWrap.classList.remove("hidden");
+    } else {
+      tamTaiWrap.classList.add("hidden");
+    }
 
     gio12Body.innerHTML = data.gio12
       .map((g: GioTrongNgay) => {

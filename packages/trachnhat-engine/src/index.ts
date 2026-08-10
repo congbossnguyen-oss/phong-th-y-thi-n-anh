@@ -52,6 +52,12 @@ export function calculate(input: TrachNhatInput): EngineResult<TrachNhatOutput> 
     hoangDaoHacDaoNgay: ngayInfo.hoangDaoHacDaoNgay,
     thanSat: ngayInfo.thanSat,
     tuoiXungNgay: ngayInfo.tuoiXungNgay,
+    nguyetKy: ngayInfo.nguyetKy,
+    tamNuong: ngayInfo.tamNuong,
+    duongCongKyNhat: ngayInfo.duongCongKyNhat,
+    nhomTuoiPhamTamTai: ngayInfo.nhomTuoiPhamTamTai,
+    satChu: ngayInfo.satChu,
+    canNamSinhKyKimThanThatSat: ngayInfo.canNamSinhKyKimThanThatSat,
     gio12,
   };
 

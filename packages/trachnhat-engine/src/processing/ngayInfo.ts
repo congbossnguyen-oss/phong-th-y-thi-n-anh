@@ -17,6 +17,12 @@ export interface NgayInfoResult {
   hoangDaoHacDaoNgay: "hoàng đạo" | "hắc đạo" | "không xác định";
   thanSat: CatHungValue[];
   tuoiXungNgay: string[];
+  nguyetKy: boolean;
+  tamNuong: boolean;
+  duongCongKyNhat: boolean;
+  nhomTuoiPhamTamTai: string[][];
+  satChu: boolean;
+  canNamSinhKyKimThanThatSat: string[];
 }
 
 export function tinhNgayInfo(tuTru: TuTruResult): NgayInfoResult {
@@ -28,6 +34,12 @@ export function tinhNgayInfo(tuTru: TuTruResult): NgayInfoResult {
   const hoangDaoHacDaoNgay = TrachNhat.getNgayHoangDaoHacDao(lunarMonth, tuTru.dayChiIndex);
   const thanSat = TrachNhat.getThanSatTrongNgay(lunarMonth, dayChi);
   const xungChi = TrachNhat.getLucXungChi(dayChi);
+  const nguyetKy = TrachNhat.isNguyetKy(tuTru.lunarDate.day);
+  const tamNuong = TrachNhat.isTamNuong(tuTru.lunarDate.day);
+  const duongCongKyNhat = TrachNhat.isDuongCongKyNhat(tuTru.lunarDate.month, tuTru.lunarDate.day);
+  const nhomTuoiPhamTamTai = TrachNhat.getNhomTuoiPhamTamTai(tuTru.tuTru.nam.chi as Chi);
+  const satChu = TrachNhat.isSatChuNgay(dayChi, tuTru.monthOrderIndex);
+  const canNamSinhKyKimThanThatSat = TrachNhat.getCanNamSinhKyKimThanThatSat(dayChi);
 
   return {
     truc: { index: truc.index, name: truc.name },
@@ -35,5 +47,11 @@ export function tinhNgayInfo(tuTru: TuTruResult): NgayInfoResult {
     hoangDaoHacDaoNgay,
     thanSat: thanSat.map((entry) => ({ name: entry.name, catHung: entry.catHung })),
     tuoiXungNgay: [xungChi],
+    nguyetKy,
+    tamNuong,
+    duongCongKyNhat,
+    nhomTuoiPhamTamTai: nhomTuoiPhamTamTai.map((g) => [...g]),
+    satChu,
+    canNamSinhKyKimThanThatSat: [...canNamSinhKyKimThanThatSat],
   };
 }

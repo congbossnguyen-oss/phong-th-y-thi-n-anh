@@ -44,5 +44,17 @@ export interface TrachNhatOutput {
   hoangDaoHacDaoNgay: "hoàng đạo" | "hắc đạo" | "không xác định";
   thanSat: CatHungValue[];
   tuoiXungNgay: string[];
+  /** Ngày Âm lịch có rơi vào mùng 5/14/23 (Nguyệt Kỵ, còn gọi Ngũ Quỷ) hay không. */
+  nguyetKy: boolean;
+  /** Ngày Âm lịch có rơi vào mùng 3/7/13/18/22/27 (Tam Nương Sát) hay không. */
+  tamNuong: boolean;
+  /** Ngày Âm lịch có phải 1 trong 13 ngày Dương Công Kỵ Nhật hay không. */
+  duongCongKyNhat: boolean;
+  /** (Các) nhóm tuổi (mỗi nhóm 3 Chi tam hợp) đang phạm hạn Tam Tai trong năm này. */
+  nhomTuoiPhamTamTai: string[][];
+  /** Ngày này có phải Sát Chủ theo mùa (Xuân/Hạ/Thu/Đông) hay không. */
+  satChu: boolean;
+  /** (Các) Can năm sinh bị kỵ Kim Thần Thất Sát (động thổ, tu tạo) vào đúng ngày này. */
+  canNamSinhKyKimThanThatSat: string[];
   gio12: GioTrongNgay[];
 }
