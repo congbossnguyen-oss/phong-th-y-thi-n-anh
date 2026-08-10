@@ -141,7 +141,7 @@ const navWithChildren = mainNav.map((item) => {
         </a>
         <a
           href={`tel:${siteConfig.hotline.replace(/\s/g, "")}`}
-          class="mt-3 flex items-center justify-center gap-2 rounded-(--radius-pill) bg-(--color-gold-400) px-4 py-3 text-sm font-semibold text-(--color-ivory-50) hover:bg-(--color-gold-300)"
+          class="mt-3 flex items-center justify-center gap-2 rounded-(--radius-pill) bg-(--color-gold-400) px-4 py-3 text-sm font-semibold text-(--color-on-accent) hover:bg-(--color-gold-300)"
         >
           <Icon name="phone" class="size-4" />
           Gọi tư vấn: {siteConfig.hotline}
@@ -216,6 +216,15 @@ const navWithChildren = mainNav.map((item) => {
       </a>
       <button
         type="button"
+        id="theme-toggle"
+        aria-label="Đổi giao diện sáng/tối"
+        class="flex size-11 items-center justify-center rounded-full text-(--color-ink-800) hover:bg-(--color-ivory-200)"
+      >
+        <Icon name="sun" class="theme-icon-sun size-5" />
+        <Icon name="moon" class="theme-icon-moon size-5" />
+      </button>
+      <button
+        type="button"
         aria-label="Tìm kiếm"
         class="js-search-open flex size-11 items-center justify-center rounded-full text-(--color-ink-800) hover:bg-(--color-ivory-200)"
       >
@@ -247,5 +256,17 @@ const navWithChildren = mainNav.map((item) => {
     btn.addEventListener("click", () => {
       btn.closest("details")?.removeAttribute("open");
     });
+  });
+
+  const themeToggle = document.getElementById("theme-toggle");
+  themeToggle?.addEventListener("click", () => {
+    const isLight = document.documentElement.getAttribute("data-theme") === "light";
+    if (isLight) {
+      document.documentElement.removeAttribute("data-theme");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.setAttribute("data-theme", "light");
+      localStorage.setItem("theme", "light");
+    }
   });
 </script>

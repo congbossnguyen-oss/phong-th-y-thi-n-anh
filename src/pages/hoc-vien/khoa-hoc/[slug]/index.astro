@@ -92,12 +92,12 @@ const dashOffset = CIRCUMFERENCE - (percent / 100) * CIRCUMFERENCE;
     {percent === 100 && (
       <div class="mb-8 flex flex-wrap items-center justify-between gap-4 rounded-(--radius-card) border border-(--color-gold-300) bg-(--color-gold-100) p-5">
         <div class="flex items-center gap-3">
-          <span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-(--color-gold-500) text-(--color-ivory-50)">
+          <span class="flex size-10 shrink-0 items-center justify-center rounded-full bg-(--color-gold-500) text-(--color-on-accent)">
             <Icon name="check-circle" class="size-5" />
           </span>
           <div>
-            <p class="font-display text-base font-semibold text-(--color-ivory-50)">Chúc mừng bạn đã hoàn thành khóa học!</p>
-            <p class="text-sm text-(--color-ivory-200)">Chứng chỉ đã được gửi tới email của bạn, hoặc tải trực tiếp tại đây.</p>
+            <p class="font-display text-base font-semibold text-(--color-on-accent)">Chúc mừng bạn đã hoàn thành khóa học!</p>
+            <p class="text-sm text-(--color-on-accent-muted)">Chứng chỉ đã được gửi tới email của bạn, hoặc tải trực tiếp tại đây.</p>
           </div>
         </div>
         <Button href={`/api/certificates/${course.slug}.pdf`} variant="secondary" target="_blank">Tải chứng chỉ PDF</Button>
@@ -121,7 +121,7 @@ const dashOffset = CIRCUMFERENCE - (percent / 100) * CIRCUMFERENCE;
               <span
                 class:list={[
                   "flex size-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold",
-                  isDone ? "bg-(--color-success-500) text-(--color-ivory-50)" : "bg-(--color-ivory-200) text-(--color-ink-600)",
+                  isDone ? "bg-(--color-success-500) text-(--color-on-accent)" : "bg-(--color-ivory-200) text-(--color-ink-600)",
                 ]}
               >
                 {isDone ? <Icon name="check-circle" class="size-4" /> : i + 1}
@@ -134,7 +134,7 @@ const dashOffset = CIRCUMFERENCE - (percent / 100) * CIRCUMFERENCE;
                 </span>
               </span>
               {isNext && (
-                <span class="hidden shrink-0 rounded-full bg-(--color-gold-400) px-2.5 py-1 text-xs font-medium text-(--color-ivory-50) sm:inline-block">
+                <span class="hidden shrink-0 rounded-full bg-(--color-gold-400) px-2.5 py-1 text-xs font-medium text-(--color-on-accent) sm:inline-block">
                   Tiếp theo
                 </span>
               )}

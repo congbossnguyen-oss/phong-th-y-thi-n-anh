@@ -80,7 +80,7 @@ const inProgressCourses = totalCourses - completedCourses;
     <Container class="py-16">
       <div class="flex flex-wrap items-center justify-between gap-6 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6">
         <div class="flex items-center gap-4">
-          <span class="flex size-14 shrink-0 items-center justify-center rounded-full bg-(--color-gold-400) font-display text-lg font-semibold text-(--color-ivory-50)">
+          <span class="flex size-14 shrink-0 items-center justify-center rounded-full bg-(--color-gold-400) font-display text-lg font-semibold text-(--color-on-accent)">
             {initials}
           </span>
           <div>
@@ -138,7 +138,7 @@ const inProgressCourses = totalCourses - completedCourses;
               <div class="relative flex aspect-video items-center justify-center bg-gradient-to-br from-(--color-ivory-200) to-(--color-gold-100)">
                 <Icon name="play-circle" class="size-10 text-(--color-gold-500) opacity-70 transition-opacity group-hover:opacity-100" />
                 {c.hasCertificate && (
-                  <span class="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-(--color-success-500) px-2.5 py-1 text-xs font-medium text-(--color-ivory-50)">
+                  <span class="absolute right-3 top-3 flex items-center gap-1 rounded-full bg-(--color-success-500) px-2.5 py-1 text-xs font-medium text-(--color-on-accent)">
                     <Icon name="award" class="size-3.5" />
                     Đã có chứng chỉ
                   </span>

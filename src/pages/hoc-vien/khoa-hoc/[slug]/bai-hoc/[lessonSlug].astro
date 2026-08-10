@@ -153,11 +153,11 @@ if (lesson.bunnyVideoId) {
                   class:list={[
                     "flex items-center gap-3 rounded-(--radius-control) px-3 py-2 text-sm",
                     isCurrent
-                      ? "bg-(--color-gold-400) text-(--color-ivory-50)"
+                      ? "bg-(--color-gold-400) text-(--color-on-accent)"
                       : "text-(--color-ink-700) hover:bg-(--color-ivory-200)",
                   ]}
                 >
-                  <span class:list={["flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold", isCurrent ? "bg-(--color-ivory-50)/20" : isDone ? "text-(--color-success-500)" : "bg-(--color-ivory-200) text-(--color-ink-600)"]}>
+                  <span class:list={["flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold", isCurrent ? "bg-(--color-on-accent)/20" : isDone ? "text-(--color-success-500)" : "bg-(--color-ivory-200) text-(--color-ink-600)"]}>
                     {isDone ? <Icon name="check-circle" class="size-4" /> : i + 1}
                   </span>
                   <span class="flex-1 truncate">{l.title}</span>
