@@ -20,15 +20,48 @@ export const prerender = true;
 
   <Container class="py-16">
     <div class="mx-auto max-w-3xl">
-      <form id="xem-ngay-form" class="flex flex-col gap-4 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6 sm:flex-row sm:items-end">
+      <div class="rounded-2xl border-2 border-amber-300 bg-white p-4 text-slate-900 shadow-lg sm:p-6">
+        <div class="flex items-center justify-between">
+          <button
+            type="button"
+            id="cal-prev"
+            aria-label="Tháng trước"
+            class="flex size-9 shrink-0 items-center justify-center rounded-full text-lg font-bold hover:bg-slate-100"
+          >‹</button>
+          <p id="cal-title" class="font-display text-lg font-bold text-slate-900"></p>
+          <button
+            type="button"
+            id="cal-next"
+            aria-label="Tháng sau"
+            class="flex size-9 shrink-0 items-center justify-center rounded-full text-lg font-bold hover:bg-slate-100"
+          >›</button>
+        </div>
+        <div class="mt-3 grid grid-cols-7 gap-1 text-center text-[11px] font-semibold uppercase tracking-wide text-slate-400">
+          <span class="text-red-500">CN</span><span>Hai</span><span>Ba</span><span>Tư</span><span>Năm</span><span>Sáu</span><span>Bảy</span>
+        </div>
+        <div id="cal-grid" class="mt-1 grid grid-cols-7 gap-1"></div>
+      </div>
+
+      <form id="xem-ngay-form" class="mt-4 flex flex-col gap-4 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6 sm:flex-row sm:items-end">
         <div class="flex-1">
-          <label for="ngay-xem" class="text-sm font-medium text-(--color-ink-800)">Chọn ngày (dương lịch)</label>
-          <input
-            id="ngay-xem"
-            type="date"
-            required
-            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3.5 py-2.5 text-sm text-(--color-ink-800) focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20"
-          />
+          <p class="text-sm font-medium text-(--color-ink-800)">Hoặc chọn nhanh ngày (dương lịch)</p>
+          <div class="mt-1.5 grid grid-cols-3 gap-2">
+            <select
+              id="ngay-xem-ngay"
+              aria-label="Ngày"
+              class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800) focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20"
+            ></select>
+            <select
+              id="ngay-xem-thang"
+              aria-label="Tháng"
+              class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800) focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20"
+            ></select>
+            <select
+              id="ngay-xem-nam"
+              aria-label="Năm"
+              class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800) focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20"
+            ></select>
+          </div>
         </div>
         <Button type="submit" size="lg" class="shrink-0">Xem ngày này</Button>
       </form>
@@ -114,6 +147,11 @@ export const prerender = true;
           </div>
         </div>
 
+        <div class="mt-6 rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
+          <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Giờ xuất hành (Tiểu Lục Nhâm)</p>
+          <div id="kq-luc-nham" class="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3"></div>
+        </div>
+
         <div class="mt-6 overflow-x-auto rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
           <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Bảng 12 giờ trong ngày</p>
           <table class="mt-3 w-full min-w-[520px] border-collapse text-center text-sm">
@@ -171,6 +209,21 @@ export const prerender = true;
     nhomTuoiPhamTamTai: string[][];
     canNamSinhKyKimThanThatSat: string[];
     gio12: GioTrongNgay[];
+  }
+
+  interface MonthGridDay {
+    solarDate: { year: number; month: number; day: number };
+    lunarDay: number;
+    lunarMonth: number;
+    isLeapMonth: boolean;
+    isCurrentMonth: boolean;
+    weekday: number;
+  }
+
+  interface MonthGridResult {
+    year: number;
+    month: number;
+    days: MonthGridDay[];
   }
 
   interface EngineErrorLike {
@@ -233,7 +286,9 @@ export const prerender = true;
   }
 
   const form = document.getElementById("xem-ngay-form") as HTMLFormElement;
-  const ngayInput = document.getElementById("ngay-xem") as HTMLInputElement;
+  const ngaySelect = document.getElementById("ngay-xem-ngay") as HTMLSelectElement;
+  const thangSelect = document.getElementById("ngay-xem-thang") as HTMLSelectElement;
+  const namSelect = document.getElementById("ngay-xem-nam") as HTMLSelectElement;
   const loiEl = document.getElementById("loi")!;
   const ketQuaEl = document.getElementById("ket-qua")!;
   const gio12Body = document.getElementById("kq-gio-12")!;
@@ -245,9 +300,143 @@ export const prerender = true;
     return `<span class="rounded-(--radius-pill) px-2.5 py-1 text-xs font-bold ${cls}">${name}</span>`;
   }
 
+  // --- Giờ xuất hành (Tiểu Lục Nhâm) — nhóm 12 giờ theo 6 tên, mỗi tên đúng 2 khung giờ/ngày.
+  // Thứ tự lưới 2 hàng x 3 cột + màu từng ô theo đúng bố cục mẫu: hàng 1 Lưu Niên/Tốc Hỷ/Xích
+  // Khẩu, hàng 2 Đại An/Không Vong/Tiểu Cát.
+  const LUC_NHAM_ORDER = ["Lưu Niên", "Tốc Hỷ", "Xích Khẩu", "Đại An", "Không Vong", "Tiểu Cát"];
+  const LUC_NHAM_COLOR: Record<string, string> = {
+    "Lưu Niên": "bg-slate-500 text-white",
+    "Tốc Hỷ": "bg-[#16a34a] text-white",
+    "Xích Khẩu": "bg-slate-500 text-white",
+    "Đại An": "bg-(--color-cinnabar-500) text-white",
+    "Không Vong": "bg-slate-500 text-white",
+    "Tiểu Cát": "bg-(--color-gold-500) text-white",
+  };
+
+  function renderLucNham(gio12: GioTrongNgay[]): string {
+    const grouped = new Map<string, { catHung: "cát" | "hung"; chiList: string[] }>();
+    for (const g of gio12) {
+      const name = g.tieuLucNhamGio.name;
+      if (!grouped.has(name)) grouped.set(name, { catHung: g.tieuLucNhamGio.catHung, chiList: [] });
+      grouped.get(name)!.chiList.push(g.chiGio);
+    }
+    return LUC_NHAM_ORDER.map((name) => {
+      const info = grouped.get(name);
+      if (!info) return "";
+      const colorCls = LUC_NHAM_COLOR[name] ?? "bg-slate-500 text-white";
+      const chiLines = info.chiList
+        .map((chi) => {
+          const idx = CHI_ORDER.indexOf(chi);
+          const khung = idx === -1 ? "" : CHI_KHUNG_GIO[idx].replace("~", "-");
+          return `<p class="text-sm font-semibold text-slate-800">${chi}(${khung})</p>`;
+        })
+        .join("");
+      const nhanXet = info.catHung === "cát" ? "Giờ tốt" : "Giờ xấu";
+      const nhanXetCls = info.catHung === "cát" ? "text-(--color-cinnabar-500)" : "text-slate-500";
+      return `
+        <div class="overflow-hidden rounded-xl border border-slate-200 text-center">
+          <div class="${colorCls} py-2 text-sm font-bold uppercase tracking-wide">${name}</div>
+          <div class="space-y-0.5 p-3">
+            ${chiLines}
+            <p class="pt-1 text-xs font-semibold ${nhanXetCls}">(${nhanXet})</p>
+          </div>
+        </div>`;
+    }).join("");
+  }
+
+  // --- Lịch dạng lưới cả tháng: bấm vào 1 ô để xem chi tiết ngày đó bên dưới.
+  const calTitleEl = document.getElementById("cal-title")!;
+  const calGridEl = document.getElementById("cal-grid")!;
+  const calPrevBtn = document.getElementById("cal-prev") as HTMLButtonElement;
+  const calNextBtn = document.getElementById("cal-next") as HTMLButtonElement;
+  const THANG_LABEL = ["", "Một", "Hai", "Ba", "Tư", "Năm", "Sáu", "Bảy", "Tám", "Chín", "Mười", "Mười Một", "Mười Hai"];
+
+  let calYear: number;
+  let calMonth: number;
+  let selectedYear: number;
+  let selectedMonth: number;
+  let selectedDay: number;
+
+  async function loadCalendarGrid(year: number, month: number) {
+    calYear = year;
+    calMonth = month;
+    calTitleEl.textContent = `Tháng ${THANG_LABEL[month]} - ${year}`;
+
+    let grid: MonthGridResult;
+    try {
+      const res = await fetch(`/api/trach-nhat-thang?year=${year}&month=${month}&timeZone=Asia/Ho_Chi_Minh`);
+      grid = await res.json();
+    } catch {
+      calGridEl.innerHTML = '<p class="col-span-7 py-4 text-center text-sm text-slate-500">Không tải được lịch tháng.</p>';
+      return;
+    }
+
+    calGridEl.innerHTML = grid.days
+      .map((d: MonthGridDay) => {
+        const isSelected =
+          d.solarDate.year === selectedYear && d.solarDate.month === selectedMonth && d.solarDate.day === selectedDay;
+        const dimCls = d.isCurrentMonth ? "text-slate-900" : "text-slate-300";
+        const selectedCls = isSelected
+          ? "bg-(--color-cinnabar-500) text-white"
+          : "hover:bg-amber-50";
+        return `
+          <button
+            type="button"
+            class="cal-cell flex flex-col items-center rounded-lg py-1.5 ${dimCls} ${selectedCls}"
+            data-y="${d.solarDate.year}" data-m="${d.solarDate.month}" data-d="${d.solarDate.day}"
+          >
+            <span class="text-sm font-bold">${d.solarDate.day}</span>
+            <span class="text-[10px] ${isSelected ? "text-white/80" : "text-slate-400"}">${d.lunarDay}</span>
+          </button>`;
+      })
+      .join("");
+
+    calGridEl.querySelectorAll<HTMLButtonElement>(".cal-cell").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const y = Number(btn.dataset.y);
+        const m = Number(btn.dataset.m);
+        const d = Number(btn.dataset.d);
+        ngaySelect.value = String(d);
+        thangSelect.value = String(m);
+        namSelect.value = String(y);
+        xemNgay(y, m, d);
+        if (m !== calMonth || y !== calYear) loadCalendarGrid(y, m);
+        else highlightSelectedCell();
+      });
+    });
+  }
+
+  function highlightSelectedCell() {
+    calGridEl.querySelectorAll<HTMLButtonElement>(".cal-cell").forEach((btn) => {
+      const isSelected =
+        Number(btn.dataset.y) === selectedYear && Number(btn.dataset.m) === selectedMonth && Number(btn.dataset.d) === selectedDay;
+      btn.classList.toggle("bg-(--color-cinnabar-500)", isSelected);
+      btn.classList.toggle("text-white", isSelected);
+      btn.classList.toggle("hover:bg-amber-50", !isSelected);
+      const lunarSpan = btn.querySelector("span:last-child")!;
+      lunarSpan.classList.toggle("text-white/80", isSelected);
+      lunarSpan.classList.toggle("text-slate-400", !isSelected);
+    });
+  }
+
+  calPrevBtn.addEventListener("click", () => {
+    const m = calMonth === 1 ? 12 : calMonth - 1;
+    const y = calMonth === 1 ? calYear - 1 : calYear;
+    loadCalendarGrid(y, m);
+  });
+  calNextBtn.addEventListener("click", () => {
+    const m = calMonth === 12 ? 1 : calMonth + 1;
+    const y = calMonth === 12 ? calYear + 1 : calYear;
+    loadCalendarGrid(y, m);
+  });
+
   async function xemNgay(year: number, month: number, day: number) {
     loiEl.classList.add("hidden");
     ketQuaEl.classList.add("hidden");
+    selectedYear = year;
+    selectedMonth = month;
+    selectedDay = day;
+    highlightSelectedCell();
 
     let result: EngineResultLike;
     try {
@@ -321,6 +510,8 @@ export const prerender = true;
       tamTaiWrap.classList.add("hidden");
     }
 
+    document.getElementById("kq-luc-nham")!.innerHTML = renderLucNham(data.gio12);
+
     gio12Body.innerHTML = data.gio12
       .map((g: GioTrongNgay) => {
         const chiIndex = CHI_ORDER.indexOf(g.chiGio);
@@ -339,15 +530,38 @@ export const prerender = true;
     ketQuaEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
   }
 
+  // 3 ô chọn Ngày/Tháng/Năm riêng biệt thay vì <input type="date"> — tránh input type="date"
+  // hiển thị định dạng MM/DD (kiểu Mỹ) theo ngôn ngữ trình duyệt/hệ điều hành của người dùng,
+  // gây nhầm ngày/tháng khi họ tưởng đang nhập theo DD/MM quen thuộc.
+  function populateSelect(el: HTMLSelectElement, options: [number, string][]) {
+    el.innerHTML = options.map(([v, l]) => `<option value="${v}">${l}</option>`).join("");
+  }
+  const DAY_OPTIONS: [number, string][] = Array.from({ length: 31 }, (_, i) => [i + 1, String(i + 1).padStart(2, "0")]);
+  const MONTH_OPTIONS: [number, string][] = Array.from({ length: 12 }, (_, i) => [i + 1, `Tháng ${i + 1}`]);
+  const nowYear = new Date().getFullYear();
+  const YEAR_OPTIONS: [number, string][] = Array.from({ length: 11 }, (_, i) => nowYear - 5 + i).map((y) => [y, String(y)]);
+  populateSelect(ngaySelect, DAY_OPTIONS);
+  populateSelect(thangSelect, MONTH_OPTIONS);
+  populateSelect(namSelect, YEAR_OPTIONS);
+
   form.addEventListener("submit", (e) => {
     e.preventDefault();
-    const [year, month, day] = ngayInput.value.split("-").map(Number);
+    const day = parseInt(ngaySelect.value, 10);
+    const month = parseInt(thangSelect.value, 10);
+    const year = parseInt(namSelect.value, 10);
     if (!year || !month || !day) return;
     xemNgay(year, month, day);
+    if (month !== calMonth || year !== calYear) loadCalendarGrid(year, month);
   });
 
   // Mặc định hiển thị sẵn kết quả của hôm nay khi vào trang, người dùng vẫn đổi được ngày.
   const homNay = new Date();
-  ngayInput.value = homNay.toISOString().slice(0, 10);
-  xemNgay(homNay.getFullYear(), homNay.getMonth() + 1, homNay.getDate());
+  ngaySelect.value = String(homNay.getDate());
+  thangSelect.value = String(homNay.getMonth() + 1);
+  namSelect.value = String(homNay.getFullYear());
+  selectedYear = homNay.getFullYear();
+  selectedMonth = homNay.getMonth() + 1;
+  selectedDay = homNay.getDate();
+  loadCalendarGrid(selectedYear, selectedMonth);
+  xemNgay(selectedYear, selectedMonth, selectedDay);
 </script>
