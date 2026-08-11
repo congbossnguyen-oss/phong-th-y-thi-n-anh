@@ -1,0 +1,354 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/ui/PageHero.astro";
+import Container from "../components/ui/Container.astro";
+import Button from "../components/ui/Button.astro";
+
+export const prerender = true;
+
+const inputClass =
+  "mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20";
+const selectClass =
+  "w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20";
+const labelClass = "text-sm font-medium text-(--color-ink-800)";
+---
+
+<BaseLayout
+  title="Lập lá số Tử Vi — Tử Vi Đẩu Số"
+  description="Lập lá số Tử Vi Đẩu Số theo ngày giờ sinh: 12 cung, 14 chính tinh, Miếu/Vượng/Đắc/Hãm, Tứ Hóa, các phụ tinh chính và Đại Vận."
+>
+  <PageHero
+    eyebrow="Công cụ"
+    title="Lập lá số Tử Vi"
+    description="Nhập đầy đủ ngày giờ sinh (Dương lịch hoặc Âm lịch) và giới tính để lập lá số Tử Vi Đẩu Số — hiển thị 12 cung, 14 chính tinh, Miếu/Vượng/Đắc/Hãm, Tứ Hóa, các phụ tinh chính và Đại Vận."
+    breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Lập lá số Tử Vi" }]}
+  />
+
+  <Container class="py-16">
+    <div class="mx-auto max-w-3xl">
+      <form id="form-tuvi" class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6 sm:p-8">
+        <h2 class="font-display text-2xl font-bold text-(--color-ink-950)">Thông tin lập lá số</h2>
+        <div class="mt-5 border-t border-(--color-ivory-300) pt-5">
+          <label for="tv-name" class={labelClass}>Họ tên (không bắt buộc)</label>
+          <input id="tv-name" type="text" placeholder="Nguyễn Văn A" class={inputClass} />
+        </div>
+
+        <div class="mt-4">
+          <p class={labelClass}>Giới tính</p>
+          <div class="mt-1.5 flex gap-3">
+            <label class="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3.5 py-2.5 text-sm has-checked:border-(--color-gold-400) has-checked:bg-(--color-ivory-100)">
+              <input type="radio" name="tv-gender" value="Nam" checked class="size-4" /> Nam
+            </label>
+            <label class="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3.5 py-2.5 text-sm has-checked:border-(--color-gold-400) has-checked:bg-(--color-ivory-100)">
+              <input type="radio" name="tv-gender" value="Nữ" class="size-4" /> Nữ
+            </label>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <p class={labelClass}>Ngày sinh:</p>
+          <div class="mt-1.5 grid grid-cols-3 gap-3">
+            <select id="tv-day" class={selectClass}></select>
+            <select id="tv-month" class={selectClass}></select>
+            <select id="tv-year" class={selectClass}></select>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <p class={labelClass}>Giờ sinh:</p>
+          <select id="tv-hour" class={selectClass}></select>
+        </div>
+
+        <label class="mt-4 flex items-center gap-2 text-sm text-(--color-ink-700)">
+          <input id="tv-lunar" type="checkbox" class="size-4 rounded border-(--color-ivory-300)" /> Ngày sinh trên là Âm lịch
+        </label>
+
+        <div class="mt-4">
+          <label for="tv-viewing-year" class={labelClass}>Năm xem (để tính tuổi và mốc Đại Vận)</label>
+          <input id="tv-viewing-year" type="number" class={inputClass} />
+        </div>
+
+        <p class="mt-4 text-xs text-(--color-ink-500)">
+          Engine tính theo profile Nam Phái phổ biến. Vị trí 12 cung, 14 chính tinh và Tứ Hóa đã được đối chiếu khớp
+          với lá số mẫu tham chiếu; một số phụ tinh và trạng thái Miếu/Vượng ở các cung khác vị trí đã đối chiếu là suy
+          ra theo tài liệu phổ biến, mang tính tham khảo.
+        </p>
+        <Button type="submit" size="lg" class="mt-5 w-full sm:w-auto">Lập lá số</Button>
+      </form>
+
+      <div id="result-tuvi" class="mt-8 hidden">
+        <div class="pointer-events-none h-0 overflow-hidden"><div id="tv-card"></div></div>
+        <p id="tv-loading" class="py-6 text-center text-sm text-(--color-ink-500)">Đang tạo ảnh lá số…</p>
+        <div class="overflow-x-auto">
+          <img id="tv-preview-img" alt="Lá số Tử Vi" class="mx-auto hidden rounded-2xl border-2 border-(--color-gold-400)/60" />
+        </div>
+        <div id="tv-save-row" class="mt-4 hidden flex-wrap items-center justify-center gap-3">
+          <Button id="tv-save-image" type="button" variant="secondary">Lưu ảnh</Button>
+          <p class="text-xs text-(--color-ink-500)">Chuột phải (máy tính) / nhấn giữ (điện thoại) vào ảnh để lưu trực tiếp.</p>
+        </div>
+      </div>
+
+      <div class="mt-10 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6">
+        <h2 class="font-display text-lg font-semibold text-(--color-ink-950)">Lưu ý về công cụ này</h2>
+        <p class="mt-2 text-sm leading-relaxed text-(--color-ink-600)">
+          Lá số Tử Vi là công cụ tham khảo, tính theo các quy tắc phổ biến của Tử Vi Đẩu Số (Nam phái). Việc luận giải
+          cát hung cụ thể (cách cục, sao xung hợp, vận hạn từng giai đoạn...) đòi hỏi kiến thức chuyên sâu, nên tham
+          vấn chuyên gia để có kết luận chính xác nhất.
+        </p>
+        <a href="/lien-he" class="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-(--color-gold-300) hover:underline">
+          Liên hệ luận giải lá số chuyên sâu →
+        </a>
+      </div>
+    </div>
+  </Container>
+</BaseLayout>
+
+<script>
+  import { tinhTuVi, type TuViChart, type CungKetQua } from "../lib/tu-vi/engine";
+  import { lunarToSolar } from "../lib/lunar-calendar";
+
+  function populateSelect(el: HTMLSelectElement, options: [string | number, string][]) {
+    el.innerHTML = options.map(([v, l]) => `<option value="${v}">${l}</option>`).join("");
+  }
+  const DAY_OPTIONS: [number, string][] = Array.from({ length: 31 }, (_, i) => [i + 1, String(i + 1).padStart(2, "0")]);
+  const MONTH_OPTIONS: [number, string][] = Array.from({ length: 12 }, (_, i) => [i + 1, `Tháng ${i + 1}`]);
+  const nowYear = new Date().getFullYear();
+  const YEAR_OPTIONS: [number, string][] = Array.from({ length: 100 }, (_, i) => nowYear - i).map((y) => [y, String(y)]);
+  // Giờ sinh chọn theo 12 Chi (giờ đại diện đầu mỗi canh giờ) — khớp công thức gioChiIndex trong engine.
+  const HOUR_OPTIONS: [number, string][] = [
+    [23, "Tý (23h-01h)"], [1, "Sửu (01h-03h)"], [3, "Dần (03h-05h)"], [5, "Mão (05h-07h)"],
+    [7, "Thìn (07h-09h)"], [9, "Tỵ (09h-11h)"], [11, "Ngọ (11h-13h)"], [13, "Mùi (13h-15h)"],
+    [15, "Thân (15h-17h)"], [17, "Dậu (17h-19h)"], [19, "Tuất (19h-21h)"], [21, "Hợi (21h-23h)"],
+  ];
+
+  const daySel = document.getElementById("tv-day") as HTMLSelectElement;
+  const monthSel = document.getElementById("tv-month") as HTMLSelectElement;
+  const yearSel = document.getElementById("tv-year") as HTMLSelectElement;
+  const hourSel = document.getElementById("tv-hour") as HTMLSelectElement;
+  const viewingYearInput = document.getElementById("tv-viewing-year") as HTMLInputElement;
+  populateSelect(daySel, DAY_OPTIONS);
+  populateSelect(monthSel, MONTH_OPTIONS);
+  populateSelect(yearSel, YEAR_OPTIONS);
+  populateSelect(hourSel, HOUR_OPTIONS);
+  const now = new Date();
+  daySel.value = String(now.getDate());
+  monthSel.value = String(now.getMonth() + 1);
+  yearSel.value = String(now.getFullYear() - 30);
+  hourSel.value = "11";
+  viewingYearInput.value = String(now.getFullYear());
+
+  const LIGHT = {
+    bg: "#f6efe0",
+    border: "#c9a256",
+    borderLight: "#e6d9ae",
+    cellBorder: "#d9c48f",
+    text: "#2b2116",
+    textMuted: "#6b5a3d",
+    red: "#b3311f",
+    gold: "#c9a256",
+    headerBg: "#efe1b8",
+    menhBg: "#f6e2c4",
+  };
+  // CARD_WIDTH/CARD_HEIGHT là kích thước CSS thật; xuất ảnh dùng pixelRatio 2 để ra đúng 1440x2000px.
+  const CARD_WIDTH = 720;
+  const CARD_HEIGHT = 1000;
+  const TT_ABBR: Record<string, string> = { "Miếu": "(M)", "Vượng": "(V)", "Đắc": "(Đ)", "Bình": "(B)", "Hãm": "(H)", "Chưa xác định": "(?)" };
+  const TU_HOA_ABBR: Record<string, string> = { "Lộc": "L", "Quyền": "Q", "Khoa": "K", "Kỵ": "H" };
+  // Chủ Mệnh/Chủ Thân: engine trả "NEED_GOLDEN_MASTER_REVIEW" cho 8/12 Chi năm sinh chưa có Golden
+  // Master xác nhận (Phase 8) — hiển thị thân thiện hơn thay vì lộ nguyên chuỗi kỹ thuật.
+  function displayChuMenhThan(value: string): string {
+    return value === "NEED_GOLDEN_MASTER_REVIEW" ? "Chưa xác định (cần thêm dữ liệu)" : value;
+  }
+
+  // Bố cục lưới 4x4 chuẩn Tử Vi: hàng trên Tỵ-Ngọ-Mùi-Thân, cột phải Dậu-Tuất, hàng dưới (trái->phải)
+  // Dần-Sửu-Tý-Hợi, cột trái Mão-Thìn (từ dưới lên) — trung tâm 2x2 gộp làm bảng Thiên Bàn.
+  const GRID_CELLS: { chiIndex: number; row: number; col: number }[] = [
+    { chiIndex: 5, row: 1, col: 1 }, { chiIndex: 6, row: 1, col: 2 }, { chiIndex: 7, row: 1, col: 3 }, { chiIndex: 8, row: 1, col: 4 },
+    { chiIndex: 4, row: 2, col: 1 }, { chiIndex: 9, row: 2, col: 4 },
+    { chiIndex: 3, row: 3, col: 1 }, { chiIndex: 10, row: 3, col: 4 },
+    { chiIndex: 2, row: 4, col: 1 }, { chiIndex: 1, row: 4, col: 2 }, { chiIndex: 0, row: 4, col: 3 }, { chiIndex: 11, row: 4, col: 4 },
+  ];
+
+  function cellHtml(p: CungKetQua): string {
+    const chinhTinhHtml = p.chinhTinh
+      .map((s) => {
+        const tuHoaTag = s.tuHoa ? `<sup style="color:${LIGHT.red};font-weight:800;">${TU_HOA_ABBR[s.tuHoa]}</sup>` : "";
+        return `<p style="margin:0;font-size:11px;font-weight:800;color:${LIGHT.red};white-space:nowrap;">${s.name}${tuHoaTag} <span style="font-weight:600;font-size:9px;">${TT_ABBR[s.trangThai]}</span></p>`;
+      })
+      .join("");
+    const phuTinhHtml = p.phuTinh
+      .map((s) => {
+        const tuHoaTag = s.tuHoa ? `<sup style="color:${LIGHT.red};font-weight:800;">${TU_HOA_ABBR[s.tuHoa]}</sup>` : "";
+        return `<span style="display:inline-block;margin:1px 3px 0 0;font-size:8px;color:${LIGHT.textMuted};white-space:nowrap;">${s.name}${tuHoaTag}</span>`;
+      })
+      .join("");
+    const badges = [
+      p.tuan ? `<span style="color:${LIGHT.text};font-size:8px;font-weight:700;border:1px solid ${LIGHT.text};border-radius:3px;padding:0 2px;">TUẦN</span>` : "",
+      p.triet ? `<span style="color:${LIGHT.red};font-size:8px;font-weight:700;border:1px solid ${LIGHT.red};border-radius:3px;padding:0 2px;">TRIỆT</span>` : "",
+    ].filter(Boolean).join(" ");
+
+    const menhThanLabel = `${p.isMenh ? "MỆNH" : ""}${p.isMenh && p.isThan ? " · " : ""}${p.isThan ? "THÂN" : ""}`;
+
+    // Toàn bộ nhãn nằm trong luồng bố cục bình thường (không dùng position:absolute) để không bao giờ
+    // đè lên nội dung khác — mỗi dòng chiếm không gian riêng, tự đẩy các dòng bên dưới xuống.
+    return `
+      <div style="border:1px solid ${LIGHT.cellBorder};background:${p.isMenh || p.isThan ? LIGHT.menhBg : LIGHT.bg};padding:5px;box-sizing:border-box;height:100%;display:flex;flex-direction:column;overflow:hidden;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:4px;">
+          <span style="font-size:9px;font-weight:700;color:${LIGHT.textMuted};white-space:nowrap;">${p.cungName}</span>
+          <span style="font-size:8px;color:${LIGHT.textMuted};white-space:nowrap;">${p.daiVanTuoi[0]}-${p.daiVanTuoi[1]}</span>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:4px;">
+          <span style="font-size:8px;color:${LIGHT.textMuted};white-space:nowrap;">${p.canName} ${p.chiName}</span>
+          ${menhThanLabel ? `<span style="font-size:8px;font-weight:800;color:${LIGHT.text};white-space:nowrap;">${menhThanLabel}</span>` : ""}
+        </div>
+        <div style="flex:1;margin-top:3px;">${chinhTinhHtml}</div>
+        <div style="margin-top:2px;line-height:1.45;">${phuTinhHtml}</div>
+        <div style="margin-top:2px;display:flex;justify-content:space-between;align-items:flex-end;gap:4px;">
+          <span style="font-size:8px;color:${LIGHT.textMuted};white-space:nowrap;">${p.trangSinh}${p.thaiTue ? " · " + p.thaiTue : ""}</span>
+          <span style="white-space:nowrap;">${badges}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  function centerPanelHtml(chart: TuViChart, name: string, timeLabel: string): string {
+    return `
+      <div style="grid-row:2 / span 2;grid-column:2 / span 2;border:1px solid ${LIGHT.cellBorder};background:${LIGHT.headerBg};padding:10px 12px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;overflow:hidden;">
+        <div style="font-size:10px;line-height:1.85;color:${LIGHT.text};">
+          ${name ? `<p style="margin:0;font-weight:800;font-size:12px;">${name}</p>` : ""}
+          <p style="margin:0;">${chart.input.gender} — ${chart.amDuongNam}</p>
+          <p style="margin:0;">Dương lịch: <strong>${timeLabel}</strong></p>
+          <p style="margin:0;">Âm lịch: <strong>${chart.lunarDay}/${chart.lunarMonth}${chart.lunarIsLeap ? " (nhuận)" : ""}/${chart.lunarYear}</strong> — giờ ${chart.gioChiName}</p>
+          <p style="margin:0;">Năm sinh: <strong>${chart.yearCanName} ${chart.yearChiName}</strong>${chart.tuoiNamXem !== null ? ` — ${chart.tuoiNamXem} tuổi (năm ${chart.input.viewingYear})` : ""}</p>
+          <p style="margin:0;">Bản mệnh: <strong>${chart.banMenhNapAm}</strong> (${chart.banMenhElement})</p>
+          <p style="margin:0;">Cục: <strong>${chart.cucName}</strong> — Mệnh Quái: <strong>${chart.menhQuai}</strong></p>
+          <p style="margin:0;">Chủ Mệnh: <strong>${displayChuMenhThan(chart.chuMenh)}</strong> — Chủ Thân: <strong>${displayChuMenhThan(chart.chuThan)}</strong></p>
+          <p style="margin:0;">Tứ Hóa: <strong style="color:${LIGHT.red};">${chart.tuHoa.loc}</strong> L · <strong style="color:${LIGHT.red};">${chart.tuHoa.quyen}</strong> Q · <strong style="color:${LIGHT.red};">${chart.tuHoa.khoa}</strong> K · <strong style="color:${LIGHT.red};">${chart.tuHoa.ky}</strong> H</p>
+        </div>
+      </div>
+    `;
+  }
+
+  function buildExportCardHtml(chart: TuViChart, name: string, timeLabel: string): string {
+    const cells = GRID_CELLS.map(({ chiIndex, row, col }) => {
+      const p = chart.cungs[chiIndex];
+      return `<div style="grid-row:${row};grid-column:${col};">${cellHtml(p)}</div>`;
+    }).join("");
+    return `
+      <div style="width:${CARD_WIDTH}px;height:${CARD_HEIGHT}px;font-family:Tahoma,'Segoe UI',Arial,sans-serif;background:${LIGHT.bg};color:${LIGHT.text};border:3px solid ${LIGHT.border};border-radius:16px;padding:14px;box-sizing:border-box;display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:center;gap:8px;border-bottom:2px solid ${LIGHT.border};padding-bottom:8px;flex-shrink:0;">
+          <img src="/images/brand/zhi-gong-logo.png" style="width:32px;height:32px;border-radius:9999px;border:2px solid ${LIGHT.border};object-fit:cover;flex-shrink:0;" />
+          <div>
+            <p style="margin:0;font-size:14px;font-weight:800;letter-spacing:.02em;color:${LIGHT.red};">PHONGTHUYTHIENANH.COM</p>
+            <p style="margin:0;font-size:9px;font-weight:700;letter-spacing:.04em;color:${LIGHT.textMuted};">LÁ SỐ TỬ VI ĐẨU SỐ</p>
+          </div>
+        </div>
+        <div style="flex:1;min-height:0;margin-top:8px;display:grid;grid-template-columns:repeat(4, 1fr);grid-template-rows:repeat(4, 1fr);gap:4px;">
+          ${cells}
+          ${centerPanelHtml(chart, name, timeLabel)}
+        </div>
+        <p style="margin:6px 0 0;font-size:8px;color:${LIGHT.textMuted};text-align:center;flex-shrink:0;">Lập lá số Tử Vi tại Phong Thủy Thiên Anh — phongthuythienanh.com</p>
+      </div>
+    `;
+  }
+
+  async function waitForImagesToLoad(cardEl: HTMLElement): Promise<void> {
+    const imgs = Array.from(cardEl.querySelectorAll("img"));
+    await Promise.all(
+      imgs.map((img) => {
+        if (img.complete && img.naturalWidth > 0) {
+          return img.decode().catch(() => undefined);
+        }
+        return new Promise<void>((resolve) => {
+          img.addEventListener("load", () => img.decode().then(() => resolve()).catch(() => resolve()), { once: true });
+          img.addEventListener("error", () => resolve(), { once: true });
+        });
+      }),
+    );
+  }
+
+  // Bảo vệ khỏi treo vô thời hạn nếu html-to-image không bao giờ resolve (đã quan sát được trong thực
+  // tế: toPng() có thể không resolve/reject — không có lỗi nào được ném ra — khiến người dùng nhìn thấy
+  // "Đang tạo ảnh…" mãi mãi mà không có phản hồi). Đây là fix UI thuần túy (thêm timeout + fallback
+  // hiển thị), KHÔNG đụng đến engine/rule tính toán lá số.
+  function withTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
+    return new Promise((resolve, reject) => {
+      const timer = setTimeout(() => reject(new Error(message)), ms);
+      promise.then(
+        (value) => { clearTimeout(timer); resolve(value); },
+        (err) => { clearTimeout(timer); reject(err); },
+      );
+    });
+  }
+
+  async function captureCardAsPng(cardEl: HTMLElement): Promise<string> {
+    const { toPng } = await import("html-to-image");
+    await waitForImagesToLoad(cardEl);
+    return await toPng(cardEl, { backgroundColor: LIGHT.bg, pixelRatio: 2, skipFonts: true, width: CARD_WIDTH, height: CARD_HEIGHT });
+  }
+
+  document.getElementById("form-tuvi")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = (document.getElementById("tv-name") as HTMLInputElement).value.trim();
+    const gender = (document.querySelector('input[name="tv-gender"]:checked') as HTMLInputElement).value as "Nam" | "Nữ";
+    const isLunar = (document.getElementById("tv-lunar") as HTMLInputElement).checked;
+    const hour = parseInt(hourSel.value, 10);
+    const viewingYear = parseInt(viewingYearInput.value, 10) || undefined;
+    let day = parseInt(daySel.value, 10);
+    let month = parseInt(monthSel.value, 10);
+    let year = parseInt(yearSel.value, 10);
+
+    const submitBtn = (e.target as HTMLFormElement).querySelector('button[type="submit"]') as HTMLButtonElement | null;
+    const loadingEl = document.getElementById("tv-loading")!;
+    const imgEl = document.getElementById("tv-preview-img") as HTMLImageElement;
+    const saveRowEl = document.getElementById("tv-save-row")!;
+
+    try {
+      if (isLunar) {
+        const solar = lunarToSolar(day, month, year);
+        day = solar.d;
+        month = solar.m;
+        year = solar.y;
+      }
+      const chart = tinhTuVi({ day, month, year, hour, gender, viewingYear });
+      const pad = (n: number) => String(n).padStart(2, "0");
+      const timeLabel = `${pad(day)}/${pad(month)}/${year}`;
+
+      const resultEl = document.getElementById("result-tuvi")!;
+      const cardEl = document.getElementById("tv-card")!;
+      cardEl.innerHTML = buildExportCardHtml(chart, name, timeLabel);
+      resultEl.classList.remove("hidden");
+      loadingEl.classList.remove("hidden");
+      loadingEl.textContent = "Đang tạo ảnh lá số…";
+      imgEl.classList.add("hidden");
+      saveRowEl.classList.add("hidden");
+      saveRowEl.classList.remove("flex");
+      if (submitBtn) submitBtn.disabled = true;
+      resultEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+
+      try {
+        const dataUrl = await withTimeout(captureCardAsPng(cardEl), 15000, "Quá thời gian tạo ảnh (15s)");
+        imgEl.src = dataUrl;
+        imgEl.classList.remove("hidden");
+        loadingEl.classList.add("hidden");
+        saveRowEl.classList.remove("hidden");
+        saveRowEl.classList.add("flex");
+        const saveBtn = document.getElementById("tv-save-image") as HTMLButtonElement;
+        saveBtn.onclick = () => {
+          const link = document.createElement("a");
+          link.download = `tu-vi-${year}-${pad(month)}-${pad(day)}.png`;
+          link.href = dataUrl;
+          link.click();
+        };
+      } catch (err) {
+        console.error("Không tạo được ảnh lá số:", err);
+        loadingEl.textContent = "Đã lập lá số xong nhưng không tạo được ảnh xuất. Bạn có thể thử lập lại lá số để tạo ảnh lần nữa.";
+      }
+    } catch (err) {
+      console.error(err);
+      alert("Không lập được lá số, vui lòng kiểm tra lại thông tin đã nhập.");
+    } finally {
+      if (submitBtn) submitBtn.disabled = false;
+    }
+  });
+</script>

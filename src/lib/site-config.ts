@@ -54,6 +54,7 @@ export const mainNav: NavItem[] = [
       { label: "Đại Cát Lợi", href: "/dai-cat-loi" },
       { label: "Lập lá số Bát Tự", href: "/lap-la-so-bat-tu" },
       { label: "Lập quẻ Kinh Dịch", href: "/gieo-que-kinh-dich" },
+      { label: "Lập lá số Tử Vi", href: "/lap-la-so-tu-vi" },
       { label: "Xem ngày tốt xấu", href: "/xem-ngay-tot-xau" },
     ],
   },
