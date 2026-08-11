@@ -11,6 +11,7 @@ import { tinhNgayInfo } from "./processing/ngayInfo.js";
 import { calculateMonthGrid } from "./processing/monthGrid.js";
 import { calculateGiaoTeTiecTungRange } from "./processing/giaoTeTiecTung.js";
 import { calculateDongPhongRange } from "./processing/dongPhong.js";
+import { calculateTuoiHopLamAn } from "./processing/tuoiHopLamAn.js";
 import { tinhTuTru } from "./processing/tuTru.js";
 import type { TrachNhatInput, TrachNhatOutput } from "./types.js";
 import { validateTrachNhatInput } from "./validation.js";
@@ -25,6 +26,8 @@ export type {
 export { calculateGiaoTeTiecTungRange };
 export type { DongPhongRangeInput, DongPhongRangeResult, DongPhongNgay } from "./processing/dongPhong.js";
 export { calculateDongPhongRange };
+export type { TuoiHopLamAnInput, TuoiHopLamAnResult } from "./processing/tuoiHopLamAn.js";
+export { calculateTuoiHopLamAn };
 
 export * from "./types.js";
 

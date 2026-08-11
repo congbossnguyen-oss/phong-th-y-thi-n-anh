@@ -18,3 +18,6 @@ export * from "./thienDucHop.js";
 export * from "./thienXa.js";
 export * from "./thaiTue.js";
 export * from "./tamHop.js";
+export * from "./lucHop.js";
+export * from "./canHop.js";
+export * from "./nguHanhQuanHe.js";
