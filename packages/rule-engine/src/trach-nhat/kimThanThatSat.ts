@@ -6,6 +6,11 @@
  * Nguồn: "Ngọc Hạp Thông Thư – Hứa Chân Quân" (bản OCR), mục "CHIÊM KIM THẦN THẤT SÁT KỴ
  * PHÁP": "Giáp Kỷ niên ngày Ngọ Mùi. Ất Canh niên ngày Thìn Tỵ. Bính Tân niên ngày Tý Sửu +
  * Dần Mão. Đinh Nhâm niên ngày Tuất Hợi. Mậu Quý niên ngày Thân Dậu." Kỵ: động thổ, tu tạo.
+ * Chủ dự án xác nhận lại đúng bộ dữ liệu này lần thứ 2 (2026-08-11, độc lập với lần xác nhận
+ * đầu 2026-08-10), kèm danh sách việc đại kỵ chi tiết hơn (dùng để hiển thị trên giao diện,
+ * xem `phong-thuy-thien-anh/src/pages/xem-ngay-tot-xau.astro`): xây/sửa nhà (động thổ, cất
+ * nóc, đổ mái, nhập trạch), cưới hỏi (đám cưới, ăn hỏi), kinh doanh/xuất hành (khai trương, ký
+ * hợp đồng lớn, đi xa), an táng (chôn cất, mai táng).
  *
  * ⚠️ Nhóm "Bính-Tân" sách ghi 4 Chi (Tý Sửu Dần Mão) trong khi 4 nhóm còn lại chỉ có 2 Chi
  * mỗi nhóm — giữ nguyên như sách, không tự cắt bớt cho đều.
