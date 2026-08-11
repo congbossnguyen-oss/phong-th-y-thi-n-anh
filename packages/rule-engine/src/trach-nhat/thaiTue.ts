@@ -1,18 +1,18 @@
 /**
- * Phạm Thái Tuế theo năm — 4 loại kinh điển: Trực (Tọa) Thái Tuế, Xung Thái Tuế, Hình Thái
- * Tuế, Hại Thái Tuế. Cho Chi của NĂM đang xét, trả về (các) Chi tuổi bị phạm mỗi loại.
+ * Phạm Thái Tuế theo năm — 5 loại kinh điển: Trực (Tọa) Thái Tuế, Xung Thái Tuế, Hình Thái
+ * Tuế, Hại Thái Tuế, Phá Thái Tuế. Cho Chi của NĂM đang xét, trả về (các) Chi tuổi bị phạm
+ * mỗi loại.
  *
- * Đây là kiến thức nền tảng cố định của Can Chi học (Lục Xung, Tam Hình, Lục Hại — không có
- * dị bản giữa các trường phái, không cần đối chiếu nguồn riêng — cùng cách xử lý với
- * `lucXung.ts` đã có). KHÔNG bao gồm "Phá Thái Tuế" (Lục Phá) — một số tài liệu có thêm loại
- * này nhưng không thống nhất giữa các nguồn phổ biến bằng 4 loại trên, nên bỏ qua để tránh
- * suy đoán thêm.
+ * Đây là kiến thức nền tảng cố định của Can Chi học (Lục Xung, Tam Hình, Lục Hại, Lục Phá —
+ * không có dị bản giữa các trường phái, không cần đối chiếu nguồn riêng — cùng cách xử lý với
+ * `lucXung.ts` đã có).
  *
  * - Tam Hình có 4 nhóm: 2 nhóm tam giác xoay vòng (Dần-Tỵ-Thân, Sửu-Tuất-Mùi — mỗi Chi hình
  *   với 2 Chi còn lại trong nhóm), 1 cặp đôi (Tý-Mão hình lẫn nhau), và 4 Chi "tự hình" với
  *   chính mình (Thìn, Ngọ, Dậu, Hợi) — tự hình trùng với năm chính là năm Trực Thái Tuế của
  *   4 con giáp này (không phải tuổi khác), nên đánh dấu bằng cờ `namTuHinh` riêng thay vì gộp
  *   vào danh sách `tuoiHinhThaiTue`.
+ * - Lục Phá: 6 cặp Tý-Dậu, Sửu-Thìn, Dần-Hợi, Mão-Ngọ, Tỵ-Thân, Mùi-Tuất.
  */
 import { Data } from "@thien-anh/calendar-core";
 import { getLucXungChi } from "./lucXung.js";
@@ -37,6 +37,15 @@ export const LUC_HAI: readonly (readonly [Chi, Chi])[] = [
   ["Dậu", "Tuất"],
 ];
 
+export const LUC_PHA: readonly (readonly [Chi, Chi])[] = [
+  ["Tý", "Dậu"],
+  ["Sửu", "Thìn"],
+  ["Dần", "Hợi"],
+  ["Mão", "Ngọ"],
+  ["Tỵ", "Thân"],
+  ["Mùi", "Tuất"],
+];
+
 /** (Các) Chi hình với Chi cho trước, theo Tam Hình (không tính tự hình — xem `TU_HINH`). */
 export function getHinhThaiTueChi(chi: Chi): Chi[] {
   for (const tamGiac of TAM_HINH_TAM_GIAC) {
@@ -56,6 +65,12 @@ export function getHaiThaiTueChi(chi: Chi): Chi {
   return cap[0] === chi ? cap[1] : cap[0];
 }
 
+/** Chi phá với Chi cho trước, theo Lục Phá. */
+export function getPhaThaiTueChi(chi: Chi): Chi {
+  const cap = LUC_PHA.find((p) => p.includes(chi))!;
+  return cap[0] === chi ? cap[1] : cap[0];
+}
+
 export interface PhamThaiTueResult {
   /** Chi của năm đang xét (Thái Tuế năm nay). */
   namChi: Chi;
@@ -69,6 +84,8 @@ export interface PhamThaiTueResult {
   namTuHinh: boolean;
   /** Tuổi Hại Thái Tuế — theo Lục Hại. */
   tuoiHaiThaiTue: Chi;
+  /** Tuổi Phá Thái Tuế — theo Lục Phá. */
+  tuoiPhaThaiTue: Chi;
 }
 
 export function getPhamThaiTueTheoNam(namChi: Chi): PhamThaiTueResult {
@@ -79,5 +96,6 @@ export function getPhamThaiTueTheoNam(namChi: Chi): PhamThaiTueResult {
     tuoiHinhThaiTue: getHinhThaiTueChi(namChi),
     namTuHinh: (TU_HINH as readonly Chi[]).includes(namChi),
     tuoiHaiThaiTue: getHaiThaiTueChi(namChi),
+    tuoiPhaThaiTue: getPhaThaiTueChi(namChi),
   };
 }

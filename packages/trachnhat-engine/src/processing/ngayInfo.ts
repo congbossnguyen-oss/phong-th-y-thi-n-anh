@@ -36,6 +36,7 @@ export interface NgayInfoResult {
     tuoiHinhThaiTue: string[];
     namTuHinh: boolean;
     tuoiHaiThaiTue: string;
+    tuoiPhaThaiTue: string;
   };
 }
 

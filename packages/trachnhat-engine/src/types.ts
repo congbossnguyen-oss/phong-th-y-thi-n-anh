@@ -74,6 +74,7 @@ export interface TrachNhatOutput {
     tuoiHinhThaiTue: string[];
     namTuHinh: boolean;
     tuoiHaiThaiTue: string;
+    tuoiPhaThaiTue: string;
   };
   gio12: GioTrongNgay[];
 }

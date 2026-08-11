@@ -153,7 +153,7 @@ export const prerender = true;
 
           <div class="mt-5 border-t border-slate-200 pt-5">
             <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Phạm Thái Tuế năm nay — tuổi thuộc nhóm</p>
-            <div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-5">
               <div class="rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-center">
                 <p class="text-[11px] uppercase tracking-wide text-slate-500">Trực (Tọa)</p>
                 <p id="kq-thai-tue-truc" class="mt-0.5 font-display text-lg font-bold text-slate-900"></p>
@@ -170,8 +170,12 @@ export const prerender = true;
                 <p class="text-[11px] uppercase tracking-wide text-slate-500">Hại</p>
                 <p id="kq-thai-tue-hai" class="mt-0.5 font-display text-lg font-bold text-slate-900"></p>
               </div>
+              <div class="rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-center">
+                <p class="text-[11px] uppercase tracking-wide text-slate-500">Phá</p>
+                <p id="kq-thai-tue-pha" class="mt-0.5 font-display text-lg font-bold text-slate-900"></p>
+              </div>
             </div>
-            <p class="mt-2 text-xs text-slate-500">4 loại phạm Thái Tuế kinh điển theo tuổi (Chi năm sinh) — không tính "Phá Thái Tuế".</p>
+            <p class="mt-2 text-xs text-slate-500">5 loại phạm Thái Tuế kinh điển theo tuổi (Chi năm sinh).</p>
           </div>
 
           <div id="kq-bach-ky-wrap" class="mt-5 hidden border-t border-slate-200 pt-5">
@@ -282,6 +286,7 @@ export const prerender = true;
       tuoiHinhThaiTue: string[];
       namTuHinh: boolean;
       tuoiHaiThaiTue: string;
+      tuoiPhaThaiTue: string;
     };
     gio12: GioTrongNgay[];
   }
@@ -617,6 +622,7 @@ export const prerender = true;
           ? `${data.phamThaiTue.namChi} (tự hình)`
           : "—";
     document.getElementById("kq-thai-tue-hai")!.textContent = data.phamThaiTue.tuoiHaiThaiTue;
+    document.getElementById("kq-thai-tue-pha")!.textContent = data.phamThaiTue.tuoiPhaThaiTue;
 
     document.getElementById("kq-goi-dau-wrap")!.classList.toggle("hidden", !data.ngayGoiDauTot);
     document.getElementById("kq-cat-toc-wrap")!.classList.toggle("hidden", !data.catTocDep);
