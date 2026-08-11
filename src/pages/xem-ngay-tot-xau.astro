@@ -471,6 +471,10 @@ export const prerender = true;
         const catTocMark = d.catTocDep
           ? `<span class="absolute top-0.5 right-1 text-[9px] leading-none" title="Ngày đẹp cắt tóc">✂️</span>`
           : "";
+        const laMungMotHoacRam = d.lunarDay === 1 || d.lunarDay === 15;
+        const soNgayCls = laMungMotHoacRam
+          ? "flex size-6 items-center justify-center rounded-full bg-amber-300/60 text-sm font-bold"
+          : "text-sm font-bold";
         return `
           <button
             type="button"
@@ -478,7 +482,7 @@ export const prerender = true;
             data-y="${d.solarDate.year}" data-m="${d.solarDate.month}" data-d="${d.solarDate.day}"
           >
             ${catTocMark}
-            <span class="text-sm font-bold">${d.solarDate.day}</span>
+            <span class="${soNgayCls}" title="${laMungMotHoacRam ? (d.lunarDay === 1 ? "Mùng 1" : "Rằm") : ""}">${d.solarDate.day}</span>
             <span class="text-[10px] ${isSelected ? "text-white/80" : "text-slate-400"}">${d.lunarDay}</span>
           </button>`;
       })

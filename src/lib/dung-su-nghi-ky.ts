@@ -15,6 +15,12 @@
  * tách bạch, dễ quy về đúng 1 việc — bỏ qua các mục bị OCR trộn lẫn 2-3 việc vào nhau hoặc
  * không còn nhãn rõ ràng.
  *
+ * 2026-08-11: đã làm 1 lượt dọn chính tả/viết hoa hiển nhiên (vd. "Thien"→"Thiên",
+ * "Blnh"→"Bình", "hợP"→"hợp", thiếu dấu như "Dan"→"Dần") cho dễ đọc hơn — CHỈ sửa lỗi ký tự rõ
+ * ràng khi từ đúng khớp với thuật ngữ/tên Chi đã biết trong hệ thống, KHÔNG sắp xếp lại thứ tự
+ * từ, KHÔNG suy đoán thêm nội dung. Những chỗ không chắc nghĩa gì (vd. "Tlánh tam", "Phả bộ")
+ * vẫn giữ nguyên như OCR, không đoán sửa.
+ *
  * `dongOcr` = số dòng trong file OCR gốc, dùng để tra lại khi cần đối chiếu.
  *
  * TODO: đối chiếu lại toàn bộ với bản PDF gốc trang 764-839 khi có điều kiện, rồi xoá cảnh
@@ -35,20 +41,20 @@ export interface DungSuNghiKyEntry {
 export const DUNG_SU_NGHI_KY: readonly DungSuNghiKyEntry[] = [
   {
     ten: "Cúng tế",
-    nghiRaw: "Thiên đức, Nguyệt Thiên xá, Thiên nguyện, Nguyệt dức, hợP",
-    kyRaw: "Thiên cẩu, ngày Dàn",
+    nghiRaw: "Thiên đức, Nguyệt Thiên xá, Thiên nguyện, Nguyệt đức, hợp",
+    kyRaw: "Thiên cẩu, ngày Dần",
     dongOcr: "9180, 9182",
   },
   {
     ten: "Cầu phúc",
     nghiRaw:
-      "Thiên đức, Nguyệt dúc, Thiên đức Thien xá, Thiên nguyện, Nguyệt ngày Khai, Phả bộ, Phúc sinh, Tlánh tam, Ích hậu, hạp, Tục",
+      "Thiên đức, Nguyệt đức, Thiên đức Thiên xá, Thiên nguyện, Nguyệt ngày Khai, Phả bộ, Phúc sinh, Tlánh tam, Ích hậu, hạp, Tục",
     kyRaw: null,
     dongOcr: "9188",
   },
   {
     ten: "Nhập học",
-    nghiRaw: "ngày Thành, ngày Khai; ngày Đjnh",
+    nghiRaw: "ngày Thành, ngày Khai; ngày Định",
     kyRaw: "Nguyệt phá, ngày Bình, ngày Thu, ngày Bế, Kiếp...",
     ghiChu:
       "Đoạn dòng 9270-9280 bị OCR trộn lẫn với nội dung mục khác ở gần đó — chỉ giữ lại phần rõ nhất, có thể còn thiếu.",
@@ -56,47 +62,47 @@ export const DUNG_SU_NGHI_KY: readonly DungSuNghiKyEntry[] = [
   },
   {
     ten: "Lễ cưới, đón dâu",
-    nghiRaw: "Thiên đức, Nguyệt dúc Thiên dức hợp; Nguyệt đức Thiên hỷ, Lục hạp, hợp,",
-    kyRaw: "Nguyệt Phá, ngày Blnh, ngày thời, Thiên lại, Tứ kị, Tứ vong; Bát chuyên, ngày Hại Thu, cùng",
+    nghiRaw: "Thiên đức, Nguyệt đức Thiên đức hợp; Nguyệt đức Thiên hỷ, Lục hạp, hợp,",
+    kyRaw: "Nguyệt Phá, ngày Bình, ngày thời, Thiên lại, Tứ kị, Tứ vong; Bát chuyên, ngày Hại Thu, cùng",
     dongOcr: "9322, 9324",
   },
   {
     ten: "Cầu thầy, chữa bệnh",
-    nghiRaw: "Thiên đức, Nguyệt dúc, Thien đức Nguyệt dức ngày Trừ, ngày hợP, hậu,",
-    kyRaw: "Nguyệt Kiến, ngày Blnh, ngày Thu, Tử thàn, ngày Man, ngày Bế, Kiếp ngày 15, ngày Sóc, Huyen; Vọng sát, tháng",
+    nghiRaw: "Thiên đức, Nguyệt đức, Thiên đức Nguyệt đức ngày Trừ, ngày hợp, hậu,",
+    kyRaw: "Nguyệt Kiến, ngày Bình, ngày Thu, Tử thần, ngày Mãn, ngày Bế, Kiếp ngày 15, ngày Sóc, Huyền; Vọng sát, tháng",
     dongOcr: "9368, 9370",
   },
   {
     ten: "May đo, cắt may quần áo",
-    nghiRaw: "Thien dúc, Nguyệt đức, Thiên dức Nguyệt dúc hợp, Thiên xá, Thiên nguyện, Nguyệt Thài ngày hạp, an, đức,",
-    kyRaw: "Nguyệt Phá, ngày Blnh, ngày Thu, Kiếp sát, Tai sát, Nguyệt",
+    nghiRaw: "Thiên đức, Nguyệt đức, Thiên đức Nguyệt đức hợp, Thiên xá, Thiên nguyện, Nguyệt Thời ngày hạp, an, đức,",
+    kyRaw: "Nguyệt Phá, ngày Bình, ngày Thu, Kiếp sát, Tai sát, Nguyệt",
     dongOcr: "9384, 9386",
   },
   {
     ten: "Xây dựng cung thất (làm nhà)",
-    nghiRaw: "Thiên đức, Nguyet đức, Thiên đúc Nguyệt đức Thien xá, Tbien ân hợP, hợP,",
-    kyRaw: "ngày Bế, Kiep sát, Tai gát, Nguyệt Nguyệt hỉnh, Nguyệt yếm, Đại thời, Thiên lại,",
+    nghiRaw: "Thiên đức, Nguyệt đức, Thiên đức Nguyệt đức Thiên xá, Thiên ân hợp, hợp,",
+    kyRaw: "ngày Bế, Kiếp sát, Tai sát, Nguyệt Nguyệt hình, Nguyệt yếm, Đại thời, Thiên lại,",
     dongOcr: "9390, 9392",
   },
   {
     ten: "Khởi tạo, động thổ, tu tạo",
-    nghiRaw: "Thien đức Nguyệt dức Thiên đức Nguyệt đức Thiên xá, Thiên nguyện, Nguyệt ngày Khai. hợP, an, bợP,",
-    kyRaw: "Nguyệt ngày Bế, Kiếp sát, Tai sát, Nguyệt sát, Nguyệt hỉnh, Nguyệt yếm, kiến,",
+    nghiRaw: "Thiên đức Nguyệt đức Thiên đức Nguyệt đức Thiên xá, Thiên nguyện, Nguyệt ngày Khai. hợp, an, hợp,",
+    kyRaw: "Nguyệt ngày Bế, Kiếp sát, Tai sát, Nguyệt sát, Nguyệt hình, Nguyệt yếm, kiến,",
     dongOcr: "9414, 9416",
   },
   {
     ten: "Khai trương",
     nghiRaw: null,
     kyRaw:
-      "Nguyệt phá, Đại hao, ngày Blnb, ngày Thu, ngày Be, Kiếp Taí sát, Nguyệt sát, Nguyệt hÌnh, Nguyệt hại, Nguyệt yếm, Đại Ngũ mộ, Cửu không.",
+      "Nguyệt phá, Đại hao, ngày Bình, ngày Thu, ngày Bế, Kiếp Tai sát, Nguyệt sát, Nguyệt hình, Nguyệt hại, Nguyệt yếm, Đại Ngũ mộ, Cửu không.",
     ghiChu: "Đoạn OCR quanh mục này không thấy nhãn 'Nghi:' riêng — không có nghĩa là không có ngày tốt cho việc này.",
     dongOcr: "9450",
   },
   {
     ten: "Lập khế ước, hợp đồng, giao dịch",
-    nghiRaw: "Thiên nguyện, ngày Dân, Tam ngày Lục hợp, hợp,",
+    nghiRaw: "Thiên nguyện, ngày Dần, Tam ngày Lục hợp, hợp,",
     kyRaw:
-      "Nguyệt phá, Đại hao; ngày Blnh, ngày Thu, Kiếp sát, Tai sát, Nguyệt sát, Nguyệt hỉnh, Nguyệt hại, Nguyệt yếm, Đại thời, Thiên lạí, Tiểu hao, Tứ ly. Ngú hao,",
+      "Nguyệt phá, Đại hao; ngày Bình, ngày Thu, Kiếp sát, Tai sát, Nguyệt sát, Nguyệt hình, Nguyệt hại, Nguyệt yếm, Đại thời, Thiên lại, Tiểu hao, Tứ ly. Ngũ hao,",
     dongOcr: "9454, 9456",
   },
   {
@@ -109,25 +115,25 @@ export const DUNG_SU_NGHI_KY: readonly DungSuNghiKyEntry[] = [
   {
     ten: "Phá, vỡ đất",
     nghiRaw: "Ô phệ, Ô phệ đối",
-    kyRaw: "Nguyệt kiến, Thổ phủ, Nguyệt phá, ngày Blnb, ngày Thu, Kiếp sát, sau Thổ vương dụng sự",
+    kyRaw: "Nguyệt kiến, Thổ phủ, Nguyệt phá, ngày Bình, ngày Thu, Kiếp sát, sau Thổ vương dụng sự",
     dongOcr: "9558, 9560",
   },
   {
     ten: "An táng",
-    nghiRaw: "Thiên dúc, Nguyệt đức, Thiên đức Nguyệt đuc hợp, Thien xá, Thiên nguyệt, Lục Ô phệ bợp, bợp,",
-    kyRaw: "Nguyệt kiến, Nguyệt phá, ngày Bỉnh, ngày Thu, Kiếp sát, Ngũ mọ, ngày Trọng, cùng, Phục",
+    nghiRaw: "Thiên đức, Nguyệt đức, Thiên đức Nguyệt đức hợp, Thiên xá, Thiên nguyệt, Lục Ô phệ hợp, hợp,",
+    kyRaw: "Nguyệt kiến, Nguyệt phá, ngày Bình, ngày Thu, Kiếp sát, Ngũ mộ, ngày Trọng, cùng, Phục",
     dongOcr: "9564, 9568",
   },
   {
     ten: "Trồng trọt",
-    nghiRaw: "ngày Dan, ngày Khai, Ngú phú. hợP, an,",
+    nghiRaw: "ngày Dần, ngày Khai, Ngũ phú. hợp, an,",
     kyRaw:
-      "Kiếp sát, Iai sát, Nguyệt Đại tbời, Thien lại, Tử khí, Tứ phế, Ngũ mọ, Cửu Thổ phù, Địa nang, ngày Át, sau Thổ vưđng dung sự",
+      "Kiếp sát, Tai sát, Nguyệt Đại thời, Thiên lại, Tử khí, Tứ phế, Ngũ mộ, Cửu Thổ phù, Địa nang, ngày Ất, sau Thổ vương dụng sự",
     dongOcr: "9542, 9544",
   },
   {
     ten: "Chăn thả gia súc, gia cầm",
-    nghiRaw: "Thien dức, Nguyet dửc, Thien đức Nguyệt đức hợP, hợP,",
+    nghiRaw: "Thiên đức, Nguyệt đức, Thiên đức Nguyệt đức hợp, hợp,",
     kyRaw: "Nguyệt phá, ngày Bình, Tử thần, Kiếp sát, Thi sát, Nguyệt",
     dongOcr: "9552, 9554",
   },
