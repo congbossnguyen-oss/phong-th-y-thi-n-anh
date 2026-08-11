@@ -17,6 +17,7 @@ import { calculateVanMayTrongNgay, calculateVanMayRange } from "./processing/van
 import { calculateNgayKhaiTruongRange } from "./processing/ngayKhaiTruong.js";
 import { calculateNgayKyHopDongRange } from "./processing/ngayKyHopDong.js";
 import { calculateNgayDaiCatCaNhan } from "./processing/ngayDaiCatCaNhan.js";
+import { calculateTrungTang } from "./processing/trungTang.js";
 import { tinhTuTru } from "./processing/tuTru.js";
 import type { TrachNhatInput, TrachNhatOutput } from "./types.js";
 import { validateTrachNhatInput } from "./validation.js";
@@ -43,6 +44,8 @@ export type { NgayKyHopDongRangeInput, NgayKyHopDongRangeResult, NgayKyHopDongNg
 export { calculateNgayKyHopDongRange };
 export type { NgayDaiCatCaNhanInput, NgayDaiCatCaNhanResult, NgayDaiCatCaNhanNgay } from "./processing/ngayDaiCatCaNhan.js";
 export { calculateNgayDaiCatCaNhan };
+export type { TrungTangInput, TrungTangOutput, TrungTangResult, TrungTangThanQuyenInput } from "./processing/trungTang.js";
+export { calculateTrungTang };
 
 export * from "./types.js";
 

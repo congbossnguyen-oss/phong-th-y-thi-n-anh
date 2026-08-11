@@ -6,3 +6,4 @@
  */
 export * as TrachNhat from "./trach-nhat/index.js";
 export * as Scoring from "./scoring/index.js";
+export * as TrungTang from "./trung-tang/index.js";

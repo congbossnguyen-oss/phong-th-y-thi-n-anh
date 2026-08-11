@@ -56,6 +56,7 @@ export const mainNav: NavItem[] = [
       { label: "Lập quẻ Kinh Dịch", href: "/gieo-que-kinh-dich" },
       { label: "Lập lá số Tử Vi", href: "/lap-la-so-tu-vi" },
       { label: "Xem ngày tốt xấu", href: "/xem-ngay-tot-xau" },
+      { label: "Tính Trùng Tang", href: "/tinh-trung-tang" },
     ],
   },
 ];
