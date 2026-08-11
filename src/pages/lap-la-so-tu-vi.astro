@@ -11,6 +11,10 @@ const inputClass =
 const selectClass =
   "w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20";
 const labelClass = "text-sm font-medium text-(--color-ink-800)";
+// Validation UI thuần túy cho "Năm xem" (không đụng thuật toán lịch/engine) — giới hạn hợp lý để tránh
+// nhập số vô nghĩa (âm, quá xa quá khứ/tương lai) gây hiển thị tuổi/Đại Vận sai lệch.
+const VIEWING_YEAR_MIN = 1900;
+const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
 ---
 
 <BaseLayout
@@ -65,7 +69,15 @@ const labelClass = "text-sm font-medium text-(--color-ink-800)";
 
         <div class="mt-4">
           <label for="tv-viewing-year" class={labelClass}>Năm xem (để tính tuổi và mốc Đại Vận)</label>
-          <input id="tv-viewing-year" type="number" class={inputClass} />
+          <input
+            id="tv-viewing-year"
+            type="number"
+            min={VIEWING_YEAR_MIN}
+            max={VIEWING_YEAR_MAX}
+            step="1"
+            class={inputClass}
+          />
+          <p class="mt-1 text-xs text-(--color-ink-500)">Để trống nếu không cần xem tuổi/Đại Vận. Nhập từ {VIEWING_YEAR_MIN} đến {VIEWING_YEAR_MAX}.</p>
         </div>
 
         <p class="mt-4 text-xs text-(--color-ink-500)">
@@ -293,7 +305,11 @@ const labelClass = "text-sm font-medium text-(--color-ink-800)";
     const gender = (document.querySelector('input[name="tv-gender"]:checked') as HTMLInputElement).value as "Nam" | "Nữ";
     const isLunar = (document.getElementById("tv-lunar") as HTMLInputElement).checked;
     const hour = parseInt(hourSel.value, 10);
-    const viewingYear = parseInt(viewingYearInput.value, 10) || undefined;
+    // Validation UI (khớp min/max đặt ở frontmatter — VIEWING_YEAR_MIN=1900/VIEWING_YEAR_MAX=nowYear+10):
+    // phòng trường hợp trình duyệt không chặn được giá trị vô lý (vd. gõ tay bỏ qua spinner), tự bỏ qua
+    // thay vì để tuổi/Đại Vận hiển thị sai lệch. Không đụng thuật toán lịch/engine.
+    const rawViewingYear = parseInt(viewingYearInput.value, 10);
+    const viewingYear = (rawViewingYear && rawViewingYear >= 1900 && rawViewingYear <= nowYear + 10) ? rawViewingYear : undefined;
     let day = parseInt(daySel.value, 10);
     let month = parseInt(monthSel.value, 10);
     let year = parseInt(yearSel.value, 10);
