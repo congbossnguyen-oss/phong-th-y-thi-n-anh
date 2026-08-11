@@ -690,10 +690,10 @@ export const prerender = true;
   function renderDungSu(entry: DungSuNghiKyEntry) {
     const nghiHtml = entry.nghiRaw
       ? `<p><span class="font-bold text-(--color-cinnabar-500)">Nghi:</span> ${entry.nghiRaw}</p>`
-      : `<p class="text-slate-500">Đoạn OCR không có mục "Nghi" riêng cho việc này.</p>`;
+      : `<p class="text-slate-500">Sách không có mục "Nghi" riêng cho việc này.</p>`;
     const kyHtml = entry.kyRaw
       ? `<p class="mt-1"><span class="font-bold text-slate-700">Kỵ:</span> ${entry.kyRaw}</p>`
-      : `<p class="mt-1 text-slate-500">Đoạn OCR không có mục "Kỵ" riêng cho việc này.</p>`;
+      : `<p class="mt-1 text-slate-500">Sách không có mục "Kỵ" riêng cho việc này.</p>`;
     const ghiChuHtml = entry.ghiChu
       ? `<p class="mt-2 text-xs italic text-slate-500">${entry.ghiChu}</p>`
       : "";
@@ -701,7 +701,7 @@ export const prerender = true;
       ${nghiHtml}
       ${kyHtml}
       ${ghiChuHtml}
-      <p class="mt-2 text-xs text-slate-400">Nguồn: OCR "Hiệp Kỷ Biện Phương Thư" Tập 1, dòng ${entry.dongOcr}.</p>
+      <p class="mt-2 text-xs text-slate-400">Nguồn: "Hiệp Kỷ Biện Phương Thư"</p>
     `;
   }
 
