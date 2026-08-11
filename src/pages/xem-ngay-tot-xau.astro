@@ -253,60 +253,6 @@ export const prerender = true;
           <div id="dong-phong-list" class="mt-3 max-h-[420px] space-y-1.5 overflow-y-auto"></div>
         </div>
 
-        <div class="mt-6 rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
-          <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Tuổi hợp làm ăn</p>
-          <p class="mt-1 text-xs text-slate-500">
-            Nhập năm sinh dương lịch của 2 người để xem mức độ hợp nhau khi hợp tác làm ăn, kinh doanh, đầu tư — hệ
-            thống tự tính Thiên Can, Địa Chi, Ngũ Hành bản mệnh và Nạp Âm, không cần biết trước phong thủy hay giới tính.
-          </p>
-          <form id="tuoi-hop-lam-an-form" class="mt-3 flex flex-col gap-2 sm:flex-row sm:items-end">
-            <div class="flex-1">
-              <label for="tuoi-hop-nam-1" class="text-xs font-medium text-slate-600">Năm sinh người 1</label>
-              <input
-                type="number"
-                id="tuoi-hop-nam-1"
-                placeholder="vd. 1988"
-                min="1900"
-                max="2100"
-                required
-                class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800) focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20"
-              />
-            </div>
-            <div class="flex-1">
-              <label for="tuoi-hop-nam-2" class="text-xs font-medium text-slate-600">Năm sinh người 2</label>
-              <input
-                type="number"
-                id="tuoi-hop-nam-2"
-                placeholder="vd. 1992"
-                min="1900"
-                max="2100"
-                required
-                class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800) focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20"
-              />
-            </div>
-            <Button type="submit" size="lg" class="shrink-0">Xem tuổi hợp làm ăn</Button>
-          </form>
-          <div id="tuoi-hop-loi" class="mt-3 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-3 text-sm text-(--color-danger-500)"></div>
-          <div id="tuoi-hop-ket-qua" class="mt-4 hidden">
-            <button
-              type="button"
-              id="tuoi-hop-toggle"
-              class="w-full rounded-xl border border-slate-200 bg-slate-50 p-4 text-left hover:bg-slate-100"
-            >
-              <p id="tuoi-hop-nhan" class="font-display text-lg font-bold text-slate-900"></p>
-              <p id="tuoi-hop-diem" class="mt-0.5 text-sm text-slate-600"></p>
-            </button>
-            <div id="tuoi-hop-chi-tiet" class="mt-2 hidden space-y-1.5 rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-700">
-              <p><strong class="text-slate-600">Can:</strong> <span id="tuoi-hop-can"></span></p>
-              <p><strong class="text-slate-600">Chi:</strong> <span id="tuoi-hop-chi"></span></p>
-              <p><strong class="text-slate-600">Mệnh:</strong> <span id="tuoi-hop-menh"></span></p>
-              <p><strong class="text-slate-600">Nạp âm:</strong> <span id="tuoi-hop-nap-am"></span></p>
-              <p><strong class="text-slate-600">Tổng hợp:</strong> <span id="tuoi-hop-tong-hop"></span></p>
-              <p class="pt-1 text-xs text-slate-400">Kết luận: <span id="tuoi-hop-ket-luan"></span></p>
-            </div>
-          </div>
-        </div>
-
         <div class="mt-6 overflow-x-auto rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
           <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Bảng 12 giờ trong ngày</p>
           <table class="mt-3 w-full min-w-[520px] border-collapse text-center text-sm">
@@ -785,73 +731,6 @@ export const prerender = true;
       });
     });
   }
-
-  // --- Tuổi hợp làm ăn: nhập 2 năm sinh, tính 1 lần khi bấm nút — không phụ thuộc tháng đang xem trên lịch.
-  interface TuoiHopTieuChi {
-    diem: number;
-    moTa: string;
-  }
-  interface TuoiHopLamAnResult {
-    diem: number;
-    hang: string;
-    nhan: string;
-    can: TuoiHopTieuChi;
-    chi: TuoiHopTieuChi;
-    menh: TuoiHopTieuChi;
-    napAm: TuoiHopTieuChi;
-    tongHop: TuoiHopTieuChi;
-    ketLuan: string;
-  }
-
-  const tuoiHopForm = document.getElementById("tuoi-hop-lam-an-form") as HTMLFormElement;
-  const tuoiHopNam1Input = document.getElementById("tuoi-hop-nam-1") as HTMLInputElement;
-  const tuoiHopNam2Input = document.getElementById("tuoi-hop-nam-2") as HTMLInputElement;
-  const tuoiHopLoiEl = document.getElementById("tuoi-hop-loi")!;
-  const tuoiHopKetQuaEl = document.getElementById("tuoi-hop-ket-qua")!;
-  const tuoiHopNhanEl = document.getElementById("tuoi-hop-nhan")!;
-  const tuoiHopDiemEl = document.getElementById("tuoi-hop-diem")!;
-  const tuoiHopChiTietEl = document.getElementById("tuoi-hop-chi-tiet")!;
-  const tuoiHopToggleBtn = document.getElementById("tuoi-hop-toggle") as HTMLButtonElement;
-
-  tuoiHopToggleBtn.addEventListener("click", () => {
-    tuoiHopChiTietEl.classList.toggle("hidden");
-  });
-
-  tuoiHopForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    tuoiHopLoiEl.classList.add("hidden");
-    tuoiHopKetQuaEl.classList.add("hidden");
-
-    const namSinh1 = Number(tuoiHopNam1Input.value);
-    const namSinh2 = Number(tuoiHopNam2Input.value);
-
-    let result: TuoiHopLamAnResult;
-    try {
-      const res = await fetch(`/api/tuoi-hop-lam-an?namSinh1=${namSinh1}&namSinh2=${namSinh2}`);
-      const data = await res.json();
-      if (!res.ok) {
-        tuoiHopLoiEl.textContent = data.error ?? "Không tính được.";
-        tuoiHopLoiEl.classList.remove("hidden");
-        return;
-      }
-      result = data;
-    } catch {
-      tuoiHopLoiEl.textContent = "Không tải được dữ liệu.";
-      tuoiHopLoiEl.classList.remove("hidden");
-      return;
-    }
-
-    tuoiHopNhanEl.textContent = `${namSinh1} × ${namSinh2} — ${result.nhan}`;
-    tuoiHopDiemEl.textContent = `${result.diem}/10 điểm`;
-    document.getElementById("tuoi-hop-can")!.textContent = result.can.moTa;
-    document.getElementById("tuoi-hop-chi")!.textContent = result.chi.moTa;
-    document.getElementById("tuoi-hop-menh")!.textContent = result.menh.moTa;
-    document.getElementById("tuoi-hop-nap-am")!.textContent = result.napAm.moTa;
-    document.getElementById("tuoi-hop-tong-hop")!.textContent = result.tongHop.moTa;
-    document.getElementById("tuoi-hop-ket-luan")!.textContent = result.ketLuan;
-    tuoiHopChiTietEl.classList.add("hidden");
-    tuoiHopKetQuaEl.classList.remove("hidden");
-  });
 
   calPrevBtn.addEventListener("click", () => {
     const m = calMonth === 1 ? 12 : calMonth - 1;
