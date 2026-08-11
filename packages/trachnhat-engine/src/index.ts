@@ -9,12 +9,19 @@ import { ENGINE_NAME, ENGINE_VERSION } from "./engine-metadata.js";
 import { tinhGio12 } from "./processing/gioBang.js";
 import { tinhNgayInfo } from "./processing/ngayInfo.js";
 import { calculateMonthGrid } from "./processing/monthGrid.js";
+import { calculateGiaoTeTiecTungRange } from "./processing/giaoTeTiecTung.js";
 import { tinhTuTru } from "./processing/tuTru.js";
 import type { TrachNhatInput, TrachNhatOutput } from "./types.js";
 import { validateTrachNhatInput } from "./validation.js";
 
 export type { MonthGridInput, MonthGridResult, MonthGridDay } from "./processing/monthGrid.js";
 export { calculateMonthGrid };
+export type {
+  GiaoTeTiecTungRangeInput,
+  GiaoTeTiecTungRangeResult,
+  GiaoTeTiecTungNgay,
+} from "./processing/giaoTeTiecTung.js";
+export { calculateGiaoTeTiecTungRange };
 
 export * from "./types.js";
 
