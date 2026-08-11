@@ -64,6 +64,7 @@ export function calculate(input: TrachNhatInput): EngineResult<TrachNhatOutput> 
     canNamSinhKyKimThanThatSat: ngayInfo.canNamSinhKyKimThanThatSat,
     bachKyNgay: ngayInfo.bachKyNgay,
     ngayGoiDauTot: ngayInfo.ngayGoiDauTot,
+    catTocDep: ngayInfo.catTocDep,
     gio12,
   };
 

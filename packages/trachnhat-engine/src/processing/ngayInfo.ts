@@ -26,6 +26,7 @@ export interface NgayInfoResult {
   canNamSinhKyKimThanThatSat: string[];
   bachKyNgay: { nhan: string; viec: string }[];
   ngayGoiDauTot: boolean;
+  catTocDep: boolean;
 }
 
 export function tinhNgayInfo(tuTru: TuTruResult): NgayInfoResult {
@@ -46,6 +47,10 @@ export function tinhNgayInfo(tuTru: TuTruResult): NgayInfoResult {
   const canNamSinhKyKimThanThatSat = TrachNhat.getCanNamSinhKyKimThanThatSat(dayChi);
   const bachKyNgay = TrachNhat.getBachKyNgay(dayCan, dayChi);
   const ngayGoiDauTot = TrachNhat.isNgayGoiDauTot(tuTru.lunarDate.day, truc.name);
+  const catTocDep = TrachNhat.isNgayDepCatToc(
+    truc.name,
+    thanSat.map((entry) => entry.name),
+  );
 
   return {
     truc: { index: truc.index, name: truc.name },
@@ -61,5 +66,6 @@ export function tinhNgayInfo(tuTru: TuTruResult): NgayInfoResult {
     canNamSinhKyKimThanThatSat: [...canNamSinhKyKimThanThatSat],
     bachKyNgay,
     ngayGoiDauTot,
+    catTocDep,
   };
 }

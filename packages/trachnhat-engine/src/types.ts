@@ -60,5 +60,7 @@ export interface TrachNhatOutput {
   bachKyNgay: { nhan: string; viec: string }[];
   /** Ngày này có tốt để gội đầu hay không (theo ngày Âm lịch trong tháng hoặc Trực). */
   ngayGoiDauTot: boolean;
+  /** Ngày này có đẹp để cắt tóc/cạo đầu/trang điểm hay không (Trực Trừ hoặc có Giải Thần). */
+  catTocDep: boolean;
   gio12: GioTrongNgay[];
 }

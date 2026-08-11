@@ -14,3 +14,4 @@ export * from "./kimThanThatSat.js";
 export * from "./duongCongKyNhat.js";
 export * from "./ngayBachKy.js";
 export * from "./ngayGoiDau.js";
+export * from "./ngayCatToc.js";

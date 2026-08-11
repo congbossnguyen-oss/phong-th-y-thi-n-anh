@@ -40,6 +40,7 @@ export const prerender = true;
           <span class="text-red-500">CN</span><span>Hai</span><span>Ba</span><span>Tư</span><span>Năm</span><span>Sáu</span><span>Bảy</span>
         </div>
         <div id="cal-grid" class="mt-1 grid grid-cols-7 gap-1"></div>
+        <p class="mt-2 text-[11px] text-slate-400">✂️ = ngày đẹp cắt tóc, cạo đầu</p>
       </div>
 
       <form id="xem-ngay-form" class="mt-4 flex flex-col gap-4 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6 sm:flex-row sm:items-end">
@@ -159,6 +160,11 @@ export const prerender = true;
             <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Ngày gội đầu</p>
             <p class="mt-1 text-sm font-semibold text-(--color-cinnabar-500)">Hôm nay là ngày tốt để gội đầu.</p>
           </div>
+
+          <div id="kq-cat-toc-wrap" class="mt-5 hidden border-t border-slate-200 pt-5">
+            <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Ngày cắt tóc</p>
+            <p class="mt-1 text-sm font-semibold text-(--color-cinnabar-500)">✂️ Hôm nay là ngày đẹp để cắt tóc, cạo đầu.</p>
+          </div>
         </div>
 
         <div class="mt-6 rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
@@ -238,6 +244,7 @@ export const prerender = true;
     canNamSinhKyKimThanThatSat: string[];
     bachKyNgay: { nhan: string; viec: string }[];
     ngayGoiDauTot: boolean;
+    catTocDep: boolean;
     gio12: GioTrongNgay[];
   }
 
@@ -248,6 +255,7 @@ export const prerender = true;
     isLeapMonth: boolean;
     isCurrentMonth: boolean;
     weekday: number;
+    catTocDep: boolean;
   }
 
   interface MonthGridResult {
@@ -417,12 +425,16 @@ export const prerender = true;
         const selectedCls = isSelected
           ? "bg-(--color-cinnabar-500) text-white"
           : "hover:bg-amber-50";
+        const catTocMark = d.catTocDep
+          ? `<span class="absolute top-0.5 right-1 text-[9px] leading-none" title="Ngày đẹp cắt tóc">✂️</span>`
+          : "";
         return `
           <button
             type="button"
-            class="cal-cell flex flex-col items-center rounded-lg py-1.5 ${dimCls} ${selectedCls}"
+            class="cal-cell relative flex flex-col items-center rounded-lg py-1.5 ${dimCls} ${selectedCls}"
             data-y="${d.solarDate.year}" data-m="${d.solarDate.month}" data-d="${d.solarDate.day}"
           >
+            ${catTocMark}
             <span class="text-sm font-bold">${d.solarDate.day}</span>
             <span class="text-[10px] ${isSelected ? "text-white/80" : "text-slate-400"}">${d.lunarDay}</span>
           </button>`;
@@ -559,6 +571,7 @@ export const prerender = true;
     }
 
     document.getElementById("kq-goi-dau-wrap")!.classList.toggle("hidden", !data.ngayGoiDauTot);
+    document.getElementById("kq-cat-toc-wrap")!.classList.toggle("hidden", !data.catTocDep);
 
     document.getElementById("kq-luc-nham")!.innerHTML = renderLucNham(data.gio12);
 
