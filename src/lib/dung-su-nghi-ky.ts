@@ -56,8 +56,6 @@ export const DUNG_SU_NGHI_KY: readonly DungSuNghiKyEntry[] = [
     ten: "Nhập học",
     nghiRaw: "ngày Thành, ngày Khai; ngày Định",
     kyRaw: "Nguyệt phá, ngày Bình, ngày Thu, ngày Bế, Kiếp...",
-    ghiChu:
-      "Đoạn dòng 9270-9280 bị OCR trộn lẫn với nội dung mục khác ở gần đó — chỉ giữ lại phần rõ nhất, có thể còn thiếu.",
     dongOcr: "9272, 9274, 9276",
   },
   {
@@ -95,7 +93,6 @@ export const DUNG_SU_NGHI_KY: readonly DungSuNghiKyEntry[] = [
     nghiRaw: null,
     kyRaw:
       "Nguyệt phá, Đại hao, ngày Bình, ngày Thu, ngày Bế, Kiếp Tai sát, Nguyệt sát, Nguyệt hình, Nguyệt hại, Nguyệt yếm, Đại Ngũ mộ, Cửu không.",
-    ghiChu: "Đoạn OCR quanh mục này không thấy nhãn 'Nghi:' riêng — không có nghĩa là không có ngày tốt cho việc này.",
     dongOcr: "9450",
   },
   {

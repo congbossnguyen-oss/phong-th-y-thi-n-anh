@@ -229,6 +229,30 @@ export const prerender = true;
           <div id="giao-te-list" class="mt-3 max-h-[420px] space-y-1.5 overflow-y-auto"></div>
         </div>
 
+        <div class="mt-6 rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
+          <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Ngày động phòng</p>
+          <p class="mt-1 text-xs text-slate-500">
+            Tự động chấm điểm riêng cho việc vợ chồng động phòng sau hôn lễ trong tháng đang xem trên lịch — khác thang
+            điểm với ngày giao tế/tiệc tùng ở trên. Chọn tuổi (con giáp) hai vợ chồng nếu muốn xét thêm xung hợp, để
+            trống nếu chưa biết.
+          </p>
+          <div class="mt-3 grid grid-cols-2 gap-2">
+            <select
+              id="dong-phong-chi-chong"
+              class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2 text-sm text-(--color-ink-800) focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20"
+            >
+              <option value="">Tuổi chồng (bỏ trống)</option>
+            </select>
+            <select
+              id="dong-phong-chi-vo"
+              class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2 text-sm text-(--color-ink-800) focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20"
+            >
+              <option value="">Tuổi vợ (bỏ trống)</option>
+            </select>
+          </div>
+          <div id="dong-phong-list" class="mt-3 max-h-[420px] space-y-1.5 overflow-y-auto"></div>
+        </div>
+
         <div class="mt-6 overflow-x-auto rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
           <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Bảng 12 giờ trong ngày</p>
           <table class="mt-3 w-full min-w-[520px] border-collapse text-center text-sm">
@@ -337,6 +361,33 @@ export const prerender = true;
 
   interface GiaoTeTiecTungRangeResult {
     ngayXepHang: GiaoTeTiecTungNgay[];
+  }
+
+  interface DongPhongXungHopMotNguoi {
+    chi: string;
+    xung: boolean;
+    hinh: boolean;
+    hai: boolean;
+    tamHop: boolean;
+    moTa: string;
+  }
+
+  interface DongPhongNgay {
+    solarDate: { year: number; month: number; day: number };
+    lunarDay: number;
+    weekday: number;
+    diem: number;
+    hang: "rat-tot" | "tot" | "co-the-dung" | "khong-nen";
+    nhan: string;
+    goiY: string;
+    yeuTo: GiaoTeTiecTungYeuTo[];
+    phamDaiKy: boolean;
+    xungHopChong: DongPhongXungHopMotNguoi | null;
+    xungHopVo: DongPhongXungHopMotNguoi | null;
+  }
+
+  interface DongPhongRangeResult {
+    ngayXepHang: DongPhongNgay[];
   }
 
   interface EngineErrorLike {
@@ -501,7 +552,7 @@ export const prerender = true;
           ? "bg-(--color-cinnabar-500) text-white"
           : "hover:bg-amber-50";
         const catTocMark = d.catTocDep
-          ? `<span class="absolute top-0.5 right-1 text-[9px] leading-none" title="Ngày đẹp cắt tóc">✂️</span>`
+          ? `<span class="absolute top-0 right-0.5 text-sm leading-none" title="Ngày đẹp cắt tóc">✂️</span>`
           : "";
         const laMungMotHoacRam = d.lunarDay === 1 || d.lunarDay === 15;
         const soNgayCls = laMungMotHoacRam
@@ -535,6 +586,7 @@ export const prerender = true;
     });
 
     loadGiaoTeTiecTung(year, month);
+    loadDongPhong(year, month);
   }
 
   function highlightSelectedCell() {
@@ -597,6 +649,82 @@ export const prerender = true;
       .join("");
 
     giaoTeListEl.querySelectorAll<HTMLButtonElement>(".giao-te-row").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const detail = btn.nextElementSibling as HTMLElement;
+        detail.classList.toggle("hidden");
+      });
+    });
+  }
+
+  // --- Ngày động phòng: chấm điểm riêng (khác Giao Tế Tiệc Tùng), có xét tuổi vợ chồng.
+  const dongPhongListEl = document.getElementById("dong-phong-list")!;
+  const dongPhongChiChongSelect = document.getElementById("dong-phong-chi-chong") as HTMLSelectElement;
+  const dongPhongChiVoSelect = document.getElementById("dong-phong-chi-vo") as HTMLSelectElement;
+  for (const chi of CHI_ORDER) {
+    dongPhongChiChongSelect.insertAdjacentHTML("beforeend", `<option value="${chi}">${chi}</option>`);
+    dongPhongChiVoSelect.insertAdjacentHTML("beforeend", `<option value="${chi}">${chi}</option>`);
+  }
+  dongPhongChiChongSelect.addEventListener("change", () => loadDongPhong(calYear, calMonth));
+  dongPhongChiVoSelect.addEventListener("change", () => loadDongPhong(calYear, calMonth));
+
+  async function loadDongPhong(year: number, month: number) {
+    dongPhongListEl.innerHTML = '<p class="py-2 text-center text-sm text-slate-500">Đang tính điểm...</p>';
+
+    const chiChong = dongPhongChiChongSelect.value;
+    const chiVo = dongPhongChiVoSelect.value;
+    let qs = `year=${year}&month=${month}&timeZone=Asia/Ho_Chi_Minh`;
+    if (chiChong) qs += `&chiChong=${encodeURIComponent(chiChong)}`;
+    if (chiVo) qs += `&chiVo=${encodeURIComponent(chiVo)}`;
+
+    let result: DongPhongRangeResult;
+    try {
+      const res = await fetch(`/api/dong-phong?${qs}`);
+      result = await res.json();
+    } catch {
+      dongPhongListEl.innerHTML = '<p class="py-2 text-center text-sm text-slate-500">Không tải được dữ liệu.</p>';
+      return;
+    }
+
+    dongPhongListEl.innerHTML = result.ngayXepHang
+      .map((n, i) => {
+        const ngayStr = `${String(n.solarDate.day).padStart(2, "0")}/${String(n.solarDate.month).padStart(2, "0")}/${n.solarDate.year}`;
+        const totYeuTo = n.yeuTo.filter((y) => y.diem > 0);
+        const xauYeuTo = n.yeuTo.filter((y) => y.diem < 0);
+        const dsHtml = (list: GiaoTeTiecTungYeuTo[]) =>
+          list.length > 0
+            ? `<ul class="space-y-0.5">${list.map((y) => `<li>${y.ten} (${y.diem >= 0 ? "+" : ""}${y.diem})</li>`).join("")}</ul>`
+            : '<p class="text-slate-400">Không có.</p>';
+        const xungHopHtml =
+          n.xungHopChong || n.xungHopVo
+            ? `<div>
+                <p class="font-semibold text-slate-700">Xung hợp:</p>
+                ${n.xungHopChong ? `<p>Chồng (${n.xungHopChong.chi}): ${n.xungHopChong.moTa}</p>` : ""}
+                ${n.xungHopVo ? `<p>Vợ (${n.xungHopVo.chi}): ${n.xungHopVo.moTa}</p>` : ""}
+              </div>`
+            : "";
+        return `
+          <div class="rounded-lg border border-slate-100">
+            <button type="button" class="dong-phong-row w-full px-3 py-2 text-left" data-idx="${i}">
+              <p class="text-sm font-bold text-slate-900">${ngayStr}</p>
+              <p class="text-sm">${HANG_ICON[n.hang]} ${n.nhan.replace(/^\S+\s/, "")} · ${n.diem}/10</p>
+            </button>
+            <div class="dong-phong-detail hidden space-y-2 border-t border-slate-100 px-3 py-2 text-xs text-slate-600">
+              <div>
+                <p class="font-semibold text-slate-700">Tốt:</p>
+                ${dsHtml(totYeuTo)}
+              </div>
+              <div>
+                <p class="font-semibold text-slate-700">Bất lợi:</p>
+                ${dsHtml(xauYeuTo)}
+              </div>
+              ${xungHopHtml}
+              <p class="italic text-slate-500">Kết luận: ${n.nhan.replace(/^\S+\s/, "")} cho mục đích động phòng.</p>
+            </div>
+          </div>`;
+      })
+      .join("");
+
+    dongPhongListEl.querySelectorAll<HTMLButtonElement>(".dong-phong-row").forEach((btn) => {
       btn.addEventListener("click", () => {
         const detail = btn.nextElementSibling as HTMLElement;
         detail.classList.toggle("hidden");
@@ -792,10 +920,10 @@ export const prerender = true;
   function renderDungSu(entry: DungSuNghiKyEntry) {
     const nghiHtml = entry.nghiRaw
       ? `<p><span class="font-bold text-(--color-cinnabar-500)">Nghi:</span> ${entry.nghiRaw}</p>`
-      : `<p class="text-slate-500">Sách không có mục "Nghi" riêng cho việc này.</p>`;
+      : "";
     const kyHtml = entry.kyRaw
       ? `<p class="mt-1"><span class="font-bold text-slate-700">Kỵ:</span> ${entry.kyRaw}</p>`
-      : `<p class="mt-1 text-slate-500">Sách không có mục "Kỵ" riêng cho việc này.</p>`;
+      : "";
     const ghiChuHtml = entry.ghiChu
       ? `<p class="mt-2 text-xs italic text-slate-500">${entry.ghiChu}</p>`
       : "";

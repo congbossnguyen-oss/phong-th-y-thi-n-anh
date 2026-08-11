@@ -17,3 +17,4 @@ export * from "./ngayCatToc.js";
 export * from "./thienDucHop.js";
 export * from "./thienXa.js";
 export * from "./thaiTue.js";
+export * from "./tamHop.js";
