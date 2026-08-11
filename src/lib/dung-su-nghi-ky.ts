@@ -106,7 +106,7 @@ export const DUNG_SU_NGHI_KY: readonly DungSuNghiKyEntry[] = [
     ten: "Khai mương, đào giếng",
     nghiRaw: "ngày Khai",
     kyRaw: "Thổ phủ, Nguyệt phá, ngày Bình, ngày Thu, ngày Bế, Kiếp sát, sau Thổ vương dụng sự",
-    ghiChu: "Sách còn ghi riêng: 'Ngày Nhâm kỵ khai mương, ngày Mão kỵ đào giếng' (dòng 9484).",
+    ghiChu: "Sách còn ghi riêng: 'Ngày Nhâm kỵ khai mương, ngày Mão kỵ đào giếng'.",
     dongOcr: "9480, 9482, 9484",
   },
   {
