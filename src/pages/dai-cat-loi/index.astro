@@ -1,0 +1,69 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import Container from "../../components/ui/Container.astro";
+
+export const prerender = true;
+
+const muc = [
+  {
+    href: "/dai-cat-loi/ngay-dai-cat-ca-nhan",
+    icon: "🌟",
+    title: "Ngày Đại Cát Cá Nhân",
+    desc: "Quét cả tháng, tìm 3-5 ngày tốt nhất dành riêng cho tuổi của bạn.",
+  },
+  {
+    href: "/dai-cat-loi/van-may-trong-ngay",
+    icon: "🍀",
+    title: "Vận May Trong Ngày",
+    desc: "Đánh giá mức độ cát hung của 1 ngày cụ thể đối với riêng bạn.",
+  },
+  {
+    href: "/dai-cat-loi/ngay-ky-hop-dong",
+    icon: "✍️",
+    title: "Ngày Ký Hợp Đồng",
+    desc: "Tìm ngày đẹp cho ký kết, giao dịch, hợp tác — có thể xét tuổi người ký.",
+  },
+  {
+    href: "/dai-cat-loi/gio-tot-trong-ngay",
+    icon: "⏰",
+    title: "Giờ Tốt Trong Ngày",
+    desc: "Xếp hạng đủ 12 giờ Địa Chi trong 1 ngày, có thể chọn theo mục đích.",
+  },
+  {
+    href: "/dai-cat-loi/ngay-khai-truong",
+    icon: "🏪",
+    title: "Ngày Khai Trương",
+    desc: "Tìm ngày đẹp để mở cửa kinh doanh, khai trương — có thể xét tuổi chủ.",
+  },
+];
+---
+
+<BaseLayout
+  title="Đại Cát Lợi"
+  description="Bộ công cụ Trạch Cát cá nhân hóa: Ngày Đại Cát Cá Nhân, Vận May Trong Ngày, Ngày Ký Hợp Đồng, Giờ Tốt Trong Ngày, Ngày Khai Trương."
+>
+  <PageHero
+    eyebrow="Công cụ tra cứu"
+    title="Đại Cát Lợi"
+    description="Chọn 1 trong 5 công cụ bên dưới — mỗi công cụ tự động tính toán từ dữ liệu Trạch Cát và (khi có) tuổi của bạn, không cần biết trước phong thủy."
+    breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Đại Cát Lợi" }]}
+  />
+
+  <Container class="py-16">
+    <div class="mx-auto grid max-w-4xl gap-4 sm:grid-cols-2">
+      {
+        muc.map((m) => (
+          <a
+            href={m.href}
+            class="flex flex-col gap-2 rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl"
+          >
+            <span class="text-3xl">{m.icon}</span>
+            <span class="font-display text-lg font-bold text-slate-900">{m.title}</span>
+            <span class="text-sm text-slate-500">{m.desc}</span>
+          </a>
+        ))
+      }
+    </div>
+  </Container>
+</BaseLayout>

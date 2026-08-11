@@ -12,9 +12,11 @@
  * `rule-engine/src/trach-nhat/thangCanChi.ts` để biết chi tiết đối chiếu.
  */
 
-import { Calendar, getCanChi, getLunarDate, getSolarTerms } from "@thien-anh/calendar-core";
+import { Calendar, Data, getCanChi, getLunarDate, getSolarTerms } from "@thien-anh/calendar-core";
 import { TrachNhat } from "@thien-anh/rule-engine";
 import type { TrachNhatInput } from "../types.js";
+
+type NguHanh = Data.NguHanh;
 
 export interface TuTruResult {
   julianDayNumber: number;
@@ -25,6 +27,8 @@ export interface TuTruResult {
     thang: { can: string; chi: string };
     ngay: { can: string; chi: string };
   };
+  /** Nạp Âm của trụ NGÀY (dùng cho "Ngũ hành ngày" khi so sánh với Mệnh cá nhân — cùng cơ chế suy Nạp Âm như Mệnh). */
+  napAmNgay: { name: string; element: NguHanh };
   dayChiIndex: number;
   monthOrderIndex: number;
 }
@@ -68,6 +72,7 @@ export function tinhTuTru(input: TrachNhatInput): TuTruResult {
       thang: { can: thang.can, chi: thang.chi },
       ngay: { can: canChi.day.can, chi: canChi.day.chi },
     },
+    napAmNgay: canChi.day.napAm,
     dayChiIndex: canChi.day.chiIndex,
     monthOrderIndex,
   };

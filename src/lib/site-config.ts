@@ -49,9 +49,9 @@ export const mainNav: NavItem[] = [
   },
   {
     label: "Công cụ",
-    href: "/tra-cuu-menh",
+    href: "/dai-cat-loi",
     children: [
-      { label: "Tra cứu mệnh theo năm sinh", href: "/tra-cuu-menh" },
+      { label: "Đại Cát Lợi", href: "/dai-cat-loi" },
       { label: "Lập lá số Bát Tự", href: "/lap-la-so-bat-tu" },
       { label: "Lập quẻ Kinh Dịch", href: "/gieo-que-kinh-dich" },
       { label: "Xem ngày tốt xấu", href: "/xem-ngay-tot-xau" },

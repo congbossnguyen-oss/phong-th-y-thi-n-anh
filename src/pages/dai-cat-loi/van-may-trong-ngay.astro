@@ -1,0 +1,170 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import Container from "../../components/ui/Container.astro";
+import Button from "../../components/ui/Button.astro";
+
+export const prerender = true;
+---
+
+<BaseLayout
+  title="Vận may trong ngày"
+  description="Đánh giá mức độ vận may của bạn trong 1 ngày cụ thể, kết hợp nền Trạch Cát của ngày và tương tác giữa ngày đó với tuổi của bạn."
+>
+  <PageHero
+    eyebrow="Đại Cát Lợi"
+    title="Vận may trong ngày"
+    description="Nhập năm sinh và ngày cần xem — hệ thống tự tính mức độ cát hung của ngày đó đối với riêng bạn."
+    breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Đại Cát Lợi", href: "/dai-cat-loi" }, { label: "Vận may trong ngày" }]}
+  />
+
+  <Container class="py-16">
+    <div class="mx-auto max-w-2xl">
+      <form id="van-may-form" class="flex flex-col gap-4 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
+        <div>
+          <label for="van-may-nam-sinh" class="text-sm font-medium text-(--color-ink-800)">Năm sinh của bạn</label>
+          <input type="number" id="van-may-nam-sinh" placeholder="vd. 1990" min="1900" max="2100" required class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+        </div>
+        <div>
+          <p class="text-sm font-medium text-(--color-ink-800)">Ngày cần xem (dương lịch)</p>
+          <div class="mt-1.5 grid grid-cols-3 gap-2">
+            <select id="van-may-ngay" aria-label="Ngày" class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"></select>
+            <select id="van-may-thang" aria-label="Tháng" class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"></select>
+            <select id="van-may-nam" aria-label="Năm" class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"></select>
+          </div>
+        </div>
+        <Button type="submit" size="lg">Xem vận may</Button>
+      </form>
+
+      <div id="van-may-loi" class="mt-4 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm text-(--color-danger-500)"></div>
+
+      <div id="van-may-ket-qua" class="mt-6 hidden rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
+        <p id="van-may-ngay-str" class="text-xs font-bold uppercase tracking-wide text-amber-600"></p>
+        <p id="van-may-nhan" class="mt-1 font-display text-2xl font-bold text-slate-900"></p>
+        <p id="van-may-diem" class="text-sm text-slate-600"></p>
+
+        <div class="mt-4 grid grid-cols-2 gap-3 border-t border-slate-200 pt-4 sm:grid-cols-5">
+          <div class="rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-center">
+            <p class="text-[11px] uppercase tracking-wide text-slate-500">Tài lộc</p>
+            <p id="van-may-tai-loc" class="mt-0.5 font-display text-lg font-bold text-slate-900"></p>
+          </div>
+          <div class="rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-center">
+            <p class="text-[11px] uppercase tracking-wide text-slate-500">Công việc</p>
+            <p id="van-may-cong-viec" class="mt-0.5 font-display text-lg font-bold text-slate-900"></p>
+          </div>
+          <div class="rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-center">
+            <p class="text-[11px] uppercase tracking-wide text-slate-500">Giao tế</p>
+            <p id="van-may-giao-te" class="mt-0.5 font-display text-lg font-bold text-slate-900"></p>
+          </div>
+          <div class="rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-center">
+            <p class="text-[11px] uppercase tracking-wide text-slate-500">Tình cảm</p>
+            <p id="van-may-tinh-cam" class="mt-0.5 font-display text-lg font-bold text-slate-900"></p>
+          </div>
+          <div class="rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-center">
+            <p class="text-[11px] uppercase tracking-wide text-slate-500">Bình an</p>
+            <p id="van-may-binh-an" class="mt-0.5 font-display text-lg font-bold text-slate-900"></p>
+          </div>
+        </div>
+
+        <button type="button" id="van-may-toggle" class="mt-4 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-left text-sm font-medium text-slate-700 hover:bg-slate-100">
+          Xem chi tiết ▾
+        </button>
+        <div id="van-may-chi-tiet" class="mt-2 hidden space-y-1.5 rounded-xl border border-slate-200 bg-white p-4 text-sm text-slate-700">
+          <p><strong class="text-slate-600">Nền Trạch Cát:</strong> <span id="van-may-trach-cat"></span>/10</p>
+          <p><strong class="text-slate-600">Tương tác cá nhân:</strong> <span id="van-may-ca-nhan"></span>/10</p>
+          <p class="pt-1 text-xs text-slate-500">Điểm thuận:</p>
+          <ul id="van-may-diem-thuan" class="space-y-0.5 text-xs text-slate-600"></ul>
+          <p class="pt-1 text-xs text-slate-500">Điểm cần lưu ý:</p>
+          <ul id="van-may-diem-luu-y" class="space-y-0.5 text-xs text-slate-600"></ul>
+        </div>
+      </div>
+    </div>
+  </Container>
+</BaseLayout>
+
+<script>
+  interface YeuTo { ten: string; diem: number }
+  interface VanMayResult {
+    solarDate: { year: number; month: number; day: number };
+    diem: number;
+    hang: string;
+    nhan: string;
+    trachCat: { diem: number; yeuTo: YeuTo[] };
+    caNhan: { diem: number; can: { moTa: string }; chi: { moTa: string }; nguHanh: { moTa: string } };
+    phuTro: { taiLoc: number; congViec: number; giaoTe: number; tinhCam: number; binhAn: number };
+  }
+
+  const namSinhInput = document.getElementById("van-may-nam-sinh") as HTMLInputElement;
+  const ngaySelect = document.getElementById("van-may-ngay") as HTMLSelectElement;
+  const thangSelect = document.getElementById("van-may-thang") as HTMLSelectElement;
+  const namSelect = document.getElementById("van-may-nam") as HTMLSelectElement;
+  const form = document.getElementById("van-may-form") as HTMLFormElement;
+  const loiEl = document.getElementById("van-may-loi")!;
+  const ketQuaEl = document.getElementById("van-may-ket-qua")!;
+  const chiTietEl = document.getElementById("van-may-chi-tiet")!;
+  const toggleBtn = document.getElementById("van-may-toggle") as HTMLButtonElement;
+
+  const today = new Date();
+  for (let d = 1; d <= 31; d++) ngaySelect.insertAdjacentHTML("beforeend", `<option value="${d}" ${d === today.getDate() ? "selected" : ""}>Ngày ${d}</option>`);
+  for (let m = 1; m <= 12; m++) thangSelect.insertAdjacentHTML("beforeend", `<option value="${m}" ${m === today.getMonth() + 1 ? "selected" : ""}>Tháng ${m}</option>`);
+  for (let y = today.getFullYear() - 1; y <= today.getFullYear() + 3; y++) namSelect.insertAdjacentHTML("beforeend", `<option value="${y}" ${y === today.getFullYear() ? "selected" : ""}>${y}</option>`);
+
+  toggleBtn.addEventListener("click", () => chiTietEl.classList.toggle("hidden"));
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    loiEl.classList.add("hidden");
+    ketQuaEl.classList.add("hidden");
+
+    const namSinh = namSinhInput.value;
+    const qs = `year=${namSelect.value}&month=${thangSelect.value}&day=${ngaySelect.value}&namSinh=${namSinh}&timeZone=Asia/Ho_Chi_Minh`;
+
+    let result: VanMayResult;
+    try {
+      const res = await fetch(`/api/van-may-trong-ngay?${qs}`);
+      const data = await res.json();
+      if (!res.ok) {
+        loiEl.textContent = data.error ?? "Không tính được.";
+        loiEl.classList.remove("hidden");
+        return;
+      }
+      result = data;
+    } catch {
+      loiEl.textContent = "Không tải được dữ liệu.";
+      loiEl.classList.remove("hidden");
+      return;
+    }
+
+    const ngayStr = `${String(result.solarDate.day).padStart(2, "0")}/${String(result.solarDate.month).padStart(2, "0")}/${result.solarDate.year}`;
+    document.getElementById("van-may-ngay-str")!.textContent = ngayStr;
+    document.getElementById("van-may-nhan")!.textContent = result.nhan;
+    document.getElementById("van-may-diem")!.textContent = `${result.diem}/10 điểm`;
+    document.getElementById("van-may-tai-loc")!.textContent = String(result.phuTro.taiLoc);
+    document.getElementById("van-may-cong-viec")!.textContent = String(result.phuTro.congViec);
+    document.getElementById("van-may-giao-te")!.textContent = String(result.phuTro.giaoTe);
+    document.getElementById("van-may-tinh-cam")!.textContent = String(result.phuTro.tinhCam);
+    document.getElementById("van-may-binh-an")!.textContent = String(result.phuTro.binhAn);
+    document.getElementById("van-may-trach-cat")!.textContent = String(result.trachCat.diem);
+    document.getElementById("van-may-ca-nhan")!.textContent = String(result.caNhan.diem);
+
+    const thuanEl = document.getElementById("van-may-diem-thuan")!;
+    const luuYEl = document.getElementById("van-may-diem-luu-y")!;
+    const tatCaYeuTo = [
+      ...result.trachCat.yeuTo,
+      { ten: `Can: ${result.caNhan.can.moTa}`, diem: 0 },
+      { ten: `Chi: ${result.caNhan.chi.moTa}`, diem: 0 },
+      { ten: `Ngũ Hành: ${result.caNhan.nguHanh.moTa}`, diem: 0 },
+    ];
+    thuanEl.innerHTML = tatCaYeuTo
+      .filter((y) => y.diem > 0)
+      .map((y) => `<li>${y.ten} (+${y.diem})</li>`)
+      .join("") || '<li class="text-slate-400">Không có.</li>';
+    luuYEl.innerHTML = tatCaYeuTo
+      .filter((y) => y.diem < 0)
+      .map((y) => `<li>${y.ten} (${y.diem})</li>`)
+      .join("") || '<li class="text-slate-400">Không có.</li>';
+
+    chiTietEl.classList.add("hidden");
+    ketQuaEl.classList.remove("hidden");
+  });
+</script>

@@ -12,6 +12,11 @@ import { calculateMonthGrid } from "./processing/monthGrid.js";
 import { calculateGiaoTeTiecTungRange } from "./processing/giaoTeTiecTung.js";
 import { calculateDongPhongRange } from "./processing/dongPhong.js";
 import { calculateTuoiHopLamAn } from "./processing/tuoiHopLamAn.js";
+import { calculateGioTotTrongNgay } from "./processing/gioTotTrongNgay.js";
+import { calculateVanMayTrongNgay, calculateVanMayRange } from "./processing/vanMayTrongNgay.js";
+import { calculateNgayKhaiTruongRange } from "./processing/ngayKhaiTruong.js";
+import { calculateNgayKyHopDongRange } from "./processing/ngayKyHopDong.js";
+import { calculateNgayDaiCatCaNhan } from "./processing/ngayDaiCatCaNhan.js";
 import { tinhTuTru } from "./processing/tuTru.js";
 import type { TrachNhatInput, TrachNhatOutput } from "./types.js";
 import { validateTrachNhatInput } from "./validation.js";
@@ -28,6 +33,16 @@ export type { DongPhongRangeInput, DongPhongRangeResult, DongPhongNgay } from ".
 export { calculateDongPhongRange };
 export type { TuoiHopLamAnInput, TuoiHopLamAnResult } from "./processing/tuoiHopLamAn.js";
 export { calculateTuoiHopLamAn };
+export type { GioTotTrongNgayInput, GioTotTrongNgayResult, GioTotTrongNgayGio } from "./processing/gioTotTrongNgay.js";
+export { calculateGioTotTrongNgay };
+export type { VanMayTrongNgayInput, VanMayTrongNgayResult, VanMayRangeInput, VanMayRangeResult } from "./processing/vanMayTrongNgay.js";
+export { calculateVanMayTrongNgay, calculateVanMayRange };
+export type { NgayKhaiTruongRangeInput, NgayKhaiTruongRangeResult, NgayKhaiTruongNgay } from "./processing/ngayKhaiTruong.js";
+export { calculateNgayKhaiTruongRange };
+export type { NgayKyHopDongRangeInput, NgayKyHopDongRangeResult, NgayKyHopDongNgay } from "./processing/ngayKyHopDong.js";
+export { calculateNgayKyHopDongRange };
+export type { NgayDaiCatCaNhanInput, NgayDaiCatCaNhanResult, NgayDaiCatCaNhanNgay } from "./processing/ngayDaiCatCaNhan.js";
+export { calculateNgayDaiCatCaNhan };
 
 export * from "./types.js";
 
