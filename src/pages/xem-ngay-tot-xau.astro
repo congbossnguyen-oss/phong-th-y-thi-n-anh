@@ -169,6 +169,11 @@ export const prerender = true;
             <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Ngày cắt tóc</p>
             <p class="mt-1 text-sm font-semibold text-(--color-cinnabar-500)">✂️ Hôm nay là ngày đẹp để cắt tóc, cạo đầu.</p>
           </div>
+
+          <div id="kq-than-sat-them-wrap" class="mt-5 hidden border-t border-slate-200 pt-5">
+            <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Sao cát khác trong ngày</p>
+            <div id="kq-than-sat-them" class="mt-2 flex flex-wrap gap-2"></div>
+          </div>
         </div>
 
         <div class="mt-6 rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
@@ -249,6 +254,8 @@ export const prerender = true;
     bachKyNgay: { nhan: string; viec: string }[];
     ngayGoiDauTot: boolean;
     catTocDep: boolean;
+    thienDucHop: boolean;
+    thienXa: boolean;
     gio12: GioTrongNgay[];
   }
 
@@ -576,6 +583,12 @@ export const prerender = true;
 
     document.getElementById("kq-goi-dau-wrap")!.classList.toggle("hidden", !data.ngayGoiDauTot);
     document.getElementById("kq-cat-toc-wrap")!.classList.toggle("hidden", !data.catTocDep);
+
+    const thanSatThemBadges: string[] = [];
+    if (data.thienDucHop) thanSatThemBadges.push(catHungBadge("Thiên Đức Hợp", "cát"));
+    if (data.thienXa) thanSatThemBadges.push(catHungBadge("Thiên Xá", "cát"));
+    document.getElementById("kq-than-sat-them-wrap")!.classList.toggle("hidden", thanSatThemBadges.length === 0);
+    document.getElementById("kq-than-sat-them")!.innerHTML = thanSatThemBadges.join("");
 
     document.getElementById("kq-luc-nham")!.innerHTML = renderLucNham(data.gio12);
 

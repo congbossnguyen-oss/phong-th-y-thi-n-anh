@@ -62,5 +62,9 @@ export interface TrachNhatOutput {
   ngayGoiDauTot: boolean;
   /** Ngày này có đẹp để cắt tóc/cạo đầu/trang điểm hay không (Trực Trừ hoặc có Giải Thần). */
   catTocDep: boolean;
+  /** Ngày này có phải Thiên Đức Hợp của tháng Âm lịch hay không. */
+  thienDucHop: boolean;
+  /** Ngày này có phải Thiên Xá của mùa (chia theo tháng Âm lịch) hay không. */
+  thienXa: boolean;
   gio12: GioTrongNgay[];
 }

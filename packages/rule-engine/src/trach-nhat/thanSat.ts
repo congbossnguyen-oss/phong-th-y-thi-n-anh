@@ -1,12 +1,13 @@
 /**
  * Thần Sát theo tháng âm lịch (cát thần + hung sát).
  *
- * Nguồn: "Ngọc Hạp Thông Thư – Hứa Chân Quân" (bản OCR, chủ dự án cung cấp 2026-08-05).
- * Mỗi thần sát dưới đây được trích từ đúng 1 mục riêng trong sách (tên mục ghi trong
- * `nguon`), toàn bộ đều là dạng bảng "tháng âm lịch → Chi ngày" rõ ràng, không bị OCR làm
- * hỏng — khác với phần Hoàng Đạo/Hắc Đạo theo giờ hay 28 Tú (xem ghi chú giới hạn ở 2 file
- * đó). Đây KHÔNG PHẢI danh sách đầy đủ mọi thần sát trong sách (sách có hàng chục mục rải
- * rác suốt ~3000 dòng) — chỉ là tập đã trích xuất và xác minh xong, mở rộng dần khi cần.
+ * Nguồn: phần lớn từ "Ngọc Hạp Thông Thư – Hứa Chân Quân" (bản OCR, chủ dự án cung cấp
+ * 2026-08-05) — mỗi mục trích từ đúng 1 mục riêng trong sách (tên mục ghi trong `nguon`),
+ * dạng bảng "tháng âm lịch → Chi ngày" rõ ràng, không bị OCR làm hỏng — khác với phần Hoàng
+ * Đạo/Hắc Đạo theo giờ hay 28 Tú (xem ghi chú giới hạn ở 2 file đó). Đây KHÔNG PHẢI danh sách
+ * đầy đủ mọi thần sát trong sách (sách có hàng chục mục rải rác suốt ~3000 dòng) — chỉ là tập
+ * đã trích xuất và xác minh xong, mở rộng dần khi cần. Một số mục (Địa Giải, Sinh Khí, Thiên
+ * Giải (nguồn khác)) do chủ dự án cung cấp trực tiếp 2026-08-11 (xem `nguon` từng mục).
  *
  * Quy ước dữ liệu: `chiTheoThang[i]` = Chi của ngày ứng với thần sát này trong tháng âm lịch
  * (i+1). Một số thần sát dùng chung 1 Chi cho cặp tháng cách nhau 6 hoặc 2 tháng — được khai
@@ -119,6 +120,27 @@ export const THAN_SAT_THANG: readonly ThanSatThangEntry[] = [
     catHung: "hung",
     nguon: "NHỮNG NGÀY TIỂU HAO KỴ XUẤT NHẬP TIỀN TÀI",
     chiTheoThang: ["Tỵ", "Ngọ", "Mùi", "Hợi", "Tý", "Sửu", "Thân", "Dậu", "Tuất", "Dần", "Mão", "Thìn"],
+  },
+  {
+    name: "Địa Giải",
+    catHung: "cát",
+    nguon: "Bảng ngày tốt theo tháng âm lịch — chủ dự án cung cấp trực tiếp 2026-08-11",
+    chiTheoThang: ["Ngọ", "Thân", "Tuất", "Tý", "Dần", "Mão", "Ngọ", "Thân", "Tuất", "Tý", "Dần", "Mão"],
+  },
+  {
+    name: "Sinh Khí (cầu tài)",
+    catHung: "cát",
+    nguon: "Bảng ngày tốt theo tháng âm lịch — chủ dự án cung cấp trực tiếp 2026-08-11",
+    chiTheoThang: ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"],
+  },
+  {
+    name: "Thiên Giải (nguồn khác)",
+    catHung: "cát",
+    nguon: "Bảng ngày tốt theo tháng âm lịch — chủ dự án cung cấp trực tiếp 2026-08-11",
+    // ⚠️ Tên trùng "Thiên Giải" đã có ở trên (nguồn Ngọc Hạp Thông Thư) nhưng 2 bảng Chi hoàn
+    // toàn khác nhau — chủ dự án xác nhận giữ cả 2, đặt tên riêng để không gây hiểu nhầm 2
+    // bảng khác nhau cùng 1 tên (2026-08-11).
+    chiTheoThang: ["Tỵ", "Hợi", "Tý", "Dần", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân", "Dậu"],
   },
 ] as const;
 
