@@ -145,6 +145,20 @@ export const prerender = true;
             <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Năm nay phạm hạn Tam Tai — tuổi thuộc nhóm</p>
             <p id="kq-tam-tai" class="mt-1 text-sm font-semibold text-slate-800"></p>
           </div>
+
+          <div id="kq-bach-ky-wrap" class="mt-5 hidden border-t border-slate-200 pt-5">
+            <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Ngày Bách Kỵ</p>
+            <p id="kq-bach-ky" class="mt-1 text-sm font-semibold text-slate-800"></p>
+            <p class="mt-1 text-xs text-slate-400">
+              Theo Can/Chi của ngày (Hiệp Kỷ Biện Phương Thư Tập 2) — bảng gốc bị OCR làm rớt vài mục (thiếu Can Nhâm và
+              3 Chi Thìn/Tỵ/Ngọ), nên một số ngày sẽ không hiện đủ.
+            </p>
+          </div>
+
+          <div id="kq-goi-dau-wrap" class="mt-5 hidden border-t border-slate-200 pt-5">
+            <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Ngày gội đầu</p>
+            <p class="mt-1 text-sm font-semibold text-(--color-cinnabar-500)">Hôm nay là ngày tốt để gội đầu.</p>
+          </div>
         </div>
 
         <div class="mt-6 rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
@@ -222,6 +236,8 @@ export const prerender = true;
     satChu: boolean;
     nhomTuoiPhamTamTai: string[][];
     canNamSinhKyKimThanThatSat: string[];
+    bachKyNgay: { nhan: string; viec: string }[];
+    ngayGoiDauTot: boolean;
     gio12: GioTrongNgay[];
   }
 
@@ -531,6 +547,18 @@ export const prerender = true;
     } else {
       tamTaiWrap.classList.add("hidden");
     }
+
+    const bachKyWrap = document.getElementById("kq-bach-ky-wrap")!;
+    if (data.bachKyNgay.length > 0) {
+      document.getElementById("kq-bach-ky")!.textContent = data.bachKyNgay
+        .map((b) => `${b.nhan} ${b.viec}`)
+        .join(" · ");
+      bachKyWrap.classList.remove("hidden");
+    } else {
+      bachKyWrap.classList.add("hidden");
+    }
+
+    document.getElementById("kq-goi-dau-wrap")!.classList.toggle("hidden", !data.ngayGoiDauTot);
 
     document.getElementById("kq-luc-nham")!.innerHTML = renderLucNham(data.gio12);
 

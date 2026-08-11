@@ -12,3 +12,5 @@ export * from "./tamTai.js";
 export * from "./satChu.js";
 export * from "./kimThanThatSat.js";
 export * from "./duongCongKyNhat.js";
+export * from "./ngayBachKy.js";
+export * from "./ngayGoiDau.js";

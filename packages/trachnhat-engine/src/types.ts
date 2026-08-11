@@ -56,5 +56,9 @@ export interface TrachNhatOutput {
   satChu: boolean;
   /** (Các) Can năm sinh bị kỵ Kim Thần Thất Sát (động thổ, tu tạo) vào đúng ngày này. */
   canNamSinhKyKimThanThatSat: string[];
+  /** Ngày Bách Kỵ — kỵ theo Can/Chi của chính ngày này (0-2 kết quả, xem rule-engine/ngayBachKy.ts). */
+  bachKyNgay: { nhan: string; viec: string }[];
+  /** Ngày này có tốt để gội đầu hay không (theo ngày Âm lịch trong tháng hoặc Trực). */
+  ngayGoiDauTot: boolean;
   gio12: GioTrongNgay[];
 }
