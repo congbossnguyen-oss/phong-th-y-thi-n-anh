@@ -151,13 +151,33 @@ export const prerender = true;
             <p id="kq-tam-tai" class="mt-1 text-sm font-semibold text-slate-800"></p>
           </div>
 
+          <div class="mt-5 border-t border-slate-200 pt-5">
+            <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Phạm Thái Tuế năm nay — tuổi thuộc nhóm</p>
+            <div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <div class="rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-center">
+                <p class="text-[11px] uppercase tracking-wide text-slate-500">Trực (Tọa)</p>
+                <p id="kq-thai-tue-truc" class="mt-0.5 font-display text-lg font-bold text-slate-900"></p>
+              </div>
+              <div class="rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-center">
+                <p class="text-[11px] uppercase tracking-wide text-slate-500">Xung</p>
+                <p id="kq-thai-tue-xung" class="mt-0.5 font-display text-lg font-bold text-slate-900"></p>
+              </div>
+              <div class="rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-center">
+                <p class="text-[11px] uppercase tracking-wide text-slate-500">Hình</p>
+                <p id="kq-thai-tue-hinh" class="mt-0.5 font-display text-lg font-bold text-slate-900"></p>
+              </div>
+              <div class="rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-center">
+                <p class="text-[11px] uppercase tracking-wide text-slate-500">Hại</p>
+                <p id="kq-thai-tue-hai" class="mt-0.5 font-display text-lg font-bold text-slate-900"></p>
+              </div>
+            </div>
+            <p class="mt-2 text-xs text-slate-500">4 loại phạm Thái Tuế kinh điển theo tuổi (Chi năm sinh) — không tính "Phá Thái Tuế".</p>
+          </div>
+
           <div id="kq-bach-ky-wrap" class="mt-5 hidden border-t border-slate-200 pt-5">
             <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Ngày Bách Kỵ</p>
             <p id="kq-bach-ky" class="mt-1 text-sm font-semibold text-slate-800"></p>
-            <p class="mt-1 text-xs text-slate-400">
-              Theo Can/Chi của ngày (Hiệp Kỷ Biện Phương Thư Tập 2) — bảng gốc bị OCR làm rớt vài mục (thiếu Can Nhâm và
-              3 Chi Thìn/Tỵ/Ngọ), nên một số ngày sẽ không hiện đủ.
-            </p>
+            <p class="mt-1 text-xs text-slate-400">Theo Can/Chi của ngày (Hiệp Kỷ Biện Phương Thư)</p>
           </div>
 
           <div id="kq-goi-dau-wrap" class="mt-5 hidden border-t border-slate-200 pt-5">
@@ -184,9 +204,8 @@ export const prerender = true;
         <div class="mt-6 rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
           <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Tra cứu Nghi/Kỵ theo việc (tham khảo)</p>
           <p class="mt-1 text-xs text-slate-500">
-            Trích từ bản OCR sách "Hiệp Kỷ Biện Phương Thư" (Mai Cốc Thành) — <strong>chưa đối chiếu lại với bản gốc</strong>,
-            OCR bị xáo trộn thứ tự từ ở nhiều chỗ nên có thể thiếu hoặc chưa chính xác 100%. Chỉ mang tính tham khảo sơ bộ,
-            không phụ thuộc vào ngày đang xem ở trên.
+            Trích từ sách "Hiệp Kỷ Biện Phương Thư" (Mai Cốc Thành) — có thể thiếu hoặc chưa chính xác 100%. Chỉ mang tính
+            tham khảo sơ bộ, không phụ thuộc vào ngày đang xem ở trên.
           </p>
           <select
             id="dung-su-select"
@@ -256,6 +275,14 @@ export const prerender = true;
     catTocDep: boolean;
     thienDucHop: boolean;
     thienXa: boolean;
+    phamThaiTue: {
+      namChi: string;
+      tuoiPhamThaiTue: string;
+      tuoiXungThaiTue: string;
+      tuoiHinhThaiTue: string[];
+      namTuHinh: boolean;
+      tuoiHaiThaiTue: string;
+    };
     gio12: GioTrongNgay[];
   }
 
@@ -580,6 +607,16 @@ export const prerender = true;
     } else {
       bachKyWrap.classList.add("hidden");
     }
+
+    document.getElementById("kq-thai-tue-truc")!.textContent = data.phamThaiTue.tuoiPhamThaiTue;
+    document.getElementById("kq-thai-tue-xung")!.textContent = data.phamThaiTue.tuoiXungThaiTue;
+    document.getElementById("kq-thai-tue-hinh")!.textContent =
+      data.phamThaiTue.tuoiHinhThaiTue.length > 0
+        ? data.phamThaiTue.tuoiHinhThaiTue.join(", ")
+        : data.phamThaiTue.namTuHinh
+          ? `${data.phamThaiTue.namChi} (tự hình)`
+          : "—";
+    document.getElementById("kq-thai-tue-hai")!.textContent = data.phamThaiTue.tuoiHaiThaiTue;
 
     document.getElementById("kq-goi-dau-wrap")!.classList.toggle("hidden", !data.ngayGoiDauTot);
     document.getElementById("kq-cat-toc-wrap")!.classList.toggle("hidden", !data.catTocDep);

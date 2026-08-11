@@ -29,6 +29,14 @@ export interface NgayInfoResult {
   catTocDep: boolean;
   thienDucHop: boolean;
   thienXa: boolean;
+  phamThaiTue: {
+    namChi: string;
+    tuoiPhamThaiTue: string;
+    tuoiXungThaiTue: string;
+    tuoiHinhThaiTue: string[];
+    namTuHinh: boolean;
+    tuoiHaiThaiTue: string;
+  };
 }
 
 export function tinhNgayInfo(tuTru: TuTruResult): NgayInfoResult {
@@ -55,6 +63,7 @@ export function tinhNgayInfo(tuTru: TuTruResult): NgayInfoResult {
   );
   const thienDucHop = TrachNhat.isThienDucHopNgay(lunarMonth, dayCan, dayChi);
   const thienXa = TrachNhat.isThienXaNgay(lunarMonth, dayCan, dayChi);
+  const phamThaiTue = TrachNhat.getPhamThaiTueTheoNam(tuTru.tuTru.nam.chi as Chi);
 
   return {
     truc: { index: truc.index, name: truc.name },
@@ -73,5 +82,6 @@ export function tinhNgayInfo(tuTru: TuTruResult): NgayInfoResult {
     catTocDep,
     thienDucHop,
     thienXa,
+    phamThaiTue,
   };
 }

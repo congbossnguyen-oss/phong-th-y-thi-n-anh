@@ -66,5 +66,14 @@ export interface TrachNhatOutput {
   thienDucHop: boolean;
   /** Ngày này có phải Thiên Xá của mùa (chia theo tháng Âm lịch) hay không. */
   thienXa: boolean;
+  /** Các tuổi (Chi) phạm Thái Tuế trong năm của ngày đang xem — Trực/Xung/Hình/Hại Thái Tuế. */
+  phamThaiTue: {
+    namChi: string;
+    tuoiPhamThaiTue: string;
+    tuoiXungThaiTue: string;
+    tuoiHinhThaiTue: string[];
+    namTuHinh: boolean;
+    tuoiHaiThaiTue: string;
+  };
   gio12: GioTrongNgay[];
 }
