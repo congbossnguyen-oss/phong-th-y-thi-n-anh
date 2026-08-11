@@ -24,8 +24,8 @@ export interface NgayInfoResult {
   nhomTuoiPhamTamTai: string[][];
   satChu: boolean;
   canNamSinhKyKimThanThatSat: string[];
+  chiNgayKyKimThanThatSatTheoNam: string[];
   bachKyNgay: { nhan: string; viec: string }[];
-  ngayGoiDauTot: boolean;
   catTocDep: boolean;
   thienDucHop: boolean;
   thienXa: boolean;
@@ -56,8 +56,8 @@ export function tinhNgayInfo(tuTru: TuTruResult): NgayInfoResult {
   const nhomTuoiPhamTamTai = TrachNhat.getNhomTuoiPhamTamTai(tuTru.tuTru.nam.chi as Chi);
   const satChu = TrachNhat.isSatChuNgay(dayChi, tuTru.monthOrderIndex);
   const canNamSinhKyKimThanThatSat = TrachNhat.getCanNamSinhKyKimThanThatSat(dayChi);
+  const chiNgayKyKimThanThatSatTheoNam = TrachNhat.getChiNgayKyKimThanThatSatTheoNam(tuTru.tuTru.nam.can as Can);
   const bachKyNgay = TrachNhat.getBachKyNgay(dayCan, dayChi);
-  const ngayGoiDauTot = TrachNhat.isNgayGoiDauTot(tuTru.lunarDate.day, truc.name);
   const catTocDep = TrachNhat.isNgayDepCatToc(
     truc.name,
     thanSat.map((entry) => entry.name),
@@ -78,8 +78,8 @@ export function tinhNgayInfo(tuTru: TuTruResult): NgayInfoResult {
     nhomTuoiPhamTamTai: nhomTuoiPhamTamTai.map((g) => [...g]),
     satChu,
     canNamSinhKyKimThanThatSat: [...canNamSinhKyKimThanThatSat],
+    chiNgayKyKimThanThatSatTheoNam: [...chiNgayKyKimThanThatSatTheoNam],
     bachKyNgay,
-    ngayGoiDauTot,
     catTocDep,
     thienDucHop,
     thienXa,

@@ -140,10 +140,17 @@ export const prerender = true;
           <div id="kq-kim-than-that-sat-wrap" class="mt-5 hidden border-t border-slate-200 pt-5">
             <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Kim Thần Thất Sát — đại kỵ với tuổi</p>
             <p id="kq-kim-than-that-sat" class="mt-1 text-sm font-semibold text-slate-800"></p>
-            <p class="mt-1 text-xs text-slate-500">
-              Tránh: động thổ, cất nóc, đổ mái, nhập trạch (xây/sửa nhà) · cưới hỏi, ăn hỏi · khai trương, ký hợp đồng lớn,
-              xuất hành đi xa · chôn cất, mai táng.
-            </p>
+            <div class="mt-2 space-y-1 text-xs text-slate-500">
+              <p><strong class="text-slate-600">Xây dựng, sửa nhà:</strong> Tránh động thổ, cất nóc, đổ mái hay nhập trạch.</p>
+              <p><strong class="text-slate-600">Cưới hỏi:</strong> Tránh tổ chức đám cưới, ăn hỏi vì sợ đổ vỡ, bất hòa.</p>
+              <p><strong class="text-slate-600">Kinh doanh, xuất hành:</strong> Tránh khai trương, ký kết hợp đồng lớn hoặc đi xa.</p>
+              <p><strong class="text-slate-600">An táng:</strong> Tránh chôn cất, mai táng.</p>
+            </div>
+          </div>
+
+          <div class="mt-5 border-t border-slate-200 pt-5">
+            <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Kim Thần Thất Sát theo năm — đại kỵ ngày</p>
+            <p id="kq-kim-than-nam" class="mt-1 text-sm font-semibold text-slate-800"></p>
           </div>
 
           <div id="kq-tam-tai-wrap" class="mt-5 hidden border-t border-slate-200 pt-5">
@@ -182,11 +189,6 @@ export const prerender = true;
             <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Ngày Bách Kỵ</p>
             <p id="kq-bach-ky" class="mt-1 text-sm font-semibold text-slate-800"></p>
             <p class="mt-1 text-xs text-slate-400">Theo Can/Chi của ngày (Hiệp Kỷ Biện Phương Thư)</p>
-          </div>
-
-          <div id="kq-goi-dau-wrap" class="mt-5 hidden border-t border-slate-200 pt-5">
-            <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Ngày gội đầu</p>
-            <p class="mt-1 text-sm font-semibold text-(--color-cinnabar-500)">Hôm nay là ngày tốt để gội đầu.</p>
           </div>
 
           <div id="kq-cat-toc-wrap" class="mt-5 hidden border-t border-slate-200 pt-5">
@@ -274,8 +276,8 @@ export const prerender = true;
     satChu: boolean;
     nhomTuoiPhamTamTai: string[][];
     canNamSinhKyKimThanThatSat: string[];
+    chiNgayKyKimThanThatSatTheoNam: string[];
     bachKyNgay: { nhan: string; viec: string }[];
-    ngayGoiDauTot: boolean;
     catTocDep: boolean;
     thienDucHop: boolean;
     thienXa: boolean;
@@ -597,6 +599,11 @@ export const prerender = true;
       kimThanWrap.classList.add("hidden");
     }
 
+    document.getElementById("kq-kim-than-nam")!.textContent =
+      data.chiNgayKyKimThanThatSatTheoNam.length > 0
+        ? `Ngày Chi ${data.chiNgayKyKimThanThatSatTheoNam.join(", ")}`
+        : "—";
+
     const tamTaiWrap = document.getElementById("kq-tam-tai-wrap")!;
     if (data.nhomTuoiPhamTamTai.length > 0) {
       document.getElementById("kq-tam-tai")!.textContent = data.nhomTuoiPhamTamTai
@@ -628,7 +635,6 @@ export const prerender = true;
     document.getElementById("kq-thai-tue-hai")!.textContent = data.phamThaiTue.tuoiHaiThaiTue;
     document.getElementById("kq-thai-tue-pha")!.textContent = data.phamThaiTue.tuoiPhaThaiTue;
 
-    document.getElementById("kq-goi-dau-wrap")!.classList.toggle("hidden", !data.ngayGoiDauTot);
     document.getElementById("kq-cat-toc-wrap")!.classList.toggle("hidden", !data.catTocDep);
 
     const thanSatThemBadges: string[] = [];

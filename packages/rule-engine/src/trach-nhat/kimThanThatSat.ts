@@ -37,3 +37,13 @@ export const KIM_THAN_THAT_SAT: readonly KimThanThatSatGroup[] = [
 export function getCanNamSinhKyKimThanThatSat(dayChi: Chi): readonly Can[] {
   return KIM_THAN_THAT_SAT.filter((g) => g.chiNgayKy.includes(dayChi)).flatMap((g) => g.canNamSinh);
 }
+
+/**
+ * Chiều ngược lại: cho Can của NĂM ĐANG XEM (không phải năm sinh gia chủ), trả về (các) Chi
+ * ngày đại kỵ Kim Thần Thất Sát suốt năm đó — dùng cùng 1 bảng `KIM_THAN_THAT_SAT` ở trên, chỉ
+ * tra theo chiều khác (từ Can ra Chi thay vì từ Chi ra Can).
+ */
+export function getChiNgayKyKimThanThatSatTheoNam(canNam: Can): readonly Chi[] {
+  const nhom = KIM_THAN_THAT_SAT.find((g) => g.canNamSinh.includes(canNam));
+  return nhom ? nhom.chiNgayKy : [];
+}

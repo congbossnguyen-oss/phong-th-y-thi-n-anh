@@ -5,3 +5,4 @@
  * — xem docs/02-rule-engine.md.
  */
 export * as TrachNhat from "./trach-nhat/index.js";
+export * as Scoring from "./scoring/index.js";
