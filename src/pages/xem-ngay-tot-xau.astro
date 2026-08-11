@@ -703,7 +703,7 @@ export const prerender = true;
     const bachKyWrap = document.getElementById("kq-bach-ky-wrap")!;
     if (data.bachKyNgay.length > 0) {
       document.getElementById("kq-bach-ky")!.textContent = data.bachKyNgay
-        .map((b) => `${b.nhan} ${b.viec}`)
+        .map((b) => `Ngày ${b.nhan} ${b.viec}`)
         .join(" · ");
       bachKyWrap.classList.remove("hidden");
     } else {
