@@ -11,9 +11,13 @@ export const prerender = false;
 
 const courseSlug = Astro.url.searchParams.get("khoa-hoc");
 const requestedCourse = courseSlug ? await getCourseBySlug(courseSlug) : null;
+const topicParam = Astro.url.searchParams.get("topic");
+const isTrungTangTopic = topicParam === "trung-tang";
 const prefilledMessage = requestedCourse
   ? `Tôi muốn đăng ký khóa học "${requestedCourse.name}". Vui lòng liên hệ tư vấn lịch học.`
-  : "";
+  : isTrungTangTopic
+    ? "Tôi muốn được tư vấn trực tiếp về Trùng Tang — chọn giờ liệm/hạ huyệt và phương án hóa giải phù hợp cho người thân."
+    : "";
 ---
 
 <BaseLayout title="Liên hệ / Đặt lịch tư vấn" description="Liên hệ và đặt lịch tư vấn phong thủy cùng Thiên Anh.">
@@ -65,6 +69,7 @@ const prefilledMessage = requestedCourse
             <option>Phong thủy văn phòng</option>
             <option>Xem ngày cao cấp</option>
             <option>Bát tự</option>
+            <option selected={isTrungTangTopic}>Trùng Tang — chọn giờ liệm/hạ huyệt</option>
             <option selected={!!requestedCourse}>Đăng ký khóa học</option>
             <option>Khác</option>
           </select>

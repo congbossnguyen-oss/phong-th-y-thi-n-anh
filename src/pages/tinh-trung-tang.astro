@@ -3,7 +3,6 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import PageHero from "../components/ui/PageHero.astro";
 import Container from "../components/ui/Container.astro";
 import Button from "../components/ui/Button.astro";
-import { siteConfig } from "../lib/site-config";
 
 export const prerender = true;
 
@@ -111,27 +110,46 @@ const CHI_LIST = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "M�
 
         <div id="tt-noi-dung" class="hidden space-y-6">
           <div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
-            <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Kết luận</p>
-            <p id="tt-ket-luan" class="mt-1 font-display text-2xl font-bold text-slate-900"></p>
-            <p id="tt-ket-luan-phu" class="mt-1 text-sm text-slate-600"></p>
-
-            <div class="mt-4 grid grid-cols-2 gap-2 border-t border-slate-200 pt-4 sm:grid-cols-4">
+            <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Xét theo từng mốc thời gian</p>
+            <div class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
               <div class="rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-center">
-                <p class="text-[11px] uppercase tracking-wide text-slate-500">Cung Tuổi</p>
+                <p class="text-[11px] uppercase tracking-wide text-slate-500">Theo Năm mất</p>
                 <p id="tt-cung-tuoi" class="mt-0.5 font-display text-lg font-bold text-slate-900"></p>
+                <p id="tt-cung-tuoi-nhan" class="mt-0.5 text-xs font-semibold"></p>
               </div>
               <div class="rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-center">
-                <p class="text-[11px] uppercase tracking-wide text-slate-500">Cung Tháng</p>
+                <p class="text-[11px] uppercase tracking-wide text-slate-500">Theo Tháng</p>
                 <p id="tt-cung-thang" class="mt-0.5 font-display text-lg font-bold text-slate-900"></p>
+                <p id="tt-cung-thang-nhan" class="mt-0.5 text-xs font-semibold"></p>
               </div>
               <div class="rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-center">
-                <p class="text-[11px] uppercase tracking-wide text-slate-500">Cung Ngày</p>
+                <p class="text-[11px] uppercase tracking-wide text-slate-500">Theo Ngày</p>
                 <p id="tt-cung-ngay" class="mt-0.5 font-display text-lg font-bold text-slate-900"></p>
+                <p id="tt-cung-ngay-nhan" class="mt-0.5 text-xs font-semibold"></p>
               </div>
               <div class="rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-center">
-                <p class="text-[11px] uppercase tracking-wide text-slate-500">Cung Giờ</p>
+                <p class="text-[11px] uppercase tracking-wide text-slate-500">Theo Giờ</p>
                 <p id="tt-cung-gio" class="mt-0.5 font-display text-lg font-bold text-slate-900"></p>
+                <p id="tt-cung-gio-nhan" class="mt-0.5 text-xs font-semibold"></p>
               </div>
+            </div>
+
+            <div class="mt-4 border-t border-slate-200 pt-4">
+              <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Kết luận chung</p>
+              <p id="tt-ket-luan" class="mt-1 font-display text-2xl font-bold text-slate-900"></p>
+              <p id="tt-ket-luan-phu" class="mt-1 text-sm text-slate-600"></p>
+            </div>
+
+            <div class="mt-4 border-t border-slate-200 pt-4">
+              <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Thứ tự nặng nhẹ</p>
+              <p class="mt-1 text-sm text-slate-700">
+                Theo người xưa và sách vở ghi chép lại thì: <strong>Trùng tang Ngày</strong> là nặng nhất,
+                <strong>Trùng tang Tháng</strong> là nặng nhì, <strong>Trùng tang Giờ</strong> là nặng thứ ba,
+                <strong>Trùng tang Năm</strong> là nhẹ nhất.
+              </p>
+              <p class="mt-1 text-xs text-slate-500">
+                (Chú ý: Nếu xuất hiện nhiều trùng tang trong năm, tháng, ngày, giờ thì mức độ nặng tăng tương ứng.)
+              </p>
             </div>
 
             <div class="mt-4 border-t border-slate-200 pt-4">
@@ -159,6 +177,32 @@ const CHI_LIST = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "M�
           </div>
 
           <div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
+            <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Ý nghĩa của Trùng tang, Nhập mộ, Thiên di</p>
+            <div class="mt-3 space-y-3 text-sm text-slate-700">
+              <p>
+                <strong class="text-emerald-600">Nhập mộ:</strong> Nghĩa là người chết bởi đến đó hết số rồi nên phải
+                chuyển kiếp. Người ra đi được nằm xuống vĩnh viễn, không còn vương vấn trần ai. Thể hiện sự an lành,
+                yên nghỉ. Chỉ cần khi tính trùng tang mà gặp năm tuổi là nhập mộ, nghĩa là người chết đã hết số, thì
+                không còn oan ức gì mấy, trùng tang được giảm nhẹ tối thiểu, tùy thuộc vào hạn trùng tang của người
+                chết trước đó trong dòng họ đã được hóa giải hay chưa. Người chết mà được năm, tháng, ngày, giờ đều
+                nhập mộ thì được coi là cái chết phúc đức để đời cho con cháu.
+              </p>
+              <p>
+                <strong class="text-slate-500">Thiên di:</strong> Là dấu hiệu ra đi số do "Trời định", người mất lúc
+                đó được trời đưa đi. Sự ra đi này nằm ngoài mong muốn của người mất, nhưng cũng là hợp với lẽ trời. Số
+                này thường được giải thích theo hai lý do là do kiếp trước hoặc là tiên, hoặc là quỷ sứ bị đầu thai
+                dáng làm kiếp người, hết thời gian tu luyện, bị Trời bắt đem về lại.
+              </p>
+              <p>
+                <strong class="text-(--color-cinnabar-500)">Trùng tang (kiếp sát):</strong> Là dấu hiệu ra đi không
+                hợp số phận, chưa tới số mà phải chết oan uổng, có sự oán thán nào đó của cõi âm, gây ảnh hưởng tới
+                người ở lại. Theo quan niệm xưa, nếu gặp phải trùng tang mà không có "Nhập mộ" nào thì cần phải làm lễ
+                "trấn trùng tang".
+              </p>
+            </div>
+          </div>
+
+          <div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
             <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Hướng xử lý</p>
             <ol class="mt-2 list-decimal space-y-2 pl-4 text-sm text-slate-700">
               <li><strong>Gốc bền vững nhất:</strong> xem lại phong thủy nhà ở của người thân còn sống và mộ phần — theo chính sách nguồn, mất vào ngày trùng chỉ là "điều kiện cần", nhà/mộ có phạm cách suy nhân đinh mới là "điều kiện đủ". Đây là hướng xử lý gốc, lâu dài.</li>
@@ -168,10 +212,10 @@ const CHI_LIST = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "M�
             <div class="mt-4 rounded-xl border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-4">
               <p class="text-sm font-semibold text-(--color-ink-800)">Chọn giờ liệm/hạ huyệt cụ thể và phương án hóa giải phù hợp cần xét riêng từng trường hợp.</p>
               <a
-                href={`tel:${siteConfig.hotline.replace(/\s/g, "")}`}
+                href="/lien-he?topic=trung-tang"
                 class="mt-3 inline-flex items-center justify-center gap-2 rounded-(--radius-pill) bg-(--color-gold-400) px-5 py-2.5 text-sm font-semibold text-(--color-on-accent) hover:bg-(--color-gold-300)"
               >
-                Liên hệ tư vấn trực tiếp: {siteConfig.hotline}
+                Đặt lịch tư vấn trực tiếp
               </a>
             </div>
           </div>
@@ -254,9 +298,18 @@ const CHI_LIST = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "M�
 
   function chiCell(id: string, chi: string | null, phanLoai?: string) {
     const el = document.getElementById(id)!;
+    const nhanEl = document.getElementById(`${id}-nhan`);
     el.textContent = chi ?? "—";
     if (phanLoai) {
-      el.className = `mt-0.5 font-display text-lg font-bold ${MAU_PHAN_LOAI[phanLoai] ?? "text-slate-900"}`;
+      const mau = MAU_PHAN_LOAI[phanLoai] ?? "text-slate-900";
+      el.className = `mt-0.5 font-display text-lg font-bold ${mau}`;
+      if (nhanEl) {
+        nhanEl.textContent = NHAN_PHAN_LOAI[phanLoai] ?? "";
+        nhanEl.className = `mt-0.5 text-xs font-semibold ${mau}`;
+      }
+    } else if (nhanEl) {
+      nhanEl.textContent = "Chưa rõ (thiếu giờ mất)";
+      nhanEl.className = "mt-0.5 text-xs font-semibold text-slate-400";
     }
   }
 
