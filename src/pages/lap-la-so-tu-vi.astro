@@ -190,13 +190,13 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
   function starLineHtml(s: DisplayStar): string {
     const tuHoaTag = s.tuHoa ? `<sup style="color:${LIGHT.red};font-weight:800;">${TU_HOA_ABBR[s.tuHoa]}</sup>` : "";
     const color = colorOfSao(s.name, LIGHT.textMuted);
-    return `<div style="font-size:7px;font-weight:700;color:${color};line-height:1.4;white-space:nowrap;">${s.name}${tuHoaTag}</div>`;
+    return `<div style="font-size:9px;font-weight:700;color:${color};line-height:1.35;white-space:nowrap;">${s.name}${tuHoaTag}</div>`;
   }
 
   // Yêu cầu Công: Tứ Hóa ghi RÕ RÀNG thành dòng riêng ở ĐẦU danh sách phụ tinh (Hóa Lộc/Quyền/Khoa bên
   // cột tốt, Hóa Kỵ bên cột xấu) — không chỉ dựa vào sup nhỏ trên chính tinh/phụ tinh nữa.
   function tuHoaLineHtml(tag: "Lộc" | "Quyền" | "Khoa" | "Kỵ"): string {
-    return `<div style="font-size:7px;font-weight:800;color:${LIGHT.red};line-height:1.4;white-space:nowrap;">Hóa ${tag}</div>`;
+    return `<div style="font-size:9px;font-weight:800;color:${LIGHT.red};line-height:1.35;white-space:nowrap;">Hóa ${tag}</div>`;
   }
 
   // Tab nối Tuần/Triệt giữa 2 cung liền cạnh — thay cho badge trong từng ô (yêu cầu Công: "1 ô nối giữa
@@ -235,7 +235,7 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
       : Math.min(a.row, b.row);
     const leftPct = ((cx - barLen / 2) / 4) * 100;
     const topPct = ((cy - barThick / 2) / 4) * 100;
-    return `<div style="position:absolute;left:${leftPct}%;top:${topPct}%;width:${(barLen / 4) * 100}%;height:${(barThick / 4) * 100}%;display:flex;align-items:center;justify-content:center;overflow:visible;white-space:nowrap;font-size:6px;font-weight:800;letter-spacing:.01em;color:${fg};background:${bg};border-radius:3px;z-index:6;box-shadow:0 0 0 1px ${LIGHT.border};">${label}</div>`;
+    return `<div style="position:absolute;left:${leftPct}%;top:${topPct}%;width:${(barLen / 4) * 100}%;height:${(barThick / 4) * 100}%;display:flex;align-items:center;justify-content:center;overflow:visible;white-space:nowrap;font-size:8px;font-weight:800;letter-spacing:.01em;color:${fg};background:${bg};border-radius:3px;z-index:6;box-shadow:0 0 0 1px ${LIGHT.border};">${label}</div>`;
   }
 
   function cellHtml(p: CungKetQua, tapDieuNames: string[], isCurrentDaiVan: boolean, isCurrentTieuHan: boolean): string {
@@ -247,12 +247,12 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
       .map((s) => {
         const tuHoaTag = s.tuHoa ? `<sup style="color:${LIGHT.red};font-weight:800;">${TU_HOA_ABBR[s.tuHoa]}</sup>` : "";
         const color = colorOfSao(s.name, LIGHT.text);
-        return `<div style="line-height:1.15;"><span style="font-weight:800;font-size:11px;color:${color};white-space:nowrap;">${s.name}${tuHoaTag}</span><span style="font-weight:800;font-size:11px;color:${LIGHT.textMuted};"> ${TT_ABBR[s.trangThai]}</span></div>`;
+        return `<div style="line-height:1.15;"><span style="font-weight:800;font-size:13px;color:${color};white-space:nowrap;">${s.name}${tuHoaTag}</span><span style="font-weight:800;font-size:13px;color:${LIGHT.textMuted};"> ${TT_ABBR[s.trangThai]}</span></div>`;
       })
       .join("");
     // Yêu cầu Công: nơi an Thân hiện "(THÂN)" chữ hoa in đậm ngay cạnh CUNG CHỨC, cỡ chữ bằng đúng cỡ chữ
-    // cung chức (12px).
-    const thanTag = p.isThan ? ` <strong style="font-size:12px;font-weight:800;color:${LIGHT.text};">(THÂN)</strong>` : "";
+    // cung chức (14px).
+    const thanTag = p.isThan ? ` <strong style="font-size:14px;font-weight:800;color:${LIGHT.text};">(THÂN)</strong>` : "";
 
     // Yêu cầu Công: sao vòng Thái Tuế (trước đây gắn cạnh Trường Sinh) chuyển lên phần phụ tinh, xếp
     // đúng cột tốt/xấu như các phụ tinh khác — không còn hiện riêng ở dòng dưới cùng nữa.
@@ -289,16 +289,16 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
           ${currentDaiVanOverlay}
           ${currentTieuHanBadge}
           <div style="display:flex;justify-content:space-between;align-items:center;gap:4px;">
-            <span style="font-size:8px;color:${LIGHT.textMuted};white-space:nowrap;flex-shrink:0;">${p.canName}${p.chiName}</span>
-            <span style="flex:1;text-align:center;font-size:12px;font-weight:800;color:${LIGHT.text};white-space:nowrap;overflow:hidden;">${p.cungName.toUpperCase()}${thanTag}</span>
-            <span style="font-size:8px;color:${LIGHT.textMuted};white-space:nowrap;flex-shrink:0;">${p.daiVanTuoi[0]}-${p.daiVanTuoi[1]}</span>
+            <span style="font-size:9px;color:${LIGHT.textMuted};white-space:nowrap;flex-shrink:0;">${p.canName}${p.chiName}</span>
+            <span style="flex:1;text-align:center;font-size:14px;font-weight:800;color:${LIGHT.text};white-space:nowrap;overflow:hidden;">${p.cungName.toUpperCase()}${thanTag}</span>
+            <span style="font-size:9px;color:${LIGHT.textMuted};white-space:nowrap;flex-shrink:0;">${p.daiVanTuoi[0]}-${p.daiVanTuoi[1]}</span>
           </div>
           <div style="text-align:center;margin-top:0;">${chinhTinhHtml}</div>
           <div style="flex:1;min-height:0;display:flex;justify-content:space-between;gap:3px;margin-top:3px;">
             <div style="display:flex;flex-direction:column;align-items:flex-start;min-width:0;">${catHtml}</div>
             <div style="display:flex;flex-direction:column;align-items:flex-end;min-width:0;text-align:right;">${hungHtml}</div>
           </div>
-          <div style="text-align:center;font-size:7px;font-weight:800;color:${LIGHT.textMuted};margin-top:2px;white-space:nowrap;">${p.trangSinh}</div>
+          <div style="text-align:center;font-size:8px;font-weight:800;color:${LIGHT.textMuted};margin-top:2px;white-space:nowrap;">${p.trangSinh}</div>
         </div>
       </div>
     `;
@@ -310,8 +310,8 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
     return `
       <div style="position:relative;grid-row:2 / span 2;grid-column:2 / span 2;border:1px solid ${LIGHT.cellBorder};background:${LIGHT.headerBg};padding:10px 12px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;overflow:hidden;">
         <img src="/images/brand/zhi-gong-logo.png" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:70%;max-width:220px;opacity:.08;pointer-events:none;z-index:0;" />
-        <div style="position:relative;z-index:1;font-size:10px;line-height:1.85;color:${LIGHT.text};">
-          ${name ? `<p style="margin:0;font-weight:800;font-size:12px;">${name}</p>` : ""}
+        <div style="position:relative;z-index:1;font-size:12px;line-height:1.75;color:${LIGHT.text};">
+          ${name ? `<p style="margin:0;font-weight:800;font-size:14px;">${name}</p>` : ""}
           <p style="margin:0;">${chart.input.gender} — ${chart.amDuongNam}</p>
           <p style="margin:0;">Dương lịch: <strong>${timeLabel}</strong></p>
           <p style="margin:0;">Âm lịch: <strong>${chart.lunarDay}/${chart.lunarMonth}${chart.lunarIsLeap ? " (nhuận)" : ""}/${chart.lunarYear}</strong> — giờ ${chart.gioChiName}</p>
