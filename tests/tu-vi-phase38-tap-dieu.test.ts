@@ -10,9 +10,9 @@ import {
   longTriIndex, phuongCacIndex, thienKhocIndex, thienHuIndex, thienDucIndex, nguyetDucIndex,
   thienTaiIndex, thienThoIndex, thienKhongIndex, thienGiaiIndex, diaGiaiIndex, giaiThanIndex,
   thienSuIndex, thienThuongIndex, quocAnIndex, duongPhuIndex,
-  anQuangIndex, thienQuyIndex, tamThaiIndex, batToaIndex,
+  anQuangIndex, thienQuyIndex, tamThaiIndex, batToaIndex, amSatIndex,
   getTuongTinhRing, getTapDieu,
-  CO_THAN_BY_CHI, QUA_TU_BY_CHI, LUU_HA_BY_CAN_THIEN_LUONG_UNCONFIRMED, PHA_TOAI_BY_CHI,
+  CO_THAN_BY_CHI, QUA_TU_BY_CHI, LUU_HA_BY_CAN, PHA_TOAI_BY_CHI,
   THIEN_LA_CHI_INDEX, DIA_VONG_CHI_INDEX,
 } from "../src/lib/tu-vi/tap-dieu";
 
@@ -87,25 +87,46 @@ describe("Phase 38 — Cô Thần / Quả Tú: đủ 12 Chi, đúng nhóm 3 Chi 
   }
 });
 
-describe("Phase 38 — Lưu Hà: SOURCE_CONFLICTED, chỉ kiểm bảng tham khảo (Thiên Lương), KHÔNG dùng trong getTapDieu()/UI", () => {
-  const EXPECTED: [string, number][] = [
-    ["Giáp", 9], ["Ất", 10], ["Bính", 7], ["Đinh", 8], ["Mậu", 5],
-    ["Kỷ", 6], ["Canh", 3], ["Tân", 4], ["Nhâm", 11], ["Quý", 2],
+// Phase 42 — Lưu Hà: RULE ĐỔI THẬT (đủ 10/10 GM-verified, không còn CONFLICTED). 3 nguồn văn bản (Thiên
+// Lương, "bài 10", Tam Hợp Phái Minh Việt) mâu thuẫn nhau nên đã kiểm tra trực tiếp cả 10 Can bằng cách
+// lập 10 lá số thật qua https://hocvienlyso.org/la-so-tu-vi.html (mỗi lá số 1 năm liên tiếp 1974-1983,
+// ứng đúng 1 Can, 31/8 giờ Ngọ Dương Nam) và đọc trực tiếp vị trí "Lưu Hà" trên ảnh lá số — có kiểm chéo
+// bằng Đẩu Quân (công thức đã LOCKED) trên từng lá số để xác nhận độ tin cậy nguồn. Xem chú thích đầy đủ
+// tại LUU_HA_BY_CAN trong tap-dieu.ts.
+describe("Phase 42 — Lưu Hà: GM-verified đủ 10/10 Can (kiểm trực tiếp qua hocvienlyso.org)", () => {
+  const GM_VERIFIED: [string, number][] = [
+    ["Giáp", 9], ["Ất", 10], ["Bính", 7], ["Đinh", 4], ["Mậu", 5],
+    ["Kỷ", 6], ["Canh", 8], ["Tân", 3], ["Nhâm", 11], ["Quý", 2],
   ];
-  for (const [can, expected] of EXPECTED) {
-    it(`Can ${can}: bảng Thiên Lương (chưa xác nhận, không dùng chính thức) ghi chiIndex ${expected}`, () => {
-      expect(LUU_HA_BY_CAN_THIEN_LUONG_UNCONFIRMED[can]).toBe(expected);
+  for (const [can, expected] of GM_VERIFIED) {
+    it(`Can ${can}: GM-verified chiIndex ${expected} (${CHI[expected]})`, () => {
+      expect(LUU_HA_BY_CAN[can]).toBe(expected);
     });
   }
 
-  it("Xung đột nguồn: bảng Thiên Lương cho Đinh = Thân(8), nhưng bài 10 hocvienlyso.org cho ví dụ 'Đinh Mão → Lưu Hà Thìn(4)' — 2 giá trị khác nhau, không tự chọn bên", () => {
-    expect(LUU_HA_BY_CAN_THIEN_LUONG_UNCONFIRMED["Đinh"]).toBe(8);
-    expect(LUU_HA_BY_CAN_THIEN_LUONG_UNCONFIRMED["Đinh"]).not.toBe(4); // giá trị nguồn Level 1 khác — ghi nhận xung đột, không sửa bảng để "ép khớp"
+  it("3 Can Đinh/Canh/Tân KHÁC bảng 'Thiên Lương' cũ (8/3/4) — lỗi dịch chuyển vòng qua 3 Can liền nhau trong nguồn cũ, đã sửa theo lá số thật", () => {
+    expect(LUU_HA_BY_CAN["Đinh"]).not.toBe(8);
+    expect(LUU_HA_BY_CAN["Canh"]).not.toBe(3);
+    expect(LUU_HA_BY_CAN["Tân"]).not.toBe(4);
   });
 
-  it("getTapDieu() không chứa 'Lưu Hà' (loại khỏi output chính thức do CONFLICTED)", () => {
+  it("GM-LUUHA-CANH (Nam Canh Thân, 31/8/1980 giờ Ngọ): Lưu Hà = Thân, Đẩu Quân = Thân (kiểm chéo)", () => {
+    const chart = tinhTuVi({ day: 31, month: 8, year: 1980, hour: 11, gender: "Nam" });
+    const result = getTapDieu(chart);
+    expect(result.find((s) => s.name === "Lưu Hà")?.chiIndex).toBe(CHI.indexOf("Thân"));
+    expect(result.find((s) => s.name === "Đẩu Quân")?.chiIndex).toBe(CHI.indexOf("Thân"));
+  });
+
+  it("GM-LUUHA-TAN (Nam Tân Dậu, 31/8/1981 giờ Ngọ): Lưu Hà = Mão, Mệnh = Mão (kiểm chéo)", () => {
+    const chart = tinhTuVi({ day: 31, month: 8, year: 1981, hour: 11, gender: "Nam" });
+    const result = getTapDieu(chart);
+    expect(result.find((s) => s.name === "Lưu Hà")?.chiIndex).toBe(CHI.indexOf("Mão"));
+    expect(chart.menhChiIndex).toBe(CHI.indexOf("Mão"));
+  });
+
+  it("getTapDieu() nay CÓ chứa 'Lưu Hà' (đã gỡ CONFLICTED)", () => {
     const chart = tinhTuVi({ day: 25, month: 8, year: 1997, hour: 11, gender: "Nữ" });
-    expect(getTapDieu(chart).some((s) => s.name === "Lưu Hà")).toBe(false);
+    expect(getTapDieu(chart).some((s) => s.name === "Lưu Hà")).toBe(true);
   });
 });
 
@@ -255,12 +276,11 @@ describe("Phase 38 — getTapDieu(): hàm tổng hợp trên lá số thực t�
     { day: 15, month: 6, year: 1974, hour: 12, gender: "Nam" },
   ];
   for (const input of INPUTS) {
-    it(`${JSON.stringify(input)}: đủ 41 sao (11 + 10 batch 2 + 11 Tướng Tinh + Thiên Quan/Thiên Phúc/Thai Phụ/Phong Cáo + Ân Quang/Thiên Quý/Tam Thai/Bát Tọa + Đẩu Quân), không NaN/undefined, không trùng "Đào Hoa"/"Lưu Hà"`, () => {
+    it(`${JSON.stringify(input)}: đủ 43 sao (11 + 10 batch 2 + 11 Tướng Tinh + Thiên Quan/Thiên Phúc/Thai Phụ/Phong Cáo + Ân Quang/Thiên Quý/Tam Thai/Bát Tọa + Đẩu Quân + Âm Sát + Lưu Hà), không NaN/undefined, không trùng "Đào Hoa"`, () => {
       const chart = tinhTuVi(input);
       const result = getTapDieu(chart);
-      expect(result).toHaveLength(41);
+      expect(result).toHaveLength(43);
       expect(result.every((s) => s.name !== "Đào Hoa")).toBe(true);
-      expect(result.every((s) => s.name !== "Lưu Hà")).toBe(true);
       const names = result.map((s) => s.name);
       expect(new Set(names).size).toBe(names.length); // không trùng tên sao nào
       for (const s of result) {
@@ -352,6 +372,31 @@ describe("Phase 38+ — Ân Quang/Thiên Quý/Tam Thai/Bát Tọa (nguồn Tam H
     expect(byName("Thiên Quan")).toBe(CHI.indexOf("Thìn"));
     expect(byName("Thiên Phúc")).toBe(CHI.indexOf("Thân"));
     expect(byName("Phong Cáo")).toBe(CHI.indexOf("Mão"));
+  });
+});
+
+// ============================================================================================
+// PHẦN E3 — Âm Sát (Phase 42, bảng tra Công cung cấp trực tiếp — KHÔNG phải tài liệu Tử Vi Hàm Số hay
+// Tam Hợp Phái, cả 2 nguồn đó đều không có công thức cho sao này).
+// ============================================================================================
+describe("Phase 42 — Âm Sát: bảng tra đủ 12 tháng âm lịch", () => {
+  const EXPECTED_BY_MONTH: [number, string][] = [
+    [1, "Dần"], [2, "Tý"], [3, "Tuất"], [4, "Thân"], [5, "Ngọ"], [6, "Thìn"],
+    [7, "Dần"], [8, "Tý"], [9, "Tuất"], [10, "Thân"], [11, "Ngọ"], [12, "Thìn"],
+  ];
+  for (const [month, chiName] of EXPECTED_BY_MONTH) {
+    it(`Tháng ${month} → ${chiName}`, () => {
+      expect(amSatIndex(month)).toBe(CHI.indexOf(chiName));
+    });
+  }
+
+  // Golden Master do Công cung cấp trực tiếp: lá số Nam Bính Tý, DL 13/8/1996 giờ Ngọ (ÂL tháng 6) →
+  // Âm Sát tại Thìn.
+  it("GM-AMSAT-01 (Nam Bính Tý, 13/8/1996 giờ Ngọ, tháng 6 âm): Âm Sát = Thìn", () => {
+    const chart = tinhTuVi({ day: 13, month: 8, year: 1996, hour: 11, gender: "Nam" });
+    expect(chart.lunarMonth).toBe(6);
+    const result = getTapDieu(chart);
+    expect(result.find((s) => s.name === "Âm Sát")?.chiIndex).toBe(CHI.indexOf("Thìn"));
   });
 });
 

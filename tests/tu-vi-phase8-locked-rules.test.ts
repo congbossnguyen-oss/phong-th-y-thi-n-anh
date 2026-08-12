@@ -8,32 +8,77 @@ import {
   getChuMenh, getChuThan, getThienViet, MAIN_STAR_STATUS,
 } from "../src/lib/tu-vi/rules";
 
-describe("Chủ Mệnh/Chủ Thân — khóa Chi năm sinh, đúng 4/12 VERIFIED, 8/12 NEED_GOLDEN_MASTER_REVIEW", () => {
+// PHASE 40 — RULE ĐỔI THẬT (không phải sửa expected để né fail): Công cung cấp bảng tra Chủ Mệnh/Chủ Thân
+// đầy đủ 12/12, nên 8 ô trước đây cố tình để NEED_GOLDEN_MASTER_REVIEW nay có giá trị thật. Cùng loại
+// quyết định như Phase 16 với bảng Miếu/Vượng. 4 ô VERIFIED cũ KHÔNG đổi giá trị — bảng mới trùng khớp
+// 100% với chúng, đó chính là bằng chứng bảng mới dùng đúng khóa Chi năm sinh (xem rules.ts).
+describe("Chủ Mệnh/Chủ Thân — khóa Chi năm sinh, đủ 12/12 sau Phase 40", () => {
   const VERIFIED_BRANCHES = { 8: "Thân", 6: "Ngọ", 1: "Sửu", 5: "Tỵ" };
-  it("Đúng 4 Chi năm sinh có giá trị Chủ Mệnh (không hơn, không kém)", () => {
-    expect(Object.keys(CHU_MENH_BY_YEAR_BRANCH).length).toBe(4);
+  it("Đủ 12 Chi năm sinh có giá trị Chủ Mệnh", () => {
+    expect(Object.keys(CHU_MENH_BY_YEAR_BRANCH).length).toBe(12);
   });
-  it("Đúng 4 Chi năm sinh có giá trị Chủ Thân (không hơn, không kém)", () => {
-    expect(Object.keys(THAN_CHU_BY_YEAR_BRANCH).length).toBe(4);
+  it("Đủ 12 Chi năm sinh có giá trị Chủ Thân", () => {
+    expect(Object.keys(THAN_CHU_BY_YEAR_BRANCH).length).toBe(12);
   });
 
+  it("Không Chi nào còn trả NEED_GOLDEN_MASTER_REVIEW", () => {
+    for (let chiIndex = 0; chiIndex < 12; chiIndex++) {
+      expect(getChuMenh(chiIndex)).not.toBe("NEED_GOLDEN_MASTER_REVIEW");
+      expect(getChuThan(chiIndex)).not.toBe("NEED_GOLDEN_MASTER_REVIEW");
+    }
+  });
+
+  // 4 ô đã kiểm chứng bằng Golden Master từ Phase 8 — khóa cứng giá trị để bảng mới không âm thầm đổi.
+  const GM_LOCKED: Record<number, { menh: string; than: string }> = {
+    8: { menh: "Liêm Trinh", than: "Thiên Lương" },
+    6: { menh: "Phá Quân", than: "Hỏa Tinh" },
+    1: { menh: "Cự Môn", than: "Thiên Tướng" },
+    5: { menh: "Vũ Khúc", than: "Thiên Cơ" },
+  };
   for (const [chiIndex, chiName] of Object.entries(VERIFIED_BRANCHES)) {
-    it(`Chi ${chiName} (index ${chiIndex}): getChuMenh/getChuThan trả giá trị thật, không phải NEED_GOLDEN_MASTER_REVIEW`, () => {
-      expect(getChuMenh(Number(chiIndex))).not.toBe("NEED_GOLDEN_MASTER_REVIEW");
-      expect(getChuThan(Number(chiIndex))).not.toBe("NEED_GOLDEN_MASTER_REVIEW");
+    it(`Chi ${chiName} (index ${chiIndex}): giữ nguyên giá trị đã VERIFIED bằng Golden Master`, () => {
+      expect(getChuMenh(Number(chiIndex))).toBe(GM_LOCKED[Number(chiIndex)].menh);
+      expect(getChuThan(Number(chiIndex))).toBe(GM_LOCKED[Number(chiIndex)].than);
     });
   }
 
-  const UNRESOLVED_BRANCHES = [0, 2, 3, 4, 7, 9, 10, 11]; // Tý Dần Mão Thìn Mùi Dậu Tuất Hợi
-  for (const chiIndex of UNRESOLVED_BRANCHES) {
-    it(`Chi index ${chiIndex}: getChuMenh/getChuThan PHẢI trả "NEED_GOLDEN_MASTER_REVIEW" (không tự điền)`, () => {
-      expect(getChuMenh(chiIndex)).toBe("NEED_GOLDEN_MASTER_REVIEW");
-      expect(getChuThan(chiIndex)).toBe("NEED_GOLDEN_MASTER_REVIEW");
-    });
-  }
+  // Khóa toàn bộ 12 giá trị theo đúng bảng Công cung cấp (Phase 40).
+  it("Bảng Chủ Mệnh đủ 12 khớp bảng nguồn Phase 40", () => {
+    expect([...Array(12).keys()].map(getChuMenh)).toEqual([
+      "Tham Lang", "Cự Môn", "Lộc Tồn", "Văn Khúc", "Liêm Trinh", "Vũ Khúc",
+      "Phá Quân", "Vũ Khúc", "Liêm Trinh", "Văn Khúc", "Lộc Tồn", "Cự Môn",
+    ]);
+  });
+  it("Bảng Chủ Thân đủ 12 khớp bảng nguồn Phase 40", () => {
+    expect([...Array(12).keys()].map(getChuThan)).toEqual([
+      "Linh Tinh", "Thiên Tướng", "Thiên Lương", "Thiên Đồng", "Văn Xương", "Thiên Cơ",
+      "Hỏa Tinh", "Thiên Tướng", "Thiên Lương", "Thiên Đồng", "Văn Xương", "Thiên Cơ",
+    ]);
+  });
 
-  it("Tý (index 0) đặc biệt giữ NEED_GOLDEN_MASTER_REVIEW cho Chủ Thân dù nguồn Nguyên Cát gợi ý đối xứng với Ngọ (Hỏa Tinh) — không suy diễn theo đối xứng", () => {
-    expect(getChuThan(0)).toBe("NEED_GOLDEN_MASTER_REVIEW");
+  it("Tý (index 0) Chủ Thân = Linh Tinh — KHÁC Ngọ (Hỏa Tinh), xác nhận Phase 8 đúng khi không suy diễn đối xứng", () => {
+    expect(getChuThan(0)).toBe("Linh Tinh");
+    expect(getChuThan(6)).toBe("Hỏa Tinh");
+  });
+
+  // Hai bảng có CẤU TRÚC ĐỐI XỨNG KHÁC NHAU — kiểm tra để phát hiện lỗi gõ nhầm dữ liệu.
+  // Chủ Mệnh: đối xứng GƯƠNG qua trục Tý–Ngọ, tức cặp (a, 12-a).
+  it("Chủ Mệnh đối xứng gương qua trục Tý–Ngọ: Sửu/Hợi, Dần/Tuất, Mão/Dậu, Thìn/Thân, Tỵ/Mùi", () => {
+    for (const [a, b] of [[1, 11], [2, 10], [3, 9], [4, 8], [5, 7]]) {
+      expect(getChuMenh(a)).toBe(getChuMenh(b));
+    }
+    // Tý và Ngọ là 2 giá trị độc nhất, không bắt cặp với Chi nào.
+    expect(getChuMenh(0)).toBe("Tham Lang");
+    expect(getChuMenh(6)).toBe("Phá Quân");
+  });
+
+  // Chủ Thân: đối xứng ĐỐI XUNG (a, a+6) — KHÁC kiểu đối xứng của Chủ Mệnh, trừ cặp Tý/Ngọ.
+  it("Chủ Thân đối xứng đối xung (a, a+6): Sửu/Mùi, Dần/Thân, Mão/Dậu, Thìn/Tuất, Tỵ/Hợi", () => {
+    for (const a of [1, 2, 3, 4, 5]) {
+      expect(getChuThan(a)).toBe(getChuThan(a + 6));
+    }
+    // Riêng Tý/Ngọ KHÔNG theo đối xung — 2 giá trị khác nhau (Linh Tinh vs Hỏa Tinh).
+    expect(getChuThan(0)).not.toBe(getChuThan(6));
   });
 });
 
@@ -96,11 +141,12 @@ describe("Golden Master vẫn pass sau khi khóa rule Phase 8 (regression trên 
     expect(chart.chuThan).toBe("Hỏa Tinh");
   });
 
-  it("Năm sinh Chi chưa xác nhận (VD Dần) trả về nhãn rõ ràng, không đoán bừa", () => {
-    // Năm Nhâm Dần 2022 -> yearChi = Dần (index 2), thuộc nhóm 8 Chi chưa có Golden Master.
+  // PHASE 40: Chi Dần trước đây nằm trong nhóm 8 Chi chưa có dữ liệu nên trả nhãn NEED_GOLDEN_MASTER_REVIEW;
+  // nay đã có bảng tra đầy đủ nên phải ra giá trị thật (Lộc Tồn / Thiên Lương).
+  it("Năm sinh Chi Dần (trước Phase 40 còn thiếu dữ liệu) nay trả giá trị thật", () => {
     const chart = tinhTuVi({ day: 15, month: 6, year: 2022, hour: 11, gender: "Nam" });
     expect(chart.yearChiName).toBe("Dần");
-    expect(chart.chuMenh).toBe("NEED_GOLDEN_MASTER_REVIEW");
-    expect(chart.chuThan).toBe("NEED_GOLDEN_MASTER_REVIEW");
+    expect(chart.chuMenh).toBe("Lộc Tồn");
+    expect(chart.chuThan).toBe("Thiên Lương");
   });
 });

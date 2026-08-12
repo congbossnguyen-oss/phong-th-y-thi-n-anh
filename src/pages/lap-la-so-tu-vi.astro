@@ -80,11 +80,6 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
           <p class="mt-1 text-xs text-(--color-ink-500)">Để trống nếu không cần xem tuổi/Đại Vận. Nhập từ {VIEWING_YEAR_MIN} đến {VIEWING_YEAR_MAX}.</p>
         </div>
 
-        <p class="mt-4 text-xs text-(--color-ink-500)">
-          Engine tính theo profile Nam Phái phổ biến. Vị trí 12 cung, 14 chính tinh và Tứ Hóa đã được đối chiếu khớp
-          với lá số mẫu tham chiếu; một số phụ tinh và trạng thái Miếu/Vượng ở các cung khác vị trí đã đối chiếu là suy
-          ra theo tài liệu phổ biến, mang tính tham khảo.
-        </p>
         <Button type="submit" size="lg" class="mt-5 w-full sm:w-auto">Lập lá số</Button>
       </form>
 
@@ -121,6 +116,7 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
   import { getTapDieu } from "../lib/tu-vi/tap-dieu";
   import { getBacSiRing } from "../lib/tu-vi/bac-si";
   import { getTieuHanPalace, getTuoiTieuHan } from "../lib/tu-vi/tieu-han";
+  import { getNguyetHan } from "../lib/tu-vi/nguyet-han";
   import { colorOfSao, isCat, ELEMENT_COLOR } from "../lib/tu-vi/hien-thi-sao";
   import { tinhBatTu, THAP_THAN_ABBR, CAN_NGU_HANH, CHI_NGU_HANH, type BatTuChart, type PillarInfo } from "../lib/bat-tu";
 
@@ -154,27 +150,66 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
   hourSel.value = "11";
   viewingYearInput.value = String(now.getFullYear());
 
+  // Bảng màu NỀN/KHUNG (giao diện) — KHÔNG đụng tới màu chữ tên sao: tên sao vẫn tô theo Ngũ Hành qua
+  // colorOfSao()/ELEMENT_COLOR (yêu cầu Công: "tất cả ngũ hành sao giữ nguyên không thay đổi gì cả, chỉ
+  // thay đổi về mặt giao diện").
   const LIGHT = {
-    bg: "#f6efe0",
-    border: "#c9a256",
+    bg: "#f7edd8",
+    border: "#8c5a2b",
     borderLight: "#e6d9ae",
-    cellBorder: "#d9c48f",
+    cellBorder: "#b98c4e",
+    cellBg: "#fdf8ec",
     text: "#2b2116",
     textMuted: "#6b5a3d",
-    red: "#b3311f",
+    red: "#8e2f22",
+    // Yêu cầu Công: đoạn thông tin giữa lá số tô màu xanh dương giống bảng tham chiếu hocvienlyso.org.
+    blue: "#2c4a7c",
     gold: "#c9a256",
-    headerBg: "#efe1b8",
-    menhBg: "#f6e2c4",
+    headerBg: "#f3e6c8",
+    menhBg: "#fbeed2",
+    frameOuter: "#5c3317",
+    frameInner: "#d9b878",
   };
+  // Vân giấy da cổ: chồng nhiều gradient rất nhạt (tự sinh bằng CSS, không phụ thuộc ảnh ngoài — quan
+  // trọng vì html-to-image phải render được offline khi xuất PNG).
+  const PARCHMENT_TEXTURE =
+    "radial-gradient(ellipse at 18% 12%, rgba(140,90,43,.10), transparent 55%)," +
+    "radial-gradient(ellipse at 84% 22%, rgba(140,90,43,.08), transparent 50%)," +
+    "radial-gradient(ellipse at 30% 88%, rgba(120,75,35,.09), transparent 55%)," +
+    "radial-gradient(ellipse at 72% 76%, rgba(160,110,55,.07), transparent 50%)," +
+    "linear-gradient(160deg, #f9f1de 0%, #f4e7ca 45%, #efdfbb 100%)";
+  const CELL_TEXTURE =
+    "radial-gradient(ellipse at 22% 18%, rgba(150,105,55,.05), transparent 60%)," +
+    "linear-gradient(155deg, #fdf9f0 0%, #faf2e0 100%)";
   // CARD_WIDTH/CARD_HEIGHT là kích thước CSS thật; xuất ảnh dùng pixelRatio 2 để ra đúng 1440x2000px.
   const CARD_WIDTH = 720;
   const CARD_HEIGHT = 1000;
   const TT_ABBR: Record<string, string> = { "Miếu": "(M)", "Vượng": "(V)", "Đắc": "(Đ)", "Bình": "(B)", "Hãm": "(H)", "Chưa xác định": "(?)" };
-  const TU_HOA_ABBR: Record<string, string> = { "Lộc": "L", "Quyền": "Q", "Khoa": "K", "Kỵ": "H" };
   // Chủ Mệnh/Chủ Thân: engine trả "NEED_GOLDEN_MASTER_REVIEW" cho 8/12 Chi năm sinh chưa có Golden
   // Master xác nhận (Phase 8) — hiển thị thân thiện hơn thay vì lộ nguyên chuỗi kỹ thuật.
   function displayChuMenhThan(value: string): string {
     return value === "NEED_GOLDEN_MASTER_REVIEW" ? "Chưa xác định (cần thêm dữ liệu)" : value;
+  }
+
+  // Quan hệ sinh/khắc Ngũ Hành giữa Bản Mệnh và Cục — quy tắc Ngũ Hành phổ thông (Kim sinh Thủy, Thủy sinh
+  // Mộc, Mộc sinh Hỏa, Hỏa sinh Thổ, Thổ sinh Kim; Mộc khắc Thổ, Thổ khắc Thủy, Thủy khắc Hỏa, Hỏa khắc
+  // Kim, Kim khắc Mộc) — KHÔNG khác biệt giữa các trường phái Tử Vi nên không cần nguồn riêng.
+  const SINH_NEXT: Record<string, string> = { "Kim": "Thủy", "Thủy": "Mộc", "Mộc": "Hỏa", "Hỏa": "Thổ", "Thổ": "Kim" };
+  const KHAC_NEXT: Record<string, string> = { "Mộc": "Thổ", "Thổ": "Thủy", "Thủy": "Hỏa", "Hỏa": "Kim", "Kim": "Mộc" };
+  function cucMenhRelation(banMenhElement: string, cucElement: string): string {
+    if (banMenhElement === cucElement) return "Cục hợp Mệnh";
+    if (SINH_NEXT[cucElement] === banMenhElement) return "Cục sinh Mệnh";
+    if (SINH_NEXT[banMenhElement] === cucElement) return "Mệnh sinh Cục";
+    if (KHAC_NEXT[banMenhElement] === cucElement) return "Mệnh khắc Cục";
+    if (KHAC_NEXT[cucElement] === banMenhElement) return "Cục khắc Mệnh";
+    return "";
+  }
+
+  // Thân đồng cung với Mệnh hay đóng ở cung khác — đọc thẳng từ flag isMenh/isThan đã có sẵn trên từng
+  // cung (Natal Core, không tính lại).
+  function thanMenhLabel(chart: TuViChart): string {
+    const thanPalace = chart.cungs.find((c) => c.isThan)!;
+    return thanPalace.isMenh ? "Thân Mệnh đồng cung" : `Thân cư ${thanPalace.cungName}`;
   }
 
   // Bố cục lưới 4x4 chuẩn Tử Vi: hàng trên Tỵ-Ngọ-Mùi-Thân, cột phải Dậu-Tuất, hàng dưới (trái->phải)
@@ -188,14 +223,16 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
 
   type DisplayStar = { name: string; tuHoa?: "Lộc" | "Quyền" | "Khoa" | "Kỵ" };
 
+  // Yêu cầu Công: bỏ chữ viết tắt Tứ Hóa nhỏ (sup) trên phụ tinh — Công thấy khó hiểu ("sao Văn Xương lại
+  // có chữ K nhỏ trên đầu là ý làm sao"). Tứ Hóa đã có dòng "Hóa Lộc/Quyền/Khoa/Kỵ" riêng ở đầu cột rồi
+  // nên không cần lặp lại bằng ký hiệu mập mờ trên từng sao nữa.
   function starLineHtml(s: DisplayStar): string {
-    const tuHoaTag = s.tuHoa ? `<sup style="color:${LIGHT.red};font-weight:800;">${TU_HOA_ABBR[s.tuHoa]}</sup>` : "";
     const color = colorOfSao(s.name, LIGHT.textMuted);
-    return `<div style="font-size:10.5px;font-weight:700;color:${color};line-height:1.3;white-space:nowrap;">${s.name}${tuHoaTag}</div>`;
+    return `<div style="font-size:10.5px;font-weight:700;color:${color};line-height:1.3;white-space:nowrap;">${s.name}</div>`;
   }
 
   // Yêu cầu Công: Tứ Hóa ghi RÕ RÀNG thành dòng riêng ở ĐẦU danh sách phụ tinh (Hóa Lộc/Quyền/Khoa bên
-  // cột tốt, Hóa Kỵ bên cột xấu) — không viết tắt/sup trên chính tinh nữa, chỉ hiện ở đây.
+  // cột tốt, Hóa Kỵ bên cột xấu) — không viết tắt/sup trên chính tinh/phụ tinh nữa, chỉ hiện ở đây.
   function tuHoaLineHtml(tag: "Lộc" | "Quyền" | "Khoa" | "Kỵ"): string {
     return `<div style="font-size:10.5px;font-weight:800;color:${LIGHT.red};line-height:1.3;white-space:nowrap;">Hóa ${tag}</div>`;
   }
@@ -239,7 +276,7 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
     return `<div style="position:absolute;left:${leftPct}%;top:${topPct}%;width:${(barLen / 4) * 100}%;height:${(barThick / 4) * 100}%;display:flex;align-items:center;justify-content:center;overflow:visible;white-space:nowrap;font-size:8px;font-weight:800;letter-spacing:.01em;color:${fg};background:${bg};border-radius:3px;z-index:6;box-shadow:0 0 0 1px ${LIGHT.border};">${label}</div>`;
   }
 
-  function cellHtml(p: CungKetQua, tapDieuNames: string[], isCurrentDaiVan: boolean, isCurrentTieuHan: boolean): string {
+  function cellHtml(p: CungKetQua, tapDieuNames: string[], isCurrentDaiVan: boolean, isCurrentTieuHan: boolean, monthlyLabel: string): string {
     // Yêu cầu Công: mỗi chính tinh xuống hàng riêng (chính tinh 1, dưới là chính tinh 2), không nằm
     // chung 1 dòng.
     // Yêu cầu Công: KHÔNG viết tắt Tứ Hóa (sup) trên đầu chính tinh nữa — Tứ Hóa chỉ hiện ở phần phụ tinh
@@ -250,9 +287,10 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
         return `<div style="line-height:1.15;"><span style="font-weight:800;font-size:13px;color:${color};white-space:nowrap;">${s.name}</span><span style="font-weight:800;font-size:13px;color:${LIGHT.textMuted};"> ${TT_ABBR[s.trangThai]}</span></div>`;
       })
       .join("");
-    // Yêu cầu Công: nơi an Thân hiện "(THÂN)" chữ hoa in đậm ngay cạnh CUNG CHỨC, cỡ chữ bằng đúng cỡ chữ
-    // cung chức (14px).
-    const thanTag = p.isThan ? ` <strong style="font-size:14px;font-weight:800;color:${LIGHT.text};">(THÂN)</strong>` : "";
+    // Yêu cầu Công: nơi an Thân hiện "(THÂN)" chữ hoa in đậm ngay cạnh CUNG CHỨC. Để 11px (nhỏ hơn tên
+    // cung 12px một bậc) vì "MỆNH (THÂN)" là chuỗi dài nhất trong 12 cung — nếu để bằng cỡ tên cung thì
+    // tràn khỏi ô và bị cắt mất chữ.
+    const thanTag = p.isThan ? ` <strong style="font-size:11px;font-weight:800;color:${LIGHT.text};">(THÂN)</strong>` : "";
 
     // Yêu cầu Công: sao vòng Thái Tuế (trước đây gắn cạnh Trường Sinh) chuyển lên phần phụ tinh, xếp
     // đúng cột tốt/xấu như các phụ tinh khác — không còn hiện riêng ở dòng dưới cùng nữa.
@@ -276,21 +314,29 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
     // trái = phụ tinh tốt (sát lề trái), phải = phụ tinh xấu (sát lề phải); Trường Sinh ở giữa dưới cùng.
     // Yêu cầu Công: cung đang ở đúng mốc Đại Vận hiện tại (theo Năm xem) phủ 1 lớp mờ để dễ nhận diện.
     const currentDaiVanOverlay = isCurrentDaiVan
-      ? `<div style="position:absolute;inset:0;background:${LIGHT.gold}40;border:2px solid ${LIGHT.gold};box-sizing:border-box;pointer-events:none;z-index:1;"></div>`
+      ? `<div style="position:absolute;inset:0;background:${LIGHT.gold}40;border:2px solid ${LIGHT.gold};border-radius:5px;box-sizing:border-box;pointer-events:none;z-index:1;"></div>`
       : "";
     // Yêu cầu Công: cung đang ở đúng Tiểu Hạn hiện tại (theo Năm xem) — badge nhỏ góc trên trái, màu khác
     // Đại Vận để không lẫn (có thể trùng cung với Đại Vận cùng lúc).
     const currentTieuHanBadge = isCurrentTieuHan
-      ? `<span style="position:absolute;top:-1px;left:-1px;font-size:6px;font-weight:800;color:#ffffff;background:#7a4fb5;padding:1px 3px;border-radius:0 0 4px 0;z-index:2;">TIỂU HẠN</span>`
+      ? `<span style="position:absolute;top:0;left:0;font-size:6px;font-weight:800;color:#ffffff;background:#7a4fb5;padding:1px 3px;border-radius:5px 0 4px 0;z-index:2;">TIỂU HẠN</span>`
       : "";
+    // Khung cung kiểu gỗ chạm/đồng cổ: viền ngoài nâu trầm + 2 vòng box-shadow inset (vàng nhạt rồi nâu
+    // mảnh) tạo cảm giác viền kép chạm khắc, thêm bóng đổ nhẹ cho nổi khối. Nền kem có vân giấy.
+    const cellFrame =
+      `border:1.5px solid ${LIGHT.cellBorder};border-radius:6px;` +
+      `box-shadow:inset 0 0 0 1px ${LIGHT.frameInner},inset 0 0 0 2.5px rgba(255,255,255,.55),0 1px 3px rgba(92,51,23,.22);`;
+    const cellBackground = p.isMenh || p.isThan
+      ? `linear-gradient(155deg, #fdf0d6 0%, #f8e4bd 100%)`
+      : CELL_TEXTURE;
     return `
       <div style="position:relative;height:100%;">
-        <div style="position:relative;border:1px solid ${LIGHT.cellBorder};background:${p.isMenh || p.isThan ? LIGHT.menhBg : LIGHT.bg};padding:5px;box-sizing:border-box;height:100%;display:flex;flex-direction:column;overflow:hidden;">
+        <div style="position:relative;${cellFrame}background:${cellBackground};padding:6px;box-sizing:border-box;height:100%;display:flex;flex-direction:column;overflow:hidden;">
           ${currentDaiVanOverlay}
           ${currentTieuHanBadge}
           <div style="display:flex;justify-content:space-between;align-items:center;gap:4px;">
-            <span style="font-size:9px;color:${LIGHT.textMuted};white-space:nowrap;flex-shrink:0;">${p.canName}${p.chiName}</span>
-            <span style="flex:1;text-align:center;font-size:14px;font-weight:800;color:${LIGHT.text};white-space:nowrap;overflow:hidden;">${p.cungName.toUpperCase()}${thanTag}</span>
+            <span style="font-size:9px;color:${LIGHT.textMuted};white-space:nowrap;flex-shrink:0;">${p.canName} ${p.chiName}</span>
+            <span style="flex:1;min-width:0;text-align:center;font-size:11.5px;letter-spacing:-.02em;font-weight:800;color:${LIGHT.text};white-space:nowrap;overflow:hidden;">${p.cungName.toUpperCase()}${thanTag}</span>
             <span style="font-size:9px;color:${LIGHT.textMuted};white-space:nowrap;flex-shrink:0;">${p.daiVanTuoi[0]}-${p.daiVanTuoi[1]}</span>
           </div>
           <div style="text-align:center;margin-top:0;">${chinhTinhHtml}</div>
@@ -298,7 +344,11 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
             <div style="display:flex;flex-direction:column;align-items:flex-start;min-width:0;">${catHtml}</div>
             <div style="display:flex;flex-direction:column;align-items:flex-end;min-width:0;text-align:right;">${hungHtml}</div>
           </div>
-          <div style="text-align:center;font-size:8px;font-weight:800;color:${LIGHT.textMuted};margin-top:2px;white-space:nowrap;">${p.trangSinh}</div>
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:3px;margin-top:2px;">
+            <span style="font-size:8px;color:transparent;white-space:nowrap;flex-shrink:0;">${monthlyLabel}</span>
+            <span style="flex:1;text-align:center;font-size:8px;font-weight:800;color:${LIGHT.textMuted};white-space:nowrap;">${p.trangSinh}</span>
+            <span style="font-size:8px;font-weight:800;color:${LIGHT.textMuted};white-space:nowrap;flex-shrink:0;">${monthlyLabel}</span>
+          </div>
         </div>
       </div>
     `;
@@ -332,8 +382,8 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
             <div style="font-size:8.5px;font-weight:700;color:${LIGHT.textMuted};white-space:nowrap;overflow:hidden;">${thapThanLabel}</div>
             <div style="font-size:13px;font-weight:800;color:${canColor};line-height:1.3;">${p.can}</div>
             <div style="font-size:13px;font-weight:800;color:${chiColor};line-height:1.3;">${p.chi}</div>
-            <div style="font-size:7.5px;color:${LIGHT.textMuted};white-space:nowrap;overflow:hidden;">${tangCanThapThan}</div>
-            <div style="font-size:7.5px;color:${LIGHT.textMuted};white-space:nowrap;overflow:hidden;">${tangCanNames}</div>
+            <div style="font-size:8.5px;font-weight:600;color:${LIGHT.textMuted};white-space:nowrap;overflow:hidden;">${tangCanThapThan}</div>
+            <div style="font-size:9.5px;font-weight:700;color:${LIGHT.text};white-space:nowrap;overflow:hidden;">${tangCanNames}</div>
             <div style="font-size:8.5px;font-weight:700;color:${LIGHT.text};white-space:nowrap;">${p.truongSinh}</div>
           </div>
         `;
@@ -349,23 +399,48 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
     `;
   }
 
-  // Yêu cầu Công: logo Phong Thủy Thiên Anh làm hình mờ (watermark) ở giữa bảng thông tin, không đè lên
-  // chữ (opacity thấp, nằm dưới lớp chữ theo thứ tự DOM).
+  // Yêu cầu Công: logo Phong Thủy Thiên Anh làm hình mờ (watermark) ở CHÍNH GIỮA khu trung tâm — thay vào
+  // đúng chỗ hình Thái Cực/Bát Quái của bản demo tham chiếu. Vẫn để mờ + nằm dưới lớp chữ (z-index/thứ tự
+  // DOM) nên không che nội dung.
   function centerPanelHtml(chart: TuViChart, batTu: BatTuChart, name: string, timeLabel: string): string {
+    // Vòng tròn đồng tâm mảnh quanh logo — gợi cảm giác con dấu cổ, thay cho vòng Bát Quái của bản demo.
+    const sealRings =
+      `<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:60%;padding-bottom:60%;max-width:250px;border-radius:9999px;` +
+      `border:1px solid rgba(140,90,43,.16);box-shadow:0 0 0 6px rgba(140,90,43,.05),inset 0 0 0 7px rgba(140,90,43,.05);pointer-events:none;z-index:0;"></div>`;
+    // Yêu cầu Công: 2 bên khu trung tâm có linh vật như ảnh mẫu. Dùng vector chim hạc/phượng mạ vàng phong
+    // cách Đông Sơn sẵn có trong bộ brand, lật gương sang trái để 2 con chầu vào logo ở giữa. CHƯA có asset
+    // rồng cùng phong cách nên tạm để cặp hạc đối xứng (xem ghi chú báo Công) — khi có file rồng chỉ cần
+    // đổi src của bên trái.
+    const guardian = (side: "left" | "right") =>
+      `<img src="/images/brand/chim-hac-vector.png" style="position:absolute;${side}:2%;top:50%;` +
+      `transform:translateY(-50%)${side === "left" ? " scaleX(-1)" : ""};width:31%;max-width:130px;` +
+      `opacity:.11;pointer-events:none;z-index:0;" />`;
+    // "Lập tại... lúc HH:MM-DD/MM/YYYY" — mốc thời điểm xuất lá số (giờ máy người dùng), giống dòng cuối
+    // của bảng tham chiếu hocvienlyso.org.
+    const now = new Date();
+    const pad2 = (n: number) => String(n).padStart(2, "0");
+    const nowStamp = `${pad2(now.getHours())}:${pad2(now.getMinutes())}-${pad2(now.getDate())}/${pad2(now.getMonth() + 1)}/${now.getFullYear()}`;
     return `
-      <div style="position:relative;grid-row:2 / span 2;grid-column:2 / span 2;border:1px solid ${LIGHT.cellBorder};background:${LIGHT.headerBg};padding:10px 12px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;overflow:hidden;">
-        <img src="/images/brand/zhi-gong-logo.png" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:70%;max-width:220px;opacity:.08;pointer-events:none;z-index:0;" />
-        <div style="position:relative;z-index:1;font-size:10.5px;line-height:1.5;color:${LIGHT.text};">
-          ${name ? `<p style="margin:0;font-weight:800;font-size:13px;">${name}</p>` : ""}
-          <p style="margin:0;">${chart.input.gender} — ${chart.amDuongNam}</p>
-          <p style="margin:0;">Dương lịch: <strong>${timeLabel}</strong></p>
+      <div data-tv-center style="position:relative;grid-row:2 / span 2;grid-column:2 / span 2;border:1.5px solid ${LIGHT.cellBorder};border-radius:6px;box-shadow:inset 0 0 0 1px ${LIGHT.frameInner},inset 0 0 0 2.5px rgba(255,255,255,.5),0 1px 3px rgba(92,51,23,.22);background:${PARCHMENT_TEXTURE};padding:10px 12px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;overflow:hidden;">
+        ${sealRings}
+        ${guardian("left")}
+        ${guardian("right")}
+        <img src="/images/brand/zhi-gong-logo.png" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:52%;max-width:215px;opacity:.13;pointer-events:none;z-index:0;" />
+        <div style="position:relative;z-index:1;font-size:10.5px;line-height:1.55;color:${LIGHT.blue};text-align:center;">
+          <p style="margin:0;font-weight:800;font-size:12px;letter-spacing:.04em;color:${LIGHT.text};">PHONG THỦY THIÊN ANH</p>
+          ${name ? `<p style="margin:2px 0 0;font-weight:800;font-size:11px;color:${LIGHT.blue};">${name}</p>` : ""}
+          <p style="margin:2px 0 0;font-weight:800;font-size:13px;letter-spacing:.02em;color:${LIGHT.text};">${chart.input.gender.toUpperCase()} MỆNH ${chart.yearCanName.toUpperCase()} ${chart.yearChiName.toUpperCase()}</p>
+          <p style="margin:2px 0 0;font-weight:700;color:${LIGHT.red};">${chart.amDuongNam}${chart.tuoiNamXem !== null ? `-${chart.tuoiNamXem} tuổi (năm ${chart.input.viewingYear})` : ""}</p>
+          <p style="margin:6px 0 0;">Dương lịch: <strong>${timeLabel}</strong></p>
           <p style="margin:0;">Âm lịch: <strong>${chart.lunarDay}/${chart.lunarMonth}${chart.lunarIsLeap ? " (nhuận)" : ""}/${chart.lunarYear}</strong> — giờ ${chart.gioChiName}</p>
-          <p style="margin:0;">Năm sinh: <strong>${chart.yearCanName} ${chart.yearChiName}</strong>${chart.tuoiNamXem !== null ? ` — ${chart.tuoiNamXem} tuổi (năm ${chart.input.viewingYear})` : ""}</p>
-          <p style="margin:0;">Bản mệnh: <strong>${chart.banMenhNapAm}</strong> (${chart.banMenhElement})</p>
-          <p style="margin:0;">Cục: <strong>${chart.cucName}</strong> — Mệnh Quái: <strong>${chart.menhQuai}</strong></p>
-          <p style="margin:0;">Chủ Mệnh: <strong>${displayChuMenhThan(chart.chuMenh)}</strong> — Chủ Thân: <strong>${displayChuMenhThan(chart.chuThan)}</strong></p>
-          <p style="margin:0;">Tứ Hóa: <strong style="color:${LIGHT.red};">${chart.tuHoa.loc}</strong> L · <strong style="color:${LIGHT.red};">${chart.tuHoa.quyen}</strong> Q · <strong style="color:${LIGHT.red};">${chart.tuHoa.khoa}</strong> K · <strong style="color:${LIGHT.red};">${chart.tuHoa.ky}</strong> H</p>
+          <p style="margin:6px 0 0;">Bản mệnh: <strong>${chart.banMenhNapAm}-${chart.cucName}</strong></p>
+          <p style="margin:0;">Mệnh quái <strong style="font-size:12px;">${chart.menhQuai}</strong></p>
+          <p style="margin:0;">${cucMenhRelation(chart.banMenhElement, chart.cucName.split(" ")[0])}-${thanMenhLabel(chart)}</p>
+          <p style="margin:0;">Chủ mệnh: <strong>${displayChuMenhThan(chart.chuMenh)}</strong> - Chủ thân: <strong>${displayChuMenhThan(chart.chuThan)}</strong></p>
+          <p style="margin:0;">Tứ Hóa: <strong>${chart.tuHoa.loc}</strong> Lộc · <strong>${chart.tuHoa.quyen}</strong> Quyền · <strong>${chart.tuHoa.khoa}</strong> Khoa · <strong>${chart.tuHoa.ky}</strong> Kỵ</p>
+          <p style="margin:6px 0 0;font-size:8.5px;color:${LIGHT.textMuted};">(GMT+07:00) Hanoi-Asia/Bangkok</p>
           ${tuTruTableHtml(batTu)}
+          <p style="margin:4px 0 0;font-size:7.5px;font-style:italic;color:${LIGHT.textMuted};">Lập tại phongthuythienanh.com (lúc ${nowStamp})</p>
         </div>
       </div>
     `;
@@ -401,13 +476,64 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
     // cạnh bảng giữa, hoặc đúng góc giao 3 cung nếu cung đích là 1 trong 4 cung góc) — KHÔNG lấy tâm cung
     // rồi cắt tùy theo góc nghiêng của tia như trước (mỗi tia khi đó sẽ vào 1 điểm khác nhau tùy hướng).
     const fromAnchor = centerFacingAnchor(chiToRowCol[menhChi]);
+    // Toạ độ ở đây chỉ là GIÁ TRỊ TẠM (chia đều lưới 0-4, chưa trừ `gap` giữa các ô nên lệch ~1/4 gap).
+    // alignMenhLines() bên dưới sẽ đo lại hình học THẬT sau khi card vào DOM rồi ghi đè chính xác — giữ
+    // giá trị tạm này để nếu vì lý do nào đó không đo được thì đường kẻ vẫn nằm gần đúng chứ không mất.
     const lines = [...tamHopPartners, doiCung]
       .map((t) => {
         const toAnchor = centerFacingAnchor(chiToRowCol[t]);
-        return `<line x1="${fromAnchor.x}" y1="${fromAnchor.y}" x2="${toAnchor.x}" y2="${toAnchor.y}" stroke="${LIGHT.textMuted}" stroke-width="0.004" />`;
+        return `<line data-to-chi="${t}" x1="${fromAnchor.x}" y1="${fromAnchor.y}" x2="${toAnchor.x}" y2="${toAnchor.y}" stroke="${LIGHT.textMuted}" stroke-width="0.004" vector-effect="non-scaling-stroke" />`;
       })
       .join("");
-    return `<svg viewBox="0 0 4 4" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.45;z-index:5;">${lines}</svg>`;
+    return `<svg data-menh-lines data-from-chi="${menhChi}" viewBox="0 0 4 4" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.45;z-index:5;">${lines}</svg>`;
+  }
+
+  // Đo hình học THẬT của lưới sau khi card đã vào DOM rồi ghi lại toạ độ 3 đường tam hợp theo đúng pixel.
+  // Cách này miễn nhiễm với `gap`, padding, border hay bất kỳ thay đổi bố cục nào về sau — trước đây tính
+  // theo tỉ lệ 0-4 nên luôn lệch đúng 1/4 gap (1.25px ở gap 5px) so với mép thật của bảng giữa.
+  function alignMenhLines(cardEl: HTMLElement): void {
+    const svg = cardEl.querySelector<SVGSVGElement>("[data-menh-lines]");
+    const grid = cardEl.querySelector<HTMLElement>("[data-tv-grid]");
+    const panel = cardEl.querySelector<HTMLElement>("[data-tv-center]");
+    if (!svg || !grid || !panel) return;
+    const gr = grid.getBoundingClientRect();
+    const pr = panel.getBoundingClientRect();
+    if (gr.width === 0 || gr.height === 0) return;
+    // Điểm neo của 1 cung = điểm trên mép bảng giữa mà cung đó "nhìn vào": cung ở hàng trên/dưới thì lấy
+    // đúng tâm ngang của chính cung đó chiếu lên mép trên/dưới bảng giữa; cung ở cột trái/phải thì lấy tâm
+    // dọc chiếu lên mép trái/phải; 4 cung góc thì lấy đúng góc bảng giữa gần nó nhất.
+    const anchorOf = (chiIndex: number): { x: number; y: number } | null => {
+      const cell = cardEl.querySelector<HTMLElement>(`[data-tv-chi="${chiIndex}"]`);
+      const rc = GRID_CELLS.find((c) => c.chiIndex === chiIndex);
+      if (!cell || !rc) return null;
+      const cr = cell.getBoundingClientRect();
+      const isTopRow = rc.row === 1, isBottomRow = rc.row === 4;
+      const isLeftCol = rc.col === 1, isRightCol = rc.col === 4;
+      const cxMid = (cr.left + cr.right) / 2 - gr.left;
+      const cyMid = (cr.top + cr.bottom) / 2 - gr.top;
+      const pl = pr.left - gr.left, prg = pr.right - gr.left;
+      const pt = pr.top - gr.top, pb = pr.bottom - gr.top;
+      if ((isTopRow || isBottomRow) && (isLeftCol || isRightCol)) {
+        return { x: isLeftCol ? pl : prg, y: isTopRow ? pt : pb };
+      }
+      if (isTopRow) return { x: cxMid, y: pt };
+      if (isBottomRow) return { x: cxMid, y: pb };
+      if (isLeftCol) return { x: pl, y: cyMid };
+      return { x: prg, y: cyMid };
+    };
+    const fromChi = Number(svg.getAttribute("data-from-chi"));
+    const from = anchorOf(fromChi);
+    if (!from) return;
+    svg.setAttribute("viewBox", `0 0 ${gr.width} ${gr.height}`);
+    svg.querySelectorAll<SVGLineElement>("line").forEach((line) => {
+      const to = anchorOf(Number(line.getAttribute("data-to-chi")));
+      if (!to) return;
+      line.setAttribute("x1", String(from.x));
+      line.setAttribute("y1", String(from.y));
+      line.setAttribute("x2", String(to.x));
+      line.setAttribute("y2", String(to.y));
+      line.setAttribute("stroke-width", "1");
+    });
   }
 
   function buildExportCardHtml(chart: TuViChart, batTu: BatTuChart, name: string, timeLabel: string): string {
@@ -420,6 +546,9 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
     }
     const chiToRowCol: Record<number, { row: number; col: number }> = {};
     for (const c of GRID_CELLS) chiToRowCol[c.chiIndex] = { row: c.row, col: c.col };
+    // 12 Nguyệt Hạn (Phase 41): chỉ phụ thuộc vị trí cung Mệnh, KHÔNG dùng tháng sinh âm lịch.
+    const nguyetHanByChi: Record<number, string> = {};
+    for (const n of getNguyetHan(chart)) nguyetHanByChi[n.chiIndex] = n.monthlyLabel;
 
     // Yêu cầu Công: cung đang ở đúng Đại Vận hiện tại (theo tuổi/Năm xem) — chỉ có khi đã nhập Năm xem.
     const currentDaiVanChiIndex = chart.tuoiNamXem !== null
@@ -432,7 +561,7 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
 
     const cells = GRID_CELLS.map(({ chiIndex, row, col }) => {
       const p = chart.cungs[chiIndex];
-      return `<div style="grid-row:${row};grid-column:${col};">${cellHtml(p, tapDieuByChi[chiIndex], chiIndex === currentDaiVanChiIndex, chiIndex === currentTieuHanChiIndex)}</div>`;
+      return `<div data-tv-chi="${chiIndex}" style="grid-row:${row};grid-column:${col};">${cellHtml(p, tapDieuByChi[chiIndex], chiIndex === currentDaiVanChiIndex, chiIndex === currentTieuHanChiIndex, nguyetHanByChi[chiIndex])}</div>`;
     }).join("");
 
     const tuanChisAll = chart.cungs.filter((c) => c.tuan).map((c) => c.chiIndex);
@@ -440,22 +569,27 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
     const tuanTrietBridges =
       (tuanChisAll.length === 2 ? tuanTrietBridgeHtml(tuanChisAll[0], tuanChisAll[1], chiToRowCol, "TUẦN", LIGHT.gold, LIGHT.text) : "") +
       (trietChisAll.length === 2 ? tuanTrietBridgeHtml(trietChisAll[0], trietChisAll[1], chiToRowCol, "TRIỆT", "#2c4a7c", "#ffffff") : "");
+    // Khung ngoài kiểu bìa sách cổ bọc da: viền gỗ nâu trầm + 2 vòng chỉ vàng inset + bóng đổ 3D nhẹ.
+    // Font Serif (Georgia/Times) cho cảm giác cổ điển, trang trọng theo đúng yêu cầu bản thiết kế mới.
+    const cardFrame =
+      `border:5px solid ${LIGHT.frameOuter};border-radius:14px;` +
+      `box-shadow:inset 0 0 0 1.5px ${LIGHT.gold},inset 0 0 0 5px rgba(250,240,214,.75),inset 0 0 0 6.5px ${LIGHT.frameInner},0 8px 22px rgba(60,35,15,.28);`;
     return `
-      <div style="width:${CARD_WIDTH}px;height:${CARD_HEIGHT}px;font-family:Tahoma,'Segoe UI',Arial,sans-serif;background:${LIGHT.bg};color:${LIGHT.text};border:3px solid ${LIGHT.border};border-radius:16px;padding:14px;box-sizing:border-box;display:flex;flex-direction:column;">
-        <div style="display:flex;align-items:center;gap:8px;border-bottom:2px solid ${LIGHT.border};padding-bottom:8px;flex-shrink:0;">
-          <img src="/images/brand/zhi-gong-logo.png" style="width:32px;height:32px;border-radius:9999px;border:2px solid ${LIGHT.border};object-fit:cover;flex-shrink:0;" />
+      <div style="width:${CARD_WIDTH}px;height:${CARD_HEIGHT}px;font-family:Georgia,'Times New Roman','Palatino Linotype',serif;background:${PARCHMENT_TEXTURE};color:${LIGHT.text};${cardFrame}padding:16px;box-sizing:border-box;display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:center;gap:9px;border-bottom:2px solid ${LIGHT.frameOuter};padding-bottom:8px;flex-shrink:0;">
+          <img src="/images/brand/zhi-gong-logo.png" style="width:36px;height:36px;border-radius:9999px;border:2px solid ${LIGHT.frameOuter};box-shadow:0 0 0 1.5px ${LIGHT.gold};object-fit:cover;flex-shrink:0;" />
           <div>
-            <p style="margin:0;font-size:14px;font-weight:800;letter-spacing:.02em;color:${LIGHT.red};">PHONGTHUYTHIENANH.COM</p>
-            <p style="margin:0;font-size:9px;font-weight:700;letter-spacing:.04em;color:${LIGHT.textMuted};">LÁ SỐ TỬ VI ĐẨU SỐ</p>
+            <p style="margin:0;font-size:15px;font-weight:800;letter-spacing:.03em;color:${LIGHT.red};">PHONGTHUYTHIENANH.COM</p>
+            <p style="margin:0;font-size:9px;font-weight:700;letter-spacing:.10em;color:${LIGHT.textMuted};">LÁ SỐ TỬ VI ĐẨU SỐ</p>
           </div>
         </div>
-        <div style="position:relative;flex:1;min-height:0;margin-top:8px;display:grid;grid-template-columns:repeat(4, 1fr);grid-template-rows:repeat(4, 1fr);gap:4px;">
+        <div data-tv-grid style="position:relative;flex:1;min-height:0;margin-top:9px;display:grid;grid-template-columns:repeat(4, minmax(0, 1fr));grid-template-rows:repeat(4, minmax(0, 1fr));gap:5px;">
           ${cells}
           ${centerPanelHtml(chart, batTu, name, timeLabel)}
           ${menhLinesHtml(chart, chiToRowCol)}
           ${tuanTrietBridges}
         </div>
-        <p style="margin:6px 0 0;font-size:8px;color:${LIGHT.textMuted};text-align:center;flex-shrink:0;">Lập lá số Tử Vi tại Phong Thủy Thiên Anh — phongthuythienanh.com</p>
+        <p style="margin:7px 0 0;font-size:8px;color:${LIGHT.textMuted};text-align:center;flex-shrink:0;font-style:italic;">Lập lá số Tử Vi tại Phong Thủy Thiên Anh — phongthuythienanh.com</p>
       </div>
     `;
   }
@@ -538,6 +672,9 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
       saveRowEl.classList.remove("flex");
       if (submitBtn) submitBtn.disabled = true;
       resultEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      // Phải chạy SAU khi #result-tuvi đã bỏ class "hidden" (lúc còn display:none thì mọi
+      // getBoundingClientRect đều = 0, không đo được) và TRƯỚC khi chụp PNG.
+      alignMenhLines(cardEl);
 
       try {
         const dataUrl = await withTimeout(captureCardAsPng(cardEl), 15000, "Quá thời gian tạo ảnh (15s)");

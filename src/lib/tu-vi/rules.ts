@@ -98,13 +98,34 @@ export function tinhMenhQuai(lunarYear: number, gender: "Nam" | "Nữ"): string 
 // SOURCE_TEXT_CONFLICT = TRUE: chính văn bản TuVi_Profile_NguyenCat_V1.md mục 5 tự khẳng định "Mệnh Chủ
 // is determined from the branch of Cung Mệnh... Do not use yearBranch" — NGƯỢC với bằng chứng thực tế
 // (0/6 vs 6/6 ở trên). Giữ nguyên ghi chú mâu thuẫn này trong audit, không tự ý sửa lại văn bản nguồn.
+// PHASE 40 — ĐIỀN ĐỦ 12/12: Công cung cấp bảng tra đầy đủ. Bảng gốc ghi cột khóa là "Cung Mệnh", NHƯNG
+// đối chiếu thực tế cho thấy phải tra theo CHI NĂM SINH (giữ nguyên khóa cũ của engine):
+//   - Lá số mẫu Nữ Đinh Sửu (31/8/1997, hocvienlyso.org) ghi "Chủ mệnh: Cự Môn"; lá số đó có cung Mệnh ở
+//     DẦN (bảng → Lộc Tồn, SAI) trong khi Chi năm sinh là SỬU (bảng → Cự Môn, ĐÚNG).
+//   - 4 giá trị đã VERIFIED từ Phase 8 theo khóa Chi năm sinh (Thân/Ngọ/Sửu/Tỵ) TRÙNG KHỚP 100% với bảng
+//     mới → bảng mới chỉ bổ sung 8 giá trị còn thiếu, KHÔNG đổi giá trị nào đã kiểm chứng.
+// Kết luận: SOURCE_TEXT_CONFLICT ghi ở trên nay được GIẢI QUYẾT — nhãn "Cung Mệnh" trong tài liệu nguồn là
+// nhãn sai; bằng chứng thực nghiệm (6/6 Golden Master + lá số mẫu độc lập) chốt khóa tra = Chi năm sinh.
+// Bảng có tính đối xứng GƯƠNG qua trục Tý–Ngọ (Sửu/Hợi, Dần/Tuất, Mão/Dậu, Thìn/Thân, Tỵ/Mùi trùng giá
+// trị; riêng Tý và Ngọ độc nhất) — đặc trưng của bảng cổ truyền thật, không phải dữ liệu chắp vá.
+// LƯU Ý: bảng Chủ Thân bên dưới dùng kiểu đối xứng KHÁC (đối xung a/a+6), đừng áp nhầm quy luật của bảng
+// này sang bảng kia — đã có test riêng cho từng loại.
 export const CHU_MENH_BY_YEAR_BRANCH: Partial<Record<number, string>> = {
-  8: "Liêm Trinh", // Thân — VERIFIED (GM-001, GM-002)
-  6: "Phá Quân", // Ngọ — VERIFIED (GM-003)
-  1: "Cự Môn", // Sửu — VERIFIED (GM-004, GM-005)
-  5: "Vũ Khúc", // Tỵ — VERIFIED (GM-006)
+  0: "Tham Lang", // Tý
+  1: "Cự Môn", // Sửu — VERIFIED (GM-004, GM-005) + khớp bảng Phase 40
+  2: "Lộc Tồn", // Dần
+  3: "Văn Khúc", // Mão
+  4: "Liêm Trinh", // Thìn
+  5: "Vũ Khúc", // Tỵ — VERIFIED (GM-006) + khớp bảng Phase 40
+  6: "Phá Quân", // Ngọ — VERIFIED (GM-003) + khớp bảng Phase 40
+  7: "Vũ Khúc", // Mùi
+  8: "Liêm Trinh", // Thân — VERIFIED (GM-001, GM-002) + khớp bảng Phase 40
+  9: "Văn Khúc", // Dậu
+  10: "Lộc Tồn", // Tuất
+  11: "Cự Môn", // Hợi
 };
 export function getChuMenh(yearChiIndex: number): string {
+  // Fallback giữ lại để phòng chỉ số ngoài 0-11 (đủ 12/12 nên nhánh này không còn xảy ra khi input hợp lệ).
   return CHU_MENH_BY_YEAR_BRANCH[yearChiIndex] ?? "NEED_GOLDEN_MASTER_REVIEW";
 }
 
@@ -112,11 +133,23 @@ export function getChuMenh(yearChiIndex: number): string {
 // Mệnh Chủ). Ngọ đã VERIFIED qua GM-003 (giải quyết được 1/2 mâu thuẫn "Tý/Ngọ presentation" mà nguồn tự
 // khai báo — mục 6 của TuVi_Profile_NguyenCat_V1.md). Tý CỐ TÌNH giữ NEED_GOLDEN_MASTER_REVIEW, không
 // suy diễn theo đối xứng với Ngọ dù nguồn gợi ý cùng giá trị "Hỏa Tinh".
+// PHASE 40 — ĐIỀN ĐỦ 12/12 từ bảng Công cung cấp (khóa "Năm sinh", khớp sẵn khóa cũ của engine, không có
+// mâu thuẫn nhãn như bảng Chủ Mệnh). 4 giá trị VERIFIED cũ trùng khớp 100% với bảng mới.
+// ĐÁNG CHÚ Ý: Tý = "Linh Tinh", KHÔNG phải "Hỏa Tinh" như suy diễn đối xứng với Ngọ mà nguồn Nguyên Cát
+// từng gợi ý — xác nhận quyết định ở Phase 8 (cố tình KHÔNG điền theo đối xứng) là đúng.
 export const THAN_CHU_BY_YEAR_BRANCH: Partial<Record<number, string>> = {
-  8: "Thiên Lương", // Thân — VERIFIED (GM-001, GM-002)
-  6: "Hỏa Tinh", // Ngọ — VERIFIED (GM-003)
-  1: "Thiên Tướng", // Sửu — VERIFIED (GM-004, GM-005)
-  5: "Thiên Cơ", // Tỵ — VERIFIED (GM-006)
+  0: "Linh Tinh", // Tý
+  1: "Thiên Tướng", // Sửu — VERIFIED (GM-004, GM-005) + khớp bảng Phase 40
+  2: "Thiên Lương", // Dần
+  3: "Thiên Đồng", // Mão
+  4: "Văn Xương", // Thìn
+  5: "Thiên Cơ", // Tỵ — VERIFIED (GM-006) + khớp bảng Phase 40
+  6: "Hỏa Tinh", // Ngọ — VERIFIED (GM-003) + khớp bảng Phase 40
+  7: "Thiên Tướng", // Mùi
+  8: "Thiên Lương", // Thân — VERIFIED (GM-001, GM-002) + khớp bảng Phase 40
+  9: "Thiên Đồng", // Dậu
+  10: "Văn Xương", // Tuất
+  11: "Thiên Cơ", // Hợi
 };
 export function getChuThan(yearChiIndex: number): string {
   return THAN_CHU_BY_YEAR_BRANCH[yearChiIndex] ?? "NEED_GOLDEN_MASTER_REVIEW";

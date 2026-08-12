@@ -1,9 +1,16 @@
 // HIỂN THỊ-ONLY: bảng màu Ngũ Hành + phân loại Cát/Hung dùng để TÔ MÀU và SẮP XẾP trái/phải trên ảnh lá
 // số xuất ra. Đây KHÔNG phải dữ liệu Natal Core đã LOCKED — không ảnh hưởng vị trí an sao/tính toán nào,
 // chỉ phục vụ trình bày. Ngũ Hành của 14 chính tinh theo Nạp Giáp ngũ hành tinh diệu (kiến thức phổ biến,
-// thống nhất ở hầu hết trường phái). Ngũ Hành/Cát Hung của phụ tinh và Tạp Diệu theo phân loại phổ biến —
-// nếu star đã có cột C/H trực tiếp từ nguồn "Tử Vi Hàm Số" (xem tap-dieu.ts) thì dùng đúng theo đó.
-
+// thống nhất ở hầu hết trường phái).
+//
+// PHASE 43 — VIẾT LẠI toàn bộ Ngũ Hành phụ tinh/Tạp Diệu/Vòng Bác Sĩ/Vòng Thái Tuế theo đúng màu hiển thị
+// thật trên lá số "Học Viện Lý Số Nguyên Cát" (hocvienlyso.org), theo yêu cầu Công "màu sắc các sao phụ
+// tinh em cũng làm cho giống với lá số của học viện lý số". Cách làm: tải lá số Canh Thân (31/8/1980 giờ
+// Ngọ, đã dùng làm ví dụ Golden Master cho Lưu Hà) làm ảnh JPEG, cắt riêng từng ô ra xem cận cảnh (tránh
+// đọc nhầm màu do ảnh full-size quá nhỏ), đối chiếu với chú thích màu in sẵn ở cuối ảnh: "Kim=xám,
+// Mộc=xanh lá, Thủy=đen, Hỏa=đỏ, Thổ=cam". Đây là bằng chứng trực tiếp từ 1 lá số thật, không phải suy
+// diễn — thay thế hoàn toàn cho phân loại "phổ biến" chưa có nguồn cụ thể trước đây. Sao nào KHÔNG xuất
+// hiện trên lá số mẫu này (không có trong ô nào của 12 cung) thì GIỮ NGUYÊN giá trị cũ, không đoán.
 export type NguHanh = "Kim" | "Mộc" | "Thủy" | "Hỏa" | "Thổ";
 
 export const NGU_HANH_BY_SAO: Record<string, NguHanh> = {
@@ -13,33 +20,38 @@ export const NGU_HANH_BY_SAO: Record<string, NguHanh> = {
   "Thái Dương": "Hỏa", "Liêm Trinh": "Hỏa",
   "Vũ Khúc": "Kim", "Thất Sát": "Kim",
   "Thiên Đồng": "Thủy", "Thái Âm": "Thủy", "Cự Môn": "Thủy", "Thiên Tướng": "Thủy", "Phá Quân": "Thủy",
-  // Phụ tinh chính (engine.ts)
-  "Tả Phù": "Thổ", "Hữu Bật": "Thủy", "Văn Xương": "Kim", "Văn Khúc": "Thủy",
-  "Thiên Khôi": "Hỏa", "Thiên Việt": "Hỏa", "Lộc Tồn": "Thổ", "Thiên Mã": "Hỏa",
+  // Phụ tinh chính (engine.ts) — Văn Khúc, Thiên Khôi, Thiên Việt sửa theo màu thật (Phase 43).
+  "Tả Phù": "Thổ", "Hữu Bật": "Thủy", "Văn Xương": "Kim", "Văn Khúc": "Kim",
+  "Thiên Khôi": "Hỏa", "Thiên Việt": "Mộc", "Lộc Tồn": "Thổ", "Thiên Mã": "Hỏa",
   "Hồng Loan": "Thủy", "Thiên Hỷ": "Thủy", "Thiên Y": "Thủy", "Đào Hoa": "Mộc",
   "Kình Dương": "Kim", "Đà La": "Kim", "Địa Kiếp": "Hỏa", "Địa Không": "Hỏa",
   "Hỏa Tinh": "Hỏa", "Linh Tinh": "Hỏa", "Thiên Hình": "Hỏa", "Thiên Diêu": "Thủy",
-  // Tạp Diệu (Phase 38 + bổ sung nguồn "Tử Vi Hàm Số")
-  "Long Trì": "Thủy", "Phượng Các": "Hỏa", "Thiên Khốc": "Kim", "Thiên Hư": "Kim",
-  "Thiên Đức": "Thổ", "Nguyệt Đức": "Thổ", "Thiên Tài": "Mộc", "Thiên Thọ": "Thổ",
-  "Cô Thần": "Hỏa", "Quả Tú": "Hỏa", "Phá Toái": "Kim", "Thiên Không": "Thổ",
-  "Thiên Giải": "Thổ", "Địa Giải": "Thổ", "Giải Thần": "Hỏa",
-  "Thiên La": "Thổ", "Địa Võng": "Thổ", "Thiên Sứ": "Thủy", "Thiên Thương": "Mộc",
-  "Quốc Ấn": "Thổ", "Đường Phù": "Hỏa", "Thiên Quan": "Thổ", "Thiên Phúc": "Thổ",
-  "Thai Phụ": "Hỏa", "Phong Cáo": "Hỏa",
-  "Tướng Tinh": "Kim", "Phan Án": "Kim", "Tuế Dịch": "Hỏa", "Tức Thần": "Thổ",
-  "Hoa Cái": "Mộc", "Kiếp Sát": "Hỏa", "Tai Sát": "Hỏa", "Thiên Sát": "Hỏa",
-  "Chỉ Bối": "Kim", "Nguyệt Sát": "Thủy", "Vong Thần": "Thủy",
-  // Bổ sung nguồn "Tử Vi Tam Hợp Phái Tập 1" (Minh Việt)
-  "Ân Quang": "Hỏa", "Thiên Quý": "Hỏa", "Tam Thai": "Thổ", "Bát Tọa": "Thổ", "Đẩu Quân": "Thổ",
-  // Vòng Bác Sĩ (Phase 32, hocvienlyso.org — "vòng Lộc Tồn")
+  // Tạp Diệu — đa số sửa theo màu thật (Phase 43); Giải Thần/Thiên La/Địa Võng không xuất hiện trên lá số
+  // mẫu nên giữ nguyên giá trị cũ.
+  "Long Trì": "Thủy", "Phượng Các": "Mộc", "Thiên Khốc": "Kim", "Thiên Hư": "Thủy",
+  "Thiên Đức": "Thổ", "Nguyệt Đức": "Hỏa", "Thiên Tài": "Thổ", "Thiên Thọ": "Thổ",
+  "Cô Thần": "Thổ", "Quả Tú": "Thổ", "Phá Toái": "Hỏa", "Thiên Không": "Hỏa",
+  "Thiên Giải": "Hỏa", "Địa Giải": "Thổ", "Giải Thần": "Hỏa",
+  "Thiên La": "Thổ", "Địa Võng": "Thổ", "Thiên Sứ": "Thủy", "Thiên Thương": "Thổ",
+  "Quốc Ấn": "Thổ", "Đường Phù": "Mộc", "Thiên Quan": "Mộc", "Thiên Phúc": "Thổ",
+  "Thai Phụ": "Kim", "Phong Cáo": "Thổ",
+  "Tướng Tinh": "Kim", "Phan Án": "Thủy", "Tuế Dịch": "Thủy", "Tức Thần": "Thủy",
+  "Hoa Cái": "Thủy", "Kiếp Sát": "Thủy", "Tai Sát": "Thủy", "Thiên Sát": "Thủy", "Âm Sát": "Thủy",
+  "Chỉ Bối": "Thủy", "Nguyệt Sát": "Thủy", "Vong Thần": "Thủy",
+  // Lưu Hà — nguồn "Tử Vi Tam Hợp Phái Minh Việt" mục 46 ghi rõ "Lưu Hà hành Thủy"; khớp luôn với màu thật.
+  "Lưu Hà": "Thủy",
+  // Bổ sung nguồn "Tử Vi Tam Hợp Phái Tập 1" (Minh Việt) — sửa theo màu thật (Phase 43).
+  "Ân Quang": "Mộc", "Thiên Quý": "Thổ", "Tam Thai": "Thủy", "Bát Tọa": "Mộc", "Đẩu Quân": "Hỏa",
+  // Vòng Bác Sĩ (Phase 32, hocvienlyso.org — "vòng Lộc Tồn") — Tấu Thư, Quan Phủ sửa theo màu thật.
   "Bác Sĩ": "Thủy", "Lực Sĩ": "Hỏa", "Thanh Long": "Thủy", "Tiểu Hao": "Hỏa",
-  "Tướng Quân": "Mộc", "Tấu Thư": "Mộc", "Phi Liêm": "Hỏa", "Hỷ Thần": "Hỏa",
-  "Bệnh Phù": "Thủy", "Đại Hao": "Hỏa", "Phục Binh": "Thủy", "Quan Phủ": "Thổ",
-  // Vòng Thái Tuế (12 sao, Natal Core đã LOCKED — chỉ thêm màu/phân loại hiển thị ở đây)
-  "Thái Tuế": "Mộc", "Thiếu Dương": "Hỏa", "Tang Môn": "Mộc", "Thiếu Âm": "Thủy",
-  "Quan Phù": "Thổ", "Tử Phù": "Hỏa", "Tuế Phá": "Kim", "Long Đức": "Thủy",
-  "Bạch Hổ": "Kim", "Phúc Đức": "Thổ", "Điếu Khách": "Thủy", "Trực Phù": "Mộc",
+  "Tướng Quân": "Mộc", "Tấu Thư": "Kim", "Phi Liêm": "Hỏa", "Hỷ Thần": "Hỏa",
+  "Bệnh Phù": "Thủy", "Đại Hao": "Hỏa", "Phục Binh": "Thủy", "Quan Phủ": "Hỏa",
+  // Vòng Thái Tuế (12 sao, Natal Core đã LOCKED — chỉ thêm màu/phân loại hiển thị ở đây) — đa số sửa theo
+  // màu thật (Phase 43); Bạch Hổ không xuất hiện rõ trên lá số mẫu (chỉ thấy dạng "L.Bạch Hổ" mờ) nên giữ
+  // nguyên giá trị cũ.
+  "Thái Tuế": "Thủy", "Thiếu Dương": "Hỏa", "Tang Môn": "Mộc", "Thiếu Âm": "Thủy",
+  "Quan Phù": "Hỏa", "Tử Phù": "Hỏa", "Tuế Phá": "Hỏa", "Long Đức": "Thủy",
+  "Bạch Hổ": "Kim", "Phúc Đức": "Thổ", "Điếu Khách": "Hỏa", "Trực Phù": "Hỏa",
 };
 
 export type CatHung = "Cát" | "Hung";
@@ -59,7 +71,8 @@ export const CAT_HUNG_BY_SAO: Record<string, CatHung> = {
   "Thai Phụ": "Cát", "Phong Cáo": "Cát",
   "Tướng Tinh": "Cát", "Phan Án": "Hung", "Tuế Dịch": "Hung", "Tức Thần": "Cát",
   "Hoa Cái": "Cát", "Kiếp Sát": "Hung", "Tai Sát": "Hung", "Thiên Sát": "Hung",
-  "Chỉ Bối": "Hung", "Nguyệt Sát": "Hung", "Vong Thần": "Hung",
+  "Chỉ Bối": "Hung", "Nguyệt Sát": "Hung", "Vong Thần": "Hung", "Âm Sát": "Hung",
+  "Lưu Hà": "Hung",
   "Ân Quang": "Cát", "Thiên Quý": "Cát", "Tam Thai": "Cát", "Bát Tọa": "Cát", "Đẩu Quân": "Cát",
   // Vòng Bác Sĩ — Bác Sĩ/Lực Sĩ/Thanh Long/Tướng Quân/Tấu Thư/Hỷ Thần: Cát (trí tuệ, quyền uy, tin vui).
   // Tiểu Hao/Phi Liêm/Bệnh Phù/Đại Hao/Phục Binh/Quan Phủ: Hung (hao tài, thị phi, bệnh, kiện tụng).

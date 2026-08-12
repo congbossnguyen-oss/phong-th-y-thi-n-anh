@@ -68,6 +68,12 @@ export function diaGiaiIndex(lunarMonth: number): number { return mod12(7 + (lun
 // đúng công thức Phượng Các đã có, KHÔNG tính lại bằng công thức khác.
 export function giaiThanIndex(yearChiIndex: number): number { return phuongCacIndex(yearChiIndex); }
 
+// Âm Sát — bảng tra theo Công cung cấp trực tiếp: Tháng 1 an tại Dần, mỗi tháng lùi (nghịch) 2 cung, hết
+// Thìn (tháng 6) thì lặp lại từ Dần (tháng 7) — chu kỳ 6 tháng. Kiểm chứng bằng lá số Bính Tý, tháng 6 âm
+// → Âm Sát tại Thìn (khớp trực tiếp ví dụ Công đưa, xem GM-AMSAT-01 trong test).
+//   Tháng 1→Dần 2→Tý 3→Tuất 4→Thân 5→Ngọ 6→Thìn 7→Dần 8→Tý 9→Tuất 10→Thân 11→Ngọ 12→Thìn
+export function amSatIndex(lunarMonth: number): number { return mod12(4 - 2 * lunarMonth); }
+
 // Thiên La/Địa Võng — nguồn (bài 15, Level 1): "Thiên La: Bao giờ cũng an ở cung Thìn." "Địa Võng: Bao
 // giờ cũng an ở cung Tuất." — vị trí CỐ ĐỊNH, không phụ thuộc Can/Chi/Mệnh/Thân.
 export const THIEN_LA_CHI_INDEX = 4; // Thìn
@@ -125,17 +131,25 @@ export const QUA_TU_BY_CHI: Record<string, number> = {
 };
 
 // ============================================================================================
-// Lưu Hà — SOURCE_CONFLICTED, KHÔNG đưa vào getTapDieu()/UI. Nguồn Thiên Lương (Level 2, bài "Lưu Hà
-// Kiếp Sát...") cho bảng đủ 10 Can: "Tuổi Giáp thì Lưu Hà đóng ở Dậu... Đinh (âm) thì Lưu Hà đóng ở Thân
-// (dương cung)... Quý thì Lưu Hà đóng ở Dần". NHƯNG bài 10 (Level 1, hocvienlyso.org, "Tự học tử vi đẩu
-// số bài 10: An các sao hàng can") lại cho ví dụ khác: "Sinh năm Đinh Mão, an Lưu Hà ở cung Thìn" — Thìn
-// (4) KHÁC Thân (8) mà nguồn Thiên Lương cho cùng Can Đinh. Đây là xung đột thật giữa 2 nguồn Level 1/2
-// cùng thuộc hocvienlyso.org — theo đúng nguyên tắc "không suy diễn, không tự chọn bên", GIỮ NGUYÊN bảng
-// đã tính (để tham khảo/đối chiếu sau) nhưng KHÔNG dùng làm dữ liệu chính thức cho đến khi có nguồn thứ 3
-// phân giải. Xem docs/TUVI_PHASE38_TAP_DIEU.md mục "Lưu Hà — CONFLICTED".
-export const LUU_HA_BY_CAN_THIEN_LUONG_UNCONFIRMED: Record<string, number> = {
-  "Giáp": 9, "Ất": 10, "Bính": 7, "Đinh": 8, "Mậu": 5,
-  "Kỷ": 6, "Canh": 3, "Tân": 4, "Nhâm": 11, "Quý": 2,
+// Lưu Hà — PHASE 42: GM-VERIFIED ĐỦ 10/10 CAN, gỡ SOURCE_CONFLICTED. Lịch sử: nguồn "Thiên Lương"
+// (Level 2, bài "Lưu Hà Kiếp Sát...") và nguồn "bài 10" (Level 1, cùng hocvienlyso.org) từng mâu thuẫn ở
+// Can Đinh (Thân vs Thìn); nguồn "Tử Vi Tam Hợp Phái Minh Việt" (mục 36) lại cho MỘT bảng thứ 3 khác hẳn
+// cả hai. Với 3 nguồn văn bản xung đột, không có căn cứ để chọn bên bằng suy diễn — nên đã kiểm tra trực
+// tiếp cả 10 Can bằng cách lập lá số thật qua https://hocvienlyso.org/la-so-tu-vi.html (10 năm liên tiếp
+// 1974-1983, mỗi năm ứng đúng 1 Can, ngày 31/8 giờ Ngọ Dương Nam) và ĐỐI CHIẾU BẰNG MẮT vị trí "Lưu Hà"
+// trên từng lá số — không suy luận lại bằng công thức, đọc trực tiếp kết quả. Mỗi lá số còn được kiểm
+// chéo bằng Đẩu Quân (công thức đã LOCKED — xem dauQuanIndex ở trên) để xác nhận lá số tải về khớp đúng
+// engine trước khi tin vị trí Lưu Hà đọc được.
+//
+// Kết quả: 7/10 Can (Giáp/Ất/Bính/Mậu/Kỷ/Nhâm/Quý) khớp đúng bảng "Thiên Lương" cũ. NHƯNG 3 Can liền kề
+// nhau — Đinh, Canh, Tân — đều SAI trong bảng "Thiên Lương": giá trị thật đọc được từ lá số là Đinh=Thìn
+// (khớp đúng nguồn "bài 10" đang mâu thuẫn, xác nhận nguồn đó mới đúng cho Can này), Canh=Thân, Tân=Mão —
+// đúng bằng linh cảm ban đầu của Công khi thấy 2 giá trị Canh(Mão)/Tân(Thìn) trong bảng cũ "nghi bị lẫn
+// Can khi đối chiếu": giá trị Thân từng gán nhầm cho Đinh hoá ra là của Canh, giá trị Mão từng gán nhầm
+// cho Canh hoá ra là của Tân — một lỗi dịch chuyển vòng qua 3 Can liền nhau trong bản chép tay/OCR gốc.
+export const LUU_HA_BY_CAN: Record<string, number> = {
+  "Giáp": 9, "Ất": 10, "Bính": 7, "Đinh": 4, "Mậu": 5,
+  "Kỷ": 6, "Canh": 8, "Tân": 3, "Nhâm": 11, "Quý": 2,
 };
 
 // ============================================================================================
@@ -296,7 +310,7 @@ export function getTapDieu(chart: TuViChart): TapDieuPlacement[] {
     { chiIndex: thienThoIndex(chart.thanChiIndex, yearChiIndex), name: "Thiên Thọ" },
     { chiIndex: CO_THAN_BY_CHI[chart.yearChiName], name: "Cô Thần" },
     { chiIndex: QUA_TU_BY_CHI[chart.yearChiName], name: "Quả Tú" },
-    // Lưu Hà: KHÔNG đưa vào — SOURCE_CONFLICTED (xem ghi chú tại LUU_HA_BY_CAN_THIEN_LUONG_UNCONFIRMED).
+    { chiIndex: LUU_HA_BY_CAN[chart.yearCanName], name: "Lưu Hà" },
     { chiIndex: PHA_TOAI_BY_CHI[chart.yearChiName], name: "Phá Toái" },
     { chiIndex: thienKhongIndex(yearChiIndex), name: "Thiên Không" },
     { chiIndex: thienGiaiIndex(chart.lunarMonth), name: "Thiên Giải" },
@@ -317,6 +331,7 @@ export function getTapDieu(chart: TuViChart): TapDieuPlacement[] {
     { chiIndex: tamThaiIndex(taPhuChiIndex, chart.lunarDay), name: "Tam Thai" },
     { chiIndex: batToaIndex(huuBatChiIndex, chart.lunarDay), name: "Bát Tọa" },
     { chiIndex: dauQuanIndex(yearChiIndex, chart.lunarMonth, gioChiIndex), name: "Đẩu Quân" },
+    { chiIndex: amSatIndex(chart.lunarMonth), name: "Âm Sát" },
     ...getTuongTinhRing(chart.yearChiName),
   ];
 
