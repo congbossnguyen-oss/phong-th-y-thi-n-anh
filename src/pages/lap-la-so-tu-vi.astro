@@ -117,8 +117,9 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
   import { getBacSiRing } from "../lib/tu-vi/bac-si";
   import { getTieuHanPalace, getTuoiTieuHan } from "../lib/tu-vi/tieu-han";
   import { getNguyetHan } from "../lib/tu-vi/nguyet-han";
+  import { getLuuNienCore, getLuuNienExtended } from "../lib/tu-vi/luu-nien";
   import { colorOfSao, isCat, ELEMENT_COLOR } from "../lib/tu-vi/hien-thi-sao";
-  import { tinhBatTu, THAP_THAN_ABBR, CAN_NGU_HANH, CHI_NGU_HANH, type BatTuChart, type PillarInfo } from "../lib/bat-tu";
+  import { tinhBatTu, tinhLuuNien, THAP_THAN_ABBR, CAN_NGU_HANH, CHI_NGU_HANH, type BatTuChart, type PillarInfo } from "../lib/bat-tu";
 
   function populateSelect(el: HTMLSelectElement, options: [string | number, string][]) {
     el.innerHTML = options.map(([v, l]) => `<option value="${v}">${l}</option>`).join("");
@@ -181,6 +182,15 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
   const CELL_TEXTURE =
     "radial-gradient(ellipse at 22% 18%, rgba(150,105,55,.05), transparent 60%)," +
     "linear-gradient(155deg, #fdf9f0 0%, #faf2e0 100%)";
+  // Yêu cầu Công: nền khung ngoài + ô trung tâm đổi thành đỏ đô (12 ô cung vẫn giữ CELL_TEXTURE cũ,
+  // không đổi). Chữ trong ô trung tâm giữ NGUYÊN màu (LIGHT.blue/red/text) — chỉ thêm viền sáng quanh chữ
+  // (text-shadow nhiều hướng, không đổi màu chữ) để đọc được trên nền sẫm.
+  const DO_TEXTURE =
+    "radial-gradient(ellipse at 20% 15%, rgba(0,0,0,.18), transparent 55%)," +
+    "radial-gradient(ellipse at 80% 30%, rgba(255,255,255,.04), transparent 50%)," +
+    "linear-gradient(160deg, #6b1522 0%, #4a0e1a 55%, #370a13 100%)";
+  const TEXT_HALO =
+    "text-shadow:-1px -1px 0 #f4e0c0,1px -1px 0 #f4e0c0,-1px 1px 0 #f4e0c0,1px 1px 0 #f4e0c0,0 0 5px rgba(244,224,192,.6);";
   // CARD_WIDTH/CARD_HEIGHT là kích thước CSS thật; xuất ảnh dùng pixelRatio 2 để ra đúng 1440x2000px.
   const CARD_WIDTH = 720;
   const CARD_HEIGHT = 1000;
@@ -222,6 +232,13 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
   ];
 
   type DisplayStar = { name: string; tuHoa?: "Lộc" | "Quyền" | "Khoa" | "Kỵ" };
+
+  // Yêu cầu Công: sao Lưu Niên (an theo năm ĐANG XEM, khác bản chất Natal Core) hiện ở CUỐI cột phụ tinh
+  // cát/hung tương ứng, tiền tố "L." và tô màu mờ (giống cách hocvienlyso.org hiển thị nhóm sao Lưu) để
+  // phân biệt rõ với phụ tinh Natal Core phía trên.
+  function luuNienLineHtml(name: string): string {
+    return `<div style="font-size:8px;font-weight:600;color:${LIGHT.textMuted};opacity:.72;line-height:1.3;white-space:nowrap;">L.${name}</div>`;
+  }
 
   // Yêu cầu Công: bỏ chữ viết tắt Tứ Hóa nhỏ (sup) trên phụ tinh — Công thấy khó hiểu ("sao Văn Xương lại
   // có chữ K nhỏ trên đầu là ý làm sao"). Tứ Hóa đã có dòng "Hóa Lộc/Quyền/Khoa/Kỵ" riêng ở đầu cột rồi
@@ -276,7 +293,7 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
     return `<div style="position:absolute;left:${leftPct}%;top:${topPct}%;width:${(barLen / 4) * 100}%;height:${(barThick / 4) * 100}%;display:flex;align-items:center;justify-content:center;overflow:visible;white-space:nowrap;font-size:8px;font-weight:800;letter-spacing:.01em;color:${fg};background:${bg};border-radius:3px;z-index:6;box-shadow:0 0 0 1px ${LIGHT.border};">${label}</div>`;
   }
 
-  function cellHtml(p: CungKetQua, tapDieuNames: string[], isCurrentDaiVan: boolean, isCurrentTieuHan: boolean, monthlyLabel: string): string {
+  function cellHtml(p: CungKetQua, tapDieuNames: string[], isCurrentDaiVan: boolean, isCurrentTieuHan: boolean, monthlyLabel: string, luuNienNames: string[]): string {
     // Yêu cầu Công: mỗi chính tinh xuống hàng riêng (chính tinh 1, dưới là chính tinh 2), không nằm
     // chung 1 dòng.
     // Yêu cầu Công: KHÔNG viết tắt Tứ Hóa (sup) trên đầu chính tinh nữa — Tứ Hóa chỉ hiện ở phần phụ tinh
@@ -306,8 +323,13 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
       .filter((t): t is "Lộc" | "Quyền" | "Khoa" | "Kỵ" => !!t);
     const tuHoaCatHtml = tuHoaHits.filter((t) => t !== "Kỵ").map(tuHoaLineHtml).join("");
     const tuHoaHungHtml = tuHoaHits.filter((t) => t === "Kỵ").map(tuHoaLineHtml).join("");
-    const catHtml = tuHoaCatHtml + allPhu.filter((s) => isCat(s.name)).map(starLineHtml).join("");
-    const hungHtml = tuHoaHungHtml + allPhu.filter((s) => !isCat(s.name)).map(starLineHtml).join("");
+    // Yêu cầu Công: sao Lưu Niên ghi ở CUỐI cột — L.Lộc Tồn/L.Thiên Mã.../loại Cát xuống cuối cột trái,
+    // L.Tang Môn/L.Thái Tuế.../loại Hung xuống cuối cột phải, dùng lại đúng isCat() của bản Natal Core
+    // (bản chất tốt/xấu của 1 sao không đổi dù là bản Natal hay Lưu Niên).
+    const luuNienCatHtml = luuNienNames.filter((n) => isCat(n)).map(luuNienLineHtml).join("");
+    const luuNienHungHtml = luuNienNames.filter((n) => !isCat(n)).map(luuNienLineHtml).join("");
+    const catHtml = tuHoaCatHtml + allPhu.filter((s) => isCat(s.name)).map(starLineHtml).join("") + luuNienCatHtml;
+    const hungHtml = tuHoaHungHtml + allPhu.filter((s) => !isCat(s.name)).map(starLineHtml).join("") + luuNienHungHtml;
 
     // Bố cục theo yêu cầu Công: 1 hàng trên cùng gồm Can Chi (trái) — tên cung (giữa, to nhất, đậm, đen,
     // đẩy lên cao nhất) — mốc Đại Vận (phải); dưới là chính tinh xếp dọc (đậm, màu Ngũ Hành); hàng dưới
@@ -345,9 +367,9 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
             <div style="display:flex;flex-direction:column;align-items:flex-end;min-width:0;text-align:right;">${hungHtml}</div>
           </div>
           <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:3px;margin-top:2px;">
-            <span style="font-size:8px;color:transparent;white-space:nowrap;flex-shrink:0;">${monthlyLabel}</span>
-            <span style="flex:1;text-align:center;font-size:8px;font-weight:800;color:${LIGHT.textMuted};white-space:nowrap;">${p.trangSinh}</span>
-            <span style="font-size:8px;font-weight:800;color:${LIGHT.textMuted};white-space:nowrap;flex-shrink:0;">${monthlyLabel}</span>
+            <span style="font-size:9.5px;color:transparent;white-space:nowrap;flex-shrink:0;">${monthlyLabel}</span>
+            <span style="flex:1;text-align:center;font-size:9.5px;font-weight:800;color:${LIGHT.textMuted};white-space:nowrap;">${p.trangSinh}</span>
+            <span style="font-size:9.5px;font-weight:800;color:${LIGHT.textMuted};white-space:nowrap;flex-shrink:0;">${monthlyLabel}</span>
           </div>
         </div>
       </div>
@@ -407,26 +429,19 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
     const sealRings =
       `<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:60%;padding-bottom:60%;max-width:250px;border-radius:9999px;` +
       `border:1px solid rgba(140,90,43,.16);box-shadow:0 0 0 6px rgba(140,90,43,.05),inset 0 0 0 7px rgba(140,90,43,.05);pointer-events:none;z-index:0;"></div>`;
-    // Yêu cầu Công: 2 bên khu trung tâm có linh vật như ảnh mẫu. Dùng vector chim hạc/phượng mạ vàng phong
-    // cách Đông Sơn sẵn có trong bộ brand, lật gương sang trái để 2 con chầu vào logo ở giữa. CHƯA có asset
-    // rồng cùng phong cách nên tạm để cặp hạc đối xứng (xem ghi chú báo Công) — khi có file rồng chỉ cần
-    // đổi src của bên trái.
-    const guardian = (side: "left" | "right") =>
-      `<img src="/images/brand/chim-hac-vector.png" style="position:absolute;${side}:2%;top:50%;` +
-      `transform:translateY(-50%)${side === "left" ? " scaleX(-1)" : ""};width:31%;max-width:130px;` +
-      `opacity:.11;pointer-events:none;z-index:0;" />`;
+    // Yêu cầu Công: cặp linh vật rồng/phượng 2 bên khu trung tâm — thử tự vẽ SVG rồng nhưng Công thấy phần
+    // này quá khó để làm đẹp, quyết định BỎ HẲN (yêu cầu "rồng phượng khó quá bỏ qua"), giữ khu trung tâm
+    // sạch, chỉ còn logo + vòng con dấu ở giữa, giống đúng bản demo tham chiếu Công gửi.
     // "Lập tại... lúc HH:MM-DD/MM/YYYY" — mốc thời điểm xuất lá số (giờ máy người dùng), giống dòng cuối
     // của bảng tham chiếu hocvienlyso.org.
     const now = new Date();
     const pad2 = (n: number) => String(n).padStart(2, "0");
     const nowStamp = `${pad2(now.getHours())}:${pad2(now.getMinutes())}-${pad2(now.getDate())}/${pad2(now.getMonth() + 1)}/${now.getFullYear()}`;
     return `
-      <div data-tv-center style="position:relative;grid-row:2 / span 2;grid-column:2 / span 2;border:1.5px solid ${LIGHT.cellBorder};border-radius:6px;box-shadow:inset 0 0 0 1px ${LIGHT.frameInner},inset 0 0 0 2.5px rgba(255,255,255,.5),0 1px 3px rgba(92,51,23,.22);background:${PARCHMENT_TEXTURE};padding:10px 12px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;overflow:hidden;">
+      <div data-tv-center style="position:relative;grid-row:2 / span 2;grid-column:2 / span 2;border:1.5px solid ${LIGHT.cellBorder};border-radius:6px;box-shadow:inset 0 0 0 1px ${LIGHT.frameInner},inset 0 0 0 2.5px rgba(255,255,255,.5),0 1px 3px rgba(92,51,23,.22);background:${DO_TEXTURE};padding:10px 12px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;overflow:hidden;">
         ${sealRings}
-        ${guardian("left")}
-        ${guardian("right")}
         <img src="/images/brand/zhi-gong-logo.png" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:52%;max-width:215px;opacity:.13;pointer-events:none;z-index:0;" />
-        <div style="position:relative;z-index:1;font-size:10.5px;line-height:1.55;color:${LIGHT.blue};text-align:center;">
+        <div style="position:relative;z-index:1;font-size:10.5px;line-height:1.55;color:${LIGHT.blue};text-align:center;${TEXT_HALO}">
           <p style="margin:0;font-weight:800;font-size:12px;letter-spacing:.04em;color:${LIGHT.text};">PHONG THỦY THIÊN ANH</p>
           ${name ? `<p style="margin:2px 0 0;font-weight:800;font-size:11px;color:${LIGHT.blue};">${name}</p>` : ""}
           <p style="margin:2px 0 0;font-weight:800;font-size:13px;letter-spacing:.02em;color:${LIGHT.text};">${chart.input.gender.toUpperCase()} MỆNH ${chart.yearCanName.toUpperCase()} ${chart.yearChiName.toUpperCase()}</p>
@@ -550,6 +565,15 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
     const nguyetHanByChi: Record<number, string> = {};
     for (const n of getNguyetHan(chart)) nguyetHanByChi[n.chiIndex] = n.monthlyLabel;
 
+    // Sao Lưu Niên (Phase 44): an theo Can/Chi của NĂM ĐANG XEM — chỉ tính khi đã nhập Năm xem, KHÔNG
+    // dùng Can/Chi năm sinh. tinhLuuNien() (bat-tu.ts) cho đúng Can/Chi của 1 năm dương lịch bất kỳ.
+    const luuNienByChi: string[][] = Array.from({ length: 12 }, () => []);
+    if (chart.input.viewingYear !== undefined) {
+      const viewYear = tinhLuuNien(chart.input.viewingYear, chart.input.viewingYear, 1)[0];
+      for (const s of getLuuNienCore(viewYear.can, viewYear.chiIndex)) luuNienByChi[s.chiIndex].push(s.name);
+      for (const s of getLuuNienExtended(viewYear.chiIndex)) luuNienByChi[s.chiIndex].push(s.name);
+    }
+
     // Yêu cầu Công: cung đang ở đúng Đại Vận hiện tại (theo tuổi/Năm xem) — chỉ có khi đã nhập Năm xem.
     const currentDaiVanChiIndex = chart.tuoiNamXem !== null
       ? chart.cungs.find((c) => chart.tuoiNamXem! >= c.daiVanTuoi[0] && chart.tuoiNamXem! <= c.daiVanTuoi[1])?.chiIndex
@@ -561,7 +585,7 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
 
     const cells = GRID_CELLS.map(({ chiIndex, row, col }) => {
       const p = chart.cungs[chiIndex];
-      return `<div data-tv-chi="${chiIndex}" style="grid-row:${row};grid-column:${col};">${cellHtml(p, tapDieuByChi[chiIndex], chiIndex === currentDaiVanChiIndex, chiIndex === currentTieuHanChiIndex, nguyetHanByChi[chiIndex])}</div>`;
+      return `<div data-tv-chi="${chiIndex}" style="grid-row:${row};grid-column:${col};">${cellHtml(p, tapDieuByChi[chiIndex], chiIndex === currentDaiVanChiIndex, chiIndex === currentTieuHanChiIndex, nguyetHanByChi[chiIndex], luuNienByChi[chiIndex])}</div>`;
     }).join("");
 
     const tuanChisAll = chart.cungs.filter((c) => c.tuan).map((c) => c.chiIndex);
@@ -575,8 +599,8 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
       `border:5px solid ${LIGHT.frameOuter};border-radius:14px;` +
       `box-shadow:inset 0 0 0 1.5px ${LIGHT.gold},inset 0 0 0 5px rgba(250,240,214,.75),inset 0 0 0 6.5px ${LIGHT.frameInner},0 8px 22px rgba(60,35,15,.28);`;
     return `
-      <div style="width:${CARD_WIDTH}px;height:${CARD_HEIGHT}px;font-family:Georgia,'Times New Roman','Palatino Linotype',serif;background:${PARCHMENT_TEXTURE};color:${LIGHT.text};${cardFrame}padding:16px;box-sizing:border-box;display:flex;flex-direction:column;">
-        <div style="display:flex;align-items:center;gap:9px;border-bottom:2px solid ${LIGHT.frameOuter};padding-bottom:8px;flex-shrink:0;">
+      <div style="width:${CARD_WIDTH}px;height:${CARD_HEIGHT}px;font-family:Georgia,'Times New Roman','Palatino Linotype',serif;background:${DO_TEXTURE};color:${LIGHT.text};${cardFrame}padding:16px;box-sizing:border-box;display:flex;flex-direction:column;">
+        <div style="display:flex;align-items:center;gap:9px;border-bottom:2px solid ${LIGHT.gold};padding-bottom:8px;flex-shrink:0;${TEXT_HALO}">
           <img src="/images/brand/zhi-gong-logo.png" style="width:36px;height:36px;border-radius:9999px;border:2px solid ${LIGHT.frameOuter};box-shadow:0 0 0 1.5px ${LIGHT.gold};object-fit:cover;flex-shrink:0;" />
           <div>
             <p style="margin:0;font-size:15px;font-weight:800;letter-spacing:.03em;color:${LIGHT.red};">PHONGTHUYTHIENANH.COM</p>
@@ -589,7 +613,7 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
           ${menhLinesHtml(chart, chiToRowCol)}
           ${tuanTrietBridges}
         </div>
-        <p style="margin:7px 0 0;font-size:8px;color:${LIGHT.textMuted};text-align:center;flex-shrink:0;font-style:italic;">Lập lá số Tử Vi tại Phong Thủy Thiên Anh — phongthuythienanh.com</p>
+        <p style="margin:7px 0 0;font-size:8px;color:${LIGHT.textMuted};text-align:center;flex-shrink:0;font-style:italic;${TEXT_HALO}">Lập lá số Tử Vi tại Phong Thủy Thiên Anh — phongthuythienanh.com</p>
       </div>
     `;
   }
