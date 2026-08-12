@@ -20,6 +20,7 @@ import { calculateNgayDaiCatCaNhan } from "./processing/ngayDaiCatCaNhan.js";
 import { calculateTrungTang } from "./processing/trungTang.js";
 import { convertSolarToLunar, convertLunarToSolar } from "./processing/doiLichAmDuong.js";
 import { calculateHoangOcKimLau, calculateHoangOcKimLauRange } from "./processing/hoangOcKimLau.js";
+import { calculateConSoMayMan } from "./processing/conSoMayMan.js";
 import { tinhTuTru } from "./processing/tuTru.js";
 import type { TrachNhatInput, TrachNhatOutput } from "./types.js";
 import { validateTrachNhatInput } from "./validation.js";
@@ -58,6 +59,8 @@ export type {
 export { convertSolarToLunar, convertLunarToSolar };
 export type { HoangOcKimLauInput, HoangOcKimLauRangeInput, HoangOcKimLauResult } from "./processing/hoangOcKimLau.js";
 export { calculateHoangOcKimLau, calculateHoangOcKimLauRange };
+export type { ConSoMayManInput, ConSoMayManResult } from "./processing/conSoMayMan.js";
+export { calculateConSoMayMan };
 
 export * from "./types.js";
 
