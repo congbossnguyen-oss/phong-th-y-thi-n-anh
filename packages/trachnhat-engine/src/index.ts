@@ -25,6 +25,7 @@ import { calculateChonTuoiKetHon, timTuoiKetHonPhuHop } from "./processing/chonT
 import { calculateChonNamSinhCon } from "./processing/chonNamSinhCon.js";
 import { calculateXemTuoiXongDat } from "./processing/xemTuoiXongDat.js";
 import { calculateChonNgayGiaoDichRange } from "./processing/chonNgayGiaoDich.js";
+import { calculateNgayLeViengMoRange } from "./processing/ngayLeViengMo.js";
 import { tinhTuTru } from "./processing/tuTru.js";
 import type { TrachNhatInput, TrachNhatOutput } from "./types.js";
 import { validateTrachNhatInput } from "./validation.js";
@@ -91,6 +92,13 @@ export type {
   ChonNgayGiaoDichRangeResult,
 } from "./processing/chonNgayGiaoDich.js";
 export { calculateChonNgayGiaoDichRange };
+export type {
+  LeViengMoPurpose,
+  NgayLeViengMoRangeInput,
+  NgayLeViengMoNgay,
+  NgayLeViengMoRangeResult,
+} from "./processing/ngayLeViengMo.js";
+export { calculateNgayLeViengMoRange };
 
 export * from "./types.js";
 
