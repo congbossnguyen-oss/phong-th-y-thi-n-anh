@@ -10,3 +10,4 @@ export * from "./ngayKyHopDong.js";
 export * from "./ngayDaiCatCaNhan.js";
 export * from "./chonNgayGiaoDich.js";
 export * from "./ngayLeViengMo.js";
+export * from "./ngayXuatHanh.js";
