@@ -193,6 +193,12 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
     return `<div style="font-size:7px;font-weight:700;color:${color};line-height:1.4;white-space:nowrap;">${s.name}${tuHoaTag}</div>`;
   }
 
+  // Yêu cầu Công: Tứ Hóa ghi RÕ RÀNG thành dòng riêng ở ĐẦU danh sách phụ tinh (Hóa Lộc/Quyền/Khoa bên
+  // cột tốt, Hóa Kỵ bên cột xấu) — không chỉ dựa vào sup nhỏ trên chính tinh/phụ tinh nữa.
+  function tuHoaLineHtml(tag: "Lộc" | "Quyền" | "Khoa" | "Kỵ"): string {
+    return `<div style="font-size:7px;font-weight:800;color:${LIGHT.red};line-height:1.4;white-space:nowrap;">Hóa ${tag}</div>`;
+  }
+
   // Tab nối Tuần/Triệt giữa 2 cung liền cạnh — thay cho badge trong từng ô (yêu cầu Công: "1 ô nối giữa
   // 2 cung bị tuần hoặc triệt"). `edge` là cạnh của Ô HIỆN TẠI giáp với ô kia.
   // `bias`: vị trí dọc theo cạnh chung — "middle" (mặc định, giữa cạnh) hoặc "start"/"end" cho 4 cặp Tý-
@@ -255,8 +261,15 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
       ...tapDieuNames.map((n) => ({ name: n })),
       ...(p.thaiTue ? [{ name: p.thaiTue }] : []),
     ];
-    const catHtml = allPhu.filter((s) => isCat(s.name)).map(starLineHtml).join("");
-    const hungHtml = allPhu.filter((s) => !isCat(s.name)).map(starLineHtml).join("");
+    // Tứ Hóa của cung này (có thể gắn trên chính tinh hoặc phụ tinh, tùy Can năm sinh) — tách riêng, đưa
+    // lên đầu 2 cột: Hóa Kỵ → cột xấu, Hóa Lộc/Quyền/Khoa → cột tốt.
+    const tuHoaHits = [...p.chinhTinh, ...p.phuTinh]
+      .map((s) => s.tuHoa)
+      .filter((t): t is "Lộc" | "Quyền" | "Khoa" | "Kỵ" => !!t);
+    const tuHoaCatHtml = tuHoaHits.filter((t) => t !== "Kỵ").map(tuHoaLineHtml).join("");
+    const tuHoaHungHtml = tuHoaHits.filter((t) => t === "Kỵ").map(tuHoaLineHtml).join("");
+    const catHtml = tuHoaCatHtml + allPhu.filter((s) => isCat(s.name)).map(starLineHtml).join("");
+    const hungHtml = tuHoaHungHtml + allPhu.filter((s) => !isCat(s.name)).map(starLineHtml).join("");
 
     // Bố cục theo yêu cầu Công: 1 hàng trên cùng gồm Can Chi (trái) — tên cung (giữa, to nhất, đậm, đen,
     // đẩy lên cao nhất) — mốc Đại Vận (phải); dưới là chính tinh xếp dọc (đậm, màu Ngũ Hành); hàng dưới
