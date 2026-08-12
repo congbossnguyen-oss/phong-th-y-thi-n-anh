@@ -36,6 +36,10 @@ export const NGU_HANH_BY_SAO: Record<string, NguHanh> = {
   "Bác Sĩ": "Thủy", "Lực Sĩ": "Hỏa", "Thanh Long": "Thủy", "Tiểu Hao": "Hỏa",
   "Tướng Quân": "Mộc", "Tấu Thư": "Mộc", "Phi Liêm": "Hỏa", "Hỷ Thần": "Hỏa",
   "Bệnh Phù": "Thủy", "Đại Hao": "Hỏa", "Phục Binh": "Thủy", "Quan Phủ": "Thổ",
+  // Vòng Thái Tuế (12 sao, Natal Core đã LOCKED — chỉ thêm màu/phân loại hiển thị ở đây)
+  "Thái Tuế": "Mộc", "Thiếu Dương": "Hỏa", "Tang Môn": "Mộc", "Thiếu Âm": "Thủy",
+  "Quan Phù": "Thổ", "Tử Phù": "Hỏa", "Tuế Phá": "Kim", "Long Đức": "Thủy",
+  "Bạch Hổ": "Kim", "Phúc Đức": "Thổ", "Điếu Khách": "Thủy", "Trực Phù": "Mộc",
 };
 
 export type CatHung = "Cát" | "Hung";
@@ -61,6 +65,11 @@ export const CAT_HUNG_BY_SAO: Record<string, CatHung> = {
   // Tiểu Hao/Phi Liêm/Bệnh Phù/Đại Hao/Phục Binh/Quan Phủ: Hung (hao tài, thị phi, bệnh, kiện tụng).
   "Bác Sĩ": "Cát", "Lực Sĩ": "Cát", "Thanh Long": "Cát", "Tướng Quân": "Cát", "Tấu Thư": "Cát", "Hỷ Thần": "Cát",
   "Tiểu Hao": "Hung", "Phi Liêm": "Hung", "Bệnh Phù": "Hung", "Đại Hao": "Hung", "Phục Binh": "Hung", "Quan Phủ": "Hung",
+  // Vòng Thái Tuế — Thiếu Dương/Thiếu Âm/Long Đức/Phúc Đức/Trực Phù: Cát. Thái Tuế/Tang Môn/Quan Phù/Tử
+  // Phù/Tuế Phá/Bạch Hổ/Điếu Khách: Hung (phân loại phổ biến).
+  "Thiếu Dương": "Cát", "Thiếu Âm": "Cát", "Long Đức": "Cát", "Phúc Đức": "Cát", "Trực Phù": "Cát",
+  "Thái Tuế": "Hung", "Tang Môn": "Hung", "Quan Phù": "Hung", "Tử Phù": "Hung", "Tuế Phá": "Hung",
+  "Bạch Hổ": "Hung", "Điếu Khách": "Hung",
 };
 
 const ELEMENT_COLOR: Record<NguHanh, string> = {

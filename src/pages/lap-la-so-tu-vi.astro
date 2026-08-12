@@ -120,6 +120,7 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
   import { lunarToSolar } from "../lib/lunar-calendar";
   import { getTapDieu } from "../lib/tu-vi/tap-dieu";
   import { getBacSiRing } from "../lib/tu-vi/bac-si";
+  import { getTieuHanPalace, getTuoiTieuHan } from "../lib/tu-vi/tieu-han";
   import { colorOfSao, isCat } from "../lib/tu-vi/hien-thi-sao";
 
   function populateSelect(el: HTMLSelectElement, options: [string | number, string][]) {
@@ -231,22 +232,29 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
     return `<div style="position:absolute;left:${leftPct}%;top:${topPct}%;width:${(barLen / 4) * 100}%;height:${(barThick / 4) * 100}%;display:flex;align-items:center;justify-content:center;overflow:visible;white-space:nowrap;font-size:6px;font-weight:800;letter-spacing:.01em;color:${fg};background:${bg};border-radius:3px;z-index:6;box-shadow:0 0 0 1px ${LIGHT.border};">${label}</div>`;
   }
 
-  function cellHtml(p: CungKetQua, tapDieuNames: string[], isCurrentDaiVan: boolean): string {
+  function cellHtml(p: CungKetQua, tapDieuNames: string[], isCurrentDaiVan: boolean, isCurrentTieuHan: boolean): string {
     // Yêu cầu Công: mỗi chính tinh xuống hàng riêng (chính tinh 1, dưới là chính tinh 2), không nằm
     // chung 1 dòng.
-    // Yêu cầu Công: bỏ hẳn sup Tứ Hóa trên chính tinh (đã có sẵn ở khối tóm tắt giữa bảng, không lặp lại
-    // ở đây nữa); chữ trạng thái (M)/(V)/(Đ)/(B)/(H) to bằng đúng cỡ chữ tên chính tinh, không nhỏ hơn.
+    // Yêu cầu Công: hiện lại Tứ Hóa (sup) trên chính tinh; chữ trạng thái (M)/(V)/(Đ)/(B)/(H) to bằng
+    // đúng cỡ chữ tên chính tinh, không nhỏ hơn.
     const chinhTinhHtml = p.chinhTinh
       .map((s) => {
+        const tuHoaTag = s.tuHoa ? `<sup style="color:${LIGHT.red};font-weight:800;">${TU_HOA_ABBR[s.tuHoa]}</sup>` : "";
         const color = colorOfSao(s.name, LIGHT.text);
-        return `<div style="line-height:1.15;"><span style="font-weight:800;font-size:11px;color:${color};white-space:nowrap;">${s.name}</span><span style="font-weight:800;font-size:11px;color:${LIGHT.textMuted};"> ${TT_ABBR[s.trangThai]}</span></div>`;
+        return `<div style="line-height:1.15;"><span style="font-weight:800;font-size:11px;color:${color};white-space:nowrap;">${s.name}${tuHoaTag}</span><span style="font-weight:800;font-size:11px;color:${LIGHT.textMuted};"> ${TT_ABBR[s.trangThai]}</span></div>`;
       })
       .join("");
     // Yêu cầu Công: nơi an Thân hiện "(THÂN)" chữ hoa in đậm ngay cạnh CUNG CHỨC, cỡ chữ bằng đúng cỡ chữ
     // cung chức (12px).
     const thanTag = p.isThan ? ` <strong style="font-size:12px;font-weight:800;color:${LIGHT.text};">(THÂN)</strong>` : "";
 
-    const allPhu: DisplayStar[] = [...p.phuTinh, ...tapDieuNames.map((n) => ({ name: n }))];
+    // Yêu cầu Công: sao vòng Thái Tuế (trước đây gắn cạnh Trường Sinh) chuyển lên phần phụ tinh, xếp
+    // đúng cột tốt/xấu như các phụ tinh khác — không còn hiện riêng ở dòng dưới cùng nữa.
+    const allPhu: DisplayStar[] = [
+      ...p.phuTinh,
+      ...tapDieuNames.map((n) => ({ name: n })),
+      ...(p.thaiTue ? [{ name: p.thaiTue }] : []),
+    ];
     const catHtml = allPhu.filter((s) => isCat(s.name)).map(starLineHtml).join("");
     const hungHtml = allPhu.filter((s) => !isCat(s.name)).map(starLineHtml).join("");
 
@@ -257,10 +265,16 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
     const currentDaiVanOverlay = isCurrentDaiVan
       ? `<div style="position:absolute;inset:0;background:${LIGHT.gold}40;border:2px solid ${LIGHT.gold};box-sizing:border-box;pointer-events:none;z-index:1;"></div>`
       : "";
+    // Yêu cầu Công: cung đang ở đúng Tiểu Hạn hiện tại (theo Năm xem) — badge nhỏ góc trên trái, màu khác
+    // Đại Vận để không lẫn (có thể trùng cung với Đại Vận cùng lúc).
+    const currentTieuHanBadge = isCurrentTieuHan
+      ? `<span style="position:absolute;top:-1px;left:-1px;font-size:6px;font-weight:800;color:#ffffff;background:#7a4fb5;padding:1px 3px;border-radius:0 0 4px 0;z-index:2;">TIỂU HẠN</span>`
+      : "";
     return `
       <div style="position:relative;height:100%;">
         <div style="position:relative;border:1px solid ${LIGHT.cellBorder};background:${p.isMenh || p.isThan ? LIGHT.menhBg : LIGHT.bg};padding:5px;box-sizing:border-box;height:100%;display:flex;flex-direction:column;overflow:hidden;">
           ${currentDaiVanOverlay}
+          ${currentTieuHanBadge}
           <div style="display:flex;justify-content:space-between;align-items:center;gap:4px;">
             <span style="font-size:8px;color:${LIGHT.textMuted};white-space:nowrap;flex-shrink:0;">${p.canName}${p.chiName}</span>
             <span style="flex:1;text-align:center;font-size:12px;font-weight:800;color:${LIGHT.text};white-space:nowrap;overflow:hidden;">${p.cungName.toUpperCase()}${thanTag}</span>
@@ -271,16 +285,19 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
             <div style="display:flex;flex-direction:column;align-items:flex-start;min-width:0;">${catHtml}</div>
             <div style="display:flex;flex-direction:column;align-items:flex-end;min-width:0;text-align:right;">${hungHtml}</div>
           </div>
-          <div style="text-align:center;font-size:7px;font-weight:800;color:${LIGHT.textMuted};margin-top:2px;white-space:nowrap;">${p.trangSinh}${p.thaiTue ? " · " + p.thaiTue : ""}</div>
+          <div style="text-align:center;font-size:7px;font-weight:800;color:${LIGHT.textMuted};margin-top:2px;white-space:nowrap;">${p.trangSinh}</div>
         </div>
       </div>
     `;
   }
 
+  // Yêu cầu Công: logo Phong Thủy Thiên Anh làm hình mờ (watermark) ở giữa bảng thông tin, không đè lên
+  // chữ (opacity thấp, nằm dưới lớp chữ theo thứ tự DOM).
   function centerPanelHtml(chart: TuViChart, name: string, timeLabel: string): string {
     return `
-      <div style="grid-row:2 / span 2;grid-column:2 / span 2;border:1px solid ${LIGHT.cellBorder};background:${LIGHT.headerBg};padding:10px 12px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;overflow:hidden;">
-        <div style="font-size:10px;line-height:1.85;color:${LIGHT.text};">
+      <div style="position:relative;grid-row:2 / span 2;grid-column:2 / span 2;border:1px solid ${LIGHT.cellBorder};background:${LIGHT.headerBg};padding:10px 12px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;overflow:hidden;">
+        <img src="/images/brand/zhi-gong-logo.png" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:70%;max-width:220px;opacity:.08;pointer-events:none;z-index:0;" />
+        <div style="position:relative;z-index:1;font-size:10px;line-height:1.85;color:${LIGHT.text};">
           ${name ? `<p style="margin:0;font-weight:800;font-size:12px;">${name}</p>` : ""}
           <p style="margin:0;">${chart.input.gender} — ${chart.amDuongNam}</p>
           <p style="margin:0;">Dương lịch: <strong>${timeLabel}</strong></p>
@@ -349,10 +366,14 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
     const currentDaiVanChiIndex = chart.tuoiNamXem !== null
       ? chart.cungs.find((c) => chart.tuoiNamXem! >= c.daiVanTuoi[0] && chart.tuoiNamXem! <= c.daiVanTuoi[1])?.chiIndex
       : undefined;
+    // Tiểu Hạn hiện tại (Phase 35, đã build sẵn — chỉ tính khi có Năm xem, dùng lại đúng tuổi Đại Vận
+    // đang dùng, KHÔNG tính tuổi lần thứ hai).
+    const tuoiTieuHan = getTuoiTieuHan(chart);
+    const currentTieuHanChiIndex = tuoiTieuHan !== null ? getTieuHanPalace(chart, tuoiTieuHan).chiIndex : undefined;
 
     const cells = GRID_CELLS.map(({ chiIndex, row, col }) => {
       const p = chart.cungs[chiIndex];
-      return `<div style="grid-row:${row};grid-column:${col};">${cellHtml(p, tapDieuByChi[chiIndex], chiIndex === currentDaiVanChiIndex)}</div>`;
+      return `<div style="grid-row:${row};grid-column:${col};">${cellHtml(p, tapDieuByChi[chiIndex], chiIndex === currentDaiVanChiIndex, chiIndex === currentTieuHanChiIndex)}</div>`;
     }).join("");
 
     const tuanChisAll = chart.cungs.filter((c) => c.tuan).map((c) => c.chiIndex);
