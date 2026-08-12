@@ -328,13 +328,13 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
         const tangCanNames = tangCanReversed.map((t) => t.can).join("-");
         return `
           <div style="flex:1;min-width:0;text-align:center;">
-            <div style="font-size:6px;font-weight:700;color:${LIGHT.textMuted};white-space:nowrap;">${label}</div>
-            <div style="font-size:6.5px;font-weight:700;color:${LIGHT.textMuted};white-space:nowrap;overflow:hidden;">${thapThanLabel}</div>
-            <div style="font-size:9.5px;font-weight:800;color:${canColor};line-height:1.3;">${p.can}</div>
-            <div style="font-size:9.5px;font-weight:800;color:${chiColor};line-height:1.3;">${p.chi}</div>
-            <div style="font-size:5.5px;color:${LIGHT.textMuted};white-space:nowrap;overflow:hidden;">${tangCanThapThan}</div>
-            <div style="font-size:5.5px;color:${LIGHT.textMuted};white-space:nowrap;overflow:hidden;">${tangCanNames}</div>
-            <div style="font-size:6.5px;font-weight:700;color:${LIGHT.text};white-space:nowrap;">${p.truongSinh}</div>
+            <div style="font-size:8px;font-weight:700;color:${LIGHT.textMuted};white-space:nowrap;">${label}</div>
+            <div style="font-size:8.5px;font-weight:700;color:${LIGHT.textMuted};white-space:nowrap;overflow:hidden;">${thapThanLabel}</div>
+            <div style="font-size:13px;font-weight:800;color:${canColor};line-height:1.3;">${p.can}</div>
+            <div style="font-size:13px;font-weight:800;color:${chiColor};line-height:1.3;">${p.chi}</div>
+            <div style="font-size:7.5px;color:${LIGHT.textMuted};white-space:nowrap;overflow:hidden;">${tangCanThapThan}</div>
+            <div style="font-size:7.5px;color:${LIGHT.textMuted};white-space:nowrap;overflow:hidden;">${tangCanNames}</div>
+            <div style="font-size:8.5px;font-weight:700;color:${LIGHT.text};white-space:nowrap;">${p.truongSinh}</div>
           </div>
         `;
       })
@@ -342,9 +342,9 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
     const dv = batTu.daiVan[0];
     const dvLabel = `Đại vận Bát Tự đầu: ${dv.can} ${dv.chi} (${batTu.daiVanForward ? "Thuận" : "Nghịch"}) — khởi ${dv.startDate.d}/${dv.startDate.m}/${dv.startDate.y}`;
     return `
-      <div style="margin-top:4px;padding-top:4px;border-top:1px solid ${LIGHT.cellBorder};">
-        <div style="display:flex;gap:2px;">${colsHtml}</div>
-        <p style="margin:3px 0 0;font-size:6.5px;color:${LIGHT.textMuted};text-align:center;white-space:nowrap;overflow:hidden;">${dvLabel}</p>
+      <div style="margin-top:5px;padding-top:5px;border-top:1px solid ${LIGHT.cellBorder};">
+        <div style="display:flex;gap:3px;">${colsHtml}</div>
+        <p style="margin:4px 0 0;font-size:8px;color:${LIGHT.textMuted};text-align:center;white-space:nowrap;overflow:hidden;">${dvLabel}</p>
       </div>
     `;
   }

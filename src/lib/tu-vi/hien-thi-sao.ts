@@ -72,10 +72,13 @@ export const CAT_HUNG_BY_SAO: Record<string, CatHung> = {
   "Bạch Hổ": "Hung", "Điếu Khách": "Hung",
 };
 
+// Yêu cầu Công: Thủy trước đây dùng #1c1c1c (gần đen) — gần như không phân biệt được với màu chữ thường
+// (#2b2116 ở LIGHT.text bên trang lá số), nhìn như "không đổ màu". Đổi sang xanh dương đậm (#2c4a7c —
+// trùng màu nền badge TRIỆT sẵn có trong lá số, giữ nhất quán bảng màu) để rõ ràng là có tô màu Ngũ Hành.
 export const ELEMENT_COLOR: Record<NguHanh, string> = {
   "Kim": "#8a8a8a",
   "Mộc": "#2f7a3f",
-  "Thủy": "#1c1c1c",
+  "Thủy": "#2c4a7c",
   "Hỏa": "#b3311f",
   "Thổ": "#c07a1e",
 };
