@@ -1,0 +1,143 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import Container from "../../components/ui/Container.astro";
+import Button from "../../components/ui/Button.astro";
+
+export const prerender = true;
+---
+
+<BaseLayout
+  title="Chọn Năm Sinh Con"
+  description="Tìm năm sinh con phù hợp nhất với cả cha và mẹ theo Mệnh, Thiên Can, Địa Chi, Cung Mệnh Bát Trạch và Niên Mệnh — quét 1 khoảng năm, xếp hạng, không hard-code."
+>
+  <PageHero
+    eyebrow="Đại Cát Lợi"
+    title="Chọn Năm Sinh Con"
+    description="Nhập năm sinh cha, năm sinh mẹ, giới tính con và khoảng năm muốn xem — hệ thống tự tính Cha→Con, Mẹ→Con và xếp hạng năm tốt nhất."
+    breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Đại Cát Lợi", href: "/dai-cat-loi" }, { label: "Chọn Năm Sinh Con" }]}
+  />
+
+  <Container class="py-16">
+    <div class="mx-auto max-w-2xl">
+      <form id="form-chon-con" class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="ccc-nam-cha" class="text-xs font-medium text-slate-600">Năm sinh chồng</label>
+            <input type="number" id="ccc-nam-cha" min="1900" max="2100" required placeholder="1984" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+          </div>
+          <div>
+            <label for="ccc-nam-me" class="text-xs font-medium text-slate-600">Năm sinh vợ</label>
+            <input type="number" id="ccc-nam-me" min="1900" max="2100" required placeholder="1988" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+          </div>
+        </div>
+        <div class="mt-3">
+          <p class="text-xs font-medium text-slate-600">Giới tính con</p>
+          <div class="mt-1.5 flex gap-4 text-sm">
+            <label class="flex items-center gap-1.5"><input type="radio" name="ccc-gioitinh-con" value="nam" checked /> 👦 Con trai</label>
+            <label class="flex items-center gap-1.5"><input type="radio" name="ccc-gioitinh-con" value="nu" /> 👧 Con gái</label>
+          </div>
+        </div>
+        <div class="mt-3 grid grid-cols-2 gap-3">
+          <div>
+            <label for="ccc-tu-nam" class="text-xs font-medium text-slate-600">Từ năm</label>
+            <input type="number" id="ccc-tu-nam" min="1900" max="2100" required placeholder="2026" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+          </div>
+          <div>
+            <label for="ccc-den-nam" class="text-xs font-medium text-slate-600">Đến năm</label>
+            <input type="number" id="ccc-den-nam" min="1900" max="2100" required placeholder="2035" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+          </div>
+        </div>
+        <p class="mt-2 text-xs text-slate-400">Tối đa 30 năm mỗi lượt tìm.</p>
+        <Button type="submit" size="lg" class="mt-4 w-full">Tìm năm sinh con</Button>
+      </form>
+
+      <div id="loi" class="mt-3 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-3 text-sm text-(--color-danger-500)"></div>
+
+      <div id="ket-qua" class="mt-4 hidden space-y-2"></div>
+
+      <p class="mt-4 text-xs text-(--color-ink-500)">
+        Đây là đánh giá theo hệ thống phong thủy đã cấu hình (Mệnh Nạp Âm, Thiên Can, Địa Chi, Cung Mệnh Bát Trạch,
+        Niên Mệnh theo Địa Chi) giữa cha-con và mẹ-con — không kết luận tuyệt đối về sức khỏe, giới tính hay tương lai
+        của trẻ, và không phải dự đoán khả năng sinh con trai/gái.
+      </p>
+    </div>
+  </Container>
+</BaseLayout>
+
+<script>
+  interface TieuChi { diem: number; moTa: string }
+  interface ParentChildScore {
+    diem: number;
+    menh: TieuChi;
+    thienCan: TieuChi;
+    diaChi: TieuChi;
+    cungMenh: TieuChi;
+    nienMenh: TieuChi;
+  }
+  interface ChildYearResult {
+    namSinhCon: number;
+    gioiTinhCon: string;
+    cha: ParentChildScore;
+    me: ParentChildScore;
+    diem: number;
+    hang: string;
+    nhan: string;
+  }
+
+  const form = document.getElementById("form-chon-con") as HTMLFormElement;
+  const loiEl = document.getElementById("loi")!;
+  const ketQuaEl = document.getElementById("ket-qua")!;
+
+  const HUY_CHUONG = ["🥇", "🥈", "🥉"];
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    loiEl.classList.add("hidden");
+    ketQuaEl.classList.add("hidden");
+
+    const namSinhCha = (document.getElementById("ccc-nam-cha") as HTMLInputElement).value;
+    const namSinhMe = (document.getElementById("ccc-nam-me") as HTMLInputElement).value;
+    const gioiTinhCon = (form.querySelector('input[name="ccc-gioitinh-con"]:checked') as HTMLInputElement).value;
+    const tuNam = (document.getElementById("ccc-tu-nam") as HTMLInputElement).value;
+    const denNam = (document.getElementById("ccc-den-nam") as HTMLInputElement).value;
+
+    try {
+      const res = await fetch(
+        `/api/chon-nam-sinh-con?namSinhCha=${namSinhCha}&namSinhMe=${namSinhMe}&gioiTinhCon=${gioiTinhCon}&tuNam=${tuNam}&denNam=${denNam}`,
+      );
+      const data = await res.json();
+      if (!res.ok) {
+        loiEl.textContent = data.error ?? "Không tính được.";
+        loiEl.classList.remove("hidden");
+        return;
+      }
+      const results = data.results as ChildYearResult[];
+      ketQuaEl.innerHTML = results
+        .slice(0, 10)
+        .map((r, i) => {
+          const huyChuong = HUY_CHUONG[i] ?? `${i + 1}.`;
+          return `<button type="button" class="ccc-item w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-left hover:bg-slate-100" data-idx="${i}">
+            <div class="flex items-center justify-between">
+              <p class="font-display text-base font-bold text-slate-900">${huyChuong} Năm ${r.namSinhCon}</p>
+              <span class="text-sm font-semibold">${r.nhan} — ${r.diem}/10</span>
+            </div>
+            <div class="ccc-chi-tiet mt-2 hidden space-y-1 text-xs text-slate-500">
+              <p><strong>Cha → Con (${r.cha.diem}/10):</strong> Mệnh ${r.cha.menh.moTa}; Can ${r.cha.thienCan.moTa}; Chi ${r.cha.diaChi.moTa}; Cung ${r.cha.cungMenh.moTa}; Niên mệnh ${r.cha.nienMenh.moTa}</p>
+              <p><strong>Mẹ → Con (${r.me.diem}/10):</strong> Mệnh ${r.me.menh.moTa}; Can ${r.me.thienCan.moTa}; Chi ${r.me.diaChi.moTa}; Cung ${r.me.cungMenh.moTa}; Niên mệnh ${r.me.nienMenh.moTa}</p>
+            </div>
+          </button>`;
+        })
+        .join("");
+      ketQuaEl.querySelectorAll(".ccc-item").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          btn.querySelector(".ccc-chi-tiet")?.classList.toggle("hidden");
+        });
+      });
+      ketQuaEl.classList.remove("hidden");
+    } catch {
+      loiEl.textContent = "Không tải được dữ liệu.";
+      loiEl.classList.remove("hidden");
+    }
+  });
+</script>

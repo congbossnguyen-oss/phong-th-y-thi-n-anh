@@ -22,6 +22,7 @@ import { convertSolarToLunar, convertLunarToSolar } from "./processing/doiLichAm
 import { calculateHoangOcKimLau, calculateHoangOcKimLauRange } from "./processing/hoangOcKimLau.js";
 import { calculateConSoMayMan } from "./processing/conSoMayMan.js";
 import { calculateChonTuoiKetHon, timTuoiKetHonPhuHop } from "./processing/chonTuoiKetHon.js";
+import { calculateChonNamSinhCon } from "./processing/chonNamSinhCon.js";
 import { tinhTuTru } from "./processing/tuTru.js";
 import type { TrachNhatInput, TrachNhatOutput } from "./types.js";
 import { validateTrachNhatInput } from "./validation.js";
@@ -71,6 +72,8 @@ export type {
   TimTuoiKetHonResult,
 } from "./processing/chonTuoiKetHon.js";
 export { calculateChonTuoiKetHon, timTuoiKetHonPhuHop };
+export type { GioiTinhCon, ChonNamSinhConInput, ChonNamSinhConResult } from "./processing/chonNamSinhCon.js";
+export { calculateChonNamSinhCon };
 
 export * from "./types.js";
 
