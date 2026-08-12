@@ -19,6 +19,7 @@ import { calculateNgayKyHopDongRange } from "./processing/ngayKyHopDong.js";
 import { calculateNgayDaiCatCaNhan } from "./processing/ngayDaiCatCaNhan.js";
 import { calculateTrungTang } from "./processing/trungTang.js";
 import { convertSolarToLunar, convertLunarToSolar } from "./processing/doiLichAmDuong.js";
+import { calculateHoangOcKimLau, calculateHoangOcKimLauRange } from "./processing/hoangOcKimLau.js";
 import { tinhTuTru } from "./processing/tuTru.js";
 import type { TrachNhatInput, TrachNhatOutput } from "./types.js";
 import { validateTrachNhatInput } from "./validation.js";
@@ -55,6 +56,8 @@ export type {
   NamAmLichCanChi,
 } from "./processing/doiLichAmDuong.js";
 export { convertSolarToLunar, convertLunarToSolar };
+export type { HoangOcKimLauInput, HoangOcKimLauRangeInput, HoangOcKimLauResult } from "./processing/hoangOcKimLau.js";
+export { calculateHoangOcKimLau, calculateHoangOcKimLauRange };
 
 export * from "./types.js";
 
