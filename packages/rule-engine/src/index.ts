@@ -12,3 +12,4 @@ export * as ConSoMayMan from "./con-so-may-man/index.js";
 export * as CungMenhBatTrach from "./cung-menh-bat-trach/index.js";
 export * as ChonTuoiKetHon from "./chon-tuoi-ket-hon/index.js";
 export * as ChonNamSinhCon from "./chon-nam-sinh-con/index.js";
+export * as XemTuoiXongDat from "./xem-tuoi-xong-dat/index.js";
