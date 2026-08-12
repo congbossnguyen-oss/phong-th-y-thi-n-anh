@@ -219,6 +219,21 @@ export function batToaIndex(huuBatChiIndex: number, lunarDay: number): number {
 }
 
 // ============================================================================================
+// Đẩu Quân — NGUỒN: "Tử Vi Tam Hợp Phái Tập 1" (Minh Việt) §28 "An sao Đẩu Quân": "Từ cung có sao Thái
+// Tuế gọi là tháng giêng, tính nghịch đến tháng sinh; [cung đó] gọi là giờ Tý, tính thuận tới giờ sinh an
+// sao Đẩu Quân." — 2 bước: (1) từ cung Thái Tuế (= yearChiIndex, đã LOCKED — vòng Thái Tuế luôn khởi tại
+// Chi năm sinh) coi là tháng Giêng, đếm NGHỊCH tới tháng sinh (offset lunarMonth-1) ra 1 cung tạm; (2) từ
+// cung tạm đó coi là giờ Tý, đếm THUẬN tới giờ sinh (offset gioChiIndex) ra vị trí Đẩu Quân. ĐÃ KIỂM
+// CHỨNG bằng lá số thật Học Viện Lý Số Nguyên Cát (Nam Ất Tỵ, ÂL 2025 tháng 12 ngày 17, giờ Sửu): yearChi
+// =Tỵ(5), lunarMonth=12, gioChiIndex=1 (Sửu) → bước1=mod12(5-11)=6(Ngọ), Đẩu Quân=mod12(6+1)=7(Mùi) — ĐÚNG
+// khớp vị trí "Đẩu quân" trong lá số mẫu (cung Mùi/Tật Ách).
+// ============================================================================================
+export function dauQuanIndex(yearChiIndex: number, lunarMonth: number, gioChiIndex: number): number {
+  const step1 = mod12(yearChiIndex - (lunarMonth - 1));
+  return mod12(step1 + gioChiIndex);
+}
+
+// ============================================================================================
 // Vòng Tướng Tinh — 11 sao mới (Đào Hoa ĐÃ có sẵn trong Natal Core từ trước, offset 9 trong vòng này —
 // KHÔNG tính lại/không hiển thị trùng ở đây, chỉ dùng để cross-check nguồn). Khởi theo nhóm tam hợp năm
 // sinh, đi THUẬN cùng chiều Thái Tuế. Điểm khởi (Tướng Tinh) + thứ tự 12 sao đã cross-check khớp 100% với
@@ -301,6 +316,7 @@ export function getTapDieu(chart: TuViChart): TapDieuPlacement[] {
     { chiIndex: thienQuyIndex(vanKhucChiIndex, chart.lunarDay), name: "Thiên Quý" },
     { chiIndex: tamThaiIndex(taPhuChiIndex, chart.lunarDay), name: "Tam Thai" },
     { chiIndex: batToaIndex(huuBatChiIndex, chart.lunarDay), name: "Bát Tọa" },
+    { chiIndex: dauQuanIndex(yearChiIndex, chart.lunarMonth, gioChiIndex), name: "Đẩu Quân" },
     ...getTuongTinhRing(chart.yearChiName),
   ];
 

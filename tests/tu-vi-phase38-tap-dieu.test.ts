@@ -255,10 +255,10 @@ describe("Phase 38 — getTapDieu(): hàm tổng hợp trên lá số thực t�
     { day: 15, month: 6, year: 1974, hour: 12, gender: "Nam" },
   ];
   for (const input of INPUTS) {
-    it(`${JSON.stringify(input)}: đủ 40 sao (11 + 10 batch 2 + 11 Tướng Tinh + Thiên Quan/Thiên Phúc/Thai Phụ/Phong Cáo + Ân Quang/Thiên Quý/Tam Thai/Bát Tọa), không NaN/undefined, không trùng "Đào Hoa"/"Lưu Hà"`, () => {
+    it(`${JSON.stringify(input)}: đủ 41 sao (11 + 10 batch 2 + 11 Tướng Tinh + Thiên Quan/Thiên Phúc/Thai Phụ/Phong Cáo + Ân Quang/Thiên Quý/Tam Thai/Bát Tọa + Đẩu Quân), không NaN/undefined, không trùng "Đào Hoa"/"Lưu Hà"`, () => {
       const chart = tinhTuVi(input);
       const result = getTapDieu(chart);
-      expect(result).toHaveLength(40);
+      expect(result).toHaveLength(41);
       expect(result.every((s) => s.name !== "Đào Hoa")).toBe(true);
       expect(result.every((s) => s.name !== "Lưu Hà")).toBe(true);
       const names = result.map((s) => s.name);
@@ -332,6 +332,26 @@ describe("Phase 38+ — Ân Quang/Thiên Quý/Tam Thai/Bát Tọa (nguồn Tam H
     expect(byName("Thiên Quan")).toBe(CHI.indexOf("Dần"));
     expect(byName("Thiên Phúc")).toBe(CHI.indexOf("Hợi"));
     expect(byName("Hoa Cái")).toBe(CHI.indexOf("Sửu"));
+  });
+
+  // Golden Master 2: lá số thật "Học Viện Lý Số Nguyên Cát" — Nam Ất Tỵ, DL 4/2/2026 giờ Sửu (ÂL 2025
+  // tháng 12 ngày 17) — dùng để XÁC NHẬN công thức Đẩu Quân mới (2 bước: nghịch tháng từ Thái Tuế, rồi
+  // thuận giờ) và cross-check lại Ân Quang/Tam Thai/Bát Tọa/Thai Phụ/Thiên Quý/Thiên Quan/Thiên Phúc/
+  // Phong Cáo trên 1 lá số hoàn toàn khác (Can/Chi/giới tính/mùa sinh khác GM-TAPDIEU-01).
+  it("GM-TAPDIEU-02 (Nam Ất Tỵ, 4/2/2026 giờ Sửu): Đẩu Quân=Mùi, Ân Quang=Tý, Tam Thai=Bát Tọa=Thai Phụ=Mùi, Thiên Quý=Dần, Thiên Quan=Thìn, Thiên Phúc=Thân, Phong Cáo=Mão", () => {
+    const chart = tinhTuVi({ day: 4, month: 2, year: 2026, hour: 1, gender: "Nam" });
+    const result = getTapDieu(chart);
+    const byName = (name: string) => result.find((s) => s.name === name)?.chiIndex;
+
+    expect(byName("Đẩu Quân")).toBe(CHI.indexOf("Mùi"));
+    expect(byName("Ân Quang")).toBe(CHI.indexOf("Tý"));
+    expect(byName("Tam Thai")).toBe(CHI.indexOf("Mùi"));
+    expect(byName("Bát Tọa")).toBe(CHI.indexOf("Mùi"));
+    expect(byName("Thai Phụ")).toBe(CHI.indexOf("Mùi"));
+    expect(byName("Thiên Quý")).toBe(CHI.indexOf("Dần"));
+    expect(byName("Thiên Quan")).toBe(CHI.indexOf("Thìn"));
+    expect(byName("Thiên Phúc")).toBe(CHI.indexOf("Thân"));
+    expect(byName("Phong Cáo")).toBe(CHI.indexOf("Mão"));
   });
 });
 

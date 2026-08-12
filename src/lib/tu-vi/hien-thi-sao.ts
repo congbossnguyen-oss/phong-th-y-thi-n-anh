@@ -31,7 +31,11 @@ export const NGU_HANH_BY_SAO: Record<string, NguHanh> = {
   "Hoa Cái": "Mộc", "Kiếp Sát": "Hỏa", "Tai Sát": "Hỏa", "Thiên Sát": "Hỏa",
   "Chỉ Bối": "Kim", "Nguyệt Sát": "Thủy", "Vong Thần": "Thủy",
   // Bổ sung nguồn "Tử Vi Tam Hợp Phái Tập 1" (Minh Việt)
-  "Ân Quang": "Hỏa", "Thiên Quý": "Hỏa", "Tam Thai": "Thổ", "Bát Tọa": "Thổ",
+  "Ân Quang": "Hỏa", "Thiên Quý": "Hỏa", "Tam Thai": "Thổ", "Bát Tọa": "Thổ", "Đẩu Quân": "Thổ",
+  // Vòng Bác Sĩ (Phase 32, hocvienlyso.org — "vòng Lộc Tồn")
+  "Bác Sĩ": "Thủy", "Lực Sĩ": "Hỏa", "Thanh Long": "Thủy", "Tiểu Hao": "Hỏa",
+  "Tướng Quân": "Mộc", "Tấu Thư": "Mộc", "Phi Liêm": "Hỏa", "Hỷ Thần": "Hỏa",
+  "Bệnh Phù": "Thủy", "Đại Hao": "Hỏa", "Phục Binh": "Thủy", "Quan Phủ": "Thổ",
 };
 
 export type CatHung = "Cát" | "Hung";
@@ -52,7 +56,11 @@ export const CAT_HUNG_BY_SAO: Record<string, CatHung> = {
   "Tướng Tinh": "Cát", "Phan Án": "Hung", "Tuế Dịch": "Hung", "Tức Thần": "Cát",
   "Hoa Cái": "Cát", "Kiếp Sát": "Hung", "Tai Sát": "Hung", "Thiên Sát": "Hung",
   "Chỉ Bối": "Hung", "Nguyệt Sát": "Hung", "Vong Thần": "Hung",
-  "Ân Quang": "Cát", "Thiên Quý": "Cát", "Tam Thai": "Cát", "Bát Tọa": "Cát",
+  "Ân Quang": "Cát", "Thiên Quý": "Cát", "Tam Thai": "Cát", "Bát Tọa": "Cát", "Đẩu Quân": "Cát",
+  // Vòng Bác Sĩ — Bác Sĩ/Lực Sĩ/Thanh Long/Tướng Quân/Tấu Thư/Hỷ Thần: Cát (trí tuệ, quyền uy, tin vui).
+  // Tiểu Hao/Phi Liêm/Bệnh Phù/Đại Hao/Phục Binh/Quan Phủ: Hung (hao tài, thị phi, bệnh, kiện tụng).
+  "Bác Sĩ": "Cát", "Lực Sĩ": "Cát", "Thanh Long": "Cát", "Tướng Quân": "Cát", "Tấu Thư": "Cát", "Hỷ Thần": "Cát",
+  "Tiểu Hao": "Hung", "Phi Liêm": "Hung", "Bệnh Phù": "Hung", "Đại Hao": "Hung", "Phục Binh": "Hung", "Quan Phủ": "Hung",
 };
 
 const ELEMENT_COLOR: Record<NguHanh, string> = {

@@ -119,6 +119,7 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
   import { tinhTuVi, type TuViChart, type CungKetQua } from "../lib/tu-vi/engine";
   import { lunarToSolar } from "../lib/lunar-calendar";
   import { getTapDieu } from "../lib/tu-vi/tap-dieu";
+  import { getBacSiRing } from "../lib/tu-vi/bac-si";
   import { colorOfSao, isCat } from "../lib/tu-vi/hien-thi-sao";
 
   function populateSelect(el: HTMLSelectElement, options: [string | number, string][]) {
@@ -337,6 +338,9 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
     const tapDieuByChi: string[][] = Array.from({ length: 12 }, () => []);
     for (const s of getTapDieu(chart)) {
       tapDieuByChi[s.chiIndex].push(s.name);
+    }
+    for (const s of getBacSiRing(chart)) {
+      tapDieuByChi[s.chiIndex].push(s.star);
     }
     const chiToRowCol: Record<number, { row: number; col: number }> = {};
     for (const c of GRID_CELLS) chiToRowCol[c.chiIndex] = { row: c.row, col: c.col };
