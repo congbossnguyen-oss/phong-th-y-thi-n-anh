@@ -72,7 +72,7 @@ export const CAT_HUNG_BY_SAO: Record<string, CatHung> = {
   "Bạch Hổ": "Hung", "Điếu Khách": "Hung",
 };
 
-const ELEMENT_COLOR: Record<NguHanh, string> = {
+export const ELEMENT_COLOR: Record<NguHanh, string> = {
   "Kim": "#8a8a8a",
   "Mộc": "#2f7a3f",
   "Thủy": "#1c1c1c",

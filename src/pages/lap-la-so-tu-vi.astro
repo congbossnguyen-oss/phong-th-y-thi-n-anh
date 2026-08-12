@@ -121,7 +121,8 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
   import { getTapDieu } from "../lib/tu-vi/tap-dieu";
   import { getBacSiRing } from "../lib/tu-vi/bac-si";
   import { getTieuHanPalace, getTuoiTieuHan } from "../lib/tu-vi/tieu-han";
-  import { colorOfSao, isCat } from "../lib/tu-vi/hien-thi-sao";
+  import { colorOfSao, isCat, ELEMENT_COLOR } from "../lib/tu-vi/hien-thi-sao";
+  import { tinhBatTu, THAP_THAN_ABBR, CAN_NGU_HANH, CHI_NGU_HANH, type BatTuChart, type PillarInfo } from "../lib/bat-tu";
 
   function populateSelect(el: HTMLSelectElement, options: [string | number, string][]) {
     el.innerHTML = options.map(([v, l]) => `<option value="${v}">${l}</option>`).join("");
@@ -303,14 +304,59 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
     `;
   }
 
+  // Yêu cầu Công: thêm bảng Tứ Trụ (Bát Tự) 4 cột Năm/Tháng/Ngày/Giờ vào bảng thông tin trung tâm, giống
+  // bố cục lá số tham chiếu (hocvienlyso.org) — Thập Thần trên đầu mỗi trụ, Can/Chi tô màu Ngũ Hành, Tàng
+  // Can kèm Thập Thần, Trường Sinh dưới cùng. Dùng engine Bát Tự có sẵn (src/lib/bat-tu.ts), KHÔNG tính
+  // lại logic — engine này độc lập với Tử Vi, chỉ dùng chung input ngày/giờ/giới tính.
+  function tuTruTableHtml(batTu: BatTuChart): string {
+    const cols: { label: string; p: PillarInfo; isDay: boolean }[] = [
+      { label: "Năm", p: batTu.year, isDay: false },
+      { label: "Tháng", p: batTu.month, isDay: false },
+      { label: "Ngày", p: batTu.day, isDay: true },
+      { label: "Giờ", p: batTu.hour, isDay: false },
+    ];
+    const colsHtml = cols
+      .map(({ label, p, isDay }) => {
+        const canColor = ELEMENT_COLOR[CAN_NGU_HANH[p.canIndex]];
+        const chiColor = ELEMENT_COLOR[CHI_NGU_HANH[p.chiIndex]];
+        const thapThanLabel = isDay ? "NHẬT CHỦ" : (THAP_THAN_ABBR[p.thapThan] ?? p.thapThan);
+        // Yêu cầu Công: hiển thị giống lá số tham chiếu hocvienlyso.org — tàng can liệt kê tạp khí trước,
+        // chính khí (bản khí) sau cùng (ngược thứ tự lưu trong TANG_CAN của engine, vốn để chính khí đầu
+        // tiên) — chỉ đổi THỨ TỰ HIỂN THỊ, không đổi giá trị/logic Thập Thần bên dưới.
+        const tangCanReversed = [...p.tangCan].reverse();
+        const tangCanThapThan = tangCanReversed.map((t) => THAP_THAN_ABBR[t.thapThan] ?? t.thapThan).join("-");
+        const tangCanNames = tangCanReversed.map((t) => t.can).join("-");
+        return `
+          <div style="flex:1;min-width:0;text-align:center;">
+            <div style="font-size:6px;font-weight:700;color:${LIGHT.textMuted};white-space:nowrap;">${label}</div>
+            <div style="font-size:6.5px;font-weight:700;color:${LIGHT.textMuted};white-space:nowrap;overflow:hidden;">${thapThanLabel}</div>
+            <div style="font-size:9.5px;font-weight:800;color:${canColor};line-height:1.3;">${p.can}</div>
+            <div style="font-size:9.5px;font-weight:800;color:${chiColor};line-height:1.3;">${p.chi}</div>
+            <div style="font-size:5.5px;color:${LIGHT.textMuted};white-space:nowrap;overflow:hidden;">${tangCanThapThan}</div>
+            <div style="font-size:5.5px;color:${LIGHT.textMuted};white-space:nowrap;overflow:hidden;">${tangCanNames}</div>
+            <div style="font-size:6.5px;font-weight:700;color:${LIGHT.text};white-space:nowrap;">${p.truongSinh}</div>
+          </div>
+        `;
+      })
+      .join("");
+    const dv = batTu.daiVan[0];
+    const dvLabel = `Đại vận Bát Tự đầu: ${dv.can} ${dv.chi} (${batTu.daiVanForward ? "Thuận" : "Nghịch"}) — khởi ${dv.startDate.d}/${dv.startDate.m}/${dv.startDate.y}`;
+    return `
+      <div style="margin-top:4px;padding-top:4px;border-top:1px solid ${LIGHT.cellBorder};">
+        <div style="display:flex;gap:2px;">${colsHtml}</div>
+        <p style="margin:3px 0 0;font-size:6.5px;color:${LIGHT.textMuted};text-align:center;white-space:nowrap;overflow:hidden;">${dvLabel}</p>
+      </div>
+    `;
+  }
+
   // Yêu cầu Công: logo Phong Thủy Thiên Anh làm hình mờ (watermark) ở giữa bảng thông tin, không đè lên
   // chữ (opacity thấp, nằm dưới lớp chữ theo thứ tự DOM).
-  function centerPanelHtml(chart: TuViChart, name: string, timeLabel: string): string {
+  function centerPanelHtml(chart: TuViChart, batTu: BatTuChart, name: string, timeLabel: string): string {
     return `
       <div style="position:relative;grid-row:2 / span 2;grid-column:2 / span 2;border:1px solid ${LIGHT.cellBorder};background:${LIGHT.headerBg};padding:10px 12px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;overflow:hidden;">
         <img src="/images/brand/zhi-gong-logo.png" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:70%;max-width:220px;opacity:.08;pointer-events:none;z-index:0;" />
-        <div style="position:relative;z-index:1;font-size:12px;line-height:1.75;color:${LIGHT.text};">
-          ${name ? `<p style="margin:0;font-weight:800;font-size:14px;">${name}</p>` : ""}
+        <div style="position:relative;z-index:1;font-size:10.5px;line-height:1.5;color:${LIGHT.text};">
+          ${name ? `<p style="margin:0;font-weight:800;font-size:13px;">${name}</p>` : ""}
           <p style="margin:0;">${chart.input.gender} — ${chart.amDuongNam}</p>
           <p style="margin:0;">Dương lịch: <strong>${timeLabel}</strong></p>
           <p style="margin:0;">Âm lịch: <strong>${chart.lunarDay}/${chart.lunarMonth}${chart.lunarIsLeap ? " (nhuận)" : ""}/${chart.lunarYear}</strong> — giờ ${chart.gioChiName}</p>
@@ -319,6 +365,7 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
           <p style="margin:0;">Cục: <strong>${chart.cucName}</strong> — Mệnh Quái: <strong>${chart.menhQuai}</strong></p>
           <p style="margin:0;">Chủ Mệnh: <strong>${displayChuMenhThan(chart.chuMenh)}</strong> — Chủ Thân: <strong>${displayChuMenhThan(chart.chuThan)}</strong></p>
           <p style="margin:0;">Tứ Hóa: <strong style="color:${LIGHT.red};">${chart.tuHoa.loc}</strong> L · <strong style="color:${LIGHT.red};">${chart.tuHoa.quyen}</strong> Q · <strong style="color:${LIGHT.red};">${chart.tuHoa.khoa}</strong> K · <strong style="color:${LIGHT.red};">${chart.tuHoa.ky}</strong> H</p>
+          ${tuTruTableHtml(batTu)}
         </div>
       </div>
     `;
@@ -363,7 +410,7 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
     return `<svg viewBox="0 0 4 4" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none;opacity:.45;z-index:5;">${lines}</svg>`;
   }
 
-  function buildExportCardHtml(chart: TuViChart, name: string, timeLabel: string): string {
+  function buildExportCardHtml(chart: TuViChart, batTu: BatTuChart, name: string, timeLabel: string): string {
     const tapDieuByChi: string[][] = Array.from({ length: 12 }, () => []);
     for (const s of getTapDieu(chart)) {
       tapDieuByChi[s.chiIndex].push(s.name);
@@ -404,7 +451,7 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
         </div>
         <div style="position:relative;flex:1;min-height:0;margin-top:8px;display:grid;grid-template-columns:repeat(4, 1fr);grid-template-rows:repeat(4, 1fr);gap:4px;">
           ${cells}
-          ${centerPanelHtml(chart, name, timeLabel)}
+          ${centerPanelHtml(chart, batTu, name, timeLabel)}
           ${menhLinesHtml(chart, chiToRowCol)}
           ${tuanTrietBridges}
         </div>
@@ -476,12 +523,13 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
         year = solar.y;
       }
       const chart = tinhTuVi({ day, month, year, hour, gender, viewingYear });
+      const batTu = tinhBatTu({ day, month, year, hour, gender });
       const pad = (n: number) => String(n).padStart(2, "0");
       const timeLabel = `${pad(day)}/${pad(month)}/${year}`;
 
       const resultEl = document.getElementById("result-tuvi")!;
       const cardEl = document.getElementById("tv-card")!;
-      cardEl.innerHTML = buildExportCardHtml(chart, name, timeLabel);
+      cardEl.innerHTML = buildExportCardHtml(chart, batTu, name, timeLabel);
       resultEl.classList.remove("hidden");
       loadingEl.classList.remove("hidden");
       loadingEl.textContent = "Đang tạo ảnh lá số…";
