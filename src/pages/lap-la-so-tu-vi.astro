@@ -190,13 +190,13 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
   function starLineHtml(s: DisplayStar): string {
     const tuHoaTag = s.tuHoa ? `<sup style="color:${LIGHT.red};font-weight:800;">${TU_HOA_ABBR[s.tuHoa]}</sup>` : "";
     const color = colorOfSao(s.name, LIGHT.textMuted);
-    return `<div style="font-size:9px;font-weight:700;color:${color};line-height:1.35;white-space:nowrap;">${s.name}${tuHoaTag}</div>`;
+    return `<div style="font-size:10.5px;font-weight:700;color:${color};line-height:1.3;white-space:nowrap;">${s.name}${tuHoaTag}</div>`;
   }
 
   // Yêu cầu Công: Tứ Hóa ghi RÕ RÀNG thành dòng riêng ở ĐẦU danh sách phụ tinh (Hóa Lộc/Quyền/Khoa bên
-  // cột tốt, Hóa Kỵ bên cột xấu) — không chỉ dựa vào sup nhỏ trên chính tinh/phụ tinh nữa.
+  // cột tốt, Hóa Kỵ bên cột xấu) — không viết tắt/sup trên chính tinh nữa, chỉ hiện ở đây.
   function tuHoaLineHtml(tag: "Lộc" | "Quyền" | "Khoa" | "Kỵ"): string {
-    return `<div style="font-size:9px;font-weight:800;color:${LIGHT.red};line-height:1.35;white-space:nowrap;">Hóa ${tag}</div>`;
+    return `<div style="font-size:10.5px;font-weight:800;color:${LIGHT.red};line-height:1.3;white-space:nowrap;">Hóa ${tag}</div>`;
   }
 
   // Tab nối Tuần/Triệt giữa 2 cung liền cạnh — thay cho badge trong từng ô (yêu cầu Công: "1 ô nối giữa
@@ -241,13 +241,12 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
   function cellHtml(p: CungKetQua, tapDieuNames: string[], isCurrentDaiVan: boolean, isCurrentTieuHan: boolean): string {
     // Yêu cầu Công: mỗi chính tinh xuống hàng riêng (chính tinh 1, dưới là chính tinh 2), không nằm
     // chung 1 dòng.
-    // Yêu cầu Công: hiện lại Tứ Hóa (sup) trên chính tinh; chữ trạng thái (M)/(V)/(Đ)/(B)/(H) to bằng
-    // đúng cỡ chữ tên chính tinh, không nhỏ hơn.
+    // Yêu cầu Công: KHÔNG viết tắt Tứ Hóa (sup) trên đầu chính tinh nữa — Tứ Hóa chỉ hiện ở phần phụ tinh
+    // (xem tuHoaLineHtml). Chữ trạng thái (M)/(V)/(Đ)/(B)/(H) to bằng đúng cỡ chữ tên chính tinh.
     const chinhTinhHtml = p.chinhTinh
       .map((s) => {
-        const tuHoaTag = s.tuHoa ? `<sup style="color:${LIGHT.red};font-weight:800;">${TU_HOA_ABBR[s.tuHoa]}</sup>` : "";
         const color = colorOfSao(s.name, LIGHT.text);
-        return `<div style="line-height:1.15;"><span style="font-weight:800;font-size:13px;color:${color};white-space:nowrap;">${s.name}${tuHoaTag}</span><span style="font-weight:800;font-size:13px;color:${LIGHT.textMuted};"> ${TT_ABBR[s.trangThai]}</span></div>`;
+        return `<div style="line-height:1.15;"><span style="font-weight:800;font-size:13px;color:${color};white-space:nowrap;">${s.name}</span><span style="font-weight:800;font-size:13px;color:${LIGHT.textMuted};"> ${TT_ABBR[s.trangThai]}</span></div>`;
       })
       .join("");
     // Yêu cầu Công: nơi an Thân hiện "(THÂN)" chữ hoa in đậm ngay cạnh CUNG CHỨC, cỡ chữ bằng đúng cỡ chữ
