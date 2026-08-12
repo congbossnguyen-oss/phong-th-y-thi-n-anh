@@ -18,6 +18,7 @@ import { calculateNgayKhaiTruongRange } from "./processing/ngayKhaiTruong.js";
 import { calculateNgayKyHopDongRange } from "./processing/ngayKyHopDong.js";
 import { calculateNgayDaiCatCaNhan } from "./processing/ngayDaiCatCaNhan.js";
 import { calculateTrungTang } from "./processing/trungTang.js";
+import { convertSolarToLunar, convertLunarToSolar } from "./processing/doiLichAmDuong.js";
 import { tinhTuTru } from "./processing/tuTru.js";
 import type { TrachNhatInput, TrachNhatOutput } from "./types.js";
 import { validateTrachNhatInput } from "./validation.js";
@@ -46,6 +47,14 @@ export type { NgayDaiCatCaNhanInput, NgayDaiCatCaNhanResult, NgayDaiCatCaNhanNga
 export { calculateNgayDaiCatCaNhan };
 export type { TrungTangInput, TrungTangOutput, TrungTangResult, TrungTangThanQuyenInput } from "./processing/trungTang.js";
 export { calculateTrungTang };
+export type {
+  SolarToLunarInput,
+  SolarToLunarResult,
+  LunarToSolarInput,
+  LunarToSolarResult,
+  NamAmLichCanChi,
+} from "./processing/doiLichAmDuong.js";
+export { convertSolarToLunar, convertLunarToSolar };
 
 export * from "./types.js";
 
