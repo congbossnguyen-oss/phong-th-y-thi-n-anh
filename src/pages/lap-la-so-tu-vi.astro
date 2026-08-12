@@ -196,19 +196,6 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
   // `bias`: vị trí dọc theo cạnh chung — "middle" (mặc định, giữa cạnh) hoặc "start"/"end" cho 4 cặp Tý-
   // Sửu/Ngọ-Mùi/Mão-Thìn/Dậu-Tuất (2 cung liền cạnh bảng giữa VÀ liền nhau): yêu cầu Công đẩy về đúng
   // điểm giao 3 cạnh hướng vào ô trung tâm thay vì giữa cạnh.
-  function edgeTabHtml(edge: "top" | "bottom" | "left" | "right", label: string, bg: string, fg: string, bias: "start" | "middle" | "end" = "middle"): string {
-    const vertical = edge === "left" || edge === "right";
-    const size = label.length * 7 + 6;
-    const alongPos =
-      edge === "right" ? "right:-5px;" : edge === "left" ? "left:-5px;" : edge === "bottom" ? "bottom:-5px;" : "top:-5px;";
-    const perpPos = vertical
-      ? (bias === "start" ? "top:2px;" : bias === "end" ? "bottom:2px;" : "top:50%;transform:translateY(-50%);")
-      : (bias === "start" ? "left:2px;" : bias === "end" ? "right:2px;" : "left:50%;transform:translateX(-50%);");
-    const dim = vertical ? `width:10px;height:${size}px;` : `width:${size}px;height:10px;`;
-    const writingMode = vertical ? "writing-mode:vertical-rl;text-orientation:upright;" : "";
-    return `<div style="position:absolute;${alongPos}${perpPos}${dim}${writingMode}display:flex;align-items:center;justify-content:center;font-size:7px;font-weight:800;letter-spacing:.02em;color:${fg};background:${bg};border-radius:3px;z-index:3;box-shadow:0 0 0 1px ${LIGHT.border};">${label}</div>`;
-  }
-
   // Chỉ "start"/"end" khi CẢ 2 cung đều liền cạnh bảng giữa VÀ liền nhau (4 cặp cố định: Tý-Sửu, Ngọ-Mùi,
   // Mão-Thìn, Dậu-Tuất) — đẩy về đúng điểm giao 3 cạnh hướng vào ô trung tâm. Các cặp còn lại (có 1 cung
   // là 1 trong 4 cung góc Dần/Thân/Tỵ/Hợi) giữ nguyên "middle" (giữa cạnh) như trước.
@@ -220,29 +207,30 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
     return "middle";
   }
 
-  // Yêu cầu Công (bản mới nhất): với 4 cặp Tý-Sửu/Ngọ-Mùi/Mão-Thìn/Dậu-Tuất, KHÔNG đặt tab dọc theo cạnh
-  // chung nữa — thay bằng 1 THANH DUY NHẤT nằm NGANG (cặp cùng hàng) hoặc DỌC (cặp cùng cột), phủ vào cả
-  // 2 cung để trông như "nối liền" 2 cung đó, tâm thanh đặt đúng điểm giao 3 cạnh hướng vào bảng giữa.
-  // Vẽ 1 lần duy nhất ở cấp lưới (không lặp lại theo từng ô) bằng % vị trí trên hệ tọa độ lưới 0-4.
+  // Yêu cầu Công: thanh TUẦN/TRIỆT LUÔN nằm NGANG (chữ ngang, không xoay dọc) dù 2 cung liền nhau theo
+  // hàng hay theo cột — chỉ VỊ TRÍ tâm thanh khác nhau theo từng loại cặp, hình dạng thanh luôn giống
+  // nhau. Vẽ 1 lần duy nhất ở cấp lưới (không lặp lại theo từng ô) bằng % vị trí trên hệ tọa độ lưới 0-4.
   function tuanTrietBridgeHtml(chiA: number, chiB: number, chiToRowCol: Record<number, { row: number; col: number }>, label: string, bg: string, fg: string): string {
     const a = chiToRowCol[chiA], b = chiToRowCol[chiB];
     const bias = edgeEdgeBias(a, b);
-    if (bias === "middle") return ""; // cặp không đặc biệt (có cung góc) — giữ tab từng ô như cũ.
     const isRowPair = a.row === b.row;
     // Yêu cầu Công: thanh chỉ cần đủ nhỏ để đọc được chữ TUẦN/TRIỆT, không cần phủ rộng vào 2 cung.
     const barLen = 0.34;
     const barThick = 0.06;
-    const cx = isRowPair ? 2 : (bias === "end" ? 1 : 3);
-    const cy = isRowPair ? (bias === "end" ? 1 : 3) : 2;
-    const w = isRowPair ? barLen : barThick;
-    const h = isRowPair ? barThick : barLen;
-    const leftPct = ((cx - w / 2) / 4) * 100;
-    const topPct = ((cy - h / 2) / 4) * 100;
-    const writingMode = isRowPair ? "" : "writing-mode:vertical-rl;text-orientation:upright;";
-    return `<div style="position:absolute;left:${leftPct}%;top:${topPct}%;width:${(w / 4) * 100}%;height:${(h / 4) * 100}%;${writingMode}display:flex;align-items:center;justify-content:center;overflow:visible;white-space:nowrap;font-size:6px;font-weight:800;letter-spacing:.01em;color:${fg};background:${bg};border-radius:3px;z-index:6;box-shadow:0 0 0 1px ${LIGHT.border};">${label}</div>`;
+    // "middle" (cặp có 1 cung góc) → giữa đường biên chung. "start"/"end" (4 cặp Tý-Sửu/Ngọ-Mùi/Mão-Thìn/
+    // Dậu-Tuất) → đẩy về đúng điểm giao 3 cạnh hướng vào bảng giữa.
+    const cx = isRowPair
+      ? Math.min(a.col, b.col)
+      : bias === "end" ? a.col : bias === "start" ? a.col - 1 : a.col - 0.5;
+    const cy = isRowPair
+      ? (bias === "end" ? a.row : bias === "start" ? a.row - 1 : a.row - 0.5)
+      : Math.min(a.row, b.row);
+    const leftPct = ((cx - barLen / 2) / 4) * 100;
+    const topPct = ((cy - barThick / 2) / 4) * 100;
+    return `<div style="position:absolute;left:${leftPct}%;top:${topPct}%;width:${(barLen / 4) * 100}%;height:${(barThick / 4) * 100}%;display:flex;align-items:center;justify-content:center;overflow:visible;white-space:nowrap;font-size:6px;font-weight:800;letter-spacing:.01em;color:${fg};background:${bg};border-radius:3px;z-index:6;box-shadow:0 0 0 1px ${LIGHT.border};">${label}</div>`;
   }
 
-  function cellHtml(p: CungKetQua, tapDieuNames: string[], tuanTrietTabsHtml: string, isCurrentDaiVan: boolean): string {
+  function cellHtml(p: CungKetQua, tapDieuNames: string[], isCurrentDaiVan: boolean): string {
     // Yêu cầu Công: mỗi chính tinh xuống hàng riêng (chính tinh 1, dưới là chính tinh 2), không nằm
     // chung 1 dòng.
     // Yêu cầu Công: bỏ hẳn sup Tứ Hóa trên chính tinh (đã có sẵn ở khối tóm tắt giữa bảng, không lặp lại
@@ -270,7 +258,6 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
       : "";
     return `
       <div style="position:relative;height:100%;">
-        ${tuanTrietTabsHtml}
         <div style="position:relative;border:1px solid ${LIGHT.cellBorder};background:${p.isMenh || p.isThan ? LIGHT.menhBg : LIGHT.bg};padding:5px;box-sizing:border-box;height:100%;display:flex;flex-direction:column;overflow:hidden;">
           ${currentDaiVanOverlay}
           <div style="display:flex;justify-content:space-between;align-items:center;gap:4px;">
@@ -326,39 +313,6 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
     return { x: 3, y: rc.row - 0.5 }; // isRightCol — 12 cung ngoài luôn rơi vào 1 trong 4 nhánh trên.
   }
 
-  function edgeBetween(a: { row: number; col: number }, b: { row: number; col: number }): "top" | "bottom" | "left" | "right" | null {
-    if (a.row === b.row) return b.col > a.col ? "right" : "left";
-    if (a.col === b.col) return b.row > a.row ? "bottom" : "top";
-    return null; // Tuần/Triệt luôn là 2 Chi liền nhau trong vòng 12, và vòng 12 cung xếp viền ngoài lưới
-    // 4x4 nên luôn liền cạnh — nhánh này chỉ để không bao giờ crash nếu có trường hợp bất thường.
-  }
-
-  // Với 4 cặp Tý-Sửu/Ngọ-Mùi/Mão-Thìn/Dậu-Tuất KHÔNG render tab theo từng ô nữa — đã có 1 thanh ngang/dọc
-  // DUY NHẤT nối 2 cung ở cấp lưới (`tuanTrietBridgeHtml`, gọi 1 lần trong buildExportCardHtml). Hàm này
-  // chỉ còn xử lý các cặp "middle" (1 trong 2 cung là cung góc Dần/Thân/Tỵ/Hợi) — giữ nguyên tab từng ô.
-  function tuanTrietTabsFor(chiIndex: number, chart: TuViChart, chiToRowCol: Record<number, { row: number; col: number }>): string {
-    let html = "";
-    const tuanChis = chart.cungs.filter((c) => c.tuan).map((c) => c.chiIndex);
-    if (tuanChis.length === 2 && tuanChis.includes(chiIndex)) {
-      const other = tuanChis.find((i) => i !== chiIndex)!;
-      const a = chiToRowCol[chiIndex], b = chiToRowCol[other];
-      if (edgeEdgeBias(a, b) === "middle") {
-        const edge = edgeBetween(a, b);
-        if (edge) html += edgeTabHtml(edge, "TUẦN", LIGHT.gold, LIGHT.text, "middle");
-      }
-    }
-    const trietChis = chart.cungs.filter((c) => c.triet).map((c) => c.chiIndex);
-    if (trietChis.length === 2 && trietChis.includes(chiIndex)) {
-      const other = trietChis.find((i) => i !== chiIndex)!;
-      const a = chiToRowCol[chiIndex], b = chiToRowCol[other];
-      if (edgeEdgeBias(a, b) === "middle") {
-        const edge = edgeBetween(a, b);
-        if (edge) html += edgeTabHtml(edge, "TRIỆT", "#2c4a7c", "#ffffff", "middle");
-      }
-    }
-    return html;
-  }
-
   // Yêu cầu Công: từ cung Mệnh kẻ 2 đường tới 2 cung tam hợp + 1 đường tới cung đối diện (xung chiếu) —
   // minh họa Tam Phương Tứ Chính. Đường mờ, nằm dưới lớp chữ (opacity thấp) để không che nội dung.
   function menhLinesHtml(chart: TuViChart, chiToRowCol: Record<number, { row: number; col: number }>): string {
@@ -394,8 +348,7 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
 
     const cells = GRID_CELLS.map(({ chiIndex, row, col }) => {
       const p = chart.cungs[chiIndex];
-      const tabs = tuanTrietTabsFor(chiIndex, chart, chiToRowCol);
-      return `<div style="grid-row:${row};grid-column:${col};">${cellHtml(p, tapDieuByChi[chiIndex], tabs, chiIndex === currentDaiVanChiIndex)}</div>`;
+      return `<div style="grid-row:${row};grid-column:${col};">${cellHtml(p, tapDieuByChi[chiIndex], chiIndex === currentDaiVanChiIndex)}</div>`;
     }).join("");
 
     const tuanChisAll = chart.cungs.filter((c) => c.tuan).map((c) => c.chiIndex);
