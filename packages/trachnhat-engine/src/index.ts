@@ -24,6 +24,7 @@ import { calculateConSoMayMan } from "./processing/conSoMayMan.js";
 import { calculateChonTuoiKetHon, timTuoiKetHonPhuHop } from "./processing/chonTuoiKetHon.js";
 import { calculateChonNamSinhCon } from "./processing/chonNamSinhCon.js";
 import { calculateXemTuoiXongDat } from "./processing/xemTuoiXongDat.js";
+import { calculateChonNgayGiaoDichRange } from "./processing/chonNgayGiaoDich.js";
 import { tinhTuTru } from "./processing/tuTru.js";
 import type { TrachNhatInput, TrachNhatOutput } from "./types.js";
 import { validateTrachNhatInput } from "./validation.js";
@@ -82,6 +83,14 @@ export type {
   XongDatExcludedResult,
 } from "./processing/xemTuoiXongDat.js";
 export { calculateXemTuoiXongDat };
+export type {
+  AssetType,
+  TransactionPurpose,
+  ChonNgayGiaoDichRangeInput,
+  ChonNgayGiaoDichNgay,
+  ChonNgayGiaoDichRangeResult,
+} from "./processing/chonNgayGiaoDich.js";
+export { calculateChonNgayGiaoDichRange };
 
 export * from "./types.js";
 

@@ -1,0 +1,191 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import Container from "../../components/ui/Container.astro";
+import Button from "../../components/ui/Button.astro";
+
+export const prerender = true;
+---
+
+<BaseLayout
+  title="Chọn Ngày Giao Dịch / Nhận Tài Sản"
+  description="Tìm ngày đẹp để mua nhà, mua xe, nhận nhà, nhận xe — quét 1 khoảng ngày, chấm điểm theo Trạch Cát và mục đích, có thể xét tuổi chủ, sau đó xem giờ tốt trong ngày đã chọn."
+>
+  <PageHero
+    eyebrow="Đại Cát Lợi"
+    title="Chọn Ngày Giao Dịch / Nhận Tài Sản"
+    description="Chọn tài sản (Nhà/Xe) và việc cần làm (Mua/Nhận), khoảng ngày muốn xem — hệ thống tự quét và xếp hạng ngày tốt nhất, sau đó có thể xem giờ tốt trong ngày đã chọn."
+    breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Đại Cát Lợi", href: "/dai-cat-loi" }, { label: "Chọn Ngày Giao Dịch / Nhận Tài Sản" }]}
+  />
+
+  <Container class="py-16">
+    <div class="mx-auto max-w-2xl">
+      <form id="form-giao-dich" class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="gd-tai-san" class="text-xs font-medium text-slate-600">Tài sản</label>
+            <select id="gd-tai-san" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)">
+              <option value="NHA">🏠 Nhà</option>
+              <option value="XE">🚗 Xe</option>
+            </select>
+          </div>
+          <div>
+            <label for="gd-viec" class="text-xs font-medium text-slate-600">Việc cần làm</label>
+            <select id="gd-viec" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)">
+              <option value="MUA">Mua</option>
+              <option value="NHAN">Nhận</option>
+            </select>
+          </div>
+        </div>
+        <div class="mt-3">
+          <label for="gd-nam-sinh-chu" class="text-xs font-medium text-slate-600">Năm sinh chủ (tùy chọn)</label>
+          <input type="number" id="gd-nam-sinh-chu" min="1900" max="2100" placeholder="Bỏ trống nếu chỉ cần ngày chung" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+        </div>
+        <div class="mt-3 grid grid-cols-2 gap-3">
+          <div>
+            <label for="gd-tu-ngay" class="text-xs font-medium text-slate-600">Từ ngày</label>
+            <input type="date" id="gd-tu-ngay" required class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+          </div>
+          <div>
+            <label for="gd-den-ngay" class="text-xs font-medium text-slate-600">Đến ngày</label>
+            <input type="date" id="gd-den-ngay" required class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+          </div>
+        </div>
+        <p class="mt-2 text-xs text-slate-400">Tối đa 62 ngày mỗi lượt quét.</p>
+        <Button type="submit" size="lg" class="mt-4 w-full">Tìm ngày tốt</Button>
+      </form>
+
+      <div id="loi" class="mt-3 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-3 text-sm text-(--color-danger-500)"></div>
+
+      <div id="ket-qua" class="mt-4 hidden space-y-2"></div>
+
+      <div id="ket-qua-gio" class="mt-4 hidden rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
+        <p class="text-xs font-bold uppercase tracking-wide text-amber-600">🕘 Giờ tốt</p>
+        <p id="gio-tieu-de" class="mt-1 text-sm text-slate-500"></p>
+        <div id="gio-danh-sach" class="mt-2 space-y-1.5"></div>
+      </div>
+
+      <p class="mt-4 text-xs text-(--color-ink-500)">
+        Đây là công cụ tham khảo theo hệ thống phong thủy đã cấu hình, chưa đối chiếu được với bảng Nghi/Kỵ phân loại
+        riêng theo từng loại giao dịch — không khẳng định chắc chắn về kết quả giao dịch hay vận hạn.
+      </p>
+    </div>
+  </Container>
+</BaseLayout>
+
+<script>
+  interface DayFactor { ten: string; diem: number }
+  interface DayScore { diem: number; yeuTo: DayFactor[]; phamDaiKy: boolean }
+  interface OwnerResult { diem: number }
+  interface TransactionDay {
+    solarDate: { year: number; month: number; day: number };
+    lunarDate: { year: number; month: number; day: number; isLeapMonth: boolean };
+    diem: number;
+    hang: string;
+    nhan: string;
+    base: DayScore;
+    mucDich: DayScore;
+    chu: OwnerResult | null;
+  }
+  interface TransactionRangeResult { assetType: string; purpose: string; ngayXepHang: TransactionDay[] }
+  interface GioKetQua { chiGio: string; canGio: string; khungGio: string; diem: number; nhan: string }
+  interface GioTotResult { gioXepHang: GioKetQua[] }
+
+  const form = document.getElementById("form-giao-dich") as HTMLFormElement;
+  const loiEl = document.getElementById("loi")!;
+  const ketQuaEl = document.getElementById("ket-qua")!;
+  const ketQuaGioEl = document.getElementById("ket-qua-gio")!;
+  const gioTieuDeEl = document.getElementById("gio-tieu-de")!;
+  const gioDanhSachEl = document.getElementById("gio-danh-sach")!;
+
+  const HUY_CHUONG = ["🥇", "🥈", "🥉"];
+
+  function pad2(n: number): string {
+    return String(n).padStart(2, "0");
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    loiEl.classList.add("hidden");
+    ketQuaEl.classList.add("hidden");
+    ketQuaGioEl.classList.add("hidden");
+
+    const assetType = (document.getElementById("gd-tai-san") as HTMLSelectElement).value;
+    const purpose = (document.getElementById("gd-viec") as HTMLSelectElement).value;
+    const namSinhChu = (document.getElementById("gd-nam-sinh-chu") as HTMLInputElement).value;
+    const tuNgay = (document.getElementById("gd-tu-ngay") as HTMLInputElement).value;
+    const denNgay = (document.getElementById("gd-den-ngay") as HTMLInputElement).value;
+
+    if (!tuNgay || !denNgay) {
+      loiEl.textContent = "Vui lòng chọn Từ ngày và Đến ngày.";
+      loiEl.classList.remove("hidden");
+      return;
+    }
+    const [startYear, startMonth, startDay] = tuNgay.split("-").map(Number);
+    const [endYear, endMonth, endDay] = denNgay.split("-").map(Number);
+
+    let qs = `assetType=${assetType}&purpose=${purpose}&startYear=${startYear}&startMonth=${startMonth}&startDay=${startDay}&endYear=${endYear}&endMonth=${endMonth}&endDay=${endDay}`;
+    if (namSinhChu) qs += `&namSinhChu=${namSinhChu}`;
+
+    try {
+      const res = await fetch(`/api/chon-ngay-giao-dich?${qs}`);
+      const data = await res.json();
+      if (!res.ok) {
+        loiEl.textContent = data.error ?? "Không tính được.";
+        loiEl.classList.remove("hidden");
+        return;
+      }
+      const result = data as TransactionRangeResult;
+      const top5 = result.ngayXepHang.slice(0, 5);
+      ketQuaEl.innerHTML = top5
+        .map((d, i) => {
+          const huyChuong = HUY_CHUONG[i] ?? `${i + 1}.`;
+          const ngayStr = `${pad2(d.solarDate.day)}/${pad2(d.solarDate.month)}/${d.solarDate.year}`;
+          return `<button type="button" class="gd-item w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-left hover:bg-slate-100" data-year="${d.solarDate.year}" data-month="${d.solarDate.month}" data-day="${d.solarDate.day}">
+            <div class="flex items-center justify-between">
+              <p class="font-display text-base font-bold text-slate-900">${huyChuong} ${ngayStr}</p>
+              <span class="text-sm font-semibold">${d.nhan} — ${d.diem}/10</span>
+            </div>
+            <p class="mt-1 text-xs text-slate-500">Bấm để xem giờ tốt trong ngày này</p>
+          </button>`;
+        })
+        .join("");
+
+      ketQuaEl.querySelectorAll(".gd-item").forEach((btn) => {
+        btn.addEventListener("click", async () => {
+          const el = btn as HTMLElement;
+          const year = el.dataset.year!;
+          const month = el.dataset.month!;
+          const day = el.dataset.day!;
+          const gioPurpose = purpose === "MUA" ? "KY_HOP_DONG" : "XUAT_HANH";
+          try {
+            const gioRes = await fetch(`/api/gio-tot-trong-ngay?year=${year}&month=${month}&day=${day}&purpose=${gioPurpose}`);
+            const gioData = await gioRes.json();
+            if (!gioRes.ok) return;
+            const gioResult = gioData as GioTotResult;
+            gioTieuDeEl.textContent = `Ngày ${pad2(Number(day))}/${pad2(Number(month))}/${year}`;
+            gioDanhSachEl.innerHTML = gioResult.gioXepHang
+              .slice(0, 3)
+              .map(
+                (g, i) =>
+                  `<div class="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-2.5">
+                    <p class="text-sm font-semibold text-slate-900">${HUY_CHUONG[i] ?? `${i + 1}.`} ${g.khungGio} (giờ ${g.chiGio})</p>
+                    <span class="text-sm">${g.nhan} — ${g.diem}/10</span>
+                  </div>`,
+              )
+              .join("");
+            ketQuaGioEl.classList.remove("hidden");
+            ketQuaGioEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+          } catch {
+            // bỏ qua lỗi phụ, không chặn luồng chính
+          }
+        });
+      });
+
+      ketQuaEl.classList.remove("hidden");
+    } catch {
+      loiEl.textContent = "Không tải được dữ liệu.";
+      loiEl.classList.remove("hidden");
+    }
+  });
+</script>
