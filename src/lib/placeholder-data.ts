@@ -11,7 +11,7 @@ export const services = [
     slug: "phong-thuy-nha-o",
     name: "Phong thủy nhà ở",
     summary: "Tư vấn bố cục, hướng nhà, nội thất hợp mệnh gia chủ để đón vượng khí.",
-    priceFrom: "3.000.000đ – 5.000.000đ",
+    priceFrom: "Liên hệ",
     image: "/images/services/phong-thuy-nha-o.jpg",
     intro: [
       `"Nhà em hướng Tây Nam, mua rồi mới biết không hợp tuổi chồng — giờ có phải đập đi xây lại không?" — đó là câu hỏi khách hàng hỏi nhiều nhất. Câu trả lời gần như luôn là: không cần đập, chỉ cần điều chỉnh đúng chỗ.`,
@@ -37,7 +37,7 @@ export const services = [
     slug: "xem-ngay-cao-cap",
     name: "Xem ngày cao cấp",
     summary: "Chọn ngày giờ tốt cho khai trương, động thổ, cưới hỏi, nhập trạch.",
-    priceFrom: "1.000.000đ",
+    priceFrom: "Liên hệ",
     image: "/images/services/xem-ngay-cao-cap.jpg",
     intro: [
       `Ông bà xưa có câu "lấy vợ xem tuổi đàn bà, làm nhà xem tuổi đàn ông" — chọn đúng ngày giờ từ lâu đã là bước không thể bỏ qua trước những cột mốc quan trọng. Xem ngày không đơn thuần là tránh ngày xấu theo lịch vạn niên thông thường, mà là đối chiếu Can Chi ngày giờ dự kiến với mệnh cục gia chủ, tránh phạm Tam Tai, Không Vong, Nguyệt Kỵ.`,
@@ -63,7 +63,7 @@ export const services = [
     slug: "bat-tu",
     name: "Bát tự",
     summary: "Luận giải lá số bát tự: sự nghiệp, tài lộc, hôn nhân, sức khỏe.",
-    priceFrom: "2.000.000đ – 3.000.000đ",
+    priceFrom: "Liên hệ",
     image: "/images/services/bat-tu.jpg",
     intro: [
       'Bát Tự (hay Tứ Trụ) là 8 chữ Can Chi tạo từ năm, tháng, ngày, giờ sinh — được xem như "bản đồ" Ngũ Hành của một đời người. Qua việc luận vượng suy của Nhật Chủ, tìm Dụng Thần và xét các đại vận, chuyên gia có thể chỉ ra xu hướng sự nghiệp, tài lộc, hôn nhân, sức khỏe trong từng giai đoạn.',
@@ -89,7 +89,7 @@ export const services = [
     slug: "phong-thuy-van-phong",
     name: "Phong thủy văn phòng",
     summary: "Bố trí không gian làm việc, kinh doanh thu hút tài lộc, hanh thông.",
-    priceFrom: "5.000.000đ – 10.000.000đ",
+    priceFrom: "Liên hệ",
     image: "/images/services/phong-thuy-van-phong.jpg",
     intro: [
       "Một văn phòng bố trí đúng phong thủy không chỉ đẹp mắt mà còn ảnh hưởng trực tiếp đến dòng tiền, mối quan hệ đối tác và tinh thần làm việc của cả đội ngũ. Dịch vụ tập trung vào 3 điểm trọng yếu: vị trí bàn làm việc của người đứng đầu, hướng cửa chính đón khách, và cách bố trí không gian chung để khí lưu thông thay vì tù đọng.",
@@ -115,7 +115,7 @@ export const services = [
     slug: "phong-thuy-nha-chuyen-sau",
     name: "Phong thủy nhà chuyên sâu",
     summary: "Luận giải toàn diện nhà ở theo nhiều trường phái, khảo sát thực địa và báo cáo chi tiết chuyên sâu.",
-    priceFrom: "15.000.000đ – 20.000.000đ",
+    priceFrom: "Liên hệ",
     image: "/images/services/phong-thuy-nha-chuyen-sau.jpg",
     intro: [
       "Đây là gói tư vấn chuyên sâu nhất, dành cho công trình quan trọng hoặc trường hợp đã áp dụng phong thủy cơ bản nhưng chưa thấy chuyển biến rõ rệt. Ngoài phân tích Bát Trạch thông thường, chuyên gia đối chiếu thêm theo Huyền Không Phi Tinh (vận khí theo từng giai đoạn 20 năm) và khảo sát thực địa toàn bộ công trình.",
@@ -167,7 +167,7 @@ export const services = [
     slug: "cung-dong-tho-nhap-trach-lap-ban-than-tai",
     name: "Cúng động thổ, nhập trạch, lập bàn thần tài",
     summary: "Thực hiện nghi lễ cúng động thổ, nhập trạch và lập bàn thờ Thần Tài đúng nghi thức, chọn ngày giờ hợp mệnh gia chủ.",
-    priceFrom: "5.000.000đ – 7.000.000đ",
+    priceFrom: "Liên hệ",
     image: "/images/services/cung-dong-tho-nhap-trach-lap-ban-than-tai.jpg",
     intro: [
       'Động thổ, nhập trạch, lập bàn thờ Thần Tài là những nghi lễ mang tính khởi đầu — theo quan niệm truyền thống, làm đúng nghi thức và đúng thời điểm được xem là cách "báo cáo" với thổ địa, gia tiên trước khi bắt đầu một giai đoạn mới, giúp công việc hanh thông, tránh phạm phải những điều kiêng kỵ ban đầu.',
@@ -193,7 +193,7 @@ export const services = [
     slug: "chon-ngay-gio-sinh",
     name: "Chọn ngày giờ sinh (sinh mổ)",
     summary: "Chọn ngày giờ sinh mổ tốt dựa trên thông tin bác sĩ đưa ra, giúp con hợp mệnh và khởi đầu vận trình thuận lợi.",
-    priceFrom: "1.000.000đ",
+    priceFrom: "Liên hệ",
     image: "/images/services/chon-ngay-gio-sinh.jpg",
     intro: [
       "Với các ca sinh mổ chủ động, gia đình có thể chọn được ngày giờ chào đời cho con — đây là quyết định chỉ có một lần, nên nhiều gia đình muốn cân nhắc kỹ theo cả yếu tố y khoa lẫn phong thủy. Dịch vụ dựa trên khung thời gian bác sĩ đưa ra để chọn ra ngày giờ có Bát Tự hài hòa nhất trong khung đó.",
@@ -219,7 +219,7 @@ export const services = [
     slug: "luan-que-kinh-dich-ky-mon",
     name: "Luận quẻ Kinh Dịch - Kỳ Môn",
     summary: "Luận giải sự vụ, tài vận, quan vận, nhân duyên, sức khỏe... qua quẻ Kinh Dịch và Kỳ Môn Độn Giáp.",
-    priceFrom: "500.000đ – 1.000.000đ",
+    priceFrom: "Liên hệ",
     image: "/images/services/luan-que-kinh-dich-ky-mon.jpg",
     intro: [
       "Kinh Dịch và Kỳ Môn Độn Giáp là hai hệ thống dự đoán cổ xưa dựa trên sự vận hành của quẻ và các sao theo thời gian thực. Khác với Bát Tự (luận cả đời người), Kinh Dịch và Kỳ Môn thường dùng để trả lời một câu hỏi cụ thể tại một thời điểm cụ thể — nên làm hay không nên làm, thời điểm nào thuận lợi, hướng đi nào nên chọn.",
@@ -245,7 +245,7 @@ export const services = [
     slug: "co-van-chien-luoc-toan-dien",
     name: "Cố vấn chiến lược toàn diện (dành cho doanh nghiệp)",
     summary: "Hỗ trợ tuyển dụng nhân sự, bố trí sắp xếp cán bộ cấp cao, hóa giải sự vụ, bố trí phong thủy công ty, xem ngày giờ ký kết... đồng hành cùng doanh nghiệp trong 1 năm.",
-    priceFrom: "30.000.000đ – 50.000.000đ / năm",
+    priceFrom: "Liên hệ",
     image: "/images/services/co-van-chien-luoc-toan-dien.jpg",
     intro: [
       "Đây là gói đồng hành dài hạn dành riêng cho doanh nghiệp — không dừng ở một buổi tư vấn mà là một năm hỗ trợ liên tục cho các quyết định quan trọng: sắp xếp nhân sự cấp cao, chọn ngày ký kết hợp đồng lớn, bố trí lại phong thủy văn phòng theo từng giai đoạn kinh doanh, và xử lý sự vụ phát sinh khi cần.",
