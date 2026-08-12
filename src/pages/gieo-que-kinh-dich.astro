@@ -384,17 +384,36 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
     return { day, month, year, hour, minute };
   }
 
-  // --- Thẻ kết quả màu sáng (be/đỏ/đen) để xuất ảnh PNG — bám theo đúng bảng màu/bố cục tham khảo ---
-  const LIGHT = {
-    bg: "#f6efe0",
-    border: "#d9c48f",
-    borderLight: "#e6d9ae",
-    text: "#2b2116",
-    textMuted: "#6b5a3d",
-    red: "#b3311f",
+  // --- Thẻ kết quả đỏ tía sẫm/vàng (theo đúng bảng màu chủ đạo của site) để xuất ảnh PNG ---
+  const CARD_COLORS = {
+    bg: "radial-gradient(ellipse at 50% 28%, #5a1a24 0%, #3d1015 55%, #2a0a0e 100%)",
+    // `html-to-image` chỉ nhận màu đặc cho backgroundColor — không nhận chuỗi gradient của `bg`.
+    bgSolid: "#3d1015",
+    border: "#c9a256",
+    borderLight: "#8f6f37",
+    text: "#f7ecd9",
+    textMuted: "#d8c3a3",
+    red: "#d15c4a",
     gold: "#c9a256",
-    dong: "#c0392b",
-    headerBg: "#efe1b8",
+    dong: "#d15c4a",
+    headerBg: "#dcbd7a",
+    headerText: "#241812",
+    // 4 khung bảng phải có nền RIÊNG, cố định. Nếu để trong suốt, chúng ăn theo gradient của thẻ nên
+    // 2 bảng dưới (rơi vào vùng tối nhất của gradient) sẽ đen sẫm hơn hẳn 2 bảng trên — lệch so với mẫu.
+    // CẢ 4 khung bảng đều dùng nền giấy kem + chữ nâu đen (theo ảnh mẫu), giống 3 ô quẻ ở trên.
+    // Phải đặt nền cố định, không để trong suốt — nếu trong suốt chúng sẽ ăn theo gradient của thẻ.
+    paperBg: "#f2e6ca",
+    paperText: "#3f3524",
+    paperDong: "#b3311f",
+    paperBorder: "#d5c197",
+    // Khung quẻ dùng nền giấy cũ sáng (tách khỏi nền thẻ tối) nên cần bộ màu chữ/vạch riêng.
+    panelBg: "linear-gradient(160deg, #f7ecd4 0%, #ecdcb8 100%)",
+    panelText: "#2b2116",
+    panelMuted: "#6b5a3d",
+    // Vạch hào dùng gradient (sáng trên → tối dưới) cho có khối, đúng như ảnh mẫu; tách riêng khỏi
+    // `dong` vì `dong` còn dùng làm màu CHỮ trong bảng nên phải giữ là màu đặc.
+    bar: "linear-gradient(180deg, #6f6656 0%, #474133 100%)",
+    barDong: "linear-gradient(180deg, #d4452f 0%, #b32d1c 100%)",
   };
   const CARD_WIDTH = 860;
   const CARD_HEIGHT = 1030;
@@ -406,7 +425,7 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
     const bars = rows
       .map(({ line, pos }) => {
         const isDong = dongPositions.includes(pos);
-        const color = isDong ? LIGHT.dong : LIGHT.text;
+        const color = isDong ? CARD_COLORS.barDong : CARD_COLORS.bar;
         if (line === 1) return `<div style="height:12px;border-radius:2px;background:${color};"></div>`;
         return `<div style="height:12px;display:flex;justify-content:space-between;"><div style="width:42%;height:100%;border-radius:2px;background:${color};"></div><div style="width:42%;height:100%;border-radius:2px;background:${color};"></div></div>`;
       })
@@ -498,12 +517,12 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
   // TÊN QUẺ, và chỉ khi quẻ đó có hào động (Chính có hào động / Biến luôn có vì chỉ tồn tại khi động) —
   // Hỗ không bao giờ in hoa. Họ quẻ và tên tượng không còn in hoa (giữ nguyên dạng chữ thường).
   function lightQueBlock(name: string, lines: readonly (0 | 1)[], dongPositions: number[], cungText: string, tenTuong?: string): string {
-    const subColor = LIGHT.textMuted;
-    const tenTuongColor = LIGHT.text;
+    const subColor = CARD_COLORS.panelMuted;
+    const tenTuongColor = CARD_COLORS.panelText;
     const nameTransform = dongPositions.length > 0 ? "uppercase" : "none";
     return `
-      <div style="border:1.5px solid ${LIGHT.borderLight};border-radius:10px;padding:14px 10px;text-align:center;">
-        <p style="margin:0;font-size:18px;font-weight:800;letter-spacing:.02em;text-transform:${nameTransform};color:${LIGHT.red};">${name}</p>
+      <div style="border:2px solid ${CARD_COLORS.border};border-radius:12px;padding:14px 10px;text-align:center;background:${CARD_COLORS.panelBg};">
+        <p style="margin:0;font-size:18px;font-weight:800;letter-spacing:.02em;text-transform:${nameTransform};color:${CARD_COLORS.red};">${name}</p>
         <div style="margin-top:10px;">${lightHexBars(lines, dongPositions)}</div>
         <p style="margin:10px 0 0;font-size:12px;font-weight:700;letter-spacing:.02em;color:${subColor};">${cungText}</p>
         ${tenTuong ? `<p style="margin:4px 0 0;font-size:14px;font-weight:700;letter-spacing:.02em;color:${tenTuongColor};white-space:nowrap;">${tenTuong}</p>` : ""}
@@ -541,33 +560,33 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
       "T.K",
       ...(isBien ? ["Lục Thú"] : []),
     ];
-    const upperHeader = headerLabels.map((label) => `<th style="padding:7px 4px;white-space:nowrap;">${label}</th>`).join("");
+    const upperHeader = headerLabels.map((label) => `<th style="padding:7px 4px;white-space:nowrap;color:${CARD_COLORS.headerText};">${label}</th>`).join("");
 
     // P.Thần (Phục Thần) KHÔNG được tô đỏ dù hào đó có động hay không — Phục Thần là hào ẩn mượn từ
     // quẻ thuần bản cung, không phải hào thật đang động trong quẻ hiện tại, nên giữ nguyên màu chữ.
     const upperRows = rows
       .map((h) => {
         const isRowDong = h.isDong || dongPositions.includes(h.hao);
-        const rowColor = isRowDong ? LIGHT.dong : LIGHT.text;
+        const rowColor = isRowDong ? CARD_COLORS.paperDong : CARD_COLORS.paperText;
         const cells = [
           `<td style="padding:7px 5px;text-align:center;font-weight:700;color:${rowColor};">${h.value === 1 ? "&mdash;" : "&#8212;&nbsp;&#8212;"}</td>`,
           ...(isBien ? [] : [`<td style="padding:7px 5px;text-align:center;color:${rowColor};font-weight:600;">${h.theUng ?? ""}</td>`]),
           `<td style="padding:7px 5px;text-align:center;color:${rowColor};font-weight:${isRowDong ? "700" : "400"};white-space:nowrap;">${h.lucThan}</td>`,
           `<td style="padding:7px 5px;text-align:center;color:${rowColor};font-weight:${isRowDong ? "700" : "400"};white-space:nowrap;">${CHI[h.chiIndex]}-${h.nguHanh}</td>`,
-          ...(isBien ? [] : [`<td style="padding:7px 5px;text-align:center;color:${LIGHT.text};white-space:nowrap;">${h.phucThan ? `${LUC_THAN_ABBREV[h.phucThan.lucThan]}-${CHI[h.phucThan.chiIndex]}` : "-"}</td>`]),
+          ...(isBien ? [] : [`<td style="padding:7px 5px;text-align:center;color:${CARD_COLORS.paperText};white-space:nowrap;">${h.phucThan ? `${LUC_THAN_ABBREV[h.phucThan.lucThan]}-${CHI[h.phucThan.chiIndex]}` : "-"}</td>`]),
           `<td style="padding:7px 5px;text-align:center;color:${rowColor};">${h.xunKong ? "K" : "-"}</td>`,
           ...(isBien ? [`<td style="padding:7px 5px;text-align:center;color:${rowColor};font-weight:${isRowDong ? "700" : "400"};white-space:nowrap;">${h.lucThu}</td>`] : []),
         ];
-        return `<tr style="border-bottom:1px solid ${LIGHT.borderLight};">${cells.join("")}</tr>`;
+        return `<tr style="border-bottom:1px solid ${CARD_COLORS.paperBorder};">${cells.join("")}</tr>`;
       })
       .join("");
 
     const lowerRows = rows
       .map((h) => {
         const isRowDong = h.isDong || dongPositions.includes(h.hao);
-        const rowColor = isRowDong ? LIGHT.dong : LIGHT.text;
+        const rowColor = isRowDong ? CARD_COLORS.paperDong : CARD_COLORS.paperText;
         return `
-          <tr style="border-bottom:1px solid ${LIGHT.borderLight};">
+          <tr style="border-bottom:1px solid ${CARD_COLORS.paperBorder};">
             <td style="padding:7px 2px;text-align:center;font-weight:${isRowDong ? "700" : "400"};color:${rowColor};white-space:nowrap;">${CAN[h.canIndex]} ${CHI[h.chiIndex]}</td>
             <td style="padding:7px 2px;text-align:center;color:${rowColor};white-space:nowrap;">${h.vuongSuy}</td>
             <td style="padding:7px 2px;text-align:center;color:${rowColor};white-space:nowrap;">-</td>
@@ -580,23 +599,51 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
 
     return `
       <div>
-        <table style="width:100%;border-collapse:collapse;font-size:18px;">
-          <thead>
-            <tr style="background:${LIGHT.headerBg};">${upperHeader}</tr>
-          </thead>
-          <tbody>${upperRows}</tbody>
-        </table>
-        <table style="width:100%;table-layout:fixed;border-collapse:collapse;font-size:14px;margin-top:10px;">
-          <thead>
-            <tr style="background:${LIGHT.headerBg};">
-              <th style="padding:7px 2px;width:20%;white-space:nowrap;">Hào</th><th style="padding:7px 2px;width:20%;white-space:nowrap;">V-S</th><th style="padding:7px 2px;width:20%;white-space:nowrap;">Q.Thần</th><th style="padding:7px 2px;width:20%;white-space:nowrap;">TS Ngày</th><th style="padding:7px 2px;width:20%;white-space:nowrap;">TS Tháng</th>
-            </tr>
-          </thead>
-          <tbody>${lowerRows}</tbody>
-        </table>
+        <div style="border:2px solid ${CARD_COLORS.border};border-radius:10px;overflow:hidden;background:${CARD_COLORS.paperBg};">
+          <table style="width:100%;border-collapse:collapse;font-size:18px;">
+            <thead>
+              <tr style="background:${CARD_COLORS.headerBg};">${upperHeader}</tr>
+            </thead>
+            <tbody>${upperRows}</tbody>
+          </table>
+        </div>
+        <div style="border:2px solid ${CARD_COLORS.border};border-radius:10px;overflow:hidden;background:${CARD_COLORS.paperBg};margin-top:10px;">
+          <table style="width:100%;table-layout:fixed;border-collapse:collapse;font-size:14px;">
+            <thead>
+              <tr style="background:${CARD_COLORS.headerBg};color:${CARD_COLORS.headerText};">
+                <th style="padding:7px 2px;width:20%;white-space:nowrap;">Hào</th><th style="padding:7px 2px;width:20%;white-space:nowrap;">V-S</th><th style="padding:7px 2px;width:20%;white-space:nowrap;">Q.Thần</th><th style="padding:7px 2px;width:20%;white-space:nowrap;">TS Ngày</th><th style="padding:7px 2px;width:20%;white-space:nowrap;">TS Tháng</th>
+              </tr>
+            </thead>
+            <tbody>${lowerRows}</tbody>
+          </table>
+        </div>
       </div>
     `;
   }
+
+  // Hoa văn mây (tường vân) vẽ bằng SVG thuần — hoạ tiết nền chìm, không phụ thuộc file ảnh ngoài nên
+  // `html-to-image` luôn chụp được (ảnh ngoài từng gây lỗi thiếu hình khi mạng chậm).
+  // Mỗi cụm gồm 3 vòng xoắn lồng nhau (đầu mây) + dải đuôi vắt ngang, đúng dáng mây cổ truyền.
+  function cloudMotif(): string {
+    return `<svg viewBox="0 0 200 100" fill="none" stroke="${CARD_COLORS.gold}" stroke-width="4" stroke-linecap="round" style="display:block;width:100%;height:auto;">
+      <path d="M46 78a26 26 0 1 1 26-28"/>
+      <path d="M60 78a15 15 0 1 1 15-16"/>
+      <path d="M74 78a5 5 0 1 1 5-6"/>
+      <path d="M46 78h96c16 0 24-12 19-24"/>
+      <path d="M142 54a13 13 0 1 1 13-14"/>
+    </svg>`;
+  }
+
+  // Rải mây quanh rìa thẻ, độ mờ rất thấp để không lấn chữ. Dùng scaleX(-1) để lật hướng cho tự nhiên.
+  const CLOUD_LAYER = [
+    "left:-56px;top:96px;width:290px;transform:rotate(-8deg);opacity:.20;",
+    "right:-70px;top:430px;width:330px;transform:scaleX(-1) rotate(-6deg);opacity:.17;",
+    "left:-40px;bottom:150px;width:300px;transform:rotate(5deg);opacity:.17;",
+    "right:-50px;bottom:-10px;width:280px;transform:scaleX(-1) rotate(4deg);opacity:.15;",
+    "left:250px;top:-34px;width:250px;transform:rotate(-3deg);opacity:.11;",
+  ]
+    .map((pos) => `<div style="position:absolute;${pos}pointer-events:none;">${cloudMotif()}</div>`)
+    .join("");
 
   function buildExportCardHtml(cast: FullCastResult, methodLabel: string, viecCanXem: string, timeLabel: string): string {
     const queCols = cast.bien ? 3 : 2;
@@ -610,32 +657,33 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
     // Bảng hào theo đúng bố cục ảnh mẫu (simkinhdich.com): Chính/Biến đặt song song 2 cột, mỗi bên tách
     // 2 bảng xếp chồng (không đưa Ngũ Hành/Quan hệ Nhật-Nguyệt thành cột riêng theo yêu cầu).
     const tables = cast.bien
-      ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;"><div style="border-right:1px solid ${LIGHT.border};">${sideHaoTables(cast.chinh, false)}</div><div>${sideHaoTables(cast.bien, true, cast.dongPositions)}</div></div>`
+      ? `<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;"><div>${sideHaoTables(cast.chinh, false)}</div><div>${sideHaoTables(cast.bien, true, cast.dongPositions)}</div></div>`
       : sideHaoTables(cast.chinh, false);
 
     return `
-      <div style="position:relative;width:${CARD_WIDTH}px;min-height:${CARD_HEIGHT}px;font-family:Tahoma,'Segoe UI',Arial,sans-serif;background:${LIGHT.bg};color:${LIGHT.text};border:3px solid ${LIGHT.border};border-radius:16px;padding:20px;box-sizing:border-box;overflow:hidden;">
-        <img src="/images/brand/chim-hac-vector.png" style="position:absolute;right:2px;top:14px;width:220px;opacity:.35;pointer-events:none;" />
-        <div style="display:flex;align-items:center;gap:10px;border-bottom:2px solid ${LIGHT.borderLight};padding-bottom:10px;">
-          <img src="/images/brand/zhi-gong-logo.png" style="width:44px;height:44px;border-radius:9999px;border:2px solid ${LIGHT.border};object-fit:cover;flex-shrink:0;" />
-          <p style="margin:0;font-size:16px;font-weight:800;letter-spacing:.02em;color:${LIGHT.red};">PHONGTHUYTHIENANH.COM</p>
+      <div style="position:relative;width:${CARD_WIDTH}px;min-height:${CARD_HEIGHT}px;font-family:Tahoma,'Segoe UI',Arial,sans-serif;background:${CARD_COLORS.bg};color:${CARD_COLORS.text};border:3px solid ${CARD_COLORS.border};border-radius:16px;padding:20px;box-sizing:border-box;overflow:hidden;">
+        ${CLOUD_LAYER}
+        <img src="/images/brand/chim-hac-vector.png" style="position:absolute;right:2px;top:14px;width:220px;opacity:.72;filter:saturate(.6) brightness(1.18);pointer-events:none;" />
+        <div style="position:relative;display:flex;align-items:center;gap:10px;border-bottom:2px solid ${CARD_COLORS.borderLight};padding-bottom:10px;">
+          <img src="/images/brand/zhi-gong-logo.png" style="width:44px;height:44px;border-radius:9999px;border:2px solid ${CARD_COLORS.border};object-fit:cover;flex-shrink:0;" />
+          <p style="margin:0;font-size:16px;font-weight:800;letter-spacing:.02em;color:${CARD_COLORS.gold};">PHONGTHUYTHIENANH.COM</p>
         </div>
-        <div style="margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;font-size:11px;line-height:1.7;">
-          <p style="margin:0;">Phương pháp lập quẻ: <strong style="color:${LIGHT.text};">${methodLabel}</strong></p>
-          <p style="margin:0;">Việc cần xem: <strong style="color:${LIGHT.text};">${viecCanXem || "—"}</strong></p>
-          <p style="margin:0;">Thời gian lập quẻ: <strong style="color:${LIGHT.text};">${timeLabel}</strong></p>
-          <p id="am-lich-row" style="margin:0;">Theo Âm lịch: <strong style="color:${LIGHT.text};">${cast.amLichText}</strong></p>
-          <p style="margin:0;grid-column:1 / -1;">Can Chi: <strong style="color:${LIGHT.text};">${cast.canChiText}</strong></p>
-          <p style="margin:0;font-size:13px;">Tiết khí: <strong style="color:${LIGHT.text};">${cast.tietKhi}</strong></p>
-          <p style="margin:0;font-size:13px;">Tuần Không: <strong style="color:${LIGHT.text};">${cast.tuanKhong}</strong></p>
-          <p style="margin:0;font-size:15px;">Nhật thần: <strong style="color:${LIGHT.text};">${cast.nhatThan}</strong></p>
-          <p style="margin:0;font-size:15px;">Nguyệt lệnh: <strong style="color:${LIGHT.text};">${cast.nguyetLenh}</strong></p>
-          ${cast.fanYin.enabled ? `<p style="margin:0;grid-column:1 / -1;">Phản Ngâm: <strong style="color:${LIGHT.red};">${cast.fanYin.label}</strong></p>` : ""}
-          ${cast.fuYin.enabled ? `<p style="margin:0;grid-column:1 / -1;">Phục Ngâm: <strong style="color:${LIGHT.red};">${cast.fuYin.label}</strong></p>` : ""}
+        <div style="position:relative;margin-top:10px;display:grid;grid-template-columns:1fr 1fr;gap:4px 24px;font-size:11px;line-height:1.7;color:${CARD_COLORS.textMuted};">
+          <p style="margin:0;">Phương pháp lập quẻ: <strong style="color:${CARD_COLORS.text};">${methodLabel}</strong></p>
+          <p style="margin:0;">Việc cần xem: <strong style="color:${CARD_COLORS.text};">${viecCanXem || "—"}</strong></p>
+          <p style="margin:0;">Thời gian lập quẻ: <strong style="color:${CARD_COLORS.text};">${timeLabel}</strong></p>
+          <p id="am-lich-row" style="margin:0;">Theo Âm lịch: <strong style="color:${CARD_COLORS.text};">${cast.amLichText}</strong></p>
+          <p style="margin:0;grid-column:1 / -1;">Can Chi: <strong style="color:${CARD_COLORS.text};">${cast.canChiText}</strong></p>
+          <p style="margin:0;font-size:13px;">Tiết khí: <strong style="color:${CARD_COLORS.text};">${cast.tietKhi}</strong></p>
+          <p style="margin:0;font-size:13px;">Tuần Không: <strong style="color:${CARD_COLORS.text};">${cast.tuanKhong}</strong></p>
+          <p style="margin:0;font-size:15px;">Nhật thần: <strong style="color:${CARD_COLORS.text};">${cast.nhatThan}</strong></p>
+          <p style="margin:0;font-size:15px;">Nguyệt lệnh: <strong style="color:${CARD_COLORS.text};">${cast.nguyetLenh}</strong></p>
+          ${cast.fanYin.enabled ? `<p style="margin:0;grid-column:1 / -1;font-size:16px;">Phản Ngâm: <strong style="color:${CARD_COLORS.red};">${cast.fanYin.label}</strong></p>` : ""}
+          ${cast.fuYin.enabled ? `<p style="margin:0;grid-column:1 / -1;font-size:16px;">Phục Ngâm: <strong style="color:${CARD_COLORS.red};">${cast.fuYin.label}</strong></p>` : ""}
         </div>
-        <div style="margin-top:20px;display:grid;grid-template-columns:repeat(${queCols}, 1fr);gap:14px;">${blocks.join("")}</div>
-        <div style="margin-top:22px;">${tables}</div>
-        <p style="margin:12px 0 0;font-size:9px;color:${LIGHT.textMuted};text-align:center;">Lập quẻ Kinh Dịch tại Phong Thủy Thiên Anh — phongthuythienanh.com</p>
+        <div style="position:relative;margin-top:20px;display:grid;grid-template-columns:repeat(${queCols}, 1fr);gap:14px;">${blocks.join("")}</div>
+        <div style="position:relative;margin-top:22px;">${tables}</div>
+        <p style="position:relative;margin:12px 0 0;font-size:9px;color:${CARD_COLORS.textMuted};text-align:center;">Lập quẻ Kinh Dịch tại Phong Thủy Thiên Anh — phongthuythienanh.com</p>
       </div>
     `;
   }
@@ -664,7 +712,7 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
     await waitForImagesToLoad(cardEl);
     // Không ép `height` cứng — thẻ dùng `min-height` nên chiều cao thật có thể lớn hơn CARD_HEIGHT tuỳ
     // nội dung; để html-to-image tự đo chiều cao thật (offsetHeight) của phần tử, tránh cắt mất nội dung.
-    return await toPng(cardEl, { backgroundColor: LIGHT.bg, pixelRatio: 2, skipFonts: true, width: CARD_WIDTH, height: cardEl.offsetHeight });
+    return await toPng(cardEl, { backgroundColor: CARD_COLORS.bgSolid, pixelRatio: 2, skipFonts: true, width: CARD_WIDTH, height: cardEl.offsetHeight });
   }
 
   async function renderExportCard(
