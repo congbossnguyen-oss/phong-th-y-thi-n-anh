@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
+import DateSelect from "../../components/ui/DateSelect.astro";
 
 export const prerender = true;
 ---
@@ -27,16 +28,12 @@ export const prerender = true;
       </div>
 
       <form id="csmm-form" class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
-        <div class="grid grid-cols-2 gap-3">
-          <div>
-            <label for="csmm-nam-sinh" class="text-xs font-medium text-slate-600">Năm sinh (dương lịch)</label>
-            <input type="number" id="csmm-nam-sinh" min="1900" max="2100" required placeholder="1996" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
-          </div>
-          <div>
-            <label for="csmm-ngay-tinh" class="text-xs font-medium text-slate-600">Ngày tính</label>
-            <input type="date" id="csmm-ngay-tinh" required class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
-            <p class="mt-1 text-xs text-slate-400">Trên iPhone, ô này trống tới khi bấm vào mới hiện lịch — không phải lỗi.</p>
-          </div>
+        <div>
+          <label for="csmm-nam-sinh" class="text-xs font-medium text-slate-600">Năm sinh (dương lịch)</label>
+          <input type="number" id="csmm-nam-sinh" min="1900" max="2100" required placeholder="1996" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+        </div>
+        <div class="mt-3">
+          <DateSelect idPrefix="csmm-ngay-tinh" label="Ngày tính" />
         </div>
         <div class="mt-3">
           <label for="csmm-muc-dich" class="text-xs font-medium text-slate-600">Mục đích</label>
@@ -59,6 +56,8 @@ export const prerender = true;
 </BaseLayout>
 
 <script>
+  import { readDateSelects } from "../../lib/date-select";
+
   // Chấm màu CSS tự vẽ thay cho emoji tròn màu (🟢🟡🟠🔴) trong nhãn "nhan" — emoji phụ thuộc font
   // từng máy, có thể khiến vàng/cam trông gần giống nhau ở cỡ nhỏ. Dùng hex cố định để tương phản rõ.
   const EMOJI_DOT_COLOR: Record<string, string> = { "⭐": "#7c3aed", "🟢": "#16a34a", "🟡": "#eab308", "🟠": "#c2410c", "🔴": "#dc2626" };
@@ -92,15 +91,15 @@ export const prerender = true;
     ketQuaEl.classList.add("hidden");
 
     const namSinh = (document.getElementById("csmm-nam-sinh") as HTMLInputElement).value;
-    const ngayTinh = (document.getElementById("csmm-ngay-tinh") as HTMLInputElement).value; // yyyy-mm-dd
+    const ngayTinh = readDateSelects("csmm-ngay-tinh");
     const purpose = (document.getElementById("csmm-muc-dich") as HTMLSelectElement).value;
 
     if (!ngayTinh) {
-      loiEl.textContent = "Vui lòng chọn ngày tính.";
+      loiEl.textContent = "Vui lòng chọn đầy đủ ngày tính.";
       loiEl.classList.remove("hidden");
       return;
     }
-    const [year, month, day] = ngayTinh.split("-").map(Number);
+    const { year, month, day } = ngayTinh;
 
     try {
       const res = await fetch(`/api/con-so-may-man?namSinh=${namSinh}&day=${day}&month=${month}&year=${year}&purpose=${purpose}`);

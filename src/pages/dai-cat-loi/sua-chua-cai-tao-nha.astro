@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
+import DateSelect from "../../components/ui/DateSelect.astro";
 
 export const prerender = true;
 ---
@@ -79,19 +80,10 @@ export const prerender = true;
           </p>
         </div>
 
-        <div class="mt-3 grid grid-cols-2 gap-3">
-          <div>
-            <label for="sc-tu-ngay" class="text-xs font-medium text-slate-600">Từ ngày</label>
-            <input type="date" id="sc-tu-ngay" required class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
-          </div>
-          <div>
-            <label for="sc-den-ngay" class="text-xs font-medium text-slate-600">Đến ngày</label>
-            <input type="date" id="sc-den-ngay" required class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
-          </div>
+        <div class="mt-3 space-y-3">
+          <DateSelect idPrefix="sc-tu-ngay" label="Từ ngày" />
+          <DateSelect idPrefix="sc-den-ngay" label="Đến ngày" />
         </div>
-        <p class="mt-2 text-xs text-slate-400">
-          Trên iPhone, ô ngày sẽ trống cho tới khi anh bấm vào để mở lịch chọn — đây là cách hiển thị mặc định của Safari, không phải lỗi.
-        </p>
         <p class="mt-2 text-xs text-slate-400">Từ ngày và Đến ngày phải cùng 1 năm dương lịch (Thái Tuế/Tam Sát/Kim Lâu/Hoàng Ốc tính theo năm), tối đa 31 ngày mỗi lượt quét.</p>
         <Button type="submit" size="lg" class="mt-4 w-full">Kiểm tra & tìm ngày giờ tốt</Button>
       </form>
@@ -121,6 +113,8 @@ export const prerender = true;
 </BaseLayout>
 
 <script>
+  import { readDateSelects } from "../../lib/date-select";
+
   const EMOJI_DOT_COLOR: Record<string, string> = { "⭐": "#7c3aed", "🟢": "#16a34a", "🟡": "#eab308", "🟠": "#c2410c", "🔴": "#dc2626" };
   function nhanDotHtml(nhan: string): string {
     const m = nhan.match(/^(\S+)\s*([\s\S]*)$/);
@@ -296,8 +290,8 @@ export const prerender = true;
     const affectsStructure = (document.getElementById("sc-dap-pha") as HTMLInputElement).checked ? "1" : "0";
     const digsGround = (document.getElementById("sc-dao-dat") as HTMLInputElement).checked ? "1" : "0";
     const cungList = [...document.querySelectorAll<HTMLInputElement>(".sc-cung:checked")].map((el) => el.value);
-    const tuNgay = (document.getElementById("sc-tu-ngay") as HTMLInputElement).value;
-    const denNgay = (document.getElementById("sc-den-ngay") as HTMLInputElement).value;
+    const tuNgay = readDateSelects("sc-tu-ngay");
+    const denNgay = readDateSelects("sc-den-ngay");
 
     if (!namSinh) {
       loiEl.textContent = "Vui lòng nhập năm sinh chủ nhà.";
@@ -310,12 +304,12 @@ export const prerender = true;
       return;
     }
     if (!tuNgay || !denNgay) {
-      loiEl.textContent = "Vui lòng chọn Từ ngày và Đến ngày.";
+      loiEl.textContent = "Vui lòng chọn đầy đủ Từ ngày và Đến ngày.";
       loiEl.classList.remove("hidden");
       return;
     }
-    const [startYear, startMonth, startDay] = tuNgay.split("-").map(Number);
-    const [endYear, endMonth, endDay] = denNgay.split("-").map(Number);
+    const { year: startYear, month: startMonth, day: startDay } = tuNgay;
+    const { year: endYear, month: endMonth, day: endDay } = denNgay;
     if (startYear !== endYear) {
       loiEl.textContent = "Từ ngày và Đến ngày phải cùng 1 năm dương lịch.";
       loiEl.classList.remove("hidden");

@@ -1,0 +1,38 @@
+---
+// 3 ô chọn Ngày/Tháng/Năm riêng biệt thay vì <input type="date"> — input type="date" hiển thị
+// định dạng ngày theo NGÔN NGỮ TRÌNH DUYỆT/HỆ ĐIỀU HÀNH của người dùng (vd. mm/dd/yyyy kiểu Mỹ),
+// không phải do trang web quyết định nên không sửa được bằng CSS. Dùng 3 select riêng để LUÔN
+// hiển thị đúng thứ tự Ngày/Tháng/Năm quen thuộc, không phụ thuộc locale máy khách.
+interface Props {
+  idPrefix: string;
+  label: string;
+  required?: boolean;
+  yearsBack?: number;
+  yearsForward?: number;
+}
+const { idPrefix, label, required = true, yearsBack = 2, yearsForward = 8 } = Astro.props;
+const nowYear = new Date().getFullYear();
+const days = Array.from({ length: 31 }, (_, i) => i + 1);
+const months = Array.from({ length: 12 }, (_, i) => i + 1);
+const years = Array.from({ length: yearsBack + yearsForward + 1 }, (_, i) => nowYear - yearsBack + i);
+const selectClass =
+  "w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-2 py-2.5 text-sm text-(--color-ink-800)";
+---
+
+<div>
+  <label class="text-xs font-medium text-slate-600">{label}{required && <span class="text-(--color-cinnabar-400)"> *</span>}</label>
+  <div class="mt-1 grid grid-cols-3 gap-1.5">
+    <select id={`${idPrefix}-ngay`} aria-label={`Ngày — ${label}`} class={selectClass}>
+      <option value="">Ngày</option>
+      {days.map((d) => <option value={d}>{d}</option>)}
+    </select>
+    <select id={`${idPrefix}-thang`} aria-label={`Tháng — ${label}`} class={selectClass}>
+      <option value="">Tháng</option>
+      {months.map((m) => <option value={m}>Th {m}</option>)}
+    </select>
+    <select id={`${idPrefix}-nam`} aria-label={`Năm — ${label}`} class={selectClass}>
+      <option value="">Năm</option>
+      {years.map((y) => <option value={y}>{y}</option>)}
+    </select>
+  </div>
+</div>

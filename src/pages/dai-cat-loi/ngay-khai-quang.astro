@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
+import DateSelect from "../../components/ui/DateSelect.astro";
 
 export const prerender = true;
 ---
@@ -64,19 +65,10 @@ export const prerender = true;
             </select>
           </div>
         </div>
-        <div class="mt-3 grid grid-cols-2 gap-3">
-          <div>
-            <label for="kq-tu-ngay" class="text-xs font-medium text-slate-600">Từ ngày</label>
-            <input type="date" id="kq-tu-ngay" required class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
-          </div>
-          <div>
-            <label for="kq-den-ngay" class="text-xs font-medium text-slate-600">Đến ngày</label>
-            <input type="date" id="kq-den-ngay" required class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
-          </div>
+        <div class="mt-3 space-y-3">
+          <DateSelect idPrefix="kq-tu-ngay" label="Từ ngày" />
+          <DateSelect idPrefix="kq-den-ngay" label="Đến ngày" />
         </div>
-        <p class="mt-2 text-xs text-slate-400">
-          Trên iPhone, ô ngày sẽ trống cho tới khi anh bấm vào để mở lịch chọn — đây là cách hiển thị mặc định của Safari, không phải lỗi.
-        </p>
         <p class="mt-2 text-xs text-slate-400">Tối đa 62 ngày mỗi lượt quét.</p>
         <Button type="submit" size="lg" class="mt-4 w-full">Tìm ngày tốt</Button>
       </form>
@@ -101,6 +93,8 @@ export const prerender = true;
 </BaseLayout>
 
 <script>
+  import { readDateSelects } from "../../lib/date-select";
+
   // Chấm màu CSS tự vẽ thay cho emoji tròn màu (🟢🟡🟠🔴) trong nhãn "nhan" — emoji phụ thuộc font
   // từng máy, có thể khiến vàng/cam trông gần giống nhau ở cỡ nhỏ. Dùng hex cố định để tương phản rõ.
   const EMOJI_DOT_COLOR: Record<string, string> = { "⭐": "#7c3aed", "🟢": "#16a34a", "🟡": "#eab308", "🟠": "#c2410c", "🔴": "#dc2626" };
@@ -144,8 +138,8 @@ export const prerender = true;
     const purpose = (document.getElementById("kq-muc-dich") as HTMLSelectElement).value;
     const namSinhChu = (document.getElementById("kq-nam-sinh-chu") as HTMLInputElement).value;
     const gender = (document.getElementById("kq-gioi-tinh-chu") as HTMLSelectElement).value;
-    const tuNgay = (document.getElementById("kq-tu-ngay") as HTMLInputElement).value;
-    const denNgay = (document.getElementById("kq-den-ngay") as HTMLInputElement).value;
+    const tuNgay = readDateSelects("kq-tu-ngay");
+    const denNgay = readDateSelects("kq-den-ngay");
 
     if (!namSinhChu) {
       loiEl.textContent = "Vui lòng nhập năm sinh chủ.";
@@ -153,12 +147,12 @@ export const prerender = true;
       return;
     }
     if (!tuNgay || !denNgay) {
-      loiEl.textContent = "Vui lòng chọn Từ ngày và Đến ngày.";
+      loiEl.textContent = "Vui lòng chọn đầy đủ Từ ngày và Đến ngày.";
       loiEl.classList.remove("hidden");
       return;
     }
-    const [startYear, startMonth, startDay] = tuNgay.split("-").map(Number);
-    const [endYear, endMonth, endDay] = denNgay.split("-").map(Number);
+    const { year: startYear, month: startMonth, day: startDay } = tuNgay;
+    const { year: endYear, month: endMonth, day: endDay } = denNgay;
 
     const qs = `purpose=${purpose}&itemType=${itemType}&gender=${encodeURIComponent(gender)}&namSinhChu=${namSinhChu}&startYear=${startYear}&startMonth=${startMonth}&startDay=${startDay}&endYear=${endYear}&endMonth=${endMonth}&endDay=${endDay}`;
 
