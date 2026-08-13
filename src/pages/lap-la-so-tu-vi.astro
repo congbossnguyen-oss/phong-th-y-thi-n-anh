@@ -401,13 +401,13 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
         const tangCanNames = tangCanReversed.map((t) => t.can).join("-");
         return `
           <div style="flex:1;min-width:0;text-align:center;">
-            <div style="font-size:8px;font-weight:700;color:${LIGHT.textMuted};white-space:nowrap;">${label}</div>
-            <div style="font-size:8.5px;font-weight:700;color:${LIGHT.textMuted};white-space:nowrap;overflow:hidden;">${thapThanLabel}</div>
-            <div style="font-size:13px;font-weight:800;color:${canColor};line-height:1.3;">${p.can}</div>
-            <div style="font-size:13px;font-weight:800;color:${chiColor};line-height:1.3;">${p.chi}</div>
-            <div style="font-size:8.5px;font-weight:600;color:${LIGHT.textMuted};white-space:nowrap;overflow:hidden;">${tangCanThapThan}</div>
-            <div style="font-size:8.5px;font-weight:700;color:${LIGHT.text};white-space:nowrap;overflow:hidden;">${tangCanNames}</div>
-            <div style="font-size:8.5px;font-weight:700;color:${LIGHT.text};white-space:nowrap;">${p.truongSinh}</div>
+            <div style="font-size:9px;font-weight:700;color:${LIGHT.textMuted};white-space:nowrap;">${label}</div>
+            <div style="font-size:9px;font-weight:700;color:${LIGHT.textMuted};white-space:nowrap;overflow:hidden;">${thapThanLabel}</div>
+            <div style="font-size:14.5px;font-weight:800;color:${canColor};line-height:1.3;">${p.can}</div>
+            <div style="font-size:14.5px;font-weight:800;color:${chiColor};line-height:1.3;">${p.chi}</div>
+            <div style="font-size:9px;font-weight:600;color:${LIGHT.textMuted};white-space:nowrap;overflow:hidden;">${tangCanThapThan}</div>
+            <div style="font-size:9px;font-weight:700;color:${LIGHT.text};white-space:nowrap;overflow:hidden;">${tangCanNames}</div>
+            <div style="font-size:9.5px;font-weight:700;color:${LIGHT.text};white-space:nowrap;">${p.truongSinh}</div>
           </div>
         `;
       })
@@ -417,7 +417,7 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
     return `
       <div style="margin-top:5px;padding-top:5px;border-top:1px solid ${LIGHT.cellBorder};">
         <div style="display:flex;gap:3px;">${colsHtml}</div>
-        <p style="margin:4px 0 0;font-size:8px;color:${LIGHT.textMuted};text-align:center;white-space:nowrap;overflow:hidden;">${dvLabel}</p>
+        <p style="margin:4px 0 0;font-size:8.5px;color:${LIGHT.textMuted};text-align:center;white-space:nowrap;overflow:hidden;">${dvLabel}</p>
       </div>
     `;
   }
@@ -439,21 +439,21 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
     return `
       <div data-tv-center style="position:relative;grid-row:2 / span 2;grid-column:2 / span 2;border:1.5px solid ${LIGHT.cellBorder};border-radius:6px;box-shadow:inset 0 0 0 1px ${LIGHT.frameInner},inset 0 0 0 2.5px rgba(255,255,255,.5),0 1px 3px rgba(92,51,23,.22);background:${PARCHMENT_TEXTURE};padding:10px 12px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;overflow:hidden;">
         <img src="/images/brand/zhi-gong-logo.png" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:52%;max-width:215px;opacity:.13;pointer-events:none;z-index:0;" />
-        <div style="position:relative;z-index:1;font-size:10.5px;line-height:1.55;color:${LIGHT.blue};text-align:center;">
-          <p style="margin:0;font-weight:800;font-size:12px;letter-spacing:.04em;color:${LIGHT.text};">PHONG THỦY THIÊN ANH</p>
-          ${name ? `<p style="margin:2px 0 0;font-weight:800;font-size:11px;color:${LIGHT.blue};">${name}</p>` : ""}
-          <p style="margin:2px 0 0;font-weight:800;font-size:13px;letter-spacing:.02em;color:${LIGHT.text};">${chart.input.gender.toUpperCase()} MỆNH ${chart.yearCanName.toUpperCase()} ${chart.yearChiName.toUpperCase()}</p>
+        <div style="position:relative;z-index:1;font-size:12px;line-height:1.55;color:${LIGHT.blue};text-align:center;">
+          <p style="margin:0;font-weight:800;font-size:13.5px;letter-spacing:.04em;color:${LIGHT.text};">PHONG THỦY THIÊN ANH</p>
+          ${name ? `<p style="margin:2px 0 0;font-weight:800;font-size:12.5px;color:${LIGHT.blue};">${name}</p>` : ""}
+          <p style="margin:2px 0 0;font-weight:800;font-size:14.5px;letter-spacing:.02em;color:${LIGHT.text};">${chart.input.gender.toUpperCase()} MỆNH ${chart.yearCanName.toUpperCase()} ${chart.yearChiName.toUpperCase()}</p>
           <p style="margin:2px 0 0;font-weight:700;color:${LIGHT.red};">${chart.amDuongNam}${chart.tuoiNamXem !== null ? `-${chart.tuoiNamXem} tuổi (năm ${chart.input.viewingYear})` : ""}</p>
           <p style="margin:6px 0 0;">Dương lịch: <strong>${timeLabel}</strong></p>
           <p style="margin:0;">Âm lịch: <strong>${chart.lunarDay}/${chart.lunarMonth}${chart.lunarIsLeap ? " (nhuận)" : ""}/${chart.lunarYear}</strong> — giờ ${chart.gioChiName}</p>
           <p style="margin:6px 0 0;">Bản mệnh: <strong>${chart.banMenhNapAm}-${chart.cucName}</strong></p>
-          <p style="margin:0;">Mệnh quái <strong style="font-size:12px;">${chart.menhQuai}</strong></p>
+          <p style="margin:0;">Mệnh quái <strong style="font-size:13.5px;">${chart.menhQuai}</strong></p>
           <p style="margin:0;">${cucMenhRelation(chart.banMenhElement, chart.cucName.split(" ")[0])}-${thanMenhLabel(chart)}</p>
           <p style="margin:0;">Chủ mệnh: <strong>${displayChuMenhThan(chart.chuMenh)}</strong> - Chủ thân: <strong>${displayChuMenhThan(chart.chuThan)}</strong></p>
           <p style="margin:0;">Tứ Hóa: <strong>${chart.tuHoa.loc}</strong> Lộc · <strong>${chart.tuHoa.quyen}</strong> Quyền · <strong>${chart.tuHoa.khoa}</strong> Khoa · <strong>${chart.tuHoa.ky}</strong> Kỵ</p>
-          <p style="margin:6px 0 0;font-size:8.5px;color:${LIGHT.textMuted};">(GMT+07:00) Hanoi-Asia/Bangkok</p>
+          <p style="margin:6px 0 0;font-size:9.5px;color:${LIGHT.textMuted};">(GMT+07:00) Hanoi-Asia/Bangkok</p>
           ${tuTruTableHtml(batTu)}
-          <p style="margin:4px 0 0;font-size:7.5px;font-style:italic;color:${LIGHT.textMuted};">Lập tại phongthuythienanh.com (lúc ${nowStamp})</p>
+          <p style="margin:4px 0 0;font-size:8.5px;font-style:italic;color:${LIGHT.textMuted};">Lập tại phongthuythienanh.com (lúc ${nowStamp})</p>
         </div>
       </div>
     `;
