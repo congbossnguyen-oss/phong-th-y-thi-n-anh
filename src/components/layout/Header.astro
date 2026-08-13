@@ -151,17 +151,13 @@ const navWithChildren = mainNav.map((item) => {
       </nav>
     </details>
 
-    <!-- Khối thương hiệu trước đây để `shrink-0` nên không co được: trên máy hẹp (375px), tên thương hiệu +
-         logo + 3 nút tròn bên phải cộng lại vượt bề ngang, đẩy cả trang tràn ngang ~36px (kéo trượt được
-         sang phải trên điện thoại). Sửa: cho khối này co lại được (`min-w-0`), giữ `shrink-0` riêng cho
-         vòng logo để logo không bị bóp méo, và cho phần chữ cắt bớt (`truncate`) khi quá hẹp. -->
-    <a href="/" class="flex min-w-0 items-center gap-2 sm:gap-2.5">
-      <span class="flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-full border-2 border-(--color-gold-400)">
+    <a href="/" class="flex shrink-0 items-center gap-2 sm:gap-2.5">
+      <span class="flex size-11 items-center justify-center overflow-hidden rounded-full border-2 border-(--color-gold-400)">
         <img src="/images/brand/zhi-gong-logo.png" alt={siteConfig.name} class="h-full w-full object-cover" />
       </span>
-      <span class="flex min-w-0 flex-col leading-tight">
-        <span class="truncate font-display text-base font-semibold text-(--color-ink-950) sm:text-lg">{siteConfig.name}</span>
-        <span class="hidden truncate text-[11px] uppercase tracking-wide text-(--color-gold-500) sm:block">{siteConfig.tagline}</span>
+      <span class="flex flex-col leading-tight">
+        <span class="font-display text-base font-semibold text-(--color-ink-950) sm:text-lg">{siteConfig.name}</span>
+        <span class="hidden text-[11px] uppercase tracking-wide text-(--color-gold-500) sm:block">{siteConfig.tagline}</span>
       </span>
     </a>
 
@@ -211,7 +207,7 @@ const navWithChildren = mainNav.map((item) => {
       )}
     </nav>
 
-    <div class="flex shrink-0 items-center gap-1.5">
+    <div class="flex items-center gap-1.5">
       <a
         id="member-nav-link"
         href="/hoc-vien"
