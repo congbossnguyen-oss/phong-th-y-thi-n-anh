@@ -7,8 +7,7 @@ import { products } from "../../lib/placeholder-data";
 
 export const prerender = true;
 
-const formatPrice = (price: number) =>
-  price.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
+import { formatProductPrice as formatPrice } from "../../lib/product-price";
 ---
 
 <BaseLayout title="Cửa hàng vật phẩm phong thủy" description="Vật phẩm phong thủy chính hiệu, hợp mệnh từ Thiên Anh.">
