@@ -26,8 +26,8 @@ import { calculateChonNamSinhCon } from "./processing/chonNamSinhCon.js";
 import { calculateXemTuoiXongDat } from "./processing/xemTuoiXongDat.js";
 import { calculateChonNgayGiaoDichRange } from "./processing/chonNgayGiaoDich.js";
 import { calculateNgayLeViengMoRange } from "./processing/ngayLeViengMo.js";
-import { calculateNgayXuatHanhRange } from "./processing/ngayXuatHanh.js";
 import { calculateNgayKhaiQuangRange } from "./processing/ngayKhaiQuang.js";
+import { calculateXuatHanhCaNhanRange, calculateXuatHanhCaNhanMotNgay } from "./processing/xuatHanhCaNhanTongHop.js";
 import { tinhTuTru } from "./processing/tuTru.js";
 import type { TrachNhatInput, TrachNhatOutput } from "./types.js";
 import { validateTrachNhatInput } from "./validation.js";
@@ -101,8 +101,6 @@ export type {
   NgayLeViengMoRangeResult,
 } from "./processing/ngayLeViengMo.js";
 export { calculateNgayLeViengMoRange };
-export type { NgayXuatHanhRangeInput, NgayXuatHanhNgay, NgayXuatHanhRangeResult } from "./processing/ngayXuatHanh.js";
-export { calculateNgayXuatHanhRange };
 export type {
   KhaiQuangPurpose,
   KhaiQuangItemType,
@@ -112,6 +110,16 @@ export type {
   NgayKhaiQuangRangeResult,
 } from "./processing/ngayKhaiQuang.js";
 export { calculateNgayKhaiQuangRange };
+export type {
+  XuatHanhCaNhanPurpose,
+  HuongXuatHanh,
+  XuatHanhCaNhanGioiTinh,
+  XuatHanhCaNhanToHop,
+  XuatHanhCaNhanRangeInput,
+  XuatHanhCaNhanRangeResult,
+  XuatHanhCaNhanMotNgayInput,
+} from "./processing/xuatHanhCaNhanTongHop.js";
+export { calculateXuatHanhCaNhanRange, calculateXuatHanhCaNhanMotNgay };
 
 export * from "./types.js";
 

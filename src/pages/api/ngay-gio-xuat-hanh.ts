@@ -1,25 +1,29 @@
 import type { APIRoute } from "astro";
-import { calculateNgayKhaiQuangRange, type KhaiQuangPurpose, type KhaiQuangItemType, type KhaiQuangGender } from "@thien-anh/trachnhat-engine";
+import {
+  calculateXuatHanhCaNhanRange,
+  type XuatHanhCaNhanPurpose,
+  type HuongXuatHanh,
+  type XuatHanhCaNhanGioiTinh,
+} from "@thien-anh/trachnhat-engine";
 
 export const prerender = false;
 
-const PURPOSE_HOP_LE: readonly KhaiQuangPurpose[] = ["KHAI_QUANG", "AN_VI", "THINH", "DAT_VAT_PHAM", "BAT_DAU_SU_DUNG"];
-const ITEM_TYPE_HOP_LE: readonly KhaiQuangItemType[] = [
-  "TUONG_PHAT",
-  "TUONG_THAN",
-  "TY_HUU",
-  "THIEM_THU",
-  "KY_LAN",
-  "SU_TU",
-  "CHO_DA",
-  "NGHE_DA",
-  "VOI_DA",
-  "VAT_PHAM_PHONG_THUY",
-  "VAT_PHAM_CHIEU_TAI",
-  "VAT_PHAM_HO_THAN",
-  "KHAC",
+const PURPOSE_HOP_LE: readonly XuatHanhCaNhanPurpose[] = [
+  "XUAT_HANH_CHUNG",
+  "DI_CONG_VIEC",
+  "GAP_KHACH_HANG",
+  "GAP_DOI_TAC",
+  "KY_HOP_DONG",
+  "CAU_TAI",
+  "DI_LAM_AN",
+  "DI_XA",
+  "PHONG_VAN",
+  "DOI_NO",
+  "GIAO_DICH",
+  "GIAO_TIEP_TIEC_TUNG",
 ];
-const GENDER_HOP_LE: readonly KhaiQuangGender[] = ["Nam", "Nữ"];
+const GIOI_TINH_HOP_LE: readonly XuatHanhCaNhanGioiTinh[] = ["Nam", "Nữ"];
+const HUONG_HOP_LE: readonly HuongXuatHanh[] = ["Đông", "Tây", "Nam", "Bắc", "Đông Bắc", "Đông Nam", "Tây Bắc", "Tây Nam"];
 
 function jsonResponse(body: unknown, status: number): Response {
   return new Response(JSON.stringify(body), {
@@ -31,9 +35,9 @@ function jsonResponse(body: unknown, status: number): Response {
 export const GET: APIRoute = async ({ url }) => {
   const params = url.searchParams;
   const purpose = params.get("purpose");
-  const itemType = params.get("itemType");
-  const gender = params.get("gender");
-  const namSinhChuRaw = params.get("namSinhChu");
+  const gioiTinh = params.get("gioiTinh");
+  const huongRaw = params.get("huong");
+  const namSinhRaw = params.get("namSinh");
   const startYearRaw = params.get("startYear");
   const startMonthRaw = params.get("startMonth");
   const startDayRaw = params.get("startDay");
@@ -41,17 +45,17 @@ export const GET: APIRoute = async ({ url }) => {
   const endMonthRaw = params.get("endMonth");
   const endDayRaw = params.get("endDay");
 
-  if (purpose === null || !PURPOSE_HOP_LE.includes(purpose as KhaiQuangPurpose)) {
+  if (purpose === null || !PURPOSE_HOP_LE.includes(purpose as XuatHanhCaNhanPurpose)) {
     return jsonResponse({ error: "purpose không hợp lệ." }, 400);
   }
-  if (itemType === null || !ITEM_TYPE_HOP_LE.includes(itemType as KhaiQuangItemType)) {
-    return jsonResponse({ error: "itemType không hợp lệ." }, 400);
+  if (gioiTinh === null || !GIOI_TINH_HOP_LE.includes(gioiTinh as XuatHanhCaNhanGioiTinh)) {
+    return jsonResponse({ error: "gioiTinh không hợp lệ." }, 400);
   }
-  if (gender === null || !GENDER_HOP_LE.includes(gender as KhaiQuangGender)) {
-    return jsonResponse({ error: "gender không hợp lệ." }, 400);
+  if (huongRaw !== null && huongRaw !== "" && !HUONG_HOP_LE.includes(huongRaw as HuongXuatHanh)) {
+    return jsonResponse({ error: "huong không hợp lệ." }, 400);
   }
   if (
-    namSinhChuRaw === null ||
+    namSinhRaw === null ||
     startYearRaw === null ||
     startMonthRaw === null ||
     startDayRaw === null ||
@@ -59,10 +63,10 @@ export const GET: APIRoute = async ({ url }) => {
     endMonthRaw === null ||
     endDayRaw === null
   ) {
-    return jsonResponse({ error: "Thiếu tham số bắt buộc (năm sinh chủ hoặc khoảng ngày)." }, 400);
+    return jsonResponse({ error: "Thiếu tham số bắt buộc (năm sinh hoặc khoảng ngày)." }, 400);
   }
 
-  const namSinhChu = Number(namSinhChuRaw);
+  const namSinh = Number(namSinhRaw);
   const startYear = Number(startYearRaw);
   const startMonth = Number(startMonthRaw);
   const startDay = Number(startDayRaw);
@@ -71,7 +75,7 @@ export const GET: APIRoute = async ({ url }) => {
   const endDay = Number(endDayRaw);
 
   if (
-    !Number.isInteger(namSinhChu) ||
+    !Number.isInteger(namSinh) ||
     !Number.isInteger(startYear) ||
     !Number.isInteger(startMonth) ||
     !Number.isInteger(startDay) ||
@@ -83,11 +87,11 @@ export const GET: APIRoute = async ({ url }) => {
   }
 
   try {
-    const result = calculateNgayKhaiQuangRange({
-      purpose: purpose as KhaiQuangPurpose,
-      itemType: itemType as KhaiQuangItemType,
-      gioiTinhChu: gender as KhaiQuangGender,
-      namSinhChu,
+    const result = calculateXuatHanhCaNhanRange({
+      purpose: purpose as XuatHanhCaNhanPurpose,
+      gioiTinh: gioiTinh as XuatHanhCaNhanGioiTinh,
+      huong: huongRaw !== null && huongRaw !== "" ? (huongRaw as HuongXuatHanh) : undefined,
+      namSinh,
       startDate: { year: startYear, month: startMonth, day: startDay },
       endDate: { year: endYear, month: endMonth, day: endDay },
       timeZone: "Asia/Ho_Chi_Minh",

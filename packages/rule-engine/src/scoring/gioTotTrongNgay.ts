@@ -37,6 +37,17 @@ export const GIO_PURPOSE_LIST = [
   "XUAT_HANH",
   "CUOI_HOI",
   "KHAI_QUANG",
+  // 8 mục đích riêng của module Xuất Hành Cá Nhân Tổng Hợp — 4 mục đích còn lại của module đó
+  // (Xuất hành chung/Ký hợp đồng/Cầu tài/Gặp gỡ-giao tế) tái dùng thẳng 4 khóa đã có ở trên
+  // (XUAT_HANH/KY_HOP_DONG/CAU_TAI/GIAO_TIEP_TIEC_TUNG) thay vì tạo khóa trùng lặp.
+  "DI_CONG_VIEC",
+  "GAP_KHACH_HANG",
+  "GAP_DOI_TAC",
+  "DI_LAM_AN",
+  "DI_XA",
+  "PHONG_VAN",
+  "DOI_NO",
+  "GIAO_DICH",
 ] as const;
 export type GioPurpose = (typeof GIO_PURPOSE_LIST)[number];
 
@@ -103,6 +114,21 @@ export const GIO_PURPOSE_RULES: Record<GioPurpose, Partial<TrongSoGio>> = {
   // Giống KHAI_TRUONG (cùng tính chất "khởi đầu trang trọng") nhưng nhấn nền ngày (Trực/Hoàng
   // Đạo/thần sát chung) cao hơn một chút vì khai quang thiên về tính chất nghi lễ/tôn nghiêm.
   KHAI_QUANG: { nenNgay: 0.28, catHungGio: 0.16, hoangHacGio: 0.14 },
+
+  // 8 mục đích của module Xuất Hành Cá Nhân Tổng Hợp — nhóm theo tính chất gần nhất với các
+  // mục đích đã có sẵn ở trên (không tự bịa hệ số riêng biệt cho từng cái khi bản chất giống
+  // nhau), điều chỉnh nhẹ theo đặc thù riêng của từng việc.
+  DI_CONG_VIEC: { hoangHacGio: 0.15, nguHanh: 0.15, chi: 0.22 }, // như XUAT_HANH
+  GAP_KHACH_HANG: { hoangHacGio: 0.15, catHungGio: 0.15, nenNgay: 0.15, chi: 0.22 }, // như GIAO_TIEP_TIEC_TUNG
+  GAP_DOI_TAC: { can: 0.2, chi: 0.28, nenNgay: 0.18 }, // như KY_HOP_DONG (quan hệ trang trọng)
+  DI_LAM_AN: { nguHanh: 0.26, chi: 0.24, nenNgay: 0.16 }, // pha giữa CAU_TAI và XUAT_HANH
+  DI_XA: { hoangHacGio: 0.2, nguHanh: 0.15, chi: 0.2 }, // như XUAT_HANH, nhấn Hoàng Đạo hơn (đi xa cần yên tâm)
+  PHONG_VAN: { nenNgay: 0.24, can: 0.2, catHungGio: 0.14 }, // nhấn "bản thân trình diện" (Can) + nền ngày
+  // Đòi nợ: việc đối đầu/khẩu thiệt — nhấn Tiểu Lục Nhâm (catHungGio, để tránh Xích Khẩu) hơn
+  // hẳn các mục đích khác. Đây là suy luận hợp lý từ ý nghĩa Xích Khẩu ("khẩu thiệt, tranh
+  // luận") đã ghi trong `TIEU_LUC_NHAM_NAMES`, không phải trích dẫn trực tiếp 1 nguồn cổ.
+  DOI_NO: { catHungGio: 0.22, chi: 0.24, can: 0.16 },
+  GIAO_DICH: { can: 0.2, chi: 0.28, nenNgay: 0.18 }, // như KY_HOP_DONG
 };
 
 function resolveTrongSo(purpose: GioPurpose): TrongSoGio {
