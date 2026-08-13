@@ -198,7 +198,7 @@ export function calculateHourPersonalCompatibility(gioCan: Can, gioChi: Chi, ngu
   const canRel = tinhQuanHeCan(gioCan, nguoi.can, R.can);
   const chiRel = tinhQuanHeChi(gioChi, nguoi.chi, R.chi);
   const rawDelta = (canRel.diem - R.can.diemNenTang + (chiRel.diem - R.chi.diemNenTang)) * R.heSoThuNho;
-  const delta = Math.max(R.penaltyToiDa, Math.min(R.bonusToiDa, rawDelta));
+  const delta = Math.round(Math.max(R.penaltyToiDa, Math.min(R.bonusToiDa, rawDelta)) * 10) / 10;
   return { delta, moTa: `Can: ${canRel.moTa}; Chi: ${chiRel.moTa}` };
 }
 

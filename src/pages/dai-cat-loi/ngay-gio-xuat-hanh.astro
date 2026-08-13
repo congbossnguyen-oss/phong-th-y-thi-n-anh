@@ -112,6 +112,18 @@ export const prerender = true;
     return `<span class="inline-flex items-center gap-1.5"><span class="inline-block size-2.5 shrink-0 rounded-full" style="background:${color};"></span>${m[2]}</span>`;
   }
 
+  interface YeuTo { ten: string; diem: number }
+  interface QuanHe { diem: number; moTa: string }
+  interface TrachCatDayBaseResult { diem: number; yeuTo: YeuTo[] }
+  interface DayPersonalResult { diem: number; nguHanh: QuanHe; can: QuanHe; chi: QuanHe }
+  interface DayScoreFull {
+    diem: number;
+    nhan: string;
+    base: TrachCatDayBaseResult;
+    mucDich: TrachCatDayBaseResult;
+    canNhan: DayPersonalResult;
+  }
+  interface HourScoreFull { diem: number; nhan: string; yeuTo: YeuTo[] }
   interface ToHop {
     solarDate: { year: number; month: number; day: number };
     khungGio: string;
@@ -119,11 +131,50 @@ export const prerender = true;
     finalDiem: number;
     hang: string;
     nhan: string;
-    dayScore: { diem: number; nhan: string };
-    hourScore: { diem: number; nhan: string };
+    dayScore: DayScoreFull;
+    hourScore: HourScoreFull;
   }
   interface RangeResult { xepHang: ToHop[] }
   interface MotNgayResult { xepHang: ToHop[] }
+
+  // Render danh sách yếu tố kiểu DELTA (base/mucDich của trachCatDayBase.ts — mỗi mục là số cộng/trừ
+  // nhỏ, không phải điểm tuyệt đối 0-10) — tô màu theo DẤU (dương = có lợi, âm = bất lợi).
+  function renderDeltaYeuTo(list: YeuTo[]): string {
+    if (list.length === 0) return `<li class="text-slate-400">Không có yếu tố đặc biệt.</li>`;
+    return list
+      .map((y) => {
+        const cls = y.diem > 0 ? "text-emerald-600" : y.diem < 0 ? "text-(--color-cinnabar-500)" : "text-slate-500";
+        const dau = y.diem > 0 ? "+" : "";
+        return `<li class="flex justify-between gap-2"><span>${y.ten}</span><span class="${cls} font-semibold">${dau}${y.diem}</span></li>`;
+      })
+      .join("");
+  }
+  // Render danh sách yếu tố kiểu ĐIỂM TUYỆT ĐỐI 0-10 (yeuTo của gioTotTrongNgay.ts, và các quan hệ
+  // Ngũ Hành/Can/Chi ngày↔tuổi) — tô màu theo ngưỡng NỀN (5 = trung bình).
+  function renderAbsYeuTo(list: { ten: string; diem: number }[]): string {
+    if (list.length === 0) return `<li class="text-slate-400">Không có yếu tố đặc biệt.</li>`;
+    return list
+      .map((y) => {
+        const cls = y.diem >= 5 ? "text-(--color-cinnabar-500)" : "text-slate-500";
+        return `<li class="flex justify-between gap-2"><span>${y.ten}</span><span class="${cls} font-semibold">${y.diem}</span></li>`;
+      })
+      .join("");
+  }
+  function dayViSaoHtml(d: DayScoreFull): string {
+    return `<p class="text-xs font-semibold text-slate-700">Nền Trạch Cát ngày:</p>
+      <ul class="mt-1 space-y-0.5 text-xs text-slate-600">${renderDeltaYeuTo(d.base.yeuTo)}</ul>
+      <p class="mt-2.5 text-xs font-semibold text-slate-700">Theo mục đích chuyến đi:</p>
+      <ul class="mt-1 space-y-0.5 text-xs text-slate-600">${renderDeltaYeuTo(d.mucDich.yeuTo)}</ul>
+      <p class="mt-2.5 text-xs font-semibold text-slate-700">Ngày ↔ tuổi:</p>
+      <ul class="mt-1 space-y-0.5 text-xs text-slate-600">${renderAbsYeuTo([
+        { ten: `Ngũ Hành (${d.canNhan.nguHanh.moTa})`, diem: d.canNhan.nguHanh.diem },
+        { ten: `Thiên Can (${d.canNhan.can.moTa})`, diem: d.canNhan.can.diem },
+        { ten: `Địa Chi (${d.canNhan.chi.moTa})`, diem: d.canNhan.chi.diem },
+      ])}</ul>`;
+  }
+  function hourViSaoHtml(h: HourScoreFull): string {
+    return `<ul class="space-y-0.5 text-xs text-slate-600">${renderAbsYeuTo(h.yeuTo)}</ul>`;
+  }
 
   const form = document.getElementById("form-xuat-hanh") as HTMLFormElement;
   const loiEl = document.getElementById("loi")!;
@@ -148,17 +199,28 @@ export const prerender = true;
       const data = await res.json();
       if (!res.ok) return;
       const result = data as MotNgayResult;
+      const top5Gio = result.xepHang.slice(0, 5);
       gioTieuDeEl.textContent = `Ngày ${pad2(day)}/${pad2(month)}/${year} — xếp hạng đủ 12 giờ Địa Chi`;
-      gioDanhSachEl.innerHTML = result.xepHang
-        .slice(0, 5)
+      gioDanhSachEl.innerHTML = top5Gio
         .map(
           (g, i) =>
-            `<div class="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-2.5">
-              <p class="text-sm font-semibold text-slate-900">${HUY_CHUONG[i] ?? `${i + 1}.`} ${g.khungGio} (giờ ${g.chiGio})</p>
-              <span class="text-sm">${nhanDotHtml(g.nhan)} — ${g.finalDiem}/10</span>
+            `<div class="rounded-xl border border-slate-200 bg-slate-50">
+              <button type="button" class="xh-gio-vi-sao w-full p-2.5 text-left" data-idx="${i}">
+                <div class="flex items-center justify-between">
+                  <p class="text-sm font-semibold text-slate-900">${HUY_CHUONG[i] ?? `${i + 1}.`} ${g.khungGio} (giờ ${g.chiGio})</p>
+                  <span class="text-sm">${nhanDotHtml(g.nhan)} — ${g.finalDiem}/10</span>
+                </div>
+                <p class="mt-1 text-xs text-amber-600">Vì sao? (bấm để xem chi tiết)</p>
+              </button>
+              <div class="xh-gio-chi-tiet hidden border-t border-slate-200 px-2.5 py-2.5">${hourViSaoHtml(g.hourScore)}</div>
             </div>`,
         )
         .join("");
+      gioDanhSachEl.querySelectorAll<HTMLButtonElement>(".xh-gio-vi-sao").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          (btn.nextElementSibling as HTMLElement).classList.toggle("hidden");
+        });
+      });
       ketQuaGioEl.classList.remove("hidden");
       ketQuaGioEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
     } catch {
@@ -237,21 +299,30 @@ export const prerender = true;
         .map((t, i) => {
           const huyChuong = HUY_CHUONG[i] ?? `${i + 1}.`;
           const ngayStr = `${pad2(t.solarDate.day)}/${pad2(t.solarDate.month)}/${t.solarDate.year}`;
-          return `<button type="button" class="xh-ngay w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-left hover:bg-slate-100" data-year="${t.solarDate.year}" data-month="${t.solarDate.month}" data-day="${t.solarDate.day}">
+          return `<div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
             <div class="flex items-center justify-between">
               <p class="font-display text-base font-bold text-slate-900">${huyChuong} ${ngayStr}</p>
               <span class="text-sm font-semibold">${nhanDotHtml(t.nhan)} — ${t.finalDiem}/10</span>
             </div>
             <p class="mt-1.5 text-xs text-slate-500">Giờ tốt nhất: ${t.khungGio} (giờ ${t.chiGio}) · Ngày: ${nhanDotHtml(t.dayScore.nhan)} (${t.dayScore.diem}/10) · Giờ: ${nhanDotHtml(t.hourScore.nhan)} (${t.hourScore.diem}/10)</p>
-            <p class="mt-1 text-xs text-amber-600">Bấm để xem thêm các lựa chọn giờ khác trong ngày này</p>
-          </button>`;
+            <div class="mt-2 flex gap-2">
+              <button type="button" class="xh-xem-gio rounded-lg bg-amber-500 px-2.5 py-1 text-xs font-semibold text-white" data-year="${t.solarDate.year}" data-month="${t.solarDate.month}" data-day="${t.solarDate.day}">Xem giờ khác</button>
+              <button type="button" class="xh-vi-sao rounded-lg border border-slate-300 px-2.5 py-1 text-xs font-semibold text-slate-700" data-idx="${i}">Vì sao?</button>
+            </div>
+            <div class="xh-ngay-chi-tiet hidden mt-2.5 border-t border-slate-200 pt-2.5">${dayViSaoHtml(t.dayScore)}</div>
+          </div>`;
         })
         .join("");
 
-      ketQuaEl.querySelectorAll(".xh-ngay").forEach((btn) => {
+      ketQuaEl.querySelectorAll<HTMLButtonElement>(".xh-xem-gio").forEach((btn) => {
         btn.addEventListener("click", () => {
-          const el = btn as HTMLElement;
-          void taiGioTrongNgay(Number(el.dataset.year), Number(el.dataset.month), Number(el.dataset.day));
+          void taiGioTrongNgay(Number(btn.dataset.year), Number(btn.dataset.month), Number(btn.dataset.day));
+        });
+      });
+      ketQuaEl.querySelectorAll<HTMLButtonElement>(".xh-vi-sao").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const chiTiet = btn.parentElement!.nextElementSibling as HTMLElement;
+          chiTiet.classList.toggle("hidden");
         });
       });
 
