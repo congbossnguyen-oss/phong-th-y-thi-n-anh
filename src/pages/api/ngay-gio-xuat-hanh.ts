@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import {
   calculateXuatHanhCaNhanRange,
+  calculateXuatHanhCaNhanMotNgay,
   type XuatHanhCaNhanPurpose,
   type HuongXuatHanh,
   type XuatHanhCaNhanGioiTinh,
@@ -38,6 +39,9 @@ export const GET: APIRoute = async ({ url }) => {
   const gioiTinh = params.get("gioiTinh");
   const huongRaw = params.get("huong");
   const namSinhRaw = params.get("namSinh");
+  const yearRaw = params.get("year");
+  const monthRaw = params.get("month");
+  const dayRaw = params.get("day");
   const startYearRaw = params.get("startYear");
   const startMonthRaw = params.get("startMonth");
   const startDayRaw = params.get("startDay");
@@ -54,8 +58,43 @@ export const GET: APIRoute = async ({ url }) => {
   if (huongRaw !== null && huongRaw !== "" && !HUONG_HOP_LE.includes(huongRaw as HuongXuatHanh)) {
     return jsonResponse({ error: "huong không hợp lệ." }, 400);
   }
+  if (namSinhRaw === null) {
+    return jsonResponse({ error: "Thiếu tham số bắt buộc (năm sinh)." }, 400);
+  }
+  const namSinh = Number(namSinhRaw);
+  if (!Number.isInteger(namSinh)) {
+    return jsonResponse({ error: "namSinh phải là số nguyên." }, 400);
+  }
+  const huong = huongRaw !== null && huongRaw !== "" ? (huongRaw as HuongXuatHanh) : undefined;
+
+  // Chế độ "chỉ xem giờ": đã có sẵn 1 ngày cụ thể (year/month/day) — chỉ xếp hạng 12 giờ trong
+  // ngày đó, không quét cả khoảng ngày (đúng mục 25 của đặc tả module).
+  if (yearRaw !== null || monthRaw !== null || dayRaw !== null) {
+    if (yearRaw === null || monthRaw === null || dayRaw === null) {
+      return jsonResponse({ error: "Thiếu tham số ngày (year/month/day)." }, 400);
+    }
+    const year = Number(yearRaw);
+    const month = Number(monthRaw);
+    const day = Number(dayRaw);
+    if (!Number.isInteger(year) || !Number.isInteger(month) || !Number.isInteger(day)) {
+      return jsonResponse({ error: "year/month/day phải là số nguyên." }, 400);
+    }
+    try {
+      const xepHang = calculateXuatHanhCaNhanMotNgay({
+        purpose: purpose as XuatHanhCaNhanPurpose,
+        gioiTinh: gioiTinh as XuatHanhCaNhanGioiTinh,
+        huong,
+        namSinh,
+        solarDate: { year, month, day },
+        timeZone: "Asia/Ho_Chi_Minh",
+      });
+      return jsonResponse({ xepHang }, 200);
+    } catch (err) {
+      return jsonResponse({ error: err instanceof Error ? err.message : "Không tính được." }, 400);
+    }
+  }
+
   if (
-    namSinhRaw === null ||
     startYearRaw === null ||
     startMonthRaw === null ||
     startDayRaw === null ||
@@ -63,10 +102,9 @@ export const GET: APIRoute = async ({ url }) => {
     endMonthRaw === null ||
     endDayRaw === null
   ) {
-    return jsonResponse({ error: "Thiếu tham số bắt buộc (năm sinh hoặc khoảng ngày)." }, 400);
+    return jsonResponse({ error: "Thiếu tham số bắt buộc (khoảng ngày)." }, 400);
   }
 
-  const namSinh = Number(namSinhRaw);
   const startYear = Number(startYearRaw);
   const startMonth = Number(startMonthRaw);
   const startDay = Number(startDayRaw);
@@ -75,7 +113,6 @@ export const GET: APIRoute = async ({ url }) => {
   const endDay = Number(endDayRaw);
 
   if (
-    !Number.isInteger(namSinh) ||
     !Number.isInteger(startYear) ||
     !Number.isInteger(startMonth) ||
     !Number.isInteger(startDay) ||
@@ -83,14 +120,14 @@ export const GET: APIRoute = async ({ url }) => {
     !Number.isInteger(endMonth) ||
     !Number.isInteger(endDay)
   ) {
-    return jsonResponse({ error: "Các tham số ngày và năm sinh phải là số nguyên." }, 400);
+    return jsonResponse({ error: "Các tham số ngày phải là số nguyên." }, 400);
   }
 
   try {
     const result = calculateXuatHanhCaNhanRange({
       purpose: purpose as XuatHanhCaNhanPurpose,
       gioiTinh: gioiTinh as XuatHanhCaNhanGioiTinh,
-      huong: huongRaw !== null && huongRaw !== "" ? (huongRaw as HuongXuatHanh) : undefined,
+      huong,
       namSinh,
       startDate: { year: startYear, month: startMonth, day: startDay },
       endDate: { year: endYear, month: endMonth, day: endDay },

@@ -86,6 +86,12 @@ export const prerender = true;
 
       <div id="ket-qua" class="mt-4 hidden space-y-2"></div>
 
+      <div id="ket-qua-gio" class="mt-4 hidden rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
+        <p class="text-xs font-bold uppercase tracking-wide text-amber-600">🕘 Giờ xuất hành trong ngày</p>
+        <p id="gio-tieu-de" class="mt-1 text-sm text-slate-500"></p>
+        <div id="gio-danh-sach" class="mt-2 space-y-1.5"></div>
+      </div>
+
       <p class="mt-4 text-xs text-(--color-ink-500)">
         Đây là công cụ tham khảo theo hệ thống phong thủy đã cấu hình: Trạch Cát ngày, Tiểu Lục Nhâm giờ, quan hệ
         Can/Chi/Ngũ Hành với tuổi, và mục đích chuyến đi. Hệ thống chưa có bảng phương vị Thần Tài/Hỷ Thần/Quý Thần
@@ -117,10 +123,14 @@ export const prerender = true;
     hourScore: { diem: number; nhan: string };
   }
   interface RangeResult { xepHang: ToHop[] }
+  interface MotNgayResult { xepHang: ToHop[] }
 
   const form = document.getElementById("form-xuat-hanh") as HTMLFormElement;
   const loiEl = document.getElementById("loi")!;
   const ketQuaEl = document.getElementById("ket-qua")!;
+  const ketQuaGioEl = document.getElementById("ket-qua-gio")!;
+  const gioTieuDeEl = document.getElementById("gio-tieu-de")!;
+  const gioDanhSachEl = document.getElementById("gio-danh-sach")!;
 
   const HUY_CHUONG = ["🥇", "🥈", "🥉"];
 
@@ -128,10 +138,39 @@ export const prerender = true;
     return String(n).padStart(2, "0");
   }
 
+  let thamSoHienTai = { purpose: "", gioiTinh: "", huong: "", namSinh: "" };
+
+  async function taiGioTrongNgay(year: number, month: number, day: number) {
+    const { purpose, gioiTinh, huong, namSinh } = thamSoHienTai;
+    const qs = `purpose=${purpose}&gioiTinh=${encodeURIComponent(gioiTinh)}&huong=${encodeURIComponent(huong)}&namSinh=${namSinh}&year=${year}&month=${month}&day=${day}`;
+    try {
+      const res = await fetch(`/api/ngay-gio-xuat-hanh?${qs}`);
+      const data = await res.json();
+      if (!res.ok) return;
+      const result = data as MotNgayResult;
+      gioTieuDeEl.textContent = `Ngày ${pad2(day)}/${pad2(month)}/${year} — xếp hạng đủ 12 giờ Địa Chi`;
+      gioDanhSachEl.innerHTML = result.xepHang
+        .slice(0, 5)
+        .map(
+          (g, i) =>
+            `<div class="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-2.5">
+              <p class="text-sm font-semibold text-slate-900">${HUY_CHUONG[i] ?? `${i + 1}.`} ${g.khungGio} (giờ ${g.chiGio})</p>
+              <span class="text-sm">${nhanDotHtml(g.nhan)} — ${g.finalDiem}/10</span>
+            </div>`,
+        )
+        .join("");
+      ketQuaGioEl.classList.remove("hidden");
+      ketQuaGioEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    } catch {
+      // bỏ qua lỗi phụ, không chặn luồng chính
+    }
+  }
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     loiEl.classList.add("hidden");
     ketQuaEl.classList.add("hidden");
+    ketQuaGioEl.classList.add("hidden");
 
     const purpose = (document.getElementById("xh-muc-dich") as HTMLSelectElement).value;
     const namSinh = (document.getElementById("xh-nam-sinh") as HTMLInputElement).value;
@@ -150,6 +189,7 @@ export const prerender = true;
       loiEl.classList.remove("hidden");
       return;
     }
+    thamSoHienTai = { purpose, gioiTinh, huong, namSinh };
     const [startYear, startMonth, startDay] = tuNgay.split("-").map(Number);
     const [endYear, endMonth, endDay] = denNgay.split("-").map(Number);
 
@@ -164,22 +204,47 @@ export const prerender = true;
         return;
       }
       const result = data as RangeResult;
-      const top5 = result.xepHang.slice(0, 5);
-      ketQuaEl.innerHTML = top5
+
+      // `xepHang` đã sắp giảm dần theo finalDiem trên TOÀN BỘ tổ hợp ngày×giờ — lấy tổ hợp đầu
+      // tiên gặp của mỗi ngày (chính là giờ tốt nhất trong ngày đó), rồi xếp hạng NGÀY theo điểm
+      // giờ tốt nhất này. Bấm vào 1 ngày sẽ gọi API riêng để xem đủ nhiều lựa chọn giờ (canh giờ)
+      // khác trong ngày đó, không chỉ 1 giờ duy nhất.
+      const ngayTotNhatMap = new Map<string, ToHop>();
+      for (const t of result.xepHang) {
+        const key = `${t.solarDate.year}-${t.solarDate.month}-${t.solarDate.day}`;
+        if (!ngayTotNhatMap.has(key)) ngayTotNhatMap.set(key, t);
+      }
+      const top5Ngay = [...ngayTotNhatMap.values()].sort((a, b) => b.finalDiem - a.finalDiem).slice(0, 5);
+
+      ketQuaEl.innerHTML = top5Ngay
         .map((t, i) => {
           const huyChuong = HUY_CHUONG[i] ?? `${i + 1}.`;
           const ngayStr = `${pad2(t.solarDate.day)}/${pad2(t.solarDate.month)}/${t.solarDate.year}`;
-          return `<div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+          return `<button type="button" class="xh-ngay w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-left hover:bg-slate-100" data-year="${t.solarDate.year}" data-month="${t.solarDate.month}" data-day="${t.solarDate.day}">
             <div class="flex items-center justify-between">
-              <p class="font-display text-base font-bold text-slate-900">${huyChuong} ${ngayStr} — ${t.khungGio} (giờ ${t.chiGio})</p>
+              <p class="font-display text-base font-bold text-slate-900">${huyChuong} ${ngayStr}</p>
               <span class="text-sm font-semibold">${nhanDotHtml(t.nhan)} — ${t.finalDiem}/10</span>
             </div>
-            <p class="mt-1.5 text-xs text-slate-500">Ngày: ${nhanDotHtml(t.dayScore.nhan)} (${t.dayScore.diem}/10) · Giờ: ${nhanDotHtml(t.hourScore.nhan)} (${t.hourScore.diem}/10)</p>
-          </div>`;
+            <p class="mt-1.5 text-xs text-slate-500">Giờ tốt nhất: ${t.khungGio} (giờ ${t.chiGio}) · Ngày: ${nhanDotHtml(t.dayScore.nhan)} (${t.dayScore.diem}/10) · Giờ: ${nhanDotHtml(t.hourScore.nhan)} (${t.hourScore.diem}/10)</p>
+            <p class="mt-1 text-xs text-amber-600">Bấm để xem thêm các lựa chọn giờ khác trong ngày này</p>
+          </button>`;
         })
         .join("");
 
+      ketQuaEl.querySelectorAll(".xh-ngay").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const el = btn as HTMLElement;
+          void taiGioTrongNgay(Number(el.dataset.year), Number(el.dataset.month), Number(el.dataset.day));
+        });
+      });
+
       ketQuaEl.classList.remove("hidden");
+      // Tự mở sẵn danh sách giờ của ngày tốt nhất, để người dùng thấy ngay nhiều lựa chọn giờ
+      // thay vì chỉ 1 giờ duy nhất trên mỗi ngày.
+      if (top5Ngay[0]) {
+        const d = top5Ngay[0].solarDate;
+        void taiGioTrongNgay(d.year, d.month, d.day);
+      }
     } catch {
       loiEl.textContent = "Không tải được dữ liệu.";
       loiEl.classList.remove("hidden");
