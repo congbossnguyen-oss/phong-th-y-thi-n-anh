@@ -1,0 +1,88 @@
+---
+// Khu giới thiệu riêng cho Gương Bát Quái Ma Phương — vật phẩm chủ lực, theo yêu cầu Công muốn "thật ấn
+// tượng, khách kéo xuống là thấy".
+//
+// Khác với khối FeaturedProducts (4 sản phẩm xếp ngang, ảnh nhỏ), khối này dành TRỌN chiều ngang cho 1 sản
+// phẩm: ảnh lớn + nền đỏ đô + vầng sáng vàng, để ảnh 5 gương đủ màu kèm đôi Tỳ Hưu nổi bật hẳn lên.
+//
+// Mọi thông tin (tên, giá, mô tả, 5 hướng xấu hoá giải) lấy TRỰC TIẾP từ dữ liệu sản phẩm trong
+// placeholder-data.ts — không tự viết thêm công dụng nào không có trong dữ liệu gốc.
+import Container from "../ui/Container.astro";
+import Button from "../ui/Button.astro";
+import Icon from "../ui/Icon.astro";
+import SacredMotif from "../ui/SacredMotif.astro";
+import { products } from "../../lib/placeholder-data";
+
+const sanPham = products.find((p) => p.slug === "guong-bat-quai");
+
+// 5 hướng/thế xấu nêu trong mô tả gốc của sản phẩm, tách thành danh sách cho dễ đọc.
+const HUONG_XAU = ["Ngũ Quỷ", "Tuyệt Mạng", "Họa Hại", "Lục Sát", "Không Vong"];
+
+const giaHienThi = sanPham ? sanPham.price.toLocaleString("vi-VN") + " ₫" : "";
+---
+
+{
+  sanPham && (
+    <section class="relative overflow-hidden bg-(--color-ivory-50) py-16 sm:py-20">
+      {/* Nền đỏ đô + vầng sáng vàng để ảnh sản phẩm bật lên, thuần trang trí */}
+      <div class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_30%_40%,rgba(140,35,30,.35),transparent_60%)]" />
+      <SacredMotif
+        variant="bagua"
+        class="pointer-events-none absolute -right-24 top-1/2 size-[34rem] -translate-y-1/2 text-(--color-gold-500)/10"
+      />
+
+      <Container class="relative">
+        <div class="grid items-center gap-10 lg:grid-cols-2 lg:gap-14">
+          {/* Ảnh sản phẩm: viền vàng mảnh + bóng đổ sâu cho cảm giác trưng bày */}
+          <div class="relative mx-auto w-full max-w-lg">
+            <div class="pointer-events-none absolute -inset-6 rounded-full bg-(--color-gold-500)/15 blur-3xl" />
+            <div class="relative overflow-hidden rounded-(--radius-card) border border-(--color-gold-500)/40 shadow-2xl">
+              <img
+                src={sanPham.image}
+                alt={sanPham.name}
+                loading="lazy"
+                class="h-full w-full object-cover"
+              />
+            </div>
+          </div>
+
+          <div>
+            <p class="text-xs font-semibold uppercase tracking-widest text-(--color-gold-300)">
+              {sanPham.category}
+            </p>
+            <h2 class="mt-2 font-display text-3xl font-semibold leading-tight text-(--color-ink-950) sm:text-4xl">
+              {sanPham.name}
+            </h2>
+            <p class="mt-4 text-base leading-relaxed text-(--color-ink-700)">{sanPham.description}</p>
+
+            <p class="mt-7 text-xs font-semibold uppercase tracking-widest text-(--color-gold-300)">
+              Hoá giải các hướng xấu
+            </p>
+            <ul class="mt-3 flex flex-wrap gap-2">
+              {HUONG_XAU.map((h) => (
+                <li class="inline-flex items-center gap-1.5 rounded-(--radius-pill) border border-(--color-gold-500)/35 bg-(--color-ivory-100) px-3.5 py-1.5 text-sm text-(--color-ink-800)">
+                  <Icon name="check-circle" class="size-4 text-(--color-gold-300)" />
+                  {h}
+                </li>
+              ))}
+            </ul>
+
+            <div class="mt-8 flex flex-wrap items-center gap-4">
+              <span class="font-display text-2xl font-semibold text-(--color-gold-300)">{giaHienThi}</span>
+              <Button href={`/vat-pham/${sanPham.slug}`} size="lg">
+                Xem chi tiết
+                <Icon name="arrow-right" class="size-4" />
+              </Button>
+              <a
+                href="/lien-he"
+                class="text-sm font-medium text-(--color-ink-700) underline-offset-4 hover:text-(--color-gold-300) hover:underline"
+              >
+                Tư vấn chọn đúng hướng cần hoá giải
+              </a>
+            </div>
+          </div>
+        </div>
+      </Container>
+    </section>
+  )
+}
