@@ -3,7 +3,9 @@ import Container from "../ui/Container.astro";
 import SectionHeading from "../ui/SectionHeading.astro";
 import Button from "../ui/Button.astro";
 import { products } from "../../lib/placeholder-data";
-import { formatProductPrice as formatPrice } from "../../lib/product-price";
+
+const formatPrice = (price: number) =>
+  price.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
 ---
 
 <section class="bg-(--color-ivory-100) py-16 sm:py-20">

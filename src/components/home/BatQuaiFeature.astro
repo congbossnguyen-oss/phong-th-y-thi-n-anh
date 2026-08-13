@@ -12,14 +12,13 @@ import Button from "../ui/Button.astro";
 import Icon from "../ui/Icon.astro";
 import SacredMotif from "../ui/SacredMotif.astro";
 import { products } from "../../lib/placeholder-data";
-import { formatProductPrice } from "../../lib/product-price";
 
 const sanPham = products.find((p) => p.slug === "guong-bat-quai");
 
 // 5 hướng/thế xấu nêu trong mô tả gốc của sản phẩm, tách thành danh sách cho dễ đọc.
 const HUONG_XAU = ["Ngũ Quỷ", "Tuyệt Mạng", "Họa Hại", "Lục Sát", "Không Vong"];
 
-const giaHienThi = sanPham ? formatProductPrice(sanPham.price) : "";
+const giaHienThi = sanPham ? sanPham.price.toLocaleString("vi-VN") + " ₫" : "";
 ---
 
 {

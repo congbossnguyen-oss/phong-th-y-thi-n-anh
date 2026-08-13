@@ -5,7 +5,6 @@ import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
 import Icon from "../../components/ui/Icon.astro";
 import { products } from "../../lib/placeholder-data";
-import { formatProductPrice as formatPrice } from "../../lib/product-price";
 
 export const prerender = true;
 
@@ -14,6 +13,9 @@ export async function getStaticPaths() {
 }
 
 const { product } = Astro.props;
+
+const formatPrice = (price: number) =>
+  price.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
 ---
 
 <BaseLayout title={product.name} description={`${product.name} — vật phẩm phong thủy ${product.category} từ Thiên Anh.`}>
