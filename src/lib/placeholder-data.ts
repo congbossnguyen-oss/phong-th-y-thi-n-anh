@@ -402,7 +402,7 @@ export const posts = [
     category: "Tư vấn thực địa",
     categorySlug: "tu-van-thuc-dia",
     publishedAt: "2026-06-27",
-    image: "/images/blog/thuc-dia-nhap-trach-biet-thu.jpg",
+    image: "/images/blog/thuc-dia-nhap-trach-villa.jpg",
     content: [
       "Có những lần quay trở lại một ngôi nhà, cảm xúc hoàn toàn khác so với lần đầu tiên đặt chân đến…",
       "Ngày đầu gặp anh, căn nhà vẫn còn là một căn biệt thự cũ kỹ, từ trường hỗn loạn. Đi một vòng khảo sát, tôi thấy khá nhiều điểm phong thuỷ chưa ổn: khí bị ngưng trệ, một số vị trí phạm sát nặng, dòng năng lượng trong nhà chưa thể lưu thông.",
@@ -427,7 +427,7 @@ export const posts = [
     category: "Tư vấn thực địa",
     categorySlug: "tu-van-thuc-dia",
     publishedAt: "2026-06-01",
-    image: "/images/blog/phong-thuy-van-phong-nho.svg",
+    image: "/images/blog/thuc-dia-phong-lam-viec-lanh-dao.jpg",
     content: [
       "Lại một buổi xem phong thuỷ quan lộ cho lãnh đạo trẻ của một ngân hàng lớn.",
       "Hôm nay có dịp khảo sát một phòng làm việc của lãnh đạo cấp trung tại một ngân hàng lớn. Bước vào phòng, cảm giác đầu tiên là: khí trường khá ổn, tài khí có, quyền khí cũng có, chỉ thiếu chút “vượng quan” để đường thăng tiến bớt gập ghềnh.",
@@ -485,7 +485,7 @@ export const posts = [
     category: "Tư vấn thực địa",
     categorySlug: "tu-van-thuc-dia",
     publishedAt: "2026-03-31",
-    image: "/images/blog/bat-tu-la-gi.svg",
+    image: "/images/blog/thuc-dia-van-phong-cap-cao.jpg",
     content: [
       "Một cuộc gặp gỡ không dành cho số đông.",
       "Hôm nay, tôi có dịp đồng hành cùng một lãnh đạo cấp cao trong lĩnh vực ngân hàng – một người không chỉ thành công trong sự nghiệp mà còn có sự am hiểu nhất định về huyền học.",
