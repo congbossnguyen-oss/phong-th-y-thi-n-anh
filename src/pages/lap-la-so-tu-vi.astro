@@ -592,12 +592,16 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
       (tuanChisAll.length === 2 ? tuanTrietBridgeHtml(tuanChisAll[0], tuanChisAll[1], chiToRowCol, "TUẦN", LIGHT.gold, LIGHT.text) : "") +
       (trietChisAll.length === 2 ? tuanTrietBridgeHtml(trietChisAll[0], trietChisAll[1], chiToRowCol, "TRIỆT", "#2c4a7c", "#ffffff") : "");
     // Khung ngoài kiểu bìa sách cổ bọc da: viền gỗ nâu trầm + 2 vòng chỉ vàng inset + bóng đổ 3D nhẹ.
-    // Font Serif (Georgia/Times) cho cảm giác cổ điển, trang trọng theo đúng yêu cầu bản thiết kế mới.
+    // Font Serif (Times/Georgia) cho cảm giác cổ điển, trang trọng theo đúng yêu cầu bản thiết kế mới.
+    // Yêu cầu Công: một số chữ có dấu kép (ầ/ấ/ắ/ệ/ồ/ậ/ự — ví dụ "Dần", "Ất", "khắc", "Mệnh", "đại vận")
+    // hiển thị lỗi/vỡ nét trên điện thoại khi xuất ảnh. Đổi thứ tự font, đưa "Times New Roman" lên đầu
+    // (trước Georgia) — bộ glyph dấu tiếng Việt của Times New Roman phổ biến/đầy đủ hơn Georgia trên hầu
+    // hết máy Android/iOS, Georgia vẫn giữ làm phương án dự phòng nếu Times không có sẵn.
     const cardFrame =
       `border:5px solid ${LIGHT.frameOuter};border-radius:14px;` +
       `box-shadow:inset 0 0 0 1.5px ${LIGHT.gold},inset 0 0 0 5px rgba(250,240,214,.75),inset 0 0 0 6.5px ${LIGHT.frameInner},0 8px 22px rgba(60,35,15,.28);`;
     return `
-      <div style="width:${CARD_WIDTH}px;height:${CARD_HEIGHT}px;font-family:Georgia,'Times New Roman','Palatino Linotype',serif;background:${DO_TEXTURE};color:${LIGHT.text};${cardFrame}padding:16px;box-sizing:border-box;display:flex;flex-direction:column;">
+      <div style="width:${CARD_WIDTH}px;height:${CARD_HEIGHT}px;font-family:'Times New Roman',Georgia,'Palatino Linotype',serif;background:${DO_TEXTURE};color:${LIGHT.text};${cardFrame}padding:16px;box-sizing:border-box;display:flex;flex-direction:column;">
         <div style="display:flex;align-items:center;gap:9px;border-bottom:2px solid ${LIGHT.gold};padding-bottom:8px;flex-shrink:0;">
           <img src="/images/brand/zhi-gong-logo.png" style="width:36px;height:36px;border-radius:9999px;border:2px solid ${LIGHT.frameOuter};object-fit:cover;flex-shrink:0;" />
           <div>
