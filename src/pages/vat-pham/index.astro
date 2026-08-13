@@ -4,11 +4,9 @@ import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
 import { products } from "../../lib/placeholder-data";
+import { formatProductPrice as formatPrice } from "../../lib/product-price";
 
 export const prerender = true;
-
-const formatPrice = (price: number) =>
-  price.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
 ---
 
 <BaseLayout title="Cửa hàng vật phẩm phong thủy" description="Vật phẩm phong thủy chính hiệu, hợp mệnh từ Thiên Anh.">

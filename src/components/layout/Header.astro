@@ -60,8 +60,11 @@ const navWithChildren = mainNav.map((item) => {
 
   <!-- Header chính -->
   <Container class="flex h-18 items-center justify-between gap-1 py-2.5 sm:gap-4">
-    <!-- Menu mobile: đặt đầu tiên để hiện bên trái trên di động (lg:hidden nên không ảnh hưởng desktop) -->
-    <details class="group relative lg:hidden">
+    <!-- Menu mobile: đặt đầu tiên để hiện bên trái trên di động (xl:hidden nên không ảnh hưởng desktop).
+         Ngưỡng đổi từ lg (1024px) sang xl (1280px): ở 1024px menu ngang chiếm tới 679px, cộng thương hiệu
+         và hàng nút bên phải thì vượt khung ~169px, ép khối chữ thương hiệu còn 0px khiến dòng tagline
+         rơi xuống thành cột dọc. Từ 1280px mới đủ chỗ cho menu ngang đầy đủ. -->
+    <details class="group relative xl:hidden">
       <summary
         aria-label="Mở menu"
         class="flex size-11 cursor-pointer list-none items-center justify-center rounded-full text-(--color-ink-800) hover:bg-(--color-ivory-200) [&::-webkit-details-marker]:hidden"
@@ -167,12 +170,14 @@ const navWithChildren = mainNav.map((item) => {
           <span class="sm:hidden">{siteConfig.shortName}</span>
           <span class="hidden sm:inline">{siteConfig.name}</span>
         </span>
-        <span class="hidden text-[11px] uppercase tracking-wide text-(--color-gold-500) sm:block">{siteConfig.tagline}</span>
+        <!-- truncate (gồm cả white-space:nowrap) là CHỐT AN TOÀN: nếu vì lý do nào đó khối chữ lại bị ép
+             hẹp, dòng này sẽ cắt bằng "…" chứ không rơi xuống thành cột dọc như lỗi đã gặp. -->
+        <span class="hidden truncate text-[11px] uppercase tracking-wide text-(--color-gold-500) sm:block">{siteConfig.tagline}</span>
       </span>
     </a>
 
     <!-- Nav desktop -->
-    <nav class="hidden items-center gap-1 lg:flex" aria-label="Điều hướng chính">
+    <nav class="hidden items-center gap-1 xl:flex" aria-label="Điều hướng chính">
       {navWithChildren.map((item) =>
         item.children ? (
           <div class="group relative">
