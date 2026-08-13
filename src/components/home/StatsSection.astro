@@ -1,17 +1,11 @@
 ---
 import Container from "../ui/Container.astro";
 import { stats } from "../../lib/placeholder-data";
-import { TOTAL_TOOL_COUNT } from "../../lib/dai-cat-loi-tools";
-
-// Trước đây chỉ có 2 số liệu nhưng lưới để 4 cột nên nửa hàng bị trống, nhìn hụt. Bổ sung số công cụ miễn
-// phí (TÍNH ĐỘNG từ danh sách nguồn nên không bao giờ lệch) — vừa lấp đủ hàng, vừa nhấn đúng điểm khác
-// biệt lớn nhất của site. Lưới đổi 4 → 3 cột cho khớp số mục thật.
-const allStats = [...stats, { value: `${TOTAL_TOOL_COUNT}`, label: "Công cụ tra cứu miễn phí" }];
 ---
 
 <section class="border-b border-(--color-ivory-300) bg-(--color-ivory-100)">
-  <Container class="grid grid-cols-2 gap-6 py-10 lg:grid-cols-3">
-    {allStats.map((stat) => (
+  <Container class="grid grid-cols-2 gap-6 py-10 lg:grid-cols-4">
+    {stats.map((stat) => (
       <div class="text-center">
         <p class="font-display text-3xl font-semibold text-(--color-gold-300) sm:text-4xl">{stat.value}</p>
         <p class="mt-1 text-sm text-(--color-ink-600)">{stat.label}</p>
