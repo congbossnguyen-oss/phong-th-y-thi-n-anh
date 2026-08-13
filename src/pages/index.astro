@@ -33,23 +33,24 @@ const personSchema = {
 <BaseLayout title={siteConfig.name} description={siteConfig.description}>
   <script type="application/ld+json" set:html={JSON.stringify(personSchema)} />
   <Hero />
-  <!-- Thứ tự dẫn dắt: lời hứa thương hiệu (Hero) → giá trị dùng được NGAY hôm nay (TodayStrip) → uy tín
-       (Stats) → thứ khác biệt nhất, dùng miễn phí (ToolsShowcase) → con người đứng sau (MasterIntro) →
-       dịch vụ trả phí. Đặt công cụ miễn phí TRƯỚC dịch vụ trả phí để người xem nhận giá trị rồi mới được
-       mời mua. -->
+  {/* Thứ tự dẫn dắt: lời hứa thương hiệu (Hero) → giá trị dùng được NGAY hôm nay (TodayStrip) → uy tín
+      (Stats) → thứ khác biệt nhất, dùng miễn phí (ToolsShowcase) → con người đứng sau (MasterIntro) →
+      dịch vụ trả phí. Đặt công cụ miễn phí TRƯỚC dịch vụ trả phí để người xem nhận giá trị rồi mới được
+      mời mua. Chú thích trong template dùng dạng JSX vì chú thích kiểu HTML sẽ bị đẩy nguyên văn ra mã
+      nguồn trang công khai, người ngoài đọc được ghi chú nội bộ. */}
   <TodayStrip />
   <StatsSection />
   <ToolsShowcase />
   <MasterIntro />
-  <!-- Vật phẩm chủ lực đặt ngay sau phần giới thiệu chuyên gia: khách vừa biết người đứng sau là ai,
-       đang ở trạng thái tin tưởng nhất, thì gặp luôn vật phẩm — trước cả danh sách dịch vụ trả phí. -->
+  {/* Vật phẩm chủ lực đặt ngay sau phần giới thiệu chuyên gia: khách vừa biết người đứng sau là ai,
+      đang ở trạng thái tin tưởng nhất, thì gặp luôn vật phẩm — trước cả danh sách dịch vụ trả phí. */}
   <BatQuaiFeature />
   <FeaturedServices />
-  <!-- Yêu cầu Công: bỏ hẳn khối cửa hàng (FeaturedProducts) khỏi trang chủ. FeaturedPortfolio (công trình
-       thật) trước đây chỉ hiện trên di động vì phải nhường chỗ cho cửa hàng ở màn lớn — nay bỏ cửa hàng
-       thì cho công trình hiện ở MỌI kích thước, vì đây là thứ tạo uy tín chứ không phải bán hàng. -->
+  {/* Yêu cầu Công: bỏ hẳn khối cửa hàng (FeaturedProducts) khỏi trang chủ. FeaturedPortfolio (công trình
+      thật) trước đây chỉ hiện trên di động vì phải nhường chỗ cho cửa hàng ở màn lớn — nay bỏ cửa hàng
+      thì cho công trình hiện ở MỌI kích thước, vì đây là thứ tạo uy tín chứ không phải bán hàng. */}
   <FeaturedPortfolio />
-  <!-- Nhật ký khảo sát thực tế — bằng chứng nghề nghiệp mạnh nhất, đặt cạnh cảm nhận khách hàng. -->
+  {/* Nhật ký khảo sát thực tế — bằng chứng nghề nghiệp mạnh nhất, đặt cạnh cảm nhận khách hàng. */}
   <FieldSurveySection />
   <Testimonials />
   <FeaturedPosts />

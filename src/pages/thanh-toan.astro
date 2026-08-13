@@ -7,12 +7,12 @@ import Button from "../components/ui/Button.astro";
 export const prerender = true;
 ---
 
-<BaseLayout title="Thanh toán" description="Hoàn tất đơn hàng tại Thiên Anh." noIndex>
-  <PageHero title="Thanh toán" breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Giỏ hàng", href: "/gio-hang" }, { label: "Thanh toán" }]} />
+<BaseLayout title="Gửi yêu cầu tư vấn" description="Gửi yêu cầu tư vấn vật phẩm phong thủy tại Thiên Anh." noIndex>
+  <PageHero title="Gửi yêu cầu tư vấn" breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Giỏ hàng", href: "/gio-hang" }, { label: "Gửi yêu cầu tư vấn" }]} />
 
   <Container class="py-16">
     <div id="checkout-empty" class="hidden flex-col items-center gap-4 rounded-(--radius-card) border border-dashed border-(--color-ivory-300) py-20 text-center">
-      <p class="text-(--color-ink-600)">Giỏ hàng trống, không có gì để thanh toán.</p>
+      <p class="text-(--color-ink-600)">Bạn chưa chọn vật phẩm nào để gửi yêu cầu tư vấn.</p>
       <Button href="/vat-pham">Quay lại cửa hàng</Button>
     </div>
 
@@ -47,34 +47,27 @@ export const prerender = true;
             class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20"></textarea>
         </div>
 
-        <h2 class="mt-8 font-display text-xl font-semibold text-(--color-ink-950)">Phương thức thanh toán</h2>
-        <div class="mt-4 space-y-3">
-          <label class="flex cursor-pointer items-start gap-3 rounded-(--radius-control) border border-(--color-ivory-300) p-4 has-[:checked]:border-(--color-gold-300) has-[:checked]:bg-(--color-gold-400)/10">
-            <input type="radio" name="payment" value="sepay_qr" checked class="mt-1 accent-(--color-gold-300)" />
-            <span>
-              <span class="block text-sm font-medium text-(--color-ink-950)">Chuyển khoản QR (tự động xác nhận)</span>
-              <span class="block text-xs text-(--color-ink-600)">Quét mã VietQR, đơn hàng được xác nhận ngay khi thanh toán thành công.</span>
-            </span>
-          </label>
-          <label class="flex cursor-pointer items-start gap-3 rounded-(--radius-control) border border-(--color-ivory-300) p-4 has-[:checked]:border-(--color-gold-300) has-[:checked]:bg-(--color-gold-400)/10">
-            <input type="radio" name="payment" value="cod" class="mt-1 accent-(--color-gold-300)" />
-            <span>
-              <span class="block text-sm font-medium text-(--color-ink-950)">Thanh toán khi nhận hàng (COD)</span>
-              <span class="block text-xs text-(--color-ink-600)">Thanh toán tiền mặt trực tiếp cho shipper.</span>
-            </span>
-          </label>
+        {/* Yêu cầu Công: bỏ hẳn phần chọn phương thức thanh toán (QR/COD) — vật phẩm phong thủy phải chọn
+            đúng mệnh và đúng hướng cần hoá giải nên không bán tự động, mọi đơn đều đi qua tư vấn rồi mới
+            chốt giá. */}
+        <div class="mt-8 rounded-(--radius-control) border border-(--color-gold-500)/35 bg-(--color-gold-400)/10 p-4">
+          <p class="text-sm font-medium text-(--color-ink-950)">Thiên Anh sẽ liên hệ tư vấn và báo giá</p>
+          <p class="mt-1 text-xs leading-relaxed text-(--color-ink-700)">
+            Sau khi nhận yêu cầu, chuyên gia sẽ liên hệ trong giờ làm việc để tư vấn vật phẩm hợp mệnh,
+            xác nhận số lượng và báo giá cuối cùng. Bạn không phải thanh toán bất kỳ khoản nào ở bước này.
+          </p>
         </div>
 
         <p id="checkout-error" class="mt-4 hidden text-sm text-(--color-danger-500)"></p>
-        <Button id="checkout-submit" type="submit" size="lg" class="mt-8 w-full">Đặt hàng</Button>
+        <Button id="checkout-submit" type="submit" size="lg" class="mt-8 w-full">Gửi yêu cầu tư vấn</Button>
       </form>
 
       <aside class="lg:col-span-2 h-fit rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
-        <h2 class="font-display text-lg font-semibold text-(--color-ink-950)">Đơn hàng của bạn</h2>
+        <h2 class="font-display text-lg font-semibold text-(--color-ink-950)">Vật phẩm quan tâm</h2>
         <ul id="summary-items" class="mt-4 space-y-3"></ul>
         <div class="mt-4 flex items-center justify-between border-t border-(--color-ivory-300) pt-4 text-base font-semibold">
-          <span class="text-(--color-ink-950)">Tổng cộng</span>
-          <span id="summary-total" class="text-(--color-gold-300)">0đ</span>
+          <span class="text-(--color-ink-950)">Báo giá</span>
+          <span id="summary-total" class="text-(--color-gold-300)">Sau khi tư vấn</span>
         </div>
       </aside>
     </div>
@@ -82,16 +75,13 @@ export const prerender = true;
 </BaseLayout>
 
 <script>
-  import { getCart, getCartTotal, clearCart } from "../lib/cart/cart-client";
+  import { getCart, clearCart } from "../lib/cart/cart-client";
 
   const emptyEl = document.getElementById("checkout-empty")!;
   const contentEl = document.getElementById("checkout-content")!;
   const summaryItemsEl = document.getElementById("summary-items")!;
   const summaryTotalEl = document.getElementById("summary-total")!;
   const form = document.getElementById("checkout-form") as HTMLFormElement;
-
-  const formatPrice = (price: number) =>
-    price.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
 
   const items = getCart();
 
@@ -105,10 +95,10 @@ export const prerender = true;
     items.forEach((item) => {
       const li = document.createElement("li");
       li.className = "flex items-center justify-between text-sm";
-      li.innerHTML = `<span class="text-(--color-ink-700)">${item.name} × ${item.qty}</span><span class="font-medium text-(--color-ink-950)">${formatPrice(item.price * item.qty)}</span>`;
+      li.innerHTML = `<span class="text-(--color-ink-700)">${item.name} × ${item.qty}</span>`;
       summaryItemsEl.appendChild(li);
     });
-    summaryTotalEl.textContent = formatPrice(getCartTotal(items));
+    // Không hiện tổng tiền — báo giá diễn ra qua tư vấn (nhãn tĩnh "Sau khi tư vấn" đã đặt sẵn trong HTML).
 
     const errorEl = document.getElementById("checkout-error")!;
     const submitBtn = document.getElementById("checkout-submit") as HTMLButtonElement;
@@ -119,7 +109,9 @@ export const prerender = true;
       submitBtn.disabled = true;
 
       const formData = new FormData(form);
-      const paymentMethod = formData.get("payment")?.toString() ?? "sepay_qr";
+      // Luôn "cod" = không thanh toán online, trả sau khi đã tư vấn và chốt giá. Đây là giá trị hợp lệ sẵn
+      // có trong enum payment_method của CSDL, nên không cần chạy migration để đổi luồng đặt hàng.
+      const paymentMethod = "cod";
 
       try {
         const res = await fetch("/api/orders/create", {
@@ -146,11 +138,8 @@ export const prerender = true;
 
         clearCart();
 
-        if (paymentMethod === "cod") {
-          window.location.href = `/don-hang/thanh-cong?orderId=${data.orderId}`;
-        } else {
-          window.location.href = `/don-hang/${data.orderId}/cho-thanh-toan`;
-        }
+        // Luôn về trang xác nhận đã nhận yêu cầu — không còn nhánh đi tới trang quét mã QR thanh toán.
+        window.location.href = `/don-hang/thanh-cong?orderId=${data.orderId}`;
       } catch {
         errorEl.textContent = "Không kết nối được máy chủ, vui lòng thử lại.";
         errorEl.classList.remove("hidden");

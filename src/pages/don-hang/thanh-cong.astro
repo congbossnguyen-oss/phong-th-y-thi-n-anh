@@ -15,29 +15,25 @@ if (!order) {
 }
 
 const orderId = order.orderCode;
-const total = Number(order.totalAmount);
-const payment = order.paymentMethod;
-
-const formatPrice = (price: number) =>
-  price.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
 ---
 
-<BaseLayout title="Đặt hàng thành công" description="Xác nhận đơn hàng tại Thiên Anh." noIndex>
+<BaseLayout title="Đã nhận yêu cầu tư vấn" description="Xác nhận yêu cầu tư vấn tại Thiên Anh." noIndex>
   <Container class="flex flex-col items-center py-20 text-center">
     <span class="flex size-16 items-center justify-center rounded-full bg-(--color-success-500)/10 text-(--color-success-500)">
       <Icon name="check-circle" class="size-8" />
     </span>
-    <h1 class="mt-5 font-display text-2xl font-semibold text-(--color-ink-950) sm:text-3xl">Đặt hàng thành công!</h1>
-    <p class="mt-2 text-(--color-ink-600)">Mã đơn hàng <strong class="text-(--color-ink-950)">#{orderId}</strong> — tổng giá trị <strong class="text-(--color-gold-300)">{formatPrice(total)}</strong></p>
+    <h1 class="mt-5 font-display text-2xl font-semibold text-(--color-ink-950) sm:text-3xl">Đã nhận yêu cầu của bạn!</h1>
+    <p class="mt-2 text-(--color-ink-600)">Mã yêu cầu <strong class="text-(--color-ink-950)">#{orderId}</strong></p>
 
-    {payment === "cod" ? (
-      <p class="mt-6 max-w-md text-sm text-(--color-ink-600)">Đơn hàng của bạn sẽ được giao và thu tiền trực tiếp (COD). Thiên Anh sẽ gọi xác nhận trong thời gian sớm nhất.</p>
-    ) : (
-      <p class="mt-6 max-w-md text-sm text-(--color-ink-600)">Thanh toán qua chuyển khoản QR đã được xác nhận tự động. Email xác nhận đơn hàng đã được gửi tới hộp thư của bạn.</p>
-    )}
+    {/* Yêu cầu Công: đặt hàng nay đi qua tư vấn, không thanh toán online — nên không hiện tổng tiền và bỏ
+        cả 2 nhánh thông báo cũ (COD / đã thanh toán QR). */}
+    <p class="mt-6 max-w-md text-sm text-(--color-ink-600)">
+      Chuyên gia Thiên Anh sẽ liên hệ với bạn trong giờ làm việc để tư vấn vật phẩm hợp mệnh, xác nhận số
+      lượng và báo giá cụ thể. Bạn chưa cần thanh toán bất kỳ khoản nào.
+    </p>
 
     <div class="mt-8 flex gap-3">
-      <Button href="/vat-pham" variant="secondary">Tiếp tục mua sắm</Button>
+      <Button href="/vat-pham" variant="secondary">Xem thêm vật phẩm</Button>
       <Button href="/">Về trang chủ</Button>
     </div>
   </Container>

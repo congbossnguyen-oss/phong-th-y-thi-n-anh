@@ -22,20 +22,22 @@ export const prerender = true;
       <div class="lg:col-span-2">
         <ul id="cart-items" class="divide-y divide-(--color-ivory-300) rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50)"></ul>
       </div>
+      {/* Yêu cầu Công: chuyển hẳn sang đặt hàng qua tư vấn — không hiện số tiền, không thanh toán online.
+          Thay khối tổng tiền cũ bằng lời mời gửi yêu cầu để Thiên Anh liên hệ tư vấn và báo giá theo đúng
+          mệnh và hướng cần hoá giải của từng khách. */}
       <aside class="h-fit rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
-        <h2 class="font-display text-lg font-semibold text-(--color-ink-950)">Tổng cộng</h2>
+        <h2 class="font-display text-lg font-semibold text-(--color-ink-950)">Yêu cầu tư vấn</h2>
         <div class="mt-4 flex items-center justify-between text-sm text-(--color-ink-700)">
-          <span>Tạm tính</span>
-          <span id="cart-total" class="font-semibold text-(--color-gold-300)">0đ</span>
+          <span>Số vật phẩm đã chọn</span>
+          <span id="cart-count" class="font-semibold text-(--color-gold-300)">0</span>
         </div>
-        <p class="mt-2 text-xs text-(--color-ink-600)">Phí vận chuyển sẽ được xác nhận khi đặt hàng.</p>
-        <Button href="/thanh-toan" size="lg" class="mt-5 w-full">Tiến hành thanh toán</Button>
+        <p class="mt-3 text-xs leading-relaxed text-(--color-ink-600)">
+          Vật phẩm phong thủy cần chọn đúng mệnh và đúng hướng cần hoá giải, nên Thiên Anh không bán tự
+          động. Gửi yêu cầu để được tư vấn và báo giá cụ thể.
+        </p>
+        <Button href="/thanh-toan" size="lg" class="mt-5 w-full">Gửi yêu cầu tư vấn</Button>
       </aside>
     </div>
-
-    <p class="mt-8 text-center text-xs text-(--color-ink-600)">
-      Đây là bản demo giỏ hàng chạy phía trình duyệt (localStorage). Khi kết nối Neon Postgres, giỏ hàng sẽ được đồng bộ qua API.
-    </p>
   </Container>
 
   <template id="cart-item-template">
@@ -43,7 +45,7 @@ export const prerender = true;
       <div class="size-16 shrink-0 rounded-(--radius-control) bg-(--color-ivory-200)"></div>
       <div class="flex-1">
         <p class="cart-item-name font-display text-sm font-semibold text-(--color-ink-950)"></p>
-        <p class="cart-item-price mt-1 text-sm text-(--color-gold-300)"></p>
+        <p class="cart-item-price mt-1 text-sm text-(--color-gold-300)">Liên hệ</p>
       </div>
       <div class="flex items-center rounded-(--radius-control) border border-(--color-ivory-300)">
         <button type="button" class="cart-item-decrease flex size-9 items-center justify-center text-(--color-ink-800) hover:bg-(--color-ivory-200)" aria-label="Giảm số lượng">−</button>
@@ -58,16 +60,14 @@ export const prerender = true;
 </BaseLayout>
 
 <script>
-  import { getCart, updateQty, removeItem, getCartTotal, CART_EVENT_NAME, type CartItem } from "../lib/cart/cart-client";
+  import { getCart, updateQty, removeItem, CART_EVENT_NAME, type CartItem } from "../lib/cart/cart-client";
+  import { PRODUCT_PRICE_LABEL } from "../lib/product-price";
 
   const emptyEl = document.getElementById("cart-empty")!;
   const filledEl = document.getElementById("cart-filled")!;
   const listEl = document.getElementById("cart-items")!;
-  const totalEl = document.getElementById("cart-total")!;
+  const countEl = document.getElementById("cart-count")!;
   const template = document.getElementById("cart-item-template") as HTMLTemplateElement;
-
-  const formatPrice = (price: number) =>
-    price.toLocaleString("vi-VN", { style: "currency", currency: "VND" });
 
   function render() {
     const items = getCart();
@@ -80,7 +80,7 @@ export const prerender = true;
     items.forEach((item: CartItem) => {
       const node = template.content.cloneNode(true) as DocumentFragment;
       node.querySelector(".cart-item-name")!.textContent = item.name;
-      node.querySelector(".cart-item-price")!.textContent = formatPrice(item.price);
+      node.querySelector(".cart-item-price")!.textContent = PRODUCT_PRICE_LABEL;
       node.querySelector(".cart-item-qty")!.textContent = String(item.qty);
 
       node.querySelector(".cart-item-decrease")!.addEventListener("click", () => updateQty(item.slug, item.qty - 1));
@@ -90,7 +90,8 @@ export const prerender = true;
       listEl.appendChild(node);
     });
 
-    totalEl.textContent = formatPrice(getCartTotal(items));
+    // Đếm tổng số món (gồm cả số lượng từng món) thay cho tổng tiền.
+    countEl.textContent = String(items.reduce((sum: number, i: CartItem) => sum + i.qty, 0));
   }
 
   window.addEventListener(CART_EVENT_NAME, render);
