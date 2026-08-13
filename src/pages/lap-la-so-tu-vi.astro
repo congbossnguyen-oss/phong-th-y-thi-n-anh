@@ -236,7 +236,8 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
   // cát/hung tương ứng, tiền tố "L." và tô màu mờ (giống cách hocvienlyso.org hiển thị nhóm sao Lưu) để
   // phân biệt rõ với phụ tinh Natal Core phía trên.
   function luuNienLineHtml(name: string): string {
-    return `<div style="font-size:8px;font-weight:600;color:${LIGHT.textMuted};opacity:.72;line-height:1.3;white-space:nowrap;">L.${name}</div>`;
+    const color = colorOfSao(name, LIGHT.textMuted);
+    return `<div style="font-size:9.5px;font-weight:600;color:${color};opacity:.72;line-height:1.3;white-space:nowrap;">L.${name}</div>`;
   }
 
   // Yêu cầu Công: bỏ chữ viết tắt Tứ Hóa nhỏ (sup) trên phụ tinh — Công thấy khó hiểu ("sao Văn Xương lại
@@ -337,10 +338,11 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
     const currentDaiVanOverlay = isCurrentDaiVan
       ? `<div style="position:absolute;inset:0;background:${LIGHT.gold}40;border:2px solid ${LIGHT.gold};border-radius:5px;box-sizing:border-box;pointer-events:none;z-index:1;"></div>`
       : "";
-    // Yêu cầu Công: cung đang ở đúng Tiểu Hạn hiện tại (theo Năm xem) — badge nhỏ góc trên trái, màu khác
-    // Đại Vận để không lẫn (có thể trùng cung với Đại Vận cùng lúc).
+    // Yêu cầu Công: cung đang ở đúng Tiểu Hạn hiện tại (theo Năm xem) — badge nhỏ góc DƯỚI trái, màu khác
+    // Đại Vận để không lẫn (có thể trùng cung với Đại Vận cùng lúc). Trước để ở góc TRÊN trái nhưng dính
+    // vào chữ Can Chi (vd "Nhâm Thìn") ngay cạnh đó — chuyển xuống góc dưới cho thoáng.
     const currentTieuHanBadge = isCurrentTieuHan
-      ? `<span style="position:absolute;top:0;left:0;font-size:6px;font-weight:800;color:#ffffff;background:#7a4fb5;padding:1px 3px;border-radius:5px 0 4px 0;z-index:2;">TIỂU HẠN</span>`
+      ? `<span style="position:absolute;bottom:0;left:0;font-size:6px;font-weight:800;color:#ffffff;background:#7a4fb5;padding:1px 3px;border-radius:0 4px 0 5px;z-index:2;">TIỂU HẠN</span>`
       : "";
     // Khung cung kiểu gỗ chạm/đồng cổ: viền ngoài nâu trầm + 2 vòng box-shadow inset (vàng nhạt rồi nâu
     // mảnh) tạo cảm giác viền kép chạm khắc, thêm bóng đổ nhẹ cho nổi khối. Nền kem có vân giấy.
