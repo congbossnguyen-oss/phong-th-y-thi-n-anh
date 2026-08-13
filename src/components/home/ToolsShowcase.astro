@@ -1,0 +1,102 @@
+---
+// Khu "PHÒNG CÔNG CỤ" — trưng bày bộ công cụ tra cứu tự động của Thiên Anh.
+//
+// Lý do thêm (yêu cầu Công "muốn thật đặc sắc"): đây là tài sản mạnh nhất và khác biệt nhất của site —
+// hơn 20 công cụ tính toán CHẠY THẬT (Tử Vi Đẩu Số, Bát Tự, Lục Hào Kinh Dịch, trạch nhật...) mà trang chủ
+// cũ không hề nhắc tới một dòng nào. Đối thủ tham chiếu (phongthuyminhtuan.com) chỉ có đúng 1 công cụ (la
+// bàn xem hướng nhà) nhưng dựng hẳn 1 banner lớn giữa trang chủ cho nó — cho thấy đây là thứ đáng khoe.
+//
+// Số lượng công cụ được TÍNH ĐỘNG từ chính danh sách nguồn (dai-cat-loi-tools.ts + CORE_TOOLS) để con số
+// không bao giờ bị lệch khi thêm/bớt công cụ về sau.
+import Container from "../ui/Container.astro";
+import Icon from "../ui/Icon.astro";
+import { daiCatLoiTools, TOTAL_TOOL_COUNT } from "../../lib/dai-cat-loi-tools";
+
+type IconName = "star" | "book-open" | "moon" | "clock" | "award" | "sun";
+
+// 6 công cụ đầu tàu đưa lên trang chủ. Các công cụ còn lại gom trong "Đại Cát Lợi" + trang tra cứu riêng.
+const CORE_TOOLS: { href: string; icon: IconName; title: string; desc: string }[] = [
+  {
+    href: "/lap-la-so-tu-vi",
+    icon: "star",
+    title: "Lập lá số Tử Vi",
+    desc: "12 cung, 14 chính tinh, Tứ Hóa, Đại Vận và sao Lưu Niên — xuất ảnh lá số đầy đủ.",
+  },
+  {
+    href: "/lap-la-so-bat-tu",
+    icon: "book-open",
+    title: "Lập lá số Bát Tự",
+    desc: "Tứ Trụ, Tàng Can, Thập Thần, Đại Vận và Lưu Niên theo đúng ngày giờ sinh.",
+  },
+  {
+    href: "/gieo-que-kinh-dich",
+    icon: "moon",
+    title: "Lập quẻ Kinh Dịch",
+    desc: "Gieo quẻ Lục Hào: Nạp Giáp, Lục Thân, Lục Thú, Thế/Ứng, Tuần Không.",
+  },
+  {
+    href: "/xem-ngay-tot-xau",
+    icon: "clock",
+    title: "Xem ngày tốt xấu",
+    desc: "Cát hung từng ngày theo Can Chi, thần sát, hoàng đạo và tuổi gia chủ.",
+  },
+  {
+    href: "/dai-cat-loi",
+    icon: "award",
+    title: "Đại Cát Lợi",
+    desc: `Bộ ${daiCatLoiTools.length} công cụ trạch cát cá nhân hóa: chọn ngày, chọn giờ, chọn tuổi hợp.`,
+  },
+  {
+    href: "/tra-cuu-menh",
+    icon: "sun",
+    title: "Tra cứu mệnh",
+    desc: "Can Chi, con giáp và mệnh Ngũ Hành Nạp Âm chỉ từ năm sinh.",
+  },
+];
+
+// Dùng chung TOTAL_TOOL_COUNT với khối số liệu (StatsSection) để 2 chỗ không bao giờ hiện 2 con số khác
+// nhau. Thẻ "Đại Cát Lợi" trong CORE_TOOLS chỉ là cửa vào của nhóm, không tính thành 1 công cụ riêng.
+const totalTools = TOTAL_TOOL_COUNT;
+---
+
+<section class="relative overflow-hidden bg-(--color-ivory-50) py-16 sm:py-20">
+  <!-- Vầng sáng vàng mờ phía sau, thuần trang trí -->
+  <div
+    class="pointer-events-none absolute left-1/2 top-0 size-[36rem] -translate-x-1/2 -translate-y-1/3 rounded-full bg-(--color-gold-500)/10 blur-3xl"
+  >
+  </div>
+
+  <Container class="relative">
+    <div class="mx-auto max-w-2xl text-center">
+      <p class="text-xs font-semibold uppercase tracking-widest text-(--color-gold-300)">Miễn phí — không cần đăng ký</p>
+      <h2 class="mt-2 font-display text-3xl font-semibold text-(--color-ink-950) sm:text-4xl">
+        <span class="text-(--color-gold-300)">{totalTools} công cụ</span> tra cứu tự động
+      </h2>
+      <p class="mt-4 text-base leading-relaxed text-(--color-ink-700)">
+        Không chỉ là nơi để đọc — Thiên Anh xây dựng bộ công cụ tính toán theo đúng cổ pháp, để bạn tự lập
+        lá số, gieo quẻ và chọn ngày ngay trên trình duyệt.
+      </p>
+    </div>
+
+    <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {
+        CORE_TOOLS.map((tool) => (
+          <a
+            href={tool.href}
+            class="group relative flex flex-col gap-3 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6 transition hover:-translate-y-0.5 hover:border-(--color-gold-400)/60 hover:bg-(--color-ivory-200)"
+          >
+            <span class="flex size-11 items-center justify-center rounded-full border border-(--color-gold-500)/40 bg-(--color-gold-500)/10 text-(--color-gold-300) transition group-hover:border-(--color-gold-400) group-hover:bg-(--color-gold-500)/20">
+              <Icon name={tool.icon} class="size-5" />
+            </span>
+            <span class="font-display text-lg font-semibold text-(--color-ink-950)">{tool.title}</span>
+            <span class="text-sm leading-relaxed text-(--color-ink-600)">{tool.desc}</span>
+            <span class="mt-auto inline-flex items-center gap-1.5 pt-1 text-sm font-medium text-(--color-gold-300)">
+              Dùng thử ngay
+              <Icon name="arrow-right" class="size-3.5 transition group-hover:translate-x-0.5" />
+            </span>
+          </a>
+        ))
+      }
+    </div>
+  </Container>
+</section>

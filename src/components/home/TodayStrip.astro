@@ -1,0 +1,169 @@
+---
+// Dải "HÔM NAY" — dữ liệu lịch/trạch nhật SỐNG, tự cập nhật mỗi ngày.
+//
+// Lý do thêm (yêu cầu Công "trang chủ chưa bắt mắt, muốn thật đặc sắc"): trang chủ cũ hoàn toàn là nội
+// dung TĨNH để đọc (tagline → tiểu sử → dịch vụ → cảm nhận), không có gì để người xem TƯƠNG TÁC hay lý do
+// quay lại hằng ngày. Người Việt có thói quen tra lịch âm/ngày tốt xấu mỗi ngày — đây là thứ kéo người
+// dùng quay lại thường xuyên nhất, và đối thủ tham chiếu (phongthuyminhtuan.com) KHÔNG có.
+//
+// Dữ liệu lấy từ /api/trach-nhat (endpoint đã có sẵn, đang dùng cho trang /xem-ngay-tot-xau) — không viết
+// lại logic trạch nhật nào ở đây. Gọi phía client vì trang chủ là prerender tĩnh, nếu render lúc build thì
+// ngày sẽ bị "đóng băng" tại thời điểm deploy.
+import Container from "../ui/Container.astro";
+import Icon from "../ui/Icon.astro";
+---
+
+<section class="relative overflow-hidden border-y border-(--color-gold-500)/25 bg-(--color-ivory-100)">
+  <!-- Vệt sáng vàng mờ tạo chiều sâu, thuần trang trí -->
+  <div
+    class="pointer-events-none absolute -top-24 left-1/4 size-[30rem] rounded-full bg-(--color-gold-500)/10 blur-3xl"
+  >
+  </div>
+
+  <Container class="relative py-8 sm:py-10">
+    <div class="mb-5 flex flex-wrap items-end justify-between gap-3">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-widest text-(--color-gold-300)">Lịch vạn niên</p>
+        <h2 class="mt-1 font-display text-2xl font-semibold text-(--color-ink-950) sm:text-3xl">
+          Hôm nay ngày gì?
+        </h2>
+      </div>
+      <a
+        href="/xem-ngay-tot-xau"
+        class="inline-flex items-center gap-1.5 text-sm font-medium text-(--color-gold-300) hover:underline"
+      >
+        Xem chi tiết ngày khác
+        <Icon name="arrow-right" class="size-3.5" />
+      </a>
+    </div>
+
+    <div
+      id="today-strip"
+      class="grid gap-px overflow-hidden rounded-(--radius-card) border border-(--color-gold-500)/30 bg-(--color-gold-500)/20 sm:grid-cols-3"
+      data-state="loading"
+    >
+      <!-- Khung xương lúc đang tải; script bên dưới thay bằng dữ liệu thật -->
+      <div class="bg-(--color-ivory-200) p-5">
+        <div class="h-3 w-20 animate-pulse rounded bg-(--color-ivory-400)/40"></div>
+        <div class="mt-3 h-9 w-28 animate-pulse rounded bg-(--color-ivory-400)/40"></div>
+        <div class="mt-3 h-3 w-32 animate-pulse rounded bg-(--color-ivory-400)/40"></div>
+      </div>
+      <div class="bg-(--color-ivory-200) p-5">
+        <div class="h-3 w-24 animate-pulse rounded bg-(--color-ivory-400)/40"></div>
+        <div class="mt-3 h-6 w-36 animate-pulse rounded bg-(--color-ivory-400)/40"></div>
+        <div class="mt-3 h-3 w-28 animate-pulse rounded bg-(--color-ivory-400)/40"></div>
+      </div>
+      <div class="bg-(--color-ivory-200) p-5">
+        <div class="h-3 w-20 animate-pulse rounded bg-(--color-ivory-400)/40"></div>
+        <div class="mt-3 h-8 w-32 animate-pulse rounded bg-(--color-ivory-400)/40"></div>
+        <div class="mt-3 h-3 w-36 animate-pulse rounded bg-(--color-ivory-400)/40"></div>
+      </div>
+    </div>
+  </Container>
+</section>
+
+<script>
+  type TrachNhatResponse = {
+    ok: boolean;
+    data?: {
+      solarDate: { year: number; month: number; day: number };
+      lunarDate: { year: number; month: number; day: number; isLeapMonth: boolean };
+      tietKhi?: { name: string } | null;
+      tuTru: { nam: { can: string; chi: string }; thang: { can: string; chi: string }; ngay: { can: string; chi: string } };
+      truc?: { name: string } | null;
+      nhiThapBatTu?: { name: string; catHung: string } | null;
+      hoangDaoHacDaoNgay: string;
+      tuoiXungNgay: string[];
+      gio12: { chiGio: string; hoangDaoHacDaoGio: { name: string; catHung: string } }[];
+    };
+  };
+
+  const el = document.getElementById("today-strip");
+
+  function esc(s: string): string {
+    return s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
+  }
+
+  // Ô con dùng chung 1 nền để 'gap-px' của lưới cha tạo thành đường kẻ vàng mảnh giữa các ô.
+  const CELL = "bg-(--color-ivory-200) p-5";
+
+  async function render() {
+    if (!el) return;
+    const now = new Date();
+    try {
+      const res = await fetch(
+        `/api/trach-nhat?year=${now.getFullYear()}&month=${now.getMonth() + 1}&day=${now.getDate()}&timeZone=Asia/Ho_Chi_Minh`,
+      );
+      const json: TrachNhatResponse = await res.json();
+      if (!json.ok || !json.data) throw new Error("no data");
+      const d = json.data;
+
+      const laHoangDao = d.hoangDaoHacDaoNgay?.toLowerCase().includes("hoàng");
+      // Giờ hoàng đạo trong ngày — lọc từ 12 giờ Địa Chi, chỉ lấy giờ có cát thần.
+      const gioTot = d.gio12
+        .filter((g) => g.hoangDaoHacDaoGio?.catHung === "cát")
+        .map((g) => g.chiGio);
+
+      const amLich = `${d.lunarDate.day}/${d.lunarDate.month}${d.lunarDate.isLeapMonth ? " (nhuận)" : ""}`;
+      const ngayCanChi = `${d.tuTru.ngay.can} ${d.tuTru.ngay.chi}`;
+      const thangCanChi = `${d.tuTru.thang.can} ${d.tuTru.thang.chi}`;
+      const namCanChi = `${d.tuTru.nam.can} ${d.tuTru.nam.chi}`;
+
+      // Badge cát/hung: xanh ngọc cho hoàng đạo, đỏ chu sa cho hắc đạo — dùng màu inline vì bảng token
+      // của site chưa có tông xanh lá.
+      const badge = laHoangDao
+        ? `<span style="background:rgba(88,150,104,.16);border-color:rgba(120,190,140,.55);color:#8fd3a4;" class="inline-flex items-center rounded-full border px-3 py-1 text-sm font-semibold">Ngày Hoàng Đạo</span>`
+        : `<span style="background:rgba(193,74,58,.16);border-color:rgba(209,92,74,.55);color:#e08b7c;" class="inline-flex items-center rounded-full border px-3 py-1 text-sm font-semibold">Ngày Hắc Đạo</span>`;
+
+      el.dataset.state = "ready";
+      el.innerHTML = `
+        <div class="${CELL}">
+          <p class="text-xs font-medium uppercase tracking-wide text-(--color-ink-600)">Dương lịch</p>
+          <p class="mt-1 font-display text-4xl font-semibold leading-none text-(--color-ink-950)">
+            ${d.solarDate.day}<span class="text-xl text-(--color-ink-600)">/${d.solarDate.month}</span>
+          </p>
+          <p class="mt-2 text-sm text-(--color-ink-700)">
+            Âm lịch <strong class="text-(--color-gold-300)">${esc(amLich)}</strong>
+            ${d.tietKhi?.name ? ` · Tiết ${esc(d.tietKhi.name)}` : ""}
+          </p>
+        </div>
+
+        <div class="${CELL}">
+          <p class="text-xs font-medium uppercase tracking-wide text-(--color-ink-600)">Can Chi</p>
+          <p class="mt-1 font-display text-2xl font-semibold text-(--color-ink-950)">Ngày ${esc(ngayCanChi)}</p>
+          <p class="mt-2 text-sm text-(--color-ink-700)">
+            Tháng ${esc(thangCanChi)} · Năm ${esc(namCanChi)}
+          </p>
+          ${
+            d.truc?.name || d.nhiThapBatTu?.name
+              ? `<p class="mt-1 text-sm text-(--color-ink-600)">
+                   ${d.truc?.name ? `Trực <strong class="text-(--color-ink-800)">${esc(d.truc.name)}</strong>` : ""}
+                   ${d.nhiThapBatTu?.name ? ` · Sao <strong class="text-(--color-ink-800)">${esc(d.nhiThapBatTu.name)}</strong>` : ""}
+                 </p>`
+              : ""
+          }
+        </div>
+
+        <div class="${CELL}">
+          <p class="text-xs font-medium uppercase tracking-wide text-(--color-ink-600)">Cát hung</p>
+          <div class="mt-2">${badge}</div>
+          ${
+            gioTot.length
+              ? `<p class="mt-2.5 text-sm text-(--color-ink-700)">Giờ hoàng đạo: <strong class="text-(--color-gold-300)">${esc(gioTot.join(", "))}</strong></p>`
+              : ""
+          }
+          ${
+            d.tuoiXungNgay?.length
+              ? `<p class="mt-1 text-sm text-(--color-ink-600)">Tuổi xung: ${esc(d.tuoiXungNgay.join(", "))}</p>`
+              : ""
+          }
+        </div>
+      `;
+    } catch {
+      // Không chặn trang chủ nếu API lỗi — ẩn hẳn dải này đi cho gọn thay vì hiện khung xương mãi.
+      el.closest("section")?.remove();
+    }
+  }
+
+  render();
+</script>

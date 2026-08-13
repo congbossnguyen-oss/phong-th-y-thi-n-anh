@@ -3,6 +3,17 @@
 // toàn, tránh lỗi resolve module khi import trực tiếp từ file .astro.
 export type DaiCatLoiTool = { href: string; icon: string; title: string; desc: string };
 
+// Các công cụ ĐỘC LẬP (không nằm trong nhóm Đại Cát Lợi) — khai báo ở đây làm nguồn duy nhất để trang chủ
+// (StatsSection/ToolsShowcase) đếm tổng số công cụ mà không bị lệch nhau khi thêm/bớt về sau.
+export const STANDALONE_TOOL_PATHS = [
+  "/lap-la-so-tu-vi",
+  "/lap-la-so-bat-tu",
+  "/gieo-que-kinh-dich",
+  "/xem-ngay-tot-xau",
+  "/tinh-trung-tang",
+  "/tra-cuu-menh",
+] as const;
+
 export const daiCatLoiTools: DaiCatLoiTool[] = [
   {
     href: "/dai-cat-loi/ngay-dai-cat-ca-nhan",
@@ -107,3 +118,9 @@ export const daiCatLoiTools: DaiCatLoiTool[] = [
     desc: "Kiểm tra Thái Tuế/Tuế Phá/Tam Sát tại phương vị định động, Kim Lâu/Hoàng Ốc/Tam Tai của chủ, rồi tìm ngày giờ tốt nhất.",
   },
 ];
+
+/**
+ * Tổng số công cụ tra cứu của site = nhóm Đại Cát Lợi + các công cụ độc lập.
+ * Khai báo SAU mảng daiCatLoiTools (không thể đặt trên đầu file vì sẽ đọc biến khi chưa khởi tạo).
+ */
+export const TOTAL_TOOL_COUNT = daiCatLoiTools.length + STANDALONE_TOOL_PATHS.length;

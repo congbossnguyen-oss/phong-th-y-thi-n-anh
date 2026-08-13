@@ -1,7 +1,9 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Hero from "../components/home/Hero.astro";
+import TodayStrip from "../components/home/TodayStrip.astro";
 import StatsSection from "../components/home/StatsSection.astro";
+import ToolsShowcase from "../components/home/ToolsShowcase.astro";
 import MasterIntro from "../components/home/MasterIntro.astro";
 import FeaturedServices from "../components/home/FeaturedServices.astro";
 import FeaturedProducts from "../components/home/FeaturedProducts.astro";
@@ -30,7 +32,13 @@ const personSchema = {
 <BaseLayout title={siteConfig.name} description={siteConfig.description}>
   <script type="application/ld+json" set:html={JSON.stringify(personSchema)} />
   <Hero />
+  <!-- Thứ tự dẫn dắt: lời hứa thương hiệu (Hero) → giá trị dùng được NGAY hôm nay (TodayStrip) → uy tín
+       (Stats) → thứ khác biệt nhất, dùng miễn phí (ToolsShowcase) → con người đứng sau (MasterIntro) →
+       dịch vụ trả phí. Đặt công cụ miễn phí TRƯỚC dịch vụ trả phí để người xem nhận giá trị rồi mới được
+       mời mua. -->
+  <TodayStrip />
   <StatsSection />
+  <ToolsShowcase />
   <MasterIntro />
   <FeaturedServices />
   <div class="hidden sm:block">
