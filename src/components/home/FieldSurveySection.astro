@@ -1,0 +1,81 @@
+---
+// Khối "TƯ VẤN THỰC ĐỊA" trên trang chủ — nhật ký khảo sát/hành nghề thật của Zhi Gong.
+//
+// Yêu cầu Công: đưa danh mục này lên trang chủ cho dễ nhìn, nhằm tạo độ uy tín. Đây là loại nội dung
+// thuyết phục nhất hiện có: chuyện thật, ảnh thật, có chẩn đoán và hướng hoá giải cụ thể — khác hẳn cảm
+// nhận khách hàng chung chung. Đặt cạnh khối Cảm nhận (Testimonials) để 2 loại bằng chứng bổ trợ nhau.
+//
+// Bài lấy TRỰC TIẾP từ mảng posts (lọc theo categorySlug "tu-van-thuc-dia") nên khi Công đăng thêm bài
+// mới vào danh mục này, trang chủ tự cập nhật, không phải sửa ở đây.
+import Container from "../ui/Container.astro";
+import SectionHeading from "../ui/SectionHeading.astro";
+import Icon from "../ui/Icon.astro";
+import { posts } from "../../lib/placeholder-data";
+
+const FIELD_CATEGORY = "tu-van-thuc-dia";
+
+// Bài mới nhất lên trước; lấy tối đa 3 bài cho vừa 1 hàng trên màn lớn.
+const baiThucDia = posts
+  .filter((p) => p.categorySlug === FIELD_CATEGORY)
+  .sort((a, b) => (a.publishedAt < b.publishedAt ? 1 : -1))
+  .slice(0, 3);
+
+function ngayVN(iso: string): string {
+  const [y, m, d] = iso.split("-");
+  return `${d}/${m}/${y}`;
+}
+---
+
+{
+  baiThucDia.length > 0 && (
+    <section class="bg-(--color-ivory-50) py-16 sm:py-20">
+      <Container>
+        <div class="flex flex-wrap items-end justify-between gap-4">
+          <SectionHeading
+            eyebrow="Tư vấn thực địa"
+            title="Nhật ký khảo sát thực tế"
+            description="Ghi chép từ chính những buổi khảo sát tại nhà và văn phòng khách hàng — từ chẩn đoán đến hướng hoá giải."
+          />
+          <a
+            href="/kien-thuc"
+            class="inline-flex items-center gap-1.5 text-sm font-medium text-(--color-gold-300) hover:underline"
+          >
+            Xem tất cả bài viết
+            <Icon name="arrow-right" class="size-3.5" />
+          </a>
+        </div>
+
+        <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+          {baiThucDia.map((post) => (
+            <a
+              href={`/kien-thuc/${post.categorySlug}/${post.slug}`}
+              class="group flex flex-col overflow-hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) transition hover:-translate-y-0.5 hover:border-(--color-gold-400)/60"
+            >
+              <div class="aspect-16/10 overflow-hidden bg-(--color-ivory-200)">
+                <img
+                  src={post.image}
+                  alt={post.title}
+                  loading="lazy"
+                  class="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                />
+              </div>
+              <div class="flex flex-1 flex-col p-5">
+                <p class="text-xs font-medium uppercase tracking-wide text-(--color-gold-500)">
+                  {post.category} · {ngayVN(post.publishedAt)}
+                </p>
+                <h3 class="mt-2 font-display text-lg font-semibold leading-snug text-(--color-ink-950)">
+                  {post.title}
+                </h3>
+                <p class="mt-2 line-clamp-3 text-sm leading-relaxed text-(--color-ink-600)">{post.excerpt}</p>
+                <span class="mt-auto inline-flex items-center gap-1.5 pt-4 text-sm font-medium text-(--color-gold-300)">
+                  Đọc bài khảo sát
+                  <Icon name="arrow-right" class="size-3.5 transition group-hover:translate-x-0.5" />
+                </span>
+              </div>
+            </a>
+          ))}
+        </div>
+      </Container>
+    </section>
+  )
+}
