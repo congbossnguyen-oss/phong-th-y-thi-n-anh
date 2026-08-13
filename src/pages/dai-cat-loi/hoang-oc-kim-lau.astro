@@ -96,6 +96,16 @@ export const prerender = true;
 </BaseLayout>
 
 <script>
+  // Chấm màu CSS tự vẽ thay cho emoji tròn màu (🟢🟡🟠🔴) trong nhãn "nhan" — emoji phụ thuộc font
+  // từng máy, có thể khiến vàng/cam trông gần giống nhau ở cỡ nhỏ. Dùng hex cố định để tương phản rõ.
+  const EMOJI_DOT_COLOR: Record<string, string> = { "⭐": "#7c3aed", "🟢": "#16a34a", "🟡": "#eab308", "🟠": "#c2410c", "🔴": "#dc2626" };
+  function nhanDotHtml(nhan: string): string {
+    const m = nhan.match(/^(\S+)\s*([\s\S]*)$/);
+    const color = m ? EMOJI_DOT_COLOR[m[1]] : undefined;
+    if (!color || !m) return nhan;
+    return `<span class="inline-flex items-center gap-1.5"><span class="inline-block size-2.5 shrink-0 rounded-full" style="background:${color};"></span>${m[2]}</span>`;
+  }
+
   interface HoangOcResult { cung: string; ten: string; tot: boolean }
   interface KimLauResult { loai: string; ten: string; pham: boolean }
   interface TamTaiResult { pham: boolean; nhomTuoi?: string[] }
@@ -205,7 +215,7 @@ export const prerender = true;
               <p class="font-display text-base font-bold text-slate-900">${huyChuong} Năm ${r.namXem} <span class="text-xs font-normal text-slate-500">(tuổi mụ ${r.tuoiMu})</span></p>
               <p class="text-xs text-slate-500">${r.hoangOc.ten} · ${r.kimLau.ten} · ${r.tamTai.pham ? "Phạm Tam Tai" : "Không phạm Tam Tai"}</p>
             </div>
-            <span class="text-sm font-semibold">${r.ketLuan.nhan}</span>
+            <span class="text-sm font-semibold">${nhanDotHtml(r.ketLuan.nhan)}</span>
           </div>`;
         })
         .join("");

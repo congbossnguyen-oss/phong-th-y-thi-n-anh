@@ -83,6 +83,16 @@ export const prerender = true;
 </BaseLayout>
 
 <script>
+  // Chấm màu CSS tự vẽ thay cho emoji tròn màu (🟢🟡🟠🔴) trong nhãn "nhan" — emoji phụ thuộc font
+  // từng máy, có thể khiến vàng/cam trông gần giống nhau ở cỡ nhỏ. Dùng hex cố định để tương phản rõ.
+  const EMOJI_DOT_COLOR: Record<string, string> = { "⭐": "#7c3aed", "🟢": "#16a34a", "🟡": "#eab308", "🟠": "#c2410c", "🔴": "#dc2626" };
+  function nhanDotHtml(nhan: string): string {
+    const m = nhan.match(/^(\S+)\s*([\s\S]*)$/);
+    const color = m ? EMOJI_DOT_COLOR[m[1]] : undefined;
+    if (!color || !m) return nhan;
+    return `<span class="inline-flex items-center gap-1.5"><span class="inline-block size-2.5 shrink-0 rounded-full" style="background:${color};"></span>${m[2]}</span>`;
+  }
+
   interface YeuTo { ten: string; diem: number }
   interface VanMayResult {
     solarDate: { year: number; month: number; day: number };
@@ -137,7 +147,7 @@ export const prerender = true;
 
     const ngayStr = `${String(result.solarDate.day).padStart(2, "0")}/${String(result.solarDate.month).padStart(2, "0")}/${result.solarDate.year}`;
     document.getElementById("van-may-ngay-str")!.textContent = ngayStr;
-    document.getElementById("van-may-nhan")!.textContent = result.nhan;
+    document.getElementById("van-may-nhan")!.innerHTML = nhanDotHtml(result.nhan);
     document.getElementById("van-may-diem")!.textContent = `${result.diem}/10 điểm`;
     document.getElementById("van-may-tai-loc")!.textContent = String(result.phuTro.taiLoc);
     document.getElementById("van-may-cong-viec")!.textContent = String(result.phuTro.congViec);

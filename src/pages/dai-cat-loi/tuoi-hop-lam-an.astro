@@ -77,6 +77,16 @@ export const prerender = true;
 </BaseLayout>
 
 <script>
+  // Chấm màu CSS tự vẽ thay cho emoji tròn màu (🟢🟡🟠🔴) trong nhãn "nhan" — emoji phụ thuộc font
+  // từng máy, có thể khiến vàng/cam trông gần giống nhau ở cỡ nhỏ. Dùng hex cố định để tương phản rõ.
+  const EMOJI_DOT_COLOR: Record<string, string> = { "⭐": "#7c3aed", "🟢": "#16a34a", "🟡": "#eab308", "🟠": "#c2410c", "🔴": "#dc2626" };
+  function nhanDotHtml(nhan: string): string {
+    const m = nhan.match(/^(\S+)\s*([\s\S]*)$/);
+    const color = m ? EMOJI_DOT_COLOR[m[1]] : undefined;
+    if (!color || !m) return nhan;
+    return `<span class="inline-flex items-center gap-1.5"><span class="inline-block size-2.5 shrink-0 rounded-full" style="background:${color};"></span>${m[2]}</span>`;
+  }
+
   interface TuoiHopTieuChi {
     diem: number;
     moTa: string;
@@ -131,7 +141,7 @@ export const prerender = true;
       return;
     }
 
-    tuoiHopNhanEl.textContent = `${namSinh1} × ${namSinh2} — ${result.nhan}`;
+    tuoiHopNhanEl.innerHTML = `${namSinh1} × ${namSinh2} — ${nhanDotHtml(result.nhan)}`;
     tuoiHopDiemEl.textContent = `${result.diem}/10 điểm`;
     document.getElementById("tuoi-hop-can")!.textContent = result.can.moTa;
     document.getElementById("tuoi-hop-chi")!.textContent = result.chi.moTa;

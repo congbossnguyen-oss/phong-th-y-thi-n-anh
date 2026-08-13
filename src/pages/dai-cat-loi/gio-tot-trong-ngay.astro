@@ -80,6 +80,23 @@ export const prerender = true;
 
   const HUY_CHUONG = ["🥇", "🥈", "🥉"];
 
+  // Chấm màu CSS tự vẽ thay cho emoji tròn màu (🟢🟡🟠🔴) — emoji phụ thuộc font từng máy, có thể
+  // khiến vàng/cam trông gần giống nhau ở cỡ nhỏ. Dùng hex cố định để đảm bảo tương phản rõ ràng.
+  const HANG_COLOR: Record<string, string> = {
+    "rat-tot": "#7c3aed",
+    "tot": "#16a34a",
+    "co-the-dung": "#eab308",
+    "khong-thuan": "#c2410c",
+    "nen-tranh": "#dc2626",
+  };
+  function stripEmoji(nhan: string): string {
+    return nhan.replace(/^\S+\s*/u, "");
+  }
+  function nhanDotHtml(hang: string, nhan: string): string {
+    const color = HANG_COLOR[hang] ?? "#6b7280";
+    return `<span class="inline-flex items-center gap-1.5"><span class="inline-block size-2.5 shrink-0 rounded-full" style="background:${color};"></span>${stripEmoji(nhan)}</span>`;
+  }
+
   const ngaySelect = document.getElementById("gio-tot-ngay") as HTMLSelectElement;
   const thangSelect = document.getElementById("gio-tot-thang") as HTMLSelectElement;
   const namSelect = document.getElementById("gio-tot-nam") as HTMLSelectElement;
@@ -165,7 +182,7 @@ export const prerender = true;
           <div class="rounded-lg border border-slate-200 bg-white">
             <button type="button" class="gio-tot-row w-full px-4 py-3 text-left" data-idx="${i}">
               <p class="text-sm font-bold text-slate-900">${huyChuong} ${g.khungGio} (giờ ${g.chiGio})</p>
-              <p class="text-sm">${g.nhan} — ${g.diem}/10</p>
+              <p class="text-sm">${nhanDotHtml(g.hang, g.nhan)} — ${g.diem}/10</p>
             </button>
             <div class="gio-tot-detail hidden border-t border-slate-100 px-4 py-3">
               <ul class="space-y-0.5 text-xs text-slate-600">${yeuToHtml}</ul>

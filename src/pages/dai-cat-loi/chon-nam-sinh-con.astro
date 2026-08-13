@@ -66,6 +66,16 @@ export const prerender = true;
 </BaseLayout>
 
 <script>
+  // Chấm màu CSS tự vẽ thay cho emoji tròn màu (🟢🟡🟠🔴) trong nhãn "nhan" — emoji phụ thuộc font
+  // từng máy, có thể khiến vàng/cam trông gần giống nhau ở cỡ nhỏ. Dùng hex cố định để tương phản rõ.
+  const EMOJI_DOT_COLOR: Record<string, string> = { "⭐": "#7c3aed", "🟢": "#16a34a", "🟡": "#eab308", "🟠": "#c2410c", "🔴": "#dc2626" };
+  function nhanDotHtml(nhan: string): string {
+    const m = nhan.match(/^(\S+)\s*([\s\S]*)$/);
+    const color = m ? EMOJI_DOT_COLOR[m[1]] : undefined;
+    if (!color || !m) return nhan;
+    return `<span class="inline-flex items-center gap-1.5"><span class="inline-block size-2.5 shrink-0 rounded-full" style="background:${color};"></span>${m[2]}</span>`;
+  }
+
   interface TieuChi { diem: number; moTa: string }
   interface ParentChildScore {
     diem: number;
@@ -120,7 +130,7 @@ export const prerender = true;
           return `<button type="button" class="ccc-item w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-left hover:bg-slate-100" data-idx="${i}">
             <div class="flex items-center justify-between">
               <p class="font-display text-base font-bold text-slate-900">${huyChuong} Năm ${r.namSinhCon}</p>
-              <span class="text-sm font-semibold">${r.nhan} — ${r.diem}/10</span>
+              <span class="text-sm font-semibold">${nhanDotHtml(r.nhan)} — ${r.diem}/10</span>
             </div>
             <div class="ccc-chi-tiet mt-2 hidden space-y-1 text-xs text-slate-500">
               <p><strong>Cha → Con (${r.cha.diem}/10):</strong> Mệnh ${r.cha.menh.moTa}; Can ${r.cha.thienCan.moTa}; Chi ${r.cha.diaChi.moTa}; Cung ${r.cha.cungMenh.moTa}; Niên mệnh ${r.cha.nienMenh.moTa}</p>
