@@ -426,10 +426,8 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
   // đúng chỗ hình Thái Cực/Bát Quái của bản demo tham chiếu. Vẫn để mờ + nằm dưới lớp chữ (z-index/thứ tự
   // DOM) nên không che nội dung.
   function centerPanelHtml(chart: TuViChart, batTu: BatTuChart, name: string, timeLabel: string): string {
-    // Vòng tròn đồng tâm mảnh quanh logo — gợi cảm giác con dấu cổ, thay cho vòng Bát Quái của bản demo.
-    const sealRings =
-      `<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:60%;padding-bottom:60%;max-width:250px;border-radius:9999px;` +
-      `border:1px solid rgba(140,90,43,.16);box-shadow:0 0 0 6px rgba(140,90,43,.05),inset 0 0 0 7px rgba(140,90,43,.05);pointer-events:none;z-index:0;"></div>`;
+    // Yêu cầu Công: bỏ vòng tròn đồng tâm mảnh quanh logo trung tâm — Công thấy nó nổi lên thành "hình
+    // vàng" lạ mắt cạnh logo, không phải hiệu ứng mong muốn.
     // Yêu cầu Công: cặp linh vật rồng/phượng 2 bên khu trung tâm — thử tự vẽ SVG rồng nhưng Công thấy phần
     // này quá khó để làm đẹp, quyết định BỎ HẲN (yêu cầu "rồng phượng khó quá bỏ qua"), giữ khu trung tâm
     // sạch, chỉ còn logo + vòng con dấu ở giữa, giống đúng bản demo tham chiếu Công gửi.
@@ -440,7 +438,6 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
     const nowStamp = `${pad2(now.getHours())}:${pad2(now.getMinutes())}-${pad2(now.getDate())}/${pad2(now.getMonth() + 1)}/${now.getFullYear()}`;
     return `
       <div data-tv-center style="position:relative;grid-row:2 / span 2;grid-column:2 / span 2;border:1.5px solid ${LIGHT.cellBorder};border-radius:6px;box-shadow:inset 0 0 0 1px ${LIGHT.frameInner},inset 0 0 0 2.5px rgba(255,255,255,.5),0 1px 3px rgba(92,51,23,.22);background:${PARCHMENT_TEXTURE};padding:10px 12px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:center;overflow:hidden;">
-        ${sealRings}
         <img src="/images/brand/zhi-gong-logo.png" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:52%;max-width:215px;opacity:.13;pointer-events:none;z-index:0;" />
         <div style="position:relative;z-index:1;font-size:10.5px;line-height:1.55;color:${LIGHT.blue};text-align:center;">
           <p style="margin:0;font-weight:800;font-size:12px;letter-spacing:.04em;color:${LIGHT.text};">PHONG THỦY THIÊN ANH</p>
@@ -602,7 +599,7 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
     return `
       <div style="width:${CARD_WIDTH}px;height:${CARD_HEIGHT}px;font-family:Georgia,'Times New Roman','Palatino Linotype',serif;background:${DO_TEXTURE};color:${LIGHT.text};${cardFrame}padding:16px;box-sizing:border-box;display:flex;flex-direction:column;">
         <div style="display:flex;align-items:center;gap:9px;border-bottom:2px solid ${LIGHT.gold};padding-bottom:8px;flex-shrink:0;">
-          <img src="/images/brand/zhi-gong-logo.png" style="width:36px;height:36px;border-radius:9999px;border:2px solid ${LIGHT.frameOuter};box-shadow:0 0 0 1.5px ${LIGHT.gold};object-fit:cover;flex-shrink:0;" />
+          <img src="/images/brand/zhi-gong-logo.png" style="width:36px;height:36px;border-radius:9999px;border:2px solid ${LIGHT.frameOuter};object-fit:cover;flex-shrink:0;" />
           <div>
             <p style="margin:0;font-size:15px;font-weight:800;letter-spacing:.03em;color:${LIGHT.gold};">PHONGTHUYTHIENANH.COM</p>
             <p style="margin:0;font-size:9px;font-weight:700;letter-spacing:.10em;color:${LIGHT.frameInner};">LÁ SỐ TỬ VI ĐẨU SỐ</p>
