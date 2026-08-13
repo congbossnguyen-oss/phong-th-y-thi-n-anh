@@ -13,3 +13,4 @@ export * from "./ngayLeViengMo.js";
 export * from "./ngayKhaiQuang.js";
 export * from "./huongXuatHanh.js";
 export * from "./xuatHanhCaNhanTongHop.js";
+export * from "./suaChuaCaiTaoNha.js";

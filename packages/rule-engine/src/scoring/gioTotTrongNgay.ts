@@ -48,6 +48,10 @@ export const GIO_PURPOSE_LIST = [
   "PHONG_VAN",
   "DOI_NO",
   "GIAO_DICH",
+  // Module Chọn Ngày Giờ Sửa Chữa – Cải Tạo Nhà — việc "khởi công/động thổ", gần bản chất với
+  // KHAI_TRUONG/DONG_PHONG (đều cần nền ngày + Hoàng Đạo giờ vững chắc hơn các mục đích giao
+  // tiếp thông thường) nên nhấn 2 yếu tố này, giống cách 2 module đó đã cấu hình.
+  "SUA_CHUA_CAI_TAO",
 ] as const;
 export type GioPurpose = (typeof GIO_PURPOSE_LIST)[number];
 
@@ -129,6 +133,7 @@ export const GIO_PURPOSE_RULES: Record<GioPurpose, Partial<TrongSoGio>> = {
   // luận") đã ghi trong `TIEU_LUC_NHAM_NAMES`, không phải trích dẫn trực tiếp 1 nguồn cổ.
   DOI_NO: { catHungGio: 0.22, chi: 0.24, can: 0.16 },
   GIAO_DICH: { can: 0.2, chi: 0.28, nenNgay: 0.18 }, // như KY_HOP_DONG
+  SUA_CHUA_CAI_TAO: { nenNgay: 0.28, hoangHacGio: 0.16, chi: 0.22 }, // như KHAI_TRUONG, nhấn nền ngày + Hoàng Đạo giờ
 };
 
 function resolveTrongSo(purpose: GioPurpose): TrongSoGio {

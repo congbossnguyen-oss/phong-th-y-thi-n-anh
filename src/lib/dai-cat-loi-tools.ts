@@ -111,6 +111,12 @@ export const daiCatLoiTools: DaiCatLoiTool[] = [
     title: "Ngày Giờ Xuất Hành Cá Nhân",
     desc: "Tìm ngày và giờ xuất hành tốt nhất cho riêng bạn — kết hợp Trạch Cát ngày, Tiểu Lục Nhâm giờ, tuổi và mục đích.",
   },
+  {
+    href: "/dai-cat-loi/sua-chua-cai-tao-nha",
+    icon: "🛠️",
+    title: "Chọn Ngày Giờ Sửa Chữa – Cải Tạo Nhà",
+    desc: "Kiểm tra Thái Tuế/Tuế Phá/Tam Sát tại phương vị định động, Kim Lâu/Hoàng Ốc/Tam Tai của chủ, rồi tìm ngày giờ tốt nhất.",
+  },
 ];
 
 /**

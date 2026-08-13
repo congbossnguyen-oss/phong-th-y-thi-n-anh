@@ -28,6 +28,7 @@ import { calculateChonNgayGiaoDichRange } from "./processing/chonNgayGiaoDich.js
 import { calculateNgayLeViengMoRange } from "./processing/ngayLeViengMo.js";
 import { calculateNgayKhaiQuangRange } from "./processing/ngayKhaiQuang.js";
 import { calculateXuatHanhCaNhanRange, calculateXuatHanhCaNhanMotNgay } from "./processing/xuatHanhCaNhanTongHop.js";
+import { calculateSuaChuaCaiTaoNhaRange, calculateSuaChuaCaiTaoNhaMotNgay } from "./processing/suaChuaCaiTaoNha.js";
 import { tinhTuTru } from "./processing/tuTru.js";
 import type { TrachNhatInput, TrachNhatOutput } from "./types.js";
 import { validateTrachNhatInput } from "./validation.js";
@@ -120,6 +121,16 @@ export type {
   XuatHanhCaNhanMotNgayInput,
 } from "./processing/xuatHanhCaNhanTongHop.js";
 export { calculateXuatHanhCaNhanRange, calculateXuatHanhCaNhanMotNgay };
+export type {
+  RenovationType,
+  RenovationLevel,
+  SuaChuaCaiTaoNhaInput,
+  SuaChuaCaiTaoToHop,
+  SuaChuaCaiTaoNhaRangeInput,
+  SuaChuaCaiTaoNhaRangeResult,
+  SuaChuaCaiTaoNhaMotNgayInput,
+} from "./processing/suaChuaCaiTaoNha.js";
+export { calculateSuaChuaCaiTaoNhaRange, calculateSuaChuaCaiTaoNhaMotNgay };
 
 export * from "./types.js";
 
