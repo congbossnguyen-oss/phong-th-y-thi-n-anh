@@ -36,6 +36,7 @@ export const GIO_PURPOSE_LIST = [
   "KY_HOP_DONG",
   "XUAT_HANH",
   "CUOI_HOI",
+  "KHAI_QUANG",
 ] as const;
 export type GioPurpose = (typeof GIO_PURPOSE_LIST)[number];
 
@@ -99,6 +100,9 @@ export const GIO_PURPOSE_RULES: Record<GioPurpose, Partial<TrongSoGio>> = {
   KY_HOP_DONG: { can: 0.2, chi: 0.28, nenNgay: 0.18 },
   XUAT_HANH: { hoangHacGio: 0.15, nguHanh: 0.15, chi: 0.22 },
   CUOI_HOI: { chi: 0.3, hoangHacGio: 0.15, nenNgay: 0.15 },
+  // Giống KHAI_TRUONG (cùng tính chất "khởi đầu trang trọng") nhưng nhấn nền ngày (Trực/Hoàng
+  // Đạo/thần sát chung) cao hơn một chút vì khai quang thiên về tính chất nghi lễ/tôn nghiêm.
+  KHAI_QUANG: { nenNgay: 0.28, catHungGio: 0.16, hoangHacGio: 0.14 },
 };
 
 function resolveTrongSo(purpose: GioPurpose): TrongSoGio {

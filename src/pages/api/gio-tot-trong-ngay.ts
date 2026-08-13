@@ -5,7 +5,7 @@ export const prerender = false;
 
 const DEFAULT_TIME_ZONE = "Asia/Ho_Chi_Minh";
 
-const PURPOSE_HOP_LE = ["GENERAL", "CAU_TAI", "GIAO_TIEP_TIEC_TUNG", "DONG_PHONG", "KHAI_TRUONG", "KY_HOP_DONG", "XUAT_HANH", "CUOI_HOI"];
+const PURPOSE_HOP_LE = ["GENERAL", "CAU_TAI", "GIAO_TIEP_TIEC_TUNG", "DONG_PHONG", "KHAI_TRUONG", "KY_HOP_DONG", "XUAT_HANH", "CUOI_HOI", "KHAI_QUANG"];
 
 function jsonResponse(body: unknown, status: number): Response {
   return new Response(JSON.stringify(body), {
