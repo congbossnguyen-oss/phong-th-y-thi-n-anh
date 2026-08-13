@@ -75,20 +75,20 @@ export const prerender = true;
              (chỉ dùng làm khuôn dựng ảnh) — không dùng display:none vì html-to-image cần phần tử có
              layout thật để chụp được. -->
         <div class="pointer-events-none h-0 overflow-hidden">
-          <div id="battu-card" class="rounded-2xl border-2 border-amber-300 bg-white p-5 text-slate-900">
-            <div class="flex flex-wrap items-start justify-between gap-3 border-b-2 border-amber-200 pb-3">
+          <div id="battu-card" class="rounded-2xl border-[3px] border-[#6b4f2a] p-5 text-[#3d2e18]" style="background:linear-gradient(160deg,#ece0c4,#e3d5af);box-shadow:inset 0 0 0 1px #c9b483;">
+            <div class="flex flex-wrap items-start justify-between gap-3 border-b-2 border-[#c9b483] pb-3">
               <div class="flex items-center gap-2">
-                <img src="/images/brand/zhi-gong-logo.png" alt="Phong Thủy Thiên Anh" class="size-9 rounded-full object-cover" />
+                <img src="/images/brand/zhi-gong-logo.png" alt="Phong Thủy Thiên Anh" class="size-9 rounded-full border border-[#c9b483] bg-white object-cover" />
                 <div>
-                  <p class="font-serif text-base font-bold text-blue-900 whitespace-nowrap">TỨ TRỤ MỆNH BÀN</p>
-                  <p class="text-[10px] font-semibold tracking-wide text-slate-600">PHONG THỦY THIÊN ANH</p>
+                  <p class="font-serif text-base font-bold text-[#1e3a8a] whitespace-nowrap">TỨ TRỤ MỆNH BÀN</p>
+                  <p class="text-[10px] font-semibold tracking-wide text-[#6b5636]">PHONG THỦY THIÊN ANH</p>
                 </div>
               </div>
-              <div class="text-right text-[10px] font-medium text-slate-800">
-                <p>Họ tên: <strong id="card-name" class="text-slate-900"></strong></p>
-                <p>Giới tính: <strong id="card-gender" class="text-slate-900"></strong></p>
-                <p>Dương lịch (GMT+7): <strong id="card-solar" class="text-slate-900"></strong></p>
-                <p>Âm Dương hợp lịch: <strong id="card-lunar" class="text-slate-900"></strong></p>
+              <div class="text-right text-[10px] font-medium text-[#3d2e18]">
+                <p>Họ tên: <strong id="card-name" class="text-[#241a10]"></strong></p>
+                <p>Giới tính: <strong id="card-gender" class="text-[#241a10]"></strong></p>
+                <p>Dương lịch (GMT+7): <strong id="card-solar" class="text-[#241a10]"></strong></p>
+                <p>Âm Dương hợp lịch: <strong id="card-lunar" class="text-[#241a10]"></strong></p>
               </div>
             </div>
 
@@ -98,21 +98,26 @@ export const prerender = true;
               </table>
             </div>
 
-            <div class="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-2.5">
+            <div class="mt-3 rounded-xl border-2 border-[#a9895a] bg-[#f1e6ca] p-2.5">
               <div class="flex flex-wrap items-center justify-between gap-2">
-                <p class="text-[10px] font-bold uppercase tracking-wide text-slate-600">Đại Vận</p>
-                <p id="battu-daivan-note" class="text-[9px] font-medium text-slate-600"></p>
+                <p class="text-[10px] font-bold uppercase tracking-wide text-[#3d2e18]">Đại Vận</p>
+                <p id="battu-daivan-note" class="text-[9px] font-medium text-[#6b5636]"></p>
               </div>
-              <div class="mt-1.5 overflow-x-auto">
+              <div class="my-1.5 flex items-center justify-center gap-1.5" aria-hidden="true">
+                <span style="width:60px;height:2px;background:#c9b483;display:inline-block;"></span>
+                <span style="width:8px;height:8px;border-radius:9999px;background:linear-gradient(160deg,#8fae86,#4f6b48);display:inline-block;"></span>
+                <span style="width:60px;height:2px;background:#c9b483;display:inline-block;"></span>
+              </div>
+              <div class="overflow-x-auto">
                 <table class="w-full border-collapse text-center text-[9px]">
                   <tbody id="battu-daivan-body"></tbody>
                 </table>
               </div>
             </div>
 
-            <div class="mt-2.5 rounded-xl border border-slate-200 bg-slate-50 p-2.5">
-              <p class="text-[10px] font-bold uppercase tracking-wide text-slate-600">Lưu Niên</p>
-              <p id="battu-luunien-note" class="mt-0.5 text-[9px] text-slate-500"></p>
+            <div class="mt-2.5 rounded-xl border-2 border-[#a9895a] bg-[#f1e6ca] p-2.5">
+              <p class="text-[10px] font-bold uppercase tracking-wide text-[#3d2e18]">Lưu Niên</p>
+              <p id="battu-luunien-note" class="mt-0.5 text-[9px] text-[#6b5636]"></p>
               <div class="mt-1.5 overflow-x-auto">
                 <table class="w-full border-collapse text-center text-[9px]">
                   <tbody id="battu-luunien-body"></tbody>
@@ -121,60 +126,60 @@ export const prerender = true;
             </div>
 
             <div class="mt-2.5 grid grid-cols-[100px_1fr] gap-2.5">
-              <div class="rounded-xl border border-slate-200 bg-slate-50 p-2">
+              <div class="rounded-xl border-2 border-[#a9895a] bg-[#f1e6ca] p-2">
                 <table class="w-full border-collapse text-left text-[9px]">
                   <tbody>
-                    <tr class="border-b border-slate-200">
-                      <td class="p-1 font-bold uppercase tracking-wide text-slate-600">Mệnh Cung</td>
+                    <tr class="border-b border-[#c9b483]">
+                      <td class="p-1 font-bold uppercase tracking-wide text-[#6b5636]">Mệnh Cung</td>
                     </tr>
-                    <tr class="border-b border-slate-200">
-                      <td id="battu-menh-cung" class="p-1 font-semibold text-slate-800"></td>
+                    <tr class="border-b border-[#c9b483]">
+                      <td id="battu-menh-cung" class="p-1 font-semibold text-[#241a10]"></td>
                     </tr>
-                    <tr class="border-b border-slate-200">
-                      <td class="p-1 font-bold uppercase tracking-wide text-slate-600">Thai Nguyên</td>
+                    <tr class="border-b border-[#c9b483]">
+                      <td class="p-1 font-bold uppercase tracking-wide text-[#6b5636]">Thai Nguyên</td>
                     </tr>
-                    <tr class="border-b border-slate-200">
-                      <td id="battu-thai-nguyen" class="p-1 font-semibold text-slate-800"></td>
+                    <tr class="border-b border-[#c9b483]">
+                      <td id="battu-thai-nguyen" class="p-1 font-semibold text-[#241a10]"></td>
                     </tr>
-                    <tr class="border-b border-slate-200">
-                      <td class="p-1 font-bold uppercase tracking-wide text-slate-600">Niên Không</td>
+                    <tr class="border-b border-[#c9b483]">
+                      <td class="p-1 font-bold uppercase tracking-wide text-[#6b5636]">Niên Không</td>
                     </tr>
-                    <tr class="border-b border-slate-200">
-                      <td id="battu-nien-khong" class="p-1 font-semibold text-slate-800"></td>
+                    <tr class="border-b border-[#c9b483]">
+                      <td id="battu-nien-khong" class="p-1 font-semibold text-[#241a10]"></td>
                     </tr>
-                    <tr class="border-b border-slate-200">
-                      <td class="p-1 font-bold uppercase tracking-wide text-slate-600">Nhật Không</td>
+                    <tr class="border-b border-[#c9b483]">
+                      <td class="p-1 font-bold uppercase tracking-wide text-[#6b5636]">Nhật Không</td>
                     </tr>
                     <tr>
-                      <td id="battu-nhat-khong" class="p-1 font-semibold text-slate-800"></td>
+                      <td id="battu-nhat-khong" class="p-1 font-semibold text-[#241a10]"></td>
                     </tr>
                   </tbody>
                 </table>
               </div>
-              <div class="rounded-xl border border-slate-200 bg-slate-50 p-2">
-                <p class="text-[10px] font-bold uppercase tracking-wide text-slate-600">Bảng Thần Sát Nguyên Cục</p>
+              <div class="rounded-xl border-2 border-[#a9895a] bg-[#f1e6ca] p-2">
+                <p class="text-center text-[10px] font-bold uppercase tracking-wide text-[#3d2e18]">Bảng Thần Sát Nguyên Cục</p>
                 <table class="mt-1.5 w-full border-collapse text-center text-[8px]">
                   <thead>
-                    <tr class="border-b border-slate-200">
-                      <th class="p-1 font-bold text-slate-600">Niên Thần</th>
-                      <th class="border-l border-slate-200 p-1 font-bold text-slate-600">Nguyệt Thần</th>
-                      <th class="border-l border-slate-200 p-1 font-bold text-slate-600">Nhật Thần</th>
-                      <th class="border-l border-slate-200 p-1 font-bold text-slate-600">Thời Thần</th>
+                    <tr class="border-b border-[#c9b483]">
+                      <th class="p-1 font-bold text-[#6b5636]">Niên Thần</th>
+                      <th class="border-l border-[#c9b483] p-1 font-bold text-[#6b5636]">Nguyệt Thần</th>
+                      <th class="border-l border-[#c9b483] p-1 font-bold text-[#6b5636]">Nhật Thần</th>
+                      <th class="border-l border-[#c9b483] p-1 font-bold text-[#6b5636]">Thời Thần</th>
                     </tr>
                   </thead>
                   <tbody>
                     <tr>
-                      <td id="battu-thansat-year" style="text-align: center;" class="p-1 align-top font-semibold text-slate-800"></td>
-                      <td id="battu-thansat-month" style="text-align: center;" class="border-l border-slate-200 p-1 align-top font-semibold text-slate-800"></td>
-                      <td id="battu-thansat-day" style="text-align: center;" class="border-l border-slate-200 p-1 align-top font-semibold text-slate-800"></td>
-                      <td id="battu-thansat-hour" style="text-align: center;" class="border-l border-slate-200 p-1 align-top font-semibold text-slate-800"></td>
+                      <td id="battu-thansat-year" style="text-align: center;" class="p-1 align-top font-semibold text-[#241a10]"></td>
+                      <td id="battu-thansat-month" style="text-align: center;" class="border-l border-[#c9b483] p-1 align-top font-semibold text-[#241a10]"></td>
+                      <td id="battu-thansat-day" style="text-align: center;" class="border-l border-[#c9b483] p-1 align-top font-semibold text-[#241a10]"></td>
+                      <td id="battu-thansat-hour" style="text-align: center;" class="border-l border-[#c9b483] p-1 align-top font-semibold text-[#241a10]"></td>
                     </tr>
                   </tbody>
                 </table>
               </div>
             </div>
 
-            <div class="mt-2.5 flex flex-wrap items-center gap-2 text-[8px] font-medium text-slate-600">
+            <div class="mt-2.5 flex flex-wrap items-center gap-2 border-t border-[#c9b483] pt-2 text-[8px] font-medium text-[#6b5636]">
               <span class="inline-flex items-center gap-1"><span class="size-2 rounded-full bg-[#16a34a]"></span>Mộc</span>
               <span class="inline-flex items-center gap-1"><span class="size-2 rounded-full bg-[#dc2626]"></span>Hỏa</span>
               <span class="inline-flex items-center gap-1"><span class="size-2 rounded-full bg-[#8b5a2b]"></span>Thổ</span>
@@ -287,7 +292,7 @@ export const prerender = true;
       scrollers.forEach((el) => (el.style.overflow = "visible"));
       const exportWidth = Math.max(cardEl.scrollWidth, BASE_EXPORT_WIDTH);
       cardEl.style.width = `${exportWidth}px`;
-      return await toPng(cardEl, { backgroundColor: "#ffffff", pixelRatio: 2, skipFonts: true, width: exportWidth });
+      return await toPng(cardEl, { backgroundColor: "#e3d5af", pixelRatio: 2, skipFonts: true, width: exportWidth });
     } finally {
       cardEl.style.width = originalWidth;
       cardEl.style.maxWidth = originalMaxWidth;
@@ -336,17 +341,19 @@ export const prerender = true;
       { p: chart.hour, isDay: false },
     ];
 
-    const rowStyle = "border-b border-slate-200";
+    const rowStyle = "border-b border-[#c9b483]";
     const labelCell = (text: string) =>
-      `<td class="p-1.5 text-left text-[8px] font-bold uppercase tracking-wide text-slate-600">${text}</td>`;
+      `<td class="p-1.5 text-left text-[8px] font-bold uppercase tracking-wide text-[#6b5636]">${text}</td>`;
 
+    // Dương lịch: thanh kim loại đồng-vàng riêng biệt (không lẫn vào các hàng khác) — theo màu đồng thau
+    // ánh kim anh chọn, chữ nâu sẫm cho tương phản (thay cho bản nền đen/chữ kem trước đó).
     const duongLichRow = `
-      <tr class="${rowStyle} bg-slate-50">
-        ${labelCell("Dương lịch")}
-        <td class="p-1.5 font-semibold text-slate-800">${year}</td>
-        <td class="p-1.5 font-semibold text-slate-800">${month}</td>
-        <td class="p-1.5 font-semibold text-slate-800">${day}</td>
-        <td class="p-1.5 font-semibold text-slate-800">${hour}:${String(minute).padStart(2, "0")}</td>
+      <tr class="rounded-lg" style="background:linear-gradient(90deg,#c9a35f 0%,#a97f3d 25%,#8a6530 50%,#a97f3d 75%,#c9a35f 100%);">
+        <td class="p-1.5 text-left text-[8px] font-bold uppercase tracking-wide text-[#3d2210]">Dương lịch</td>
+        <td class="p-1.5 font-semibold text-[#2b1a0c]">${year}</td>
+        <td class="p-1.5 font-semibold text-[#2b1a0c]">${month}</td>
+        <td class="p-1.5 font-semibold text-[#2b1a0c]">${day}</td>
+        <td class="p-1.5 font-semibold text-[#2b1a0c]">${hour}:${String(minute).padStart(2, "0")}</td>
       </tr>
     `;
 
@@ -356,19 +363,26 @@ export const prerender = true;
         ${pillars
           .map(
             ({ p, isDay }) =>
-              `<td class="p-1.5 ${isDay ? "font-bold text-blue-900" : "font-semibold text-slate-800"}">${thapThanLabel(p, isDay)}</td>`,
+              `<td class="p-1.5 ${isDay ? "font-bold text-[#1e3a8a]" : "font-semibold text-[#3d2e18]"}">${thapThanLabel(p, isDay)}</td>`,
           )
           .join("")}
       </tr>
     `;
 
+    // Bát tự: mỗi trụ là 1 khối "thẻ bài" nổi bật (nền gradient kem-vàng, viền vàng đồng, bo góc) —
+    // khác hẳn các hàng chữ thường còn lại, đúng trọng tâm thị giác trong ảnh mẫu.
     const batTuRow = `
-      <tr class="${rowStyle}">
+      <tr>
         ${labelCell("Bát tự")}
         ${pillars
           .map(
             ({ p }) =>
-              `<td class="p-1.5 font-serif text-lg font-bold"><span class="${canClass(p.canIndex)}">${p.can}</span><br/><span class="${chiClass(p.chiIndex)}">${p.chi}</span></td>`,
+              `<td class="p-1">
+                <div class="rounded-lg border-2 border-[#b89a5c] py-1.5" style="background:linear-gradient(160deg,#f5ecd4,#e6d6ab);">
+                  <p class="font-serif text-lg font-bold leading-tight"><span class="${canClass(p.canIndex)}">${p.can}</span></p>
+                  <p class="font-serif text-lg font-bold leading-tight"><span class="${chiClass(p.chiIndex)}">${p.chi}</span></p>
+                </div>
+              </td>`,
           )
           .join("")}
       </tr>
@@ -394,7 +408,7 @@ export const prerender = true;
         ${pillars
           .map(
             ({ p }) =>
-              `<td class="p-1.5"><div class="flex flex-wrap items-center justify-center gap-1 text-[8px] font-semibold text-slate-600">${p.tangCan
+              `<td class="p-1.5"><div class="flex flex-wrap items-center justify-center gap-1 text-[8px] font-semibold text-[#6b5636]">${p.tangCan
                 .map((t) => `<span>${THAP_THAN_ABBR[t.thapThan] ?? t.thapThan}</span>`)
                 .join("")}</div></td>`,
           )
@@ -405,14 +419,14 @@ export const prerender = true;
     const truongSinhRow = `
       <tr class="${rowStyle}">
         ${labelCell("Trường sinh")}
-        ${pillars.map(({ p }) => `<td class="p-1.5 font-semibold text-slate-800">${p.truongSinh}</td>`).join("")}
+        ${pillars.map(({ p }) => `<td class="p-1.5 font-semibold text-[#3d2e18]">${p.truongSinh}</td>`).join("")}
       </tr>
     `;
 
     const napAmRow = `
       <tr>
         ${labelCell("Nạp âm")}
-        ${pillars.map(({ p }) => `<td class="p-1.5 font-semibold text-slate-800">${p.napAm}</td>`).join("")}
+        ${pillars.map(({ p }) => `<td class="p-1.5 font-semibold text-[#3d2e18]">${p.napAm}</td>`).join("")}
       </tr>
     `;
 
@@ -442,9 +456,10 @@ export const prerender = true;
     return idx;
   }
 
-  const colDivider = "border-r border-slate-200";
+  const colDivider = "border-r border-[#c9b483]";
 
-  // Lưu Niên: 20 năm chia thành 2 tầng 10 năm, mỗi tầng 2 dòng (Can Chi xếp dọc / Năm + tuổi).
+  // Lưu Niên: 20 năm chia thành 2 tầng 10 năm, mỗi tầng 2 dòng (Can Chi xếp dọc / Năm + tuổi). Năm hiện
+  // tại (thực) tô nền nâu đỏ đậm — cố tình khác màu với vận "đang chọn xem" (olive) để không lẫn 2 ý nghĩa.
   function renderLuuNien(startYear: number) {
     const years = tinhLuuNien(startYear, birthYear, 20);
     const nowYear = new Date().getFullYear();
@@ -452,19 +467,19 @@ export const prerender = true;
     luuNienBody.innerHTML = tiers
       .map(
         (tier) => `
-          <tr class="border-b border-slate-200">
+          <tr class="border-b border-[#c9b483]">
             ${tier
               .map(
                 (y, i) =>
-                  `<td class="p-1 font-serif font-bold ${i < tier.length - 1 ? colDivider : ""} ${y.year === nowYear ? "rounded-md bg-amber-100" : ""}"><span class="${canClass(y.canIndex)}">${y.can}</span><br/><span class="${chiClass(y.chiIndex)}">${y.chi}</span></td>`,
+                  `<td class="p-1 font-serif font-bold ${i < tier.length - 1 ? colDivider : ""}" style="${y.year === nowYear ? "border-radius:6px;background:#6b2320;" : ""}"><span style="${y.year === nowYear ? "color:#f0e6cf;" : ""}" class="${y.year === nowYear ? "" : canClass(y.canIndex)}">${y.can}</span><br/><span style="${y.year === nowYear ? "color:#f0e6cf;" : ""}" class="${y.year === nowYear ? "" : chiClass(y.chiIndex)}">${y.chi}</span></td>`,
               )
               .join("")}
           </tr>
-          <tr class="border-b border-slate-200">
+          <tr class="border-b border-[#c9b483]">
             ${tier
               .map(
                 (y, i) =>
-                  `<td class="p-1 text-[8px] font-semibold text-slate-600 ${i < tier.length - 1 ? colDivider : ""} ${y.year === nowYear ? "rounded-md bg-amber-100 text-slate-800" : ""}">${y.year}<br/>${y.tuoi}t</td>`,
+                  `<td class="p-1 text-[8px] font-semibold ${i < tier.length - 1 ? colDivider : ""} ${y.year === nowYear ? "text-[#f0e6cf]" : "text-[#6b5636]"}" style="${y.year === nowYear ? "border-radius:6px;background:#6b2320;" : ""}">${y.year}<br/>${y.tuoi}t</td>`,
               )
               .join("")}
           </tr>
@@ -480,17 +495,17 @@ export const prerender = true;
     const rowCanChi = chart.daiVan
       .map(
         (d, i) =>
-          `<td data-idx="${i}" class="rounded-md p-1 font-serif font-bold ${i < chart.daiVan.length - 1 ? colDivider : ""} ${i === currentIdx ? "outline outline-2 outline-dashed outline-red-400" : ""}"><span class="${canClass(d.canIndex)}">${d.can}</span><br/><span class="${chiClass(d.chiIndex)}">${d.chi}</span></td>`,
+          `<td data-idx="${i}" class="rounded-md p-1 font-serif font-bold ${i < chart.daiVan.length - 1 ? colDivider : ""}" style="${i === currentIdx ? "box-shadow:inset 0 0 0 2px #8a3b2a;" : ""}"><span class="${canClass(d.canIndex)}">${d.can}</span><br/><span class="${chiClass(d.chiIndex)}">${d.chi}</span></td>`,
       )
       .join("");
     const rowMeta = chart.daiVan
       .map(
         (d, i) =>
-          `<td data-idx="${i}" class="rounded-md p-1 text-[8px] font-semibold text-slate-600 ${i < chart.daiVan.length - 1 ? colDivider : ""} ${i === currentIdx ? "text-red-500" : ""}">${d.startAge}-${d.endAge}t<br/>~${d.startDate.y}</td>`,
+          `<td data-idx="${i}" class="rounded-md p-1 text-[8px] font-semibold ${i < chart.daiVan.length - 1 ? colDivider : ""} ${i === currentIdx ? "text-[#8a3b2a]" : "text-[#6b5636]"}">${d.startAge}-${d.endAge}t<br/>~${d.startDate.y}</td>`,
       )
       .join("");
     daiVanBody.innerHTML = `
-      <tr class="border-b border-slate-200">${rowCanChi}</tr>
+      <tr class="border-b border-[#c9b483]">${rowCanChi}</tr>
       <tr>${rowMeta}</tr>
     `;
 
@@ -509,7 +524,7 @@ export const prerender = true;
     vanChonSelect.value = String(idx);
     daiVanBody.querySelectorAll<HTMLElement>("td[data-idx]").forEach((cell) => {
       const cellIdx = parseInt(cell.dataset.idx || "-1", 10);
-      cell.classList.toggle("bg-amber-100", cellIdx === idx);
+      cell.style.background = cellIdx === idx ? "#c9cca0" : "";
     });
     const period = currentChart.daiVan[idx];
     luuNienNoteEl.textContent = `Lưu niên đang xem: ${period.startDate.y}−${period.startDate.y + 19} (từ đại vận ${period.can} ${period.chi})`;
