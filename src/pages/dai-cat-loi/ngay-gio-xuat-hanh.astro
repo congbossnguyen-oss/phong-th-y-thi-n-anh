@@ -214,7 +214,24 @@ export const prerender = true;
         const key = `${t.solarDate.year}-${t.solarDate.month}-${t.solarDate.day}`;
         if (!ngayTotNhatMap.has(key)) ngayTotNhatMap.set(key, t);
       }
-      const top5Ngay = [...ngayTotNhatMap.values()].sort((a, b) => b.finalDiem - a.finalDiem).slice(0, 5);
+      // Chỉ hiện những ngày mà GIỜ TỐT NHẤT của ngày đó đạt hạng "có thể dùng" trở lên — "Top 5"
+      // không nên ép đủ 5 kết quả bằng cả những ngày "Không thuận"/"Không nên chọn" chỉ vì chúng
+      // xếp hạng cao hơn phần còn lại trong khoảng ngày đã quét.
+      const HANG_DUNG_DUOC = new Set(["rat-tot", "tot", "kha-tot", "co-the-dung"]);
+      const top5Ngay = [...ngayTotNhatMap.values()]
+        .filter((t) => HANG_DUNG_DUOC.has(t.hang))
+        .sort((a, b) => b.finalDiem - a.finalDiem)
+        .slice(0, 5);
+
+      if (top5Ngay.length === 0) {
+        ketQuaEl.innerHTML = `<div class="rounded-xl border border-(--color-danger-500)/30 bg-(--color-danger-500)/5 p-4 text-sm text-slate-600">
+          Không có ngày nào trong khoảng đã chọn đủ tốt để xuất hành (mọi ngày đều rơi vào mức "Không thuận" trở xuống).
+          Anh thử chọn khoảng ngày khác hoặc đổi mục đích xem sao.
+        </div>`;
+        ketQuaGioEl.classList.add("hidden");
+        ketQuaEl.classList.remove("hidden");
+        return;
+      }
 
       ketQuaEl.innerHTML = top5Ngay
         .map((t, i) => {
@@ -241,10 +258,8 @@ export const prerender = true;
       ketQuaEl.classList.remove("hidden");
       // Tự mở sẵn danh sách giờ của ngày tốt nhất, để người dùng thấy ngay nhiều lựa chọn giờ
       // thay vì chỉ 1 giờ duy nhất trên mỗi ngày.
-      if (top5Ngay[0]) {
-        const d = top5Ngay[0].solarDate;
-        void taiGioTrongNgay(d.year, d.month, d.day);
-      }
+      const d = top5Ngay[0]!.solarDate;
+      void taiGioTrongNgay(d.year, d.month, d.day);
     } catch {
       loiEl.textContent = "Không tải được dữ liệu.";
       loiEl.classList.remove("hidden");
