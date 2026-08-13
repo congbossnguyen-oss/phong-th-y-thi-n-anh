@@ -4,6 +4,11 @@
   /* Typography: Cormorant Garamond (tieu de, co ho tro dau tieng Viet) + Be Vietnam Pro (noi dung) */
   --font-display: "Cormorant Garamond", "Noto Serif", serif;
   --font-sans: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+  /* Ghi de utility "font-serif" cua Tailwind (mac dinh la ui-serif/Georgia/Times New Roman — font he dieu
+     hanh, thieu glyph dau kep tieng Viet o/a/e co mu/moc + dau thanh, gay vo net khi xuat anh tren mobile,
+     xem lap-la-so-tu-vi.astro). Chi 1 trang (lap-la-so-bat-tu.astro) dung class nay — doi sang cung font
+     Cormorant Garamond da dung cho la so Tu Vi de dong bo + fix tan goc. */
+  --font-serif: "Cormorant Garamond", "Noto Serif", "Times New Roman", Georgia, serif;
 
   /* Redesign "Celestial Alchemy": nen gan den am (dark luxury) + vang dong, ke thua tong do tram cu lam mau phu. */
   --color-ink-950: #f7ecd9;
