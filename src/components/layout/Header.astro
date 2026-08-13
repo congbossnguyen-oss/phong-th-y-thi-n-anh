@@ -160,14 +160,8 @@ const navWithChildren = mainNav.map((item) => {
         <img src="/images/brand/zhi-gong-logo.png" alt={siteConfig.name} class="h-full w-full object-cover" />
       </span>
       <span class="flex min-w-0 flex-col leading-tight">
-        <!-- Trên điện thoại chỉ còn ~95px cho phần chữ, trong khi tên đầy đủ cần ~147px nên bị cắt cụt
-             thành "P..". Dùng tên rút gọn ("Thiên Anh") dưới 640px và tên đầy đủ từ 640px trở lên —
-             giải quyết bằng cách nhường chỗ, thay vì cắt chữ. -->
-        <span class="truncate font-display text-base font-semibold text-(--color-ink-950) sm:text-lg">
-          <span class="sm:hidden">{siteConfig.shortName}</span>
-          <span class="hidden sm:inline">{siteConfig.name}</span>
-        </span>
-        <span class="hidden text-[11px] uppercase tracking-wide text-(--color-gold-500) sm:block">{siteConfig.tagline}</span>
+        <span class="truncate font-display text-base font-semibold text-(--color-ink-950) sm:text-lg">{siteConfig.name}</span>
+        <span class="hidden truncate text-[11px] uppercase tracking-wide text-(--color-gold-500) sm:block">{siteConfig.tagline}</span>
       </span>
     </a>
 
