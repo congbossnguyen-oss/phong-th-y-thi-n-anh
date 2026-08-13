@@ -33,13 +33,15 @@ const personSchema = {
   <script type="application/ld+json" set:html={JSON.stringify(personSchema)} />
   <Hero />
   <!-- Thứ tự dẫn dắt: lời hứa thương hiệu (Hero) → giá trị dùng được NGAY hôm nay (TodayStrip) → uy tín
-       (Stats) → thứ khác biệt nhất, dùng miễn phí (ToolsShowcase) → con người đứng sau (MasterIntro) →
-       dịch vụ trả phí. Đặt công cụ miễn phí TRƯỚC dịch vụ trả phí để người xem nhận giá trị rồi mới được
-       mời mua. -->
+       (Stats) → CON NGƯỜI đứng sau (MasterIntro) → thứ khác biệt nhất, dùng miễn phí (ToolsShowcase) →
+       dịch vụ trả phí.
+       Yêu cầu Công: đưa phần giới thiệu nhân vật lên trên. Cũng hợp lý về mặt thuyết phục — biết người
+       đứng sau là ai trước thì bộ công cụ phía sau mới có sức nặng. Vẫn giữ công cụ MIỄN PHÍ đứng trước
+       dịch vụ trả phí để người xem nhận giá trị rồi mới được mời mua. -->
   <TodayStrip />
   <StatsSection />
-  <ToolsShowcase />
   <MasterIntro />
+  <ToolsShowcase />
   <FeaturedServices />
   <div class="hidden sm:block">
     <FeaturedProducts />
