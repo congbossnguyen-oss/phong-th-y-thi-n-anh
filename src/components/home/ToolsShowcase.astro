@@ -44,21 +44,21 @@ const CORE_TOOLS: { href: string; icon: IconName; image: string; title: string; 
   {
     href: "/xem-ngay-tot-xau",
     icon: "clock",
-    image: "/xem-ngay-tot-xau.jpg",
+    image: "/xem-ngay-tot-xau-v2.png",
     title: "Xem ngày tốt xấu",
     desc: "Cát hung từng ngày theo Can Chi, thần sát, hoàng đạo và tuổi gia chủ.",
   },
   {
     href: "/dai-cat-loi",
     icon: "award",
-    image: "/dai-cat-loi.jpg",
+    image: "/dai-cat-loi-v2.png",
     title: "Đại Cát Lợi",
     desc: `Bộ ${daiCatLoiTools.length} công cụ trạch cát cá nhân hóa: chọn ngày, chọn giờ, chọn tuổi hợp.`,
   },
   {
     href: "/tra-cuu-menh",
     icon: "sun",
-    image: "/tra-cuu-menh.jpg",
+    image: "/tra-cuu-menh-v2.png",
     title: "Tra cứu mệnh",
     desc: "Can Chi, con giáp và mệnh Ngũ Hành Nạp Âm chỉ từ năm sinh.",
   },
@@ -93,7 +93,7 @@ const totalTools = TOTAL_TOOL_COUNT;
         CORE_TOOLS.map((tool) => (
           <a
             href={tool.href}
-            class="group relative flex aspect-[4/3] flex-col justify-end overflow-hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ink-950) transition hover:-translate-y-0.5 hover:border-(--color-gold-400)/60"
+            class="group relative flex aspect-video flex-col justify-end overflow-hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ink-950) transition hover:-translate-y-0.5 hover:border-(--color-gold-400)/60"
           >
             {/* Ảnh minh hoạ riêng của từng công cụ (Công cung cấp) làm nền toàn thẻ kiểu poster. */}
             <img
