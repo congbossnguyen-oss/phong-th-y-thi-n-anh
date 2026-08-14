@@ -62,7 +62,7 @@ const TOOL_PRICE_LABEL = "499.000đ";
         </div>
 
         <div>
-          <DateSelect idPrefix="glhh-ngay-mat" label="Ngày mất (dương lịch)" required />
+          <DateSelect idPrefix="glhh-ngay-mat" label="Ngày mất (dương lịch)" required yearsBack={80} yearsForward={0} />
         </div>
 
         <div>
@@ -335,6 +335,7 @@ const TOOL_PRICE_LABEL = "499.000đ";
         stopPolling();
         trangThaiEl.textContent = "Đã thanh toán — đang hiển thị kết quả bên dưới.";
         thanhToanEl.classList.add("hidden");
+        form.classList.add("hidden"); // tránh gửi lại form (tạo đơn mới, thu phí lần nữa) sau khi đã có kết quả
         renderKetQua(data.result as GioLiemHaHuyetResult);
       } else if (data.status === "cancelled") {
         stopPolling();

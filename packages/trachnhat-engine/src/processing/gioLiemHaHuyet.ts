@@ -175,6 +175,14 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
   }
 
   const coNhapMoGioLiem = ungVienGioLiem.some((c) => c.phanLoaiCung === "nhap-mo");
+  const thanQuyenParam: TrungTang.ThanQuyenGioLiem = {
+    ...(input.thanQuyen?.chiTruongNam ? { chiTruongNam: input.thanQuyen.chiTruongNam } : {}),
+    ...(input.thanQuyen?.chiConDauLon ? { chiConDauLon: input.thanQuyen.chiConDauLon } : {}),
+    ...(input.thanQuyen?.chiChauDichTon ? { chiChauDichTon: input.thanQuyen.chiChauDichTon } : {}),
+    ...(input.thanQuyen?.chiAnhTraiLon ? { chiAnhTraiLon: input.thanQuyen.chiAnhTraiLon } : {}),
+    ...(input.thanQuyen?.chiChaMe ? { chiChaMe: input.thanQuyen.chiChaMe } : {}),
+  };
+
   for (const c of ungVienGioLiem) {
     c.diem = TrungTang.tinhDiemUngVien({
       phanLoaiCung: c.phanLoaiCung,
@@ -188,13 +196,13 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
   }
   ungVienGioLiem.sort((a, b) => b.diem - a.diem);
 
-  const locThanQuyen = TrungTang.locTheoTuoiThanQuyen(ungVienGioLiem, {
-    ...(input.thanQuyen?.chiTruongNam ? { chiTruongNam: input.thanQuyen.chiTruongNam } : {}),
-    ...(input.thanQuyen?.chiConDauLon ? { chiConDauLon: input.thanQuyen.chiConDauLon } : {}),
-    ...(input.thanQuyen?.chiChauDichTon ? { chiChauDichTon: input.thanQuyen.chiChauDichTon } : {}),
-    ...(input.thanQuyen?.chiAnhTraiLon ? { chiAnhTraiLon: input.thanQuyen.chiAnhTraiLon } : {}),
-    ...(input.thanQuyen?.chiChaMe ? { chiChaMe: input.thanQuyen.chiChaMe } : {}),
-  });
+  // Bước 8 — lọc thân quyến. Đặc tả mục 11 gợi ý "nới lỏng dần: bỏ tầng Can giờ, rồi tầng Hoàng
+  // Đạo" nếu lọc hết sạch — NHƯNG lọc ở đây loại theo Chi giờ (chiGio) tuyệt đối, không theo
+  // ngưỡng điểm, nên chấm lại điểm với ít/không bonus không đổi được TẬP Chi nào bị loại — chỉ
+  // đổi thứ tự trong tập không đổi. Do đó việc duy nhất "nới lỏng" thực sự làm được là bỏ hẳn
+  // ràng buộc thân quyến (đã có sẵn trong `locTheoTuoiThanQuyen`, gắn cờ `daNoiLong` cho tầng UI
+  // biết mà cảnh báo) — không có tầng trung gian nào khác hợp lý về mặt logic.
+  const locThanQuyen = TrungTang.locTheoTuoiThanQuyen(ungVienGioLiem, thanQuyenParam);
 
   // ------------------------------------------------------------------
   // Bước 4 — quy tắc miễn trừ: chôn trong ≤3 ngày (hoặc không rõ) → bỏ hẳn bước chọn NGÀY,
