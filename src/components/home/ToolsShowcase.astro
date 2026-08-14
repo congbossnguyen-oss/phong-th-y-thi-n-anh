@@ -10,57 +10,53 @@
 // không bao giờ bị lệch khi thêm/bớt công cụ về sau.
 import Container from "../ui/Container.astro";
 import Icon from "../ui/Icon.astro";
-import { daiCatLoiTools, TOTAL_TOOL_COUNT } from "../../lib/dai-cat-loi-tools";
+import { TOTAL_TOOL_COUNT } from "../../lib/dai-cat-loi-tools";
 
 type IconName = "star" | "book-open" | "moon" | "clock" | "award" | "sun";
 
 // 6 công cụ đầu tàu đưa lên trang chủ. Các công cụ còn lại gom trong "Đại Cát Lợi" + trang tra cứu riêng.
 // Mỗi thẻ dùng 1 ảnh banner do Công cung cấp (đặt sẵn trong public/, đã đổi tên bỏ khoảng trắng) làm NỀN
-// TOÀN THẺ kiểu poster — chữ đè lên trên qua lớp gradient tối dần từ dưới lên (xem markup bên dưới).
+// TOÀN THẺ kiểu poster — ảnh tự thân đã có tên công cụ trong thiết kế nên thẻ chỉ còn icon + nút "Dùng
+// thử ngay" đè lên qua lớp gradient tối dần từ dưới lên (xem markup bên dưới), không lặp lại chữ tiêu
+// đề/mô tả. `title` vẫn giữ để làm alt ảnh + aria-label cho khả năng tiếp cận (screen reader).
 // Lưu ý: 6 ảnh này không cùng 1 bộ nhận diện (3 phong cách/logo khác nhau) — đã xác nhận với Công dùng
 // nguyên như vậy, không chờ làm lại đồng bộ.
-const CORE_TOOLS: { href: string; icon: IconName; image: string; title: string; desc: string }[] = [
+const CORE_TOOLS: { href: string; icon: IconName; image: string; title: string }[] = [
   {
     href: "/lap-la-so-tu-vi",
     icon: "star",
     image: "/lap-la-so-tu-vi.png",
     title: "Lập lá số Tử Vi",
-    desc: "12 cung, 14 chính tinh, Tứ Hóa, Đại Vận và sao Lưu Niên — xuất ảnh lá số đầy đủ.",
   },
   {
     href: "/lap-la-so-bat-tu",
     icon: "book-open",
     image: "/lap-la-so-bat-tu.png",
     title: "Lập lá số Bát Tự",
-    desc: "Tứ Trụ, Tàng Can, Thập Thần, Đại Vận và Lưu Niên theo đúng ngày giờ sinh.",
   },
   {
     href: "/gieo-que-kinh-dich",
     icon: "moon",
     image: "/lap-que-kinh-dich.png",
     title: "Lập quẻ Kinh Dịch",
-    desc: "Gieo quẻ Lục Hào: Nạp Giáp, Lục Thân, Lục Thú, Thế/Ứng, Tuần Không.",
   },
   {
     href: "/xem-ngay-tot-xau",
     icon: "clock",
     image: "/xem-ngay-tot-xau-v2.png",
     title: "Xem ngày tốt xấu",
-    desc: "Cát hung từng ngày theo Can Chi, thần sát, hoàng đạo và tuổi gia chủ.",
   },
   {
     href: "/dai-cat-loi",
     icon: "award",
     image: "/dai-cat-loi-v2.png",
     title: "Đại Cát Lợi",
-    desc: `Bộ ${daiCatLoiTools.length} công cụ trạch cát cá nhân hóa: chọn ngày, chọn giờ, chọn tuổi hợp.`,
   },
   {
     href: "/tra-cuu-menh",
     icon: "sun",
     image: "/tra-cuu-menh-v2.png",
     title: "Tra cứu mệnh",
-    desc: "Can Chi, con giáp và mệnh Ngũ Hành Nạp Âm chỉ từ năm sinh.",
   },
 ];
 
@@ -93,12 +89,14 @@ const totalTools = TOTAL_TOOL_COUNT;
         CORE_TOOLS.map((tool) => (
           <a
             href={tool.href}
+            aria-label={tool.title}
             class="group relative flex aspect-video flex-col justify-end overflow-hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ink-950) transition hover:-translate-y-0.5 hover:border-(--color-gold-400)/60"
           >
-            {/* Ảnh minh hoạ riêng của từng công cụ (Công cung cấp) làm nền toàn thẻ kiểu poster. */}
+            {/* Ảnh minh hoạ riêng của từng công cụ (Công cung cấp) làm nền toàn thẻ kiểu poster — tự thân
+            đã có tên công cụ trong thiết kế, nên bỏ chữ tiêu đề/mô tả lặp lại của site, chỉ giữ CTA. */}
             <img
               src={tool.image}
-              alt=""
+              alt={tool.title}
               loading="lazy"
               class="absolute inset-0 size-full object-cover transition duration-500 group-hover:scale-105"
             />
@@ -108,9 +106,7 @@ const totalTools = TOTAL_TOOL_COUNT;
             <span class="relative z-10 flex size-11 items-center justify-center self-start rounded-full border border-(--color-gold-500)/40 bg-(--color-ink-950)/40 text-(--color-gold-300) backdrop-blur-sm transition group-hover:border-(--color-gold-400)">
               <Icon name={tool.icon} class="size-5" />
             </span>
-            <span class="relative z-10 mt-auto font-display text-lg font-semibold text-white">{tool.title}</span>
-            <span class="relative z-10 text-sm leading-relaxed text-white/80">{tool.desc}</span>
-            <span class="relative z-10 mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-(--color-gold-300)">
+            <span class="relative z-10 mt-auto inline-flex items-center gap-1.5 text-sm font-medium text-(--color-gold-300)">
               Dùng thử ngay
               <Icon name="arrow-right" class="size-3.5 transition group-hover:translate-x-0.5" />
             </span>
