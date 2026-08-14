@@ -10,57 +10,55 @@
 // không bao giờ bị lệch khi thêm/bớt công cụ về sau.
 import Container from "../ui/Container.astro";
 import Icon from "../ui/Icon.astro";
-import SacredMotif from "../ui/SacredMotif.astro";
 import { daiCatLoiTools, TOTAL_TOOL_COUNT } from "../../lib/dai-cat-loi-tools";
 
 type IconName = "star" | "book-open" | "moon" | "clock" | "award" | "sun";
-type MotifName = "bagua" | "flower-of-life" | "constellation";
 
 // 6 công cụ đầu tàu đưa lên trang chủ. Các công cụ còn lại gom trong "Đại Cát Lợi" + trang tra cứu riêng.
-// Yêu cầu Công: thêm hình cho phần này bớt khô. Dùng chính bộ hoạ tiết SVG sẵn có của site (SacredMotif —
-// Bát Quái / Hoa Sen / Chòm Sao) làm HÌNH CHÌM trong từng thẻ: đúng tông thương hiệu, nét vector nên sắc
-// ở mọi kích thước, không tốn thêm dung lượng ảnh và không phụ thuộc ảnh chụp bên ngoài. Mỗi công cụ gắn
-// một hoạ tiết hợp nghĩa để 6 thẻ không bị lặp lại giống nhau.
-const CORE_TOOLS: { href: string; icon: IconName; motif: MotifName; title: string; desc: string }[] = [
+// Mỗi thẻ dùng 1 ảnh banner do Công cung cấp (đặt sẵn trong public/, đã đổi tên bỏ khoảng trắng) làm NỀN
+// TOÀN THẺ kiểu poster — chữ đè lên trên qua lớp gradient tối dần từ dưới lên (xem markup bên dưới).
+// Lưu ý: 6 ảnh này không cùng 1 bộ nhận diện (3 phong cách/logo khác nhau) — đã xác nhận với Công dùng
+// nguyên như vậy, không chờ làm lại đồng bộ.
+const CORE_TOOLS: { href: string; icon: IconName; image: string; title: string; desc: string }[] = [
   {
     href: "/lap-la-so-tu-vi",
     icon: "star",
-    motif: "constellation", // lá số Tử Vi = các sao
+    image: "/lap-la-so-tu-vi.png",
     title: "Lập lá số Tử Vi",
     desc: "12 cung, 14 chính tinh, Tứ Hóa, Đại Vận và sao Lưu Niên — xuất ảnh lá số đầy đủ.",
   },
   {
     href: "/lap-la-so-bat-tu",
     icon: "book-open",
-    motif: "flower-of-life", // Bát Tự = tương sinh tương khắc, hình hoa lồng nhau
+    image: "/lap-la-so-bat-tu.png",
     title: "Lập lá số Bát Tự",
     desc: "Tứ Trụ, Tàng Can, Thập Thần, Đại Vận và Lưu Niên theo đúng ngày giờ sinh.",
   },
   {
     href: "/gieo-que-kinh-dich",
     icon: "moon",
-    motif: "bagua", // Kinh Dịch = quẻ, Bát Quái
+    image: "/lap-que-kinh-dich.png",
     title: "Lập quẻ Kinh Dịch",
     desc: "Gieo quẻ Lục Hào: Nạp Giáp, Lục Thân, Lục Thú, Thế/Ứng, Tuần Không.",
   },
   {
     href: "/xem-ngay-tot-xau",
     icon: "clock",
-    motif: "flower-of-life",
+    image: "/xem-ngay-tot-xau.jpg",
     title: "Xem ngày tốt xấu",
     desc: "Cát hung từng ngày theo Can Chi, thần sát, hoàng đạo và tuổi gia chủ.",
   },
   {
     href: "/dai-cat-loi",
     icon: "award",
-    motif: "bagua",
+    image: "/dai-cat-loi.jpg",
     title: "Đại Cát Lợi",
     desc: `Bộ ${daiCatLoiTools.length} công cụ trạch cát cá nhân hóa: chọn ngày, chọn giờ, chọn tuổi hợp.`,
   },
   {
     href: "/tra-cuu-menh",
     icon: "sun",
-    motif: "constellation",
+    image: "/tra-cuu-menh.jpg",
     title: "Tra cứu mệnh",
     desc: "Can Chi, con giáp và mệnh Ngũ Hành Nạp Âm chỉ từ năm sinh.",
   },
@@ -95,19 +93,24 @@ const totalTools = TOTAL_TOOL_COUNT;
         CORE_TOOLS.map((tool) => (
           <a
             href={tool.href}
-            class="group relative flex flex-col gap-3 overflow-hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6 transition hover:-translate-y-0.5 hover:border-(--color-gold-400)/60 hover:bg-(--color-ivory-200)"
+            class="group relative flex aspect-[4/3] flex-col justify-end overflow-hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ink-950) transition hover:-translate-y-0.5 hover:border-(--color-gold-400)/60"
           >
-            {/* Hoạ tiết chìm góc phải, sáng dần khi rê chuột — trang trí, nằm dưới lớp chữ */}
-            <SacredMotif
-              variant={tool.motif}
-              class="pointer-events-none absolute -right-10 -top-10 size-44 text-(--color-gold-500)/15 transition duration-500 group-hover:scale-110 group-hover:text-(--color-gold-400)/25"
+            {/* Ảnh minh hoạ riêng của từng công cụ (Công cung cấp) làm nền toàn thẻ kiểu poster. */}
+            <img
+              src={tool.image}
+              alt=""
+              loading="lazy"
+              class="absolute inset-0 size-full object-cover transition duration-500 group-hover:scale-105"
             />
-            <span class="relative flex size-11 items-center justify-center rounded-full border border-(--color-gold-500)/40 bg-(--color-gold-500)/10 text-(--color-gold-300) transition group-hover:border-(--color-gold-400) group-hover:bg-(--color-gold-500)/20">
+            {/* Lớp phủ tối dần từ dưới lên để chữ luôn đọc được, bất kể nội dung ảnh phía dưới là gì. */}
+            <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-black/10" />
+
+            <span class="relative z-10 flex size-11 items-center justify-center self-start rounded-full border border-(--color-gold-500)/40 bg-(--color-ink-950)/40 text-(--color-gold-300) backdrop-blur-sm transition group-hover:border-(--color-gold-400)">
               <Icon name={tool.icon} class="size-5" />
             </span>
-            <span class="relative font-display text-lg font-semibold text-(--color-ink-950)">{tool.title}</span>
-            <span class="relative text-sm leading-relaxed text-(--color-ink-600)">{tool.desc}</span>
-            <span class="relative mt-auto inline-flex items-center gap-1.5 pt-1 text-sm font-medium text-(--color-gold-300)">
+            <span class="relative z-10 mt-auto font-display text-lg font-semibold text-white">{tool.title}</span>
+            <span class="relative z-10 text-sm leading-relaxed text-white/80">{tool.desc}</span>
+            <span class="relative z-10 mt-2 inline-flex items-center gap-1.5 text-sm font-medium text-(--color-gold-300)">
               Dùng thử ngay
               <Icon name="arrow-right" class="size-3.5 transition group-hover:translate-x-0.5" />
             </span>
