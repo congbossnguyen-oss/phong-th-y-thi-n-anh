@@ -1,0 +1,94 @@
+import type { APIRoute } from "astro";
+import { calculateGioLiemHaHuyet, type GioLiemHaHuyetInput } from "@thien-anh/trachnhat-engine";
+import { Astronomy, type Data } from "@thien-anh/calendar-core";
+
+type Chi = Data.Chi;
+
+export const prerender = false;
+
+/**
+ * ⚠️ TẠM THỜI — endpoint test nội bộ, KHÔNG thu phí, KHÔNG tạo đơn hàng, KHÔNG lưu DB. Dùng để
+ * kiểm thử trực tiếp trên hệ thống trong lúc module còn đang gỡ khỏi menu công khai (yêu cầu
+ * Công 2026-08-14: "đóng lại chạy trên hệ thống để test đã, bỏ thu phí test cho dễ test"). XÓA
+ * file này khi module quay lại thu phí — không được để lẫn với `checkout.ts` (bản thật, có tạo
+ * đơn + QR SePay).
+ */
+
+const CHI_HOP_LE = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"];
+const GIOI_TINH_HOP_LE = ["nam", "nu"];
+
+function jsonResponse(body: unknown, status: number): Response {
+  return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
+}
+
+function parseChiOptional(value: unknown): Chi | undefined {
+  if (typeof value !== "string" || value === "") return undefined;
+  if (!CHI_HOP_LE.includes(value)) throw new Error("Giá trị Chi không hợp lệ.");
+  return value as Chi;
+}
+
+export const POST: APIRoute = async ({ request }) => {
+  const body = await request.json().catch(() => null);
+  if (!body || typeof body !== "object") {
+    return jsonResponse({ ok: false, error: "Dữ liệu gửi lên không hợp lệ." }, 400);
+  }
+
+  const b = body as Record<string, unknown>;
+  const gioiTinh = b.gioiTinh;
+  const namSinhDuongLich = Number(b.namSinhDuongLich);
+  const namMat = Number(b.namMat);
+  const thangMat = Number(b.thangMat);
+  const ngayMat = Number(b.ngayMat);
+  const chiGioMat = b.chiGioMat;
+
+  if (typeof gioiTinh !== "string" || !GIOI_TINH_HOP_LE.includes(gioiTinh)) {
+    return jsonResponse({ ok: false, error: "gioiTinh không hợp lệ." }, 400);
+  }
+  if (typeof chiGioMat !== "string" || !CHI_HOP_LE.includes(chiGioMat)) {
+    return jsonResponse({ ok: false, error: "Giờ mất không hợp lệ." }, 400);
+  }
+
+  const jdnMat = Astronomy.julianDayNumber(namMat, thangMat, ngayMat);
+  const homNay = new Date();
+  const jdnHomNay = Astronomy.julianDayNumber(homNay.getFullYear(), homNay.getMonth() + 1, homNay.getDate());
+  if (Number.isFinite(jdnMat) && jdnMat > jdnHomNay) {
+    return jsonResponse({ ok: false, error: "Ngày giờ mất không được ở tương lai." }, 400);
+  }
+
+  let thanQuyen: GioLiemHaHuyetInput["thanQuyen"];
+  try {
+    const tq = (b.thanQuyen ?? {}) as Record<string, unknown>;
+    const chiTruongNam = parseChiOptional(tq.chiTruongNam);
+    const chiConDauLon = parseChiOptional(tq.chiConDauLon);
+    const chiChauDichTon = parseChiOptional(tq.chiChauDichTon);
+    const chiAnhTraiLon = parseChiOptional(tq.chiAnhTraiLon);
+    if (chiTruongNam || chiConDauLon || chiChauDichTon || chiAnhTraiLon) {
+      thanQuyen = {
+        ...(chiTruongNam ? { chiTruongNam } : {}),
+        ...(chiConDauLon ? { chiConDauLon } : {}),
+        ...(chiChauDichTon ? { chiChauDichTon } : {}),
+        ...(chiAnhTraiLon ? { chiAnhTraiLon } : {}),
+      };
+    }
+  } catch (err) {
+    return jsonResponse({ ok: false, error: err instanceof Error ? err.message : "Dữ liệu thân quyến không hợp lệ." }, 400);
+  }
+
+  const input: GioLiemHaHuyetInput = {
+    gioiTinh: gioiTinh as GioLiemHaHuyetInput["gioiTinh"],
+    namSinhDuongLich,
+    namMat,
+    thangMat,
+    ngayMat,
+    chiGioMat: chiGioMat as GioLiemHaHuyetInput["chiGioMat"],
+    ...(b.soNgayDuKienToiChon ? { soNgayDuKienToiChon: Number(b.soNgayDuKienToiChon) } : {}),
+    ...(thanQuyen ? { thanQuyen } : {}),
+  };
+
+  try {
+    const result = calculateGioLiemHaHuyet(input);
+    return jsonResponse({ ok: true, result }, 200);
+  } catch (err) {
+    return jsonResponse({ ok: false, error: err instanceof Error ? err.message : "Không tính được." }, 400);
+  }
+};

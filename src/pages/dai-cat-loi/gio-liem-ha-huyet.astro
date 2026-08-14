@@ -29,6 +29,9 @@ const TOOL_PRICE_LABEL = "499.000đ";
 
   <Container class="py-16">
     <div class="mx-auto max-w-2xl">
+      <div class="mb-4 rounded-(--radius-card) border-2 border-amber-400 bg-amber-50 p-4 text-sm font-medium text-amber-800">
+        🧪 ĐANG THỬ NGHIỆM NỘI BỘ — tạm gỡ khỏi menu công khai, tạm bỏ bước thanh toán để test nhanh. Nộp form là ra kết quả ngay, không tạo đơn hàng thật.
+      </div>
       <div class="mb-6 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-4 text-sm text-(--color-ink-600)">
         Công cụ này KHÔNG chẩn đoán lại Trùng Tang (dùng công cụ <a href="/tinh-trung-tang" class="text-(--color-gold-300) hover:underline">Tính Trùng Tang miễn phí</a> nếu cần) —
         chỉ dùng Chưởng Pháp để xếp hạng giờ liệm/đóng quan và ngày giờ hạ huyệt tốt nhất. Cách tính dựa trên tư liệu dân
@@ -181,6 +184,11 @@ const TOOL_PRICE_LABEL = "499.000đ";
 
 <script>
   import { readDateSelects } from "../../lib/date-select";
+
+  // ⚠️ TẠM THỜI — true = bỏ qua thanh toán, gọi thẳng test-calculate.ts (test nội bộ, yêu cầu
+  // Công 2026-08-14). Đổi lại `false` khi quay lại thu phí thật (và khôi phục nhánh checkout.ts
+  // đã có sẵn bên dưới — không cần viết lại).
+  const TEST_MODE = true;
 
   interface UngVienGioLiem {
     chiGio: string;
@@ -396,6 +404,31 @@ const TOOL_PRICE_LABEL = "499.000đ";
       customerPhone,
       ...(customerEmail ? { customerEmail } : {}),
     };
+
+    // ⚠️ TẠM THỜI (test nội bộ, yêu cầu Công 2026-08-14): gọi thẳng test-calculate.ts, bỏ qua
+    // bước tạo đơn + QR SePay. Để bật lại thu phí: đổi endpoint về checkout.ts và khôi phục
+    // đoạn xử lý QR/polling đã lưu trong lịch sử git (commit thêm module này).
+    if (TEST_MODE) {
+      try {
+        const res = await fetch("/api/dai-cat-loi/gio-liem-ha-huyet/test-calculate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          loiEl.textContent = data.error ?? "Không tính được.";
+          loiEl.classList.remove("hidden");
+          return;
+        }
+        renderKetQua(data.result as GioLiemHaHuyetResult);
+        ketQuaEl.scrollIntoView({ behavior: "smooth", block: "start" });
+      } catch {
+        loiEl.textContent = "Không tính được. Vui lòng thử lại.";
+        loiEl.classList.remove("hidden");
+      }
+      return;
+    }
 
     try {
       const res = await fetch("/api/dai-cat-loi/gio-liem-ha-huyet/checkout", {
