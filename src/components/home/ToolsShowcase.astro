@@ -12,7 +12,7 @@ import Container from "../ui/Container.astro";
 import Icon from "../ui/Icon.astro";
 import { TOTAL_TOOL_COUNT } from "../../lib/dai-cat-loi-tools";
 
-type IconName = "star" | "book-open" | "moon" | "clock" | "award" | "sun";
+type IconName = "star" | "book-open" | "moon" | "clock" | "award" | "map-pin";
 
 // 6 công cụ đầu tàu đưa lên trang chủ. Các công cụ còn lại gom trong "Đại Cát Lợi" + trang tra cứu riêng.
 // Mỗi thẻ dùng 1 ảnh banner do Công cung cấp (đặt sẵn trong public/, đã đổi tên bỏ khoảng trắng) làm NỀN
@@ -53,10 +53,10 @@ const CORE_TOOLS: { href: string; icon: IconName; image: string; title: string }
     title: "Đại Cát Lợi",
   },
   {
-    href: "/tra-cuu-menh",
-    icon: "sun",
-    image: "/tra-cuu-menh-v2.png",
-    title: "Tra cứu mệnh",
+    href: "/dai-cat-loi/ngay-gio-xuat-hanh",
+    icon: "map-pin",
+    image: "/ngay-gio-xuat-hanh-ca-nhan.png",
+    title: "Ngày Giờ Xuất Hành Cá Nhân",
   },
 ];
 
