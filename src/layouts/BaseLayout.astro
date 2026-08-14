@@ -13,10 +13,18 @@ interface Props {
   noIndex?: boolean;
 }
 
+// Ảnh thumbnail khi chia sẻ link (Facebook/Zalo/Messenger). Trước đây mặc định trỏ "/og-default.png"
+// nhưng tệp đó đã bị xoá khỏi kho — nghĩa là mọi link chia sẻ đều KHÔNG hiện được ảnh nào. Nay dùng ảnh
+// banner thương hiệu, đã nén còn ~213KB và đưa về đúng 1200×631 (tỉ lệ 1.91 chuẩn) để bộ quét của mạng
+// xã hội tải nhanh và không bỏ qua.
+const OG_IMAGE_DEFAULT = "/images/brand/og-thumbnail.jpg";
+const OG_IMAGE_WIDTH = "1200";
+const OG_IMAGE_HEIGHT = "631";
+
 const {
   title,
   description = siteConfig.description,
-  ogImage = "/og-default.png",
+  ogImage = OG_IMAGE_DEFAULT,
   noIndex = false,
 } = Astro.props;
 
@@ -79,9 +87,19 @@ const websiteSchema = {
     <meta property="og:title" content={pageTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={absoluteOgImage} />
+    {/* Khai báo sẵn kích thước + mô tả ảnh: Facebook/Zalo dựng được khung ảnh ngay từ lần quét đầu, không
+        phải tải ảnh về đo — đây là lý do phổ biến khiến link chia sẻ lần đầu bị mất ảnh. */}
+    <meta property="og:image:width" content={OG_IMAGE_WIDTH} />
+    <meta property="og:image:height" content={OG_IMAGE_HEIGHT} />
+    <meta property="og:image:alt" content={siteConfig.name} />
+    <meta property="og:site_name" content={siteConfig.name} />
     <meta property="og:url" content={canonicalUrl} />
     <meta property="og:locale" content="vi_VN" />
     <meta name="twitter:card" content="summary_large_image" />
+    {/* Twitter/X thường tự lấy og:image, nhưng khai báo riêng thì chắc chắn hơn. */}
+    <meta name="twitter:title" content={pageTitle} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={absoluteOgImage} />
 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
