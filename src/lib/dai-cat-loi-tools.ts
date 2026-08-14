@@ -122,5 +122,20 @@ export const daiCatLoiTools: DaiCatLoiTool[] = [
 /**
  * Tổng số công cụ tra cứu của site = nhóm Đại Cát Lợi + các công cụ độc lập.
  * Khai báo SAU mảng daiCatLoiTools (không thể đặt trên đầu file vì sẽ đọc biến khi chưa khởi tạo).
+ * KHÔNG cộng `paidTools` vào đây — con số này gắn với thông điệp "miễn phí" trên trang chủ.
  */
 export const TOTAL_TOOL_COUNT = daiCatLoiTools.length + STANDALONE_TOOL_PATHS.length;
+
+// Nhóm "Dịch vụ thu phí" — tách riêng khỏi daiCatLoiTools (miễn phí) theo yêu cầu Công, có hub
+// riêng (/dai-cat-loi/dich-vu-thu-phi) và badge giá tiền nổi bật trên từng thẻ.
+export type PaidTool = { href: string; icon: string; title: string; desc: string; priceLabel: string };
+
+export const paidTools: PaidTool[] = [
+  {
+    href: "/dai-cat-loi/gio-liem-ha-huyet",
+    icon: "🕯️",
+    title: "Chọn Giờ Liệm – Đóng Quan – Ngày Giờ Hạ Huyệt",
+    desc: "Xếp hạng giờ liệm/đóng quan và ngày giờ hạ huyệt theo Chưởng Pháp Trùng Tang – Nhập Mộ, có xét tuổi thân quyến.",
+    priceLabel: "499.000đ / lượt",
+  },
+];

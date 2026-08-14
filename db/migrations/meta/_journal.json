@@ -29,6 +29,13 @@
       "when": 1786286141183,
       "tag": "0003_demonic_scalphunter",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1786693307013,
+      "tag": "0004_stiff_red_hulk",
+      "breakpoints": true
     }
   ]
 }

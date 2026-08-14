@@ -1,0 +1,44 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import Container from "../../components/ui/Container.astro";
+import { paidTools } from "../../lib/dai-cat-loi-tools";
+
+export const prerender = true;
+---
+
+<BaseLayout
+  title="Dịch vụ thu phí"
+  description="Các công cụ trạch cát chuyên sâu, tính toán theo yêu cầu riêng của từng khách hàng — thu phí theo lượt sử dụng."
+>
+  <PageHero
+    eyebrow="Công cụ tra cứu"
+    title="⭐ Dịch vụ thu phí"
+    description="Khác với nhóm công cụ Đại Cát Lợi miễn phí, các công cụ dưới đây xử lý bài toán chuyên sâu hơn, tính riêng cho từng trường hợp — thanh toán theo lượt qua QR chuyển khoản, không cần tạo tài khoản."
+    breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Đại Cát Lợi", href: "/dai-cat-loi" }, { label: "Dịch vụ thu phí" }]}
+  />
+
+  <Container class="py-16">
+    <div class="mx-auto grid max-w-4xl gap-4 sm:grid-cols-2">
+      {
+        paidTools.map((m) => (
+          <a
+            href={m.href}
+            class="relative flex flex-col gap-2 rounded-2xl border-2 border-(--color-gold-400) bg-white p-6 text-slate-900 shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl"
+          >
+            <span class="absolute -top-3 right-4 rounded-(--radius-pill) bg-(--color-gold-400) px-3 py-1 text-xs font-semibold text-(--color-on-accent) shadow">
+              {m.priceLabel}
+            </span>
+            <span class="text-3xl">{m.icon}</span>
+            <span class="font-display text-lg font-bold text-slate-900">{m.title}</span>
+            <span class="text-sm text-slate-500">{m.desc}</span>
+          </a>
+        ))
+      }
+    </div>
+
+    <p class="mx-auto mt-8 max-w-4xl text-center text-xs text-(--color-ink-500)">
+      Cần một công cụ thu phí khác chưa có ở đây? <a href="/lien-he" class="text-(--color-gold-300) hover:underline">Liên hệ đặt lịch tư vấn trực tiếp</a>.
+    </p>
+  </Container>
+</BaseLayout>

@@ -118,6 +118,7 @@ const navWithChildren = mainNav.map((item) => {
             <a href="/lap-la-so-tu-vi" class="rounded-(--radius-control) px-3 py-2.5 text-sm text-(--color-ink-700) hover:bg-(--color-ivory-200)">Lập lá số Tử Vi</a>
             <a href="/xem-ngay-tot-xau" class="rounded-(--radius-control) px-3 py-2.5 text-sm text-(--color-ink-700) hover:bg-(--color-ivory-200)">Xem ngày tốt xấu</a>
             <a href="/tinh-trung-tang" class="rounded-(--radius-control) px-3 py-2.5 text-sm text-(--color-ink-700) hover:bg-(--color-ivory-200)">Tính Trùng Tang</a>
+            <a href="/dai-cat-loi/dich-vu-thu-phi" class="rounded-(--radius-control) px-3 py-2.5 text-sm font-medium text-(--color-gold-400) hover:bg-(--color-ivory-200)">⭐ Dịch vụ thu phí</a>
           </div>
         </details>
 
@@ -182,7 +183,10 @@ const navWithChildren = mainNav.map((item) => {
                   <li>
                     <a
                       href={child.href}
-                      class="block rounded-(--radius-control) px-3 py-2 text-sm text-(--color-ink-800) hover:bg-(--color-ivory-200) hover:text-(--color-gold-300)"
+                      class:list={[
+                        "block rounded-(--radius-control) px-3 py-2 text-sm hover:bg-(--color-ivory-200) hover:text-(--color-gold-300)",
+                        child.label.startsWith("⭐") ? "font-semibold text-(--color-gold-400)" : "text-(--color-ink-800)",
+                      ]}
                     >
                       {child.label}
                     </a>

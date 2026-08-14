@@ -42,7 +42,7 @@ export const orderStatusEnum = pgEnum("order_status", [
 
 export const paymentMethodEnum = pgEnum("payment_method", ["bank_transfer", "cod", "sepay_qr"]);
 
-export const orderTypeEnum = pgEnum("order_type", ["product", "course"]);
+export const orderTypeEnum = pgEnum("order_type", ["product", "course", "tool"]);
 
 export const orders = pgTable("orders", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -53,13 +53,19 @@ export const orders = pgTable("orders", {
   customerName: text("customer_name").notNull(),
   customerPhone: text("customer_phone").notNull(),
   customerEmail: text("customer_email"),
-  // Bắt buộc với đơn vật phẩm (giao hàng), null với đơn khóa học.
+  // Bắt buộc với đơn vật phẩm (giao hàng), null với đơn khóa học/công cụ.
   shippingAddress: text("shipping_address"),
   note: text("note"),
   totalAmount: numeric("total_amount", { precision: 12, scale: 0 }).notNull(),
   // Đơn khóa học: courseRef trỏ tới khóa học duy nhất được mua (mỗi đơn = 1 khóa).
   courseRef: text("course_ref"),
+  // Đơn công cụ trả phí (vd "gio-liem-ha-huyet"): định danh công cụ + input đã nộp, lưu dạng
+  // JSON string — sau khi thanh toán xong, kết quả được TÍNH LẠI từ input này (không lưu sẵn kết
+  // quả) vì hàm tính là thuần/deterministic và rẻ, tránh lệch dữ liệu nếu công thức được sửa sau.
+  toolSlug: text("tool_slug"),
+  toolInputSnapshot: text("tool_input_snapshot"),
   // Mã đơn hàng ngắn, duy nhất — nhúng vào nội dung chuyển khoản QR để đối soát với webhook SePay.
+  // Với đơn công cụ (không cần tài khoản), orderCode còn đóng vai trò "vé" truy cập kết quả.
   orderCode: text("order_code").notNull().unique(),
   paidAt: timestamp("paid_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),

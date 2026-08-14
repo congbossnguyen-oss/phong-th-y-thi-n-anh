@@ -57,6 +57,7 @@ export const mainNav: NavItem[] = [
       { label: "Lập lá số Tử Vi", href: "/lap-la-so-tu-vi" },
       { label: "Xem ngày tốt xấu", href: "/xem-ngay-tot-xau" },
       { label: "Tính Trùng Tang", href: "/tinh-trung-tang" },
+      { label: "⭐ Dịch vụ thu phí", href: "/dai-cat-loi/dich-vu-thu-phi" },
     ],
   },
 ];

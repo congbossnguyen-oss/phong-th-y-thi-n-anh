@@ -127,6 +127,47 @@ export async function createCourseOrder(params: {
 }
 
 /**
+ * Tạo đơn hàng công cụ trả phí (vd "gio-liem-ha-huyet") — KHÔNG cần tài khoản (userId luôn
+ * null), vì nhu cầu dùng thường chỉ 1 lần. `toolInput` lưu nguyên object input đã validate được
+ * (JSON.stringify) để sau khi thanh toán xong, tầng API tính lại kết quả từ chính input này —
+ * không lưu sẵn kết quả để tránh lệch dữ liệu nếu công thức tính được sửa sau khi đơn đã tạo.
+ */
+export async function createToolOrder(params: {
+  toolSlug: string;
+  toolInput: unknown;
+  customerName: string;
+  customerPhone: string;
+  customerEmail: string | null;
+  totalAmount: number;
+}) {
+  const orderCode = generateOrderCode();
+
+  const [order] = await db
+    .insert(orders)
+    .values({
+      userId: null,
+      orderType: "tool",
+      status: "pending_payment",
+      paymentMethod: "sepay_qr",
+      customerName: params.customerName,
+      customerPhone: params.customerPhone,
+      customerEmail: params.customerEmail,
+      toolSlug: params.toolSlug,
+      toolInputSnapshot: JSON.stringify(params.toolInput),
+      totalAmount: String(params.totalAmount),
+      orderCode,
+    })
+    .returning({ id: orders.id, orderCode: orders.orderCode });
+
+  return { orderId: order.id, orderCode: order.orderCode, totalAmount: params.totalAmount };
+}
+
+export async function getOrderByCode(orderCode: string) {
+  const [order] = await db.select().from(orders).where(eq(orders.orderCode, orderCode)).limit(1);
+  return order ?? null;
+}
+
+/**
  * Đánh dấu đơn hàng đã thanh toán (gọi từ webhook SePay sau khi đối soát số tiền khớp) —
  * với đơn khóa học, tự động tạo lượt đăng ký (course_enrollments) và gửi email xác nhận.
  */
