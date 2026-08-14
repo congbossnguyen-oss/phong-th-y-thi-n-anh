@@ -1,7 +1,6 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
 import Hero from "../components/home/Hero.astro";
-import TodayStrip from "../components/home/TodayStrip.astro";
 import StatsSection from "../components/home/StatsSection.astro";
 import ToolsShowcase from "../components/home/ToolsShowcase.astro";
 import BatQuaiFeature from "../components/home/BatQuaiFeature.astro";
@@ -33,15 +32,15 @@ const personSchema = {
 <BaseLayout title={siteConfig.name} description={siteConfig.description}>
   <script type="application/ld+json" set:html={JSON.stringify(personSchema)} />
   <Hero />
-  {/* Thứ tự dẫn dắt: lời hứa thương hiệu (Hero) → giá trị dùng được NGAY hôm nay (TodayStrip) → uy tín
-      (Stats) → thứ khác biệt nhất, dùng miễn phí (ToolsShowcase) → con người đứng sau (MasterIntro) →
-      dịch vụ trả phí. Đặt công cụ miễn phí TRƯỚC dịch vụ trả phí để người xem nhận giá trị rồi mới được
-      mời mua. Chú thích trong template dùng dạng JSX vì chú thích kiểu HTML sẽ bị đẩy nguyên văn ra mã
-      nguồn trang công khai, người ngoài đọc được ghi chú nội bộ. */}
-  <TodayStrip />
+  {/* Thứ tự dẫn dắt: lời hứa thương hiệu (Hero) → con người đứng sau (MasterIntro, lên ngay đầu để tạo
+      tin tưởng trước khi nói gì khác) → uy tín bằng số liệu (Stats, đặt liền sau để củng cố ngay) → thứ
+      khác biệt nhất, dùng miễn phí (ToolsShowcase) → dịch vụ trả phí. Đặt công cụ miễn phí TRƯỚC dịch vụ
+      trả phí để người xem nhận giá trị rồi mới được mời mua. Đã bỏ hẳn TodayStrip (Lịch Vạn Niên) theo
+      yêu cầu Công. Chú thích trong template dùng dạng JSX vì chú thích kiểu HTML sẽ bị đẩy nguyên văn ra
+      mã nguồn trang công khai, người ngoài đọc được ghi chú nội bộ. */}
+  <MasterIntro />
   <StatsSection />
   <ToolsShowcase />
-  <MasterIntro />
   {/* Vật phẩm chủ lực đặt ngay sau phần giới thiệu chuyên gia: khách vừa biết người đứng sau là ai,
       đang ở trạng thái tin tưởng nhất, thì gặp luôn vật phẩm — trước cả danh sách dịch vụ trả phí. */}
   <BatQuaiFeature />

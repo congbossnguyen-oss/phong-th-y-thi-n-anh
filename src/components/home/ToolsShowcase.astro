@@ -84,13 +84,16 @@ const totalTools = TOTAL_TOOL_COUNT;
       </p>
     </div>
 
-    <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    {/* Lưới 2 cột cố định ở MỌI kích thước màn hình (giống hệt bố cục "Công trình" — FeaturedPortfolio.astro)
+    thay vì 1→2→3 cột theo yêu cầu Công "cho nhỏ lại như phần công trình". Thẻ cũng thu nhỏ theo (icon/chữ
+    nhỏ hơn, bớt padding) để khớp mật độ dày hơn của lưới 2 cột. */}
+    <div class="mt-10 grid grid-cols-2 gap-4">
       {
         CORE_TOOLS.map((tool) => (
           <a
             href={tool.href}
             aria-label={tool.title}
-            class="group relative flex aspect-video flex-col justify-end overflow-hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ink-950) transition hover:-translate-y-0.5 hover:border-(--color-gold-400)/60"
+            class="group relative flex aspect-video flex-col justify-end overflow-hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ink-950) p-3 transition hover:-translate-y-0.5 hover:border-(--color-gold-400)/60"
           >
             {/* Ảnh minh hoạ riêng của từng công cụ (Công cung cấp) làm nền toàn thẻ kiểu poster — tự thân
             đã có tên công cụ trong thiết kế, nên bỏ chữ tiêu đề/mô tả lặp lại của site, chỉ giữ CTA. */}
@@ -103,12 +106,12 @@ const totalTools = TOTAL_TOOL_COUNT;
             {/* Lớp phủ tối dần từ dưới lên để chữ luôn đọc được, bất kể nội dung ảnh phía dưới là gì. */}
             <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-black/10" />
 
-            <span class="relative z-10 flex size-11 items-center justify-center self-start rounded-full border border-(--color-gold-500)/40 bg-(--color-ink-950)/40 text-(--color-gold-300) backdrop-blur-sm transition group-hover:border-(--color-gold-400)">
-              <Icon name={tool.icon} class="size-5" />
+            <span class="relative z-10 flex size-8 items-center justify-center self-start rounded-full border border-(--color-gold-500)/40 bg-(--color-ink-950)/40 text-(--color-gold-300) backdrop-blur-sm transition group-hover:border-(--color-gold-400)">
+              <Icon name={tool.icon} class="size-3.5" />
             </span>
-            <span class="relative z-10 mt-auto inline-flex items-center gap-1.5 text-sm font-medium text-(--color-gold-300)">
+            <span class="relative z-10 mt-auto inline-flex items-center gap-1 text-xs font-medium text-(--color-gold-300)">
               Dùng thử ngay
-              <Icon name="arrow-right" class="size-3.5 transition group-hover:translate-x-0.5" />
+              <Icon name="arrow-right" class="size-3 transition group-hover:translate-x-0.5" />
             </span>
           </a>
         ))

@@ -16,7 +16,9 @@ import { services } from "../../lib/placeholder-data";
       <a href="/dich-vu" class="text-sm font-medium text-(--color-gold-300) hover:underline">Xem tất cả dịch vụ →</a>
     </div>
 
-    <div class="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+    {/* Trên mobile: lưới 2 cột + thẻ gọn (giống hệt bố cục "Công trình" — FeaturedPortfolio.astro), chỉ
+    hiện ảnh + tên dịch vụ. Mô tả và dòng chi phí CHỈ hiện từ sm: trở lên, theo yêu cầu Công. */}
+    <div class="mt-10 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
       {services.map((service) => (
         <a
           href={`/dich-vu/${service.slug}`}
@@ -30,10 +32,10 @@ import { services } from "../../lib/placeholder-data";
               loading="lazy"
             />
           </div>
-          <div class="flex flex-1 flex-col p-6">
-            <h3 class="font-display text-lg font-semibold text-(--color-ink-950)">{service.name}</h3>
-            <p class="mt-2 flex-1 text-sm leading-relaxed text-(--color-ink-600)">{service.summary}</p>
-            <div class="mt-4 flex items-center justify-between border-t border-(--color-ivory-300) pt-4 text-sm">
+          <div class="flex flex-1 flex-col p-3 sm:p-6">
+            <h3 class="font-display text-sm font-semibold text-(--color-ink-950) sm:text-lg">{service.name}</h3>
+            <p class="mt-2 hidden flex-1 text-sm leading-relaxed text-(--color-ink-600) sm:block">{service.summary}</p>
+            <div class="mt-4 hidden items-center justify-between border-t border-(--color-ivory-300) pt-4 text-sm sm:flex">
               <span class="text-(--color-ink-600)">Chi phí: <strong class="text-(--color-gold-300)">{service.priceFrom}</strong></span>
               <Icon name="arrow-right" class="size-4 text-(--color-ink-400) transition-transform group-hover:translate-x-1 group-hover:text-(--color-gold-300)" />
             </div>
