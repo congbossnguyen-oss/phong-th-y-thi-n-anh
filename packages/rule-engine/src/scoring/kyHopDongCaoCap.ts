@@ -17,8 +17,8 @@
  * thức → bỏ qua và phân bổ lại trọng số". Nhưng repo ĐÃ CÓ công thức thật cho cả hai
  * (`trach-nhat/thienDucHop.ts`, `trach-nhat/thienXa.ts`, nguồn: bảng do chủ dự án cung cấp
  * 2026-08-11). Bỏ đi là tự làm yếu kết quả, nên ở đây VẪN TÍNH và giữ nguyên phần trọng số cát
- * tinh. Các mục thật sự chưa có công thức (Thiên Xá tháng, Thiên Giải, Địa Giải, Nguyệt Đức,
- * Tuế Đức...) vẫn liệt kê trong `thieuDuLieu` để minh bạch với khách.
+ * tinh. Danh sách các mục THẬT SỰ chưa có công thức nằm ở `THIEU_DU_LIEU_MAC_DINH` bên dưới, đã
+ * đối chiếu với thanSat.ts — Thiên Giải, Địa Giải, Nguyệt Đức đều đã có nên KHÔNG kê vào đó.
  */
 import type { Data } from "@thien-anh/calendar-core";
 import {
