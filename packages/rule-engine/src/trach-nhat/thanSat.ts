@@ -36,12 +36,20 @@ export const THAN_SAT_THANG: readonly ThanSatThangEntry[] = [
     nguon: "NHỮNG NGÀY THIÊN ĐỨC",
     chiTheoThang: ["Tỵ", "Mùi", "Dậu", "Hợi", "Sửu", "Mão", "Tỵ", "Mùi", "Dậu", "Hợi", "Sửu", "Mão"],
   },
-  {
-    name: "Nguyệt Đức",
-    catHung: "cát",
-    nguon: "NHỮNG NGÀY NGUYỆT ĐỨC",
-    chiTheoThang: ["Hợi", "Tuất", "Dậu", "Thân", "Mùi", "Ngọ", "Tỵ", "Thìn", "Mão", "Dần", "Sửu", "Tý"],
-  },
+  // ⚠️ ĐÃ GỠ KHỎI ENGINE — bảng "Nguyệt Đức" theo ĐỊA CHI (chủ dự án quyết định 2026-08-15).
+  //
+  //     tháng 1→Hợi, 2→Tuất, 3→Dậu, 4→Thân, 5→Mùi, 6→Ngọ,
+  //     tháng 7→Tỵ,  8→Thìn, 9→Mão, 10→Dần, 11→Sửu, 12→Tý
+  //     (nguồn cũ ghi là "NHỮNG NGÀY NGUYỆT ĐỨC")
+  //
+  // Lý do gỡ: Nguyệt Đức cổ truyền tra theo THIÊN CAN (Tam Mệnh Thông Hội; Khâm định Hiệp Kỷ
+  // Biện Phương Thư) — xem `catTinhTheoCan.ts`. Bảng theo Chi ở trên chọn ra tập ngày hoàn toàn
+  // khác, nên không thể là cùng một sao. Có thể nó thuộc một hệ thần sát khác, hoặc bị truyền
+  // sai tên.
+  //
+  // Chủ dự án chỉ đạo rõ: KHÔNG tự ý đặt cho nó một tên thần sát khác chỉ vì bảng cần có tên.
+  // Không tính điểm, không hiển thị, không tham gia engine. Giữ lại số liệu ở dạng chú thích
+  // (không có tác dụng lúc chạy) để sau này tra ra đúng tên thì khôi phục được.
   {
     name: "Thiên Giải",
     catHung: "cát",

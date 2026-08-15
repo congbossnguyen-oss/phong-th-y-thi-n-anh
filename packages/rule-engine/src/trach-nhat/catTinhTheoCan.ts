@@ -8,11 +8,13 @@
  *   - Ba bảng "Hợp" đều đúng là Ngũ Hợp của bảng gốc: Giáp↔Kỷ, Ất↔Canh, Bính↔Tân, Đinh↔Nhâm,
  *     Mậu↔Quý. Kiểm được bằng máy — xem test `catTinhTheoCan.test.ts`.
  *
- * ⚠️ KHÁC HOÀN TOÀN với entry tên "Nguyệt Đức" trong `thanSat.ts`: entry đó tra theo ĐỊA CHI của
- * ngày (bảng Hợi-Tuất-Dậu-Thân… giảm dần), còn bảng ở đây tra theo THIÊN CAN. Hai bảng cùng tên
- * nhưng là hai hệ khác nhau, KHÔNG được gộp hay ghi đè lên nhau — cùng tình huống đã gặp với
- * "Thiên Giải" / "Thiên Giải (nguồn khác)". Ở đây đặt tên có hậu tố "(theo Can)" để phân biệt rõ
- * khi hiển thị cho khách.
+ * Nguyệt Đức (月德) — nguồn chính: Tam Mệnh Thông Hội; Khâm định Hiệp Kỷ Biện Phương Thư.
+ * Quy tắc: Thiên Can NGÀY trùng Thiên Can Nguyệt Đức của tháng thì được tính.
+ *
+ * `thanSat.ts` từng có một entry cũng tên "Nguyệt Đức" nhưng tra theo ĐỊA CHI — chủ dự án đã
+ * quyết định gỡ hẳn khỏi engine ngày 2026-08-15 vì nó chọn ra tập ngày hoàn toàn khác nên không
+ * thể là cùng một sao. Từ đây "Nguyệt Đức" trong hệ trạch nhật chỉ có nghĩa là bảng theo Can ở
+ * file này.
  */
 import { Data } from "@thien-anh/calendar-core";
 import type { CatHung } from "./catHung.js";
@@ -92,7 +94,7 @@ export function getCatTinhTheoCanTrongNgay(
     ds.push({ name: "Tuế Đức Hợp", catHung: "cát", nguon: NGUON });
   }
   if (NGUYET_DUC_THEO_THANG[lunarMonth - 1] === canNgay) {
-    ds.push({ name: "Nguyệt Đức (theo Can)", catHung: "cát", nguon: NGUON });
+    ds.push({ name: "Nguyệt Đức", catHung: "cát", nguon: NGUON });
   }
   if (NGUYET_DUC_HOP_THEO_THANG[lunarMonth - 1] === canNgay) {
     ds.push({ name: "Nguyệt Đức Hợp", catHung: "cát", nguon: NGUON });

@@ -49,8 +49,8 @@ export function tinhNgayInfo(tuTru: TuTruResult): NgayInfoResult {
   const nhiThapBatTu = TrachNhat.getNhiThapBatTu(tuTru.julianDayNumber);
   const hoangDaoHacDaoNgay = TrachNhat.getNgayHoangDaoHacDao(lunarMonth, tuTru.dayChiIndex);
   const thanSat = TrachNhat.getThanSatTrongNgay(lunarMonth, dayChi);
-  // 4 cát tinh tra theo THIÊN CAN của ngày (Tuế Đức, Tuế Đức Hợp, Nguyệt Đức theo Can, Nguyệt Đức
-  // Hợp) — hệ khác với `getThanSatTrongNgay` (tra theo Địa Chi), nên gọi riêng rồi gộp danh sách.
+  // 4 cát tinh tra theo THIÊN CAN của ngày (Tuế Đức, Tuế Đức Hợp, Nguyệt Đức, Nguyệt Đức Hợp) —
+  // hệ khác với `getThanSatTrongNgay` (tra theo Địa Chi), nên gọi riêng rồi gộp danh sách.
   // Gộp ở đây để MỌI module chấm điểm đều nhận được, không phải sửa từng module.
   const catTinhTheoCan = TrachNhat.getCatTinhTheoCanTrongNgay(
     tuTru.tuTru.nam.can as Can,

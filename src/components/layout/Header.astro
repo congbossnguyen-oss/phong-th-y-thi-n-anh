@@ -212,13 +212,18 @@ const navWithChildren = mainNav.map((item) => {
     </nav>
 
     <div class="flex items-center gap-1.5">
+      {/* Lối vào tài khoản. TRƯỚC ĐÂY bị `hidden ... md:flex` nên trên điện thoại biến mất hoàn
+          toàn khỏi thanh đầu trang — khách chỉ còn cách cuộn xuống đáy menu 54 mục mới thấy dòng
+          "Khu vực học viên". Nay hiện ở mọi khổ màn hình: điện thoại chỉ có icon (vừa đúng ô 44px
+          như nút tìm kiếm / đổi giao diện), từ md trở lên mới kèm chữ. */}
       <a
         id="member-nav-link"
         href="/hoc-vien"
-        class="hidden items-center gap-1.5 rounded-(--radius-control) px-3 py-2 text-sm font-medium text-(--color-ink-800) hover:bg-(--color-ivory-200) md:flex"
+        aria-label="Khu vực học viên — đăng nhập / đăng ký"
+        class="flex size-11 items-center justify-center gap-1.5 rounded-full text-sm font-medium text-(--color-ink-800) hover:bg-(--color-ivory-200) md:size-auto md:rounded-(--radius-control) md:px-3 md:py-2"
       >
-        <Icon name="user" class="size-4.5" />
-        <span id="member-nav-label">Học viên</span>
+        <Icon name="user" class="size-5.5 md:size-4.5" />
+        <span id="member-nav-label" class="hidden md:inline">Học viên</span>
       </a>
       <button
         type="button"
