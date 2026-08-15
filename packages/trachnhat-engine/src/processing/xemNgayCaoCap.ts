@@ -82,6 +82,26 @@ export interface GioDeXuat {
   diem: number;
 }
 
+/**
+ * Các yếu tố đã đạt, ở dạng CÓ CẤU TRÚC để tầng xếp hạng chấm điểm được (phần `diemManh` chỉ là
+ * câu chữ cho người đọc, không dùng để tính điểm).
+ */
+export interface YeuToXepHang {
+  /** Nhật Khóa giao Sơn Gia (Tọa) — null = không giao / thiếu quẻ Tọa. */
+  giaoSonGia: string | null;
+  giaoMenhChuChinh: string | null;
+  giaoMenhChuPhu: string | null;
+  toaGiaoMenhChu: boolean;
+  nhomThang: "tu_hop" | "sinh_hop" | "tam_hop" | null;
+  thuocCucBoLong: boolean;
+  amDuongHaiHoa: boolean;
+  haiCapHaDoKhacNhau: boolean;
+  /** Số trụ (Năm/Tháng) hỗ trợ trụ Ngày — nguồn xếp hạng theo con số này (3 trụ = lý tưởng). */
+  soTruHoTroNgay: number;
+  /** 3 địa chi Tứ Trụ tạo tam hợp với Chi của Tọa (chỉ tính khi tọa là sơn Địa Chi). */
+  tamHopVoiToa: boolean;
+}
+
 export interface XemNgayCaoCapResult {
   ngayDuongLich: { nam: number; thang: number; ngay: number };
   amLich: { ngay: number; thang: number; nam: number; nhuan: boolean };
@@ -96,6 +116,7 @@ export interface XemNgayCaoCapResult {
   diemLuuY: string[];
   /** Bước 6 — 12 giờ đã xếp hạng (tốt nhất trước). */
   gioDeXuat: GioDeXuat[];
+  yeuTo: YeuToXepHang;
 }
 
 /**
@@ -136,6 +157,18 @@ export function calculateXemNgayCaoCap(input: XemNgayCaoCapInput): XemNgayCaoCap
   const chieuTungBuoc: BuocKetQua[] = [];
   const diemManh: string[] = [];
   const diemLuuY: string[] = [];
+  const yeuTo: YeuToXepHang = {
+    giaoSonGia: null,
+    giaoMenhChuChinh: null,
+    giaoMenhChuPhu: null,
+    toaGiaoMenhChu: false,
+    nhomThang: null,
+    thuocCucBoLong: false,
+    amDuongHaiHoa: false,
+    haiCapHaDoKhacNhau: false,
+    soTruHoTroNgay: 0,
+    tamHopVoiToa: false,
+  };
 
   // ----- Nền: Tứ Trụ thật + âm lịch -----
   const canChi = getCanChi({ year: nam, month: thang, day: ngay, hour: 12, timeZone });
@@ -313,7 +346,10 @@ export function calculateXemNgayCaoCap(input: XemNgayCaoCapInput): XemNgayCaoCap
       sinh_hop: "Sinh hợp theo mùa",
       tam_hop: "Tam hợp theo mùa",
     };
-    if (nhan.nhom) diemManh.push(`Tháng ${truThang.chi} thuộc nhóm ${tenNhom[nhan.nhom]} của tọa phương ${phuongToa}.`);
+    if (nhan.nhom) {
+      yeuTo.nhomThang = nhan.nhom;
+      diemManh.push(`Tháng ${truThang.chi} thuộc nhóm ${tenNhom[nhan.nhom]} của tọa phương ${phuongToa}.`);
+    }
     if (nhan.laTuMo) {
       diemLuuY.push(
         `Tháng ${truThang.chi} là tháng Tứ Mộ — nửa đầu tháng còn khí mùa trước, nửa sau mới chuyển sang khí Thổ. Cần xác định rõ đang dùng nửa nào (ranh giới theo tiết khí) trước khi chốt ngày.`,
@@ -324,6 +360,7 @@ export function calculateXemNgayCaoCap(input: XemNgayCaoCapInput): XemNgayCaoCap
     const boLong = XemNgayCaoCap.tinhBoLongTamCuc(input.toaNha);
     const cucDung = boLong.uuTien;
     if (cucDung && XemNgayCaoCap.chiThuocCuc(cucDung, truThang.chi)) {
+      yeuTo.thuocCucBoLong = true;
       const tenCuc: Record<string, string> = { an_cuc: "Ấn cục", tai_cuc: "Tài cục", vuong_cuc: "Vượng cục" };
       diemManh.push(
         `Bổ Long Tam Cục: tháng ${truThang.chi} thuộc ${tenCuc[cucDung.loai]} (${cucDung.hanh}) của Long tọa ${input.toaNha} (hành ${boLong.hanhLong}).`,
@@ -390,6 +427,7 @@ export function calculateXemNgayCaoCap(input: XemNgayCaoCapInput): XemNgayCaoCap
   if (queToa) {
     const giaoNgayToa = XemNgayCaoCap.xetGiao(truNgay.hknh, queToa.hknh, queToa.hknh);
     if (giaoNgayToa.giaoDuoc) {
+      yeuTo.giaoSonGia = giaoNgayToa.mucDat;
       diemManh.push(`Nhật Khóa giao được Sơn Gia (Tọa): ${moTaQuanHe(giaoNgayToa.mucDat)}.`);
     } else {
       buoc5Dat = false;
@@ -399,6 +437,7 @@ export function calculateXemNgayCaoCap(input: XemNgayCaoCapInput): XemNgayCaoCap
     lyDo5.push("5e — Chưa xét được Nhật Khóa ↔ Sơn Gia vì thiếu quẻ Tọa.");
   }
   if (giaoNgayMenh.giaoDuoc) {
+    yeuTo.giaoMenhChuChinh = giaoNgayMenh.mucDat;
     diemManh.push(`Nhật Khóa giao được Mệnh Chủ chính: ${moTaQuanHe(giaoNgayMenh.mucDat)}.`);
   } else {
     buoc5Dat = false;
@@ -410,8 +449,10 @@ export function calculateXemNgayCaoCap(input: XemNgayCaoCapInput): XemNgayCaoCap
     const skToaMenh = XemNgayCaoCap.xetSinhKhac(menhChuChinh.hknh, queToa.hknh);
     const qhToaMenh = XemNgayCaoCap.xetQuanHe(queToa.hknh, menhChuChinh.hknh);
     if (qhToaMenh !== "khong_giao") {
+      yeuTo.toaGiaoMenhChu = true;
       diemManh.push(`Tọa giao Mệnh Chủ: ${moTaQuanHe(qhToaMenh)}.`);
     } else if (skToaMenh === "sinh_nhap" || skToaMenh === "khac_xuat") {
+      yeuTo.toaGiaoMenhChu = true;
       // Mệnh Chủ là chủ: sinh_nhap = Địa sinh Nhân; khac_xuat = Nhân khắc Địa.
       diemManh.push(`Tọa ↔ Mệnh Chủ: ${skToaMenh === "sinh_nhap" ? "Địa sinh Nhân" : "Nhân khắc Địa"} — đạt yêu cầu của nguồn.`);
     } else {
@@ -422,13 +463,16 @@ export function calculateXemNgayCaoCap(input: XemNgayCaoCapInput): XemNgayCaoCap
   // Mệnh Chủ phụ — chỉ tăng điểm ưu tiên, không loại ngày.
   if (menhChuPhu) {
     const giaoPhu = XemNgayCaoCap.xetGiao(truNgay.hknh, menhChuPhu.hknh, menhChuPhu.hknh);
-    if (giaoPhu.giaoDuoc) diemManh.push(`Nhật Khóa giao thêm được Mệnh Chủ phụ: ${moTaQuanHe(giaoPhu.mucDat)}.`);
+    if (giaoPhu.giaoDuoc) {
+      yeuTo.giaoMenhChuPhu = giaoPhu.mucDat;
+      diemManh.push(`Nhật Khóa giao thêm được Mệnh Chủ phụ: ${moTaQuanHe(giaoPhu.mucDat)}.`);
+    }
     else diemLuuY.push("Nhật Khóa không giao được Mệnh Chủ phụ (không loại ngày, chỉ giảm mức ưu tiên).");
   }
 
   // 5b bổ sung — 2 cặp Hà Đồ khắc nhau trong Tứ Trụ.
   const hknhTuTru = [truNam.hknh, truThang.hknh, truNgay.hknh];
-  if (XemNgayCaoCap.coHaiCapHaDoKhacNhau(hknhTuTru)) {
+  if ((yeuTo.haiCapHaDoKhacNhau = XemNgayCaoCap.coHaiCapHaDoKhacNhau(hknhTuTru))) {
     diemLuuY.push("Tứ Trụ có 2 nhóm Hà Đồ khắc nhau cùng xuất hiện (Thủy-Hỏa hoặc Mộc-Kim) — nguồn khuyến cáo không nên.");
   }
 
@@ -438,6 +482,7 @@ export function calculateXemNgayCaoCap(input: XemNgayCaoCapInput): XemNgayCaoCap
       `Tứ Trụ thuần ${hknhTuTru[0]! % 2 === 1 ? "dương" : "âm"} — tốc phát nhưng ngắn hạn, nguồn khuyến cáo KHÔNG dùng cho ${input.loaiViec === "nhap_trach" ? "nhập trạch" : "động thổ"} (việc cần độ bền).`,
     );
   } else {
+    yeuTo.amDuongHaiHoa = true;
     diemManh.push("Âm dương Tứ Trụ hài hòa (không thuần âm, không thuần dương).");
   }
 
@@ -448,10 +493,31 @@ export function calculateXemNgayCaoCap(input: XemNgayCaoCapInput): XemNgayCaoCap
   ] as const) {
     const qh = XemNgayCaoCap.xetQuanHe(truNgay.hknh, tru.hknh);
     if (qh !== "khong_giao") {
+      yeuTo.soTruHoTroNgay++;
       diemManh.push(`Trụ Ngày ↔ trụ ${tenTru}: ${moTaQuanHe(qh)}.`);
     } else {
       const sk = XemNgayCaoCap.xetSinhKhac(truNgay.hknh, tru.hknh);
-      if (XemNgayCaoCap.laSinhKhacTot(sk)) diemManh.push(`Trụ Ngày được trụ ${tenTru} ${moTaQuanHe(sk)}.`);
+      if (XemNgayCaoCap.laSinhKhacTot(sk)) {
+        yeuTo.soTruHoTroNgay++;
+        diemManh.push(`Trụ Ngày được trụ ${tenTru} ${moTaQuanHe(sk)}.`);
+      }
+    }
+  }
+
+  // Lý tưởng theo nguồn: 3 địa chi Tứ Trụ tạo tam hợp với Tọa. Chỉ tính được khi tọa là sơn Địa
+  // Chi (12/24 sơn) — sơn Thiên Can/tứ duy không có Chi nên bỏ qua, không suy đoán.
+  const CHI_LIST: readonly string[] = Data.CHI;
+  if (CHI_LIST.includes(input.toaNha)) {
+    const chiToa = input.toaNha as Chi;
+    const nhom = XemNgayCaoCap.TAM_HOP_CUC;
+    const cucChuaToa = Object.values(nhom).find((bo) => (bo as readonly string[]).includes(chiToa));
+    if (cucChuaToa) {
+      const chiTuTru = [truNam.chi, truThang.chi, truNgay.chi];
+      const soTrongCuc = chiTuTru.filter((c) => (cucChuaToa as readonly string[]).includes(c)).length;
+      if (soTrongCuc >= 2) {
+        yeuTo.tamHopVoiToa = true;
+        diemManh.push(`Địa chi Tứ Trụ hợp cục tam hợp với Tọa ${chiToa} (${soTrongCuc}/3 trụ trong cục ${(cucChuaToa as readonly string[]).join("-")}).`);
+      }
     }
   }
 
@@ -512,5 +578,6 @@ export function calculateXemNgayCaoCap(input: XemNgayCaoCapInput): XemNgayCaoCap
     diemManh,
     diemLuuY,
     gioDeXuat,
+    yeuTo,
   };
 }
