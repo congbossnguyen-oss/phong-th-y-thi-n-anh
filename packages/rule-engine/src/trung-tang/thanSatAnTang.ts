@@ -22,11 +22,43 @@ type Can = Data.Can;
 type Chi = Data.Chi;
 
 /**
- * Sát Chủ ÂM theo tháng âm lịch — hệ dùng CHÍNH cho an táng.
+ * NHÓM VIỆC mà Sát Chủ Âm thực sự chi phối (chủ dự án cung cấp 2026-08-15). Đây là điểm cốt lõi
+ * của kiến trúc "thần sát × loại việc": KHÔNG phải cứ phạm là trừ điểm cho mọi việc như nhau —
+ * cùng một ngày Sát Chủ Âm thì đánh rất nặng khi xét hạ huyệt/an táng, nhưng không được mang
+ * cùng trọng số đó sang việc dương như ký hợp đồng, khai trương.
+ *
+ * Khai báo tường minh ngay cạnh bảng để luật này không bị dùng lan sang module việc dương. Module
+ * giờ liệm – đóng quan – hạ huyệt nằm trọn trong nhóm này nên áp mức nặng nhất (loại thẳng).
+ */
+export const SAT_CHU_AM_NHOM_VIEC: readonly string[] = [
+  "an_tang",
+  "ha_huyet",
+  "nhap_quan",
+  "dong_quan",
+  "cai_tang",
+  "boc_mo",
+  "dao_huyet",
+  "xay_mo",
+  "lap_ban_tho",
+  "an_vi_bat_huong",
+  "an_tuong",
+];
+
+/** Sát Chủ Âm có chi phối loại việc này không — dùng trước khi áp luật ở bất kỳ module nào khác. */
+export function satChuAmApDungCho(loaiViec: string): boolean {
+  return SAT_CHU_AM_NHOM_VIEC.includes(loaiViec);
+}
+
+/**
+ * Sát Chủ ÂM theo tháng âm lịch — hệ dùng CHÍNH cho an táng. Độ tin cậy chủ dự án đánh giá mức B
+ * ("đã xác nhận bảng truyền thống").
  *
  * ⚠️ Tháng 7 = Hợi, tháng 8 = Sửu là theo bản CHỦ DỰ ÁN ĐÃ SỬA (ghi trong `_sua_sat_chu_am`).
  * Một số nguồn khác (kể cả file của skill xem-ngay-cao-cap trong dự án) ghi ngược lại
  * T7 = Sửu, T8 = Hợi. Mười tháng còn lại thì mọi nguồn đều khớp. Không tự ý đổi 2 tháng này.
+ *
+ * Bảng riêng chủ dự án gửi 2026-08-15 (dạng mã TI/TY/...) đã đối chiếu KHỚP 12/12 với bảng này,
+ * và xác nhận luôn cách đọc gây nhầm: tháng 1 = TI = Tỵ, tháng 2 = TY = Tý.
  */
 export const SAT_CHU_AM_THEO_THANG: readonly Chi[] = [
   "Tỵ", // tháng 1
@@ -137,6 +169,95 @@ export function isNgayThaiTue(chiNgay: Chi, chiNam: Chi): boolean {
  */
 export const TIET_TU_TUYET: readonly string[] = ["Lập Xuân", "Lập Hạ", "Lập Thu", "Lập Đông"];
 export const TIET_TU_LY: readonly string[] = ["Xuân Phân", "Hạ Chí", "Thu Phân", "Đông Chí"];
+
+/* ------------------------------------------------------------------------------------------
+ * BỘ BẢNG CHỦ DỰ ÁN CUNG CẤP 2026-08-15 (dạng mã GIAP/AT/... đã quy về tên tiếng Việt).
+ *
+ * ⚠️ Bản gốc dùng `TY` cho CẢ Tý lẫn Tỵ, trong khi bảng quy ước kèm theo ghi Tỵ = `TI`. Chỗ nào
+ * nhập nhằng đã được giải bằng QUY LUẬT NỘI TẠI của chính bảng đó (không đoán):
+ *   - `tue_sat`: JSON có khoá "TY" LẶP 2 LẦN (nếu parse thẳng thì Tý bị đè thành Thìn). Giải theo
+ *     tam hợp: Thân-Tý-Thìn→Mùi, Dần-Ngọ-Tuất→Sửu, Tỵ-Dậu-Sửu→Thìn, Hợi-Mão-Mùi→Tuất.
+ *   - `nguyet_yem`: là chuỗi ĐI LÙI liên tục từ Tuất, nên T6 = Tỵ, T11 = Tý.
+ *   - `nguyet_hai`: chuỗi đi lùi từ Tỵ, nên T1 = Tỵ, T6 = Tý.
+ *   - `nguyet_hinh`: T1 = Tỵ, T2 = Tý.
+ *   - `tu_phe` mùa Đông: Bính Ngọ + Đinh **Tỵ** (Đông thuộc thủy, hoả tử).
+ * Tất cả các điểm này CẦN CHỦ DỰ ÁN XÁC NHẬN LẠI.
+ *
+ * Hai bảng dùng để đối chứng đã khớp 100% với thứ đang chạy trong dự án, cho thấy cùng một nguồn:
+ * `phuc_nhat` trùng `CAN_PHUC_NHAT_THEO_THANG`, và `nguyet_duc` khớp quy tắc tam hợp với quy ước
+ * tháng 1 = Dần (giống `CHI_THANG_CO_DINH`).
+ * ------------------------------------------------------------------------------------------ */
+
+/** TẦNG 4 — cát thần theo CAN NĂM, dùng để cứu/nâng điểm chứ không phải để loại. */
+export const TUE_DUC_THEO_CAN_NAM: Readonly<Record<Can, Can>> = {
+  "Giáp": "Giáp", "Ất": "Canh", "Bính": "Bính", "Đinh": "Nhâm", "Mậu": "Mậu",
+  "Kỷ": "Giáp", "Canh": "Canh", "Tân": "Bính", "Nhâm": "Nhâm", "Quý": "Mậu",
+};
+export const TUE_DUC_HOP_THEO_CAN_NAM: Readonly<Record<Can, Can>> = {
+  "Giáp": "Kỷ", "Ất": "Ất", "Bính": "Tân", "Đinh": "Đinh", "Mậu": "Quý",
+  "Kỷ": "Kỷ", "Canh": "Ất", "Tân": "Tân", "Nhâm": "Đinh", "Quý": "Quý",
+};
+
+/** TẦNG 4 — cát thần theo THÁNG âm lịch (tháng 1 = Dần). */
+export const NGUYET_DUC_THEO_THANG: readonly Can[] = ["Bính", "Giáp", "Nhâm", "Canh", "Bính", "Giáp", "Nhâm", "Canh", "Bính", "Giáp", "Nhâm", "Canh"];
+export const NGUYET_DUC_HOP_THEO_THANG: readonly Can[] = ["Tân", "Kỷ", "Đinh", "Ất", "Tân", "Kỷ", "Đinh", "Ất", "Tân", "Kỷ", "Đinh", "Ất"];
+
+/** TẦNG 1 — Tuế Sát theo CHI NĂM (giải từ tam hợp, xem ghi chú khoá lặp ở trên). */
+export const TUE_SAT_THEO_CHI_NAM: Readonly<Record<Chi, Chi>> = {
+  "Dần": "Sửu", "Ngọ": "Sửu", "Tuất": "Sửu",
+  "Thân": "Mùi", "Tý": "Mùi", "Thìn": "Mùi",
+  "Tỵ": "Thìn", "Dậu": "Thìn", "Sửu": "Thìn",
+  "Hợi": "Tuất", "Mão": "Tuất", "Mùi": "Tuất",
+};
+
+/** TẦNG 1 — Nguyệt Yếm theo tháng (chuỗi đi lùi từ Tuất). */
+export const NGUYET_YEM_THEO_THANG: readonly Chi[] = ["Tuất", "Dậu", "Thân", "Mùi", "Ngọ", "Tỵ", "Thìn", "Mão", "Dần", "Sửu", "Tý", "Hợi"];
+
+/** TẦNG 2 — Nguyệt Hình / Nguyệt Hại theo tháng. */
+export const NGUYET_HINH_THEO_THANG: readonly Chi[] = ["Tỵ", "Tý", "Thìn", "Thân", "Ngọ", "Sửu", "Dần", "Dậu", "Mùi", "Hợi", "Mão", "Tuất"];
+export const NGUYET_HAI_THEO_THANG: readonly Chi[] = ["Tỵ", "Thìn", "Mão", "Dần", "Sửu", "Tý", "Hợi", "Tuất", "Dậu", "Thân", "Mùi", "Ngọ"];
+
+/** TẦNG 2 — Tứ Phế: cặp Can Chi ngày "tử" theo mùa (mùa lấy theo TIẾT KHÍ, không theo tháng lịch). */
+export type MuaTuPhe = "Xuân" | "Hạ" | "Thu" | "Đông";
+export const TU_PHE_THEO_MUA: Readonly<Record<MuaTuPhe, readonly { can: Can; chi: Chi }[]>> = {
+  "Xuân": [{ can: "Canh", chi: "Thân" }, { can: "Tân", chi: "Dậu" }],
+  "Hạ": [{ can: "Nhâm", chi: "Tý" }, { can: "Quý", chi: "Hợi" }],
+  "Thu": [{ can: "Giáp", chi: "Dần" }, { can: "Ất", chi: "Mão" }],
+  "Đông": [{ can: "Bính", chi: "Ngọ" }, { can: "Đinh", chi: "Tỵ" }],
+};
+
+export function isTueSat(chiNgay: Chi, chiNam: Chi): boolean {
+  return TUE_SAT_THEO_CHI_NAM[chiNam] === chiNgay;
+}
+export function isNguyetYem(chiNgay: Chi, thangAmLich: number): boolean {
+  return NGUYET_YEM_THEO_THANG[thangAmLich - 1] === chiNgay;
+}
+export function isNguyetHinh(chiNgay: Chi, thangAmLich: number): boolean {
+  return NGUYET_HINH_THEO_THANG[thangAmLich - 1] === chiNgay;
+}
+export function isNguyetHai(chiNgay: Chi, thangAmLich: number): boolean {
+  return NGUYET_HAI_THEO_THANG[thangAmLich - 1] === chiNgay;
+}
+export function isTuPhe(canNgay: Can, chiNgay: Chi, mua: MuaTuPhe): boolean {
+  return TU_PHE_THEO_MUA[mua].some((e) => e.can === canNgay && e.chi === chiNgay);
+}
+
+/** Cát thần đạt được của một ngày — dùng ở tầng 4 để nâng điểm / "hung hoá cát". */
+export interface CatThanNgay {
+  tueDuc: boolean;
+  tueDucHop: boolean;
+  nguyetDuc: boolean;
+  nguyetDucHop: boolean;
+}
+
+export function tinhCatThanNgay(canNgay: Can, canNam: Can, thangAmLich: number): CatThanNgay {
+  return {
+    tueDuc: TUE_DUC_THEO_CAN_NAM[canNam] === canNgay,
+    tueDucHop: TUE_DUC_HOP_THEO_CAN_NAM[canNam] === canNgay,
+    nguyetDuc: NGUYET_DUC_THEO_THANG[thangAmLich - 1] === canNgay,
+    nguyetDucHop: NGUYET_DUC_HOP_THEO_THANG[thangAmLich - 1] === canNgay,
+  };
+}
 
 export function isSatChuAm(chiNgay: Chi, thangAmLich: number): boolean {
   return SAT_CHU_AM_THEO_THANG[thangAmLich - 1] === chiNgay;

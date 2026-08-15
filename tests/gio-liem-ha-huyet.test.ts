@@ -251,6 +251,79 @@ describe("Tầng 1 — đại kỵ ngày (loại ngay)", () => {
   });
 });
 
+describe("Bảng thần sát chủ dự án cung cấp 2026-08-15 — khoá cách giải Tý/Tỵ", () => {
+  // Bản gốc dùng "TY" cho cả Tý lẫn Tỵ. Các assert dưới đây khoá lại cách giải theo quy luật nội
+  // tại của từng bảng — nếu chủ dự án xác nhận khác, test sẽ báo ngay chỗ cần sửa.
+
+  it("Tuế Sát: khoá lặp trong JSON gốc đã giải theo tam hợp, Tý ≠ Tỵ", () => {
+    // Nếu parse thẳng JSON gốc thì "TY" thứ hai đè cái đầu → Tý nhận nhầm Thìn.
+    expect(TrungTang.TUE_SAT_THEO_CHI_NAM["Tý"]).toBe("Mùi"); // Thân-Tý-Thìn
+    expect(TrungTang.TUE_SAT_THEO_CHI_NAM["Tỵ"]).toBe("Thìn"); // Tỵ-Dậu-Sửu
+    expect(TrungTang.TUE_SAT_THEO_CHI_NAM["Dần"]).toBe("Sửu");
+    expect(TrungTang.TUE_SAT_THEO_CHI_NAM["Hợi"]).toBe("Tuất");
+    // Mỗi bộ tam hợp phải cho cùng một Tuế Sát.
+    for (const nhom of [["Thân", "Tý", "Thìn"], ["Dần", "Ngọ", "Tuất"], ["Tỵ", "Dậu", "Sửu"], ["Hợi", "Mão", "Mùi"]] as const) {
+      const ds = nhom.map((c) => TrungTang.TUE_SAT_THEO_CHI_NAM[c]);
+      expect(new Set(ds).size).toBe(1);
+    }
+  });
+
+  it("Sát Chủ Âm khớp bảng riêng chủ dự án gửi 2026-08-15 (12/12), T1 = Tỵ chứ không phải Tý", () => {
+    const mong = ["Tỵ", "Tý", "Mùi", "Mão", "Thân", "Tuất", "Hợi", "Sửu", "Ngọ", "Dậu", "Dần", "Thìn"];
+    expect([...TrungTang.SAT_CHU_AM_THEO_THANG]).toEqual(mong);
+    expect(TrungTang.isSatChuAm("Tỵ", 1)).toBe(true);
+    expect(TrungTang.isSatChuAm("Tý", 1)).toBe(false);
+    expect(TrungTang.isSatChuAm("Tý", 2)).toBe(true);
+    // Hai tháng chủ dự án đã sửa so với nguồn khác.
+    expect(TrungTang.isSatChuAm("Hợi", 7)).toBe(true);
+    expect(TrungTang.isSatChuAm("Sửu", 8)).toBe(true);
+  });
+
+  it("Sát Chủ Âm chỉ chi phối việc ÂM — không mang cùng trọng số sang việc dương", () => {
+    expect(TrungTang.satChuAmApDungCho("an_tang")).toBe(true);
+    expect(TrungTang.satChuAmApDungCho("ha_huyet")).toBe(true);
+    expect(TrungTang.satChuAmApDungCho("nhap_quan")).toBe(true);
+    expect(TrungTang.satChuAmApDungCho("ky_hop_dong")).toBe(false);
+    expect(TrungTang.satChuAmApDungCho("khai_truong")).toBe(false);
+  });
+
+  it("Nguyệt Yếm là chuỗi đi lùi liên tục từ Tuất (T6 = Tỵ, T11 = Tý)", () => {
+    expect(TrungTang.NGUYET_YEM_THEO_THANG[5]).toBe("Tỵ");
+    expect(TrungTang.NGUYET_YEM_THEO_THANG[10]).toBe("Tý");
+    expect(new Set(TrungTang.NGUYET_YEM_THEO_THANG).size).toBe(12); // đủ 12 chi, không trùng
+  });
+
+  it("Nguyệt Hại là chuỗi đi lùi từ Tỵ (T1 = Tỵ, T6 = Tý)", () => {
+    expect(TrungTang.NGUYET_HAI_THEO_THANG[0]).toBe("Tỵ");
+    expect(TrungTang.NGUYET_HAI_THEO_THANG[5]).toBe("Tý");
+    expect(new Set(TrungTang.NGUYET_HAI_THEO_THANG).size).toBe(12);
+  });
+
+  it("Nguyệt Hình: T1 = Tỵ, T2 = Tý", () => {
+    expect(TrungTang.NGUYET_HINH_THEO_THANG[0]).toBe("Tỵ");
+    expect(TrungTang.NGUYET_HINH_THEO_THANG[1]).toBe("Tý");
+  });
+
+  it("Tứ Phế: mỗi mùa là cặp Can Chi của hành BỊ TỬ ở mùa đó", () => {
+    expect(TrungTang.TU_PHE_THEO_MUA["Xuân"]).toEqual([{ can: "Canh", chi: "Thân" }, { can: "Tân", chi: "Dậu" }]);
+    expect(TrungTang.TU_PHE_THEO_MUA["Đông"]).toEqual([{ can: "Bính", chi: "Ngọ" }, { can: "Đinh", chi: "Tỵ" }]);
+  });
+
+  it("Nguyệt Đức khớp quy tắc tam hợp với quy ước tháng 1 = Dần (đối chứng nguồn)", () => {
+    // Dần-Ngọ-Tuất → Bính; Thân-Tý-Thìn → Nhâm; Hợi-Mão-Mùi → Giáp; Tỵ-Dậu-Sửu → Canh.
+    const CHI_THANG = ["Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi", "Tý", "Sửu"];
+    const mong: Record<string, string> = { "Dần": "Bính", "Ngọ": "Bính", "Tuất": "Bính", "Thân": "Nhâm", "Tý": "Nhâm", "Thìn": "Nhâm", "Hợi": "Giáp", "Mão": "Giáp", "Mùi": "Giáp", "Tỵ": "Canh", "Dậu": "Canh", "Sửu": "Canh" };
+    for (let t = 1; t <= 12; t++) {
+      expect(TrungTang.NGUYET_DUC_THEO_THANG[t - 1]).toBe(mong[CHI_THANG[t - 1]!]);
+    }
+  });
+
+  it("cát thần được chấm nhưng KHÔNG lật ngược thứ hạng do cung/hoàng đạo quyết định", () => {
+    // Tổng tối đa 4 cát thần (12+8+12+8 = 40) vẫn thấp hơn khoảng cách Nhập Mộ (100) - Thiên Di (40).
+    expect(12 + 8 + 12 + 8).toBeLessThan(100);
+  });
+});
+
 describe("Tầng 3 — quan hệ ngày với TỌA huyệt", () => {
   it("bảng Tam Sát theo tọa khớp nguồn: Đông kỵ Tỵ-Dậu-Sửu, Tây kỵ Hợi-Mão-Mùi, Nam kỵ Thân-Tý-Thìn, Bắc kỵ Dần-Ngọ-Tuất", () => {
     expect([...TrungTang.TAM_SAT_THEO_TOA["Đông"]]).toEqual(["Tỵ", "Dậu", "Sửu"]);

@@ -21,6 +21,20 @@ const SO_NGAY_QUET_TOI_DA = 20;
 const SO_NGAY_UNG_VIEN_GIU_LAI = 10;
 /** Trực không thuộc nhóm này thì được coi là "tốt" (bước 7 mục 10.3, dòng "+5 nếu Trực không phải Kiến/Phá/Thu"). */
 const TRUC_XAU = new Set(["Kiến", "Phá", "Thu"]);
+/**
+ * TẦNG 4 — trọng số cát thần. Đặc tả gốc KHÔNG quy định con số, nên đặt thấp hơn hẳn tầng cung
+ * (Nhập Mộ 100 / Thiên Di 40) và hoàng đạo (50): cát thần là để "cứu" và phân định giữa các ngày
+ * đã sạch thần sát, không được phép lật ngược thứ hạng do cung và hoàng đạo quyết định.
+ */
+const DIEM_TUE_DUC = 12;
+const DIEM_TUE_DUC_HOP = 8;
+const DIEM_NGUYET_DUC = 12;
+const DIEM_NGUYET_DUC_HOP = 8;
+
+/** monthOrderIndex 0-11 (0 = Dần sau Lập Xuân) → mùa theo TIẾT KHÍ, dùng cho Tứ Phế. */
+const MUA_THEO_MONTH_ORDER: readonly TrungTang.MuaTuPhe[] = [
+  "Xuân", "Xuân", "Xuân", "Hạ", "Hạ", "Hạ", "Thu", "Thu", "Thu", "Đông", "Đông", "Đông",
+];
 
 /** Đệm mặc định trước giờ hạ huyệt khi tính giờ động quan (mục 9b: "nên tới sớm rồi chờ"). */
 const DEM_DONG_QUAN_PHUT_MAC_DINH = 45;
@@ -176,6 +190,8 @@ export interface UngVienNgayGioHaHuyet {
    * không loại, chỉ hiện nhãn để gia chủ và thầy cùng cân nhắc.
    */
   canhBaoThanSat: TrungTang.CanhBaoThanSat[];
+  /** TẦNG 4 — cát thần đạt được của ngày (Tuế Đức / Tuế Đức Hợp / Nguyệt Đức / Nguyệt Đức Hợp). */
+  catThan: TrungTang.CatThanNgay;
   diem: number;
 }
 
@@ -438,6 +454,8 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
     /** Tháng + ngày âm lịch của chính ngày ứng viên (Thổ Tú / Tam Nương / Nguyệt Kỵ tra theo đây). */
     thangAmLich: number;
     ngayAmLich: number;
+    /** Can của NĂM ứng với ngày này — dùng tra Tuế Đức / Tuế Đức Hợp. */
+    canChiNam: Can;
   }
 
   /** Thần sát mức cảnh báo của một ngày ứng viên — không loại, chỉ gắn nhãn. */
@@ -466,6 +484,14 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
     const truc = TrachNhat.getTruc(ngay.canChiNgay.chiIndex, monthOrderIndex);
     const trucTot = !TRUC_XAU.has(truc.name);
     const canhBaoNgay = canhBaoThanSatCuaNgay(ngay, truc.name);
+    // TẦNG 4 — cát thần của ngày. Nguồn ghi ngày có cát thần/Hoàng Đạo có thể "hung hoá cát", nên
+    // đây là điểm CỘNG cho ngày, đứng riêng với các tầng lọc phía trên.
+    const catThan = TrungTang.tinhCatThanNgay(ngay.canChiNgay.can, ngay.canChiNam, ngay.thangAmLich);
+    const diemCatThan =
+      (catThan.tueDuc ? DIEM_TUE_DUC : 0) +
+      (catThan.tueDucHop ? DIEM_TUE_DUC_HOP : 0) +
+      (catThan.nguyetDuc ? DIEM_NGUYET_DUC : 0) +
+      (catThan.nguyetDucHop ? DIEM_NGUYET_DUC_HOP : 0);
 
     const cungTheoK: Chi[] = [];
     for (let k = 1; k <= 12; k++) cungTheoK.push(TrungTang.tinhCungGioHaHuyet(ngay.cungNgay, k));
@@ -497,6 +523,7 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
       });
 
       ketQua.push({
+        catThan,
         ngayDuongLich: ngay.ngayDuongLich,
         khungGio: tinhKhungGio(ngay.jdn, idxChi),
         canChiNgay: { can: ngay.canChiNgay.can, chi: ngay.canChiNgay.chi },
@@ -516,7 +543,7 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
         phamGioSatChu: TrungTang.isGioSatChu(chiGio, ngay.thangAmLich),
         hacDaoKyAnTang: TrungTang.isHacDaoKyAnTang(hoangDao.name),
         canhBaoThanSat: canhBaoNgay,
-        diem,
+        diem: diem + diemCatThan,
       });
     }
     return ketQua;
@@ -542,6 +569,7 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
       ngayHopVoiVong: ngayHopVoiVongCua(canChiMat.day.chi),
       thangAmLich: lunarMat.month,
       ngayAmLich: lunarMat.day,
+      canChiNam: canChiMat.year.can,
     });
   } else {
     const chiXungVong = TrachNhat.getLucXungChi(chiTuoiVong);
@@ -580,6 +608,17 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
       // Tứ Tuyệt / Tứ Ly — ngày liền trước 4 tiết Lập và 4 tiết Phân/Chí.
       if (ngayTuTuyetTuLy.tuTuyet.has(jdnCandidate) || ngayTuTuyetTuLy.tuLy.has(jdnCandidate)) continue;
 
+      // Tuế Sát (bộ Tam Sát ở phạm vi NĂM) và Nguyệt Yếm — chủ dự án xếp tầng 1.
+      if (TrungTang.isTueSat(canChiCandidate.day.chi, canChiCandidate.year.chi)) continue;
+      if (TrungTang.isNguyetYem(canChiCandidate.day.chi, lunarCandidate.month)) continue;
+
+      // ---- TẦNG 2 — kỵ tang táng chuyên biệt ----
+      if (TrungTang.isNguyetHinh(canChiCandidate.day.chi, lunarCandidate.month)) continue;
+      if (TrungTang.isNguyetHai(canChiCandidate.day.chi, lunarCandidate.month)) continue;
+      // Tứ Phế: mùa lấy theo TIẾT KHÍ (dùng chung ranh giới với Trực), không theo tháng lịch.
+      const muaTuPhe = MUA_THEO_MONTH_ORDER[Calendar.monthBoundaryOrderIndex(canChiCandidate.julianDay)]!;
+      if (TrungTang.isTuPhe(canChiCandidate.day.can, canChiCandidate.day.chi, muaTuPhe)) continue;
+
       // ---- TẦNG 3 — quan hệ ngày với TỌA huyệt (chỉ khi khách cung cấp hướng) ----
       if (input.toaHuyet && TrungTang.isTamSatTheoToa(canChiCandidate.day.chi, input.toaHuyet)) continue;
 
@@ -593,6 +632,7 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
         ngayHopVoiVong: ngayHopVoiVongCua(canChiCandidate.day.chi),
         thangAmLich: lunarCandidate.month,
         ngayAmLich: lunarCandidate.day,
+        canChiNam: canChiCandidate.year.can,
       });
     }
 
