@@ -138,4 +138,11 @@ export const paidTools: PaidTool[] = [
     desc: "Xếp hạng giờ liệm/đóng quan và ngày giờ hạ huyệt theo Chưởng Pháp Trùng Tang – Nhập Mộ, có xét tuổi thân quyến.",
     priceLabel: "499.000đ / lượt",
   },
+  {
+    href: "/dai-cat-loi/xem-ngay-cao-cap",
+    icon: "🧭",
+    title: "Xem Ngày Cao Cấp – Động Thổ / Nhập Trạch",
+    desc: "Giám định ngày theo Huyền Không Đại Quái: lọc Ngũ Hoàng/Tam Sát/Bát Sát/Thái Tuế trước, rồi luận cách cục Tam Tài Thiên – Địa – Nhân giao.",
+    priceLabel: "999.000đ / lượt",
+  },
 ];

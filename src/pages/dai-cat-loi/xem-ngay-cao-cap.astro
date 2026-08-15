@@ -1,0 +1,353 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import Container from "../../components/ui/Container.astro";
+import Button from "../../components/ui/Button.astro";
+import DateSelect from "../../components/ui/DateSelect.astro";
+
+export const prerender = true;
+
+const SON_24 = [
+  "Tý", "Quý", "Sửu", "Cấn", "Dần", "Giáp", "Mão", "Ất", "Thìn", "Tốn", "Tỵ", "Bính",
+  "Ngọ", "Đinh", "Mùi", "Khôn", "Thân", "Canh", "Dậu", "Tân", "Tuất", "Càn", "Hợi", "Nhâm",
+];
+const TOOL_PRICE_LABEL = "999.000đ";
+---
+
+<BaseLayout
+  title="Xem Ngày Cao Cấp (Động Thổ / Nhập Trạch)"
+  description="Giám định ngày động thổ / nhập trạch theo Huyền Không Đại Quái: kiểm Ngũ Hoàng, Tam Sát, Bát Sát, Thái Tuế, Tuế Phá rồi luận cách cục Tam Tài Thiên - Địa - Nhân giao."
+>
+  <PageHero
+    eyebrow="⭐ Dịch vụ thu phí"
+    title="Xem Ngày Cao Cấp — Động Thổ / Nhập Trạch"
+    description="Phương pháp lõi Huyền Không Đại Quái: bắt đầu từ tọa nhà, lọc phương vị sát trước, rồi mới luận cách cục Tam Tài Thiên - Địa - Nhân giao."
+    breadcrumbs={[
+      { label: "Trang chủ", href: "/" },
+      { label: "Đại Cát Lợi", href: "/dai-cat-loi" },
+      { label: "Dịch vụ thu phí", href: "/dai-cat-loi/dich-vu-thu-phi" },
+      { label: "Xem Ngày Cao Cấp" },
+    ]}
+  />
+
+  <Container class="py-16">
+    <div class="mx-auto max-w-2xl">
+      <div class="mb-4 rounded-(--radius-card) border-2 border-amber-400 bg-amber-50 p-4 text-sm font-medium text-amber-800">
+        🧪 ĐANG THỬ NGHIỆM — tạm bỏ bước thanh toán ({TOOL_PRICE_LABEL}/lượt khi phát hành chính thức) để test nhanh. Nộp form là ra kết quả ngay.
+      </div>
+
+      <div class="mb-6 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-4 text-sm text-(--color-ink-600)">
+        <p class="font-medium text-(--color-ink-800)">Phạm vi công cụ</p>
+        <p class="mt-1">
+          Chỉ luận theo <strong>Huyền Không Đại Quái</strong> (Bước 2→6): khung tháng theo tọa · phương vị sát
+          (Ngũ Hoàng/Tam Sát/Bát Sát/Thái Tuế/Tuế Phá/Mậu Kỷ Đô Thiên/Âm Phủ Thái Tuế) · quy Tứ Trụ về HKNH–Quái Vận ·
+          cách cục Tam Tài · chọn giờ. <strong>Không</strong> bao gồm lớp thần sát dân gian ở Bước 1 (Tam Nương,
+          Nguyệt Kỵ, Sát Chủ, 28 sao…) theo đúng phạm vi đã chốt.
+        </p>
+        <p class="mt-2">Dữ liệu Ngũ Hoàng tra bảng thật, phủ 1968–2068 (riêng năm 1994 lưới nguồn bị lỗi số, hệ thống sẽ báo thiếu dữ liệu thay vì đoán).</p>
+      </div>
+
+      <form id="xncc-form" class="flex flex-col gap-4 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
+        <div>
+          <p class="text-sm font-medium text-(--color-ink-800)">Loại việc</p>
+          <div class="mt-1.5 flex gap-4">
+            <label class="flex items-center gap-1.5 text-sm text-(--color-ink-700)">
+              <input type="radio" name="loaiViec" value="nhap_trach" checked /> Nhập trạch
+            </label>
+            <label class="flex items-center gap-1.5 text-sm text-(--color-ink-700)">
+              <input type="radio" name="loaiViec" value="dong_tho" /> Động thổ
+            </label>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="xncc-toa" class="text-sm font-medium text-(--color-ink-800)">Tọa nhà (24 sơn)</label>
+            <select id="xncc-toa" required class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)">
+              {SON_24.map((s) => <option value={s}>{s}</option>)}
+            </select>
+          </div>
+          <div>
+            <label for="xncc-huong" class="text-sm font-medium text-(--color-ink-800)">Hướng nhà (nên có)</label>
+            <select id="xncc-huong" class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)">
+              <option value="">Không rõ</option>
+              {SON_24.map((s) => <option value={s}>{s}</option>)}
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label for="xncc-do-so" class="text-sm font-medium text-(--color-ink-800)">Độ số la bàn của tọa (0–359.99)</label>
+          <input
+            type="number"
+            id="xncc-do-so"
+            step="0.01"
+            min="0"
+            max="359.99"
+            placeholder="vd. 318 — bắt buộc nếu tọa là Cấn/Tốn/Khôn/Càn"
+            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"
+          />
+          <p class="mt-1 text-xs text-(--color-ink-500)">
+            4 sơn Cấn/Tốn/Khôn/Càn nằm đúng ranh giới 2 phương — thiếu độ số thì hệ thống báo thiếu dữ liệu chứ không suy đoán.
+          </p>
+        </div>
+
+        <div class="rounded-(--radius-control) border border-(--color-gold-500)/40 bg-(--color-gold-400)/5 p-3">
+          <p class="text-sm font-medium text-(--color-ink-800)">Quẻ Tọa — HKNH / Quái Vận</p>
+          <p class="mt-1 text-xs text-(--color-ink-600)">
+            Đọc từ <strong>la kinh 64 quẻ</strong> theo độ số thực đo. Bắt buộc có thì Bước 5 mới luận được cách cục —
+            trong Huyền Không Đại Quái mỗi sơn 15° còn chia nhỏ theo hệ 384 hào, nên <strong>tên sơn không đủ</strong> để
+            suy ra quẻ (ngay tài liệu gốc, cùng tọa Ất có bài ghi 6/9, bài khác ghi 7/8). Bỏ trống → hệ thống báo thiếu
+            dữ liệu chứ không đoán.
+          </p>
+          <div class="mt-2 grid grid-cols-2 gap-2">
+            <div>
+              <label for="xncc-toa-hknh" class="text-xs text-(--color-ink-600)">HKNH (1-4, 6-9)</label>
+              <select id="xncc-toa-hknh" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-2 py-2 text-sm text-(--color-ink-800)">
+                <option value="">Chưa rõ</option>
+                {[1, 2, 3, 4, 6, 7, 8, 9].map((n) => <option value={n}>{n}</option>)}
+              </select>
+            </div>
+            <div>
+              <label for="xncc-toa-quai-van" class="text-xs text-(--color-ink-600)">Quái Vận (1-9)</label>
+              <select id="xncc-toa-quai-van" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-2 py-2 text-sm text-(--color-ink-800)">
+                <option value="">Chưa rõ</option>
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => <option value={n}>{n}</option>)}
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="xncc-nam-sinh" class="text-sm font-medium text-(--color-ink-800)">Năm sinh gia chủ (dương lịch)</label>
+            <input type="number" id="xncc-nam-sinh" min="1900" max="2100" required placeholder="vd. 1980" class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+          </div>
+          <div>
+            <label for="xncc-nam-sinh-phu" class="text-sm font-medium text-(--color-ink-800)">Năm sinh vợ/chồng (tùy chọn)</label>
+            <input type="number" id="xncc-nam-sinh-phu" min="1900" max="2100" placeholder="vd. 1983" class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+          </div>
+        </div>
+
+        <div>
+          <DateSelect idPrefix="xncc-ngay" label="Ngày cần giám định (dương lịch)" required yearsBack={15} yearsForward={5} />
+        </div>
+
+        <Button type="submit" size="lg">Giám định ngày</Button>
+      </form>
+
+      <div id="xncc-loi" class="mt-4 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm text-(--color-danger-500)"></div>
+      <div id="xncc-ket-qua" class="mt-6 hidden space-y-6"></div>
+    </div>
+  </Container>
+</BaseLayout>
+
+<script>
+  import { readDateSelects } from "../../lib/date-select";
+
+  interface TruQue { can: string; chi: string; que: string; hknh: number; quaiVan: number }
+  interface MenhChuQue { canChiNamSinh: string; que: string; hknh: number; quaiVan: number }
+  interface BuocKetQua { buoc: 2 | 3 | 4 | 5; ten: string; trangThai: "dat" | "khong_dat" | "thieu_du_lieu"; lyDo: string }
+  interface XemNgayCaoCapResult {
+    ngayDuongLich: { nam: number; thang: number; ngay: number };
+    amLich: { ngay: number; thang: number; nam: number; nhuan: boolean };
+    tuTru: { nam: TruQue; thang: TruQue; ngay: TruQue };
+    toaNha: { ten: string; cung: string; phuong: string | null; hknh: number | null; quaiVan: number | null };
+    huongNha?: { ten: string; cung: string };
+    menhChuChinh: MenhChuQue;
+    menhChuPhu?: MenhChuQue;
+    ketLuan: "dung_duoc" | "khong_dung" | "dung_duoc_co_dieu_kien";
+    chieuTungBuoc: BuocKetQua[];
+    diemManh: string[];
+    diemLuuY: string[];
+    gioDeXuat: {
+      chiGio: string;
+      khungGio: string;
+      laHoangDao: boolean;
+      tenSao: string;
+      hopCucVoiToa: "tam-hop" | "luc-hop" | null;
+      xungChiNgay: boolean;
+      phamTamSatGio: boolean;
+      diem: number;
+    }[];
+  }
+
+  const NHAN_KET_LUAN: Record<string, { text: string; cls: string }> = {
+    dung_duoc: { text: "✅ DÙNG ĐƯỢC", cls: "text-emerald-600" },
+    dung_duoc_co_dieu_kien: { text: "⚠️ DÙNG ĐƯỢC CÓ ĐIỀU KIỆN", cls: "text-amber-600" },
+    khong_dung: { text: "❌ KHÔNG DÙNG", cls: "text-(--color-cinnabar-500)" },
+  };
+  const NHAN_TRANG_THAI: Record<string, { text: string; cls: string }> = {
+    dat: { text: "Đạt", cls: "text-emerald-600" },
+    khong_dat: { text: "Không đạt", cls: "text-(--color-cinnabar-500)" },
+    thieu_du_lieu: { text: "Thiếu dữ liệu", cls: "text-amber-600" },
+  };
+
+  function esc(s: string): string {
+    return s.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
+  }
+
+  function truCell(t: TruQue): string {
+    return `<td class="border border-slate-200 px-2 py-1.5 text-center">
+      <div class="font-semibold text-slate-900">${esc(t.can)} ${esc(t.chi)}</div>
+      <div class="text-xs text-slate-500">${esc(t.que)}</div>
+      <div class="text-sm font-bold text-(--color-gold-400)">${t.hknh}/${t.quaiVan}</div>
+    </td>`;
+  }
+
+  function render(r: XemNgayCaoCapResult) {
+    const el = document.getElementById("xncc-ket-qua")!;
+    const kl = NHAN_KET_LUAN[r.ketLuan]!;
+    const d = r.ngayDuongLich;
+    const ngayLbl = `${String(d.ngay).padStart(2, "0")}/${String(d.thang).padStart(2, "0")}/${d.nam}`;
+
+    const buocHtml = r.chieuTungBuoc
+      .map((b) => {
+        const tt = NHAN_TRANG_THAI[b.trangThai]!;
+        return `<div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+          <div class="flex items-baseline justify-between gap-2">
+            <p class="text-sm font-semibold text-slate-900">Bước ${b.buoc} — ${esc(b.ten)}</p>
+            <span class="shrink-0 text-sm font-bold ${tt.cls}">${tt.text}</span>
+          </div>
+          <p class="mt-1 text-xs leading-relaxed text-slate-600">${esc(b.lyDo)}</p>
+        </div>`;
+      })
+      .join("");
+
+    const dsHtml = (items: string[]) =>
+      items.length > 0 ? items.map((s) => `<li>${esc(s)}</li>`).join("") : `<li class="text-slate-400">(không có)</li>`;
+
+    // Chỉ hiện 6 giờ đầu (đã xếp hạng) để tránh rối; giờ xấu rõ ràng vẫn hiện nhãn cảnh báo.
+    const gioHtml = r.gioDeXuat
+      .slice(0, 6)
+      .map((g, i) => {
+        const nhan: string[] = [];
+        if (g.laHoangDao) nhan.push(`Hoàng đạo ${esc(g.tenSao)}`);
+        else nhan.push(`Hắc đạo ${esc(g.tenSao)}`);
+        if (g.hopCucVoiToa === "tam-hop") nhan.push("tam hợp với tọa");
+        if (g.hopCucVoiToa === "luc-hop") nhan.push("lục hợp với tọa");
+        const canhBao: string[] = [];
+        if (g.xungChiNgay) canhBao.push("xung Chi ngày");
+        if (g.phamTamSatGio) canhBao.push("phạm Tam Sát");
+        const mau = g.laHoangDao && canhBao.length === 0 ? "text-emerald-600" : canhBao.length > 0 ? "text-(--color-cinnabar-500)" : "text-slate-500";
+        return `<div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+          <div class="flex items-baseline justify-between gap-2">
+            <p class="font-display text-base font-bold text-slate-900">${i === 0 ? "⭐ " : ""}Giờ ${esc(g.chiGio)} <span class="text-sm font-normal text-slate-500">(${esc(g.khungGio)})</span></p>
+          </div>
+          <p class="mt-0.5 text-sm font-semibold ${mau}">${nhan.join(" · ")}</p>
+          ${canhBao.length > 0 ? `<p class="mt-1 text-xs text-amber-600">⚠️ ${canhBao.join(" · ")}</p>` : ""}
+        </div>`;
+      })
+      .join("");
+
+    el.innerHTML = `
+      <div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
+        <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Kết luận</p>
+        <p class="mt-1 font-display text-2xl font-bold ${kl.cls}">${kl.text}</p>
+        <p class="mt-1 text-sm text-slate-600">
+          Ngày ${ngayLbl} (ÂL ${r.amLich.ngay}/${r.amLich.thang}${r.amLich.nhuan ? " nhuận" : ""}/${r.amLich.nam})
+        </p>
+      </div>
+
+      <div class="overflow-x-auto rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
+        <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Bảng Tứ Trụ (HKNH / Quái Vận)</p>
+        <table class="mt-3 w-full min-w-[26rem] border-collapse text-sm">
+          <thead>
+            <tr>
+              <th class="border border-slate-200 bg-slate-100 px-2 py-1.5 text-xs">Trụ Năm</th>
+              <th class="border border-slate-200 bg-slate-100 px-2 py-1.5 text-xs">Trụ Tháng</th>
+              <th class="border border-slate-200 bg-slate-100 px-2 py-1.5 text-xs">Trụ Ngày</th>
+            </tr>
+          </thead>
+          <tbody><tr>${truCell(r.tuTru.nam)}${truCell(r.tuTru.thang)}${truCell(r.tuTru.ngay)}</tr></tbody>
+        </table>
+        <div class="mt-3 space-y-1 text-sm text-slate-700">
+          <p><strong>Tọa nhà:</strong> ${esc(r.toaNha.ten)} — cung ${esc(r.toaNha.cung)}${r.toaNha.phuong ? ` (phương ${esc(r.toaNha.phuong)})` : " (chưa rõ phương — cần độ số)"} — ${r.toaNha.hknh !== null ? `quẻ <strong class="text-(--color-gold-400)">${r.toaNha.hknh}/${r.toaNha.quaiVan}</strong>` : `<span class="text-amber-600">chưa nhập quẻ tọa</span>`}</p>
+          ${r.huongNha ? `<p><strong>Hướng nhà:</strong> ${esc(r.huongNha.ten)} — cung ${esc(r.huongNha.cung)}</p>` : ""}
+          <p><strong>Mệnh Chủ chính:</strong> ${esc(r.menhChuChinh.canChiNamSinh)} — ${esc(r.menhChuChinh.que)} <strong class="text-(--color-gold-400)">${r.menhChuChinh.hknh}/${r.menhChuChinh.quaiVan}</strong></p>
+          ${r.menhChuPhu ? `<p><strong>Mệnh Chủ phụ:</strong> ${esc(r.menhChuPhu.canChiNamSinh)} — ${esc(r.menhChuPhu.que)} <strong class="text-(--color-gold-400)">${r.menhChuPhu.hknh}/${r.menhChuPhu.quaiVan}</strong></p>` : ""}
+        </div>
+      </div>
+
+      <div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
+        <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Chiếu từng bước</p>
+        <div class="mt-3 space-y-2">${buocHtml}</div>
+      </div>
+
+      <div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
+        <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Bước 6 — Giờ đề xuất trong ngày</p>
+        <p class="mt-1 text-xs text-slate-500">Xếp hạng 12 giờ Địa Chi. Nguyên tắc nguồn: không hy sinh chất lượng Ngày để lấy Giờ đẹp.</p>
+        <div class="mt-3 space-y-2">${gioHtml}</div>
+      </div>
+
+      <div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
+        <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Điểm mạnh của cách cục</p>
+        <ul class="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">${dsHtml(r.diemManh)}</ul>
+        <p class="mt-4 text-xs font-bold uppercase tracking-wide text-amber-600">Điểm cần lưu ý</p>
+        <ul class="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">${dsHtml(r.diemLuuY)}</ul>
+      </div>
+
+      <p class="text-xs text-(--color-ink-500)">
+        Kết quả tính theo phương pháp Huyền Không Đại Quái từ tư liệu chuyên môn, mang tính tham khảo.
+        Không thay thế tư vấn phong thủy trực tiếp. <a href="/lien-he" class="text-(--color-gold-300) hover:underline">Đặt lịch tư vấn</a>.
+      </p>
+    `;
+    el.classList.remove("hidden");
+  }
+
+  const form = document.getElementById("xncc-form") as HTMLFormElement;
+  const loiEl = document.getElementById("xncc-loi")!;
+  const ketQuaEl = document.getElementById("xncc-ket-qua")!;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    loiEl.classList.add("hidden");
+    ketQuaEl.classList.add("hidden");
+
+    const loaiViec = (form.querySelector('input[name="loaiViec"]:checked') as HTMLInputElement).value;
+    const toaNha = (document.getElementById("xncc-toa") as HTMLSelectElement).value;
+    const huongNha = (document.getElementById("xncc-huong") as HTMLSelectElement).value;
+    const toaDoSo = (document.getElementById("xncc-do-so") as HTMLInputElement).value;
+    const toaHknh = (document.getElementById("xncc-toa-hknh") as HTMLSelectElement).value;
+    const toaQuaiVan = (document.getElementById("xncc-toa-quai-van") as HTMLSelectElement).value;
+    const namSinhGiaChuChinh = (document.getElementById("xncc-nam-sinh") as HTMLInputElement).value;
+    const namSinhVoChong = (document.getElementById("xncc-nam-sinh-phu") as HTMLInputElement).value;
+    const ngay = readDateSelects("xncc-ngay");
+
+    if (!ngay) {
+      loiEl.textContent = "Vui lòng chọn đầy đủ ngày cần giám định.";
+      loiEl.classList.remove("hidden");
+      return;
+    }
+
+    const payload = {
+      loaiViec,
+      toaNha,
+      ...(huongNha ? { huongNha } : {}),
+      ...(toaDoSo ? { toaDoSo: Number(toaDoSo) } : {}),
+      ...(toaHknh && toaQuaiVan ? { toaHknh: Number(toaHknh), toaQuaiVan: Number(toaQuaiVan) } : {}),
+      namSinhGiaChuChinh: Number(namSinhGiaChuChinh),
+      ...(namSinhVoChong ? { namSinhVoChong: Number(namSinhVoChong) } : {}),
+      ngayGiamDinh: { nam: ngay.year, thang: ngay.month, ngay: ngay.day },
+    };
+
+    try {
+      const res = await fetch("/api/dai-cat-loi/xem-ngay-cao-cap/test-calculate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        loiEl.textContent = data.error ?? "Không giám định được.";
+        loiEl.classList.remove("hidden");
+        return;
+      }
+      render(data.result as XemNgayCaoCapResult);
+      ketQuaEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch {
+      loiEl.textContent = "Không giám định được. Vui lòng thử lại.";
+      loiEl.classList.remove("hidden");
+    }
+  });
+</script>

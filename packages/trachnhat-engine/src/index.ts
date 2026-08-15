@@ -30,6 +30,7 @@ import { calculateNgayKhaiQuangRange } from "./processing/ngayKhaiQuang.js";
 import { calculateXuatHanhCaNhanRange, calculateXuatHanhCaNhanMotNgay } from "./processing/xuatHanhCaNhanTongHop.js";
 import { calculateSuaChuaCaiTaoNhaRange, calculateSuaChuaCaiTaoNhaMotNgay } from "./processing/suaChuaCaiTaoNha.js";
 import { calculateGioLiemHaHuyet } from "./processing/gioLiemHaHuyet.js";
+import { calculateXemNgayCaoCap } from "./processing/xemNgayCaoCap.js";
 import { tinhTuTru } from "./processing/tuTru.js";
 import type { TrachNhatInput, TrachNhatOutput } from "./types.js";
 import { validateTrachNhatInput } from "./validation.js";
@@ -141,6 +142,16 @@ export type {
   GioLiemHaHuyetOutput,
 } from "./processing/gioLiemHaHuyet.js";
 export { calculateGioLiemHaHuyet };
+export type {
+  LoaiViec,
+  XemNgayCaoCapInput,
+  XemNgayCaoCapResult,
+  TruQue,
+  MenhChuQue,
+  BuocKetQua,
+  TrangThaiBuoc,
+} from "./processing/xemNgayCaoCap.js";
+export { calculateXemNgayCaoCap };
 
 export * from "./types.js";
 
