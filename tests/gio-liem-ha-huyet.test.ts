@@ -176,6 +176,68 @@ describe("Cung dùng được — loại Thìn (Nhập Mộ) và Dậu (Thiên D
   });
 });
 
+describe("Tam Đại Cát Tinh — Sát Cống / Trực Tinh / Nhân Chuyên", () => {
+  const CAN = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"];
+  const CHI = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"];
+
+  it("mọi cặp Can Chi trong 3 bảng đều là cặp HỢP LỆ của lục thập hoa giáp", () => {
+    // Chốt chặn lỗi chép bảng: Can và Chi phải cùng tính chẵn/lẻ, nếu không thì cặp đó không tồn tại.
+    for (const bang of [TrungTang.SAT_CONG_THEO_NHOM, TrungTang.TRUC_TINH_THEO_NHOM, TrungTang.NHAN_CHUYEN_THEO_NHOM]) {
+      for (const nhom of ["tu-manh", "tu-trong", "tu-quy"] as const) {
+        for (const e of bang[nhom]) {
+          // Dùng Math.abs: JS trả -0 cho hiệu âm chia hết cho 2, mà toBe(0) thì -0 !== +0.
+          expect(Math.abs(CAN.indexOf(e.can) - CHI.indexOf(e.chi)) % 2).toBe(0);
+        }
+      }
+    }
+  });
+
+  it("trong cùng một nhóm tháng, 3 sao không trùng ngày nào — mỗi ngày trúng tối đa 1 sao", () => {
+    for (const nhom of ["tu-manh", "tu-trong", "tu-quy"] as const) {
+      const key = (e: { can: string; chi: string }) => `${e.can} ${e.chi}`;
+      const ds = [
+        TrungTang.SAT_CONG_THEO_NHOM[nhom].map(key),
+        TrungTang.TRUC_TINH_THEO_NHOM[nhom].map(key),
+        TrungTang.NHAN_CHUYEN_THEO_NHOM[nhom].map(key),
+      ];
+      expect(new Set(ds.flat()).size).toBe(ds.flat().length);
+    }
+  });
+
+  it("khớp quy luật dịch nhóm: Trực Tinh(Trọng) = Sát Cống(Mạnh), Trực Tinh(Quý) = Sát Cống(Trọng)", () => {
+    const key = (e: { can: string; chi: string }) => `${e.can} ${e.chi}`;
+    expect([...TrungTang.TRUC_TINH_THEO_NHOM["tu-trong"]].map(key).sort()).toEqual([...TrungTang.SAT_CONG_THEO_NHOM["tu-manh"]].map(key).sort());
+    expect([...TrungTang.TRUC_TINH_THEO_NHOM["tu-quy"]].map(key).sort()).toEqual([...TrungTang.SAT_CONG_THEO_NHOM["tu-trong"]].map(key).sort());
+  });
+
+  it("chia nhóm tháng đúng: 1-4-7-10 Mạnh, 2-5-8-11 Trọng, 3-6-9-12 Quý", () => {
+    for (const t of [1, 4, 7, 10]) expect(TrungTang.nhomThangAmLich(t)).toBe("tu-manh");
+    for (const t of [2, 5, 8, 11]) expect(TrungTang.nhomThangAmLich(t)).toBe("tu-trong");
+    for (const t of [3, 6, 9, 12]) expect(TrungTang.nhomThangAmLich(t)).toBe("tu-quy");
+  });
+
+  it("tra đúng theo TRỌN cặp Can Chi, không phải chỉ Can hay chỉ Chi", () => {
+    // Tháng 1 (Tứ Mạnh): Đinh Mão là Sát Cống, nhưng Đinh Sửu thì không (cùng Can, khác Chi).
+    expect(TrungTang.isSatCong("Đinh", "Mão", 1)).toBe(true);
+    expect(TrungTang.isSatCong("Đinh", "Sửu", 1)).toBe(false);
+    // Cùng cặp Đinh Mão nhưng sang tháng 2 (Tứ Trọng) thì là Trực Tinh chứ không phải Sát Cống.
+    expect(TrungTang.isSatCong("Đinh", "Mão", 2)).toBe(false);
+    expect(TrungTang.isTrucTinh("Đinh", "Mão", 2)).toBe(true);
+  });
+
+  it("Nhân Chuyên nhóm Tứ Quý theo bản Đổng Công (Kỷ Hợi), dị bản Đinh Mão chưa dùng", () => {
+    expect(TrungTang.isNhanChuyen("Kỷ", "Hợi", 3)).toBe(true);
+    expect(TrungTang.isNhanChuyen("Đinh", "Mão", 3)).toBe(false);
+    expect(TrungTang.NHAN_CHUYEN_TU_QUY_DI_BAN).toEqual({ can: "Đinh", chi: "Mão" });
+  });
+
+  it("ghi rõ nhóm hung tinh mà ba sao này KHÔNG giải được", () => {
+    for (const ten of ["Sát Chủ", "Thọ Tử", "Kim Thần Thất Sát"]) {
+      expect(TrungTang.TAM_CAT_KHONG_GIAI_DUOC).toContain(ten);
+    }
+  });
+});
+
 describe("Dần/Thân/Tỵ/Hợi — kiêng MỀM ở cả liệm lẫn hạ huyệt", () => {
   // Chủ dự án chốt 2026-08-16: "Dần Thân Tị Hợi thực chất là kiêng giờ liệm, hạ huyệt — nếu được
   // thì tránh". Tức KHÔNG loại tuyệt đối (khác với CUNG rơi vào nhóm Trùng Tang, cái đó loại thẳng).

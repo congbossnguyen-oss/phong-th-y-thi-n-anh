@@ -30,6 +30,13 @@ const DIEM_TUE_DUC = 12;
 const DIEM_TUE_DUC_HOP = 8;
 const DIEM_NGUYET_DUC = 12;
 const DIEM_NGUYET_DUC_HOP = 8;
+/**
+ * Tam Đại Cát Tinh (Sát Cống / Trực Tinh / Nhân Chuyên) — chủ dự án gọi là "ba sao CỰC KỲ CÁT",
+ * mạnh hơn hẳn Tuế Đức/Nguyệt Đức nên cho trọng số cao hơn. Vẫn giữ dưới ngưỡng cung Nhập Mộ
+ * (100) để không lật được thứ hạng do cung quyết định. Một ngày chỉ trúng tối đa 1 trong 3 sao
+ * (đã kiểm: 3 bảng không giao nhau trong cùng nhóm tháng) nên không có chuyện cộng dồn.
+ */
+const DIEM_TAM_DAI_CAT_TINH = 30;
 
 /** monthOrderIndex 0-11 (0 = Dần sau Lập Xuân) → mùa theo TIẾT KHÍ, dùng cho Tứ Phế. */
 const MUA_THEO_MONTH_ORDER: readonly TrungTang.MuaTuPhe[] = [
@@ -201,6 +208,8 @@ export interface UngVienNgayGioHaHuyet {
   canhBaoThanSat: TrungTang.CanhBaoThanSat[];
   /** TẦNG 4 — cát thần đạt được của ngày (Tuế Đức / Tuế Đức Hợp / Nguyệt Đức / Nguyệt Đức Hợp). */
   catThan: TrungTang.CatThanNgay;
+  /** Tam Đại Cát Tinh của ngày — Sát Cống / Trực Tinh / Nhân Chuyên. */
+  tamDaiCatTinh: TrungTang.TamDaiCatTinh;
   diem: number;
 }
 
@@ -517,11 +526,13 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
     // TẦNG 4 — cát thần của ngày. Nguồn ghi ngày có cát thần/Hoàng Đạo có thể "hung hoá cát", nên
     // đây là điểm CỘNG cho ngày, đứng riêng với các tầng lọc phía trên.
     const catThan = TrungTang.tinhCatThanNgay(ngay.canChiNgay.can, ngay.canChiNam, ngay.thangAmLich);
+    const tamDaiCatTinh = TrungTang.tinhTamDaiCatTinh(ngay.canChiNgay.can, ngay.canChiNgay.chi, ngay.thangAmLich);
     const diemCatThan =
       (catThan.tueDuc ? DIEM_TUE_DUC : 0) +
       (catThan.tueDucHop ? DIEM_TUE_DUC_HOP : 0) +
       (catThan.nguyetDuc ? DIEM_NGUYET_DUC : 0) +
-      (catThan.nguyetDucHop ? DIEM_NGUYET_DUC_HOP : 0);
+      (catThan.nguyetDucHop ? DIEM_NGUYET_DUC_HOP : 0) +
+      (tamDaiCatTinh.co ? DIEM_TAM_DAI_CAT_TINH : 0);
 
     const cungTheoK: Chi[] = [];
     for (let k = 1; k <= 12; k++) cungTheoK.push(TrungTang.tinhCungGioHaHuyet(ngay.cungNgay, k));
@@ -554,6 +565,7 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
 
       ketQua.push({
         catThan,
+        tamDaiCatTinh,
         ngayDuongLich: ngay.ngayDuongLich,
         khungGio: tinhKhungGio(ngay.jdn, idxChi),
         canChiNgay: { can: ngay.canChiNgay.can, chi: ngay.canChiNgay.chi },
