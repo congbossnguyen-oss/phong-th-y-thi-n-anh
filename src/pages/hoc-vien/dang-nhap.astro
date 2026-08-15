@@ -38,8 +38,17 @@ export const prerender = true;
 
   const params = new URLSearchParams(window.location.search);
   const courseSlug = params.get("course");
+
+  // `tiep` = trang cần quay lại sau khi đăng nhập (vd các công cụ thu phí bắt đăng nhập).
+  // CHỈ nhận đường dẫn nội bộ: phải bắt đầu bằng "/" và không phải "//" (dạng "//evil.com" bị
+  // trình duyệt hiểu là tên miền khác) — nếu không sẽ thành lỗ hổng chuyển hướng ra site lạ.
+  const tiepRaw = params.get("tiep");
+  const tiep = tiepRaw && tiepRaw.startsWith("/") && !tiepRaw.startsWith("//") ? tiepRaw : null;
+
   if (courseSlug) {
     registerLink.href = `/hoc-vien/dang-ky?course=${encodeURIComponent(courseSlug)}`;
+  } else if (tiep) {
+    registerLink.href = `/hoc-vien/dang-ky?tiep=${encodeURIComponent(tiep)}`;
   }
 
   form.addEventListener("submit", async (e) => {
@@ -67,6 +76,8 @@ export const prerender = true;
 
       if (courseSlug) {
         window.location.href = `/khoa-hoc/${courseSlug}/thanh-toan`;
+      } else if (tiep) {
+        window.location.href = tiep;
       } else {
         window.location.href = "/hoc-vien";
       }

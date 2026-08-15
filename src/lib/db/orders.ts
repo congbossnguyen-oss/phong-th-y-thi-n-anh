@@ -135,6 +135,9 @@ export async function createCourseOrder(params: {
 export async function createToolOrder(params: {
   toolSlug: string;
   toolInput: unknown;
+  // Dịch vụ công cụ thu phí nay bắt buộc đăng nhập — gắn đơn vào tài khoản để khách xem lại được
+  // kết quả cũ và để đối soát khách hàng. (Trước đây cho phép mua không tài khoản → userId null.)
+  userId: string;
   customerName: string;
   customerPhone: string;
   customerEmail: string | null;
@@ -145,7 +148,7 @@ export async function createToolOrder(params: {
   const [order] = await db
     .insert(orders)
     .values({
-      userId: null,
+      userId: params.userId,
       orderType: "tool",
       status: "pending_payment",
       paymentMethod: "sepay_qr",

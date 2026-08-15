@@ -65,3 +65,15 @@ for (let i = 0; i < soLuong; i++) {
 console.log(`\nĐã tạo ${daTao.length} mã (${ghiChu}${congCu ? `, chỉ cho công cụ ${congCu}` : ", dùng cho mọi công cụ"}${maxUses ? `, mỗi mã ${maxUses} lượt` : ", không giới hạn lượt"}${han ? `, hạn ${han}` : ""}):\n`);
 daTao.forEach((m, i) => console.log(`  ${String(i + 1).padStart(2, " ")}. ${m}`));
 console.log("");
+
+// Đẩy luôn lên Google Sheet cho anh Công theo dõi (hoặc xuất CSV nếu chưa deploy Apps Script).
+// Lỗi đồng bộ không được coi là lỗi tạo mã — mã đã nằm trong CSDL rồi, chạy lại lệnh đồng bộ là xong.
+try {
+  const { dongBoLenSheet } = await import("./dong-bo-ma-len-sheet.mjs");
+  await dongBoLenSheet();
+} catch (err) {
+  console.error(
+    `\n⚠️  Tạo mã xong nhưng chưa đồng bộ được lên Sheet: ${err.message}\n` +
+      `    Mã vẫn dùng được bình thường. Chạy lại: node scripts/dong-bo-ma-len-sheet.mjs\n`,
+  );
+}

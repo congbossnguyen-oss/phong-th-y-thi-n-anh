@@ -25,7 +25,15 @@ function parseChiOptional(value: unknown): Chi | undefined {
   return value as Chi;
 }
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
+  // Dịch vụ thu phí: bắt buộc đăng nhập. Đây là chốt chặn THẬT (trang .astro chỉ ẩn form cho đẹp).
+  if (!locals.user) {
+    return new Response(
+      JSON.stringify({ ok: false, error: "Vui lòng đăng nhập để sử dụng dịch vụ này." }),
+      { status: 401, headers: { "Content-Type": "application/json" } },
+    );
+  }
+
   const body = await request.json().catch(() => null);
   if (!body || typeof body !== "object") {
     return jsonResponse({ ok: false, error: "Dữ liệu gửi lên không hợp lệ." }, 400);
@@ -38,9 +46,12 @@ export const POST: APIRoute = async ({ request }) => {
   const thangMat = Number(b.thangMat);
   const ngayMat = Number(b.ngayMat);
   const chiGioMat = b.chiGioMat;
-  const customerName = typeof b.customerName === "string" ? b.customerName.trim() : "";
+  // Họ tên + email lấy từ TÀI KHOẢN, không nhận từ client — client sửa được thì đối soát vô nghĩa.
+  // Riêng số điện thoại vẫn nhận từ form vì tài khoản có thể chưa có (cột phone cho phép null),
+  // và khách hay muốn để số khác số đăng ký — giống luồng thanh toán khóa học.
+  const customerName = locals.user.name;
+  const customerEmail = locals.user.email;
   const customerPhone = typeof b.customerPhone === "string" ? b.customerPhone.trim() : "";
-  const customerEmail = typeof b.customerEmail === "string" && b.customerEmail.trim() ? b.customerEmail.trim() : null;
 
   if (typeof gioiTinh !== "string" || !GIOI_TINH_HOP_LE.includes(gioiTinh)) {
     return jsonResponse({ ok: false, error: "gioiTinh không hợp lệ." }, 400);
@@ -48,8 +59,8 @@ export const POST: APIRoute = async ({ request }) => {
   if (typeof chiGioMat !== "string" || !CHI_HOP_LE.includes(chiGioMat)) {
     return jsonResponse({ ok: false, error: "Giờ mất không hợp lệ." }, 400);
   }
-  if (!customerName || !customerPhone) {
-    return jsonResponse({ ok: false, error: "Vui lòng nhập đầy đủ họ tên và số điện thoại liên hệ." }, 400);
+  if (!customerPhone) {
+    return jsonResponse({ ok: false, error: "Vui lòng nhập số điện thoại liên hệ." }, 400);
   }
 
   // Ngày giờ mất không được ở tương lai — quy tắc nghiệp vụ (không thuộc engine thuần, vì engine
@@ -106,6 +117,7 @@ export const POST: APIRoute = async ({ request }) => {
     const { orderId, orderCode, totalAmount } = await createToolOrder({
       toolSlug: TOOL_SLUG,
       toolInput: input,
+      userId: locals.user.id,
       customerName,
       customerPhone,
       customerEmail,

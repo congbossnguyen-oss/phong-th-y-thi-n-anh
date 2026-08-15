@@ -5,7 +5,13 @@ import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
 import DateSelect from "../../components/ui/DateSelect.astro";
 
-export const prerender = true;
+// Không prerender: cần đọc phiên đăng nhập lúc request. Trang vẫn trả nội dung giới thiệu cho
+// khách chưa đăng nhập (và cho Google index) — chỉ khối form bị thay bằng lời mời đăng nhập.
+// Chốt chặn thật nằm ở API, không phải ở đây.
+export const prerender = false;
+
+const user = Astro.locals.user;
+const DUONG_DAN = "/dai-cat-loi/xem-ngay-cao-cap";
 
 const SON_24 = [
   "Tý", "Quý", "Sửu", "Cấn", "Dần", "Giáp", "Mão", "Ất", "Thìn", "Tốn", "Tỵ", "Bính",
@@ -76,7 +82,28 @@ const TOOL_PRICE_LABEL = "999.000đ";
         <p class="mt-2">Dữ liệu Ngũ Hoàng tra bảng thật từ Vạn Niên Lịch Tam Nguyên, phủ liền mạch 1968–2068.</p>
       </div>
 
-      <form id="xncc-form" class="flex flex-col gap-4 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
+      {!user && (
+        <div class="rounded-(--radius-card) border border-(--color-gold-500)/40 bg-(--color-gold-400)/10 p-6 text-center">
+          <p class="font-display text-lg font-semibold text-(--color-ink-950)">Cần đăng nhập để sử dụng</p>
+          <p class="mx-auto mt-2 max-w-md text-sm text-(--color-ink-700)">
+            Đây là dịch vụ thu phí. Anh/chị vui lòng đăng nhập để hệ thống lưu đơn và kết quả vào
+            đúng tài khoản của mình — sau này đăng nhập lại là xem lại được, không sợ mất.
+          </p>
+          <div class="mt-5 flex flex-wrap justify-center gap-3">
+            <Button href={`/hoc-vien/dang-nhap?tiep=${encodeURIComponent(DUONG_DAN)}`} size="lg">Đăng nhập</Button>
+            <Button href={`/hoc-vien/dang-ky?tiep=${encodeURIComponent(DUONG_DAN)}`} size="lg" variant="secondary">Tạo tài khoản</Button>
+          </div>
+        </div>
+      )}
+
+      {/* Form vẫn nằm trong DOM khi chưa đăng nhập (chỉ ẩn đi) để đoạn script phía dưới không vỡ. */}
+      <form
+        id="xncc-form"
+        class:list={[
+          "flex flex-col gap-4 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6",
+          !user && "hidden",
+        ]}
+      >
         <div>
           <p class="text-sm font-medium text-(--color-ink-800)">Loại việc</p>
           <div class="mt-1.5 flex gap-4">

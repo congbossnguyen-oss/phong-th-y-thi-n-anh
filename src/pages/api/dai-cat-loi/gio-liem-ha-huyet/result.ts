@@ -10,7 +10,7 @@ function jsonResponse(body: unknown, status: number): Response {
   return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 }
 
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ url, locals }) => {
   const orderCode = url.searchParams.get("orderCode");
   if (!orderCode) {
     return jsonResponse({ ok: false, error: "Thiếu mã đơn hàng." }, 400);
@@ -19,6 +19,13 @@ export const GET: APIRoute = async ({ url }) => {
   const order = await getOrderByCode(orderCode);
   if (!order || order.orderType !== "tool" || order.toolSlug !== TOOL_SLUG) {
     return jsonResponse({ ok: false, error: "Không tìm thấy đơn hàng." }, 404);
+  }
+
+  // Đơn tạo từ khi bắt đăng nhập luôn có userId → chỉ chính chủ mới xem được kết quả.
+  // Đơn cũ (userId null, thời còn cho mua không tài khoản) vẫn dùng orderCode làm "vé" như trước,
+  // nếu không những đơn đó sẽ mất kết quả vĩnh viễn.
+  if (order.userId && order.userId !== locals.user?.id) {
+    return jsonResponse({ ok: false, error: "Đơn hàng này không thuộc tài khoản đang đăng nhập." }, 403);
   }
 
   if (order.status === "cancelled") {

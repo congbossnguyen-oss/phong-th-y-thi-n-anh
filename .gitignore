@@ -22,3 +22,6 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# Bản xuất mã khuyến mãi (chứa mã thật — không đưa lên git)
+ma-khuyen-mai.csv

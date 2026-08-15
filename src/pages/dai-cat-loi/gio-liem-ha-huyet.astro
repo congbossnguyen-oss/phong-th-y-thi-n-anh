@@ -5,7 +5,16 @@ import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
 import DateSelect from "../../components/ui/DateSelect.astro";
 
-export const prerender = true;
+// Không prerender: cần đọc phiên đăng nhập lúc request để chặn khách chưa có tài khoản.
+export const prerender = false;
+
+// Dịch vụ thu phí bắt buộc đăng nhập — để mỗi lượt dùng gắn được với một khách hàng cụ thể
+// (họ tên/email/SĐT), phục vụ đối soát đơn, tra lại kết quả cũ và theo dõi mã khuyến mãi.
+//
+// KHÔNG redirect thẳng sang trang đăng nhập: phần giới thiệu dịch vụ vẫn phải xem được (và Google
+// vẫn index được) — chỉ riêng khối form bị thay bằng lời mời đăng nhập. Chốt chặn thật nằm ở API.
+const user = Astro.locals.user;
+const DUONG_DAN = "/dai-cat-loi/gio-liem-ha-huyet";
 
 const CHI_LIST = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"];
 const TOOL_PRICE_LABEL = "499.000đ";
@@ -13,12 +22,12 @@ const TOOL_PRICE_LABEL = "499.000đ";
 
 <BaseLayout
   title="Chọn Giờ Liệm – Đóng Quan – Ngày Giờ Hạ Huyệt"
-  description="Xếp hạng giờ liệm/đóng quan và ngày giờ hạ huyệt theo Chưởng Pháp Trùng Tang – Nhập Mộ, có xét tuổi thân quyến. Dịch vụ thu phí 499.000đ/lượt, thanh toán qua QR, không cần tài khoản."
+  description="Xếp hạng giờ liệm/đóng quan và ngày giờ hạ huyệt theo Chưởng Pháp Trùng Tang – Nhập Mộ, có xét tuổi thân quyến. Dịch vụ thu phí 499.000đ/lượt, thanh toán qua QR, cần đăng nhập tài khoản."
 >
   <PageHero
     eyebrow="⭐ Dịch vụ thu phí"
     title="Chọn Giờ Liệm – Đóng Quan – Ngày Giờ Hạ Huyệt"
-    description={`Nhập thông tin người mất — hệ thống xếp hạng giờ liệm/đóng quan và ngày giờ hạ huyệt tốt nhất theo Chưởng Pháp Trùng Tang – Nhập Mộ. Phí ${TOOL_PRICE_LABEL}/lượt, thanh toán QR, không cần tạo tài khoản.`}
+    description={`Nhập thông tin người mất — hệ thống xếp hạng giờ liệm/đóng quan và ngày giờ hạ huyệt tốt nhất theo Chưởng Pháp Trùng Tang – Nhập Mộ. Phí ${TOOL_PRICE_LABEL}/lượt, thanh toán QR. Cần đăng nhập tài khoản.`}
     breadcrumbs={[
       { label: "Trang chủ", href: "/" },
       { label: "Đại Cát Lợi", href: "/dai-cat-loi" },
@@ -38,7 +47,29 @@ const TOOL_PRICE_LABEL = "499.000đ";
         gian tổng hợp, mang tính tương đối, không thay thế tư vấn phong thủy trực tiếp.
       </div>
 
-      <form id="glhh-form" class="flex flex-col gap-4 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
+      {!user && (
+        <div class="rounded-(--radius-card) border border-(--color-gold-500)/40 bg-(--color-gold-400)/10 p-6 text-center">
+          <p class="font-display text-lg font-semibold text-(--color-ink-950)">Cần đăng nhập để sử dụng</p>
+          <p class="mx-auto mt-2 max-w-md text-sm text-(--color-ink-700)">
+            Đây là dịch vụ thu phí. Anh/chị vui lòng đăng nhập để hệ thống lưu đơn và kết quả vào
+            đúng tài khoản của mình — sau này đăng nhập lại là xem lại được, không sợ mất.
+          </p>
+          <div class="mt-5 flex flex-wrap justify-center gap-3">
+            <Button href={`/hoc-vien/dang-nhap?tiep=${encodeURIComponent(DUONG_DAN)}`} size="lg">Đăng nhập</Button>
+            <Button href={`/hoc-vien/dang-ky?tiep=${encodeURIComponent(DUONG_DAN)}`} size="lg" variant="secondary">Tạo tài khoản</Button>
+          </div>
+        </div>
+      )}
+
+      {/* Form vẫn nằm trong DOM khi chưa đăng nhập (chỉ ẩn đi) để đoạn script phía dưới không vỡ.
+          Đây KHÔNG phải hàng rào bảo mật — chốt chặn thật nằm ở API, xem các route dưới /api. */}
+      <form
+        id="glhh-form"
+        class:list={[
+          "flex flex-col gap-4 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6",
+          !user && "hidden",
+        ]}
+      >
         <div>
           <p class="text-sm font-medium text-(--color-ink-800)">Giới tính người mất</p>
           <div class="mt-1.5 flex gap-4">
@@ -123,25 +154,17 @@ const TOOL_PRICE_LABEL = "499.000đ";
 
         <div class="border-t border-(--color-ivory-300) pt-4">
           <p class="text-sm font-medium text-(--color-ink-800)">Thông tin liên hệ (để nhận kết quả sau khi thanh toán)</p>
+          {user && (
+            <p class="mt-2 rounded-(--radius-control) bg-(--color-ivory-200) px-3 py-2.5 text-sm text-(--color-ink-700)">
+              Tài khoản: <strong class="text-(--color-ink-900)">{user.name}</strong> · {user.email}
+            </p>
+          )}
           <div class="mt-2 grid gap-3">
-            <input
-              type="text"
-              id="glhh-ten"
-              placeholder="Họ tên"
-              required
-              class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"
-            />
             <input
               type="tel"
               id="glhh-sdt"
               placeholder="Số điện thoại"
               required
-              class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"
-            />
-            <input
-              type="email"
-              id="glhh-email"
-              placeholder="Email (tùy chọn)"
               class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"
             />
           </div>
@@ -370,9 +393,8 @@ const TOOL_PRICE_LABEL = "499.000đ";
     const conDauLon = (document.getElementById("glhh-con-dau-lon") as HTMLSelectElement).value;
     const chauDichTon = (document.getElementById("glhh-chau-dich-ton") as HTMLSelectElement).value;
     const anhTraiLon = (document.getElementById("glhh-anh-trai-lon") as HTMLSelectElement).value;
-    const customerName = (document.getElementById("glhh-ten") as HTMLInputElement).value.trim();
+    // Họ tên + email không gửi từ đây nữa — server lấy thẳng từ tài khoản đang đăng nhập.
     const customerPhone = (document.getElementById("glhh-sdt") as HTMLInputElement).value.trim();
-    const customerEmail = (document.getElementById("glhh-email") as HTMLInputElement).value.trim();
 
     if (!ngayMat) {
       loiEl.textContent = "Vui lòng chọn đầy đủ ngày mất.";
@@ -400,9 +422,7 @@ const TOOL_PRICE_LABEL = "499.000đ";
       chiGioMat,
       ...(soNgayRaw ? { soNgayDuKienToiChon: Number(soNgayRaw) } : {}),
       ...(Object.keys(thanQuyen).length > 0 ? { thanQuyen } : {}),
-      customerName,
       customerPhone,
-      ...(customerEmail ? { customerEmail } : {}),
     };
 
     // ⚠️ TẠM THỜI (test nội bộ, yêu cầu Công 2026-08-14): gọi thẳng test-calculate.ts, bỏ qua

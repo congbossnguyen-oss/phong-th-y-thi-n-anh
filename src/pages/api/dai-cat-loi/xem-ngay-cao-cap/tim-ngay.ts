@@ -29,7 +29,15 @@ function gonNgay(n: Record<string, unknown>) {
   return gon;
 }
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, locals }) => {
+  // Dịch vụ thu phí: bắt buộc đăng nhập. Đây là chốt chặn THẬT (trang .astro chỉ ẩn form cho đẹp).
+  if (!locals.user) {
+    return new Response(
+      JSON.stringify({ ok: false, error: "Vui lòng đăng nhập để sử dụng dịch vụ này." }),
+      { status: 401, headers: { "Content-Type": "application/json" } },
+    );
+  }
+
   const body = await request.json().catch(() => null);
   if (!body || typeof body !== "object") {
     return jsonResponse({ ok: false, error: "Dữ liệu gửi lên không hợp lệ." }, 400);

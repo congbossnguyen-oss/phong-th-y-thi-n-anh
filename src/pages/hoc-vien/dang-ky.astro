@@ -42,8 +42,16 @@ export const prerender = true;
 
   const params = new URLSearchParams(window.location.search);
   const courseSlug = params.get("course");
+
+  // `tiep` = trang cần quay lại sau khi đăng ký xong. Chỉ nhận đường dẫn nội bộ — xem giải thích
+  // ở dang-nhap.astro (chặn chuyển hướng ra site lạ).
+  const tiepRaw = params.get("tiep");
+  const tiep = tiepRaw && tiepRaw.startsWith("/") && !tiepRaw.startsWith("//") ? tiepRaw : null;
+
   if (courseSlug) {
     loginLink.href = `/hoc-vien/dang-nhap?course=${encodeURIComponent(courseSlug)}`;
+  } else if (tiep) {
+    loginLink.href = `/hoc-vien/dang-nhap?tiep=${encodeURIComponent(tiep)}`;
   }
 
   form.addEventListener("submit", async (e) => {
@@ -72,6 +80,8 @@ export const prerender = true;
 
       if (courseSlug) {
         window.location.href = `/khoa-hoc/${courseSlug}/thanh-toan`;
+      } else if (tiep) {
+        window.location.href = tiep;
       } else {
         window.location.href = "/hoc-vien";
       }
