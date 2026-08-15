@@ -50,12 +50,15 @@ export const THAN_SAT_THANG: readonly ThanSatThangEntry[] = [
   // Chủ dự án chỉ đạo rõ: KHÔNG tự ý đặt cho nó một tên thần sát khác chỉ vì bảng cần có tên.
   // Không tính điểm, không hiển thị, không tham gia engine. Giữ lại số liệu ở dạng chú thích
   // (không có tác dụng lúc chạy) để sau này tra ra đúng tên thì khôi phục được.
-  {
-    name: "Thiên Giải",
-    catHung: "cát",
-    nguon: "NHỮNG NGÀY THIÊN GIẢI",
-    chiTheoThang: ["Ngọ", "Thân", "Tuất", "Tý", "Dần", "Thìn", "Ngọ", "Thân", "Tuất", "Tý", "Dần", "Thìn"],
-  },
+  // ⚠️ ĐÃ GỠ KHỎI ENGINE — bảng "Thiên Giải" theo sách (chủ dự án chốt 2026-08-16 lấy bảng 11/8).
+  //
+  //     tháng 1→Ngọ, 2→Thân, 3→Tuất, 4→Tý,  5→Dần,  6→Thìn,
+  //     tháng 7→Ngọ, 8→Thân, 9→Tuất, 10→Tý, 11→Dần, 12→Thìn
+  //     (nguồn cũ ghi là "NHỮNG NGÀY THIÊN GIẢI")
+  //
+  // Cùng cách xử lý đã áp dụng cho bảng "Nguyệt Đức" theo Địa Chi: không tính điểm, không hiển
+  // thị, không tham gia engine, KHÔNG tự đặt tên thần sát khác. Giữ số liệu ở dạng chú thích
+  // (không có tác dụng lúc chạy) để sau này cần đối chiếu thì có.
   {
     name: "Thiên Hỷ",
     catHung: "cát",
@@ -142,12 +145,19 @@ export const THAN_SAT_THANG: readonly ThanSatThangEntry[] = [
     chiTheoThang: ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"],
   },
   {
-    name: "Thiên Giải (nguồn khác)",
+    name: "Thiên Giải",
     catHung: "cát",
     nguon: "Bảng ngày tốt theo tháng âm lịch — chủ dự án cung cấp trực tiếp 2026-08-11",
-    // ⚠️ Tên trùng "Thiên Giải" đã có ở trên (nguồn Ngọc Hạp Thông Thư) nhưng 2 bảng Chi hoàn
-    // toàn khác nhau — chủ dự án xác nhận giữ cả 2, đặt tên riêng để không gây hiểu nhầm 2
-    // bảng khác nhau cùng 1 tên (2026-08-11).
+    // Chủ dự án chốt 2026-08-16: lấy bảng 11/8 làm chuẩn, bảng theo sách đã gỡ (xem chú thích ở
+    // trên) nên tên "Thiên Giải" từ đây chỉ còn một nghĩa duy nhất.
+    //
+    // ⚠️ NGHI GÕ NHẦM Ở THÁNG 4 — đã báo chủ dự án, CHƯA tự sửa vì đây là số liệu gốc:
+    //   tháng  3  4  5  6  7  8  9 10 11 12
+    //   hiện    Tý Dần Dần Mão Thìn Tỵ Ngọ Mùi Thân Dậu   → tháng 4 và 5 trùng nhau, và nhảy cóc
+    //                                                       qua Sửu
+    //   nếu tháng 4 là Sửu thì tháng 3→12 thành dãy tăng đều tuyệt đối: Tý Sửu Dần Mão Thìn Tỵ
+    //   Ngọ Mùi Thân Dậu. Xác suất trùng hợp ngẫu nhiên rất thấp.
+    // Giữ nguyên "Dần" cho tới khi chủ dự án tra lại bảng gốc và xác nhận.
     chiTheoThang: ["Tỵ", "Hợi", "Tý", "Dần", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân", "Dậu"],
   },
 ] as const;
