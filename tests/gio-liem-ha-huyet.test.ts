@@ -79,10 +79,13 @@ describe("Giờ liệm / đóng quan", () => {
     }
   });
 
-  it("không bao giờ đề xuất giờ Dần/Thân/Tỵ/Hợi cho liệm (loại tuyệt đối)", () => {
+  it("không bao giờ đề xuất ứng viên có CUNG rơi vào nhóm Trùng Tang (loại tuyệt đối)", () => {
+    // Kỵ tuyệt đối cho liệm là ở CUNG, không phải ở tên chi giờ. Sách: "Tuyệt đối kị các ngày giờ
+    // rơi vào CUNG Dần Thân Tị Hợi". Chủ dự án khẳng định lại 2026-08-16 bằng ví dụ ngày 12: khi
+    // Cung_Ngày = Tuất thì giờ Dần/Thân/Hợi đều ra cung Nhập Mộ và "đều có thể liệm".
     for (const r of [caA(), caB()]) {
       for (const c of r.gioLiemDongQuan!) {
-        expect(["Dần", "Thân", "Tỵ", "Hợi"]).not.toContain(c.chiGio);
+        expect(TrungTang.phanLoaiCung(c.cungGio)).not.toBe("trung-tang");
       }
     }
   });
@@ -96,15 +99,28 @@ describe("Giờ liệm / đóng quan", () => {
     }
   });
 
-  it("⚠️ MÂU THUẪN ĐẶC TẢ — ca B ra giờ Thìn (cung Sửu), đặc tả mục 14 ghi giờ Mão (cung Sửu)", () => {
-    // Engine dùng công thức TRỰC TIẾP cung=f(Chi giờ) (khớp ca A), nên ca B: Mão → cung Tý (Thiên
-    // Di) chứ không phải Sửu. Công thức "đếm step từ giờ mất" của mục 6 cho ra Mão → Sửu (khớp
-    // mục 14 ca B) nhưng lại làm ca A sai. Hai ví dụ kiểm chứng của đặc tả loại trừ lẫn nhau —
-    // giữ nguyên lựa chọn hiện tại (ưu tiên ca A) và khoá lại để phát hiện nếu ai đó đổi ngầm.
-    const r = caB();
-    expect(r.gioLiemDongQuan![0]!.chiGio).toBe("Thìn");
-    expect(r.gioLiemDongQuan![0]!.cungGio).toBe("Sửu");
-    expect(TrungTang.tinhCungTheoChiGio("nam", "Thân", "Mão")).toBe("Tý");
+  it("ca B: ra giờ Mão và Dậu — khớp đúng lời giảng của chủ dự án 2026-08-16", () => {
+    // Chủ dự án giảng nguyên văn: "nếu chọn ngày 11 thì giờ Mão Dậu thì liệm được".
+    // Ngày 11 âm (= 28/10/2039 dương) có Cung_Ngày = Dậu → Mão ra cung Sửu, Dậu ra cung Mùi,
+    // đều Nhập Mộ dùng được. Giờ Tý cũng ra cung Tuất (Nhập Mộ) nhưng bị luật 8 tiếng loại, đúng
+    // như chủ dự án lưu ý "người mất chưa đủ 8 tiếng thì không nên động vào".
+    //
+    // ĐÂY LÀ CHỖ GIẢI ĐƯỢC "MÂU THUẪN" GIỮA 2 CÔNG THỨC Ở MỤC 6 / MỤC 14: hai công thức chưa bao
+    // giờ thật sự chỏi nhau — engine chỉ thiếu bước quy về NGÀY MỚI khi giờ ứng viên đã qua ngày.
+    const top = caB().gioLiemDongQuan!;
+    const hai = top.slice(0, 2).map((c) => c.chiGio);
+    expect(hai).toEqual(["Mão", "Dậu"]);
+    expect(top[0]!.cungGio).toBe("Sửu");
+    expect(top[1]!.cungGio).toBe("Mùi");
+    // Cả hai đều rơi sang ngày dương 28/10 (= ngày 11 âm), không phải ngày mất 27/10.
+    for (const c of top.slice(0, 2)) expect(c.ngayDuongLich).toEqual({ nam: 2039, thang: 10, ngay: 28 });
+  });
+
+  it("Cung_Ngày phải nhích theo NGÀY mà giờ ứng viên rơi vào, không giữ nguyên cung ngày mất", () => {
+    // Ca B: Cung_Ngày ngày mất = Thân. Qua 1 ngày phải thành Dậu (nam thuận). Nếu vẫn dùng Thân
+    // thì giờ Mão sẽ ra cung Tý (Thiên Di) và cả kết quả lệch hẳn.
+    expect(TrungTang.tinhCungTheoChiGio("nam", "Dậu", "Mão")).toBe("Sửu"); // đúng: cung ngày 11
+    expect(TrungTang.tinhCungTheoChiGio("nam", "Thân", "Mão")).toBe("Tý"); // sai: cung ngày mất
   });
 });
 
@@ -174,14 +190,19 @@ describe("Quy luật bất biến (`chuong_phap.quy_luat_bat_bien`)", () => {
 
 describe("Mốc chuyển ngày (`chon_gio_liem.moc_chuyen_ngay`)", () => {
   it("giờ Tý bắt đầu 23:00 của ngày dương liền TRƯỚC ngày trụ Can Chi", () => {
-    const tyCandidate = caA().gioLiemDongQuan!.find((c) => c.chiGio === "Tý");
-    expect(tyCandidate).toBeDefined();
-    expect(tyCandidate!.khungGio.batDau).toBe("23:00");
-    expect(tyCandidate!.khungGio.ketThuc).toBe("01:00");
-    expect(tyCandidate!.khungGio.vatQuaNuaDem).toBe(true);
-    // Ngày trụ là 26/7 nhưng mốc 23:00 rơi vào tối 25/7 — sai chỗ này là lệch hẳn 1 ngày tang lễ.
-    expect(tyCandidate!.ngayDuongLich).toEqual({ nam: 2026, thang: 7, ngay: 26 });
-    expect(tyCandidate!.khungGio.ngayBatDau).toEqual({ nam: 2026, thang: 7, ngay: 25 });
+    // Không phụ thuộc việc giờ Tý có lọt top 3 hay không (top 3 đổi theo từng lần sửa luật) —
+    // kiểm trên MỌI ứng viên của cả hai ca, và bắt buộc phải gặp ít nhất một giờ Tý ở đâu đó.
+    const tatCa = [...(caA().gioLiemDongQuan ?? []), ...(caB().gioLiemDongQuan ?? []), ...(caA().ngayGioHaHuyet ?? []), ...(caB().ngayGioHaHuyet ?? [])];
+    const dsTy = tatCa.filter((c) => c.chiGio === "Tý");
+    expect(dsTy.length).toBeGreaterThan(0);
+    for (const c of dsTy) {
+      expect(c.khungGio.batDau).toBe("23:00");
+      expect(c.khungGio.ketThuc).toBe("01:00");
+      expect(c.khungGio.vatQuaNuaDem).toBe(true);
+      // Mốc 23:00 phải rơi vào ngày dương LIỀN TRƯỚC ngày trụ — sai chỗ này là lệch hẳn 1 ngày.
+      const truoc = new Date(Date.UTC(c.ngayDuongLich.nam, c.ngayDuongLich.thang - 1, c.ngayDuongLich.ngay - 1));
+      expect(c.khungGio.ngayBatDau).toEqual({ nam: truoc.getUTCFullYear(), thang: truoc.getUTCMonth() + 1, ngay: truoc.getUTCDate() });
+    }
   });
 
   it("11 chi giờ còn lại nằm gọn trong ngày trụ", () => {

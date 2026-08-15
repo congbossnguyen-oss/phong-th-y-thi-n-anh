@@ -88,6 +88,16 @@ function tinhKhungGio(jdnNgayTru: number, chiIndex: number): KhungGioThucTe {
   };
 }
 
+/**
+ * Cung_Ngày sau `soNgay` ngày kể từ một cung ngày đã biết. Vì Cung_Ngày(N) = Cung_Tháng + s*N,
+ * qua mỗi ngày cung chỉ nhích 1 bậc: nam thuận (+1), nữ nghịch (-1).
+ */
+function dichCungTheoNgay(cungNgayGoc: Chi, gioiTinh: TrungTang.GioiTinh, soNgay: number): Chi {
+  const s = gioiTinh === "nam" ? 1 : -1;
+  const idx = Data.CHI.indexOf(cungNgayGoc);
+  return Data.CHI[(((idx + s * soNgay) % 12) + 12) % 12]!;
+}
+
 /** Mốc tuyệt đối (phút) của thời điểm bắt đầu 1 chi giờ, để so sánh trước/sau giữa các ngày. */
 function mocTuyetDoiPhut(jdnNgayTru: number, chiIndex: number): number {
   return jdnNgayTru * 1440 + phutBatDauKhungGio(chiIndex);
@@ -364,15 +374,32 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
   for (let step = 0; step < 12; step++) {
     const idxChi = (idxGioMat + step) % 12;
     const chiGio = Data.CHI[idxChi]!;
-    if ((TrungTang.LUON_TRANH_LIEM as readonly Chi[]).includes(chiGio)) continue; // Dần/Thân/Tỵ/Hợi — loại tuyệt đối
     if (step * 2 < 8) continue; // dưới 8 tiếng kể từ khi mất
 
     const dayOffset = Math.floor((idxGioMat + step) / 12);
     const jdnCandidate = jdnMat + dayOffset;
     const hourPillar = Calendar.getGanzhiHour(jdnCandidate, representativeHour(idxChi));
     const dayPillar = Calendar.getGanzhiDay(jdnCandidate);
-    const cungGio = TrungTang.tinhCungTheoChiGio(input.gioiTinh, bonCung.cungNgay, chiGio);
+
+    // ⚠️ Cung_Ngày phải là cung của CHÍNH NGÀY mà giờ ứng viên rơi vào, KHÔNG phải luôn là cung
+    // ngày mất. Chủ dự án giảng 2026-08-16:
+    //   "nếu giờ nhập liệm cùng với giờ mất trong cùng 1 ngày thì chỉ việc đếm từ giờ mất. Nhưng
+    //    khi nó đã qua ngày rồi thì lại khác — phải tính qua 1 ngày mới, ngày 11 sẽ vào cung Thiên
+    //    Di tại cung Dậu, ta đếm giờ Tý tại cung Tuất rồi lần lượt đếm."
+    // Vì Cung_Ngày(N) = Cung_Tháng + s*N nên qua mỗi ngày cung chỉ nhích đúng 1 bậc theo chiều
+    // nam thuận / nữ nghịch — cộng thẳng `s * dayOffset`, vừa đúng vừa không vỡ khi ngày ứng viên
+    // rơi sang tháng âm lịch khác (chuỗi bàn tay đi tiếp, không phụ thuộc nhãn tháng).
+    const cungNgayCuaUngVien = dichCungTheoNgay(bonCung.cungNgay, input.gioiTinh, dayOffset);
+    const cungGio = TrungTang.tinhCungTheoChiGio(input.gioiTinh, cungNgayCuaUngVien, chiGio);
     const phanLoaiCungGio = TrungTang.phanLoaiCung(cungGio);
+
+    // Kỵ tuyệt đối cho LIỆM là khi CUNG rơi vào nhóm Trùng Tang (Dần/Thân/Tỵ/Hợi), KHÔNG phải khi
+    // CHI GIỜ mang tên đó. Sách: "Tuyệt đối kị các ngày giờ rơi vào CUNG Dần Thân Tị Hợi... (ngày
+    // giờ tính theo vòng Thiên Di Nhập Mộ)". Ví dụ của chủ dự án khẳng định lại: ngày 12 có
+    // Cung_Ngày = Tuất thì giờ Dần/Thân/Hợi đều ra cung Nhập Mộ và "đều có thể liệm" — nếu lọc
+    // theo tên chi giờ thì đã loại oan cả ba.
+    if (phanLoaiCungGio === "trung-tang") continue;
+
     const hoangDao = TrachNhat.getHoangDaoHacDaoGio(dayPillar.chiIndex, hourPillar.chiIndex);
 
     ungVienGioLiem.push({
