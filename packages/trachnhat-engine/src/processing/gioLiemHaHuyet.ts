@@ -7,7 +7,7 @@
  * KHÔNG chẩn đoán lại Trùng Tang — chỉ dùng `TrungTang.tinhBonCungTrungTang` (đã có, dùng chung
  * với công cụ miễn phí) để lấy 4 cung làm nền cho việc xếp hạng giờ/ngày.
  */
-import { Astronomy, Calendar, Data, getCanChi, getLunarDate } from "@thien-anh/calendar-core";
+import { Astronomy, Calendar, Data, getCanChi, getLunarDate, getSolarTerms } from "@thien-anh/calendar-core";
 import { TrachNhat, TrungTang, Scoring } from "@thien-anh/rule-engine";
 
 type Can = Data.Can;
@@ -112,6 +112,11 @@ export interface GioLiemHaHuyetInput {
   thoiGianDiChuyenPhut?: number;
   /** Đệm đi sớm trước giờ hạ huyệt, mặc định 45 phút (mục 9b cho phép cấu hình). */
   demDongQuanPhut?: number;
+  /**
+   * TỌA của huyệt mộ (Đông/Tây/Nam/Bắc). Bỏ trống thì bỏ qua tầng lọc theo phương vị — KHÔNG tự
+   * đoán hướng, vì đoán sai còn tệ hơn không xét.
+   */
+  toaHuyet?: TrungTang.ToaHuyet;
   timeZone?: string;
 }
 
@@ -261,6 +266,25 @@ function validateInput(input: GioLiemHaHuyetInput): void {
   if (input.demDongQuanPhut !== undefined && (!Number.isFinite(input.demDongQuanPhut) || input.demDongQuanPhut < 0)) {
     throw new Error("demDongQuanPhut phải là số phút không âm.");
   }
+}
+
+/**
+ * Tập JDN của các ngày Tứ Tuyệt / Tứ Ly trong khoảng năm cần quét.
+ *
+ * Định nghĩa: là ngày LIỀN TRƯỚC thời khắc vào tiết, nên lấy JDN của tiết rồi lùi 1 ngày. Quét cả
+ * năm trước và năm sau để không sót trường hợp ngày ứng viên nằm sát ranh giới năm dương lịch.
+ */
+function tapNgayTuTuyetTuLy(namTu: number, namDen: number): { tuTuyet: Set<number>; tuLy: Set<number> } {
+  const tuTuyet = new Set<number>();
+  const tuLy = new Set<number>();
+  for (let nam = namTu; nam <= namDen; nam++) {
+    for (const term of getSolarTerms(nam)) {
+      const jdnTruocTiet = Math.floor(term.julianDay + 0.5) - 1;
+      if (TrungTang.TIET_TU_TUYET.includes(term.name)) tuTuyet.add(jdnTruocTiet);
+      else if (TrungTang.TIET_TU_LY.includes(term.name)) tuLy.add(jdnTruocTiet);
+    }
+  }
+  return { tuTuyet, tuLy };
 }
 
 /** Mục 9b — trừ lùi từ giờ hạ huyệt phương án 1 để ra khoảng động quan. */
@@ -521,6 +545,8 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
     });
   } else {
     const chiXungVong = TrachNhat.getLucXungChi(chiTuoiVong);
+    // Quét dư 1 năm mỗi phía cho chắc, vì 20 ngày quét có thể vắt qua giao thừa dương lịch.
+    const ngayTuTuyetTuLy = tapNgayTuTuyetTuLy(input.namMat - 1, input.namMat + 1);
     const dsNgayUngVien: NgayUngVienHaHuyet[] = [];
     for (let offset = 1; offset <= SO_NGAY_QUET_TOI_DA && dsNgayUngVien.length < SO_NGAY_UNG_VIEN_GIU_LAI; offset++) {
       const jdnCandidate = jdnMat + offset;
@@ -540,7 +566,22 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
       if ((TrachNhat.getChiNgayKyKimThanThatSatTheoNam(canNamSinhVong) as readonly Chi[]).includes(canChiCandidate.day.chi)) continue;
       // Trực Phá — cũng thuộc nhóm không hoá giải được.
       const trucCandidate = TrachNhat.getTruc(canChiCandidate.day.chiIndex, Calendar.monthBoundaryOrderIndex(canChiCandidate.julianDay));
+      // Trực Phá ≡ Nguyệt Phá (Chi ngày xung Chi tháng); Trực Kiến ≡ Nguyệt Kiến. Chủ dự án xếp
+      // cả hai vào tầng 1 "đại kỵ — loại ngay", nên loại thẳng, không chỉ trừ điểm như trước.
       if (TrungTang.isTrucKhongHoaGiai(trucCandidate.name)) continue;
+      if (trucCandidate.name === "Kiến") continue;
+
+      // ---- TẦNG 1 — đại kỵ ngày (chủ dự án chốt 2026-08-15) ----
+      // Thái Tuế: Chi ngày trùng Chi năm hành sự. Tuế Phá: Chi ngày xung Chi năm.
+      if (TrungTang.isNgayThaiTue(canChiCandidate.day.chi, canChiCandidate.year.chi)) continue;
+      if (canChiCandidate.day.chi === TrachNhat.getLucXungChi(canChiCandidate.year.chi)) continue;
+      // Kiếp Sát theo tam hợp tuổi vong — chủ dự án xếp vào tầng 1 (trước đây chỉ cảnh báo mềm).
+      if (TrungTang.isKiepSat(chiTuoiVong, canChiCandidate.day.chi)) continue;
+      // Tứ Tuyệt / Tứ Ly — ngày liền trước 4 tiết Lập và 4 tiết Phân/Chí.
+      if (ngayTuTuyetTuLy.tuTuyet.has(jdnCandidate) || ngayTuTuyetTuLy.tuLy.has(jdnCandidate)) continue;
+
+      // ---- TẦNG 3 — quan hệ ngày với TỌA huyệt (chỉ khi khách cung cấp hướng) ----
+      if (input.toaHuyet && TrungTang.isTamSatTheoToa(canChiCandidate.day.chi, input.toaHuyet)) continue;
 
       const cungNgay = TrungTang.tinhCungNgayUngVien(input.gioiTinh, bonCung.cungThang, lunarCandidate.day);
       dsNgayUngVien.push({

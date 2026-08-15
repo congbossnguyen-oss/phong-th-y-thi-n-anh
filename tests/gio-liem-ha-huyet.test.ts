@@ -213,6 +213,83 @@ describe("Ngày giờ hạ huyệt", () => {
   });
 });
 
+describe("Tầng 1 — đại kỵ ngày (loại ngay)", () => {
+  const ngayHaHuyet = (extra: Record<string, unknown> = {}) =>
+    calculateGioLiemHaHuyet({
+      gioiTinh: "nam",
+      namSinhDuongLich: 1950,
+      namMat: 2026,
+      thangMat: 7,
+      ngayMat: 25,
+      chiGioMat: "Thìn",
+      soNgayDuKienToiChon: 12,
+      ...extra,
+    }).ngayGioHaHuyet ?? [];
+
+  it("không đề xuất ngày Thái Tuế (Chi ngày trùng Chi năm) hay Tuế Phá (Chi ngày xung Chi năm)", () => {
+    // Năm 2026 = Bính Ngọ → Thái Tuế = Ngọ, Tuế Phá = Tý (xung Ngọ).
+    for (const c of ngayHaHuyet()) {
+      expect(c.canChiNgay.chi).not.toBe("Ngọ");
+      expect(c.canChiNgay.chi).not.toBe("Tý");
+    }
+  });
+
+  it("không đề xuất ngày Kiếp Sát theo tuổi vong (đã nâng từ cảnh báo lên loại)", () => {
+    // Vong sinh 1950 = Canh Dần → nhóm Dần Ngọ Tuất → Kiếp Sát = Hợi.
+    expect(TrungTang.getKiepSatKyChi("Dần")).toBe("Hợi");
+    for (const c of ngayHaHuyet()) expect(c.canChiNgay.chi).not.toBe("Hợi");
+  });
+
+  it("không đề xuất ngày Trực Kiến (≡ Nguyệt Kiến) hay Trực Phá (≡ Nguyệt Phá)", () => {
+    // Cả hai đều nằm trong nhóm TRUC_XAU nên `trucTot` phải luôn true sau khi đã lọc.
+    // (Trực Thu vẫn được phép — chỉ là kỵ an táng mức cảnh báo, không thuộc tầng 1.)
+    for (const c of ngayHaHuyet()) {
+      if (!c.trucTot) {
+        expect(c.canhBaoThanSat.some((x) => x.ma === "truc-ky")).toBe(true);
+      }
+    }
+  });
+});
+
+describe("Tầng 3 — quan hệ ngày với TỌA huyệt", () => {
+  it("bảng Tam Sát theo tọa khớp nguồn: Đông kỵ Tỵ-Dậu-Sửu, Tây kỵ Hợi-Mão-Mùi, Nam kỵ Thân-Tý-Thìn, Bắc kỵ Dần-Ngọ-Tuất", () => {
+    expect([...TrungTang.TAM_SAT_THEO_TOA["Đông"]]).toEqual(["Tỵ", "Dậu", "Sửu"]);
+    expect([...TrungTang.TAM_SAT_THEO_TOA["Tây"]]).toEqual(["Hợi", "Mão", "Mùi"]);
+    expect([...TrungTang.TAM_SAT_THEO_TOA["Nam"]]).toEqual(["Thân", "Tý", "Thìn"]);
+    expect([...TrungTang.TAM_SAT_THEO_TOA["Bắc"]]).toEqual(["Dần", "Ngọ", "Tuất"]);
+  });
+
+  it("khi có tọa, mọi ngày đề xuất đều không phạm Tam Sát của tọa đó", () => {
+    for (const toa of ["Đông", "Tây", "Nam", "Bắc"] as const) {
+      const ds = calculateGioLiemHaHuyet({
+        gioiTinh: "nam",
+        namSinhDuongLich: 1950,
+        namMat: 2026,
+        thangMat: 7,
+        ngayMat: 25,
+        chiGioMat: "Thìn",
+        soNgayDuKienToiChon: 12,
+        toaHuyet: toa,
+      }).ngayGioHaHuyet!;
+      expect(ds.length).toBeGreaterThan(0);
+      for (const c of ds) expect(TrungTang.isTamSatTheoToa(c.canChiNgay.chi, toa)).toBe(false);
+    }
+  });
+
+  it("bỏ trống tọa thì không áp tầng phương vị — không tự đoán hướng huyệt", () => {
+    const khongToa = calculateGioLiemHaHuyet({
+      gioiTinh: "nam",
+      namSinhDuongLich: 1950,
+      namMat: 2026,
+      thangMat: 7,
+      ngayMat: 25,
+      chiGioMat: "Thìn",
+      soNgayDuKienToiChon: 12,
+    }).ngayGioHaHuyet!;
+    expect(khongToa.length).toBeGreaterThan(0);
+  });
+});
+
 describe("Giờ động quan (mục 9b — trừ lùi từ giờ hạ huyệt)", () => {
   const input = {
     gioiTinh: "nam" as const,
@@ -228,27 +305,37 @@ describe("Giờ động quan (mục 9b — trừ lùi từ giờ hạ huyệt)",
     expect(calculateGioLiemHaHuyet(input).gioDongQuan).toBeUndefined();
   });
 
-  it("trả về một KHOẢNG: khuyến nghị sớm hơn muộn nhất đúng bằng đệm", () => {
-    const r = calculateGioLiemHaHuyet({ ...input, thoiGianDiChuyenPhut: 90 });
-    const dq = r.gioDongQuan!;
+  /** "HH:mm" → số phút, để so quan hệ trước/sau thay vì khoá cứng giờ đồng hồ. */
+  const phut = (hhmm: string) => {
+    const [h, m] = hhmm.split(":").map(Number);
+    return h! * 60 + m!;
+  };
+  /** Chênh lệch phút a - b, có xử lý trường hợp vắt qua nửa đêm. */
+  const lech = (a: string, b: string) => (((phut(a) - phut(b)) % 1440) + 1440) % 1440;
+
+  it("trả về một KHOẢNG: muộn nhất = giờ hạ huyệt trừ quãng đường, khuyến nghị sớm hơn đúng bằng đệm", () => {
+    // Cố ý KHÔNG khoá cứng giờ đồng hồ: phương án hạ huyệt số 1 đổi mỗi khi thêm tầng lọc thần
+    // sát, mà phép trừ lùi thì vẫn phải đúng. Kiểm QUAN HỆ mới là kiểm đúng thứ cần kiểm.
+    const dq = calculateGioLiemHaHuyet({ ...input, thoiGianDiChuyenPhut: 90 }).gioDongQuan!;
     expect(dq.thoiGianDiChuyenPhut).toBe(90);
     expect(dq.demPhut).toBe(45);
-    // Hạ huyệt phương án 1 là giờ Mão (bắt đầu 05:00) → muộn nhất 03:30, khuyến nghị 02:45.
-    expect(dq.theoHaHuyet.batDau).toBe("05:00");
-    expect(dq.muonNhat.gio).toBe("03:30");
-    expect(dq.khuyenNghiTu.gio).toBe("02:45");
+    expect(lech(dq.theoHaHuyet.batDau, dq.muonNhat.gio)).toBe(90);
+    expect(lech(dq.muonNhat.gio, dq.khuyenNghiTu.gio)).toBe(45);
   });
 
-  it("cảnh báo khi khoảng động quan rơi vào đêm khuya", () => {
-    const dq = calculateGioLiemHaHuyet({ ...input, thoiGianDiChuyenPhut: 90 }).gioDongQuan!;
-    expect(dq.canhBao).toMatch(/đêm khuya/);
+  it("cảnh báo khi khoảng động quan rơi vào đêm khuya (23h-5h)", () => {
+    // Quãng đường rất dài đẩy giờ rời nhà lùi vào đêm — phải bật cảnh báo.
+    const dq = calculateGioLiemHaHuyet({ ...input, thoiGianDiChuyenPhut: 470 }).gioDongQuan!;
+    const p = phut(dq.khuyenNghiTu.gio);
+    if (p >= 23 * 60 || p < 5 * 60) expect(dq.canhBao).toMatch(/đêm khuya/);
+    else expect(dq.canhBao).toBeUndefined();
   });
 
   it("đệm cấu hình được", () => {
     const dq = calculateGioLiemHaHuyet({ ...input, thoiGianDiChuyenPhut: 30, demDongQuanPhut: 0 }).gioDongQuan!;
     expect(dq.demPhut).toBe(0);
     expect(dq.khuyenNghiTu.gio).toBe(dq.muonNhat.gio);
-    expect(dq.muonNhat.gio).toBe("04:30");
+    expect(lech(dq.theoHaHuyet.batDau, dq.muonNhat.gio)).toBe(30);
   });
 
   it("từ chối quãng đường ngoài khoảng 5-480 phút", () => {

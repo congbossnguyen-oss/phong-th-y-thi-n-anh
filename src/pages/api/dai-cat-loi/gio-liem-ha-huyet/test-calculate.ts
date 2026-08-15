@@ -16,6 +16,7 @@ export const prerender = false;
 
 const CHI_HOP_LE = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"];
 const GIOI_TINH_HOP_LE = ["nam", "nu"];
+const TOA_HOP_LE = ["Đông", "Tây", "Nam", "Bắc"];
 
 function jsonResponse(body: unknown, status: number): Response {
   return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
@@ -85,6 +86,10 @@ export const POST: APIRoute = async ({ request }) => {
     ...(thanQuyen ? { thanQuyen } : {}),
     // Quãng đường nhà → huyệt, dùng cho bước 6b (giờ động quan). Engine tự validate 5-480 phút.
     ...(b.thoiGianDiChuyenPhut ? { thoiGianDiChuyenPhut: Number(b.thoiGianDiChuyenPhut) } : {}),
+    // Tọa huyệt — chỉ nhận 4 giá trị hợp lệ; sai thì bỏ qua tầng phương vị thay vì tính bừa.
+    ...(typeof b.toaHuyet === "string" && TOA_HOP_LE.includes(b.toaHuyet)
+      ? { toaHuyet: b.toaHuyet as GioLiemHaHuyetInput["toaHuyet"] }
+      : {}),
   };
 
   try {

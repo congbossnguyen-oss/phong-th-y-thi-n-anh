@@ -93,6 +93,51 @@ export const HAC_DAO_KY_AN_TANG: ReadonlySet<string> = new Set(["Bạch Hổ", "
 /** Nhóm thần sát mà nguồn ghi rõ KHÔNG hoá giải được — đã phạm là phải đổi ngày, không trấn yểm. */
 export const KHONG_HOA_GIAI_DUOC: readonly string[] = ["Kim Thần Thất Sát", "Tam Sát", "Nguyệt Phá", "Đại Hao", "Trực Phá"];
 
+/**
+ * TẦNG 3 — Tam Sát theo TỌA huyệt (`tam_sat_theo_toa`). Đây là lớp "phương vị" mà chủ dự án nhấn
+ * mạnh: không thể chỉ `ngày → thần sát → điểm`, phải có `ngày + tọa huyệt → luật riêng theo hướng`.
+ *
+ * Mỗi tọa kỵ trọn một bộ tam hợp. Ba chi trong bộ đó chính là ba sao của Tam Sát (Kiếp Sát – Tai
+ * Sát – Tuế Sát), nên cài bảng này là đã phủ luôn ba tên gọi đó ở phạm vi phương vị.
+ *
+ * `kien_truc_danh_gia.buoc_1_hard_constraint` xếp Tam Sát vào nhóm "không hoá giải được" → LOẠI.
+ */
+export type ToaHuyet = "Đông" | "Tây" | "Nam" | "Bắc";
+
+export const TAM_SAT_THEO_TOA: Readonly<Record<ToaHuyet, readonly Chi[]>> = {
+  "Đông": ["Tỵ", "Dậu", "Sửu"],
+  "Tây": ["Hợi", "Mão", "Mùi"],
+  "Nam": ["Thân", "Tý", "Thìn"],
+  "Bắc": ["Dần", "Ngọ", "Tuất"],
+};
+
+export function isTamSatTheoToa(chi: Chi, toa: ToaHuyet): boolean {
+  return (TAM_SAT_THEO_TOA[toa] as readonly Chi[]).includes(chi);
+}
+
+/**
+ * TẦNG 1 — Thái Tuế / Tuế Phá ở phạm vi NGÀY.
+ *
+ * Không phải bảng tra mà là quan hệ định nghĩa: ngày Thái Tuế = Chi ngày trùng Chi năm hành sự;
+ * ngày Tuế Phá = Chi ngày xung Chi năm. Vì là quan hệ chứ không phải số liệu, cài được mà không
+ * phải suy diễn thêm dữ liệu nào.
+ */
+export function isNgayThaiTue(chiNgay: Chi, chiNam: Chi): boolean {
+  return chiNgay === chiNam;
+}
+
+/**
+ * TẦNG 1 — Tứ Tuyệt / Tứ Ly. Cũng là ĐỊNH NGHĨA chứ không phải bảng tra:
+ *
+ * - Tứ Tuyệt = ngày liền TRƯỚC 4 tiết Lập Xuân / Lập Hạ / Lập Thu / Lập Đông (khí mùa cũ dứt).
+ * - Tứ Ly    = ngày liền TRƯỚC Xuân Phân / Hạ Chí / Thu Phân / Đông Chí (âm dương phân ly).
+ *
+ * Ở đây chỉ khai báo TÊN TIẾT; việc quy ra ngày dương lịch thật do tầng facade làm, vì rule-engine
+ * là hàm thuần, không tự đi tính thiên văn.
+ */
+export const TIET_TU_TUYET: readonly string[] = ["Lập Xuân", "Lập Hạ", "Lập Thu", "Lập Đông"];
+export const TIET_TU_LY: readonly string[] = ["Xuân Phân", "Hạ Chí", "Thu Phân", "Đông Chí"];
+
 export function isSatChuAm(chiNgay: Chi, thangAmLich: number): boolean {
   return SAT_CHU_AM_THEO_THANG[thangAmLich - 1] === chiNgay;
 }
