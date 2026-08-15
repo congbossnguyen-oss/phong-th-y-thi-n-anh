@@ -139,6 +139,12 @@ export const KHONG_HOA_GIAI_DUOC: readonly string[] = ["Kim Thần Thất Sát",
  * Sát – Tuế Sát), nên cài bảng này là đã phủ luôn ba tên gọi đó ở phạm vi phương vị.
  *
  * `kien_truc_danh_gia.buoc_1_hard_constraint` xếp Tam Sát vào nhóm "không hoá giải được" → LOẠI.
+ *
+ * ✔ ĐỐI CHỨNG NGUỒN SÁCH ("Sổ Tay Tang Sự", Ch.14 mục "Tam sát niên, tháng nhựt"): sách ghi theo
+ * chiều ngược lại — năm Tỵ-Dậu-Sửu thì Tam Sát đóng ở ĐÔNG phương (3 sơn Dần Mão Thìn), năm
+ * Hợi-Mão-Mùi ở Tây, Thân-Tý-Thìn ở Nam, Dần-Ngọ-Tuất ở Bắc. Đọc ngược lại đúng bằng bảng dưới
+ * đây. Sách cũng nói rõ Tam Sát có ba cấp "niên / nguyệt / NHẬT tam sát" nên áp cho NGÀY là đúng
+ * phạm vi, và "nhất là khi Tam sát ở cung Tọa... tai họa đến liền" — đúng mức LOẠI, không trừ điểm.
  */
 export type ToaHuyet = "Đông" | "Tây" | "Nam" | "Bắc";
 
@@ -172,6 +178,9 @@ export function isNgayThaiTue(chiNgay: Chi, chiNam: Chi): boolean {
  *
  * Ở đây chỉ khai báo TÊN TIẾT; việc quy ra ngày dương lịch thật do tầng facade làm, vì rule-engine
  * là hàm thuần, không tự đi tính thiên văn.
+ *
+ * ✔ ĐỐI CHỨNG NGUỒN SÁCH (Ch.14): "Tứ tuyệt: 1 ngày trước Lập Xuân, Lập Hạ, Lập Thu, Lập Đông.
+ * Tứ ly: 1 ngày trước Xuân Phân, Hạ Chí, Thu Phân, Đông Chí." — khớp nguyên văn định nghĩa đang cài.
  */
 export const TIET_TU_TUYET: readonly string[] = ["Lập Xuân", "Lập Hạ", "Lập Thu", "Lập Đông"];
 export const TIET_TU_LY: readonly string[] = ["Xuân Phân", "Hạ Chí", "Thu Phân", "Đông Chí"];
@@ -217,7 +226,13 @@ export const NGUYET_YEM_THEO_THANG: readonly Chi[] = ["Tuất", "Dậu", "Thân"
 export const NGUYET_HINH_THEO_THANG: readonly Chi[] = ["Tỵ", "Tý", "Thìn", "Thân", "Ngọ", "Sửu", "Dần", "Dậu", "Mùi", "Hợi", "Mão", "Tuất"];
 export const NGUYET_HAI_THEO_THANG: readonly Chi[] = ["Tỵ", "Thìn", "Mão", "Dần", "Sửu", "Tý", "Hợi", "Tuất", "Dậu", "Thân", "Mùi", "Ngọ"];
 
-/** TẦNG 2 — Tứ Phế: cặp Can Chi ngày "tử" theo mùa (mùa lấy theo TIẾT KHÍ, không theo tháng lịch). */
+/**
+ * TẦNG 2 — Tứ Phế: cặp Can Chi ngày "tử" theo mùa (mùa lấy theo TIẾT KHÍ, không theo tháng lịch).
+ *
+ * ✔ ĐỐI CHỨNG NGUỒN SÁCH (Ch.14, dòng "Chánh Tứ Phế"): Xuân = Canh Thân/Tân Dậu, Hạ = Nhâm Tý/
+ * Quý Hợi, Thu = Giáp Dần/Ất Mão, Đông = Bính Ngọ/Đinh Tỵ — khớp 4/4 mùa với bảng chủ dự án gửi,
+ * và xác nhận luôn mùa Đông là Đinh TỴ (không phải Đinh Tý).
+ */
 export type MuaTuPhe = "Xuân" | "Hạ" | "Thu" | "Đông";
 export const TU_PHE_THEO_MUA: Readonly<Record<MuaTuPhe, readonly { can: Can; chi: Chi }[]>> = {
   "Xuân": [{ can: "Canh", chi: "Thân" }, { can: "Tân", chi: "Dậu" }],
