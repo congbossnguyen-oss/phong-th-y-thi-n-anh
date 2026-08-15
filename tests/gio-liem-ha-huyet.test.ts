@@ -251,12 +251,13 @@ describe("Tầng 1 — đại kỵ ngày (loại ngay)", () => {
   });
 });
 
-describe("Bảng thần sát chủ dự án cung cấp 2026-08-15 — khoá cách giải Tý/Tỵ", () => {
-  // Bản gốc dùng "TY" cho cả Tý lẫn Tỵ. Các assert dưới đây khoá lại cách giải theo quy luật nội
-  // tại của từng bảng — nếu chủ dự án xác nhận khác, test sẽ báo ngay chỗ cần sửa.
+describe("Bảng thần sát chủ dự án cung cấp 2026-08-15 — Tý (子) ≠ Tỵ (巳)", () => {
+  // Bản gốc dùng "TY" cho cả Tý lẫn Tỵ. Cách giải theo quy luật nội tại của từng bảng đã được
+  // CHỦ DỰ ÁN XÁC NHẬN LẠI TOÀN BỘ (2026-08-15) — khớp đúng, không phải sửa số liệu nào.
+  // Giữ các assert này làm chốt chặn: đây là kiểu lỗi sai một ly đi một dặm mà không báo gì.
 
-  it("Tuế Sát: khoá lặp trong JSON gốc đã giải theo tam hợp, Tý ≠ Tỵ", () => {
-    // Nếu parse thẳng JSON gốc thì "TY" thứ hai đè cái đầu → Tý nhận nhầm Thìn.
+  it("Tuế Sát: bản mảng theo tam hợp chủ dự án gửi lại khớp 4/4 nhóm, Tý ≠ Tỵ", () => {
+    // Bản JSON đầu tiên có khoá "TY" lặp 2 lần → parse thẳng thì Tý nhận nhầm Thìn.
     expect(TrungTang.TUE_SAT_THEO_CHI_NAM["Tý"]).toBe("Mùi"); // Thân-Tý-Thìn
     expect(TrungTang.TUE_SAT_THEO_CHI_NAM["Tỵ"]).toBe("Thìn"); // Tỵ-Dậu-Sửu
     expect(TrungTang.TUE_SAT_THEO_CHI_NAM["Dần"]).toBe("Sửu");

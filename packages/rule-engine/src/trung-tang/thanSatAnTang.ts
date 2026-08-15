@@ -179,15 +179,17 @@ export const TIET_TU_LY: readonly string[] = ["Xuân Phân", "Hạ Chí", "Thu P
 /* ------------------------------------------------------------------------------------------
  * BỘ BẢNG CHỦ DỰ ÁN CUNG CẤP 2026-08-15 (dạng mã GIAP/AT/... đã quy về tên tiếng Việt).
  *
- * ⚠️ Bản gốc dùng `TY` cho CẢ Tý lẫn Tỵ, trong khi bảng quy ước kèm theo ghi Tỵ = `TI`. Chỗ nào
- * nhập nhằng đã được giải bằng QUY LUẬT NỘI TẠI của chính bảng đó (không đoán):
- *   - `tue_sat`: JSON có khoá "TY" LẶP 2 LẦN (nếu parse thẳng thì Tý bị đè thành Thìn). Giải theo
- *     tam hợp: Thân-Tý-Thìn→Mùi, Dần-Ngọ-Tuất→Sửu, Tỵ-Dậu-Sửu→Thìn, Hợi-Mão-Mùi→Tuất.
- *   - `nguyet_yem`: là chuỗi ĐI LÙI liên tục từ Tuất, nên T6 = Tỵ, T11 = Tý.
- *   - `nguyet_hai`: chuỗi đi lùi từ Tỵ, nên T1 = Tỵ, T6 = Tý.
- *   - `nguyet_hinh`: T1 = Tỵ, T2 = Tý.
- *   - `tu_phe` mùa Đông: Bính Ngọ + Đinh **Tỵ** (Đông thuộc thủy, hoả tử).
- * Tất cả các điểm này CẦN CHỦ DỰ ÁN XÁC NHẬN LẠI.
+ * Bản gốc dùng `TY` cho CẢ Tý lẫn Tỵ, trong khi bảng quy ước kèm theo ghi Tý = `TY` (子) và
+ * Tỵ = `TI` (巳). Các chỗ nhập nhằng được giải bằng QUY LUẬT NỘI TẠI của từng bảng, sau đó
+ * CHỦ DỰ ÁN ĐÃ XÁC NHẬN LẠI TOÀN BỘ ngày 2026-08-15 — khớp đúng cách giải, không phải sửa gì:
+ *   - `nguyet_yem`  T6 = Tỵ  (chuỗi đi lùi liên tục từ Tuất)
+ *   - `nguyet_hai`  T1 = Tỵ  (chuỗi đi lùi từ Tỵ)
+ *   - `nguyet_hinh` T1 = Tỵ
+ *   - `tu_phe` mùa Đông = Bính Ngọ + Đinh Tỵ (Đông thuộc thuỷ, hoả tử)
+ *
+ * ⚠️ Riêng `tue_sat`: bản JSON ĐẦU TIÊN có khoá "TY" LẶP 2 LẦN — parse thẳng thì cái sau đè cái
+ * trước, Tý nhận nhầm giá trị của Tỵ (Mùi -> Thìn) mà không có lỗi nào báo. Chủ dự án đã gửi lại
+ * bản sửa dạng MẢNG theo nhóm tam hợp (hết trùng khoá), đối chiếu KHỚP 4/4 nhóm với bảng bên dưới.
  *
  * Hai bảng dùng để đối chứng đã khớp 100% với thứ đang chạy trong dự án, cho thấy cùng một nguồn:
  * `phuc_nhat` trùng `CAN_PHUC_NHAT_THEO_THANG`, và `nguyet_duc` khớp quy tắc tam hợp với quy ước
