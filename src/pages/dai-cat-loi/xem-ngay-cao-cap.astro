@@ -19,6 +19,13 @@ const SON_24 = [
   "Tý", "Quý", "Sửu", "Cấn", "Dần", "Giáp", "Mão", "Ất", "Thìn", "Tốn", "Tỵ", "Bính",
   "Ngọ", "Đinh", "Mùi", "Khôn", "Thân", "Canh", "Dậu", "Tân", "Tuất", "Càn", "Hợi", "Nhâm",
 ];
+// Cờ thử nghiệm: true = bỏ bước thanh toán, nộp form ra kết quả ngay (không tạo đơn thật).
+// Khai báo ở frontmatter để MARKUP cũng dùng được — các ô chỉ có nghĩa khi thu phí (số điện
+// thoại, mã khuyến mãi) phải ẩn đi lúc đang thử nghiệm, nếu không khách nhập mã, thấy báo giảm
+// giá thành công, rồi form lại nộp sang test-calculate: mã không đi đâu cả mà khách tưởng đã
+// dùng mất mã tặng. Script đọc lại cờ này qua data-test-mode trên thẻ form (1 nguồn sự thật).
+const TEST_MODE = true;
+
 const TOOL_SLUG = "xem-ngay-cao-cap";
 const TOOL_PRICE = GIA_CONG_CU[TOOL_SLUG];
 const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
@@ -103,6 +110,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
       {/* Form vẫn nằm trong DOM khi chưa đăng nhập (chỉ ẩn đi) để đoạn script phía dưới không vỡ. */}
       <form
         id="xncc-form"
+        data-test-mode={String(TEST_MODE)}
         class:list={[
           "flex flex-col gap-4 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6",
           !user && "hidden",
@@ -221,6 +229,11 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
           <DateSelect idPrefix="xncc-ngay" label="Ngày cần giám định (dương lịch)" required={false} yearsBack={15} yearsForward={5} />
         </div>
 
+        {/* Chỉ hiện khi đã bật thu phí. Đang TEST_MODE mà vẫn hiện ô mã thì khách nhập mã, thấy
+            báo giảm giá thành công, nhưng form lại nộp sang test-calculate — mã không đi đâu cả
+            và khách tưởng đã dùng mất mã tặng. */}
+        {!TEST_MODE && (
+        <>
         <div class="border-t border-(--color-ivory-300) pt-4">
           <label for="xncc-sdt" class="text-sm font-medium text-(--color-ink-800)">Số điện thoại liên hệ</label>
           <input
@@ -233,6 +246,8 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
         </div>
 
         <MaKhuyenMai idPrefix="xncc-ma" toolSlug={TOOL_SLUG} giaGoc={TOOL_PRICE} />
+        </>
+        )}
 
         <Button type="submit" size="lg"><span id="xncc-nhan-nut">Tìm tháng phù hợp</span></Button>
       </form>

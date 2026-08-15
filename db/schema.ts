@@ -67,6 +67,11 @@ export const orders = pgTable("orders", {
   // Mã đơn hàng ngắn, duy nhất — nhúng vào nội dung chuyển khoản QR để đối soát với webhook SePay.
   // Với đơn công cụ (không cần tài khoản), orderCode còn đóng vai trò "vé" truy cập kết quả.
   orderCode: text("order_code").notNull().unique(),
+  // Mã khuyến mãi khách đã áp cho đơn này (nếu có). Lưu ở đây để LƯỢT MÃ chỉ bị trừ khi đơn thực
+  // sự được thanh toán — nếu trừ ngay lúc tạo đơn thì khách xem QR rồi bỏ ngang sẽ đốt mất mã.
+  // Việc trừ lượt + ghi Google Sheet nằm trong markOrderPaidAndFulfill().
+  promoCodeId: uuid("promo_code_id"),
+  promoDiscountAmount: numeric("promo_discount_amount", { precision: 12, scale: 0 }),
   paidAt: timestamp("paid_at", { withTimezone: true }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

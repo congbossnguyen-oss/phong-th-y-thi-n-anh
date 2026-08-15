@@ -7,6 +7,7 @@
 import { and, eq, sql as rawSql } from "drizzle-orm";
 import { db } from "../db/client";
 import { promoCodes, promoRedemptions } from "../../../db/schema";
+import { ghiLuotDungMaLenSheet } from "../google-sheets-promo";
 
 export interface KetQuaKiemMa {
   hopLe: boolean;
@@ -103,4 +104,59 @@ export async function ghiNhanDungMa(params: {
     discountAmount: String(params.soTienGiam),
   });
   return true;
+}
+
+/**
+ * Chốt mã khi đơn ĐÃ THANH TOÁN: trừ lượt, ghi sổ, đẩy sang Google Sheet.
+ *
+ * Gọi từ markOrderPaidAndFulfill(). Đặt ở thời điểm thanh toán (thay vì lúc tạo đơn) để đơn khách
+ * bỏ ngang không đốt mất mã — xem giải thích tại chỗ gọi.
+ *
+ * KHÔNG được ném lỗi ra ngoài: đơn đã thanh toán rồi, hỏng khâu ghi sổ mã không được phép chặn
+ * khách nhận kết quả. Mọi trục trặc chỉ log lại để đối soát tay.
+ */
+export async function apDungMaKhiThanhToan(params: {
+  promoCodeId: string;
+  orderId: string;
+  orderCode: string;
+  soTienGiam: number;
+  toolSlug: string;
+  customerName: string;
+  customerEmail: string | null;
+  customerPhone: string;
+  totalAmount: number;
+}): Promise<void> {
+  try {
+    const daTru = await ghiNhanDungMa({
+      promoCodeId: params.promoCodeId,
+      orderId: params.orderId,
+      soTienGiam: params.soTienGiam,
+    });
+    if (!daTru) {
+      console.error(
+        `[promo] Đơn ${params.orderCode} đã thanh toán nhưng mã ${params.promoCodeId} hết lượt — cần đối soát tay.`,
+      );
+      return;
+    }
+
+    const [row] = await db
+      .select({ code: promoCodes.code })
+      .from(promoCodes)
+      .where(eq(promoCodes.id, params.promoCodeId))
+      .limit(1);
+
+    await ghiLuotDungMaLenSheet({
+      ma: row?.code ?? "",
+      congCu: params.toolSlug,
+      hoTen: params.customerName,
+      email: params.customerEmail ?? "",
+      soDienThoai: params.customerPhone,
+      maDon: params.orderCode,
+      giaGoc: params.totalAmount + params.soTienGiam,
+      duocGiam: params.soTienGiam,
+      phaiTra: params.totalAmount,
+    });
+  } catch (err) {
+    console.error(`[promo] Không chốt được mã cho đơn ${params.orderCode}:`, err);
+  }
 }

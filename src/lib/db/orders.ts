@@ -5,6 +5,7 @@ import { generateOrderCode } from "../payments/sepay";
 import { products } from "../placeholder-data";
 import { getCourseBySlug } from "../cms/queries";
 import { sendProductOrderConfirmedEmail, sendCourseOrderConfirmedEmail } from "../email/send";
+import { apDungMaKhiThanhToan } from "../payments/promo";
 
 export interface CartLine {
   slug: string;
@@ -127,8 +128,8 @@ export async function createCourseOrder(params: {
 }
 
 /**
- * Tạo đơn hàng công cụ trả phí (vd "gio-liem-ha-huyet") — KHÔNG cần tài khoản (userId luôn
- * null), vì nhu cầu dùng thường chỉ 1 lần. `toolInput` lưu nguyên object input đã validate được
+ * Tạo đơn hàng công cụ trả phí (vd "gio-liem-ha-huyet"). Có công cụ bắt đăng nhập, có công cụ
+ * không (xem chú thích ở `userId`). `toolInput` lưu nguyên object input đã validate được
  * (JSON.stringify) để sau khi thanh toán xong, tầng API tính lại kết quả từ chính input này —
  * không lưu sẵn kết quả để tránh lệch dữ liệu nếu công thức tính được sửa sau khi đơn đã tạo.
  */
@@ -146,6 +147,9 @@ export async function createToolOrder(params: {
   customerPhone: string;
   customerEmail: string | null;
   totalAmount: number;
+  // Mã khuyến mãi đã áp — CHƯA trừ lượt ở đây, chỉ ghi nhớ để trừ lúc đơn được thanh toán.
+  promoCodeId?: string | null;
+  promoDiscountAmount?: number | null;
 }) {
   const orderCode = generateOrderCode();
 
@@ -163,6 +167,9 @@ export async function createToolOrder(params: {
       toolInputSnapshot: JSON.stringify(params.toolInput),
       totalAmount: String(params.totalAmount),
       orderCode,
+      promoCodeId: params.promoCodeId ?? null,
+      promoDiscountAmount:
+        params.promoDiscountAmount != null ? String(params.promoDiscountAmount) : null,
     })
     .returning({ id: orders.id, orderCode: orders.orderCode });
 
@@ -183,6 +190,23 @@ export async function markOrderPaidAndFulfill(orderId: string) {
   if (!order || order.status === "confirmed") return;
 
   await db.update(orders).set({ status: "confirmed", paidAt: new Date() }).where(eq(orders.id, orderId));
+
+  // Trừ lượt mã khuyến mãi ở ĐÂY chứ không phải lúc tạo đơn: đơn khách xem QR rồi bỏ ngang sẽ
+  // không đốt mất mã. Đổi lại, về lý thuyết 2 người cùng giữ lượt cuối có thể cùng thanh toán —
+  // với mã tặng riêng từng người thì khả năng đó không đáng kể, còn mã chết oan thì rất phiền.
+  if (order.promoCodeId) {
+    await apDungMaKhiThanhToan({
+      promoCodeId: order.promoCodeId,
+      orderId: order.id,
+      orderCode: order.orderCode,
+      soTienGiam: Number(order.promoDiscountAmount ?? 0),
+      toolSlug: order.toolSlug ?? "",
+      customerName: order.customerName,
+      customerEmail: order.customerEmail,
+      customerPhone: order.customerPhone,
+      totalAmount: Number(order.totalAmount),
+    });
+  }
 
   if (order.orderType === "course" && order.courseRef && order.userId) {
     await db.insert(courseEnrollments).values({

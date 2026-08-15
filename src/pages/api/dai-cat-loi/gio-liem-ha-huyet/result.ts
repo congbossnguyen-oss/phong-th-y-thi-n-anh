@@ -10,7 +10,7 @@ function jsonResponse(body: unknown, status: number): Response {
   return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 }
 
-export const GET: APIRoute = async ({ url, locals }) => {
+export const GET: APIRoute = async ({ url }) => {
   const orderCode = url.searchParams.get("orderCode");
   if (!orderCode) {
     return jsonResponse({ ok: false, error: "Thiếu mã đơn hàng." }, 400);
@@ -21,12 +21,13 @@ export const GET: APIRoute = async ({ url, locals }) => {
     return jsonResponse({ ok: false, error: "Không tìm thấy đơn hàng." }, 404);
   }
 
-  // Đơn tạo từ khi bắt đăng nhập luôn có userId → chỉ chính chủ mới xem được kết quả.
-  // Đơn cũ (userId null, thời còn cho mua không tài khoản) vẫn dùng orderCode làm "vé" như trước,
-  // nếu không những đơn đó sẽ mất kết quả vĩnh viễn.
-  if (order.userId && order.userId !== locals.user?.id) {
-    return jsonResponse({ ok: false, error: "Đơn hàng này không thuộc tài khoản đang đăng nhập." }, 403);
-  }
+  // ⚠️ CỐ Ý KHÔNG kiểm tra chính chủ ở module tang lễ. Công cụ này không bắt đăng nhập, orderCode
+  // chính là "vé" (8 ký tự ngẫu nhiên từ 32 ký tự = ~1.1e12 khả năng, không đoán được).
+  //
+  // Từng thêm ràng buộc "đơn có userId thì phải đúng tài khoản" và đó là lỗi: đơn vẫn dính userId
+  // nếu khách tình cờ đang đăng nhập, mà phiên đăng nhập bị hủy ngay khi IP đổi (xem
+  // lib/auth/session.ts). Khách đặt đơn qua wifi rồi ra ngoài dùng 4G là mất luôn kết quả đã trả
+  // tiền, gửi link cho người nhà cũng không mở được.
 
   if (order.status === "cancelled") {
     return jsonResponse({ ok: true, status: "cancelled" }, 200);

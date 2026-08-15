@@ -12,7 +12,9 @@ export const GIA_CONG_CU = {
 export type ToolSlug = keyof typeof GIA_CONG_CU;
 
 export function laToolSlug(v: unknown): v is ToolSlug {
-  return typeof v === "string" && v in GIA_CONG_CU;
+  // Dùng Object.hasOwn chứ KHÔNG dùng `in`: toán tử `in` xét cả chuỗi nguyên mẫu nên
+  // laToolSlug("toString") / ("constructor") sẽ trả về true, lọt qua kiểm tra đầu vào.
+  return typeof v === "string" && Object.hasOwn(GIA_CONG_CU, v);
 }
 
 /** Định dạng tiền để hiển thị, vd 999000 → "999.000đ". */

@@ -7,13 +7,9 @@
  *
  * ⚠️ Số tiền LUÔN tính ở đây từ bảng giá phía máy chủ. Client gửi `soTien` gì cũng bị bỏ qua.
  */
-import { eq } from "drizzle-orm";
-import { db } from "../db/client";
-import { orders } from "../../../db/schema";
 import { createToolOrder, markOrderPaidAndFulfill } from "../db/orders";
 import { getSepayQrUrl } from "./sepay";
-import { kiemMaKhuyenMai, ghiNhanDungMa, chuanHoaMa } from "./promo";
-import { ghiLuotDungMaLenSheet } from "../google-sheets-promo";
+import { kiemMaKhuyenMai, chuanHoaMa } from "./promo";
 import { GIA_CONG_CU, type ToolSlug } from "./gia-cong-cu";
 
 export interface KetQuaTaoDon {
@@ -65,6 +61,9 @@ export async function taoDonCongCu(params: {
 
   const totalAmount = Math.max(0, soTienGoc - soTienGiam);
 
+  // Mã CHƯA bị trừ lượt ở đây — chỉ ghi vào đơn. Lượt được trừ (và ghi Google Sheet) lúc đơn
+  // thực sự được thanh toán, trong markOrderPaidAndFulfill(). Làm vậy để khách xem QR rồi bỏ
+  // ngang không đốt mất mã tặng: mã 1 lượt mà chết oan thì anh Công phải tạo mã mới.
   const { orderId, orderCode } = await createToolOrder({
     toolSlug: params.toolSlug,
     toolInput: params.toolInput,
@@ -73,39 +72,13 @@ export async function taoDonCongCu(params: {
     customerPhone: params.customerPhone,
     customerEmail: params.customerEmail,
     totalAmount,
+    promoCodeId: promoCodeId ?? null,
+    promoDiscountAmount: promoCodeId ? soTienGiam : null,
   });
-
-  // Trừ lượt mã NGAY SAU khi đơn tồn tại (cần orderId để ghi sổ). Nếu trong tích tắc vừa rồi có
-  // người khác dùng mất lượt cuối thì hủy đơn luôn — thà báo khách nhập lại còn hơn để tồn tại một
-  // đơn đã giảm giá mà không có lượt mã nào đối ứng.
-  if (promoCodeId) {
-    const daTru = await ghiNhanDungMa({ promoCodeId, orderId, soTienGiam });
-    if (!daTru) {
-      await db.update(orders).set({ status: "cancelled" }).where(eq(orders.id, orderId));
-      return {
-        ok: false,
-        error: "Mã khuyến mãi vừa hết lượt sử dụng. Vui lòng thử mã khác.",
-        loiMaKhuyenMai: true,
-      };
-    }
-
-    // Ghi sang Google Sheet cho anh Công theo dõi. Lỗi Sheet không được ảnh hưởng tới đơn của
-    // khách — hàm này tự nuốt lỗi bên trong, ở đây không cần try/catch thêm.
-    await ghiLuotDungMaLenSheet({
-      ma,
-      congCu: params.toolSlug,
-      hoTen: params.customerName,
-      email: params.customerEmail ?? "",
-      soDienThoai: params.customerPhone,
-      maDon: orderCode,
-      giaGoc: soTienGoc,
-      duocGiam: soTienGiam,
-      phaiTra: totalAmount,
-    });
-  }
 
   // Mã miễn phí 100%: không còn gì để chuyển khoản, xác nhận đơn luôn để khách xem kết quả ngay.
   // Nếu vẫn sinh QR 0đ thì khách kẹt vĩnh viễn ở màn hình chờ thanh toán.
+  // (markOrderPaidAndFulfill cũng chính là chỗ trừ lượt mã, nên đường này vẫn ghi sổ đầy đủ.)
   if (totalAmount === 0) {
     await markOrderPaidAndFulfill(orderId);
     return {
