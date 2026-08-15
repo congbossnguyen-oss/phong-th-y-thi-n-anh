@@ -103,6 +103,19 @@ export function traCanChi(can: Can, chi: Chi): readonly QueHknhQuaiVan[] {
   return ketQua;
 }
 
+/** Tra HKNH/Quái Vận theo TÊN QUẺ đầy đủ (VD "Sơn Trạch Tổn"). Dùng cho luồng quy độ số la bàn →
+ * quẻ (`bang64QueDoSo.ts`) → cặp số, thay cho việc bắt người dùng tự nhập HKNH/Quái Vận. */
+const TABLE_THEO_TEN_QUE = new Map<string, QueHknhQuaiVan>();
+for (const [, , que, hknh, quaiVan] of RAW) {
+  TABLE_THEO_TEN_QUE.set(que, { que, hknh, quaiVan });
+}
+
+export function traTheoTenQue(tenQue: string): QueHknhQuaiVan {
+  const ketQua = TABLE_THEO_TEN_QUE.get(tenQue);
+  if (!ketQua) throw new Error(`Không tìm thấy quẻ "${tenQue}" trong bảng 60 Giáp Tý.`);
+  return ketQua;
+}
+
 /** Bát Thuần quẻ theo 8 cung Bát Quái — trích trực tiếp từ bảng trên, dùng để quy Tọa nhà → quẻ. */
 export const BAT_THUAN_THEO_CUNG: Readonly<Record<CungBatQuai, QueHknhQuaiVan>> = {
   Khảm: { que: "Khảm Vi Thủy", hknh: 7, quaiVan: 1 },

@@ -17,7 +17,8 @@ export interface CuuCungGridRow {
   hknh: number | null;
   quaiVan: number | null;
   tamSatPhuong: string | null;
-  grid: { DN: number; N: number; TN: number; D: number; TT: number; T: number; DB: number; B: number; TB: number };
+  /** null = ô bị BỎ TRỐNG trong CSV nguồn (không phải số 0). Hiện chỉ có khối Năm 1994, cột DN. */
+  grid: { DN: number | null; N: number | null; TN: number | null; D: number | null; TT: number | null; T: number | null; DB: number | null; B: number | null; TB: number | null };
 }
 
 export const CUU_CUNG_NAM_THANG: readonly CuuCungGridRow[] = [
@@ -370,7 +371,7 @@ export const CUU_CUNG_NAM_THANG: readonly CuuCungGridRow[] = [
     "quaiVan": 3,
     "tamSatPhuong": "Tây",
     "grid": {
-      "DN": 8,
+      "DN": 9,
       "N": 5,
       "TN": 7,
       "D": 8,
@@ -470,10 +471,10 @@ export const CUU_CUNG_NAM_THANG: readonly CuuCungGridRow[] = [
     "quaiVan": 4,
     "tamSatPhuong": "Nam",
     "grid": {
-      "DN": 3,
+      "DN": 4,
       "N": 9,
-      "TN": 1,
-      "D": 2,
+      "TN": 2,
+      "D": 3,
       "TT": 5,
       "T": 7,
       "DB": 8,
@@ -1235,10 +1236,10 @@ export const CUU_CUNG_NAM_THANG: readonly CuuCungGridRow[] = [
       "TN": 3,
       "D": 4,
       "TT": 6,
-      "T": 7,
+      "T": 8,
       "DB": 9,
       "B": 2,
-      "TB": 8
+      "TB": 7
     }
   },
   {
@@ -2351,13 +2352,13 @@ export const CUU_CUNG_NAM_THANG: readonly CuuCungGridRow[] = [
     "tamSatPhuong": "Tây",
     "grid": {
       "DN": 7,
-      "N": 4,
+      "N": 3,
       "TN": 5,
       "D": 6,
       "TT": 8,
       "T": 1,
       "DB": 2,
-      "B": 3,
+      "B": 4,
       "TB": 9
     }
   },
@@ -2411,8 +2412,8 @@ export const CUU_CUNG_NAM_THANG: readonly CuuCungGridRow[] = [
     "tamSatPhuong": "Đông",
     "grid": {
       "DN": 5,
-      "N": 3,
-      "TN": 1,
+      "N": 1,
+      "TN": 3,
       "D": 4,
       "TT": 6,
       "T": 8,
@@ -2429,186 +2430,6 @@ export const CUU_CUNG_NAM_THANG: readonly CuuCungGridRow[] = [
     "hknh": 2,
     "quaiVan": 4,
     "tamSatPhuong": "Bắc",
-    "grid": {
-      "DN": 4,
-      "N": 9,
-      "TN": 2,
-      "D": 3,
-      "TT": 5,
-      "T": 7,
-      "DB": 8,
-      "B": 1,
-      "TB": 6
-    }
-  },
-  {
-    "nam": 1979,
-    "laKhoiNam": false,
-    "thuTuKhoi": 4,
-    "khoangNgayDL": null,
-    "hknh": 6,
-    "quaiVan": 9,
-    "tamSatPhuong": "Tây",
-    "grid": {
-      "DN": 3,
-      "N": 8,
-      "TN": 1,
-      "D": 2,
-      "TT": 4,
-      "T": 6,
-      "DB": 7,
-      "B": 9,
-      "TB": 5
-    }
-  },
-  {
-    "nam": 1979,
-    "laKhoiNam": false,
-    "thuTuKhoi": 5,
-    "khoangNgayDL": "Tam Sát",
-    "hknh": 9,
-    "quaiVan": 6,
-    "tamSatPhuong": "Nam",
-    "grid": {
-      "DN": 2,
-      "N": 7,
-      "TN": 9,
-      "D": 1,
-      "TT": 3,
-      "T": 5,
-      "DB": 6,
-      "B": 8,
-      "TB": 4
-    }
-  },
-  {
-    "nam": 1979,
-    "laKhoiNam": false,
-    "thuTuKhoi": 6,
-    "khoangNgayDL": null,
-    "hknh": 8,
-    "quaiVan": 2,
-    "tamSatPhuong": "Đông",
-    "grid": {
-      "DN": 1,
-      "N": 6,
-      "TN": 8,
-      "D": 9,
-      "TT": 2,
-      "T": 4,
-      "DB": 5,
-      "B": 7,
-      "TB": 3
-    }
-  },
-  {
-    "nam": 1979,
-    "laKhoiNam": false,
-    "thuTuKhoi": 7,
-    "khoangNgayDL": null,
-    "hknh": 8,
-    "quaiVan": 9,
-    "tamSatPhuong": "Bắc",
-    "grid": {
-      "DN": 9,
-      "N": 5,
-      "TN": 7,
-      "D": 8,
-      "TT": 1,
-      "T": 3,
-      "DB": 4,
-      "B": 6,
-      "TB": 2
-    }
-  },
-  {
-    "nam": 1979,
-    "laKhoiNam": false,
-    "thuTuKhoi": 8,
-    "khoangNgayDL": null,
-    "hknh": 9,
-    "quaiVan": 3,
-    "tamSatPhuong": "Tây",
-    "grid": {
-      "DN": 8,
-      "N": 4,
-      "TN": 6,
-      "D": 7,
-      "TT": 9,
-      "T": 2,
-      "DB": 3,
-      "B": 5,
-      "TB": 1
-    }
-  },
-  {
-    "nam": 1979,
-    "laKhoiNam": false,
-    "thuTuKhoi": 9,
-    "khoangNgayDL": null,
-    "hknh": 1,
-    "quaiVan": 7,
-    "tamSatPhuong": "Nam",
-    "grid": {
-      "DN": 7,
-      "N": 3,
-      "TN": 5,
-      "D": 6,
-      "TT": 8,
-      "T": 1,
-      "DB": 2,
-      "B": 4,
-      "TB": 9
-    }
-  },
-  {
-    "nam": 1979,
-    "laKhoiNam": false,
-    "thuTuKhoi": 10,
-    "khoangNgayDL": null,
-    "hknh": 2,
-    "quaiVan": 7,
-    "tamSatPhuong": "Đông",
-    "grid": {
-      "DN": 6,
-      "N": 2,
-      "TN": 4,
-      "D": 5,
-      "TT": 7,
-      "T": 9,
-      "DB": 1,
-      "B": 3,
-      "TB": 8
-    }
-  },
-  {
-    "nam": 1979,
-    "laKhoiNam": false,
-    "thuTuKhoi": 11,
-    "khoangNgayDL": null,
-    "hknh": 7,
-    "quaiVan": 2,
-    "tamSatPhuong": "Bắc",
-    "grid": {
-      "DN": 5,
-      "N": 1,
-      "TN": 3,
-      "D": 4,
-      "TT": 6,
-      "T": 8,
-      "DB": 9,
-      "B": 2,
-      "TB": 7
-    }
-  },
-  {
-    "nam": 1979,
-    "laKhoiNam": false,
-    "thuTuKhoi": 12,
-    "khoangNgayDL": "Tam Sát",
-    "hknh": 3,
-    "quaiVan": 3,
-    "tamSatPhuong": "Tây",
     "grid": {
       "DN": 4,
       "N": 9,
@@ -2624,6 +2445,186 @@ export const CUU_CUNG_NAM_THANG: readonly CuuCungGridRow[] = [
   {
     "nam": 1979,
     "laKhoiNam": false,
+    "thuTuKhoi": 4,
+    "khoangNgayDL": null,
+    "hknh": 6,
+    "quaiVan": 9,
+    "tamSatPhuong": "Tây",
+    "grid": {
+      "DN": 3,
+      "N": 8,
+      "TN": 1,
+      "D": 2,
+      "TT": 4,
+      "T": 6,
+      "DB": 7,
+      "B": 9,
+      "TB": 5
+    }
+  },
+  {
+    "nam": 1979,
+    "laKhoiNam": false,
+    "thuTuKhoi": 5,
+    "khoangNgayDL": "Tam Sát",
+    "hknh": 9,
+    "quaiVan": 6,
+    "tamSatPhuong": "Nam",
+    "grid": {
+      "DN": 2,
+      "N": 7,
+      "TN": 9,
+      "D": 1,
+      "TT": 3,
+      "T": 5,
+      "DB": 6,
+      "B": 8,
+      "TB": 4
+    }
+  },
+  {
+    "nam": 1979,
+    "laKhoiNam": false,
+    "thuTuKhoi": 6,
+    "khoangNgayDL": null,
+    "hknh": 8,
+    "quaiVan": 2,
+    "tamSatPhuong": "Đông",
+    "grid": {
+      "DN": 1,
+      "N": 6,
+      "TN": 8,
+      "D": 9,
+      "TT": 2,
+      "T": 4,
+      "DB": 5,
+      "B": 7,
+      "TB": 3
+    }
+  },
+  {
+    "nam": 1979,
+    "laKhoiNam": false,
+    "thuTuKhoi": 7,
+    "khoangNgayDL": null,
+    "hknh": 8,
+    "quaiVan": 9,
+    "tamSatPhuong": "Bắc",
+    "grid": {
+      "DN": 9,
+      "N": 5,
+      "TN": 7,
+      "D": 8,
+      "TT": 1,
+      "T": 3,
+      "DB": 4,
+      "B": 6,
+      "TB": 2
+    }
+  },
+  {
+    "nam": 1979,
+    "laKhoiNam": false,
+    "thuTuKhoi": 8,
+    "khoangNgayDL": null,
+    "hknh": 9,
+    "quaiVan": 3,
+    "tamSatPhuong": "Tây",
+    "grid": {
+      "DN": 8,
+      "N": 4,
+      "TN": 6,
+      "D": 7,
+      "TT": 9,
+      "T": 2,
+      "DB": 3,
+      "B": 5,
+      "TB": 1
+    }
+  },
+  {
+    "nam": 1979,
+    "laKhoiNam": false,
+    "thuTuKhoi": 9,
+    "khoangNgayDL": null,
+    "hknh": 1,
+    "quaiVan": 7,
+    "tamSatPhuong": "Nam",
+    "grid": {
+      "DN": 7,
+      "N": 3,
+      "TN": 5,
+      "D": 6,
+      "TT": 8,
+      "T": 1,
+      "DB": 2,
+      "B": 4,
+      "TB": 9
+    }
+  },
+  {
+    "nam": 1979,
+    "laKhoiNam": false,
+    "thuTuKhoi": 10,
+    "khoangNgayDL": null,
+    "hknh": 2,
+    "quaiVan": 7,
+    "tamSatPhuong": "Đông",
+    "grid": {
+      "DN": 6,
+      "N": 2,
+      "TN": 4,
+      "D": 5,
+      "TT": 7,
+      "T": 9,
+      "DB": 1,
+      "B": 3,
+      "TB": 8
+    }
+  },
+  {
+    "nam": 1979,
+    "laKhoiNam": false,
+    "thuTuKhoi": 11,
+    "khoangNgayDL": null,
+    "hknh": 7,
+    "quaiVan": 2,
+    "tamSatPhuong": "Bắc",
+    "grid": {
+      "DN": 5,
+      "N": 1,
+      "TN": 3,
+      "D": 4,
+      "TT": 6,
+      "T": 8,
+      "DB": 9,
+      "B": 2,
+      "TB": 7
+    }
+  },
+  {
+    "nam": 1979,
+    "laKhoiNam": false,
+    "thuTuKhoi": 12,
+    "khoangNgayDL": "Tam Sát",
+    "hknh": 3,
+    "quaiVan": 3,
+    "tamSatPhuong": "Tây",
+    "grid": {
+      "DN": 4,
+      "N": 9,
+      "TN": 2,
+      "D": 3,
+      "TT": 5,
+      "T": 7,
+      "DB": 8,
+      "B": 1,
+      "TB": 6
+    }
+  },
+  {
+    "nam": 1979,
+    "laKhoiNam": false,
     "thuTuKhoi": 13,
     "khoangNgayDL": "Tam Sát",
     "hknh": 6,
@@ -2950,10 +2951,10 @@ export const CUU_CUNG_NAM_THANG: readonly CuuCungGridRow[] = [
     "quaiVan": 1,
     "tamSatPhuong": "Bắc",
     "grid": {
-      "DN": 6,
+      "DN": 7,
       "N": 3,
       "TN": 5,
-      "D": 5,
+      "D": 6,
       "TT": 8,
       "T": 1,
       "DB": 2,
@@ -6010,10 +6011,10 @@ export const CUU_CUNG_NAM_THANG: readonly CuuCungGridRow[] = [
     "quaiVan": 1,
     "tamSatPhuong": "Nam",
     "grid": {
-      "DN": 8,
+      "DN": 9,
       "N": 5,
       "TN": 7,
-      "D": 7,
+      "D": 8,
       "TT": 1,
       "T": 3,
       "DB": 4,
@@ -6290,7 +6291,7 @@ export const CUU_CUNG_NAM_THANG: readonly CuuCungGridRow[] = [
     "quaiVan": 3,
     "tamSatPhuong": "Bắc",
     "grid": {
-      "DN": 0,
+      "DN": 5,
       "N": 1,
       "TN": 3,
       "D": 4,
@@ -6410,10 +6411,10 @@ export const CUU_CUNG_NAM_THANG: readonly CuuCungGridRow[] = [
     "quaiVan": 9,
     "tamSatPhuong": "Bắc",
     "grid": {
-      "DN": 8,
+      "DN": 9,
       "N": 5,
       "TN": 7,
-      "D": 7,
+      "D": 8,
       "TT": 1,
       "T": 3,
       "DB": 4,
@@ -8070,10 +8071,10 @@ export const CUU_CUNG_NAM_THANG: readonly CuuCungGridRow[] = [
     "quaiVan": 8,
     "tamSatPhuong": "Tây",
     "grid": {
-      "DN": 0,
+      "DN": 4,
       "N": 9,
       "TN": 2,
-      "D": 4,
+      "D": 3,
       "TT": 5,
       "T": 7,
       "DB": 8,
@@ -24690,7 +24691,7 @@ export const CUU_CUNG_NAM_THANG: readonly CuuCungGridRow[] = [
     "quaiVan": 6,
     "tamSatPhuong": "Nam",
     "grid": {
-      "DN": 0,
+      "DN": 1,
       "N": 6,
       "TN": 8,
       "D": 9,

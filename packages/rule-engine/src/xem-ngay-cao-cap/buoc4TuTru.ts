@@ -1,12 +1,12 @@
 /**
  * XEM NGÀY CAO CẤP — Bước 4: quy Tứ Trụ (Năm/Tháng/Ngày/Giờ) + Tọa nhà + năm sinh Mệnh Chủ về
- * cặp số HKNH/Quái Vận. Nguồn: bang-60-giap-ty-64-que.md.
+ * cặp số HKNH/Quái Vận. Nguồn: bang-60-giap-ty-64-que.md + bang64QueDoSo.ts.
  *
- * Tọa nhà quy về quẻ Bát Thuần theo CUNG (8 cung → 8 quẻ Bát Thuần) — đây là mức chi tiết mà
- * SKILL.md mô tả cho Bước 4 (không đi sâu tới hệ 384 hào/0.9375° từng phân kim, thuộc phạm vi
- * skill `huyen-khong-dai-quai` riêng, không phải skill `xem-ngay-cao-cap` này).
+ * Tọa/Hướng nhà quy về quẻ theo ĐỘ SỐ LA BÀN (vòng 64 quẻ, 5.625°/quẻ) — không quy theo tên sơn,
+ * vì mỗi sơn 15° chứa 2-3 quẻ khác nhau (xem chú thích hàm `quyDoSoVeQueToa` bên dưới).
  */
-import { traCanChi, type QueHknhQuaiVan } from "./data/bang60GiapTy.js";
+import { traCanChi, traTheoTenQue, type QueHknhQuaiVan } from "./data/bang60GiapTy.js";
+import { queTuDoSo } from "./data/bang64QueDoSo.js";
 import type { Data } from "@thien-anh/calendar-core";
 
 type Can = Data.Can;
@@ -19,18 +19,34 @@ export function quyTruVeQue(can: Can, chi: Chi): readonly QueHknhQuaiVan[] {
   return traCanChi(can, chi);
 }
 
+export interface QueToaTheoDoSo extends QueHknhQuaiVan {
+  /** Tên ngắn như đọc trên la kinh, VD "Tổn". */
+  tenNgan: string;
+  thuTu: number;
+  doBatDau: number;
+  doKetThuc: number;
+}
+
 /**
- * ⚠️ KHÔNG CÓ hàm quy Tọa sơn → quẻ trong module này, và đây là quyết định có chủ đích:
+ * Quy Tọa (hoặc Hướng) nhà về quẻ + cặp HKNH/Quái Vận TỪ ĐỘ SỐ LA BÀN THỰC ĐO.
  *
- * Trong Huyền Không Đại Quái, mỗi sơn (15°) còn chia nhỏ thành nhiều quẻ theo hệ 384 hào
- * (~0.9375°/hào), nên TÊN SƠN KHÔNG ĐỦ để xác định quẻ tọa — phải có ĐỘ SỐ la bàn chính xác rồi
- * tra bảng 384 hào. Chứng cứ ngay trong nguồn (`vi-du-thuc-hanh.md`): cùng là tọa **Ất** nhưng
- * Bài 1 ghi quẻ 6/9 còn Bài 3 ghi 7/8 — hai quẻ khác nhau cho cùng một tên sơn.
+ * ⚠️ BẮT BUỘC dùng độ số, KHÔNG dùng tên sơn: trong Huyền Không Đại Quái mỗi sơn (15°) chứa tới
+ * 2-3 quẻ khác nhau (vòng 64 quẻ, mỗi quẻ 5.625°), nên tên sơn không đủ phân giải. Chứng cứ ngay
+ * trong nguồn (`vi-du-thuc-hanh.md`): cùng "tọa Ất" nhưng Bài 1 ra quẻ Tổn 6/9 (97.5-101.25°)
+ * còn Bài 3 ra quẻ Tiết 7/8 (101.25-106.875°).
  *
- * Bảng tra 384 hào hiện CHƯA ĐƯỢC SỐ HÓA (skill `huyen-khong-dai-quai` chỉ có ảnh la kinh
- * `assets/la-kinh-384-hao-tam-nguyen.jpg`, chưa trích thành dữ liệu). Vì vậy tầng trên PHẢI nhận
- * cặp HKNH/Quái Vận của quẻ tọa TRỰC TIẾP TỪ NGƯỜI DÙNG (người đo la kinh 64 quẻ sẽ đọc được),
- * tuyệt đối không suy đoán từ tên sơn — suy đoán ở đây sẽ làm sai lệch toàn bộ Bước 5.
+ * Trước 2026-08-15 module bắt người dùng tự nhập cặp HKNH/Quái Vận vì bảng 64 quẻ phối độ số chưa
+ * được số hóa; nay đã có (`data/bang64QueDoSo.ts`, do Công cung cấp + đã kiểm chứng chéo với cả 5
+ * bài thực hành) nên suy trực tiếp được, bỏ hẳn khâu nhập tay.
  */
-export const GHI_CHU_TOA_QUE =
-  "Quẻ tọa phải lấy từ la kinh 64 quẻ (hệ 384 hào) theo độ số thực đo — không suy ra được từ tên sơn.";
+export function quyDoSoVeQueToa(doSo: number): QueToaTheoDoSo {
+  const que = queTuDoSo(doSo);
+  const soLieu = traTheoTenQue(que.tenDayDu);
+  return {
+    ...soLieu,
+    tenNgan: que.tenNgan,
+    thuTu: que.thuTu,
+    doBatDau: que.doBatDau,
+    doKetThuc: que.doKetThuc,
+  };
+}

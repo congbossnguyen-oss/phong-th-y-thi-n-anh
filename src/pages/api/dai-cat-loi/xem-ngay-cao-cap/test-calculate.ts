@@ -53,23 +53,8 @@ export const POST: APIRoute = async ({ request }) => {
     return jsonResponse({ ok: false, error: "Độ số la bàn phải trong khoảng 0-359.99." }, 400);
   }
 
-  // Quẻ tọa (HKNH/Quái Vận) — tùy chọn; thiếu thì engine tự trả `thieu_du_lieu` ở Bước 5.
-  const toaHknhRaw = b.toaHknh;
-  const toaQuaiVanRaw = b.toaQuaiVan;
-  const coToaQue = toaHknhRaw !== undefined && toaHknhRaw !== "" && toaQuaiVanRaw !== undefined && toaQuaiVanRaw !== "";
-  let toaQue: { hknh: number; quaiVan: number } | undefined;
-  if (coToaQue) {
-    const hknh = Number(toaHknhRaw);
-    const quaiVan = Number(toaQuaiVanRaw);
-    // HKNH chỉ có 1-4,6-9 (không có 5 — số 5 = Thổ chỉ tồn tại ở Quái Vận). Quái Vận có đủ 1-9.
-    if (!Number.isInteger(hknh) || hknh < 1 || hknh > 9 || hknh === 5) {
-      return jsonResponse({ ok: false, error: "HKNH của quẻ tọa phải là 1,2,3,4,6,7,8 hoặc 9 (không có số 5)." }, 400);
-    }
-    if (!Number.isInteger(quaiVan) || quaiVan < 1 || quaiVan > 9) {
-      return jsonResponse({ ok: false, error: "Quái Vận của quẻ tọa phải từ 1 đến 9." }, 400);
-    }
-    toaQue = { hknh, quaiVan };
-  }
+  // Quẻ tọa nay suy TRỰC TIẾP từ `toaDoSo` (vòng 64 quẻ) trong engine — không nhận nhập tay nữa.
+  // Thiếu độ số → engine tự trả `thieu_du_lieu` ở Bước 5 thay vì đoán.
 
   const ngay = b.ngayGiamDinh as Record<string, unknown> | undefined;
   const nam = Number(ngay?.nam);
@@ -83,7 +68,6 @@ export const POST: APIRoute = async ({ request }) => {
     loaiViec: loaiViec as XemNgayCaoCapInput["loaiViec"],
     toaNha: toaNha as XemNgayCaoCapInput["toaNha"],
     ...(toaDoSo !== undefined ? { toaDoSo } : {}),
-    ...(toaQue ? { toaQue } : {}),
     ...(huongNha ? { huongNha: huongNha as XemNgayCaoCapInput["toaNha"] } : {}),
     namSinhGiaChuChinh,
     ...(namSinhVoChong !== undefined ? { namSinhVoChong } : {}),

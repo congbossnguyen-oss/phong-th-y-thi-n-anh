@@ -1,5 +1,6 @@
 export * from "./data/sonBatQuai.js";
 export * from "./data/bang60GiapTy.js";
+export * from "./data/bang64QueDoSo.js";
 export * from "./buoc2ChonThang.js";
 export * from "./buoc3PhuongViSat.js";
 export * from "./buoc4TuTru.js";

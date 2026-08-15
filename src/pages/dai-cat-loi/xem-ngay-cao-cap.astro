@@ -76,46 +76,26 @@ const TOOL_PRICE_LABEL = "999.000đ";
           </div>
         </div>
 
-        <div>
-          <label for="xncc-do-so" class="text-sm font-medium text-(--color-ink-800)">Độ số la bàn của tọa (0–359.99)</label>
+        <div class="rounded-(--radius-control) border border-(--color-gold-500)/40 bg-(--color-gold-400)/5 p-3">
+          <label for="xncc-do-so" class="text-sm font-medium text-(--color-ink-800)">
+            Độ số la bàn của tọa (0–359.99) <span class="text-(--color-cinnabar-400)">*</span>
+          </label>
           <input
             type="number"
             id="xncc-do-so"
             step="0.01"
             min="0"
             max="359.99"
-            placeholder="vd. 318 — bắt buộc nếu tọa là Cấn/Tốn/Khôn/Càn"
+            placeholder="vd. 318"
             class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"
           />
-          <p class="mt-1 text-xs text-(--color-ink-500)">
-            4 sơn Cấn/Tốn/Khôn/Càn nằm đúng ranh giới 2 phương — thiếu độ số thì hệ thống báo thiếu dữ liệu chứ không suy đoán.
+          <p id="xncc-que-preview" class="mt-2 hidden rounded-(--radius-control) bg-(--color-gold-400)/15 px-3 py-2 text-sm font-medium text-(--color-ink-800)"></p>
+          <p class="mt-2 text-xs text-(--color-ink-600)">
+            Hệ thống tự tra ra <strong>quẻ Tọa</strong> từ độ số này (vòng 64 quẻ, mỗi quẻ 5.625°) — anh không cần nhập
+            HKNH/Quái Vận nữa. Bắt buộc có độ số thì Bước 5 mới luận được cách cục: mỗi sơn rộng 15° nhưng chứa tới 2–3
+            quẻ khác nhau, nên <strong>tên sơn không đủ</strong> (cùng tọa Ất, 99° ra quẻ Tổn 6/9 còn 104° ra quẻ Tiết 7/8).
+            Bỏ trống → hệ thống báo thiếu dữ liệu chứ không đoán.
           </p>
-        </div>
-
-        <div class="rounded-(--radius-control) border border-(--color-gold-500)/40 bg-(--color-gold-400)/5 p-3">
-          <p class="text-sm font-medium text-(--color-ink-800)">Quẻ Tọa — HKNH / Quái Vận</p>
-          <p class="mt-1 text-xs text-(--color-ink-600)">
-            Đọc từ <strong>la kinh 64 quẻ</strong> theo độ số thực đo. Bắt buộc có thì Bước 5 mới luận được cách cục —
-            trong Huyền Không Đại Quái mỗi sơn 15° còn chia nhỏ theo hệ 384 hào, nên <strong>tên sơn không đủ</strong> để
-            suy ra quẻ (ngay tài liệu gốc, cùng tọa Ất có bài ghi 6/9, bài khác ghi 7/8). Bỏ trống → hệ thống báo thiếu
-            dữ liệu chứ không đoán.
-          </p>
-          <div class="mt-2 grid grid-cols-2 gap-2">
-            <div>
-              <label for="xncc-toa-hknh" class="text-xs text-(--color-ink-600)">HKNH (1-4, 6-9)</label>
-              <select id="xncc-toa-hknh" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-2 py-2 text-sm text-(--color-ink-800)">
-                <option value="">Chưa rõ</option>
-                {[1, 2, 3, 4, 6, 7, 8, 9].map((n) => <option value={n}>{n}</option>)}
-              </select>
-            </div>
-            <div>
-              <label for="xncc-toa-quai-van" class="text-xs text-(--color-ink-600)">Quái Vận (1-9)</label>
-              <select id="xncc-toa-quai-van" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-2 py-2 text-sm text-(--color-ink-800)">
-                <option value="">Chưa rõ</option>
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => <option value={n}>{n}</option>)}
-              </select>
-            </div>
-          </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
@@ -299,6 +279,40 @@ const TOOL_PRICE_LABEL = "999.000đ";
   const loiEl = document.getElementById("xncc-loi")!;
   const ketQuaEl = document.getElementById("xncc-ket-qua")!;
 
+  // Xem trước quẻ Tọa ngay khi gõ độ số — để người dùng đối chiếu với la kinh trước khi bấm tính.
+  // Chỉ là hiển thị phụ trợ; nguồn sự thật vẫn là engine phía server (cùng 1 bảng dữ liệu).
+  const doSoInput = document.getElementById("xncc-do-so") as HTMLInputElement;
+  const quePreviewEl = document.getElementById("xncc-que-preview")!;
+  const VONG_64_QUE = [
+    "Phục", "Di", "Truân", "Ích", "Chấn", "Phệ Hạp", "Tùy", "Vô Vọng",
+    "Minh Di", "Bí", "Ký Tế", "Gia Nhân", "Phong", "Ly", "Cách", "Đồng Nhân",
+    "Lâm", "Tổn", "Tiết", "Trung Phu", "Quy Muội", "Khuê", "Đoài", "Lý",
+    "Thái", "Đại Súc", "Nhu", "Tiểu Súc", "Đại Tráng", "Đại Hữu", "Quải", "Càn",
+    "Cấu", "Đại Quá", "Đỉnh", "Hằng", "Tốn", "Tỉnh", "Cổ", "Thăng",
+    "Tụng", "Khốn", "Vị Tế", "Giải", "Hoán", "Khảm", "Mông", "Sư",
+    "Độn", "Hàm", "Lữ", "Tiểu Quá", "Tiệm", "Kiển", "Cấn", "Khiêm",
+    "Bĩ", "Tụy", "Tấn", "Dự", "Quan", "Tỷ", "Bác", "Khôn",
+  ];
+  function capNhatXemTruocQue() {
+    const raw = doSoInput.value;
+    if (raw === "") {
+      quePreviewEl.classList.add("hidden");
+      return;
+    }
+    const d = Number(raw);
+    if (!Number.isFinite(d) || d < 0 || d >= 360) {
+      quePreviewEl.classList.add("hidden");
+      return;
+    }
+    const idx = Math.floor(d / 5.625);
+    const bd = (idx * 5.625).toFixed(3);
+    const kt = ((idx + 1) * 5.625).toFixed(3);
+    quePreviewEl.textContent = `→ Quẻ Tọa: ${VONG_64_QUE[idx]} (quẻ số ${idx + 1}, khoảng ${bd}°–${kt}°)`;
+    quePreviewEl.classList.remove("hidden");
+  }
+  doSoInput.addEventListener("input", capNhatXemTruocQue);
+  capNhatXemTruocQue();
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     loiEl.classList.add("hidden");
@@ -308,8 +322,6 @@ const TOOL_PRICE_LABEL = "999.000đ";
     const toaNha = (document.getElementById("xncc-toa") as HTMLSelectElement).value;
     const huongNha = (document.getElementById("xncc-huong") as HTMLSelectElement).value;
     const toaDoSo = (document.getElementById("xncc-do-so") as HTMLInputElement).value;
-    const toaHknh = (document.getElementById("xncc-toa-hknh") as HTMLSelectElement).value;
-    const toaQuaiVan = (document.getElementById("xncc-toa-quai-van") as HTMLSelectElement).value;
     const namSinhGiaChuChinh = (document.getElementById("xncc-nam-sinh") as HTMLInputElement).value;
     const namSinhVoChong = (document.getElementById("xncc-nam-sinh-phu") as HTMLInputElement).value;
     const ngay = readDateSelects("xncc-ngay");
@@ -325,7 +337,6 @@ const TOOL_PRICE_LABEL = "999.000đ";
       toaNha,
       ...(huongNha ? { huongNha } : {}),
       ...(toaDoSo ? { toaDoSo: Number(toaDoSo) } : {}),
-      ...(toaHknh && toaQuaiVan ? { toaHknh: Number(toaHknh), toaQuaiVan: Number(toaQuaiVan) } : {}),
       namSinhGiaChuChinh: Number(namSinhGiaChuChinh),
       ...(namSinhVoChong ? { namSinhVoChong: Number(namSinhVoChong) } : {}),
       ngayGiamDinh: { nam: ngay.year, thang: ngay.month, ngay: ngay.day },

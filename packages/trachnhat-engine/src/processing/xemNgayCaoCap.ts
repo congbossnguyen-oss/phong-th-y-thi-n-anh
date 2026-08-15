@@ -25,14 +25,14 @@ export interface XemNgayCaoCapInput {
   loaiViec: LoaiViec;
   /** 1 trong 24 sơn — dùng cho Bước 2 (khung tháng) và Bước 3 (phương vị sát). */
   toaNha: TenSon;
-  /** Độ số la bàn thực tế (0-359.99) — BẮT BUỘC nếu toaNha là 1 trong 4 sơn duy (Cấn/Tốn/Khôn/Càn). */
-  toaDoSo?: number;
   /**
-   * Cặp HKNH/Quái Vận của QUẺ TỌA, đọc từ la kinh 64 quẻ (hệ 384 hào) theo độ số thực đo.
-   * BẮT BUỘC cho Bước 5 — không suy ra được từ tên sơn (xem GHI_CHU_TOA_QUE ở rule-engine).
+   * Độ số la bàn thực đo của Tọa (0-359.99).
+   * - BẮT BUỘC để Bước 5 luận cách cục: quẻ tọa suy từ vòng 64 quẻ (5.625°/quẻ), tên sơn 15°
+   *   không đủ phân giải (cùng "tọa Ất" có thể ra quẻ Tổn 6/9 hoặc Tiết 7/8 tùy độ số).
+   * - Cũng BẮT BUỘC để xác định phương chính nếu toaNha là 1 trong 4 sơn duy (Cấn/Tốn/Khôn/Càn).
    * Bỏ trống → Bước 5 trả `thieu_du_lieu` thay vì luận sai.
    */
-  toaQue?: { hknh: number; quaiVan: number };
+  toaDoSo?: number;
   /** Hướng nhà — nên có để lọc Ngũ Hoàng/Tam Sát đáo Hướng. */
   huongNha?: TenSon;
   namSinhGiaChuChinh: number;
@@ -156,10 +156,22 @@ export function calculateXemNgayCaoCap(input: XemNgayCaoCapInput): XemNgayCaoCap
 
   // ----- Tọa / Hướng -----
   const cungToa = XemNgayCaoCap.cungCuaSon(input.toaNha);
-  const queToa = input.toaQue ?? null;
-  if (!queToa) {
+  // Quẻ Tọa suy TRỰC TIẾP từ độ số la bàn qua vòng 64 quẻ — không nhận nhập tay, không đoán từ tên sơn.
+  let queToa: { hknh: number; quaiVan: number; que: string; tenNgan: string } | null = null;
+  if (input.toaDoSo !== undefined) {
+    const q = XemNgayCaoCap.quyDoSoVeQueToa(input.toaDoSo);
+    queToa = { hknh: q.hknh, quaiVan: q.quaiVan, que: q.que, tenNgan: q.tenNgan };
+    // Cảnh báo nếu độ số nằm ngoài phạm vi sơn mà người dùng khai — thường là gõ nhầm 1 trong 2.
+    const dnSon = XemNgayCaoCap.timDinhNghiaSon(input.toaNha);
+    const lech = Math.abs(((input.toaDoSo - dnSon.doTam + 540) % 360) - 180);
+    if (lech > 7.5) {
+      diemLuuY.push(
+        `Độ số Tọa (${input.toaDoSo}°) không nằm trong sơn ${input.toaNha} (${dnSon.doTam - 7.5}°-${dnSon.doTam + 7.5}°) — kiểm tra lại xem có nhầm giữa tên sơn và độ số không. Hệ thống đang lấy quẻ theo ĐỘ SỐ (${q.tenNgan} ${q.hknh}/${q.quaiVan}).`,
+      );
+    }
+  } else {
     diemLuuY.push(
-      "Chưa nhập quẻ Tọa (HKNH/Quái Vận đọc từ la kinh 64 quẻ) — Bước 5 không luận được cách cục. Trong Huyền Không Đại Quái mỗi sơn 15° còn chia nhỏ theo hệ 384 hào, nên TÊN SƠN KHÔNG ĐỦ để suy ra quẻ tọa (ngay trong tài liệu gốc, cùng tọa Ất có bài ghi quẻ 6/9, bài khác ghi 7/8). Hệ thống không suy đoán để tránh luận sai toàn bộ.",
+      "Chưa nhập độ số la bàn của Tọa — Bước 5 không luận được cách cục. Trong Huyền Không Đại Quái, quẻ tọa lấy theo vòng 64 quẻ (mỗi quẻ 5.625°), nên TÊN SƠN (15°) KHÔNG ĐỦ để suy ra quẻ (ngay trong tài liệu gốc, cùng tọa Ất có bài ra quẻ Tổn 6/9, bài khác ra quẻ Tiết 7/8). Hệ thống không suy đoán để tránh luận sai toàn bộ.",
     );
   }
   const phuongToaRaw = XemNgayCaoCap.phuongTuSon(input.toaNha);
