@@ -59,12 +59,16 @@ export function satChuAmApDungCho(loaiViec: string): boolean {
  * Sát Chủ ÂM theo tháng âm lịch — hệ dùng CHÍNH cho an táng. Độ tin cậy chủ dự án đánh giá mức B
  * ("đã xác nhận bảng truyền thống").
  *
- * ⚠️ Tháng 7 = Hợi, tháng 8 = Sửu là theo bản CHỦ DỰ ÁN ĐÃ SỬA (ghi trong `_sua_sat_chu_am`).
- * Một số nguồn khác (kể cả file của skill xem-ngay-cao-cap trong dự án) ghi ngược lại
- * T7 = Sửu, T8 = Hợi. Mười tháng còn lại thì mọi nguồn đều khớp. Không tự ý đổi 2 tháng này.
+ * ⚠️ THÁNG 7 = SỬU, THÁNG 8 = HỢI — chốt cuối cùng, chủ dự án khẳng định 2026-08-16 kèm chữ
+ * "chốt". Hai tháng này từng bị lật qua lật lại, ghi đủ để sau không ai đổi nhầm lần nữa:
+ *   - file `tang1-loc-than-sat-hung.md` của skill xem-ngay-cao-cap: T7 = Sửu, T8 = Hợi
+ *   - dòng `_sua_sat_chu_am` trong bảng dữ liệu hợp nhất: "Công sửa: T7 = Hợi, T8 = Sửu"
+ *   - bảng chủ dự án gửi 2026-08-15: T7 = Hợi, T8 = Sửu (khớp dòng sửa ở trên)
+ *   - ✔ CHỐT 2026-08-16: T7 = SỬU, T8 = HỢI — tức quay về đúng bản của skill. Dòng
+ *     `_sua_sat_chu_am` mới là chỗ sai, KHÔNG phải skill. Không tự ý đổi lại 2 tháng này.
+ * Mười tháng còn lại thì mọi nguồn đều khớp, chưa bao giờ có tranh chấp.
  *
- * Bảng riêng chủ dự án gửi 2026-08-15 (dạng mã TI/TY/...) đã đối chiếu KHỚP 12/12 với bảng này,
- * và xác nhận luôn cách đọc gây nhầm: tháng 1 = TI = Tỵ, tháng 2 = TY = Tý.
+ * Bảng chủ dự án gửi cũng xác nhận cách đọc gây nhầm: tháng 1 = TI = Tỵ, tháng 2 = TY = Tý.
  */
 export const SAT_CHU_AM_THEO_THANG: readonly Chi[] = [
   "Tỵ", // tháng 1
@@ -73,8 +77,8 @@ export const SAT_CHU_AM_THEO_THANG: readonly Chi[] = [
   "Mão",
   "Thân",
   "Tuất",
-  "Hợi", // tháng 7 — chủ dự án sửa
-  "Sửu", // tháng 8 — chủ dự án sửa
+  "Sửu", // tháng 7 — CHỐT 2026-08-16
+  "Hợi", // tháng 8 — CHỐT 2026-08-16
   "Ngọ",
   "Dậu",
   "Dần",
@@ -308,7 +312,9 @@ export interface CanhBaoThanSat {
  *    đúng nguyên tắc "thần sát phải đứng trong đúng phạm vi tác dụng", không đưa vào module này.
  *    Khi nào làm module chọn ngày khởi công xây mộ thì lấy bảng đó ra dùng.
  *
- * 4. CỬU PHI CUNG THANH LONG BẠCH HỔ — sách (Ch.1 §6) nói giờ hạ huyệt lấy theo "giờ Bạch Hổ
- *    nhập địa" của hệ này, KHÁC hệ chưởng pháp module đang chạy. Đang theo mặc định của đặc tả
- *    (trừ lùi từ giờ hạ huyệt chưởng pháp, không cài Cửu Phi Cung) — chờ chủ dự án chốt.
+ * 4. CỬU PHI CUNG THANH LONG BẠCH HỔ — ĐÃ CHỐT 2026-08-16: "bỏ cửu phi cung đi, chưa tính vội".
+ *    Sách (Ch.1 §6 và Ch.19) nói giờ hạ huyệt lấy theo "giờ Bạch Hổ nhập địa" của hệ này (rơi
+ *    Càn/Khảm/Cấn), KHÁC hệ chưởng pháp module đang chạy. Đây là sai lệch CÓ Ý THỨC so với câu
+ *    chữ sách, chủ dự án biết và chấp nhận: giờ động quan vẫn trừ lùi từ giờ hạ huyệt của chưởng
+ *    pháp. Không cài Cửu Phi Cung cho tới khi có yêu cầu mới.
  * ------------------------------------------------------------------------------------------ */

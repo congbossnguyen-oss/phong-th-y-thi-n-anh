@@ -270,14 +270,17 @@ describe("Bảng thần sát chủ dự án cung cấp 2026-08-15 — Tý (子) 
   });
 
   it("Sát Chủ Âm khớp bảng riêng chủ dự án gửi 2026-08-15 (12/12), T1 = Tỵ chứ không phải Tý", () => {
-    const mong = ["Tỵ", "Tý", "Mùi", "Mão", "Thân", "Tuất", "Hợi", "Sửu", "Ngọ", "Dậu", "Dần", "Thìn"];
+    const mong = ["Tỵ", "Tý", "Mùi", "Mão", "Thân", "Tuất", "Sửu", "Hợi", "Ngọ", "Dậu", "Dần", "Thìn"];
     expect([...TrungTang.SAT_CHU_AM_THEO_THANG]).toEqual(mong);
     expect(TrungTang.isSatChuAm("Tỵ", 1)).toBe(true);
     expect(TrungTang.isSatChuAm("Tý", 1)).toBe(false);
     expect(TrungTang.isSatChuAm("Tý", 2)).toBe(true);
-    // Hai tháng chủ dự án đã sửa so với nguồn khác.
-    expect(TrungTang.isSatChuAm("Hợi", 7)).toBe(true);
-    expect(TrungTang.isSatChuAm("Sửu", 8)).toBe(true);
+    // Hai tháng từng bị lật qua lật lại — CHỐT 2026-08-16: T7 = Sửu, T8 = Hợi (quay về đúng bản
+    // của skill xem-ngay-cao-cap; dòng `_sua_sat_chu_am` trong bảng dữ liệu mới là chỗ sai).
+    expect(TrungTang.isSatChuAm("Sửu", 7)).toBe(true);
+    expect(TrungTang.isSatChuAm("Hợi", 8)).toBe(true);
+    expect(TrungTang.isSatChuAm("Hợi", 7)).toBe(false);
+    expect(TrungTang.isSatChuAm("Sửu", 8)).toBe(false);
   });
 
   it("Sát Chủ Âm chỉ chi phối việc ÂM — không mang cùng trọng số sang việc dương", () => {

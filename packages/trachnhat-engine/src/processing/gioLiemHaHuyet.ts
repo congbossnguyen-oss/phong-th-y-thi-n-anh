@@ -196,10 +196,13 @@ export interface UngVienNgayGioHaHuyet {
  * lập mà là hệ quả số học của giờ hạ huyệt trừ lùi quãng đường, nên trả về một KHOẢNG: sách
  * khuyên tới sớm rồi chờ, đi sớm luôn an toàn, chỉ đến muộn mới hỏng việc.
  *
- * ⚠️ Hai điểm đặc tả để mở, đang chạy theo MẶC ĐỊNH đặc tả nêu, chờ chủ dự án chốt:
- * (a) trừ lùi từ giờ hạ huyệt của chưởng pháp (hệ module đang dùng), KHÔNG cài Cửu Phi Cung
- *     Thanh Long Bạch Hổ như câu chữ sách;
- * (b) KHÔNG sàng thần sát cho giờ động quan, vì nó là giờ dẫn xuất chứ không phải giờ được chọn.
+ * Hai điểm đặc tả từng để mở:
+ * (a) ✔ ĐÃ CHỐT 2026-08-16 — "bỏ cửu phi cung đi, chưa tính vội": trừ lùi từ giờ hạ huyệt của
+ *     CHƯỞNG PHÁP (hệ module đang dùng), KHÔNG cài Cửu Phi Cung Thanh Long Bạch Hổ. Đây là sai
+ *     lệch có ý thức so với câu chữ sách ("lấy giờ Bạch Hổ để hạ huyệt"), chủ dự án biết và chấp
+ *     nhận.
+ * (b) Vẫn theo mặc định đặc tả: KHÔNG sàng thần sát cho giờ động quan, vì nó là giờ DẪN XUẤT chứ
+ *     không phải giờ được chọn — khác với giờ liệm và giờ hạ huyệt (hai giờ đó có sàng thần sát).
  */
 export interface GioDongQuan {
   /** Phương án hạ huyệt số 1 mà khoảng này được trừ lùi từ đó. */
