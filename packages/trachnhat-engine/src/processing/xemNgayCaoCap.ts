@@ -7,6 +7,11 @@
  *
  * Chế độ hiện có: `giam_dinh` — giám định 1 ngày cụ thể. Chế độ `tim_ngay` (quét khoảng, xếp
  * hạng) chưa làm ở phiên bản này.
+ *
+ * Bước 2 chạy CẢ 2 phương pháp độc lập (A: Tự/Sinh/Tam hợp theo mùa · B: Bổ Long Tam Cục) và nêu
+ * cả hai — nguồn ghi rõ khi 2 cách lệch nhau thì không có quy tắc phân xử cứng, không tự chọn bên.
+ * Bước 3 soát đủ 5 sát cốt lõi + 3 Thái Tuế Sát mở rộng (Mậu Kỷ Đô Thiên, Âm Phủ Thái Tuế, Mộ
+ * Long Biến Vận).
  */
 import { Data, getCanChi, getLunarDate } from "@thien-anh/calendar-core";
 import { Scoring, XemNgayCaoCap } from "@thien-anh/rule-engine";
@@ -269,11 +274,20 @@ export function calculateXemNgayCaoCap(input: XemNgayCaoCapInput): XemNgayCaoCap
   const apToa = XemNgayCaoCap.kiemAmPhuThaiTue(truNam.can, input.toaNha);
   if (apToa.phamChinh) phamSat.push(`Chính Âm Phủ Thái Tuế đáo Tọa (${input.toaNha}) — tối kỵ khai sơn lập hướng`);
   if (apToa.phamBang) diemLuuY.push(`Tọa ${input.toaNha} phạm Bàng Âm Phủ Thái Tuế (mức nhẹ hơn) — nên lưu ý.`);
+  if (apToa.bangKhongDoiChieuDuoc) {
+    diemLuuY.push(
+      "Bàng Âm Phủ Thái Tuế của năm này rơi vào Can Mậu/Kỷ — 2 Can không có phương vị trên vòng 24 sơn nên KHÔNG đối chiếu được với Tọa/Hướng (chưa soát được mục này, không phải là 'không phạm').",
+    );
+  }
+
+  // Mộ Long Biến Vận Sát (Hồng Phạm Ngũ Hành) — Thái Tuế khắc khố của nhóm Long thì phạm.
+  const moLong = XemNgayCaoCap.kiemMoLongBienVan(canChi.year.canIndex, canChi.year.chiIndex, input.toaNha);
+  if (moLong.pham) phamSat.push(`Mộ Long Biến Vận Sát đáo Tọa — ${moLong.lyDo}`);
 
   const buoc3Dat = phamSat.length === 0;
   chieuTungBuoc.push({
     buoc: 3,
-    ten: "Kiểm phương vị sát (Ngũ Hoàng / Tam Sát / Bát Sát / Thái Tuế / Tuế Phá / Mậu Kỷ Đô Thiên / Âm Phủ Thái Tuế)",
+    ten: "Kiểm phương vị sát (Ngũ Hoàng / Tam Sát / Bát Sát / Thái Tuế / Tuế Phá / Mậu Kỷ Đô Thiên / Âm Phủ Thái Tuế / Mộ Long Biến Vận)",
     trangThai: buoc3Dat ? (thieuDuLieuSat ? "thieu_du_lieu" : "dat") : "khong_dat",
     lyDo: buoc3Dat
       ? thieuDuLieuSat
@@ -305,6 +319,21 @@ export function calculateXemNgayCaoCap(input: XemNgayCaoCapInput): XemNgayCaoCap
         `Tháng ${truThang.chi} là tháng Tứ Mộ — nửa đầu tháng còn khí mùa trước, nửa sau mới chuyển sang khí Thổ. Cần xác định rõ đang dùng nửa nào (ranh giới theo tiết khí) trước khi chốt ngày.`,
       );
     }
+    // Phương pháp B — Bổ Long Tam Cục. ĐỘC LẬP với phương pháp A: nguồn ghi rõ nếu 2 cách lệch
+    // nhau thì KHÔNG có quy tắc phân xử cứng, phải nêu cả hai chứ không tự chọn một bên.
+    const boLong = XemNgayCaoCap.tinhBoLongTamCuc(input.toaNha);
+    const cucDung = boLong.uuTien;
+    if (cucDung && XemNgayCaoCap.chiThuocCuc(cucDung, truThang.chi)) {
+      const tenCuc: Record<string, string> = { an_cuc: "Ấn cục", tai_cuc: "Tài cục", vuong_cuc: "Vượng cục" };
+      diemManh.push(
+        `Bổ Long Tam Cục: tháng ${truThang.chi} thuộc ${tenCuc[cucDung.loai]} (${cucDung.hanh}) của Long tọa ${input.toaNha} (hành ${boLong.hanhLong}).`,
+      );
+    } else if (cucDung) {
+      diemLuuY.push(
+        `Bổ Long Tam Cục: Long tọa ${input.toaNha} hành ${boLong.hanhLong}, cục nên dùng là ${cucDung.hanh} (${(cucDung.chi ?? []).join(" - ")}) — tháng ${truThang.chi} không thuộc cục này.`,
+      );
+    }
+
     chieuTungBuoc.push({
       buoc: 2,
       ten: "Khung tháng theo Tọa",

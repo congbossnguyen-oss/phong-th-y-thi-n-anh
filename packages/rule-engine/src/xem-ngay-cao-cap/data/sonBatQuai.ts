@@ -10,14 +10,17 @@
  * ("Nửa ĐB2, ĐB3, Đ1..."). Vì vậy 4 sơn duy CẦN độ số chính xác mới xác định đúng phương — nếu
  * chỉ có tên sơn (không có độ số), phải báo thiếu dữ liệu, không suy đoán.
  */
-import type { Data } from "@thien-anh/calendar-core";
-
-type Can = Data.Can;
-type Chi = Data.Chi;
-
 export type CungBatQuai = "Khảm" | "Cấn" | "Chấn" | "Tốn" | "Ly" | "Khôn" | "Đoài" | "Càn";
 export type PhuongChinh = "Đông" | "Nam" | "Tây" | "Bắc";
-export type TenSon = Can | Chi | "Càn" | "Khôn" | "Cấn" | "Tốn";
+/**
+ * Đúng 24 sơn của la bàn. LƯU Ý: chỉ dùng 8/10 Thiên Can — **Mậu và Kỷ KHÔNG phải sơn** (2 Can
+ * này thuộc Trung cung, không có phương vị trên vòng 24 sơn). Vì vậy không được khai báo kiểu
+ * `Can | Chi | ...` (sẽ lọt Mậu/Kỷ vào chỗ chỉ nhận sơn).
+ */
+export type TenSon =
+  | "Tý" | "Sửu" | "Dần" | "Mão" | "Thìn" | "Tỵ" | "Ngọ" | "Mùi" | "Thân" | "Dậu" | "Tuất" | "Hợi"
+  | "Giáp" | "Ất" | "Bính" | "Đinh" | "Canh" | "Tân" | "Nhâm" | "Quý"
+  | "Càn" | "Khôn" | "Cấn" | "Tốn";
 
 /** 4 sơn duy (quái) — luôn nằm đúng ranh giới giữa 2 phương chính, cần độ số mới tách được. */
 export const SON_DUY: readonly TenSon[] = ["Cấn", "Tốn", "Khôn", "Càn"];

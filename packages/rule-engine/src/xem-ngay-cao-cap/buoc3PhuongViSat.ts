@@ -176,7 +176,14 @@ export function kiemMauKyDoThien(canNam: Can, tenSon: TenSon): KetQuaMauKyDoThie
 interface AmPhuEntry {
   cap: readonly [Can, Can];
   chinh: readonly TenSon[];
-  bang: readonly TenSon[];
+  /**
+   * Bàng Âm Phủ — nguồn ghi theo CẶP THIÊN CAN, không phải danh sách sơn. 8/10 Can đồng thời là
+   * sơn (Giáp, Ất, Bính, Đinh, Canh, Tân, Nhâm, Quý) nên đối chiếu được với Tọa/Hướng; riêng
+   * **Mậu và Kỷ KHÔNG phải sơn** (thuộc Trung cung, không có phương vị trên vòng 24 sơn) nên
+   * không thể đối chiếu — khi rơi vào 2 Can này, phần Bàng Âm Phủ coi như KHÔNG ÁP DỤNG được,
+   * và hàm trả `bangKhongDoiChieuDuoc = true` để tầng trên nói rõ thay vì lặng lẽ bỏ qua.
+   */
+  bang: readonly Can[];
 }
 
 const AM_PHU_THAI_TUE: readonly AmPhuEntry[] = [
@@ -196,13 +203,25 @@ function timAmPhuEntry(canNam: Can): AmPhuEntry {
 export interface KetQuaAmPhuThaiTue {
   phamChinh: boolean;
   phamBang: boolean;
+  /**
+   * true = phần Bàng Âm Phủ của năm này rơi vào Can Mậu hoặc Kỷ — 2 Can không có phương vị trên
+   * vòng 24 sơn nên KHÔNG đối chiếu được với Tọa/Hướng. Tầng trên phải nói rõ "chưa soát được
+   * Bàng Âm Phủ" thay vì hiểu nhầm là "không phạm".
+   */
+  bangKhongDoiChieuDuoc: boolean;
 }
+
+/** 2 Thiên Can không nằm trên vòng 24 sơn (thuộc Trung cung). */
+const CAN_KHONG_PHAI_SON: readonly Can[] = ["Mậu", "Kỷ"];
 
 export function kiemAmPhuThaiTue(canNam: Can, tenSon: TenSon): KetQuaAmPhuThaiTue {
   const e = timAmPhuEntry(canNam);
+  const bangLaSon = e.bang.filter((c) => !CAN_KHONG_PHAI_SON.includes(c));
   return {
     phamChinh: (e.chinh as readonly TenSon[]).includes(tenSon),
-    phamBang: (e.bang as readonly TenSon[]).includes(tenSon),
+    // So khớp trên phần Can thực sự là sơn; ép kiểu an toàn vì đã lọc bỏ Mậu/Kỷ.
+    phamBang: (bangLaSon as readonly string[]).includes(tenSon),
+    bangKhongDoiChieuDuoc: bangLaSon.length < e.bang.length,
   };
 }
 
