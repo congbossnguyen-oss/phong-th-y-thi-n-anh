@@ -157,14 +157,48 @@ const TOOL_PRICE_LABEL = "999.000đ";
           </div>
         </div>
 
-        <div>
-          <DateSelect idPrefix="xncc-ngay" label="Ngày cần giám định (dương lịch)" required yearsBack={15} yearsForward={5} />
+        <div class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3">
+          <p class="text-sm font-medium text-(--color-ink-800)">Bạn muốn làm gì?</p>
+          <div class="mt-2 flex flex-col gap-2">
+            <label class="flex items-start gap-2 text-sm text-(--color-ink-700)">
+              <input type="radio" name="cheDo" value="tim_thang" class="mt-1" checked />
+              <span><strong>Tìm tháng trong năm</strong> — "năm nay tháng nào làm được?"</span>
+            </label>
+            <label class="flex items-start gap-2 text-sm text-(--color-ink-700)">
+              <input type="radio" name="cheDo" value="tim_ngay" class="mt-1" />
+              <span><strong>Tìm ngày trong khoảng</strong> — "tháng này ngày nào làm được?"</span>
+            </label>
+            <label class="flex items-start gap-2 text-sm text-(--color-ink-700)">
+              <input type="radio" name="cheDo" value="giam_dinh" class="mt-1" />
+              <span><strong>Giám định 1 ngày</strong> — đã có ngày dự kiến, xem có dùng được không</span>
+            </label>
+          </div>
         </div>
 
-        <Button type="submit" size="lg">Giám định ngày</Button>
+        <div id="xncc-o-nam" class="hidden">
+          <label for="xncc-nam-tim" class="text-sm font-medium text-(--color-ink-800)">Năm cần tìm (dương lịch)</label>
+          <select id="xncc-nam-tim" class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"></select>
+        </div>
+
+        <div id="xncc-o-khoang" class="hidden grid gap-3">
+          <DateSelect idPrefix="xncc-tu" label="Từ ngày" required={false} yearsBack={1} yearsForward={5} />
+          <DateSelect idPrefix="xncc-den" label="Đến ngày" required={false} yearsBack={1} yearsForward={5} />
+          <p class="text-xs text-(--color-ink-500)">Quét tối đa 400 ngày mỗi lần. Để trống ngày nào thì báo lỗi.</p>
+        </div>
+
+        <div id="xncc-o-mot-ngay" class="hidden">
+          <DateSelect idPrefix="xncc-ngay" label="Ngày cần giám định (dương lịch)" required={false} yearsBack={15} yearsForward={5} />
+        </div>
+
+        <Button type="submit" size="lg"><span id="xncc-nhan-nut">Tìm tháng phù hợp</span></Button>
       </form>
 
       <div id="xncc-loi" class="mt-4 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm text-(--color-danger-500)"></div>
+      <div id="xncc-dang-chay" class="mt-4 hidden rounded-(--radius-card) border border-(--color-gold-500)/40 bg-(--color-gold-400)/10 p-4 text-sm text-(--color-ink-700)">
+        <p class="font-medium text-(--color-ink-900)">⏳ Đang tính, vui lòng đợi…</p>
+        <p id="xncc-dang-chay-chi-tiet" class="mt-1 text-xs text-(--color-ink-600)"></p>
+      </div>
+
       <div id="xncc-ket-qua" class="mt-6 hidden space-y-6"></div>
     </div>
   </Container>
@@ -375,52 +409,214 @@ const TOOL_PRICE_LABEL = "999.000đ";
     capNhatXemTruocQue();
   });
 
+  // --- Chuyển ô nhập theo chế độ đang chọn ---
+  const oNam = document.getElementById("xncc-o-nam")!;
+  const oKhoang = document.getElementById("xncc-o-khoang")!;
+  const oMotNgay = document.getElementById("xncc-o-mot-ngay")!;
+  const nhanNut = document.getElementById("xncc-nhan-nut")!;
+  const namTimSelect = document.getElementById("xncc-nam-tim") as HTMLSelectElement;
+  const namNay = new Date().getFullYear();
+  for (let y = namNay; y <= Math.min(namNay + 5, 2068); y++) {
+    namTimSelect.insertAdjacentHTML("beforeend", `<option value="${y}">${y}</option>`);
+  }
+
+  function cheDoDangChon(): string {
+    return (form.querySelector('input[name="cheDo"]:checked') as HTMLInputElement).value;
+  }
+  function capNhatOTheoCheDo() {
+    const cd = cheDoDangChon();
+    oNam.classList.toggle("hidden", cd !== "tim_thang");
+    oKhoang.classList.toggle("hidden", cd !== "tim_ngay");
+    oKhoang.classList.toggle("grid", cd === "tim_ngay");
+    oMotNgay.classList.toggle("hidden", cd !== "giam_dinh");
+    nhanNut.textContent =
+      cd === "tim_thang" ? "Tìm tháng phù hợp" : cd === "tim_ngay" ? "Tìm ngày phù hợp" : "Giám định ngày";
+  }
+  form.querySelectorAll('input[name="cheDo"]').forEach((r) => r.addEventListener("change", capNhatOTheoCheDo));
+  capNhatOTheoCheDo();
+
+  const TEN_MUC: Record<string, string> = {
+    ly_tuong: "Lý tưởng",
+    tot: "Tốt",
+    duoc: "Được",
+    khong_dung: "Không dùng",
+  };
+  const MAU_MUC: Record<string, string> = {
+    ly_tuong: "bg-emerald-100 text-emerald-800 border-emerald-300",
+    tot: "bg-sky-100 text-sky-800 border-sky-300",
+    duoc: "bg-amber-100 text-amber-800 border-amber-300",
+  };
+
+  interface YeuToDatUI { ten: string; diem: number }
+  interface NgayXH {
+    ngayDuongLich: { nam: number; thang: number; ngay: number };
+    amLich: { ngay: number; thang: number; nam: number; nhuan: boolean };
+    canChiNgay: string;
+    diem: number;
+    muc: string;
+    yeuToDat: YeuToDatUI[];
+    gioTot: { chiGio: string; khungGio: string; tenSao: string }[];
+  }
+
+  function theNgay(n: NgayXH): string {
+    const d = n.ngayDuongLich;
+    const gio = n.gioTot.length
+      ? n.gioTot.map((g) => `${g.chiGio} (${g.khungGio})`).join(" · ")
+      : "Không có giờ Hoàng Đạo sạch trong ngày";
+    return `<div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+      <div class="flex flex-wrap items-center justify-between gap-2">
+        <p class="font-display text-lg font-bold text-slate-900">
+          ${String(d.ngay).padStart(2, "0")}/${String(d.thang).padStart(2, "0")}/${d.nam}
+          <span class="ml-1 text-sm font-normal text-slate-500">(ÂL ${n.amLich.ngay}/${n.amLich.thang}${n.amLich.nhuan ? " nhuận" : ""} · ${n.canChiNgay})</span>
+        </p>
+        <span class="rounded-(--radius-pill) border px-2.5 py-0.5 text-xs font-semibold ${MAU_MUC[n.muc] ?? ""}">${TEN_MUC[n.muc] ?? n.muc} · ${n.diem} điểm</span>
+      </div>
+      <p class="mt-2 text-sm text-slate-700"><strong>Giờ tốt:</strong> ${gio}</p>
+      <details class="mt-2">
+        <summary class="cursor-pointer text-xs font-medium text-(--color-gold-300)">Vì sao ngày này được ${n.diem} điểm?</summary>
+        <ul class="mt-1.5 space-y-0.5 text-xs text-slate-600">
+          ${n.yeuToDat.map((y) => `<li>${y.diem >= 0 ? "+" : ""}${y.diem} — ${y.ten}</li>`).join("")}
+        </ul>
+      </details>
+    </div>`;
+  }
+
+  function renderTimNgay(data: any) {
+    if (data.soNgayDung === 0) {
+      const lyDo = (data.lyDoLoaiPhoBien ?? [])
+        .map((l: any) => `<li><strong>${l.soNgay} ngày</strong> — ${l.lyDo}</li>`)
+        .join("");
+      ketQuaEl.innerHTML = `<div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
+        <p class="font-display text-lg font-bold">Không có ngày nào dùng được trong khoảng đã quét</p>
+        <p class="mt-1 text-sm text-slate-600">Đã quét ${data.tongSoNgayQuet} ngày. Lý do bị loại nhiều nhất:</p>
+        <ul class="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">${lyDo}</ul>
+        <p class="mt-3 text-sm text-slate-700">Thường gặp khi tọa nhà phạm sát theo NĂM — khi đó cả năm đều vướng, nên cân nhắc <strong>đổi sang năm khác</strong>, hoặc <a href="/lien-he" class="text-(--color-gold-300) hover:underline">hỏi chuyên gia về phương án mượn tuổi</a>.</p>
+      </div>`;
+    } else {
+      ketQuaEl.innerHTML = `<div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
+        <p class="font-display text-lg font-bold">Tìm được ${data.soNgayDung} ngày dùng được / ${data.tongSoNgayQuet} ngày đã quét</p>
+        <p class="mt-1 text-sm text-slate-600">Xếp theo tổng số yếu tố tốt đạt được — càng nhiều yếu tố, điểm càng cao.</p>
+        <div class="mt-3 space-y-2">${data.ketQua.map(theNgay).join("")}</div>
+      </div>`;
+    }
+    ketQuaEl.classList.remove("hidden");
+    ketQuaEl.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function renderTimThang(data: any) {
+    const co = data.thang.filter((t: any) => t.soNgayDung > 0);
+    const khong = data.thang.filter((t: any) => t.soNgayDung === 0).map((t: any) => t.thangDuongLich);
+    const khoi = co.length
+      ? co
+          .sort((a: any, b: any) => b.diemCaoNhat - a.diemCaoNhat)
+          .map(
+            (t: any) => `<div class="rounded-xl border border-slate-200 bg-white p-4">
+              <p class="font-display text-base font-bold text-slate-900">Tháng ${t.thangDuongLich}/${t.namDuongLich} — ${t.soNgayDung} ngày dùng được</p>
+              <p class="mt-1 text-xs text-slate-500">Ngày tốt nhất trong tháng:</p>
+              <div class="mt-1.5">${theNgay(t.ngayTotNhat)}</div>
+            </div>`,
+          )
+          .join("")
+      : "";
+    ketQuaEl.innerHTML = `<div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
+      <p class="font-display text-lg font-bold">Năm ${data.namDuongLich}: ${co.length}/12 tháng có ngày dùng được</p>
+      ${khong.length ? `<p class="mt-1 text-sm text-slate-600">Không có ngày nào dùng được trong tháng: <strong>${khong.join(", ")}</strong>.</p>` : ""}
+      ${co.length ? `<div class="mt-3 space-y-3">${khoi}</div>` : `<p class="mt-3 text-sm text-slate-700">Cả năm ${data.namDuongLich} đều không có ngày phù hợp với tọa nhà này — thường do phạm sát theo NĂM. Nên thử năm khác, hoặc <a href="/lien-he" class="text-(--color-gold-300) hover:underline">hỏi chuyên gia về phương án mượn tuổi</a>.</p>`}
+    </div>`;
+    ketQuaEl.classList.remove("hidden");
+    ketQuaEl.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     loiEl.classList.add("hidden");
     ketQuaEl.classList.add("hidden");
 
+    const cheDo = cheDoDangChon();
     const loaiViec = (form.querySelector('input[name="loaiViec"]:checked') as HTMLInputElement).value;
     const toaNha = (document.getElementById("xncc-toa") as HTMLSelectElement).value;
     const huongNha = (document.getElementById("xncc-huong") as HTMLSelectElement).value;
     const toaDoSo = (document.getElementById("xncc-do-so") as HTMLInputElement).value;
     const namSinhGiaChuChinh = (document.getElementById("xncc-nam-sinh") as HTMLInputElement).value;
     const namSinhVoChong = (document.getElementById("xncc-nam-sinh-phu") as HTMLInputElement).value;
-    const ngay = readDateSelects("xncc-ngay");
 
-    if (!ngay) {
-      loiEl.textContent = "Vui lòng chọn đầy đủ ngày cần giám định.";
-      loiEl.classList.remove("hidden");
-      return;
-    }
-
-    const payload = {
+    const chung = {
       loaiViec,
       toaNha,
       ...(huongNha ? { huongNha } : {}),
       ...(toaDoSo ? { toaDoSo: Number(toaDoSo) } : {}),
       namSinhGiaChuChinh: Number(namSinhGiaChuChinh),
       ...(namSinhVoChong ? { namSinhVoChong: Number(namSinhVoChong) } : {}),
-      ngayGiamDinh: { nam: ngay.year, thang: ngay.month, ngay: ngay.day },
     };
 
+    const dangChayEl = document.getElementById("xncc-dang-chay")!;
+    const dangChayChiTiet = document.getElementById("xncc-dang-chay-chi-tiet")!;
+    const nutSubmit = form.querySelector('button[type="submit"]') as HTMLButtonElement | null;
+    const tatDangChay = () => {
+      dangChayEl.classList.add("hidden");
+      if (nutSubmit) nutSubmit.disabled = false;
+    };
+    const baoLoi = (msg: string) => {
+      tatDangChay();
+      loiEl.textContent = msg;
+      loiEl.classList.remove("hidden");
+    };
+
+    // Quét cả năm phải chạy ~365 lượt tính đầy đủ nên mất hàng chục giây — bắt buộc báo cho người
+    // dùng biết, nếu không họ tưởng web hỏng và bấm lại nhiều lần.
+    dangChayChiTiet.textContent =
+      cheDo === "tim_thang"
+        ? "Đang quét cả 12 tháng (khoảng 365 ngày) — mất khoảng 20-30 giây."
+        : cheDo === "tim_ngay"
+          ? "Đang quét từng ngày trong khoảng đã chọn — vài giây tới nửa phút tùy độ dài."
+          : "Đang giám định ngày…";
+    dangChayEl.classList.remove("hidden");
+    if (nutSubmit) nutSubmit.disabled = true;
+
     try {
-      const res = await fetch("/api/dai-cat-loi/xem-ngay-cao-cap/test-calculate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-      const data = await res.json();
-      if (!res.ok || !data.ok) {
-        loiEl.textContent = data.error ?? "Không giám định được.";
-        loiEl.classList.remove("hidden");
+      if (cheDo === "giam_dinh") {
+        const ngay = readDateSelects("xncc-ngay");
+        if (!ngay) return baoLoi("Vui lòng chọn đầy đủ ngày cần giám định.");
+        const res = await fetch("/api/dai-cat-loi/xem-ngay-cao-cap/test-calculate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ...chung, ngayGiamDinh: { nam: ngay.year, thang: ngay.month, ngay: ngay.day } }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) return baoLoi(data.error ?? "Không giám định được.");
+        tatDangChay();
+        render(data.result as XemNgayCaoCapResult);
+        ketQuaEl.scrollIntoView({ behavior: "smooth", block: "start" });
         return;
       }
-      render(data.result as XemNgayCaoCapResult);
-      ketQuaEl.scrollIntoView({ behavior: "smooth", block: "start" });
+
+      let body: Record<string, unknown>;
+      if (cheDo === "tim_thang") {
+        body = { ...chung, cheDo, namDuongLich: Number(namTimSelect.value) };
+      } else {
+        const tu = readDateSelects("xncc-tu");
+        const den = readDateSelects("xncc-den");
+        if (!tu || !den) return baoLoi("Vui lòng chọn đầy đủ ngày bắt đầu và ngày kết thúc.");
+        body = {
+          ...chung,
+          cheDo,
+          tuNgay: { nam: tu.year, thang: tu.month, ngay: tu.day },
+          denNgay: { nam: den.year, thang: den.month, ngay: den.day },
+        };
+      }
+
+      const res = await fetch("/api/dai-cat-loi/xem-ngay-cao-cap/tim-ngay", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) return baoLoi(data.error ?? "Không tìm được.");
+      tatDangChay();
+      if (cheDo === "tim_thang") renderTimThang(data);
+      else renderTimNgay(data);
     } catch {
-      loiEl.textContent = "Không giám định được. Vui lòng thử lại.";
-      loiEl.classList.remove("hidden");
+      baoLoi("Không tính được. Vui lòng thử lại.");
     }
   });
 </script>
