@@ -312,7 +312,18 @@ export interface CanhBaoThanSat {
  *    đúng nguyên tắc "thần sát phải đứng trong đúng phạm vi tác dụng", không đưa vào module này.
  *    Khi nào làm module chọn ngày khởi công xây mộ thì lấy bảng đó ra dùng.
  *
- * 4. CỬU PHI CUNG THANH LONG BẠCH HỔ — ĐÃ CHỐT 2026-08-16: "bỏ cửu phi cung đi, chưa tính vội".
+ * 4. SÁT CỐNG / TRỰC TINH / NHÂN CHUYÊN — chủ dự án chốt 2026-08-16: "bỏ qua, anh sẽ bổ sung".
+ *    Đã tra kỹ: KHÔNG có trong bảng dữ liệu hợp nhất, KHÔNG có trong sách "Sổ Tay Tang Sự", cũng
+ *    không có trong mã nguồn (kể cả tra theo tên anh em cùng vòng: Yêu tinh, Hoặc tinh, Hòa đao,
+ *    Bốc mộc, Giác kỷ, Lập tảo). Chỉ tìm được đúng MỘT chỗ, trong "Kỳ Môn Độn Giáp Bí Kíp Đại
+ *    Toàn" Quyển 11 mục "Lệ khởi Nhân chuyên Sát Cống": vòng 9 sao luân theo ngày, khởi điểm đổi
+ *    theo tháng Mạnh/Trọng/Quý tính từ ngày Giáp Tý, trong đó Sát Cống–Thanh Long, Trực Tinh–Kim
+ *    Quỹ, Nhân Chuyên–Kim Đường là ba sao ghép hoàng đạo.
+ *    KHÔNG tự bê sang vì (a) đó là hệ KỲ MÔN, khác phạm vi việc âm của module này, và (b) bản OCR
+ *    ghi sai tên ("Trục tinh", "Nhân chuyền", "Dác kỷ") mà chỉ có một nguồn nên không đối chiếu
+ *    chéo được — chờ chủ dự án cung cấp bảng chuẩn.
+ *
+ * 5. CỬU PHI CUNG THANH LONG BẠCH HỔ — ĐÃ CHỐT 2026-08-16: "bỏ cửu phi cung đi, chưa tính vội".
  *    Sách (Ch.1 §6 và Ch.19) nói giờ hạ huyệt lấy theo "giờ Bạch Hổ nhập địa" của hệ này (rơi
  *    Càn/Khảm/Cấn), KHÁC hệ chưởng pháp module đang chạy. Đây là sai lệch CÓ Ý THỨC so với câu
  *    chữ sách, chủ dự án biết và chấp nhận: giờ động quan vẫn trừ lùi từ giờ hạ huyệt của chưởng
