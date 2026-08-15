@@ -143,3 +143,36 @@ export const courseCertificates = pgTable("course_certificates", {
   certificateCode: text("certificate_code").notNull().unique(),
   issuedAt: timestamp("issued_at", { withTimezone: true }).notNull().defaultNow(),
 });
+
+// --- Mã khuyến mãi cho công cụ thu phí ---
+
+// Loại giảm giá: miễn phí hoàn toàn (tặng), giảm theo % , hoặc giảm số tiền cố định.
+export const promoDiscountTypeEnum = pgEnum("promo_discount_type", ["mien_phi", "phan_tram", "so_tien"]);
+
+export const promoCodes = pgTable("promo_codes", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  // Mã khách nhập — luôn lưu và so khớp ở dạng CHỮ HOA để khách gõ thường/hoa đều được.
+  code: text("code").notNull().unique(),
+  discountType: promoDiscountTypeEnum("discount_type").notNull(),
+  // phan_tram: 1-100. so_tien: số tiền VNĐ được trừ. mien_phi: bỏ qua cột này.
+  discountValue: numeric("discount_value", { precision: 12, scale: 0 }),
+  // Giới hạn mã theo 1 công cụ cụ thể (vd "gio-liem-ha-huyet"); null = dùng được cho mọi công cụ.
+  toolSlug: text("tool_slug"),
+  // Số lượt tối đa. null = không giới hạn. Mã tặng người thân nên đặt 1 để tránh bị chia sẻ lan.
+  maxUses: integer("max_uses"),
+  usedCount: integer("used_count").notNull().default(0),
+  expiresAt: timestamp("expires_at", { withTimezone: true }),
+  isActive: boolean("is_active").notNull().default(true),
+  note: text("note"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// Ghi lại mã đã dùng cho đơn nào — để đối soát và chống dùng lại khi cần.
+export const promoRedemptions = pgTable("promo_redemptions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  promoCodeId: uuid("promo_code_id").notNull().references(() => promoCodes.id, { onDelete: "cascade" }),
+  orderId: uuid("order_id").notNull().references(() => orders.id, { onDelete: "cascade" }),
+  // Số tiền thực tế được giảm cho đơn này (lưu lại vì mức giảm của mã có thể bị sửa về sau).
+  discountAmount: numeric("discount_amount", { precision: 12, scale: 0 }).notNull(),
+  redeemedAt: timestamp("redeemed_at", { withTimezone: true }).notNull().defaultNow(),
+});
