@@ -82,8 +82,10 @@ const BASE_RULES: TrachCatDayBaseRules = {
   diemNenTang: 5,
   hoangDaoHacDao: { "hoàng đạo": 1.2, "hắc đạo": -1.2, "không xác định": 0 },
   nhiThapBatTu: { cat: 0.8, hung: -0.8 },
-  // "Mãn" = đầy đủ, sung túc — chủ dự án chốt 2026-08-15 xếp nhóm tốt cho mọi loại việc.
-  trucTot: ["Mãn", "Thành", "Khai", "Kiến", "Định", "Trừ"],
+  // ⚠️ KHÔNG có "Mãn" ở đây là CÓ CHỦ Ý. Bảng Trực tổng quát chủ dự án cung cấp 2026-08-15 xếp
+  // Mãn ở mức ⚠️ (thận trọng), không phải ✅. Mãn chỉ được tính là tốt ở module Ký Hợp Đồng —
+  // nơi ý nghĩa "đầy đủ, thu hoạch, hoàn tất giao dịch" đúng với tính chất công việc.
+  trucTot: ["Thành", "Khai", "Kiến", "Định", "Trừ"],
   trucXau: ["Phá", "Nguy", "Bế"],
   diemTrucTot: 0.8,
   diemTrucXau: -0.8,
