@@ -136,6 +136,10 @@ export interface UngVienGioLiem {
   hoangDaoTen: string;
   hoangDaoLaCat: boolean;
   canGioDatBangDep: boolean;
+  /** Phạm Giờ Sát Chủ của tháng — cấu hình đã chốt là LOẠI GIỜ (xem `daNoiLongGioSatChu`). */
+  phamGioSatChu: boolean;
+  /** Sao hắc đạo thuộc nhóm kỵ an táng (Bạch Hổ / Nguyên Vũ / Câu Trần / Thiên Hình / Thiên Lao). */
+  hacDaoKyAnTang: boolean;
   diem: number;
 }
 
@@ -160,6 +164,13 @@ export interface UngVienNgayGioHaHuyet {
   trucTot: boolean;
   /** Chi giờ thuộc Dần/Thân/Tỵ/Hợi — chỉ khuyến nghị tránh cho hạ huyệt, không loại tuyệt đối. */
   chiGioThuocTuSinh: boolean;
+  phamGioSatChu: boolean;
+  hacDaoKyAnTang: boolean;
+  /**
+   * Thần sát mức CẢNH BÁO của ngày này — nguồn không xếp vào nhóm "không hoá giải được" nên
+   * không loại, chỉ hiện nhãn để gia chủ và thầy cùng cân nhắc.
+   */
+  canhBaoThanSat: TrungTang.CanhBaoThanSat[];
   diem: number;
 }
 
@@ -195,6 +206,11 @@ export interface GioLiemHaHuyetOutput {
   gioLiemDongQuan?: UngVienGioLiem[];
   /** true nếu lọc thân quyến làm hết sạch danh sách nên phải bỏ ràng buộc đó để có kết quả. */
   thanQuyenDaNoiLong?: boolean;
+  /**
+   * true khi MỌI giờ liệm hợp lệ đều phạm Giờ Sát Chủ, buộc phải giữ lại thay vì trả về rỗng.
+   * Tầng hiển thị phải cảnh báo rõ để gia chủ biết mà hỏi thầy trực tiếp.
+   */
+  daNoiLongGioSatChu?: boolean;
   apDungMienTru3Ngay?: boolean;
   /** Top 3 ngày+giờ hạ huyệt. */
   ngayGioHaHuyet?: UngVienNgayGioHaHuyet[];
@@ -303,6 +319,7 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
   const jdnMat = Astronomy.julianDayNumber(input.namMat, input.thangMat, input.ngayMat);
   const idxGioMat = Data.CHI.indexOf(input.chiGioMat);
   const chiTuoiVong = Scoring.getChi(input.namSinhDuongLich);
+  const canNamSinhVong = Scoring.getCan(input.namSinhDuongLich);
 
   // ------------------------------------------------------------------
   // Bước 3 + 7 + 8 — Giờ liệm / đóng quan (dùng chung 1 danh sách xếp hạng cho cả 2 mục).
@@ -334,6 +351,8 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
       hoangDaoTen: hoangDao.name,
       hoangDaoLaCat: hoangDao.catHung === "cát",
       canGioDatBangDep: TrungTang.isCanGioDep(hourPillar.can, dayPillar.chi),
+      phamGioSatChu: TrungTang.isGioSatChu(chiGio, lunarMat.month),
+      hacDaoKyAnTang: TrungTang.isHacDaoKyAnTang(hoangDao.name),
       diem: 0,
     });
   }
@@ -364,13 +383,20 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
   }
   ungVienGioLiem.sort((a, b) => b.diem - a.diem);
 
+  // Giờ Sát Chủ — cấu hình đã chốt: "Giờ Sát Chủ loại giờ". Nhưng nếu loại xong không còn ứng
+  // viên nào thì KHÔNG trả về rỗng cho một gia đình đang có tang: giữ lại danh sách kèm cờ
+  // `daNoiLongGioSatChu` để tầng hiển thị cảnh báo rõ, gia chủ tự quyết cùng thầy.
+  const sachGioSatChu = ungVienGioLiem.filter((c) => !c.phamGioSatChu);
+  const daNoiLongGioSatChu = sachGioSatChu.length === 0 && ungVienGioLiem.length > 0;
+  const gioLiemSauSatChu = daNoiLongGioSatChu ? ungVienGioLiem : sachGioSatChu;
+
   // Bước 8 — lọc thân quyến. Đặc tả mục 11 gợi ý "nới lỏng dần: bỏ tầng Can giờ, rồi tầng Hoàng
   // Đạo" nếu lọc hết sạch — NHƯNG lọc ở đây loại theo Chi giờ (chiGio) tuyệt đối, không theo
   // ngưỡng điểm, nên chấm lại điểm với ít/không bonus không đổi được TẬP Chi nào bị loại — chỉ
   // đổi thứ tự trong tập không đổi. Do đó việc duy nhất "nới lỏng" thực sự làm được là bỏ hẳn
   // ràng buộc thân quyến (đã có sẵn trong `locTheoTuoiThanQuyen`, gắn cờ `daNoiLong` cho tầng UI
   // biết mà cảnh báo) — không có tầng trung gian nào khác hợp lý về mặt logic.
-  const locThanQuyen = TrungTang.locTheoTuoiThanQuyen(ungVienGioLiem, thanQuyenParam);
+  const locThanQuyen = TrungTang.locTheoTuoiThanQuyen(gioLiemSauSatChu, thanQuyenParam);
 
   // ------------------------------------------------------------------
   // Bước 4 — quy tắc miễn trừ: chôn trong ≤3 ngày (hoặc không rõ) → bỏ hẳn bước chọn NGÀY,
@@ -385,12 +411,37 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
     canChiNgay: { can: Can; chi: Chi; chiIndex: number };
     cungNgay: Chi;
     ngayHopVoiVong: "tam-hop" | "luc-hop" | null;
+    /** Tháng + ngày âm lịch của chính ngày ứng viên (Thổ Tú / Tam Nương / Nguyệt Kỵ tra theo đây). */
+    thangAmLich: number;
+    ngayAmLich: number;
+  }
+
+  /** Thần sát mức cảnh báo của một ngày ứng viên — không loại, chỉ gắn nhãn. */
+  function canhBaoThanSatCuaNgay(ngay: NgayUngVienHaHuyet, tenTruc: string): TrungTang.CanhBaoThanSat[] {
+    const ds: TrungTang.CanhBaoThanSat[] = [];
+    if (TrungTang.isThoTu(ngay.canChiNgay.can, ngay.canChiNgay.chi, ngay.thangAmLich)) {
+      ds.push({ ma: "tho-tu", nhan: "Thổ Tú — kỵ động thổ, đào huyệt" });
+    }
+    if (TrachNhat.isTamNuong(ngay.ngayAmLich)) {
+      ds.push({ ma: "tam-nuong", nhan: `Tam Nương — ngày ${ngay.ngayAmLich} âm lịch` });
+    }
+    if (TrachNhat.isNguyetKy(ngay.ngayAmLich)) {
+      ds.push({ ma: "nguyet-ky", nhan: `Nguyệt Kỵ — ngày ${ngay.ngayAmLich} âm lịch` });
+    }
+    if (TrungTang.isTrucKyAnTang(tenTruc)) {
+      ds.push({ ma: "truc-ky", nhan: `Trực ${tenTruc} — kỵ an táng` });
+    }
+    if (TrungTang.isKiepSat(chiTuoiVong, ngay.canChiNgay.chi)) {
+      ds.push({ ma: "kiep-sat", nhan: "Kiếp Sát theo tuổi người mất" });
+    }
+    return ds;
   }
 
   function xepHangGioTrongNgay(ngay: NgayUngVienHaHuyet): UngVienNgayGioHaHuyet[] {
     const monthOrderIndex = Calendar.monthBoundaryOrderIndex(ngay.jdUT);
     const truc = TrachNhat.getTruc(ngay.canChiNgay.chiIndex, monthOrderIndex);
     const trucTot = !TRUC_XAU.has(truc.name);
+    const canhBaoNgay = canhBaoThanSatCuaNgay(ngay, truc.name);
 
     const cungTheoK: Chi[] = [];
     for (let k = 1; k <= 12; k++) cungTheoK.push(TrungTang.tinhCungGioHaHuyet(ngay.cungNgay, k));
@@ -438,6 +489,9 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
         ngayHopVoiVong: ngay.ngayHopVoiVong,
         trucTot,
         chiGioThuocTuSinh,
+        phamGioSatChu: TrungTang.isGioSatChu(chiGio, ngay.thangAmLich),
+        hacDaoKyAnTang: TrungTang.isHacDaoKyAnTang(hoangDao.name),
+        canhBaoThanSat: canhBaoNgay,
         diem,
       });
     }
@@ -462,6 +516,8 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
       canChiNgay: { can: canChiMat.day.can, chi: canChiMat.day.chi, chiIndex: canChiMat.day.chiIndex },
       cungNgay: bonCung.cungNgay,
       ngayHopVoiVong: ngayHopVoiVongCua(canChiMat.day.chi),
+      thangAmLich: lunarMat.month,
+      ngayAmLich: lunarMat.day,
     });
   } else {
     const chiXungVong = TrachNhat.getLucXungChi(chiTuoiVong);
@@ -476,6 +532,16 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
       if (TrungTang.isPhucNhat(canChiCandidate.day.can, lunarMat.month)) continue;
       if (canChiCandidate.day.chi === chiXungVong) continue;
 
+      // ---- Thần sát an táng: lọc cứng (theo cấu hình đã chốt + nhóm "không hoá giải được") ----
+      // Sát Chủ ÂM tính theo tháng âm lịch CỦA CHÍNH NGÀY ỨNG VIÊN, không phải tháng mất — ngày
+      // chôn có thể rơi sang tháng âm sau, lúc đó bảng Sát Chủ đã đổi.
+      if (TrungTang.isSatChuAm(canChiCandidate.day.chi, lunarCandidate.month)) continue;
+      // Kim Thần Thất Sát theo Can năm sinh của vong — nguồn xếp vào nhóm không hoá giải được.
+      if ((TrachNhat.getChiNgayKyKimThanThatSatTheoNam(canNamSinhVong) as readonly Chi[]).includes(canChiCandidate.day.chi)) continue;
+      // Trực Phá — cũng thuộc nhóm không hoá giải được.
+      const trucCandidate = TrachNhat.getTruc(canChiCandidate.day.chiIndex, Calendar.monthBoundaryOrderIndex(canChiCandidate.julianDay));
+      if (TrungTang.isTrucKhongHoaGiai(trucCandidate.name)) continue;
+
       const cungNgay = TrungTang.tinhCungNgayUngVien(input.gioiTinh, bonCung.cungThang, lunarCandidate.day);
       dsNgayUngVien.push({
         ngayDuongLich: jdnToNgayDuongLich(jdnCandidate),
@@ -484,6 +550,8 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
         canChiNgay: { can: canChiCandidate.day.can, chi: canChiCandidate.day.chi, chiIndex: canChiCandidate.day.chiIndex },
         cungNgay,
         ngayHopVoiVong: ngayHopVoiVongCua(canChiCandidate.day.chi),
+        thangAmLich: lunarCandidate.month,
+        ngayAmLich: lunarCandidate.day,
       });
     }
 
@@ -550,6 +618,7 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
     tuoiCanTranh,
     gioLiemDongQuan: topGioLiem,
     thanQuyenDaNoiLong: locThanQuyen.daNoiLong,
+    daNoiLongGioSatChu,
     apDungMienTru3Ngay,
     ngayGioHaHuyet: topHaHuyet,
     khongTimThayNgayHaHuyet,

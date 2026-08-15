@@ -245,7 +245,13 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
     hoangDaoTen: string;
     hoangDaoLaCat: boolean;
     canGioDatBangDep: boolean;
+    phamGioSatChu: boolean;
+    hacDaoKyAnTang: boolean;
     diem: number;
+  }
+  interface CanhBaoThanSat {
+    ma: string;
+    nhan: string;
   }
   interface UngVienNgayGioHaHuyet {
     ngayDuongLich: NgayDL;
@@ -264,6 +270,9 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
     ngayHopVoiVong: "tam-hop" | "luc-hop" | null;
     trucTot: boolean;
     chiGioThuocTuSinh: boolean;
+    phamGioSatChu: boolean;
+    hacDaoKyAnTang: boolean;
+    canhBaoThanSat: CanhBaoThanSat[];
     diem: number;
   }
   interface GioDongQuan {
@@ -285,6 +294,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
     khongTimThayNgayHaHuyet?: boolean;
     gioDongQuan?: GioDongQuan;
     nhapMoTrungTuSinh?: boolean;
+    daNoiLongGioSatChu?: boolean;
     tuoiCanTranh?: {
       nhom1LongHoKeXa: string[];
       nhom2TamHopCungPham: string[];
@@ -323,9 +333,11 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
     // Cung Thìn vẫn ĐÚNG là Nhập Mộ, chỉ thuộc Tứ Kỵ nên xếp sau Tuất/Sửu/Mùi — nói rõ "bất đắc
     // dĩ" chứ không nói "không tính", để gia chủ hiểu đúng bản chất. Cung Dậu (Thiên Di) thì bị
     // loại khỏi tập dùng được theo mục 3 đặc tả.
+    // Hậu tố "cung kỵ" CHỈ dành cho Thìn (Nhập Mộ) và Dậu (Thiên Di) — cung Trùng Tang thì bản
+    // thân cái tên đã nói hết, gắn thêm "(cung kỵ, không tính ưu tiên)" chỉ làm rối gia chủ.
     const nhan = y.nhapMoTuKy
       ? `${nhanCung} (Tứ Kỵ — bất đắc dĩ mới dùng)`
-      : y.cungDungDuoc === false
+      : y.cungDungDuoc === false && y.phanLoaiCung !== "trung-tang"
         ? `${nhanCung} (cung kỵ, không tính ưu tiên)`
         : nhanCung;
     const parts: string[] = [nhan];
@@ -336,13 +348,26 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
     return parts.join(" · ");
   }
 
-  function candidateCardHtml(params: { ngayLbl: string; gioLbl: string; khungLbl?: string; nhan: string; mau: string; canhBao?: string }): string {
+  /** Nhãn thần sát mức cảnh báo — không loại ứng viên, chỉ để gia chủ và thầy cùng cân nhắc. */
+  function thanSatChipsHtml(y: { hacDaoKyAnTang?: boolean; phamGioSatChu?: boolean; canhBaoThanSat?: CanhBaoThanSat[] }): string {
+    const nhan: string[] = [];
+    if (y.phamGioSatChu) nhan.push("Giờ Sát Chủ");
+    if (y.hacDaoKyAnTang) nhan.push("Hắc đạo kỵ an táng");
+    for (const c of y.canhBaoThanSat ?? []) nhan.push(c.nhan);
+    if (nhan.length === 0) return "";
+    return `<div class="mt-1.5 flex flex-wrap gap-1">${nhan
+      .map((n) => `<span class="rounded-md bg-amber-50 px-1.5 py-0.5 text-xs font-medium text-amber-700 ring-1 ring-amber-200">${n}</span>`)
+      .join("")}</div>`;
+  }
+
+  function candidateCardHtml(params: { ngayLbl: string; gioLbl: string; khungLbl?: string; nhan: string; mau: string; thanSat?: string; canhBao?: string }): string {
     return `<div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
       <div class="flex items-center justify-between">
         <p class="font-display text-lg font-bold text-slate-900">${params.ngayLbl} — giờ ${params.gioLbl}</p>
       </div>
       ${params.khungLbl ? `<p class="text-sm font-medium text-slate-600">${params.khungLbl}</p>` : ""}
       <p class="mt-1 text-sm font-semibold ${params.mau}">${params.nhan}</p>
+      ${params.thanSat ?? ""}
       ${params.canhBao ? `<p class="mt-1.5 text-xs text-amber-600">⚠️ ${params.canhBao}</p>` : ""}
     </div>`;
   }
@@ -373,6 +398,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
           khungLbl: khungGioLabel(c.khungGio),
           nhan: yeuToLabel(c),
           mau: MAU_PHAN_LOAI[c.phanLoaiCung] ?? "text-slate-700",
+          thanSat: thanSatChipsHtml(c),
         }),
       )
       .join("");
@@ -386,6 +412,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
           khungLbl: khungGioLabel(c.khungGio),
           nhan: yeuToLabel(c),
           mau: MAU_PHAN_LOAI[c.phanLoaiCung] ?? "text-slate-700",
+          thanSat: thanSatChipsHtml(c),
           ...(c.chiGioThuocTuSinh
             ? { canhBao: "Giờ này thuộc nhóm nên hạn chế nếu có lựa chọn khác tốt hơn — chọn vì đạt Nhập Mộ và hoàng đạo, hai yếu tố sách xếp ưu tiên cao nhất." }
             : {}),
@@ -458,6 +485,11 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
       <div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
         <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Giờ liệm / đóng quan (dùng chung công thức)</p>
         ${result.thanQuyenDaNoiLong ? `<p class="mt-1 text-xs text-amber-600">Đã bỏ ràng buộc tuổi thân quyến do không còn ứng viên hợp lệ nào phù hợp.</p>` : ""}
+        ${
+          result.daNoiLongGioSatChu
+            ? `<p class="mt-1 text-xs text-(--color-cinnabar-500)">⚠️ Mọi giờ hợp lệ trong ngày đều phạm Giờ Sát Chủ nên buộc phải giữ lại — vui lòng hỏi thầy trực tiếp trước khi dùng.</p>`
+            : ""
+        }
         <div class="mt-3 space-y-2">${gioLiemHtml || `<p class="text-sm text-slate-500">Không tìm được giờ phù hợp trong khung 12 giờ sau khi mất.</p>`}</div>
       </div>
       <div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">

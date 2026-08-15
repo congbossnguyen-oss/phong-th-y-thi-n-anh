@@ -1,0 +1,127 @@
+/**
+ * THẦN SÁT AN TÁNG — bảng tra riêng cho việc ÂM (an táng, đào huyệt, nhập quan, đưa tang),
+ * lấy từ khối `than_sat_an_tang` trong "bảng dữ liệu hợp nhất" chủ dự án cung cấp 2026-08-15.
+ *
+ * Vì sao đặt ở `trung-tang/` chứ không nhét vào `trach-nhat/`: các bảng dưới đây CHỈ đúng cho
+ * việc âm. Riêng Sát Chủ có tới 4 hệ và chúng KHÁC nhau — `trach-nhat/satChu.ts` đang cài hệ
+ * theo MÙA (dùng cho việc dương: khai trương, động thổ), không dùng được cho an táng.
+ *
+ * Cấu hình Sát Chủ đã được chủ dự án CHỐT (ghi trong `_meta.canh_bao` của bảng dữ liệu):
+ *   - hệ ÂM  → LOẠI NGÀY
+ *   - Giờ Sát Chủ → LOẠI GIỜ
+ *   - hệ DƯƠNG → chỉ cảnh báo mềm, và theo `ghi_chu_pham_vi` thì việc dương không thuộc phạm vi
+ *     module này nên không cài
+ *   - hệ MÙA → TẮT
+ *
+ * Các bảng đã có sẵn ở `trach-nhat/` và ĐÃ ĐỐI CHIẾU KHỚP với bảng dữ liệu mới, nên dùng lại,
+ * không chép lại ở đây: `kimThanThatSat.ts`, `tamNuong.ts`, `nguyetKy.ts`.
+ */
+import type { Data } from "@thien-anh/calendar-core";
+
+type Can = Data.Can;
+type Chi = Data.Chi;
+
+/**
+ * Sát Chủ ÂM theo tháng âm lịch — hệ dùng CHÍNH cho an táng.
+ *
+ * ⚠️ Tháng 7 = Hợi, tháng 8 = Sửu là theo bản CHỦ DỰ ÁN ĐÃ SỬA (ghi trong `_sua_sat_chu_am`).
+ * Một số nguồn khác (kể cả file của skill xem-ngay-cao-cap trong dự án) ghi ngược lại
+ * T7 = Sửu, T8 = Hợi. Mười tháng còn lại thì mọi nguồn đều khớp. Không tự ý đổi 2 tháng này.
+ */
+export const SAT_CHU_AM_THEO_THANG: readonly Chi[] = [
+  "Tỵ", // tháng 1
+  "Tý",
+  "Mùi",
+  "Mão",
+  "Thân",
+  "Tuất",
+  "Hợi", // tháng 7 — chủ dự án sửa
+  "Sửu", // tháng 8 — chủ dự án sửa
+  "Ngọ",
+  "Dậu",
+  "Dần",
+  "Thìn", // tháng 12
+];
+
+/** Giờ Sát Chủ theo tháng âm lịch — loại thẳng Chi giờ này. */
+export const GIO_SAT_CHU_THEO_THANG: readonly Chi[] = [
+  "Dần", // tháng 1
+  "Tỵ",
+  "Thân",
+  "Thìn",
+  "Dậu",
+  "Mão",
+  "Dần", // tháng 7 (lặp lại chu kỳ 6 tháng)
+  "Tỵ",
+  "Thân",
+  "Thìn",
+  "Dậu",
+  "Mão", // tháng 12
+];
+
+/** Thổ Tú theo tháng âm lịch — kỵ động thổ/đào huyệt. Là một cặp Can Chi ngày trọn vẹn. */
+export const THO_TU_THEO_THANG: readonly { can: Can; chi: Chi }[] = [
+  { can: "Bính", chi: "Tuất" }, // tháng 1
+  { can: "Nhâm", chi: "Thìn" },
+  { can: "Tân", chi: "Hợi" },
+  { can: "Đinh", chi: "Tỵ" },
+  { can: "Mậu", chi: "Tý" },
+  { can: "Bính", chi: "Ngọ" },
+  { can: "Ất", chi: "Sửu" },
+  { can: "Quý", chi: "Mùi" },
+  { can: "Giáp", chi: "Dần" },
+  { can: "Mậu", chi: "Thân" },
+  { can: "Tân", chi: "Mão" },
+  { can: "Tân", chi: "Dậu" }, // tháng 12
+];
+
+/**
+ * Trực kỵ an táng. Lưu ý CHÍNH TẢ: bảng dữ liệu ghi "Thâu", còn bộ Trực đang chạy trong dự án
+ * (`trach-nhat/truc.ts`) đặt tên "Thu" — cùng một Trực, dùng tên của dự án để so khớp được.
+ */
+export const TRUC_KY_AN_TANG: readonly string[] = ["Khai", "Thu"];
+
+/** Trực Phá — nằm trong nhóm "không hoá giải được", nặng hơn 2 Trực kỵ ở trên. */
+export const TRUC_KHONG_HOA_GIAI: readonly string[] = ["Phá"];
+
+/**
+ * Hắc đạo kỵ an táng (5/6 sao hắc đạo, trừ Chu Tước). Tên đã quy về đúng bộ tên đang hiển thị
+ * trên site: bảng dữ liệu ghi "Huyền Vũ"/"Câu Trận", dự án dùng "Nguyên Vũ"/"Câu Trần".
+ */
+export const HAC_DAO_KY_AN_TANG: ReadonlySet<string> = new Set(["Bạch Hổ", "Nguyên Vũ", "Câu Trần", "Thiên Hình", "Thiên Lao"]);
+
+/** Nhóm thần sát mà nguồn ghi rõ KHÔNG hoá giải được — đã phạm là phải đổi ngày, không trấn yểm. */
+export const KHONG_HOA_GIAI_DUOC: readonly string[] = ["Kim Thần Thất Sát", "Tam Sát", "Nguyệt Phá", "Đại Hao", "Trực Phá"];
+
+export function isSatChuAm(chiNgay: Chi, thangAmLich: number): boolean {
+  return SAT_CHU_AM_THEO_THANG[thangAmLich - 1] === chiNgay;
+}
+
+export function isGioSatChu(chiGio: Chi, thangAmLich: number): boolean {
+  return GIO_SAT_CHU_THEO_THANG[thangAmLich - 1] === chiGio;
+}
+
+export function isThoTu(canNgay: Can, chiNgay: Chi, thangAmLich: number): boolean {
+  const e = THO_TU_THEO_THANG[thangAmLich - 1]!;
+  return e.can === canNgay && e.chi === chiNgay;
+}
+
+export function isTrucKyAnTang(tenTruc: string): boolean {
+  return TRUC_KY_AN_TANG.includes(tenTruc);
+}
+
+export function isTrucKhongHoaGiai(tenTruc: string): boolean {
+  return TRUC_KHONG_HOA_GIAI.includes(tenTruc);
+}
+
+export function isHacDaoKyAnTang(tenSao: string): boolean {
+  return HAC_DAO_KY_AN_TANG.has(tenSao);
+}
+
+/** Cảnh báo mềm gắn trên 1 ứng viên ngày/giờ — hiện nhãn cho gia chủ, KHÔNG tự loại. */
+export interface CanhBaoThanSat {
+  ma: string;
+  nhan: string;
+  /** true nếu nguồn ghi rõ không hoá giải được (đã bị loại thẳng, chỉ để giải thích lý do). */
+  khongHoaGiai?: boolean;
+}

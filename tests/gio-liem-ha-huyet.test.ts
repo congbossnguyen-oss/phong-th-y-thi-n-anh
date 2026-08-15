@@ -58,12 +58,25 @@ describe("Chưởng pháp — 4 cung nền (mục 14 đặc tả)", () => {
 });
 
 describe("Giờ liệm / đóng quan", () => {
-  it("ca A: phương án số 1 là giờ Mão, cung Sửu (Nhập Mộ) — khớp đặc tả mục 14", () => {
-    const top = caA().gioLiemDongQuan![0]!;
-    expect(top.chiGio).toBe("Mão");
-    expect(top.cungGio).toBe("Sửu");
-    expect(top.phanLoaiCung).toBe("nhap-mo");
-    expect(top.cungDungDuoc).toBe(true);
+  it("⚠️ MÂU THUẪN — ca A: đặc tả mục 14 chọn giờ Mão, nhưng Mão CHÍNH LÀ Giờ Sát Chủ tháng 6", () => {
+    // Ca A mất 25/7/2026 = 12/6 âm lịch. Bảng `than_sat_an_tang.gio_sat_chu_theo_thang` cho
+    // tháng 6 = Mão, mà cấu hình Sát Chủ đã được chủ dự án CHỐT là "Giờ Sát Chủ loại giờ".
+    // Hai nguồn cùng của chủ dự án nhưng chỏi nhau: mục 14 khen Mão là phương án tốt nhất, còn
+    // bảng thần sát thì loại thẳng Mão. Hiện đang ưu tiên bảng thần sát (mới hơn, và được đánh
+    // dấu "ĐÃ CHỐT"), nên ca A ra giờ Dậu. Khoá lại để nếu ai đó đổi thì test báo ngay.
+    const r = caA();
+    expect(TrungTang.isGioSatChu("Mão", 6)).toBe(true);
+    expect(r.gioLiemDongQuan!.map((c) => c.chiGio)).not.toContain("Mão");
+    expect(r.gioLiemDongQuan![0]!.chiGio).toBe("Dậu");
+    expect(r.gioLiemDongQuan![0]!.cungGio).toBe("Mùi");
+    expect(r.gioLiemDongQuan![0]!.phanLoaiCung).toBe("nhap-mo");
+  });
+
+  it("mọi phương án giờ liệm đều không phạm Giờ Sát Chủ (trừ khi phải nới lỏng)", () => {
+    for (const r of [caA(), caB()]) {
+      if (r.daNoiLongGioSatChu) continue;
+      for (const c of r.gioLiemDongQuan!) expect(c.phamGioSatChu).toBe(false);
+    }
   });
 
   it("không bao giờ đề xuất giờ Dần/Thân/Tỵ/Hợi cho liệm (loại tuyệt đối)", () => {
