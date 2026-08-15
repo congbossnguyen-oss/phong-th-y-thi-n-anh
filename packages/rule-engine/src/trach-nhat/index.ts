@@ -6,6 +6,8 @@ export * from "./hoangDaoHacDao.js";
 export * from "./hoangDaoHacDaoGio.js";
 export * from "./tieuLucNham.js";
 export * from "./thanSat.js";
+// 4 cát tinh tra theo THIÊN CAN của ngày — khác hệ với thanSat.ts (tra theo Địa Chi).
+export * from "./catTinhTheoCan.js";
 export * from "./nguyetKy.js";
 export * from "./tamNuong.js";
 export * from "./tamTai.js";

@@ -333,10 +333,10 @@ export function getKyHopDongCaoCapRating(diem: number): string {
  * "chưa tính" trong khi thực ra đã tính là thông tin sai trong một sản phẩm thu phí.
  */
 export const THIEU_DU_LIEU_MAC_DINH: readonly string[] = [
-  "tue_duc",
-  "nguyet_duc_hop",
-  "tue_duc_hop",
+  // Chủ dự án đánh dấu "pending_source_verification" ngày 2026-08-15 — chưa chốt được hệ chính.
   "thien_nguyen",
+  // Có phương pháp (phân tầng Đại Sát / Trung Sát / Tiểu Sát) nhưng chưa có bảng xếp sát nào vào
+  // tầng nào, cũng chưa có bảng cát tinh nào cứu được sát nào → chưa cài được.
   "dai_cat_tinh_hoa_giai",
 ];
 
