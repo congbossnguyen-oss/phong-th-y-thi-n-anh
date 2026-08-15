@@ -159,3 +159,44 @@ export function courseCertificateEmail(params: {
     html: layout({ previewText: `Chứng chỉ hoàn thành khóa học ${params.courseName}.`, title: "Chúc mừng bạn đã hoàn thành khóa học!", bodyHtml }),
   };
 }
+
+/**
+ * Báo cáo nội bộ gửi cho anh Công MỖI KHI có bản ghi mới đẩy sang Google Sheet.
+ *
+ * Yêu cầu của anh Công 2026-08-16: Sheet ghi gì thì email báo cái đó. Lý do thực tế — Sheet có thể
+ * ghi hụt (Apps Script lỗi, hết quota, deploy sai version) mà không ai biết; email là bản sao độc
+ * lập để đối chiếu.
+ */
+export function baoCaoGoogleSheetEmail(params: {
+  /** Loại bản ghi, vd "Đơn thu phí" / "Lượt dùng mã khuyến mãi". */
+  loai: string;
+  /** Tiêu đề ngắn để nhận ra ngay trong hộp thư. */
+  tomTat: string;
+  /** Các dòng thông tin, hiển thị theo đúng thứ tự truyền vào. */
+  dong: { nhan: string; giaTri: string }[];
+  /** Đường dẫn tới Sheet tương ứng, nếu có. */
+  linkSheet?: string;
+  /** true nếu ghi Sheet THẤT BẠI — email lúc này là bản ghi duy nhất, phải nổi bật. */
+  sheetLoi?: boolean;
+}): { subject: string; html: string } {
+  const canhBao = params.sheetLoi
+    ? `<p style="margin:0 0 16px;padding:12px;border-radius:8px;background:#fdecea;color:#8a1c12;">
+         <strong>⚠️ Ghi Google Sheet THẤT BẠI.</strong> Email này đang là bản ghi duy nhất —
+         vui lòng nhập tay vào Sheet để không thất lạc số liệu.
+       </p>`
+    : "";
+
+  const bodyHtml = `
+    ${canhBao}
+    <p>${params.loai} vừa được ghi nhận trên website.</p>
+    <table role="presentation" width="100%" style="margin-top:16px;border-top:1px solid #e8dfcd;padding-top:12px;">
+      ${params.dong.map((d) => infoRow(d.nhan, d.giaTri)).join("")}
+    </table>
+    ${params.linkSheet ? `<p style="margin-top:20px;"><a href="${params.linkSheet}">Mở Google Sheet để xem đầy đủ</a></p>` : ""}
+  `;
+
+  return {
+    subject: `[${params.loai}] ${params.tomTat}`,
+    html: layout({ previewText: params.tomTat, title: params.loai, bodyHtml }),
+  };
+}

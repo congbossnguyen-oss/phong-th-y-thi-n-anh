@@ -4,8 +4,13 @@ import { orders, orderItems, courseEnrollments } from "../../../db/schema";
 import { generateOrderCode } from "../payments/sepay";
 import { products } from "../placeholder-data";
 import { getCourseBySlug } from "../cms/queries";
-import { sendProductOrderConfirmedEmail, sendCourseOrderConfirmedEmail } from "../email/send";
+import {
+  sendProductOrderConfirmedEmail,
+  sendCourseOrderConfirmedEmail,
+  sendBaoCaoGoogleSheetEmail,
+} from "../email/send";
 import { apDungMaKhiThanhToan } from "../payments/promo";
+import { ghiDonThuPhiLenSheet, TEN_CONG_CU_HIEN_THI } from "../google-sheets-don-thu-phi";
 
 export interface CartLine {
   slug: string;
@@ -194,8 +199,9 @@ export async function markOrderPaidAndFulfill(orderId: string) {
   // Trừ lượt mã khuyến mãi ở ĐÂY chứ không phải lúc tạo đơn: đơn khách xem QR rồi bỏ ngang sẽ
   // không đốt mất mã. Đổi lại, về lý thuyết 2 người cùng giữ lượt cuối có thể cùng thanh toán —
   // với mã tặng riêng từng người thì khả năng đó không đáng kể, còn mã chết oan thì rất phiền.
+  let maKhuyenMaiDaDung: string | null = null;
   if (order.promoCodeId) {
-    await apDungMaKhiThanhToan({
+    maKhuyenMaiDaDung = await apDungMaKhiThanhToan({
       promoCodeId: order.promoCodeId,
       orderId: order.id,
       orderCode: order.orderCode,
@@ -205,6 +211,56 @@ export async function markOrderPaidAndFulfill(orderId: string) {
       customerEmail: order.customerEmail,
       customerPhone: order.customerPhone,
       totalAmount: Number(order.totalAmount),
+    });
+  }
+
+  // Sổ doanh thu cho anh Công (Google Sheet "Khách hàng trả phí"). Ghi ở ĐÂY — thời điểm tiền
+  // thực sự về — chứ không phải lúc tạo đơn, để sổ chỉ chứa doanh thu thật.
+  //
+  // Hiện chỉ ghi đơn CÔNG CỤ thu phí, đúng phạm vi anh Công yêu cầu. Muốn thống kê cả khóa học /
+  // vật phẩm thì bỏ điều kiện orderType bên dưới và bổ sung tên hiển thị tương ứng.
+  if (order.orderType === "tool") {
+    const duocGiam = Number(order.promoDiscountAmount ?? 0);
+    const thucThu = Number(order.totalAmount);
+    const giaGoc = thucThu + duocGiam;
+    const tenCongCu = TEN_CONG_CU_HIEN_THI[order.toolSlug ?? ""] ?? order.toolSlug ?? "";
+
+    const daGhiSheet = await ghiDonThuPhiLenSheet({
+      maDon: order.orderCode,
+      toolSlug: order.toolSlug ?? "",
+      hoTen: order.customerName,
+      soDienThoai: order.customerPhone,
+      email: order.customerEmail ?? "",
+      // Giá gốc = số thực thu + phần đã giảm, nên đơn giảm giá vẫn thấy được giá niêm yết.
+      giaGoc,
+      maKhuyenMai: maKhuyenMaiDaDung ?? "",
+      duocGiam,
+      thucThu,
+    });
+
+    // Email báo cáo song song với Sheet (yêu cầu anh Công 2026-08-16). Sheet có thể ghi hụt mà
+    // không ai biết; email là bản sao độc lập để đối chiếu, và khi Sheet lỗi thì email có cảnh
+    // báo để anh nhập tay.
+    const tien = (n: number) => `${n.toLocaleString("vi-VN")}đ`;
+    await sendBaoCaoGoogleSheetEmail({
+      loai: "Đơn thu phí",
+      tomTat: `${tenCongCu} — ${order.customerName} — ${tien(thucThu)}`,
+      dong: [
+        { nhan: "Mã đơn", giaTri: order.orderCode },
+        { nhan: "Công cụ", giaTri: tenCongCu },
+        { nhan: "Họ tên", giaTri: order.customerName },
+        { nhan: "Số điện thoại", giaTri: order.customerPhone },
+        ...(order.customerEmail ? [{ nhan: "Email", giaTri: order.customerEmail }] : []),
+        { nhan: "Giá gốc", giaTri: tien(giaGoc) },
+        ...(maKhuyenMaiDaDung
+          ? [
+              { nhan: "Mã khuyến mãi", giaTri: maKhuyenMaiDaDung },
+              { nhan: "Được giảm", giaTri: tien(duocGiam) },
+            ]
+          : []),
+        { nhan: "Thực thu", giaTri: tien(thucThu) },
+      ],
+      sheetLoi: !daGhiSheet,
     });
   }
 

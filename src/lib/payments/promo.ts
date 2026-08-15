@@ -8,6 +8,7 @@ import { and, eq, sql as rawSql } from "drizzle-orm";
 import { db } from "../db/client";
 import { promoCodes, promoRedemptions } from "../../../db/schema";
 import { ghiLuotDungMaLenSheet } from "../google-sheets-promo";
+import { sendBaoCaoGoogleSheetEmail } from "../email/send";
 
 export interface KetQuaKiemMa {
   hopLe: boolean;
@@ -114,6 +115,9 @@ export async function ghiNhanDungMa(params: {
  *
  * KHÔNG được ném lỗi ra ngoài: đơn đã thanh toán rồi, hỏng khâu ghi sổ mã không được phép chặn
  * khách nhận kết quả. Mọi trục trặc chỉ log lại để đối soát tay.
+ *
+ * Trả về CHUỖI MÃ đã dùng (vd "TA6TU2XPGV") để tầng gọi ghi vào sổ doanh thu; null nếu không
+ * chốt được.
  */
 export async function apDungMaKhiThanhToan(params: {
   promoCodeId: string;
@@ -125,7 +129,7 @@ export async function apDungMaKhiThanhToan(params: {
   customerEmail: string | null;
   customerPhone: string;
   totalAmount: number;
-}): Promise<void> {
+}): Promise<string | null> {
   try {
     const daTru = await ghiNhanDungMa({
       promoCodeId: params.promoCodeId,
@@ -136,7 +140,7 @@ export async function apDungMaKhiThanhToan(params: {
       console.error(
         `[promo] Đơn ${params.orderCode} đã thanh toán nhưng mã ${params.promoCodeId} hết lượt — cần đối soát tay.`,
       );
-      return;
+      return null;
     }
 
     const [row] = await db
@@ -145,8 +149,9 @@ export async function apDungMaKhiThanhToan(params: {
       .where(eq(promoCodes.id, params.promoCodeId))
       .limit(1);
 
+    const ma = row?.code ?? "";
     await ghiLuotDungMaLenSheet({
-      ma: row?.code ?? "",
+      ma,
       congCu: params.toolSlug,
       hoTen: params.customerName,
       email: params.customerEmail ?? "",
@@ -156,7 +161,27 @@ export async function apDungMaKhiThanhToan(params: {
       duocGiam: params.soTienGiam,
       phaiTra: params.totalAmount,
     });
+
+    // Email báo cáo song song với Sheet (yêu cầu anh Công 2026-08-16) — Sheet ghi gì thì báo nấy.
+    const tien = (n: number) => `${n.toLocaleString("vi-VN")}đ`;
+    await sendBaoCaoGoogleSheetEmail({
+      loai: "Lượt dùng mã khuyến mãi",
+      tomTat: `${ma} — ${params.customerName} — giảm ${tien(params.soTienGiam)}`,
+      dong: [
+        { nhan: "Mã khuyến mãi", giaTri: ma },
+        { nhan: "Mã đơn", giaTri: params.orderCode },
+        { nhan: "Công cụ", giaTri: params.toolSlug },
+        { nhan: "Họ tên", giaTri: params.customerName },
+        { nhan: "Số điện thoại", giaTri: params.customerPhone },
+        ...(params.customerEmail ? [{ nhan: "Email", giaTri: params.customerEmail }] : []),
+        { nhan: "Giá gốc", giaTri: tien(params.totalAmount + params.soTienGiam) },
+        { nhan: "Được giảm", giaTri: tien(params.soTienGiam) },
+        { nhan: "Phải trả", giaTri: tien(params.totalAmount) },
+      ],
+    });
+    return ma || null;
   } catch (err) {
     console.error(`[promo] Không chốt được mã cho đơn ${params.orderCode}:`, err);
+    return null;
   }
 }

@@ -5,6 +5,7 @@ import {
   courseOrderConfirmedEmail,
   courseCertificateEmail,
   consultationRequestEmail,
+  baoCaoGoogleSheetEmail,
 } from "./templates";
 
 // Gửi email không được phép làm sập luồng nghiệp vụ chính (vd webhook thanh toán phải trả 200
@@ -78,4 +79,23 @@ export async function sendCourseCertificateEmail(params: {
   await safeSend(params.to, subject, html, [
     { filename: `chung-chi-${params.certificateCode}.pdf`, content: Buffer.from(params.pdfBytes) },
   ]);
+}
+
+/**
+ * Email báo cáo nội bộ mỗi khi có bản ghi đẩy sang Google Sheet (yêu cầu anh Công 2026-08-16).
+ *
+ * Gửi về cùng hòm thư nhận thông báo tư vấn, dùng chung `safeSend` nên lỗi gửi mail không bao giờ
+ * làm hỏng đơn hàng của khách.
+ */
+export async function sendBaoCaoGoogleSheetEmail(params: {
+  loai: string;
+  tomTat: string;
+  dong: { nhan: string; giaTri: string }[];
+  linkSheet?: string;
+  sheetLoi?: boolean;
+}) {
+  const { subject, html } = baoCaoGoogleSheetEmail(params);
+  const to = import.meta.env.CONTACT_NOTIFICATION_EMAIL || siteConfig.email;
+  const cc = import.meta.env.CONTACT_NOTIFICATION_CC_EMAIL || "congboss.nguyen@gmail.com";
+  await safeSend(to, subject, html, undefined, cc);
 }
