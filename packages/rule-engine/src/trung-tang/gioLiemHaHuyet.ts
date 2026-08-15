@@ -28,22 +28,44 @@ export const KHUYEN_TRANH_CHON: readonly Chi[] = CUNG_TRUNG_TANG;
  * Mục 3 đặc tả — trong mỗi nhóm cung còn phải loại tiếp cung xấu trước khi coi là "dùng được":
  *
  * - Nhập Mộ: loại **Thìn** vì Thìn nằm trong bộ Long Hổ Kê Xà (Thìn/Dần/Dậu/Tỵ — xem
- *   `LONG_HO_KE_XA` ở `tuoiCanTranh.ts`), bộ này kỵ có mặt ở nhập quan/khâm liệm/đóng cá/hạ huyệt.
+ *   `LONG_HO_KE_XA` ở `tuoiCanTranh.ts`).
  * - Thiên Di: loại **Dậu** (tứ ngoại nhân, cũng thuộc Long Hổ Kê Xà).
  *
  * Cung bị loại vẫn GIỮ nguyên `phanLoaiCung` (Thìn vẫn là "nhap-mo") để phần diễn giải nói đúng
- * bản chất chưởng pháp, nhưng KHÔNG được cộng điểm ưu tiên của nhóm — nếu cộng, một cung kỵ sẽ
- * leo lên đầu bảng xếp hạng.
+ * bản chất chưởng pháp.
  */
 export const NHAP_MO_DUNG_DUOC: readonly Chi[] = ["Tuất", "Sửu", "Mùi"];
 export const THIEN_DI_DUNG_DUOC: readonly Chi[] = ["Tý", "Mão", "Ngọ"];
 
-/** Cung có được hưởng điểm ưu tiên của nhóm nó hay không (Thìn/Dậu → false). */
+/**
+ * Cung Nhập Mộ nhưng thuộc Tứ Kỵ — chủ dự án chốt 2026-08-15:
+ *
+ *   "Thìn vẫn là Nhập Mộ về mặt phân loại, nhưng khi module tự động chọn giờ/ngày liệm hoặc hạ
+ *    huyệt thì loại Thìn, ưu tiên Tuất–Sửu–Mùi. Ngày Nhập Mộ vẫn chọn trong 4 cung Thìn–Tuất–
+ *    Sửu–Mùi, nhưng Thìn bị xem là Tứ Kỵ nên BẤT ĐẮC DĨ MỚI DÙNG."
+ *
+ * Nên Thìn KHÔNG bị về 0 (0 = ngang hàng cung Trùng Tang, nặng hơn ý chủ dự án) mà nhận một bậc
+ * điểm thấp: đứng trên cung Trùng Tang, nhưng đứng dưới cả Nhập Mộ dùng được (100) lẫn tầng Thiên
+ * Di dự phòng (40) — đúng nghĩa chỉ nổi lên khi không còn lựa chọn nào khác.
+ *
+ * ⚠️ Lưu ý bộ Long Hổ Kê Xà còn một nghĩa KHÁC và quan trọng hơn: đó là nhóm TUỔI NGƯỜI không
+ * được có mặt lúc nhập liệm (xem `LONG_HO_KE_XA` / `tinhTuoiCanTranh`). Hai việc này độc lập —
+ * điểm cung ở đây không thay thế được việc phải báo danh sách tuổi cần tránh mặt cho gia chủ.
+ */
+export const NHAP_MO_TU_KY: readonly Chi[] = ["Thìn"];
+export const DIEM_NHAP_MO_TU_KY = 20;
+
+/** Cung có được hưởng trọn điểm ưu tiên của nhóm nó hay không (Thìn/Dậu → false). */
 export function laCungDungDuoc(cung: Chi): boolean {
   const loai = phanLoaiCung(cung);
   if (loai === "nhap-mo") return (NHAP_MO_DUNG_DUOC as readonly Chi[]).includes(cung);
   if (loai === "thien-di") return (THIEN_DI_DUNG_DUOC as readonly Chi[]).includes(cung);
   return false;
+}
+
+/** Cung Nhập Mộ thuộc Tứ Kỵ (Thìn) — vẫn dùng được nhưng chỉ khi bất đắc dĩ. */
+export function laNhapMoTuKy(cung: Chi): boolean {
+  return (NHAP_MO_TU_KY as readonly Chi[]).includes(cung);
 }
 
 /**
@@ -152,6 +174,7 @@ export function tinhDiemUngVien(y: YeuToDiemUngVien): number {
   let diem = 0;
   const cungDungDuoc = laCungDungDuoc(y.cungGio);
   if (y.phanLoaiCung === "nhap-mo" && cungDungDuoc) diem += 100;
+  else if (y.phanLoaiCung === "nhap-mo" && laNhapMoTuKy(y.cungGio)) diem += DIEM_NHAP_MO_TU_KY;
   else if (y.phanLoaiCung === "thien-di" && cungDungDuoc && y.apDungThienDi) diem += 40;
   if (y.hoangDaoLaCat) diem += 50;
   if (TEN_HOANG_DAO_UU_TIEN.has(y.hoangDaoTen)) diem += 20;

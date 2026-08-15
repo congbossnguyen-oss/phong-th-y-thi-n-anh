@@ -129,8 +129,10 @@ export interface UngVienGioLiem {
   khungGio: KhungGioThucTe;
   cungGio: Chi;
   phanLoaiCung: TrungTang.PhanLoaiCung;
-  /** false với cung Thìn (Nhập Mộ) / Dậu (Thiên Di) — bị loại khỏi tập cung dùng được, không cộng điểm nhóm. */
+  /** false với cung Thìn (Nhập Mộ) / Dậu (Thiên Di) — bị loại khỏi tập cung dùng được. */
   cungDungDuoc: boolean;
+  /** true khi cung là Thìn: vẫn là Nhập Mộ nhưng thuộc Tứ Kỵ, chỉ nên dùng khi bất đắc dĩ. */
+  nhapMoTuKy: boolean;
   hoangDaoTen: string;
   hoangDaoLaCat: boolean;
   canGioDatBangDep: boolean;
@@ -149,6 +151,8 @@ export interface UngVienNgayGioHaHuyet {
   phanLoaiCung: TrungTang.PhanLoaiCung;
   /** false với cung Thìn (Nhập Mộ) / Dậu (Thiên Di) — xem `TrungTang.laCungDungDuoc`. */
   cungDungDuoc: boolean;
+  /** true khi cung là Thìn: vẫn là Nhập Mộ nhưng thuộc Tứ Kỵ, chỉ nên dùng khi bất đắc dĩ. */
+  nhapMoTuKy: boolean;
   hoangDaoTen: string;
   hoangDaoLaCat: boolean;
   canGioDatBangDep: boolean;
@@ -198,6 +202,16 @@ export interface GioLiemHaHuyetOutput {
   khongTimThayNgayHaHuyet?: boolean;
   /** Chỉ có khi khách nhập `thoiGianDiChuyenPhut` và đã tìm được ít nhất 1 giờ hạ huyệt. */
   gioDongQuan?: GioDongQuan;
+  /**
+   * Các nhóm tuổi cần tránh mặt lúc nhập quan / khâm liệm / đóng cá / hạ huyệt. Chủ dự án nhấn
+   * mạnh 2026-08-15: "sách ghi rất rõ — người tuổi Thìn, Dần, Dậu, Tỵ không bao giờ được đứng
+   * nhìn nhập liệm". Đây là việc KHÁC với điểm cung Thìn ở bảng xếp hạng giờ: một bên là tuổi
+   * người dự lễ, một bên là cung trên bàn tay chưởng pháp.
+   *
+   * Phạm vi: chỉ người huyết thống trực hệ (cha mẹ, vợ/chồng, con, anh chị em ruột, cháu nội);
+   * con dâu, con rể, cháu ngoại, người ngoài KHÔNG chịu tác động — tầng hiển thị phải nói rõ.
+   */
+  tuoiCanTranh?: TrungTang.TuoiCanTranhKetQua;
   /**
    * Quy luật bất biến: Cung_Ngày hạ huyệt thuộc nhóm Nhập Mộ → chỉ 4 giờ Dần/Tỵ/Thân/Hợi đạt
    * Nhập Mộ, mà đó đúng là 4 giờ khuyến nghị tránh khi chôn. Bật cờ này để tầng hiển thị giải
@@ -316,6 +330,7 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
       cungGio,
       phanLoaiCung: phanLoaiCungGio,
       cungDungDuoc: TrungTang.laCungDungDuoc(cungGio),
+      nhapMoTuKy: TrungTang.laNhapMoTuKy(cungGio),
       hoangDaoTen: hoangDao.name,
       hoangDaoLaCat: hoangDao.catHung === "cát",
       canGioDatBangDep: TrungTang.isCanGioDep(hourPillar.can, dayPillar.chi),
@@ -416,6 +431,7 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
         cungGio,
         phanLoaiCung: phanLoaiCungGio,
         cungDungDuoc: TrungTang.laCungDungDuoc(cungGio),
+        nhapMoTuKy: TrungTang.laNhapMoTuKy(cungGio),
         hoangDaoTen: hoangDao.name,
         hoangDaoLaCat: hoangDao.catHung === "cát",
         canGioDatBangDep,
@@ -514,10 +530,24 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
     );
   }
 
+  // Nhóm tuổi cần tránh mặt — tính từ 4 cung chưởng pháp đã có + Chi tuổi vong + tuổi thân quyến.
+  // `cacCungPham` = những cung trong tứ cung rơi vào nhóm Trùng Tang (dùng cho nhóm 2 tam hợp).
+  const cacCungPham = [bonCung.cungTuoi, bonCung.cungThang, bonCung.cungNgay, bonCung.cungGio].filter(
+    (c): c is Chi => !!c && TrungTang.phanLoaiCung(c) === "trung-tang",
+  );
+  const tuoiCanTranh = TrungTang.tinhTuoiCanTranh(cacCungPham, chiTuoiVong, {
+    ...(input.thanQuyen?.chiTruongNam ? { truongNam: input.thanQuyen.chiTruongNam } : {}),
+    ...(input.thanQuyen?.chiConDauLon ? { conDauLon: input.thanQuyen.chiConDauLon } : {}),
+    ...(input.thanQuyen?.chiChauDichTon ? { chauNoiLon: input.thanQuyen.chiChauDichTon } : {}),
+    ...(input.thanQuyen?.chiAnhTraiLon ? { anhTraiLon: input.thanQuyen.chiAnhTraiLon } : {}),
+    ...(input.thanQuyen?.chiChaMe ? { chaMe: input.thanQuyen.chiChaMe } : {}),
+  });
+
   return {
     tuoiTa,
     duoi10Tuoi: false,
     bonCung,
+    tuoiCanTranh,
     gioLiemDongQuan: topGioLiem,
     thanQuyenDaNoiLong: locThanQuyen.daNoiLong,
     apDungMienTru3Ngay,

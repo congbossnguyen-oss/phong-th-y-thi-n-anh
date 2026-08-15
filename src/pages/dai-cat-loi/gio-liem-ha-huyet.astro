@@ -241,6 +241,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
     cungGio: string;
     phanLoaiCung: "nhap-mo" | "thien-di" | "trung-tang";
     cungDungDuoc: boolean;
+    nhapMoTuKy: boolean;
     hoangDaoTen: string;
     hoangDaoLaCat: boolean;
     canGioDatBangDep: boolean;
@@ -256,6 +257,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
     cungGio: string;
     phanLoaiCung: "nhap-mo" | "thien-di" | "trung-tang";
     cungDungDuoc: boolean;
+    nhapMoTuKy: boolean;
     hoangDaoTen: string;
     hoangDaoLaCat: boolean;
     canGioDatBangDep: boolean;
@@ -283,6 +285,13 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
     khongTimThayNgayHaHuyet?: boolean;
     gioDongQuan?: GioDongQuan;
     nhapMoTrungTuSinh?: boolean;
+    tuoiCanTranh?: {
+      nhom1LongHoKeXa: string[];
+      nhom2TamHopCungPham: string[];
+      nhom3TamHopTuoiVong: string[];
+      nhom4XungHinh: { xung: string; hinh: string[] };
+      nhom6GioLiemKyThanQuyen: string[];
+    };
   }
 
   const NHAN_PHAN_LOAI: Record<string, string> = { "nhap-mo": "Nhập Mộ", "thien-di": "Thiên Di", "trung-tang": "Trùng Tang" };
@@ -304,15 +313,22 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
   function yeuToLabel(y: {
     phanLoaiCung: string;
     cungDungDuoc?: boolean;
+    nhapMoTuKy?: boolean;
     hoangDaoTen: string;
     hoangDaoLaCat: boolean;
     canGioDatBangDep: boolean;
     ngayHopVoiVong?: string | null;
   }): string {
     const nhanCung = NHAN_PHAN_LOAI[y.phanLoaiCung] ?? y.phanLoaiCung;
-    // Cung Thìn (Nhập Mộ) / Dậu (Thiên Di) vẫn đúng nhãn chưởng pháp nhưng bị loại khỏi tập cung
-    // dùng được (kỵ Long Hổ Kê Xà / tứ ngoại nhân) nên không được hưởng điểm ưu tiên của nhóm.
-    const parts: string[] = [y.cungDungDuoc === false ? `${nhanCung} (cung kỵ, không tính ưu tiên)` : nhanCung];
+    // Cung Thìn vẫn ĐÚNG là Nhập Mộ, chỉ thuộc Tứ Kỵ nên xếp sau Tuất/Sửu/Mùi — nói rõ "bất đắc
+    // dĩ" chứ không nói "không tính", để gia chủ hiểu đúng bản chất. Cung Dậu (Thiên Di) thì bị
+    // loại khỏi tập dùng được theo mục 3 đặc tả.
+    const nhan = y.nhapMoTuKy
+      ? `${nhanCung} (Tứ Kỵ — bất đắc dĩ mới dùng)`
+      : y.cungDungDuoc === false
+        ? `${nhanCung} (cung kỵ, không tính ưu tiên)`
+        : nhanCung;
+    const parts: string[] = [nhan];
     if (y.hoangDaoLaCat) parts.push(`Hoàng đạo ${y.hoangDaoTen}`);
     if (y.canGioDatBangDep) parts.push("Can giờ đẹp");
     if (y.ngayHopVoiVong === "tam-hop") parts.push("ngày tam hợp tuổi vong");
@@ -392,6 +408,52 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
         </div>`
       : "";
 
+    // Tuổi phải tránh mặt lúc nhập quan / khâm liệm / đóng cá / hạ huyệt. Nhóm Long Hổ Kê Xà đặt
+    // riêng lên đầu vì đây là quy tắc cứng ("người tuổi Thìn, Dần, Dậu, Tỵ không bao giờ được đứng
+    // nhìn nhập liệm"), các nhóm còn lại phụ thuộc tuổi vong và tứ cung nên xếp sau.
+    const tct = result.tuoiCanTranh;
+    // Lọc trùng: một chi có thể vừa là tuổi xung vừa nằm trong bộ tam hình (vd vong tuổi Dần thì
+    // Thân vừa xung vừa hình), hiện 2 lần rất khó hiểu cho gia chủ.
+    const chipList = (ds: string[]) => {
+      const uniq = [...new Set(ds)];
+      return uniq.length === 0
+        ? `<span class="text-sm text-slate-400">—</span>`
+        : uniq.map((c) => `<span class="rounded-md bg-white px-2 py-0.5 text-sm font-semibold text-slate-800 ring-1 ring-slate-200">${c}</span>`).join(" ");
+    };
+    const tuoiTranhHtml = tct
+      ? `<div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
+          <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Tuổi cần tránh mặt</p>
+          <p class="mt-1 text-xs text-slate-500">Áp dụng lúc nhập quan · khâm liệm · đóng cá · hạ huyệt và lấp đất.</p>
+          <div class="mt-3 rounded-xl border border-(--color-cinnabar-500)/30 bg-(--color-cinnabar-500)/5 p-4">
+            <p class="text-sm font-bold text-(--color-cinnabar-500)">Long Hổ Kê Xà — tuyệt đối không được có mặt</p>
+            <div class="mt-1.5 flex flex-wrap gap-1.5">${chipList(tct.nhom1LongHoKeXa)}</div>
+            <p class="mt-2 text-xs text-slate-600">Nhóm này áp dụng trong mọi trường hợp, không phụ thuộc tuổi người mất.</p>
+          </div>
+          <div class="mt-2 grid gap-2 sm:grid-cols-2">
+            <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <p class="text-sm font-semibold text-slate-700">Tam hợp với tuổi người mất</p>
+              <div class="mt-1.5 flex flex-wrap gap-1.5">${chipList(tct.nhom3TamHopTuoiVong)}</div>
+            </div>
+            <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+              <p class="text-sm font-semibold text-slate-700">Xung / hình với tuổi người mất</p>
+              <div class="mt-1.5 flex flex-wrap gap-1.5">${chipList([tct.nhom4XungHinh.xung, ...tct.nhom4XungHinh.hinh])}</div>
+            </div>
+            ${
+              tct.nhom2TamHopCungPham.length > 0
+                ? `<div class="rounded-xl border border-slate-200 bg-slate-50 p-4 sm:col-span-2">
+                     <p class="text-sm font-semibold text-slate-700">Tam hợp với cung phạm Trùng Tang</p>
+                     <div class="mt-1.5 flex flex-wrap gap-1.5">${chipList(tct.nhom2TamHopCungPham)}</div>
+                   </div>`
+                : ""
+            }
+          </div>
+          <p class="mt-3 text-xs text-slate-600">
+            <strong>Phạm vi:</strong> chỉ người huyết thống trực hệ với người mất (cha, mẹ, vợ/chồng, con, anh chị em ruột, cháu nội).
+            Con dâu, con rể, cháu ngoại và người ngoài <strong>không</strong> chịu tác động.
+          </p>
+        </div>`
+      : "";
+
     el.innerHTML = `
       <div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
         <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Giờ liệm / đóng quan (dùng chung công thức)</p>
@@ -414,6 +476,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
         <div class="mt-3 space-y-2">${haHuyetHtml || `<p class="text-sm text-slate-500">Chưa có ứng viên phù hợp.</p>`}</div>
       </div>
       ${dongQuanHtml}
+      ${tuoiTranhHtml}
       ${DISCLAIMER_HTML}
     `;
     el.classList.remove("hidden");
