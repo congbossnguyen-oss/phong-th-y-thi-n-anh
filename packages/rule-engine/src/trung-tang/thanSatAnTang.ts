@@ -131,33 +131,15 @@ export const HAC_DAO_KY_AN_TANG: ReadonlySet<string> = new Set(["Bạch Hổ", "
 /** Nhóm thần sát mà nguồn ghi rõ KHÔNG hoá giải được — đã phạm là phải đổi ngày, không trấn yểm. */
 export const KHONG_HOA_GIAI_DUOC: readonly string[] = ["Kim Thần Thất Sát", "Tam Sát", "Nguyệt Phá", "Đại Hao", "Trực Phá"];
 
-/**
- * TẦNG 3 — Tam Sát theo TỌA huyệt (`tam_sat_theo_toa`). Đây là lớp "phương vị" mà chủ dự án nhấn
- * mạnh: không thể chỉ `ngày → thần sát → điểm`, phải có `ngày + tọa huyệt → luật riêng theo hướng`.
+/*
+ * TẦNG 3 (Tam Sát theo TỌA huyệt) ĐÃ ĐƯỢC GỠ KHỎI PHASE 1 — chủ dự án chốt 2026-08-16:
+ * "cái gì liên quan tọa hướng mộ thì phải để phase 2".
  *
- * Mỗi tọa kỵ trọn một bộ tam hợp. Ba chi trong bộ đó chính là ba sao của Tam Sát (Kiếp Sát – Tai
- * Sát – Tuế Sát), nên cài bảng này là đã phủ luôn ba tên gọi đó ở phạm vi phương vị.
- *
- * `kien_truc_danh_gia.buoc_1_hard_constraint` xếp Tam Sát vào nhóm "không hoá giải được" → LOẠI.
- *
- * ✔ ĐỐI CHỨNG NGUỒN SÁCH ("Sổ Tay Tang Sự", Ch.14 mục "Tam sát niên, tháng nhựt"): sách ghi theo
- * chiều ngược lại — năm Tỵ-Dậu-Sửu thì Tam Sát đóng ở ĐÔNG phương (3 sơn Dần Mão Thìn), năm
- * Hợi-Mão-Mùi ở Tây, Thân-Tý-Thìn ở Nam, Dần-Ngọ-Tuất ở Bắc. Đọc ngược lại đúng bằng bảng dưới
- * đây. Sách cũng nói rõ Tam Sát có ba cấp "niên / nguyệt / NHẬT tam sát" nên áp cho NGÀY là đúng
- * phạm vi, và "nhất là khi Tam sát ở cung Tọa... tai họa đến liền" — đúng mức LOẠI, không trừ điểm.
+ * Bảng `TAM_SAT_THEO_TOA` + `isTamSatTheoToa()` và ô nhập tọa trên form vẫn nằm nguyên trong lịch
+ * sử git (commit "Thần sát theo 4 tầng + lớp phương vị"), Phase 2 lấy lại được, không phải dựng
+ * lại từ đầu. Dữ liệu gốc: `tam_sat_theo_toa` trong bảng dữ liệu hợp nhất, và sách "Sổ Tay Tang
+ * Sự" Ch.14 mục "Tam sát niên, tháng nhựt" (năm Tỵ-Dậu-Sửu → Tam Sát ở Đông phương, v.v.).
  */
-export type ToaHuyet = "Đông" | "Tây" | "Nam" | "Bắc";
-
-export const TAM_SAT_THEO_TOA: Readonly<Record<ToaHuyet, readonly Chi[]>> = {
-  "Đông": ["Tỵ", "Dậu", "Sửu"],
-  "Tây": ["Hợi", "Mão", "Mùi"],
-  "Nam": ["Thân", "Tý", "Thìn"],
-  "Bắc": ["Dần", "Ngọ", "Tuất"],
-};
-
-export function isTamSatTheoToa(chi: Chi, toa: ToaHuyet): boolean {
-  return (TAM_SAT_THEO_TOA[toa] as readonly Chi[]).includes(chi);
-}
 
 /**
  * TẦNG 1 — Thái Tuế / Tuế Phá ở phạm vi NGÀY.
@@ -306,3 +288,27 @@ export interface CanhBaoThanSat {
   /** true nếu nguồn ghi rõ không hoá giải được (đã bị loại thẳng, chỉ để giải thích lý do). */
   khongHoaGiai?: boolean;
 }
+
+/* ------------------------------------------------------------------------------------------
+ * CỐ Ý CHƯA CÀI — ghi lại để lần sau không ai "tiện tay" thêm vào sai chỗ:
+ *
+ * 1. NGŨ HOÀNG — chủ dự án chốt 2026-08-16: để dành cho PHASE 2 (module tọa hướng mộ theo Huyền
+ *    Không Đại Quái). Dữ liệu cửu cung năm/tháng đã có sẵn trong `xem-ngay-cao-cap/` nên nối sang
+ *    được về mặt kỹ thuật, nhưng Ngũ Hoàng là chuyện phương vị chuyên sâu, thuộc phạm vi Phase 2 —
+ *    KHÔNG cài vào module này.
+ *
+ * 2. DIỆT SÁT, NGŨ MỘ, TRÙNG PHỤC, TỨ KỴ — chưa có bảng tra. Sách "Sổ Tay Tang Sự" chỉ NÊU TÊN
+ *    trong danh sách kiêng của mục cải táng, không kèm bảng; bảng dữ liệu hợp nhất cũng không có.
+ *    Không tự dựng bảng theo trí nhớ — chờ chủ dự án cung cấp.
+ *    (Lưu ý: Tuế Sát và Kiếp Sát thì ĐÃ có, nằm trong bộ Tam Sát; "Diệt Sát" có thể là tên gọi
+ *    khác của Tai Sát trong cùng bộ đó, nhưng chưa đủ căn cứ để khẳng định nên không gộp.)
+ *
+ * 3. PHỦ ĐẦU SÁT / ĐAO CÔ SÁT / LỖ BANG SÁT — sách CÓ bảng đủ (Ch.14, theo 4 mùa), nhưng nằm ở
+ *    mục "Khởi công làm mả — KỴ", tức phạm vi KHỞI CÔNG XÂY MỘ, không phải hạ huyệt/an táng. Theo
+ *    đúng nguyên tắc "thần sát phải đứng trong đúng phạm vi tác dụng", không đưa vào module này.
+ *    Khi nào làm module chọn ngày khởi công xây mộ thì lấy bảng đó ra dùng.
+ *
+ * 4. CỬU PHI CUNG THANH LONG BẠCH HỔ — sách (Ch.1 §6) nói giờ hạ huyệt lấy theo "giờ Bạch Hổ
+ *    nhập địa" của hệ này, KHÁC hệ chưởng pháp module đang chạy. Đang theo mặc định của đặc tả
+ *    (trừ lùi từ giờ hạ huyệt chưởng pháp, không cài Cửu Phi Cung) — chờ chủ dự án chốt.
+ * ------------------------------------------------------------------------------------------ */

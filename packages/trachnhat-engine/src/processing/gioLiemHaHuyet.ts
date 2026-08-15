@@ -126,11 +126,6 @@ export interface GioLiemHaHuyetInput {
   thoiGianDiChuyenPhut?: number;
   /** Đệm đi sớm trước giờ hạ huyệt, mặc định 45 phút (mục 9b cho phép cấu hình). */
   demDongQuanPhut?: number;
-  /**
-   * TỌA của huyệt mộ (Đông/Tây/Nam/Bắc). Bỏ trống thì bỏ qua tầng lọc theo phương vị — KHÔNG tự
-   * đoán hướng, vì đoán sai còn tệ hơn không xét.
-   */
-  toaHuyet?: TrungTang.ToaHuyet;
   timeZone?: string;
 }
 
@@ -619,8 +614,8 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
       const muaTuPhe = MUA_THEO_MONTH_ORDER[Calendar.monthBoundaryOrderIndex(canChiCandidate.julianDay)]!;
       if (TrungTang.isTuPhe(canChiCandidate.day.can, canChiCandidate.day.chi, muaTuPhe)) continue;
 
-      // ---- TẦNG 3 — quan hệ ngày với TỌA huyệt (chỉ khi khách cung cấp hướng) ----
-      if (input.toaHuyet && TrungTang.isTamSatTheoToa(canChiCandidate.day.chi, input.toaHuyet)) continue;
+      // TẦNG 3 (quan hệ ngày với TỌA huyệt) thuộc PHASE 2 — chủ dự án chốt 2026-08-16: mọi thứ
+      // liên quan tọa hướng mộ để Phase 2. Module này không nhận hướng huyệt, không lọc phương vị.
 
       const cungNgay = TrungTang.tinhCungNgayUngVien(input.gioiTinh, bonCung.cungThang, lunarCandidate.day);
       dsNgayUngVien.push({

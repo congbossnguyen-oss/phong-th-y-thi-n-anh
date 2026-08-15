@@ -327,42 +327,12 @@ describe("Bảng thần sát chủ dự án cung cấp 2026-08-15 — Tý (子) 
   });
 });
 
-describe("Tầng 3 — quan hệ ngày với TỌA huyệt", () => {
-  it("bảng Tam Sát theo tọa khớp nguồn: Đông kỵ Tỵ-Dậu-Sửu, Tây kỵ Hợi-Mão-Mùi, Nam kỵ Thân-Tý-Thìn, Bắc kỵ Dần-Ngọ-Tuất", () => {
-    expect([...TrungTang.TAM_SAT_THEO_TOA["Đông"]]).toEqual(["Tỵ", "Dậu", "Sửu"]);
-    expect([...TrungTang.TAM_SAT_THEO_TOA["Tây"]]).toEqual(["Hợi", "Mão", "Mùi"]);
-    expect([...TrungTang.TAM_SAT_THEO_TOA["Nam"]]).toEqual(["Thân", "Tý", "Thìn"]);
-    expect([...TrungTang.TAM_SAT_THEO_TOA["Bắc"]]).toEqual(["Dần", "Ngọ", "Tuất"]);
-  });
-
-  it("khi có tọa, mọi ngày đề xuất đều không phạm Tam Sát của tọa đó", () => {
-    for (const toa of ["Đông", "Tây", "Nam", "Bắc"] as const) {
-      const ds = calculateGioLiemHaHuyet({
-        gioiTinh: "nam",
-        namSinhDuongLich: 1950,
-        namMat: 2026,
-        thangMat: 7,
-        ngayMat: 25,
-        chiGioMat: "Thìn",
-        soNgayDuKienToiChon: 12,
-        toaHuyet: toa,
-      }).ngayGioHaHuyet!;
-      expect(ds.length).toBeGreaterThan(0);
-      for (const c of ds) expect(TrungTang.isTamSatTheoToa(c.canChiNgay.chi, toa)).toBe(false);
-    }
-  });
-
-  it("bỏ trống tọa thì không áp tầng phương vị — không tự đoán hướng huyệt", () => {
-    const khongToa = calculateGioLiemHaHuyet({
-      gioiTinh: "nam",
-      namSinhDuongLich: 1950,
-      namMat: 2026,
-      thangMat: 7,
-      ngayMat: 25,
-      chiGioMat: "Thìn",
-      soNgayDuKienToiChon: 12,
-    }).ngayGioHaHuyet!;
-    expect(khongToa.length).toBeGreaterThan(0);
+describe("Tầng 3 — TỌA huyệt: đã chuyển sang Phase 2", () => {
+  it("engine KHÔNG còn nhận hướng huyệt ở Phase 1", () => {
+    // Chủ dự án chốt 2026-08-16: mọi thứ liên quan tọa hướng mộ để Phase 2. Test này chốt chặn
+    // để không ai vô tình cài lại tầng phương vị vào module Phase 1.
+    expect("isTamSatTheoToa" in TrungTang).toBe(false);
+    expect("TAM_SAT_THEO_TOA" in TrungTang).toBe(false);
   });
 });
 

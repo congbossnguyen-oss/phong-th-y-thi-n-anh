@@ -12,7 +12,6 @@ const TOOL_SLUG = "gio-liem-ha-huyet";
 
 const CHI_HOP_LE = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"];
 const GIOI_TINH_HOP_LE = ["nam", "nu"];
-const TOA_HOP_LE = ["Đông", "Tây", "Nam", "Bắc"];
 
 function jsonResponse(body: unknown, status: number): Response {
   return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
@@ -99,10 +98,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Quãng đường nhà → huyệt, dùng để trừ lùi ra giờ động quan (bước 6b). Bỏ trống thì không
     // tính giờ động quan — engine tự validate khoảng 5-480 phút ở "dry run" bên dưới.
     ...(b.thoiGianDiChuyenPhut ? { thoiGianDiChuyenPhut: Number(b.thoiGianDiChuyenPhut) } : {}),
-    // Tọa huyệt — chỉ nhận 4 giá trị hợp lệ; sai thì bỏ qua tầng phương vị thay vì tính bừa.
-    ...(typeof b.toaHuyet === "string" && TOA_HOP_LE.includes(b.toaHuyet)
-      ? { toaHuyet: b.toaHuyet as GioLiemHaHuyetInput["toaHuyet"] }
-      : {}),
   };
 
   // "Dry run" — tính thử trước khi tạo đơn, để không thu tiền cho input không tính được.

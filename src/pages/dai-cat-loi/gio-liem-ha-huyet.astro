@@ -117,24 +117,6 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
           <p class="mt-1 text-xs text-(--color-ink-500)">Có số này mới tính thêm được giờ động quan (giờ rời nhà), tính lùi từ giờ hạ huyệt.</p>
         </div>
 
-        <div>
-          <label for="glhh-toa" class="text-sm font-medium text-(--color-ink-800)">Tọa của huyệt mộ (tùy chọn)</label>
-          <select
-            id="glhh-toa"
-            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"
-          >
-            <option value="">Chưa rõ — bỏ qua xét theo phương vị</option>
-            <option value="Đông">Tọa Đông</option>
-            <option value="Tây">Tọa Tây</option>
-            <option value="Nam">Tọa Nam</option>
-            <option value="Bắc">Tọa Bắc</option>
-          </select>
-          <p class="mt-1 text-xs text-(--color-ink-500)">
-            Có tọa thì loại thêm các ngày phạm Tam Sát của hướng đó (tọa Đông kỵ Tỵ–Dậu–Sửu, Tây kỵ Hợi–Mão–Mùi,
-            Nam kỵ Thân–Tý–Thìn, Bắc kỵ Dần–Ngọ–Tuất). Không nhập thì bỏ qua tầng này, không tự đoán hướng.
-          </p>
-        </div>
-
         <details class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3">
           <summary class="cursor-pointer text-sm font-medium text-(--color-ink-800)">Thêm tuổi thân quyến (tùy chọn — để xét giờ liệm kỵ)</summary>
           <div class="mt-3 grid grid-cols-2 gap-2">
@@ -581,7 +563,6 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
     const chiGioMat = (document.getElementById("glhh-gio-mat") as HTMLSelectElement).value;
     const soNgayRaw = (document.getElementById("glhh-so-ngay") as HTMLInputElement).value;
     const diChuyenRaw = (document.getElementById("glhh-di-chuyen") as HTMLInputElement).value;
-    const toaHuyet = (document.getElementById("glhh-toa") as HTMLSelectElement).value;
     const truongNam = (document.getElementById("glhh-truong-nam") as HTMLSelectElement).value;
     const conDauLon = (document.getElementById("glhh-con-dau-lon") as HTMLSelectElement).value;
     const chauDichTon = (document.getElementById("glhh-chau-dich-ton") as HTMLSelectElement).value;
@@ -621,7 +602,6 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
       chiGioMat,
       ...(soNgayRaw ? { soNgayDuKienToiChon: Number(soNgayRaw) } : {}),
       ...(diChuyenRaw ? { thoiGianDiChuyenPhut: Number(diChuyenRaw) } : {}),
-      ...(toaHuyet ? { toaHuyet } : {}),
       ...(Object.keys(thanQuyen).length > 0 ? { thanQuyen } : {}),
       customerName,
       customerPhone,
