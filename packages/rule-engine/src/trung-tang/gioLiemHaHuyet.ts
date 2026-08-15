@@ -6,6 +6,16 @@
  *
  * KHÔNG chẩn đoán lại Trùng Tang — module `tinhBonCungTrungTang` (miễn phí, `chuongPhap.ts`)
  * đã làm việc đó. Module này CHỈ dùng lại 4 cung để xếp hạng giờ liệm/đóng quan/hạ huyệt.
+ *
+ * ⚠️ PHẠM VI ÁP DỤNG — CHỈ DÙNG CHO TRƯỜNG HỢP **KHÔNG TRÙNG TANG**.
+ * Sách "Sổ Tay Tang Sự" ghi thẳng ở tiêu đề mục: "Tính giờ nhập liệm, hạ huyệt (Dùng cho trường
+ * hợp không trùng tang)". Vong ĐANG phạm Trùng Tang thì phải xử lý theo hướng khác (trấn/hoá giải
+ * trước), không dùng kết quả xếp hạng ở đây. Chủ dự án yêu cầu 2026-08-16 ghi rõ điều này ngay từ
+ * phần giới thiệu module — đã bổ sung một khối cảnh báo đỏ ở đầu trang, sửa cả mô tả SEO, mô tả
+ * PageHero và mô tả thẻ công cụ ở trang Dịch vụ thu phí.
+ *
+ * Engine CỐ Ý không tự chặn: nó không biết vong có phạm hay không (không nhận đủ input để chẩn
+ * đoán), nên việc chặn nằm ở tầng con người — cảnh báo + dẫn sang công cụ Tính Trùng Tang miễn phí.
  */
 import { Data } from "@thien-anh/calendar-core";
 import { CUNG_TRUNG_TANG, phanLoaiCung, type GioiTinh, type PhanLoaiCung } from "./chuongPhap.js";

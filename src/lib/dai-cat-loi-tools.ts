@@ -135,7 +135,7 @@ export const paidTools: PaidTool[] = [
     href: "/dai-cat-loi/gio-liem-ha-huyet",
     icon: "🕯️",
     title: "Chọn Giờ Liệm – Đóng Quan – Ngày Giờ Hạ Huyệt",
-    desc: "Xếp hạng giờ liệm/đóng quan và ngày giờ hạ huyệt theo Chưởng Pháp Trùng Tang – Nhập Mộ, có xét tuổi thân quyến.",
+    desc: "Dành cho trường hợp KHÔNG phạm Trùng Tang — xếp hạng giờ liệm/đóng quan và ngày giờ hạ huyệt theo Chưởng Pháp Nhập Mộ – Thiên Di, có sàng thần sát an táng và xét tuổi thân quyến.",
     priceLabel: "499.000đ / lượt",
   },
   {

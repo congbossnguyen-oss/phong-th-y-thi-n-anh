@@ -27,12 +27,12 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
 
 <BaseLayout
   title="Chọn Giờ Liệm – Đóng Quan – Ngày Giờ Hạ Huyệt"
-  description="Xếp hạng giờ liệm/đóng quan và ngày giờ hạ huyệt theo Chưởng Pháp Trùng Tang – Nhập Mộ, có xét tuổi thân quyến. Dịch vụ thu phí 499.000đ/lượt, thanh toán qua QR, không cần tạo tài khoản."
+  description="Dành cho trường hợp người mất KHÔNG phạm Trùng Tang. Xếp hạng giờ liệm/đóng quan và ngày giờ hạ huyệt theo Chưởng Pháp Nhập Mộ – Thiên Di, có sàng thần sát an táng và xét tuổi thân quyến. Dịch vụ thu phí 499.000đ/lượt, thanh toán qua QR, không cần tạo tài khoản."
 >
   <PageHero
     eyebrow="⭐ Dịch vụ thu phí"
     title="Chọn Giờ Liệm – Đóng Quan – Ngày Giờ Hạ Huyệt"
-    description={`Nhập thông tin người mất — hệ thống xếp hạng giờ liệm/đóng quan và ngày giờ hạ huyệt tốt nhất theo Chưởng Pháp Trùng Tang – Nhập Mộ. Phí ${TOOL_PRICE_LABEL}/lượt, thanh toán QR, không cần tạo tài khoản.`}
+    description={`Dành cho trường hợp người mất KHÔNG phạm Trùng Tang. Nhập thông tin người mất — hệ thống xếp hạng giờ liệm/đóng quan và ngày giờ hạ huyệt tốt nhất theo Chưởng Pháp Nhập Mộ – Thiên Di. Phí ${TOOL_PRICE_LABEL}/lượt, thanh toán QR, không cần tạo tài khoản.`}
     breadcrumbs={[
       { label: "Trang chủ", href: "/" },
       { label: "Đại Cát Lợi", href: "/dai-cat-loi" },
@@ -46,9 +46,29 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
       <div class="mb-4 rounded-(--radius-card) border-2 border-amber-400 bg-amber-50 p-4 text-sm font-medium text-amber-800">
         🧪 ĐANG THỬ NGHIỆM NỘI BỘ — tạm gỡ khỏi menu công khai, tạm bỏ bước thanh toán để test nhanh. Nộp form là ra kết quả ngay, không tạo đơn hàng thật.
       </div>
+      {/* Phạm vi áp dụng — chủ dự án yêu cầu 2026-08-16 ghi ngay đầu module. Nguồn sách ghi rõ ở
+      tiêu đề mục: "Tính giờ nhập liệm, hạ huyệt (DÙNG CHO TRƯỜNG HỢP KHÔNG TRÙNG TANG)". Gia đình
+      có vong ĐANG phạm trùng tang mà dùng nhầm bảng này thì sai phương pháp, nên phải cảnh báo
+      đậm ngay trên đầu, không giấu trong đoạn chữ nhỏ. */}
+      <div class="mb-4 rounded-(--radius-card) border-2 border-(--color-cinnabar-500) bg-(--color-cinnabar-500)/5 p-4">
+        <p class="font-display text-base font-bold text-(--color-cinnabar-500)">
+          Công cụ này chỉ dùng khi người mất KHÔNG phạm Trùng Tang
+        </p>
+        <p class="mt-1.5 text-sm text-(--color-ink-700)">
+          Phương pháp Chưởng Pháp bên dưới được sách quy định rõ là dành cho <strong>trường hợp không trùng tang</strong>.
+          Nếu người mất đang phạm Trùng Tang thì phải xử lý theo hướng khác (trấn/hoá giải trước), không dùng kết quả ở đây.
+        </p>
+        <p class="mt-1.5 text-sm text-(--color-ink-700)">
+          Chưa biết có phạm hay không, hãy kiểm tra bằng
+          <a href="/tinh-trung-tang" class="font-semibold text-(--color-gold-300) hover:underline">công cụ Tính Trùng Tang miễn phí</a>
+          trước khi dùng công cụ này. Nếu kết quả là CÓ phạm, xin
+          <a href="/lien-he" class="font-semibold text-(--color-gold-300) hover:underline">liên hệ tư vấn trực tiếp</a>.
+        </p>
+      </div>
+
       <div class="mb-6 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-4 text-sm text-(--color-ink-600)">
-        Công cụ này KHÔNG chẩn đoán lại Trùng Tang (dùng công cụ <a href="/tinh-trung-tang" class="text-(--color-gold-300) hover:underline">Tính Trùng Tang miễn phí</a> nếu cần) —
-        chỉ dùng Chưởng Pháp để xếp hạng giờ liệm/đóng quan và ngày giờ hạ huyệt tốt nhất. Cách tính dựa trên tư liệu dân
+        Công cụ này KHÔNG tự chẩn đoán Trùng Tang — chỉ dùng Chưởng Pháp để xếp hạng giờ liệm/đóng quan và ngày giờ
+        hạ huyệt tốt nhất, kèm sàng thần sát an táng và danh sách tuổi cần tránh mặt. Cách tính dựa trên tư liệu dân
         gian tổng hợp, mang tính tương đối, không thay thế tư vấn phong thủy trực tiếp.
       </div>
 
