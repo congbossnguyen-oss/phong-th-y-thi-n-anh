@@ -17,6 +17,12 @@
  * không chép lại ở đây: `kimThanThatSat.ts`, `tamNuong.ts`, `nguyetKy.ts`.
  */
 import type { Data } from "@thien-anh/calendar-core";
+import {
+  TUE_DUC_THEO_CAN_NAM,
+  TUE_DUC_HOP_THEO_CAN_NAM,
+  NGUYET_DUC_THEO_THANG,
+  NGUYET_DUC_HOP_THEO_THANG,
+} from "../trach-nhat/catTinhTheoCan.js";
 
 type Can = Data.Can;
 type Chi = Data.Chi;
@@ -188,20 +194,12 @@ export const TIET_TU_LY: readonly string[] = ["Xuân Phân", "Hạ Chí", "Thu P
  * tháng 1 = Dần (giống `CHI_THANG_CO_DINH`).
  * ------------------------------------------------------------------------------------------ */
 
-/** TẦNG 4 — cát thần theo CAN NĂM, dùng để cứu/nâng điểm chứ không phải để loại. */
-export const TUE_DUC_THEO_CAN_NAM: Readonly<Record<Can, Can>> = {
-  "Giáp": "Giáp", "Ất": "Canh", "Bính": "Bính", "Đinh": "Nhâm", "Mậu": "Mậu",
-  "Kỷ": "Giáp", "Canh": "Canh", "Tân": "Bính", "Nhâm": "Nhâm", "Quý": "Mậu",
-};
-export const TUE_DUC_HOP_THEO_CAN_NAM: Readonly<Record<Can, Can>> = {
-  "Giáp": "Kỷ", "Ất": "Ất", "Bính": "Tân", "Đinh": "Đinh", "Mậu": "Quý",
-  "Kỷ": "Kỷ", "Canh": "Ất", "Tân": "Tân", "Nhâm": "Đinh", "Quý": "Quý",
-};
-
-/** TẦNG 4 — cát thần theo THÁNG âm lịch (tháng 1 = Dần). */
-export const NGUYET_DUC_THEO_THANG: readonly Can[] = ["Bính", "Giáp", "Nhâm", "Canh", "Bính", "Giáp", "Nhâm", "Canh", "Bính", "Giáp", "Nhâm", "Canh"];
-export const NGUYET_DUC_HOP_THEO_THANG: readonly Can[] = ["Tân", "Kỷ", "Đinh", "Ất", "Tân", "Kỷ", "Đinh", "Ất", "Tân", "Kỷ", "Đinh", "Ất"];
-
+/**
+ * TẦNG 4 — cát thần Tuế Đức / Tuế Đức Hợp / Nguyệt Đức / Nguyệt Đức Hợp KHÔNG khai báo lại ở đây.
+ * Bốn bảng này đã có trong `trach-nhat/catTinhTheoCan.ts` (cùng nguồn chủ dự án cung cấp
+ * 2026-08-15, đã đối chiếu khớp 100%). Giữ MỘT nguồn duy nhất để sau này chủ dự án sửa bảng thì
+ * không có bản sao nào âm thầm lệch đi — `tinhCatThanNgay` bên dưới đọc thẳng từ đó.
+ */
 /** TẦNG 1 — Tuế Sát theo CHI NĂM (giải từ tam hợp, xem ghi chú khoá lặp ở trên). */
 export const TUE_SAT_THEO_CHI_NAM: Readonly<Record<Chi, Chi>> = {
   "Dần": "Sửu", "Ngọ": "Sửu", "Tuất": "Sửu",

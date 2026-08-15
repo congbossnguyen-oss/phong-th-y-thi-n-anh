@@ -13,7 +13,7 @@
 
 import { describe, expect, it } from "vitest";
 import { calculateGioLiemHaHuyet } from "@thien-anh/trachnhat-engine";
-import { TrungTang } from "@thien-anh/rule-engine";
+import { TrungTang, TrachNhat } from "@thien-anh/rule-engine";
 
 /** Ca A — Nam, sinh 1950, mất giờ Thìn ngày 25/7/2026 (mục 14 đặc tả). */
 const caA = () =>
@@ -310,11 +310,13 @@ describe("Bảng thần sát chủ dự án cung cấp 2026-08-15 — khoá các
   });
 
   it("Nguyệt Đức khớp quy tắc tam hợp với quy ước tháng 1 = Dần (đối chứng nguồn)", () => {
+    // Bốn bảng cát thần chỉ tồn tại MỘT bản, ở `trach-nhat/catTinhTheoCan.ts` — module tang lễ
+    // đọc nhờ chứ không giữ bản sao, để chủ dự án sửa bảng thì không chỗ nào lệch.
     // Dần-Ngọ-Tuất → Bính; Thân-Tý-Thìn → Nhâm; Hợi-Mão-Mùi → Giáp; Tỵ-Dậu-Sửu → Canh.
     const CHI_THANG = ["Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi", "Tý", "Sửu"];
     const mong: Record<string, string> = { "Dần": "Bính", "Ngọ": "Bính", "Tuất": "Bính", "Thân": "Nhâm", "Tý": "Nhâm", "Thìn": "Nhâm", "Hợi": "Giáp", "Mão": "Giáp", "Mùi": "Giáp", "Tỵ": "Canh", "Dậu": "Canh", "Sửu": "Canh" };
     for (let t = 1; t <= 12; t++) {
-      expect(TrungTang.NGUYET_DUC_THEO_THANG[t - 1]).toBe(mong[CHI_THANG[t - 1]!]);
+      expect(TrachNhat.NGUYET_DUC_THEO_THANG[t - 1]).toBe(mong[CHI_THANG[t - 1]!]);
     }
   });
 
