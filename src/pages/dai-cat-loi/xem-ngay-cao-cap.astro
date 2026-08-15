@@ -36,15 +36,44 @@ const TOOL_PRICE_LABEL = "999.000đ";
         🧪 ĐANG THỬ NGHIỆM — tạm bỏ bước thanh toán ({TOOL_PRICE_LABEL}/lượt khi phát hành chính thức) để test nhanh. Nộp form là ra kết quả ngay.
       </div>
 
+      <div class="mb-4 rounded-(--radius-card) border-2 border-(--color-gold-500)/50 bg-(--color-gold-400)/10 p-4 text-sm text-(--color-ink-700)">
+        <p class="font-semibold text-(--color-ink-900)">⚠️ Cần chuẩn bị trước: độ số la bàn của tọa nhà</p>
+        <p class="mt-1.5">
+          Công cụ luận theo vòng <strong>64 quẻ</strong> (mỗi quẻ 5.625°), nên <strong>bắt buộc phải có độ số đo
+          thực tế</strong> — chỉ biết tên sơn (Càn, Ất, Mùi…) là <strong>không đủ</strong>, vì mỗi sơn rộng 15° và
+          chứa tới 2–3 quẻ khác nhau. Chưa có độ số thì hệ thống vẫn chạy, nhưng bỏ trống phần luận cách cục
+          (báo thiếu dữ liệu) chứ không đoán.
+        </p>
+        <details class="mt-2.5">
+          <summary class="cursor-pointer font-medium text-(--color-gold-300)">Chưa biết đo? Bấm xem hướng dẫn</summary>
+          <ol class="mt-2 list-decimal space-y-1.5 pl-5 text-(--color-ink-600)">
+            <li><strong>Tọa là lưng nhà</strong>, không phải mặt tiền. Đứng giữa nhà quay mặt ra cửa chính — đó là <em>hướng</em>; lưng anh quay về đâu thì đó là <em>tọa</em>.</li>
+            <li>Dùng la bàn phong thủy, hoặc ứng dụng la bàn trên điện thoại. Đo tại <strong>giữa nhà</strong>, tránh xa tủ sắt, cột bê tông, thiết bị điện, điện thoại của người khác.</li>
+            <li>Nếu ứng dụng chỉ cho anh số của <strong>hướng</strong> (mặt nhà) thì <strong>tọa = hướng + 180°</strong>. Ví dụ hướng đo được 138° → tọa = 318°.</li>
+            <li>Đo 2–3 lần ở vị trí khác nhau rồi lấy số ổn định nhất. Lệch vài độ có thể ra quẻ khác, nên số càng chuẩn kết quả càng đúng.</li>
+          </ol>
+          <p class="mt-2 text-(--color-ink-600)">
+            Không tự đo được?
+            <a href="/lien-he" class="font-medium text-(--color-gold-300) hover:underline">Liên hệ để được khảo sát và đo trực tiếp</a>.
+          </p>
+        </details>
+      </div>
+
       <div class="mb-6 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-4 text-sm text-(--color-ink-600)">
         <p class="font-medium text-(--color-ink-800)">Phạm vi công cụ</p>
         <p class="mt-1">
-          Chỉ luận theo <strong>Huyền Không Đại Quái</strong> (Bước 2→6): khung tháng theo tọa · phương vị sát
-          (Ngũ Hoàng/Tam Sát/Bát Sát/Thái Tuế/Tuế Phá/Mậu Kỷ Đô Thiên/Âm Phủ Thái Tuế) · quy Tứ Trụ về HKNH–Quái Vận ·
-          cách cục Tam Tài · chọn giờ. <strong>Không</strong> bao gồm lớp thần sát dân gian ở Bước 1 (Tam Nương,
-          Nguyệt Kỵ, Sát Chủ, 28 sao…) theo đúng phạm vi đã chốt.
+          Chỉ dùng cho <strong>động thổ</strong> và <strong>nhập trạch</strong>. Các việc khác (khai trương, cưới hỏi,
+          ký hợp đồng…) sẽ có công cụ riêng — hoặc
+          <a href="/dich-vu/xem-ngay-cao-cap" class="text-(--color-gold-300) hover:underline">đặt lịch xem ngày cùng chuyên gia</a>.
         </p>
-        <p class="mt-2">Dữ liệu Ngũ Hoàng tra bảng thật, phủ 1968–2068 (riêng năm 1994 lưới nguồn bị lỗi số, hệ thống sẽ báo thiếu dữ liệu thay vì đoán).</p>
+        <p class="mt-2">
+          Luận thuần <strong>Huyền Không Đại Quái</strong> (Bước 2→6): khung tháng theo tọa (2 phương pháp: theo mùa
+          và Bổ Long Tam Cục) · phương vị sát (Ngũ Hoàng/Tam Sát/Bát Sát/Thái Tuế/Tuế Phá/Mậu Kỷ Đô Thiên/Âm Phủ
+          Thái Tuế/Mộ Long Biến Vận) · quy Tứ Trụ về HKNH–Quái Vận · cách cục Tam Tài · chọn giờ.
+          <strong>Không</strong> bao gồm lớp thần sát dân gian ở Bước 1 (Tam Nương, Nguyệt Kỵ, Sát Chủ, 28 sao…)
+          theo đúng phạm vi đã chốt.
+        </p>
+        <p class="mt-2">Dữ liệu Ngũ Hoàng tra bảng thật từ Vạn Niên Lịch Tam Nguyên, phủ liền mạch 1968–2068.</p>
       </div>
 
       <form id="xncc-form" class="flex flex-col gap-4 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
@@ -89,6 +118,25 @@ const TOOL_PRICE_LABEL = "999.000đ";
             placeholder="vd. 318"
             class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"
           />
+          <div class="mt-2 flex flex-wrap items-center gap-2">
+            <span class="text-xs text-(--color-ink-600)">Chỉ đo được số của <strong>hướng</strong> (mặt nhà)?</span>
+            <input
+              type="number"
+              id="xncc-do-huong"
+              step="0.01"
+              min="0"
+              max="359.99"
+              placeholder="Nhập độ hướng"
+              class="w-36 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-2 py-1.5 text-sm text-(--color-ink-800)"
+            />
+            <button
+              type="button"
+              id="xncc-doi-huong-sang-toa"
+              class="rounded-(--radius-pill) bg-(--color-gold-400) px-3 py-1.5 text-xs font-semibold text-(--color-on-accent) hover:bg-(--color-gold-300)"
+            >
+              Đổi sang tọa (+180°)
+            </button>
+          </div>
           <p id="xncc-que-preview" class="mt-2 hidden rounded-(--radius-control) bg-(--color-gold-400)/15 px-3 py-2 text-sm font-medium text-(--color-ink-800)"></p>
           <p class="mt-2 text-xs text-(--color-ink-600)">
             Hệ thống tự tra ra <strong>quẻ Tọa</strong> từ độ số này (vòng 64 quẻ, mỗi quẻ 5.625°) — anh không cần nhập
@@ -312,6 +360,20 @@ const TOOL_PRICE_LABEL = "999.000đ";
   }
   doSoInput.addEventListener("input", capNhatXemTruocQue);
   capNhatXemTruocQue();
+
+  // Tiện ích: nhiều người chỉ đo được HƯỚNG (mặt nhà) bằng app la bàn điện thoại. Tọa = hướng + 180°.
+  const doHuongInput = document.getElementById("xncc-do-huong") as HTMLInputElement;
+  document.getElementById("xncc-doi-huong-sang-toa")!.addEventListener("click", () => {
+    const h = Number(doHuongInput.value);
+    if (doHuongInput.value === "" || !Number.isFinite(h) || h < 0 || h >= 360) {
+      loiEl.textContent = "Nhập độ số của hướng (0–359.99) trước khi đổi sang tọa.";
+      loiEl.classList.remove("hidden");
+      return;
+    }
+    loiEl.classList.add("hidden");
+    doSoInput.value = String(Math.round(((h + 180) % 360) * 100) / 100);
+    capNhatXemTruocQue();
+  });
 
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
