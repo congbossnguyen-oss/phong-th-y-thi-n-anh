@@ -79,7 +79,17 @@ export function nhapMoChiRoiVaoTuSinh(cungNgay: Chi): boolean {
   return phanLoaiCung(cungNgay) === "nhap-mo";
 }
 
-/** Bước 7 mục 10.2 — Can giờ đẹp theo Chi ngày (nguồn ngoài sách, bảng tra cố định). */
+/**
+ * ⛔ KHÔNG DÙNG NỮA — chủ dự án chốt 2026-08-16: "chọn ngày liệm theo Trần Tử Tánh không dùng nhé".
+ *
+ * Đây chính là bảng của phép TRẦN TỬ TÁNH trong "Sổ Tay Tang Sự" (mục "Chọn ngày giờ theo Trần Tử
+ * Tánh": từ địa chi của NGÀY lấy thiên can của GIỜ, kết hợp giờ hoàng đạo để chọn giờ nhập quan).
+ * Đặc tả mục 10.2 từng ghi bảng này là "nguồn ngoài sách, chưa rõ nguyên lý sinh" — nay đã nhận
+ * diện được nguồn, và đối chiếu KHỚP 12/12 chi với bảng in trong sách.
+ *
+ * GIỮ LẠI bảng để lưu xuất xứ và để không ai đi tìm/cài lại nó lần nữa, nhưng KHÔNG còn được cộng
+ * điểm ở `tinhDiemUngVien` và không còn hiển thị trên kết quả.
+ */
 export const CAN_GIO_DEP_THEO_CHI_NGAY: Readonly<Record<Chi, readonly [Can, Can]>> = {
   Tý: ["Giáp", "Canh"],
   Sửu: ["Ất", "Tân"],
@@ -152,7 +162,6 @@ export interface YeuToDiemUngVien {
   apDungThienDi: boolean;
   hoangDaoTen: string;
   hoangDaoLaCat: boolean;
-  canGioDatBangDep: boolean;
   boiCanh: BoiCanhChonGio;
   /** Chi giờ thuộc nhóm Dần/Thân/Tỵ/Hợi — chỉ có ý nghĩa trừ điểm khi boiCanh = "ha-huyet"
    * (ở "liem" nhóm này đã bị loại tuyệt đối trước khi tới bước chấm điểm). */
@@ -178,7 +187,6 @@ export function tinhDiemUngVien(y: YeuToDiemUngVien): number {
   else if (y.phanLoaiCung === "thien-di" && cungDungDuoc && y.apDungThienDi) diem += 40;
   if (y.hoangDaoLaCat) diem += 50;
   if (TEN_HOANG_DAO_UU_TIEN.has(y.hoangDaoTen)) diem += 20;
-  if (y.canGioDatBangDep) diem += 15;
   if (y.boiCanh === "ha-huyet") {
     if (y.ngayHopVoiVong) diem += 25;
     if (y.trucTot) diem += 5;

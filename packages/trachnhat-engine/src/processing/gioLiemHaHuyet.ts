@@ -149,7 +149,6 @@ export interface UngVienGioLiem {
   nhapMoTuKy: boolean;
   hoangDaoTen: string;
   hoangDaoLaCat: boolean;
-  canGioDatBangDep: boolean;
   /** Phạm Giờ Sát Chủ của tháng — cấu hình đã chốt là LOẠI GIỜ (xem `daNoiLongGioSatChu`). */
   phamGioSatChu: boolean;
   /** Sao hắc đạo thuộc nhóm kỵ an táng (Bạch Hổ / Nguyên Vũ / Câu Trần / Thiên Hình / Thiên Lao). */
@@ -173,7 +172,6 @@ export interface UngVienNgayGioHaHuyet {
   nhapMoTuKy: boolean;
   hoangDaoTen: string;
   hoangDaoLaCat: boolean;
-  canGioDatBangDep: boolean;
   ngayHopVoiVong: "tam-hop" | "luc-hop" | null;
   trucTot: boolean;
   /** Chi giờ thuộc Dần/Thân/Tỵ/Hợi — chỉ khuyến nghị tránh cho hạ huyệt, không loại tuyệt đối. */
@@ -388,7 +386,6 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
       nhapMoTuKy: TrungTang.laNhapMoTuKy(cungGio),
       hoangDaoTen: hoangDao.name,
       hoangDaoLaCat: hoangDao.catHung === "cát",
-      canGioDatBangDep: TrungTang.isCanGioDep(hourPillar.can, dayPillar.chi),
       phamGioSatChu: TrungTang.isGioSatChu(chiGio, lunarMat.month),
       hacDaoKyAnTang: TrungTang.isHacDaoKyAnTang(hoangDao.name),
       diem: 0,
@@ -414,7 +411,6 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
       apDungThienDi: !coNhapMoGioLiem,
       hoangDaoTen: c.hoangDaoTen,
       hoangDaoLaCat: c.hoangDaoLaCat,
-      canGioDatBangDep: c.canGioDatBangDep,
       boiCanh: "liem",
       chiGioThuocTuSinh: false, // nhóm này đã bị loại ở vòng lọc tuyệt đối phía trên
     });
@@ -504,7 +500,6 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
       const cungGio = cungTheoK[idxChi]!;
       const phanLoaiCungGio = TrungTang.phanLoaiCung(cungGio);
       const hoangDao = TrachNhat.getHoangDaoHacDaoGio(ngay.canChiNgay.chiIndex, hourPillar.chiIndex);
-      const canGioDatBangDep = TrungTang.isCanGioDep(hourPillar.can, ngay.canChiNgay.chi);
       const chiGioThuocTuSinh = (TrungTang.KHUYEN_TRANH_CHON as readonly Chi[]).includes(chiGio);
 
       const diem = TrungTang.tinhDiemUngVien({
@@ -513,7 +508,6 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
         apDungThienDi: !coNhapMoTrongNgay,
         hoangDaoTen: hoangDao.name,
         hoangDaoLaCat: hoangDao.catHung === "cát",
-        canGioDatBangDep,
         boiCanh: "ha-huyet",
         chiGioThuocTuSinh,
         ngayHopVoiVong: ngay.ngayHopVoiVong !== null,
@@ -534,7 +528,6 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
         nhapMoTuKy: TrungTang.laNhapMoTuKy(cungGio),
         hoangDaoTen: hoangDao.name,
         hoangDaoLaCat: hoangDao.catHung === "cát",
-        canGioDatBangDep,
         ngayHopVoiVong: ngay.ngayHopVoiVong,
         trucTot,
         chiGioThuocTuSinh,

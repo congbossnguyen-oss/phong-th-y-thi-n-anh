@@ -121,7 +121,7 @@ describe("Cung dùng được — loại Thìn (Nhập Mộ) và Dậu (Thiên D
     // Chủ dự án chốt 2026-08-15: "Thìn vẫn là Nhập Mộ về mặt phân loại, nhưng khi module tự động
     // chọn giờ/ngày liệm hoặc hạ huyệt thì loại Thìn, ưu tiên Tuất–Sửu–Mùi... Thìn bị xem là Tứ Kỵ
     // nên bất đắc dĩ mới dùng." → không về 0 (0 = ngang cung Trùng Tang), mà là một bậc thấp riêng.
-    const chung = { apDungThienDi: true, hoangDaoTen: "", hoangDaoLaCat: false, canGioDatBangDep: false, boiCanh: "liem" as const, chiGioThuocTuSinh: false };
+    const chung = { apDungThienDi: true, hoangDaoTen: "", hoangDaoLaCat: false, boiCanh: "liem" as const, chiGioThuocTuSinh: false };
     const diem = (cungGio: Parameters<typeof TrungTang.laCungDungDuoc>[0], phanLoaiCung: TrungTang.PhanLoaiCung) =>
       TrungTang.tinhDiemUngVien({ ...chung, phanLoaiCung, cungGio });
 
@@ -139,7 +139,7 @@ describe("Cung dùng được — loại Thìn (Nhập Mộ) và Dậu (Thiên D
   it("Thìn KHÔNG chặn tầng Thiên Di dự phòng — vẫn giữ đúng nghĩa 'bất đắc dĩ'", () => {
     // Nếu trong ngày chỉ chạm được cung Thìn thì vẫn coi như chưa có Nhập Mộ dùng được, để Thiên
     // Di (Tý/Mão/Ngọ) được kích hoạt và đứng trên Thìn.
-    const chung = { hoangDaoTen: "", hoangDaoLaCat: false, canGioDatBangDep: false, boiCanh: "liem" as const, chiGioThuocTuSinh: false };
+    const chung = { hoangDaoTen: "", hoangDaoLaCat: false, boiCanh: "liem" as const, chiGioThuocTuSinh: false };
     const thienDiKhiChiCoThin = TrungTang.tinhDiemUngVien({ ...chung, phanLoaiCung: "thien-di", cungGio: "Mão", apDungThienDi: true });
     const thinBatDacDi = TrungTang.tinhDiemUngVien({ ...chung, phanLoaiCung: "nhap-mo", cungGio: "Thìn", apDungThienDi: true });
     expect(thienDiKhiChiCoThin).toBeGreaterThan(thinBatDacDi);
@@ -154,7 +154,7 @@ describe("Cung dùng được — loại Thìn (Nhập Mộ) và Dậu (Thiên D
   });
 
   it("cung Dậu KHÔNG được cộng +40 dù vẫn mang nhãn Thiên Di", () => {
-    const chung = { apDungThienDi: true, hoangDaoTen: "", hoangDaoLaCat: false, canGioDatBangDep: false, boiCanh: "liem" as const, chiGioThuocTuSinh: false };
+    const chung = { apDungThienDi: true, hoangDaoTen: "", hoangDaoLaCat: false, boiCanh: "liem" as const, chiGioThuocTuSinh: false };
     expect(TrungTang.tinhDiemUngVien({ ...chung, phanLoaiCung: "thien-di", cungGio: "Tý" })).toBe(40);
     expect(TrungTang.tinhDiemUngVien({ ...chung, phanLoaiCung: "thien-di", cungGio: "Dậu" })).toBe(0);
   });
