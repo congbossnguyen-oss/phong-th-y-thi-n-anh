@@ -21,41 +21,45 @@ type IconName = "star" | "book-open" | "moon" | "clock" | "award" | "map-pin";
 // đề/mô tả. `title` vẫn giữ để làm alt ảnh + aria-label cho khả năng tiếp cận (screen reader).
 // Lưu ý: 6 ảnh này không cùng 1 bộ nhận diện (3 phong cách/logo khác nhau) — đã xác nhận với Công dùng
 // nguyên như vậy, không chờ làm lại đồng bộ.
+// Ảnh dùng WebP thay cho PNG gốc: bộ 6 ảnh này nặng ~9,9 MB ở dạng PNG (riêng 3 ảnh poster hơn
+// 2,3 MB mỗi ảnh), tải trên 3G/4G rất chậm và tốn dung lượng của khách. Bản WebP cùng kích thước
+// tổng cộng ~851 KB, giảm ~92% mà mắt thường không phân biệt được. File PNG gốc vẫn giữ trong
+// public/ để cần thì xuất lại.
 const CORE_TOOLS: { href: string; icon: IconName; image: string; title: string }[] = [
   {
     href: "/lap-la-so-tu-vi",
     icon: "star",
-    image: "/lap-la-so-tu-vi.png",
+    image: "/lap-la-so-tu-vi.webp",
     title: "Lập lá số Tử Vi",
   },
   {
     href: "/lap-la-so-bat-tu",
     icon: "book-open",
-    image: "/lap-la-so-bat-tu.png",
+    image: "/lap-la-so-bat-tu.webp",
     title: "Lập lá số Bát Tự",
   },
   {
     href: "/gieo-que-kinh-dich",
     icon: "moon",
-    image: "/lap-que-kinh-dich.png",
+    image: "/lap-que-kinh-dich.webp",
     title: "Lập quẻ Kinh Dịch",
   },
   {
     href: "/xem-ngay-tot-xau",
     icon: "clock",
-    image: "/xem-ngay-tot-xau-v2.png",
+    image: "/xem-ngay-tot-xau-v2.webp",
     title: "Xem ngày tốt xấu",
   },
   {
     href: "/dai-cat-loi",
     icon: "award",
-    image: "/dai-cat-loi-v2.png",
+    image: "/dai-cat-loi-v2.webp",
     title: "Đại Cát Lợi",
   },
   {
     href: "/dai-cat-loi/ngay-gio-xuat-hanh",
     icon: "map-pin",
-    image: "/ngay-gio-xuat-hanh-ca-nhan.png",
+    image: "/ngay-gio-xuat-hanh-ca-nhan.webp",
     title: "Ngày Giờ Xuất Hành Cá Nhân",
   },
 ];
