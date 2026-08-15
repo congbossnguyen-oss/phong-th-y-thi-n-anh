@@ -232,7 +232,8 @@ const BASE_RULES: TrachCatDayBaseRules = {
   diemNenTang: 5,
   hoangDaoHacDao: { "hoàng đạo": 1.2, "hắc đạo": -1.2, "không xác định": 0 },
   nhiThapBatTu: { cat: 0.8, hung: -0.8 },
-  trucTot: ["Thành", "Khai", "Kiến", "Định", "Trừ"],
+  // "Mãn" = đầy đủ, sung túc — chủ dự án chốt 2026-08-15 xếp nhóm tốt cho mọi loại việc.
+  trucTot: ["Mãn", "Thành", "Khai", "Kiến", "Định", "Trừ"],
   trucXau: ["Phá", "Nguy", "Bế"],
   diemTrucTot: 0.8,
   diemTrucXau: -0.8,
