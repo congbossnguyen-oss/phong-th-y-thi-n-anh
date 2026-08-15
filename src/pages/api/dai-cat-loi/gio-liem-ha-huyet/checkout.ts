@@ -1,16 +1,14 @@
 import type { APIRoute } from "astro";
 import { calculateGioLiemHaHuyet, type GioLiemHaHuyetInput } from "@thien-anh/trachnhat-engine";
-import { createToolOrder } from "../../../../lib/db/orders";
-import { getSepayQrUrl } from "../../../../lib/payments/sepay";
+import { taoDonCongCu } from "../../../../lib/payments/checkout-cong-cu";
 import { Astronomy, type Data } from "@thien-anh/calendar-core";
 
 type Chi = Data.Chi;
 
 export const prerender = false;
 
+// Giá lấy từ bảng giá phía máy chủ (lib/payments/gia-cong-cu.ts) — không tin số tiền client gửi.
 const TOOL_SLUG = "gio-liem-ha-huyet";
-// Giá cố định phía server — không bao giờ tin số tiền client gửi lên (cùng nguyên tắc với đơn vật phẩm).
-const TOOL_PRICE = 499000;
 
 const CHI_HOP_LE = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"];
 const GIOI_TINH_HOP_LE = ["nam", "nu"];
@@ -26,13 +24,9 @@ function parseChiOptional(value: unknown): Chi | undefined {
 }
 
 export const POST: APIRoute = async ({ request, locals }) => {
-  // Dịch vụ thu phí: bắt buộc đăng nhập. Đây là chốt chặn THẬT (trang .astro chỉ ẩn form cho đẹp).
-  if (!locals.user) {
-    return new Response(
-      JSON.stringify({ ok: false, error: "Vui lòng đăng nhập để sử dụng dịch vụ này." }),
-      { status: 401, headers: { "Content-Type": "application/json" } },
-    );
-  }
+  // ⚠️ Module này CỐ Ý KHÔNG bắt đăng nhập (quyết định của Công): khách dùng ngay lúc gia đình
+  // vừa có tang, thường nửa đêm và đang rối — bắt tạo tài khoản lúc đó là rào cản sai chỗ.
+  // Kết quả truy cập bằng orderCode làm "vé". Khác với Xem Ngày Cao Cấp (có bắt đăng nhập).
 
   const body = await request.json().catch(() => null);
   if (!body || typeof body !== "object") {
@@ -46,11 +40,12 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const thangMat = Number(b.thangMat);
   const ngayMat = Number(b.ngayMat);
   const chiGioMat = b.chiGioMat;
-  // Họ tên + email lấy từ TÀI KHOẢN, không nhận từ client — client sửa được thì đối soát vô nghĩa.
-  // Riêng số điện thoại vẫn nhận từ form vì tài khoản có thể chưa có (cột phone cho phép null),
-  // và khách hay muốn để số khác số đăng ký — giống luồng thanh toán khóa học.
-  const customerName = locals.user.name;
-  const customerEmail = locals.user.email;
+  // Không bắt đăng nhập nên thông tin liên hệ lấy từ form. Nếu khách TÌNH CỜ đang đăng nhập thì
+  // ưu tiên tên/email của tài khoản (đáng tin hơn) và gắn đơn vào tài khoản đó.
+  const customerName = locals.user?.name ?? (typeof b.customerName === "string" ? b.customerName.trim() : "");
+  const customerEmail =
+    locals.user?.email ??
+    (typeof b.customerEmail === "string" && b.customerEmail.trim() ? b.customerEmail.trim() : null);
   const customerPhone = typeof b.customerPhone === "string" ? b.customerPhone.trim() : "";
 
   if (typeof gioiTinh !== "string" || !GIOI_TINH_HOP_LE.includes(gioiTinh)) {
@@ -59,8 +54,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
   if (typeof chiGioMat !== "string" || !CHI_HOP_LE.includes(chiGioMat)) {
     return jsonResponse({ ok: false, error: "Giờ mất không hợp lệ." }, 400);
   }
-  if (!customerPhone) {
-    return jsonResponse({ ok: false, error: "Vui lòng nhập số điện thoại liên hệ." }, 400);
+  if (!customerName || !customerPhone) {
+    return jsonResponse({ ok: false, error: "Vui lòng nhập đầy đủ họ tên và số điện thoại liên hệ." }, 400);
   }
 
   // Ngày giờ mất không được ở tương lai — quy tắc nghiệp vụ (không thuộc engine thuần, vì engine
@@ -114,18 +109,16 @@ export const POST: APIRoute = async ({ request, locals }) => {
   }
 
   try {
-    const { orderId, orderCode, totalAmount } = await createToolOrder({
+    const kq = await taoDonCongCu({
       toolSlug: TOOL_SLUG,
       toolInput: input,
-      userId: locals.user.id,
+      userId: locals.user?.id ?? null,
       customerName,
       customerPhone,
       customerEmail,
-      totalAmount: TOOL_PRICE,
+      maKhuyenMai: typeof b.maKhuyenMai === "string" ? b.maKhuyenMai : "",
     });
-
-    const qrUrl = getSepayQrUrl({ amount: totalAmount, orderCode });
-    return jsonResponse({ ok: true, orderId, orderCode, totalAmount, qrUrl }, 200);
+    return jsonResponse(kq, kq.ok ? 200 : 400);
   } catch (err) {
     return jsonResponse({ ok: false, error: err instanceof Error ? err.message : "Không tạo được đơn hàng." }, 400);
   }

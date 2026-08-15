@@ -4,6 +4,8 @@ import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
 import DateSelect from "../../components/ui/DateSelect.astro";
+import MaKhuyenMai from "../../components/ui/MaKhuyenMai.astro";
+import { GIA_CONG_CU, dinhDangTien } from "../../lib/payments/gia-cong-cu";
 
 // Không prerender: cần đọc phiên đăng nhập lúc request. Trang vẫn trả nội dung giới thiệu cho
 // khách chưa đăng nhập (và cho Google index) — chỉ khối form bị thay bằng lời mời đăng nhập.
@@ -17,7 +19,9 @@ const SON_24 = [
   "Tý", "Quý", "Sửu", "Cấn", "Dần", "Giáp", "Mão", "Ất", "Thìn", "Tốn", "Tỵ", "Bính",
   "Ngọ", "Đinh", "Mùi", "Khôn", "Thân", "Canh", "Dậu", "Tân", "Tuất", "Càn", "Hợi", "Nhâm",
 ];
-const TOOL_PRICE_LABEL = "999.000đ";
+const TOOL_SLUG = "xem-ngay-cao-cap";
+const TOOL_PRICE = GIA_CONG_CU[TOOL_SLUG];
+const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
 ---
 
 <BaseLayout
@@ -216,6 +220,19 @@ const TOOL_PRICE_LABEL = "999.000đ";
         <div id="xncc-o-mot-ngay" class="hidden">
           <DateSelect idPrefix="xncc-ngay" label="Ngày cần giám định (dương lịch)" required={false} yearsBack={15} yearsForward={5} />
         </div>
+
+        <div class="border-t border-(--color-ivory-300) pt-4">
+          <label for="xncc-sdt" class="text-sm font-medium text-(--color-ink-800)">Số điện thoại liên hệ</label>
+          <input
+            type="tel"
+            id="xncc-sdt"
+            placeholder="Để liên hệ khi cần làm rõ kết quả"
+            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"
+          />
+          <p class="mt-1 text-xs text-(--color-ink-500)">Họ tên và email lấy sẵn từ tài khoản đang đăng nhập.</p>
+        </div>
+
+        <MaKhuyenMai idPrefix="xncc-ma" toolSlug={TOOL_SLUG} giaGoc={TOOL_PRICE} />
 
         <Button type="submit" size="lg"><span id="xncc-nhan-nut">Tìm tháng phù hợp</span></Button>
       </form>

@@ -135,9 +135,13 @@ export async function createCourseOrder(params: {
 export async function createToolOrder(params: {
   toolSlug: string;
   toolInput: unknown;
-  // Dịch vụ công cụ thu phí nay bắt buộc đăng nhập — gắn đơn vào tài khoản để khách xem lại được
-  // kết quả cũ và để đối soát khách hàng. (Trước đây cho phép mua không tài khoản → userId null.)
-  userId: string;
+  // Gắn đơn vào tài khoản khi công cụ có bắt đăng nhập (vd Xem Ngày Cao Cấp) — để khách xem lại
+  // được kết quả cũ và để đối soát khách hàng.
+  //
+  // null với công cụ CỐ Ý không bắt đăng nhập: module Giờ Liệm – Hạ Huyệt dùng ngay lúc gia đình
+  // vừa có tang, thường nửa đêm và đang rối — bắt tạo tài khoản lúc đó là rào cản sai chỗ.
+  // Những đơn này dùng orderCode làm "vé" truy cập kết quả.
+  userId: string | null;
   customerName: string;
   customerPhone: string;
   customerEmail: string | null;

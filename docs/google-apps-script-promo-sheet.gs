@@ -67,6 +67,15 @@ const COT_LUOT_DUNG = [
 function layTab(ten, cotTieuDe) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   let sheet = ss.getSheetByName(ten);
+
+  // Sheet ban đầu được tạo bằng cách import CSV nên tab mang tên mặc định của Google
+  // ("Trang tính1"/"Sheet1"/tên file). Nếu chưa có tab đúng tên mà cả bảng tính mới chỉ có đúng
+  // 1 tab, thì đó chính là tab dữ liệu — đổi tên nó thay vì tạo tab mới, nếu không dữ liệu đã
+  // import sẽ nằm mồ côi ở tab cũ còn script thì ghi sang tab khác.
+  if (!sheet && ten === TAB_DANH_SACH && ss.getSheets().length === 1) {
+    sheet = ss.getSheets()[0].setName(ten);
+  }
+
   if (!sheet) {
     sheet = ss.insertSheet(ten);
   }

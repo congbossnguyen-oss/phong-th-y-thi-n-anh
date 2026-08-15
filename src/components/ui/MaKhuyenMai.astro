@@ -1,0 +1,114 @@
+---
+/**
+ * Ô nhập mã khuyến mãi cho các công cụ thu phí.
+ *
+ * Bấm "Áp dụng" chỉ để khách XEM TRƯỚC số tiền còn phải trả — không trừ lượt mã. Mã thật sự được
+ * kiểm lại và trừ lượt ở bước tạo đơn (checkout), nên khách có sửa gì trong trình duyệt cũng vô ích.
+ *
+ * Trang chứa component này chỉ cần đọc `document.getElementById(`${idPrefix}-input`).value` rồi
+ * gửi lên checkout dưới khóa `maKhuyenMai`. Không cần biết mã hợp lệ hay chưa.
+ */
+import { dinhDangTien } from "../../lib/payments/gia-cong-cu";
+
+interface Props {
+  idPrefix: string;
+  toolSlug: "gio-liem-ha-huyet" | "xem-ngay-cao-cap";
+  giaGoc: number;
+}
+
+const { idPrefix, toolSlug, giaGoc } = Astro.props;
+---
+
+<div
+  class="rounded-(--radius-control) border border-dashed border-(--color-gold-500)/50 bg-(--color-gold-400)/5 p-3"
+  data-ma-khuyen-mai
+  data-id-prefix={idPrefix}
+  data-tool-slug={toolSlug}
+>
+  <label for={`${idPrefix}-input`} class="text-sm font-medium text-(--color-ink-800)">
+    Mã khuyến mãi (nếu có)
+  </label>
+  <div class="mt-1.5 flex gap-2">
+    <input
+      type="text"
+      id={`${idPrefix}-input`}
+      placeholder="Nhập mã được tặng"
+      autocomplete="off"
+      spellcheck="false"
+      class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm uppercase tracking-wider text-(--color-ink-800)"
+    />
+    <button
+      type="button"
+      id={`${idPrefix}-nut`}
+      class="shrink-0 rounded-(--radius-control) border border-(--color-ink-600) px-4 py-2.5 text-sm font-semibold text-(--color-ink-950) transition-colors hover:border-(--color-gold-400) hover:text-(--color-gold-300) disabled:opacity-50"
+    >
+      Áp dụng
+    </button>
+  </div>
+  <p id={`${idPrefix}-ket-qua`} class="mt-2 hidden text-sm"></p>
+  <p class="mt-1.5 text-xs text-(--color-ink-500)">
+    Giá gốc {dinhDangTien(giaGoc)}. Chưa có mã thì bỏ trống ô này.
+  </p>
+</div>
+
+<script>
+  // Chạy cho MỌI ô mã khuyến mãi trên trang (hiện mỗi trang chỉ có 1, nhưng viết vậy cho chắc).
+  document.querySelectorAll<HTMLElement>("[data-ma-khuyen-mai]").forEach((goc) => {
+    const idPrefix = goc.dataset.idPrefix!;
+    const toolSlug = goc.dataset.toolSlug!;
+    const input = document.getElementById(`${idPrefix}-input`) as HTMLInputElement;
+    const nut = document.getElementById(`${idPrefix}-nut`) as HTMLButtonElement;
+    const ketQua = document.getElementById(`${idPrefix}-ket-qua`)!;
+
+    const bao = (msg: string, tot: boolean) => {
+      ketQua.textContent = msg;
+      ketQua.className = tot
+        ? "mt-2 text-sm font-medium text-(--color-success-500)"
+        : "mt-2 text-sm text-(--color-danger-500)";
+    };
+
+    // Sửa mã thì xoá kết quả cũ đi, tránh khách tưởng mã mới vẫn đang được giảm.
+    input.addEventListener("input", () => {
+      ketQua.classList.add("hidden");
+    });
+
+    nut.addEventListener("click", async () => {
+      const ma = input.value.trim();
+      if (!ma) {
+        ketQua.classList.remove("hidden");
+        bao("Chưa nhập mã.", false);
+        return;
+      }
+
+      nut.disabled = true;
+      ketQua.classList.remove("hidden");
+      bao("Đang kiểm mã…", true);
+
+      try {
+        const res = await fetch("/api/khuyen-mai/kiem-ma", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ ma, toolSlug }),
+        });
+        const data = await res.json();
+
+        if (!data.ok) {
+          bao(data.error ?? "Mã không dùng được.", false);
+          return;
+        }
+
+        const phaiTra = Number(data.soTienPhaiTra);
+        bao(
+          phaiTra === 0
+            ? `✅ ${data.moTaGiam} — lượt này miễn phí.`
+            : `✅ ${data.moTaGiam} — chỉ còn ${phaiTra.toLocaleString("vi-VN")}đ.`,
+          true,
+        );
+      } catch {
+        bao("Không kết nối được máy chủ, thử lại sau.", false);
+      } finally {
+        nut.disabled = false;
+      }
+    });
+  });
+</script>
