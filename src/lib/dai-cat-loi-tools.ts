@@ -145,4 +145,11 @@ export const paidTools: PaidTool[] = [
     desc: "Giám định ngày theo Huyền Không Đại Quái: lọc Ngũ Hoàng/Tam Sát/Bát Sát/Thái Tuế trước, rồi luận cách cục Tam Tài Thiên – Địa – Nhân giao.",
     priceLabel: "999.000đ / lượt",
   },
+  {
+    href: "/dai-cat-loi/ngay-ky-hop-dong-cao-cap",
+    icon: "✍️",
+    title: "Ngày Giờ Ký Kết Hợp Đồng – Bản Cao Cấp",
+    desc: "Lọc loại ngày đại kỵ trước, rồi chấm điểm theo Thập Nhị Trực, 28 Tú, Tiểu Lục Nhâm và lớp Thập Thần theo Nhật Chủ người ký. Chọn luôn giờ ký trong ngày.",
+    priceLabel: "299.000đ / lượt",
+  },
 ];

@@ -8,11 +8,12 @@
  * Trang chứa component này chỉ cần đọc `document.getElementById(`${idPrefix}-input`).value` rồi
  * gửi lên checkout dưới khóa `maKhuyenMai`. Không cần biết mã hợp lệ hay chưa.
  */
-import { dinhDangTien } from "../../lib/payments/gia-cong-cu";
+import { dinhDangTien, type ToolSlug } from "../../lib/payments/gia-cong-cu";
 
 interface Props {
   idPrefix: string;
-  toolSlug: "gio-liem-ha-huyet" | "xem-ngay-cao-cap";
+  // Lấy thẳng kiểu từ bảng giá — thêm công cụ thu phí mới thì không phải sửa lại chỗ này.
+  toolSlug: ToolSlug;
   giaGoc: number;
 }
 

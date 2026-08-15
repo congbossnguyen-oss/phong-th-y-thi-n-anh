@@ -55,6 +55,15 @@ export { calculateVanMayTrongNgay, calculateVanMayRange };
 export type { NgayKhaiTruongRangeInput, NgayKhaiTruongRangeResult, NgayKhaiTruongNgay } from "./processing/ngayKhaiTruong.js";
 export { calculateNgayKhaiTruongRange };
 export type { NgayKyHopDongRangeInput, NgayKyHopDongRangeResult, NgayKyHopDongNgay } from "./processing/ngayKyHopDong.js";
+// Bản cao cấp (dịch vụ thu phí) — engine riêng, không dùng chung công thức với bản miễn phí ở trên.
+export {
+  calculateNgayKyHopDongCaoCap,
+  type NgayKyHopDongCaoCapInput,
+  type NgayKyHopDongCaoCapResult,
+  type NgayKyHopDongCaoCapNgay,
+  type GioKyDeXuat,
+  type NgaySinhDayDu,
+} from "./processing/ngayKyHopDongCaoCap.js";
 export { calculateNgayKyHopDongRange };
 export type { NgayDaiCatCaNhanInput, NgayDaiCatCaNhanResult, NgayDaiCatCaNhanNgay } from "./processing/ngayDaiCatCaNhan.js";
 export { calculateNgayDaiCatCaNhan };
