@@ -8,7 +8,7 @@
  * đã làm việc đó. Module này CHỈ dùng lại 4 cung để xếp hạng giờ liệm/đóng quan/hạ huyệt.
  */
 import { Data } from "@thien-anh/calendar-core";
-import { CUNG_TRUNG_TANG, type GioiTinh, type PhanLoaiCung } from "./chuongPhap.js";
+import { CUNG_TRUNG_TANG, phanLoaiCung, type GioiTinh, type PhanLoaiCung } from "./chuongPhap.js";
 
 type Can = Data.Can;
 type Chi = Data.Chi;
@@ -23,6 +23,39 @@ const CHI_INDEX = new Map<Chi, number>(Data.CHI.map((c, i) => [c, i]));
 export const LUON_TRANH_LIEM: readonly Chi[] = CUNG_TRUNG_TANG;
 /** Chỉ khuyến nghị tránh (trừ điểm, không loại) cho CHÔN/hạ huyệt. */
 export const KHUYEN_TRANH_CHON: readonly Chi[] = CUNG_TRUNG_TANG;
+
+/**
+ * Mục 3 đặc tả — trong mỗi nhóm cung còn phải loại tiếp cung xấu trước khi coi là "dùng được":
+ *
+ * - Nhập Mộ: loại **Thìn** vì Thìn nằm trong bộ Long Hổ Kê Xà (Thìn/Dần/Dậu/Tỵ — xem
+ *   `LONG_HO_KE_XA` ở `tuoiCanTranh.ts`), bộ này kỵ có mặt ở nhập quan/khâm liệm/đóng cá/hạ huyệt.
+ * - Thiên Di: loại **Dậu** (tứ ngoại nhân, cũng thuộc Long Hổ Kê Xà).
+ *
+ * Cung bị loại vẫn GIỮ nguyên `phanLoaiCung` (Thìn vẫn là "nhap-mo") để phần diễn giải nói đúng
+ * bản chất chưởng pháp, nhưng KHÔNG được cộng điểm ưu tiên của nhóm — nếu cộng, một cung kỵ sẽ
+ * leo lên đầu bảng xếp hạng.
+ */
+export const NHAP_MO_DUNG_DUOC: readonly Chi[] = ["Tuất", "Sửu", "Mùi"];
+export const THIEN_DI_DUNG_DUOC: readonly Chi[] = ["Tý", "Mão", "Ngọ"];
+
+/** Cung có được hưởng điểm ưu tiên của nhóm nó hay không (Thìn/Dậu → false). */
+export function laCungDungDuoc(cung: Chi): boolean {
+  const loai = phanLoaiCung(cung);
+  if (loai === "nhap-mo") return (NHAP_MO_DUNG_DUOC as readonly Chi[]).includes(cung);
+  if (loai === "thien-di") return (THIEN_DI_DUNG_DUOC as readonly Chi[]).includes(cung);
+  return false;
+}
+
+/**
+ * Quy luật bất biến (dữ liệu gốc `chuong_phap.quy_luat_bat_bien`): vì Cung_Giờ = (Cung_Ngày + k)
+ * mod 12, khi Cung_Ngày thuộc nhóm Nhập Mộ thì CHỈ k = 3/6/9/12 (tức 4 giờ Dần/Tỵ/Thân/Hợi) mới
+ * ra Nhập Mộ; 8 giờ còn lại không bao giờ đạt. Hệ quả thực tế: hôm đó mọi giờ Nhập Mộ đều đồng
+ * thời là giờ tứ sinh (bị trừ điểm ở bối cảnh hạ huyệt) — tầng hiển thị cần nói rõ để gia chủ
+ * hiểu vì sao không có giờ nào "sạch" cả hai tiêu chí.
+ */
+export function nhapMoChiRoiVaoTuSinh(cungNgay: Chi): boolean {
+  return phanLoaiCung(cungNgay) === "nhap-mo";
+}
 
 /** Bước 7 mục 10.2 — Can giờ đẹp theo Chi ngày (nguồn ngoài sách, bảng tra cố định). */
 export const CAN_GIO_DEP_THEO_CHI_NGAY: Readonly<Record<Chi, readonly [Can, Can]>> = {
@@ -88,6 +121,11 @@ export type BoiCanhChonGio = "liem" | "ha-huyet";
 
 export interface YeuToDiemUngVien {
   phanLoaiCung: PhanLoaiCung;
+  /**
+   * Cung trên bàn tay chưởng pháp của ứng viên. Cần truyền cả Chi (không chỉ `phanLoaiCung`) để
+   * loại được Thìn/Dậu khỏi điểm ưu tiên theo `NHAP_MO_DUNG_DUOC` / `THIEN_DI_DUNG_DUOC`.
+   */
+  cungGio: Chi;
   /** Chỉ cộng điểm Thiên Di khi KHÔNG có ứng viên Nhập Mộ nào khả dụng trong cùng ngày đó. */
   apDungThienDi: boolean;
   hoangDaoTen: string;
@@ -103,11 +141,18 @@ export interface YeuToDiemUngVien {
   trucTot?: boolean;
 }
 
-/** Bước 7 mục 10.3 — công thức chấm điểm tổng. */
+/**
+ * Bước 7 mục 10.3 — công thức chấm điểm tổng.
+ *
+ * Điểm ưu tiên nhóm cung CHỈ cộng khi cung thuộc tập "dùng được" (`laCungDungDuoc`) — cung Thìn
+ * (Nhập Mộ) và Dậu (Thiên Di) bị loại theo mục 3 đặc tả nên không được cộng, tránh việc một cung
+ * kỵ Long Hổ Kê Xà lại đứng đầu bảng chỉ nhờ nhãn "Nhập Mộ".
+ */
 export function tinhDiemUngVien(y: YeuToDiemUngVien): number {
   let diem = 0;
-  if (y.phanLoaiCung === "nhap-mo") diem += 100;
-  else if (y.phanLoaiCung === "thien-di" && y.apDungThienDi) diem += 40;
+  const cungDungDuoc = laCungDungDuoc(y.cungGio);
+  if (y.phanLoaiCung === "nhap-mo" && cungDungDuoc) diem += 100;
+  else if (y.phanLoaiCung === "thien-di" && cungDungDuoc && y.apDungThienDi) diem += 40;
   if (y.hoangDaoLaCat) diem += 50;
   if (TEN_HOANG_DAO_UU_TIEN.has(y.hoangDaoTen)) diem += 20;
   if (y.canGioDatBangDep) diem += 15;

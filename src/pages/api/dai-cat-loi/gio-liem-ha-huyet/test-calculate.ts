@@ -83,6 +83,8 @@ export const POST: APIRoute = async ({ request }) => {
     chiGioMat: chiGioMat as GioLiemHaHuyetInput["chiGioMat"],
     ...(b.soNgayDuKienToiChon ? { soNgayDuKienToiChon: Number(b.soNgayDuKienToiChon) } : {}),
     ...(thanQuyen ? { thanQuyen } : {}),
+    // Quãng đường nhà → huyệt, dùng cho bước 6b (giờ động quan). Engine tự validate 5-480 phút.
+    ...(b.thoiGianDiChuyenPhut ? { thoiGianDiChuyenPhut: Number(b.thoiGianDiChuyenPhut) } : {}),
   };
 
   try {

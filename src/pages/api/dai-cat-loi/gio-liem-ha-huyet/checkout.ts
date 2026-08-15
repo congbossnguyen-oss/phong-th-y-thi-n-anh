@@ -95,6 +95,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
     chiGioMat: chiGioMat as GioLiemHaHuyetInput["chiGioMat"],
     ...(b.soNgayDuKienToiChon ? { soNgayDuKienToiChon: Number(b.soNgayDuKienToiChon) } : {}),
     ...(thanQuyen ? { thanQuyen } : {}),
+    // Quãng đường nhà → huyệt, dùng để trừ lùi ra giờ động quan (bước 6b). Bỏ trống thì không
+    // tính giờ động quan — engine tự validate khoảng 5-480 phút ở "dry run" bên dưới.
+    ...(b.thoiGianDiChuyenPhut ? { thoiGianDiChuyenPhut: Number(b.thoiGianDiChuyenPhut) } : {}),
   };
 
   // "Dry run" — tính thử trước khi tạo đơn, để không thu tiền cho input không tính được.

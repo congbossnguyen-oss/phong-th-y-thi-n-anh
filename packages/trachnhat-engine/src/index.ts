@@ -141,6 +141,8 @@ export type {
   UngVienGioLiem,
   UngVienNgayGioHaHuyet,
   GioLiemHaHuyetOutput,
+  KhungGioThucTe,
+  GioDongQuan,
 } from "./processing/gioLiemHaHuyet.js";
 export { calculateGioLiemHaHuyet };
 export type {

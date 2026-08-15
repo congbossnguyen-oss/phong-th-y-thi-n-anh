@@ -104,6 +104,19 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
           <p class="mt-1 text-xs text-(--color-ink-500)">Nếu ≤3 ngày (hoặc bỏ trống): chỉ chọn giờ hạ huyệt, giữ nguyên ngày mất.</p>
         </div>
 
+        <div>
+          <label for="glhh-di-chuyen" class="text-sm font-medium text-(--color-ink-800)">Thời gian đi từ nhà tới huyệt (phút, tùy chọn)</label>
+          <input
+            type="number"
+            id="glhh-di-chuyen"
+            placeholder="Ví dụ 90 — bỏ trống nếu chưa rõ quãng đường"
+            min="5"
+            max="480"
+            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"
+          />
+          <p class="mt-1 text-xs text-(--color-ink-500)">Có số này mới tính thêm được giờ động quan (giờ rời nhà), tính lùi từ giờ hạ huyệt.</p>
+        </div>
+
         <details class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3">
           <summary class="cursor-pointer text-sm font-medium text-(--color-ink-800)">Thêm tuổi thân quyến (tùy chọn — để xét giờ liệm kỵ)</summary>
           <div class="mt-3 grid grid-cols-2 gap-2">
@@ -211,24 +224,38 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
   // Đọc từ thẻ form để không lệch với cờ ở frontmatter (chỗ quyết định ẩn/hiện các ô thu phí).
   const TEST_MODE = (document.getElementById("glhh-form") as HTMLFormElement).dataset.testMode === "true";
 
+  type NgayDL = { nam: number; thang: number; ngay: number };
+
+  /** Khung giờ đồng hồ thực tế — giờ Tý bắt đầu 23h của ngày dương liền TRƯỚC ngày trụ Can Chi. */
+  interface KhungGioThucTe {
+    batDau: string;
+    ketThuc: string;
+    ngayBatDau: NgayDL;
+    vatQuaNuaDem: boolean;
+  }
   interface UngVienGioLiem {
     chiGio: string;
     canGio: string;
-    ngayDuongLich: { nam: number; thang: number; ngay: number };
+    ngayDuongLich: NgayDL;
+    khungGio: KhungGioThucTe;
     cungGio: string;
     phanLoaiCung: "nhap-mo" | "thien-di" | "trung-tang";
+    cungDungDuoc: boolean;
     hoangDaoTen: string;
     hoangDaoLaCat: boolean;
     canGioDatBangDep: boolean;
     diem: number;
   }
   interface UngVienNgayGioHaHuyet {
-    ngayDuongLich: { nam: number; thang: number; ngay: number };
+    ngayDuongLich: NgayDL;
+    khungGio: KhungGioThucTe;
     canChiNgay: { can: string; chi: string };
     chiGio: string;
     canGio: string;
+    cungNgay: string;
     cungGio: string;
     phanLoaiCung: "nhap-mo" | "thien-di" | "trung-tang";
+    cungDungDuoc: boolean;
     hoangDaoTen: string;
     hoangDaoLaCat: boolean;
     canGioDatBangDep: boolean;
@@ -236,6 +263,14 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
     trucTot: boolean;
     chiGioThuocTuSinh: boolean;
     diem: number;
+  }
+  interface GioDongQuan {
+    theoHaHuyet: { ngayDuongLich: NgayDL; chiGio: string; batDau: string };
+    khuyenNghiTu: { gio: string; ngayDuongLich: NgayDL };
+    muonNhat: { gio: string; ngayDuongLich: NgayDL };
+    thoiGianDiChuyenPhut: number;
+    demPhut: number;
+    canhBao?: string;
   }
   interface GioLiemHaHuyetResult {
     tuoiTa: number;
@@ -246,6 +281,8 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
     apDungMienTru3Ngay?: boolean;
     ngayGioHaHuyet?: UngVienNgayGioHaHuyet[];
     khongTimThayNgayHaHuyet?: boolean;
+    gioDongQuan?: GioDongQuan;
+    nhapMoTrungTuSinh?: boolean;
   }
 
   const NHAN_PHAN_LOAI: Record<string, string> = { "nhap-mo": "Nhập Mộ", "thien-di": "Thiên Di", "trung-tang": "Trùng Tang" };
@@ -255,8 +292,27 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
     return `${String(n.ngay).padStart(2, "0")}/${String(n.thang).padStart(2, "0")}/${n.nam}`;
   }
 
-  function yeuToLabel(y: { phanLoaiCung: string; hoangDaoTen: string; hoangDaoLaCat: boolean; canGioDatBangDep: boolean; ngayHopVoiVong?: string | null }): string {
-    const parts: string[] = [NHAN_PHAN_LOAI[y.phanLoaiCung] ?? y.phanLoaiCung];
+  /**
+   * Giờ đồng hồ thực tế của một ứng viên. Với giờ Tý phải ghi rõ mốc 23h thuộc NGÀY TRƯỚC, nếu
+   * không gia chủ rất dễ hiểu nhầm sang 0h cùng ngày — lệch hẳn một ngày tang lễ.
+   */
+  function khungGioLabel(k: KhungGioThucTe): string {
+    if (!k) return "";
+    return k.vatQuaNuaDem ? `${k.batDau} ngày ${ngayLabel(k.ngayBatDau)} → ${k.ketThuc}` : `${k.batDau}–${k.ketThuc}`;
+  }
+
+  function yeuToLabel(y: {
+    phanLoaiCung: string;
+    cungDungDuoc?: boolean;
+    hoangDaoTen: string;
+    hoangDaoLaCat: boolean;
+    canGioDatBangDep: boolean;
+    ngayHopVoiVong?: string | null;
+  }): string {
+    const nhanCung = NHAN_PHAN_LOAI[y.phanLoaiCung] ?? y.phanLoaiCung;
+    // Cung Thìn (Nhập Mộ) / Dậu (Thiên Di) vẫn đúng nhãn chưởng pháp nhưng bị loại khỏi tập cung
+    // dùng được (kỵ Long Hổ Kê Xà / tứ ngoại nhân) nên không được hưởng điểm ưu tiên của nhóm.
+    const parts: string[] = [y.cungDungDuoc === false ? `${nhanCung} (cung kỵ, không tính ưu tiên)` : nhanCung];
     if (y.hoangDaoLaCat) parts.push(`Hoàng đạo ${y.hoangDaoTen}`);
     if (y.canGioDatBangDep) parts.push("Can giờ đẹp");
     if (y.ngayHopVoiVong === "tam-hop") parts.push("ngày tam hợp tuổi vong");
@@ -264,11 +320,12 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
     return parts.join(" · ");
   }
 
-  function candidateCardHtml(params: { ngayLbl: string; gioLbl: string; nhan: string; mau: string; canhBao?: string }): string {
+  function candidateCardHtml(params: { ngayLbl: string; gioLbl: string; khungLbl?: string; nhan: string; mau: string; canhBao?: string }): string {
     return `<div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
       <div class="flex items-center justify-between">
         <p class="font-display text-lg font-bold text-slate-900">${params.ngayLbl} — giờ ${params.gioLbl}</p>
       </div>
+      ${params.khungLbl ? `<p class="text-sm font-medium text-slate-600">${params.khungLbl}</p>` : ""}
       <p class="mt-1 text-sm font-semibold ${params.mau}">${params.nhan}</p>
       ${params.canhBao ? `<p class="mt-1.5 text-xs text-amber-600">⚠️ ${params.canhBao}</p>` : ""}
     </div>`;
@@ -297,6 +354,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
         candidateCardHtml({
           ngayLbl: ngayLabel(c.ngayDuongLich),
           gioLbl: c.chiGio,
+          khungLbl: khungGioLabel(c.khungGio),
           nhan: yeuToLabel(c),
           mau: MAU_PHAN_LOAI[c.phanLoaiCung] ?? "text-slate-700",
         }),
@@ -309,6 +367,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
         candidateCardHtml({
           ngayLbl: ngayLabel(c.ngayDuongLich),
           gioLbl: c.chiGio,
+          khungLbl: khungGioLabel(c.khungGio),
           nhan: yeuToLabel(c),
           mau: MAU_PHAN_LOAI[c.phanLoaiCung] ?? "text-slate-700",
           ...(c.chiGioThuocTuSinh
@@ -317,6 +376,21 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
         }),
       )
       .join("");
+
+    // Giờ ĐỘNG QUAN (chuyển quan tài ra khỏi nhà) — khác giờ ĐÓNG QUAN (đậy nắp) ở khối trên.
+    // Là giờ dẫn xuất: lấy giờ hạ huyệt phương án 1 trừ lùi quãng đường, nên trả về một KHOẢNG.
+    const dq = result.gioDongQuan;
+    const dongQuanHtml = dq
+      ? `<div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
+          <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Giờ động quan (rời nhà)</p>
+          <p class="mt-1 text-xs text-slate-500">Tính lùi từ phương án hạ huyệt số 1 (${ngayLabel(dq.theoHaHuyet.ngayDuongLich)} giờ ${dq.theoHaHuyet.chiGio}, bắt đầu ${dq.theoHaHuyet.batDau}), trừ ${dq.thoiGianDiChuyenPhut} phút di chuyển${dq.demPhut > 0 ? ` và ${dq.demPhut} phút đi sớm dự phòng` : ""}.</p>
+          <div class="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
+            <p class="font-display text-lg font-bold text-slate-900">Nên rời nhà trong khoảng ${dq.khuyenNghiTu.gio} – ${dq.muonNhat.gio}</p>
+            <p class="mt-1 text-sm text-slate-600">Ngày ${ngayLabel(dq.khuyenNghiTu.ngayDuongLich)}. Tới sớm rồi chờ luôn an toàn; chỉ tới muộn mới ảnh hưởng giờ hạ huyệt.</p>
+            ${dq.canhBao ? `<p class="mt-1.5 text-xs text-amber-600">⚠️ ${dq.canhBao}</p>` : ""}
+          </div>
+        </div>`
+      : "";
 
     el.innerHTML = `
       <div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
@@ -332,8 +406,14 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
             : ""
         }
         ${result.khongTimThayNgayHaHuyet ? `<p class="mt-1 text-xs text-amber-600">Không tìm được ngày phù hợp trong 20 ngày quét — vui lòng liên hệ tư vấn trực tiếp.</p>` : ""}
+        ${
+          result.nhapMoTrungTuSinh
+            ? `<p class="mt-1 text-xs text-slate-500">Ngày này có Cung Ngày thuộc nhóm Nhập Mộ, nên theo quy luật chưởng pháp chỉ 4 giờ Dần/Tỵ/Thân/Hợi mới đạt Nhập Mộ — mà đó đúng là nhóm giờ nên hạn chế khi chôn. Vì vậy không có giờ nào đạt trọn vẹn cả hai tiêu chí.</p>`
+            : ""
+        }
         <div class="mt-3 space-y-2">${haHuyetHtml || `<p class="text-sm text-slate-500">Chưa có ứng viên phù hợp.</p>`}</div>
       </div>
+      ${dongQuanHtml}
       ${DISCLAIMER_HTML}
     `;
     el.classList.remove("hidden");
@@ -387,6 +467,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
     const ngayMat = readDateSelects("glhh-ngay-mat");
     const chiGioMat = (document.getElementById("glhh-gio-mat") as HTMLSelectElement).value;
     const soNgayRaw = (document.getElementById("glhh-so-ngay") as HTMLInputElement).value;
+    const diChuyenRaw = (document.getElementById("glhh-di-chuyen") as HTMLInputElement).value;
     const truongNam = (document.getElementById("glhh-truong-nam") as HTMLSelectElement).value;
     const conDauLon = (document.getElementById("glhh-con-dau-lon") as HTMLSelectElement).value;
     const chauDichTon = (document.getElementById("glhh-chau-dich-ton") as HTMLSelectElement).value;
@@ -425,6 +506,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
       ngayMat: ngayMat.day,
       chiGioMat,
       ...(soNgayRaw ? { soNgayDuKienToiChon: Number(soNgayRaw) } : {}),
+      ...(diChuyenRaw ? { thoiGianDiChuyenPhut: Number(diChuyenRaw) } : {}),
       ...(Object.keys(thanQuyen).length > 0 ? { thanQuyen } : {}),
       customerName,
       customerPhone,

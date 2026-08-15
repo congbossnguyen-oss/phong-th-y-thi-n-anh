@@ -22,9 +22,61 @@ const SO_NGAY_UNG_VIEN_GIU_LAI = 10;
 /** Trực không thuộc nhóm này thì được coi là "tốt" (bước 7 mục 10.3, dòng "+5 nếu Trực không phải Kiến/Phá/Thu"). */
 const TRUC_XAU = new Set(["Kiến", "Phá", "Thu"]);
 
+/** Đệm mặc định trước giờ hạ huyệt khi tính giờ động quan (mục 9b: "nên tới sớm rồi chờ"). */
+const DEM_DONG_QUAN_PHUT_MAC_DINH = 45;
+/** Khoảng thời gian di chuyển hợp lệ (mục 2 đặc tả). */
+const DI_CHUYEN_PHUT_TOI_THIEU = 5;
+const DI_CHUYEN_PHUT_TOI_DA = 480;
+/** Khung "đêm khuya" dùng để cảnh báo giờ động quan bất khả thi (23h-5h). */
+const DEM_KHUYA_TU_PHUT = 23 * 60;
+const DEM_KHUYA_DEN_PHUT = 5 * 60;
+
 /** Giờ dân sự đại diện (0-23) cho mỗi Chi giờ — cùng quy ước với `gioBang.ts`. */
 function representativeHour(chiIndex: number): number {
   return chiIndex === 0 ? 0 : 2 * chiIndex - 1;
+}
+
+/**
+ * Mốc chuyển ngày (dữ liệu gốc `chon_gio_liem.moc_chuyen_ngay`): ngày Can Chi khởi từ giờ Tý =
+ * **23h của ngày dương lịch liền TRƯỚC**. Chỉ giờ Tý bị ảnh hưởng, 11 chi giờ còn lại nằm gọn
+ * trong ngày dương cùng tên với ngày trụ.
+ *
+ * Trả về số phút kể từ 0h của NGÀY TRỤ, nên giờ Tý ra `-60` (tức 23:00 hôm trước). Đây là chi
+ * tiết sống còn với tang lễ: nếu hiển thị "giờ Tý ngày 20/8" mà gia chủ hiểu là 0h ngày 20/8
+ * trong khi thầy định 23h ngày 19/8 thì lệch hẳn một ngày.
+ */
+function phutBatDauKhungGio(chiIndex: number): number {
+  return chiIndex === 0 ? -60 : (2 * chiIndex - 1) * 60;
+}
+
+function formatGioPhut(phutTrongNgay: number): string {
+  const p = ((phutTrongNgay % 1440) + 1440) % 1440;
+  return `${String(Math.floor(p / 60)).padStart(2, "0")}:${String(p % 60).padStart(2, "0")}`;
+}
+
+export interface KhungGioThucTe {
+  /** Mốc bắt đầu khung 2 tiếng của chi giờ, dạng "HH:mm". */
+  batDau: string;
+  ketThuc: string;
+  /** Ngày dương lịch chứa mốc BẮT ĐẦU — với giờ Tý là ngày liền TRƯỚC ngày trụ Can Chi. */
+  ngayBatDau: NgayDuongLich;
+  /** true khi khung giờ vắt qua nửa đêm (chỉ xảy ra với giờ Tý). */
+  vatQuaNuaDem: boolean;
+}
+
+function tinhKhungGio(jdnNgayTru: number, chiIndex: number): KhungGioThucTe {
+  const batDau = phutBatDauKhungGio(chiIndex);
+  return {
+    batDau: formatGioPhut(batDau),
+    ketThuc: formatGioPhut(batDau + 120),
+    ngayBatDau: jdnToNgayDuongLich(jdnNgayTru + Math.floor(batDau / 1440)),
+    vatQuaNuaDem: chiIndex === 0,
+  };
+}
+
+/** Mốc tuyệt đối (phút) của thời điểm bắt đầu 1 chi giờ, để so sánh trước/sau giữa các ngày. */
+function mocTuyetDoiPhut(jdnNgayTru: number, chiIndex: number): number {
+  return jdnNgayTru * 1440 + phutBatDauKhungGio(chiIndex);
 }
 
 function jdnToNgayDuongLich(jdn: number): NgayDuongLich {
@@ -53,6 +105,13 @@ export interface GioLiemHaHuyetInput {
   /** Số ngày dự kiến tới khi hạ huyệt — bỏ trống hoặc ≤3 sẽ áp quy tắc miễn trừ (bước 4). */
   soNgayDuKienToiChon?: number;
   thanQuyen?: GioLiemHaHuyetThanQuyenInput;
+  /**
+   * Bước 6b — thời gian di chuyển từ nhà tới huyệt/nơi hoả táng (phút, 5-480). Bỏ trống thì
+   * không tính giờ động quan (không tự đoán quãng đường).
+   */
+  thoiGianDiChuyenPhut?: number;
+  /** Đệm đi sớm trước giờ hạ huyệt, mặc định 45 phút (mục 9b cho phép cấu hình). */
+  demDongQuanPhut?: number;
   timeZone?: string;
 }
 
@@ -65,9 +124,13 @@ export interface NgayDuongLich {
 export interface UngVienGioLiem {
   chiGio: Chi;
   canGio: Can;
+  /** Ngày của TRỤ Can Chi. Giờ đồng hồ thực tế xem ở `khungGio` (giờ Tý bắt đầu từ 23h hôm trước). */
   ngayDuongLich: NgayDuongLich;
+  khungGio: KhungGioThucTe;
   cungGio: Chi;
   phanLoaiCung: TrungTang.PhanLoaiCung;
+  /** false với cung Thìn (Nhập Mộ) / Dậu (Thiên Di) — bị loại khỏi tập cung dùng được, không cộng điểm nhóm. */
+  cungDungDuoc: boolean;
   hoangDaoTen: string;
   hoangDaoLaCat: boolean;
   canGioDatBangDep: boolean;
@@ -76,11 +139,16 @@ export interface UngVienGioLiem {
 
 export interface UngVienNgayGioHaHuyet {
   ngayDuongLich: NgayDuongLich;
+  khungGio: KhungGioThucTe;
   canChiNgay: { can: Can; chi: Chi };
   chiGio: Chi;
   canGio: Can;
+  /** Cung_Ngày của ngày này trên bàn tay chưởng pháp (gốc để suy ra Cung_Giờ). */
+  cungNgay: Chi;
   cungGio: Chi;
   phanLoaiCung: TrungTang.PhanLoaiCung;
+  /** false với cung Thìn (Nhập Mộ) / Dậu (Thiên Di) — xem `TrungTang.laCungDungDuoc`. */
+  cungDungDuoc: boolean;
   hoangDaoTen: string;
   hoangDaoLaCat: boolean;
   canGioDatBangDep: boolean;
@@ -89,6 +157,30 @@ export interface UngVienNgayGioHaHuyet {
   /** Chi giờ thuộc Dần/Thân/Tỵ/Hợi — chỉ khuyến nghị tránh cho hạ huyệt, không loại tuyệt đối. */
   chiGioThuocTuSinh: boolean;
   diem: number;
+}
+
+/**
+ * Bước 6b (mục 9b đặc tả) — giờ động quan (chuyển quan tài RA KHỎI NHÀ), khác với "giờ đóng
+ * quan" (đậy nắp) vốn dùng chung bảng xếp hạng với giờ liệm. Đây KHÔNG phải một phép luận độc
+ * lập mà là hệ quả số học của giờ hạ huyệt trừ lùi quãng đường, nên trả về một KHOẢNG: sách
+ * khuyên tới sớm rồi chờ, đi sớm luôn an toàn, chỉ đến muộn mới hỏng việc.
+ *
+ * ⚠️ Hai điểm đặc tả để mở, đang chạy theo MẶC ĐỊNH đặc tả nêu, chờ chủ dự án chốt:
+ * (a) trừ lùi từ giờ hạ huyệt của chưởng pháp (hệ module đang dùng), KHÔNG cài Cửu Phi Cung
+ *     Thanh Long Bạch Hổ như câu chữ sách;
+ * (b) KHÔNG sàng thần sát cho giờ động quan, vì nó là giờ dẫn xuất chứ không phải giờ được chọn.
+ */
+export interface GioDongQuan {
+  /** Phương án hạ huyệt số 1 mà khoảng này được trừ lùi từ đó. */
+  theoHaHuyet: { ngayDuongLich: NgayDuongLich; chiGio: Chi; batDau: string };
+  /** Nên rời nhà từ mốc này (đã trừ cả đệm đi sớm). */
+  khuyenNghiTu: { gio: string; ngayDuongLich: NgayDuongLich };
+  /** Muộn nhất phải rời nhà (chỉ trừ quãng đường, không còn đệm). */
+  muonNhat: { gio: string; ngayDuongLich: NgayDuongLich };
+  thoiGianDiChuyenPhut: number;
+  demPhut: number;
+  /** Cảnh báo khi khoảng động quan rơi vào đêm khuya hoặc sớm hơn giờ liệm phương án 1. */
+  canhBao?: string;
 }
 
 export interface GioLiemHaHuyetOutput {
@@ -104,6 +196,14 @@ export interface GioLiemHaHuyetOutput {
   ngayGioHaHuyet?: UngVienNgayGioHaHuyet[];
   /** true nếu quét hết 20 ngày mà không còn ngày nào qua được lọc tuyệt đối (rất hiếm). */
   khongTimThayNgayHaHuyet?: boolean;
+  /** Chỉ có khi khách nhập `thoiGianDiChuyenPhut` và đã tìm được ít nhất 1 giờ hạ huyệt. */
+  gioDongQuan?: GioDongQuan;
+  /**
+   * Quy luật bất biến: Cung_Ngày hạ huyệt thuộc nhóm Nhập Mộ → chỉ 4 giờ Dần/Tỵ/Thân/Hợi đạt
+   * Nhập Mộ, mà đó đúng là 4 giờ khuyến nghị tránh khi chôn. Bật cờ này để tầng hiển thị giải
+   * thích vì sao không có giờ nào đạt đồng thời cả hai tiêu chí.
+   */
+  nhapMoTrungTuSinh?: boolean;
 }
 
 function validateInput(input: GioLiemHaHuyetInput): void {
@@ -122,6 +222,53 @@ function validateInput(input: GioLiemHaHuyetInput): void {
   if (!Number.isInteger(input.ngayMat) || input.ngayMat < 1 || input.ngayMat > 31) {
     throw new Error("ngayMat không hợp lệ.");
   }
+  if (input.thoiGianDiChuyenPhut !== undefined) {
+    const t = input.thoiGianDiChuyenPhut;
+    if (!Number.isFinite(t) || t < DI_CHUYEN_PHUT_TOI_THIEU || t > DI_CHUYEN_PHUT_TOI_DA) {
+      throw new Error(`thoiGianDiChuyenPhut phải trong khoảng ${DI_CHUYEN_PHUT_TOI_THIEU}-${DI_CHUYEN_PHUT_TOI_DA} phút.`);
+    }
+  }
+  if (input.demDongQuanPhut !== undefined && (!Number.isFinite(input.demDongQuanPhut) || input.demDongQuanPhut < 0)) {
+    throw new Error("demDongQuanPhut phải là số phút không âm.");
+  }
+}
+
+/** Mục 9b — trừ lùi từ giờ hạ huyệt phương án 1 để ra khoảng động quan. */
+function tinhGioDongQuan(
+  haHuyet: UngVienNgayGioHaHuyet,
+  jdnHaHuyet: number,
+  chiIndexHaHuyet: number,
+  thoiGianDiChuyenPhut: number,
+  demPhut: number,
+  mocGioLiemSom: number | null,
+): GioDongQuan {
+  const mocHaHuyet = mocTuyetDoiPhut(jdnHaHuyet, chiIndexHaHuyet);
+  const mocMuonNhat = mocHaHuyet - thoiGianDiChuyenPhut;
+  const mocKhuyenNghi = mocMuonNhat - demPhut;
+
+  const moTa = (moc: number) => ({
+    gio: formatGioPhut(moc),
+    ngayDuongLich: jdnToNgayDuongLich(Math.floor(moc / 1440)),
+  });
+
+  let canhBao: string | undefined;
+  const phutTrongNgay = ((mocKhuyenNghi % 1440) + 1440) % 1440;
+  if (phutTrongNgay >= DEM_KHUYA_TU_PHUT || phutTrongNgay < DEM_KHUYA_DEN_PHUT) {
+    canhBao =
+      "Giờ động quan tính ra rơi vào đêm khuya — quãng đường quá dài so với giờ hạ huyệt đã chọn. Nên cân nhắc phương án hạ huyệt muộn hơn trong danh sách.";
+  } else if (mocGioLiemSom !== null && mocKhuyenNghi < mocGioLiemSom) {
+    canhBao =
+      "Giờ động quan tính ra sớm hơn cả giờ liệm phương án 1 — không khả thi. Nên chọn giờ hạ huyệt muộn hơn hoặc rút ngắn quãng đường.";
+  }
+
+  return {
+    theoHaHuyet: { ngayDuongLich: haHuyet.ngayDuongLich, chiGio: haHuyet.chiGio, batDau: haHuyet.khungGio.batDau },
+    khuyenNghiTu: moTa(mocKhuyenNghi),
+    muonNhat: moTa(mocMuonNhat),
+    thoiGianDiChuyenPhut,
+    demPhut,
+    ...(canhBao ? { canhBao } : {}),
+  };
 }
 
 function tinhTuoiTa(namSinhDuongLich: number, namMatDuongLich: number): number {
@@ -165,8 +312,10 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
       chiGio,
       canGio: hourPillar.can,
       ngayDuongLich: jdnToNgayDuongLich(jdnCandidate),
+      khungGio: tinhKhungGio(jdnCandidate, idxChi),
       cungGio,
       phanLoaiCung: phanLoaiCungGio,
+      cungDungDuoc: TrungTang.laCungDungDuoc(cungGio),
       hoangDaoTen: hoangDao.name,
       hoangDaoLaCat: hoangDao.catHung === "cát",
       canGioDatBangDep: TrungTang.isCanGioDep(hourPillar.can, dayPillar.chi),
@@ -174,7 +323,10 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
     });
   }
 
-  const coNhapMoGioLiem = ungVienGioLiem.some((c) => c.phanLoaiCung === "nhap-mo");
+  // "Có Nhập Mộ" ở đây phải hiểu là có Nhập Mộ DÙNG ĐƯỢC — nếu cả ngày chỉ chạm cung Thìn (Nhập
+  // Mộ nhưng bị loại vì Long Hổ Kê Xà) thì coi như không có, để tầng Thiên Di dự phòng được kích
+  // hoạt thay vì mất luôn cả hai tầng điểm ưu tiên.
+  const coNhapMoGioLiem = ungVienGioLiem.some((c) => c.phanLoaiCung === "nhap-mo" && c.cungDungDuoc);
   const thanQuyenParam: TrungTang.ThanQuyenGioLiem = {
     ...(input.thanQuyen?.chiTruongNam ? { chiTruongNam: input.thanQuyen.chiTruongNam } : {}),
     ...(input.thanQuyen?.chiConDauLon ? { chiConDauLon: input.thanQuyen.chiConDauLon } : {}),
@@ -186,6 +338,7 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
   for (const c of ungVienGioLiem) {
     c.diem = TrungTang.tinhDiemUngVien({
       phanLoaiCung: c.phanLoaiCung,
+      cungGio: c.cungGio,
       apDungThienDi: !coNhapMoGioLiem,
       hoangDaoTen: c.hoangDaoTen,
       hoangDaoLaCat: c.hoangDaoLaCat,
@@ -226,7 +379,8 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
 
     const cungTheoK: Chi[] = [];
     for (let k = 1; k <= 12; k++) cungTheoK.push(TrungTang.tinhCungGioHaHuyet(ngay.cungNgay, k));
-    const coNhapMoTrongNgay = cungTheoK.some((c) => TrungTang.phanLoaiCung(c) === "nhap-mo");
+    // Cùng lý do như bên giờ liệm: chỉ Nhập Mộ DÙNG ĐƯỢC mới chặn tầng Thiên Di dự phòng.
+    const coNhapMoTrongNgay = cungTheoK.some((c) => TrungTang.phanLoaiCung(c) === "nhap-mo" && TrungTang.laCungDungDuoc(c));
 
     const ketQua: UngVienNgayGioHaHuyet[] = [];
     for (let k = 1; k <= 12; k++) {
@@ -241,6 +395,7 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
 
       const diem = TrungTang.tinhDiemUngVien({
         phanLoaiCung: phanLoaiCungGio,
+        cungGio,
         apDungThienDi: !coNhapMoTrongNgay,
         hoangDaoTen: hoangDao.name,
         hoangDaoLaCat: hoangDao.catHung === "cát",
@@ -253,11 +408,14 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
 
       ketQua.push({
         ngayDuongLich: ngay.ngayDuongLich,
+        khungGio: tinhKhungGio(ngay.jdn, idxChi),
         canChiNgay: { can: ngay.canChiNgay.can, chi: ngay.canChiNgay.chi },
         chiGio,
         canGio: hourPillar.can,
+        cungNgay: ngay.cungNgay,
         cungGio,
         phanLoaiCung: phanLoaiCungGio,
+        cungDungDuoc: TrungTang.laCungDungDuoc(cungGio),
         hoangDaoTen: hoangDao.name,
         hoangDaoLaCat: hoangDao.catHung === "cát",
         canGioDatBangDep,
@@ -323,15 +481,49 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
   }
 
   tatCaGioHaHuyet.sort((a, b) => b.diem - a.diem);
+  const topHaHuyet = tatCaGioHaHuyet.slice(0, 3);
+  const topGioLiem = locThanQuyen.ketQua.slice(0, 3);
+
+  // ------------------------------------------------------------------
+  // Bước 6b — giờ động quan, trừ lùi từ phương án hạ huyệt số 1. Chỉ tính khi khách có nhập
+  // quãng đường; không có thì bỏ trống, không tự đoán khoảng cách nhà - huyệt.
+  // ------------------------------------------------------------------
+  let gioDongQuan: GioDongQuan | undefined;
+  const haHuyetSo1 = topHaHuyet[0];
+  if (haHuyetSo1 && input.thoiGianDiChuyenPhut !== undefined) {
+    const jdnHaHuyet = Astronomy.julianDayNumber(
+      haHuyetSo1.ngayDuongLich.nam,
+      haHuyetSo1.ngayDuongLich.thang,
+      haHuyetSo1.ngayDuongLich.ngay,
+    );
+    const gioLiemSo1 = topGioLiem[0];
+    const mocGioLiemSom = gioLiemSo1
+      ? mocTuyetDoiPhut(
+          Astronomy.julianDayNumber(gioLiemSo1.ngayDuongLich.nam, gioLiemSo1.ngayDuongLich.thang, gioLiemSo1.ngayDuongLich.ngay),
+          Data.CHI.indexOf(gioLiemSo1.chiGio),
+        )
+      : null;
+
+    gioDongQuan = tinhGioDongQuan(
+      haHuyetSo1,
+      jdnHaHuyet,
+      Data.CHI.indexOf(haHuyetSo1.chiGio),
+      input.thoiGianDiChuyenPhut,
+      input.demDongQuanPhut ?? DEM_DONG_QUAN_PHUT_MAC_DINH,
+      mocGioLiemSom,
+    );
+  }
 
   return {
     tuoiTa,
     duoi10Tuoi: false,
     bonCung,
-    gioLiemDongQuan: locThanQuyen.ketQua.slice(0, 3),
+    gioLiemDongQuan: topGioLiem,
     thanQuyenDaNoiLong: locThanQuyen.daNoiLong,
     apDungMienTru3Ngay,
-    ngayGioHaHuyet: tatCaGioHaHuyet.slice(0, 3),
+    ngayGioHaHuyet: topHaHuyet,
     khongTimThayNgayHaHuyet,
+    ...(gioDongQuan ? { gioDongQuan } : {}),
+    ...(haHuyetSo1 ? { nhapMoTrungTuSinh: TrungTang.nhapMoChiRoiVaoTuSinh(haHuyetSo1.cungNgay) } : {}),
   };
 }
