@@ -32,7 +32,7 @@ function gonNgay(n: Record<string, unknown>) {
   return gon;
 }
 
-export const GET: APIRoute = async ({ url, locals }) => {
+export const GET: APIRoute = async ({ url }) => {
   const orderCode = url.searchParams.get("orderCode");
   if (!orderCode) {
     return jsonResponse({ ok: false, error: "Thiếu mã đơn hàng." }, 400);
@@ -43,11 +43,9 @@ export const GET: APIRoute = async ({ url, locals }) => {
     return jsonResponse({ ok: false, error: "Không tìm thấy đơn hàng." }, 404);
   }
 
-  // Module này bắt đăng nhập nên đơn luôn có userId → chỉ chính chủ xem được.
-  // (Khác module tang lễ: ở đó orderCode là "vé", cố ý không ràng buộc tài khoản.)
-  if (order.userId && order.userId !== locals.user?.id) {
-    return jsonResponse({ ok: false, error: "Đơn hàng này không thuộc tài khoản đang đăng nhập." }, 403);
-  }
+  // ⚠️ CỐ Ý KHÔNG kiểm tra chính chủ: module này không bắt đăng nhập nữa (chủ dự án chốt
+  // 2026-08-16), orderCode chính là "vé" — 8 ký tự ngẫu nhiên từ bộ 32 ký tự. Ràng buộc tài khoản
+  // ở đây từng làm khách mất kết quả đã trả tiền mỗi khi phiên đăng nhập bị hủy vì đổi IP.
 
   if (order.status === "cancelled") {
     return jsonResponse({ ok: true, status: "cancelled" }, 200);

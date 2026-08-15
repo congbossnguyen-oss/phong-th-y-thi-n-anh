@@ -7,13 +7,10 @@ import DateSelect from "../../components/ui/DateSelect.astro";
 import MaKhuyenMai from "../../components/ui/MaKhuyenMai.astro";
 import { GIA_CONG_CU, dinhDangTien } from "../../lib/payments/gia-cong-cu";
 
-// Không prerender: cần đọc phiên đăng nhập lúc request. Trang vẫn trả nội dung giới thiệu cho
-// khách chưa đăng nhập (và cho Google index) — chỉ khối form bị thay bằng lời mời đăng nhập.
-// Chốt chặn thật nằm ở API, không phải ở đây.
-export const prerender = false;
-
-const user = Astro.locals.user;
-const DUONG_DAN = "/dai-cat-loi/xem-ngay-cao-cap";
+// ⚠️ KHÔNG bắt đăng nhập (chủ dự án chốt 2026-08-16) — đồng bộ với 2 module thu phí còn lại.
+// Nhờ vậy trang quay lại được dạng tĩnh (prerender), tải nhanh hơn và Google index thoải mái.
+// Kết quả sau khi thanh toán truy cập bằng orderCode làm "vé".
+export const prerender = true;
 
 const SON_24 = [
   "Tý", "Quý", "Sửu", "Cấn", "Dần", "Giáp", "Mão", "Ất", "Thìn", "Tốn", "Tỵ", "Bính",
@@ -93,28 +90,10 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
         <p class="mt-2">Dữ liệu Ngũ Hoàng tra bảng thật từ Vạn Niên Lịch Tam Nguyên, phủ liền mạch 1968–2068.</p>
       </div>
 
-      {!user && (
-        <div class="rounded-(--radius-card) border border-(--color-gold-500)/40 bg-(--color-gold-400)/10 p-6 text-center">
-          <p class="font-display text-lg font-semibold text-(--color-ink-950)">Cần đăng nhập để sử dụng</p>
-          <p class="mx-auto mt-2 max-w-md text-sm text-(--color-ink-700)">
-            Đây là dịch vụ thu phí. Anh/chị vui lòng đăng nhập để hệ thống lưu đơn và kết quả vào
-            đúng tài khoản của mình — sau này đăng nhập lại là xem lại được, không sợ mất.
-          </p>
-          <div class="mt-5 flex flex-wrap justify-center gap-3">
-            <Button href={`/hoc-vien/dang-nhap?tiep=${encodeURIComponent(DUONG_DAN)}`} size="lg">Đăng nhập</Button>
-            <Button href={`/hoc-vien/dang-ky?tiep=${encodeURIComponent(DUONG_DAN)}`} size="lg" variant="secondary">Tạo tài khoản</Button>
-          </div>
-        </div>
-      )}
-
-      {/* Form vẫn nằm trong DOM khi chưa đăng nhập (chỉ ẩn đi) để đoạn script phía dưới không vỡ. */}
       <form
         id="xncc-form"
         data-test-mode={String(TEST_MODE)}
-        class:list={[
-          "flex flex-col gap-4 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6",
-          !user && "hidden",
-        ]}
+        class="flex flex-col gap-4 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6"
       >
         <div>
           <p class="text-sm font-medium text-(--color-ink-800)">Loại việc</p>
@@ -235,14 +214,29 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
         {!TEST_MODE && (
         <>
         <div class="border-t border-(--color-ivory-300) pt-4">
-          <label for="xncc-sdt" class="text-sm font-medium text-(--color-ink-800)">Số điện thoại liên hệ</label>
-          <input
-            type="tel"
-            id="xncc-sdt"
-            placeholder="Để liên hệ khi cần làm rõ kết quả"
-            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"
-          />
-          <p class="mt-1 text-xs text-(--color-ink-500)">Họ tên và email lấy sẵn từ tài khoản đang đăng nhập.</p>
+          <p class="text-sm font-medium text-(--color-ink-800)">Thông tin liên hệ (để nhận kết quả sau khi thanh toán)</p>
+          <div class="mt-2 grid gap-3">
+            <input
+              type="text"
+              id="xncc-ten"
+              placeholder="Họ tên"
+              required
+              class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"
+            />
+            <input
+              type="tel"
+              id="xncc-sdt"
+              placeholder="Số điện thoại"
+              required
+              class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"
+            />
+            <input
+              type="email"
+              id="xncc-email"
+              placeholder="Email (tùy chọn)"
+              class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"
+            />
+          </div>
         </div>
 
         <MaKhuyenMai idPrefix="xncc-ma" toolSlug={TOOL_SLUG} giaGoc={TOOL_PRICE} />
@@ -750,7 +744,9 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
           ...chung,
           ...rieng,
           cheDo,
+          customerName: (document.getElementById("xncc-ten") as HTMLInputElement | null)?.value.trim() ?? "",
           customerPhone: (document.getElementById("xncc-sdt") as HTMLInputElement | null)?.value.trim() ?? "",
+          customerEmail: (document.getElementById("xncc-email") as HTMLInputElement | null)?.value.trim() ?? "",
           maKhuyenMai: (document.getElementById("xncc-ma-input") as HTMLInputElement | null)?.value.trim() ?? "",
         }),
       });

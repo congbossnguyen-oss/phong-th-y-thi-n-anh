@@ -35,9 +35,8 @@ function docNgay(v: unknown): { nam: number; thang: number; ngay: number } | nul
 }
 
 export const POST: APIRoute = async ({ request, locals }) => {
-  if (!locals.user) {
-    return jsonResponse({ ok: false, error: "Vui lòng đăng nhập để sử dụng dịch vụ này." }, 401);
-  }
+  // ⚠️ CỐ Ý KHÔNG bắt đăng nhập (chủ dự án chốt 2026-08-16) — giống 2 module thu phí còn lại.
+  // Kết quả truy cập bằng orderCode làm "vé".
 
   const body = await request.json().catch(() => null);
   if (!body || typeof body !== "object") {
@@ -53,6 +52,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const namSinhVoChong = b.namSinhVoChong ? Number(b.namSinhVoChong) : undefined;
   const toaDoSo = b.toaDoSo !== undefined && b.toaDoSo !== "" ? Number(b.toaDoSo) : undefined;
   const customerPhone = typeof b.customerPhone === "string" ? b.customerPhone.trim() : "";
+  const customerName = locals.user?.name ?? (typeof b.customerName === "string" ? b.customerName.trim() : "");
+  const customerEmail =
+    locals.user?.email ??
+    (typeof b.customerEmail === "string" && b.customerEmail.trim() ? b.customerEmail.trim() : null);
 
   if (typeof cheDo !== "string" || !CHE_DO_HOP_LE.includes(cheDo)) {
     return jsonResponse({ ok: false, error: "Chế độ không hợp lệ." }, 400);
@@ -75,8 +78,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
   if (toaDoSo !== undefined && (!Number.isFinite(toaDoSo) || toaDoSo < 0 || toaDoSo >= 360)) {
     return jsonResponse({ ok: false, error: "Độ số la bàn phải trong khoảng 0-359.99." }, 400);
   }
-  if (!customerPhone) {
-    return jsonResponse({ ok: false, error: "Vui lòng nhập số điện thoại liên hệ." }, 400);
+  if (!customerName || !customerPhone) {
+    return jsonResponse({ ok: false, error: "Vui lòng nhập đầy đủ họ tên và số điện thoại liên hệ." }, 400);
   }
 
   const chung = {
@@ -130,10 +133,10 @@ export const POST: APIRoute = async ({ request, locals }) => {
     const kq = await taoDonCongCu({
       toolSlug: TOOL_SLUG,
       toolInput: snapshot,
-      userId: locals.user.id,
-      customerName: locals.user.name,
+      userId: locals.user?.id ?? null,
+      customerName,
       customerPhone,
-      customerEmail: locals.user.email,
+      customerEmail,
       maKhuyenMai: typeof b.maKhuyenMai === "string" ? b.maKhuyenMai : "",
     });
     return jsonResponse(kq, kq.ok ? 200 : 400);
