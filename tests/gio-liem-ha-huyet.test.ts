@@ -176,6 +176,40 @@ describe("Cung dùng được — loại Thìn (Nhập Mộ) và Dậu (Thiên D
   });
 });
 
+describe("Trần Tử Tánh — điểm cộng, KHÔNG phải phép chọn", () => {
+  // Chủ dự án chốt 2026-08-16 qua hai câu bổ sung cho nhau: "chọn ngày liệm theo Trần Tử Tánh
+  // không dùng" (không dùng làm phép chọn) + "nếu có càng tốt" (trúng thì là điểm cộng).
+
+  it("bảng khớp 12/12 chi với bảng in trong sách Sổ Tay Tang Sự", () => {
+    const sach: Record<string, [string, string]> = {
+      "Tý": ["Giáp", "Canh"], "Sửu": ["Ất", "Tân"], "Dần": ["Bính", "Quý"], "Mão": ["Bính", "Nhâm"],
+      "Thìn": ["Đinh", "Giáp"], "Tỵ": ["Ất", "Canh"], "Ngọ": ["Đinh", "Quý"], "Mùi": ["Ất", "Tân"],
+      "Thân": ["Giáp", "Quý"], "Dậu": ["Đinh", "Nhâm"], "Tuất": ["Canh", "Nhâm"], "Hợi": ["Ất", "Tân"],
+    };
+    for (const [chi, cans] of Object.entries(sach)) {
+      expect([...TrungTang.CAN_GIO_DEP_THEO_CHI_NGAY[chi as keyof typeof sach]].sort()).toEqual([...cans].sort());
+    }
+  });
+
+  it("cộng đúng 15 điểm khi trúng bảng", () => {
+    const chung = { cungGio: "Sửu" as const, phanLoaiCung: "nhap-mo" as const, apDungThienDi: true, hoangDaoTen: "", hoangDaoLaCat: false, boiCanh: "liem" as const, chiGioThuocTuSinh: false };
+    const co = TrungTang.tinhDiemUngVien({ ...chung, canGioDatBangDep: true });
+    const khong = TrungTang.tinhDiemUngVien({ ...chung, canGioDatBangDep: false });
+    expect(co - khong).toBe(TrungTang.DIEM_TRAN_TU_TANH);
+    expect(TrungTang.DIEM_TRAN_TU_TANH).toBe(15);
+  });
+
+  it("KHÔNG đủ sức lật thứ hạng do CUNG quyết định", () => {
+    const nen = { apDungThienDi: true, hoangDaoTen: "", hoangDaoLaCat: false, boiCanh: "liem" as const, chiGioThuocTuSinh: false };
+    // Nhập Mộ dùng được mà KHÔNG trúng bảng vẫn phải hơn Thiên Di / Thìn tứ kỵ dù chúng trúng bảng.
+    const nhapMoKhongTrung = TrungTang.tinhDiemUngVien({ ...nen, cungGio: "Sửu", phanLoaiCung: "nhap-mo", canGioDatBangDep: false });
+    const thienDiTrung = TrungTang.tinhDiemUngVien({ ...nen, cungGio: "Tý", phanLoaiCung: "thien-di", canGioDatBangDep: true });
+    const thinTrung = TrungTang.tinhDiemUngVien({ ...nen, cungGio: "Thìn", phanLoaiCung: "nhap-mo", canGioDatBangDep: true });
+    expect(nhapMoKhongTrung).toBeGreaterThan(thienDiTrung);
+    expect(nhapMoKhongTrung).toBeGreaterThan(thinTrung);
+  });
+});
+
 describe("Quy luật bất biến (`chuong_phap.quy_luat_bat_bien`)", () => {
   it("Cung_Ngày thuộc nhóm Nhập Mộ → chỉ k=3/6/9/12 (Dần/Tỵ/Thân/Hợi) đạt Nhập Mộ", () => {
     const kNhapMo: number[] = [];

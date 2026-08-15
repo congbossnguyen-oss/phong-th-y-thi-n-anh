@@ -90,15 +90,18 @@ export function nhapMoChiRoiVaoTuSinh(cungNgay: Chi): boolean {
 }
 
 /**
- * ⛔ KHÔNG DÙNG NỮA — chủ dự án chốt 2026-08-16: "chọn ngày liệm theo Trần Tử Tánh không dùng nhé".
+ * Bảng của phép TRẦN TỬ TÁNH trong "Sổ Tay Tang Sự" (mục "Chọn ngày giờ theo Trần Tử Tánh": từ
+ * địa chi của NGÀY lấy thiên can của GIỜ, kết hợp giờ hoàng đạo để chọn giờ nhập quan). Đặc tả
+ * mục 10.2 từng ghi bảng này là "nguồn ngoài sách, chưa rõ nguyên lý sinh" — nay đã truy được
+ * nguồn, đối chiếu KHỚP 12/12 chi với bảng in trong sách.
  *
- * Đây chính là bảng của phép TRẦN TỬ TÁNH trong "Sổ Tay Tang Sự" (mục "Chọn ngày giờ theo Trần Tử
- * Tánh": từ địa chi của NGÀY lấy thiên can của GIỜ, kết hợp giờ hoàng đạo để chọn giờ nhập quan).
- * Đặc tả mục 10.2 từng ghi bảng này là "nguồn ngoài sách, chưa rõ nguyên lý sinh" — nay đã nhận
- * diện được nguồn, và đối chiếu KHỚP 12/12 chi với bảng in trong sách.
+ * VAI TRÒ ĐÃ ĐƯỢC CHỦ DỰ ÁN CHỐT LẠI 2026-08-16, qua hai câu bổ sung cho nhau:
+ *   - "chọn ngày liệm theo Trần Tử Tánh KHÔNG DÙNG nhé"  → không dùng nó làm PHÉP CHỌN
+ *   - "nếu chọn được ngày giờ liệm như bảng đính kèm thì QUÁ ĐẸP" / "cứ bổ sung theo Trần Tử
+ *     Tánh, nếu có càng tốt"                              → trúng bảng thì là ĐIỂM CỘNG
  *
- * GIỮ LẠI bảng để lưu xuất xứ và để không ai đi tìm/cài lại nó lần nữa, nhưng KHÔNG còn được cộng
- * điểm ở `tinhDiemUngVien` và không còn hiển thị trên kết quả.
+ * Nên đây là điểm thưởng (+15), cố ý giữ nhỏ hơn hẳn tầng cung (100/40/20) và hoàng đạo (50): nó
+ * chỉ phân định giữa các ứng viên đã ngang nhau, KHÔNG được phép lật thứ hạng do cung quyết định.
  */
 export const CAN_GIO_DEP_THEO_CHI_NGAY: Readonly<Record<Chi, readonly [Can, Can]>> = {
   Tý: ["Giáp", "Canh"],
@@ -114,6 +117,9 @@ export const CAN_GIO_DEP_THEO_CHI_NGAY: Readonly<Record<Chi, readonly [Can, Can]
   Tuất: ["Canh", "Nhâm"],
   Hợi: ["Ất", "Tân"],
 };
+
+/** Điểm thưởng khi Can giờ trúng bảng Trần Tử Tánh — xem ghi chú vai trò ở bảng phía trên. */
+export const DIEM_TRAN_TU_TANH = 15;
 
 export function isCanGioDep(canGio: Can, chiNgay: Chi): boolean {
   return (CAN_GIO_DEP_THEO_CHI_NGAY[chiNgay] as readonly Can[]).includes(canGio);
@@ -168,6 +174,8 @@ export interface YeuToDiemUngVien {
    * loại được Thìn/Dậu khỏi điểm ưu tiên theo `NHAP_MO_DUNG_DUOC` / `THIEN_DI_DUNG_DUOC`.
    */
   cungGio: Chi;
+  /** Can giờ trúng bảng Trần Tử Tánh — điểm cộng "nếu có càng tốt", không phải điều kiện chọn. */
+  canGioDatBangDep: boolean;
   /** Chỉ cộng điểm Thiên Di khi KHÔNG có ứng viên Nhập Mộ nào khả dụng trong cùng ngày đó. */
   apDungThienDi: boolean;
   hoangDaoTen: string;
@@ -197,6 +205,7 @@ export function tinhDiemUngVien(y: YeuToDiemUngVien): number {
   else if (y.phanLoaiCung === "thien-di" && cungDungDuoc && y.apDungThienDi) diem += 40;
   if (y.hoangDaoLaCat) diem += 50;
   if (TEN_HOANG_DAO_UU_TIEN.has(y.hoangDaoTen)) diem += 20;
+  if (y.canGioDatBangDep) diem += DIEM_TRAN_TU_TANH;
   if (y.boiCanh === "ha-huyet") {
     if (y.ngayHopVoiVong) diem += 25;
     if (y.trucTot) diem += 5;
