@@ -1,20 +1,35 @@
 import type { APIRoute } from "astro";
-import { calculateXemNgayCaoCap, type XemNgayCaoCapInput } from "@thien-anh/trachnhat-engine";
+import {
+  calculateXemNgayCaoCap,
+  timNgayXemNgayCaoCap,
+  timThangTrongNam,
+  type XemNgayCaoCapInput,
+} from "@thien-anh/trachnhat-engine";
 import { getOrderByCode } from "../../../../lib/db/orders";
 
 export const prerender = false;
 
 /**
  * Đọc kết quả sau khi đơn đã thanh toán. Kết quả được TÍNH LẠI từ input đã lưu (không lưu sẵn kết
- * quả) vì hàm tính là thuần/deterministic và rẻ — tránh lệch dữ liệu nếu công thức được sửa sau.
+ * quả) vì hàm tính là thuần/deterministic — tránh lệch dữ liệu nếu công thức được sửa sau.
  *
- * Module này bắt đăng nhập nên đơn luôn có userId → chỉ chính chủ xem được.
+ * Cùng một đơn phục vụ cả 3 chế độ; `cheDo` nằm trong snapshot quyết định gọi hàm nào.
+ *
+ * ⚠️ Chế độ tìm tháng quét ~365 ngày, mất 20-30 giây mỗi lượt. Phía trình duyệt PHẢI chặn không
+ * cho 2 lượt hỏi chồng nhau (xem biến `dangHoi` trong trang .astro), nếu không mỗi nhịp 3 giây lại
+ * châm thêm một lượt quét cả năm và làm nghẽn máy chủ.
  */
 
 const TOOL_SLUG = "xem-ngay-cao-cap";
 
 function jsonResponse(body: unknown, status: number): Response {
   return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
+}
+
+/** Bỏ `chiTiet` (toàn bộ kết quả giám định của TỪNG ngày) — gửi hết sẽ rất nặng. */
+function gonNgay(n: Record<string, unknown>) {
+  const { chiTiet: _bo, ...gon } = n as { chiTiet?: unknown } & Record<string, unknown>;
+  return gon;
 }
 
 export const GET: APIRoute = async ({ url, locals }) => {
@@ -28,6 +43,8 @@ export const GET: APIRoute = async ({ url, locals }) => {
     return jsonResponse({ ok: false, error: "Không tìm thấy đơn hàng." }, 404);
   }
 
+  // Module này bắt đăng nhập nên đơn luôn có userId → chỉ chính chủ xem được.
+  // (Khác module tang lễ: ở đó orderCode là "vé", cố ý không ràng buộc tài khoản.)
   if (order.userId && order.userId !== locals.user?.id) {
     return jsonResponse({ ok: false, error: "Đơn hàng này không thuộc tài khoản đang đăng nhập." }, 403);
   }
@@ -44,9 +61,49 @@ export const GET: APIRoute = async ({ url, locals }) => {
   }
 
   try {
-    const input = JSON.parse(order.toolInputSnapshot) as XemNgayCaoCapInput;
-    const result = calculateXemNgayCaoCap(input);
-    return jsonResponse({ ok: true, status: "confirmed", result }, 200);
+    const snap = JSON.parse(order.toolInputSnapshot) as Record<string, unknown>;
+    const { cheDo, ...chung } = snap;
+
+    if (cheDo === "tim_thang") {
+      const { namDuongLich, ...input } = chung as { namDuongLich: number } & XemNgayCaoCapInput;
+      const thang = timThangTrongNam({ ...(input as XemNgayCaoCapInput), namDuongLich });
+      return jsonResponse(
+        {
+          ok: true,
+          status: "confirmed",
+          cheDo,
+          namDuongLich,
+          thang: thang.map((t) => ({
+            ...t,
+            ngayTotNhat: t.ngayTotNhat ? gonNgay(t.ngayTotNhat as unknown as Record<string, unknown>) : null,
+          })),
+        },
+        200,
+      );
+    }
+
+    if (cheDo === "tim_ngay") {
+      const { tuNgay, denNgay, ...input } = chung as {
+        tuNgay: { nam: number; thang: number; ngay: number };
+        denNgay: { nam: number; thang: number; ngay: number };
+      } & XemNgayCaoCapInput;
+      const kq = timNgayXemNgayCaoCap({ ...(input as XemNgayCaoCapInput), tuNgay, denNgay, soKetQua: 10 });
+      return jsonResponse(
+        {
+          ok: true,
+          status: "confirmed",
+          cheDo,
+          tongSoNgayQuet: kq.tongSoNgayQuet,
+          soNgayDung: kq.soNgayDung,
+          lyDoLoaiPhoBien: kq.lyDoLoaiPhoBien,
+          ketQua: kq.ketQua.map((n) => gonNgay(n as unknown as Record<string, unknown>)),
+        },
+        200,
+      );
+    }
+
+    const result = calculateXemNgayCaoCap(chung as unknown as XemNgayCaoCapInput);
+    return jsonResponse({ ok: true, status: "confirmed", cheDo: "giam_dinh", result }, 200);
   } catch (err) {
     return jsonResponse({ ok: false, error: err instanceof Error ? err.message : "Không tính được kết quả." }, 500);
   }

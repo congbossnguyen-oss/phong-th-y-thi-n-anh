@@ -258,6 +258,13 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
         <p id="xncc-dang-chay-chi-tiet" class="mt-1 text-xs text-(--color-ink-600)"></p>
       </div>
 
+      <div id="xncc-thanh-toan" class="mt-6 hidden space-y-4 rounded-2xl border-2 border-amber-300 bg-white p-6 text-center text-slate-900 shadow-lg">
+        <p class="font-display text-lg font-bold">Quét mã QR để thanh toán <span id="xncc-so-tien">{TOOL_PRICE_LABEL}</span></p>
+        <img id="xncc-qr" src="" alt="Mã QR thanh toán" class="mx-auto h-64 w-64 rounded-xl border border-slate-200" />
+        <p class="text-sm text-slate-600">Mã đơn hàng: <strong id="xncc-order-code"></strong></p>
+        <p id="xncc-trang-thai" class="text-sm font-medium text-amber-600">Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)</p>
+      </div>
+
       <div id="xncc-ket-qua" class="mt-6 hidden space-y-6"></div>
     </div>
   </Container>
@@ -419,6 +426,37 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
   const form = document.getElementById("xncc-form") as HTMLFormElement;
   const loiEl = document.getElementById("xncc-loi")!;
   const ketQuaEl = document.getElementById("xncc-ket-qua")!;
+
+  // Cờ thử nghiệm đọc từ frontmatter qua data-test-mode (1 nguồn sự thật).
+  const TEST_MODE = form.dataset.testMode === "true";
+
+  const thanhToanEl = document.getElementById("xncc-thanh-toan")!;
+  const qrImg = document.getElementById("xncc-qr") as HTMLImageElement;
+  const orderCodeEl = document.getElementById("xncc-order-code")!;
+  const trangThaiEl = document.getElementById("xncc-trang-thai")!;
+  const soTienEl = document.getElementById("xncc-so-tien")!;
+
+  // Khối "đang chạy" khai báo ở phạm vi module vì cả lúc nộp form lẫn lúc chờ thanh toán đều dùng.
+  const dangChayEl = document.getElementById("xncc-dang-chay")!;
+  const dangChayChiTiet = document.getElementById("xncc-dang-chay-chi-tiet")!;
+  const nutSubmit = form.querySelector('button[type="submit"]') as HTMLButtonElement | null;
+  const tatDangChay = () => {
+    dangChayEl.classList.add("hidden");
+    if (nutSubmit) nutSubmit.disabled = false;
+  };
+
+  let pollTimer: ReturnType<typeof setInterval> | null = null;
+  // Chặn 2 lượt hỏi kết quả chồng nhau. Chế độ tìm tháng quét ~365 ngày mất 20-30 giây, mà nhịp
+  // hỏi là 3 giây — không có cờ này thì mỗi nhịp lại châm thêm một lượt quét cả năm, chồng cả chục
+  // lượt và làm nghẽn máy chủ.
+  let dangHoi = false;
+
+  function dungCho() {
+    if (pollTimer) {
+      clearInterval(pollTimer);
+      pollTimer = null;
+    }
+  }
 
   // Xem trước quẻ Tọa ngay khi gõ độ số — để người dùng đối chiếu với la kinh trước khi bấm tính.
   // Chỉ là hiển thị phụ trợ; nguồn sự thật vẫn là engine phía server (cùng 1 bảng dữ liệu).
@@ -586,6 +624,48 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
     ketQuaEl.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
+  /** Gọi đúng hàm hiển thị theo chế độ. Dùng chung cho cả nhánh thử nghiệm lẫn nhánh thu phí. */
+  function hienKetQua(data: any) {
+    if (data.cheDo === "tim_thang") return renderTimThang(data);
+    if (data.cheDo === "tim_ngay") return renderTimNgay(data);
+    render(data.result as XemNgayCaoCapResult);
+    ketQuaEl.classList.remove("hidden");
+    ketQuaEl.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  /**
+   * Hỏi máy chủ xem đơn đã thanh toán chưa; xong thì hiển thị kết quả.
+   *
+   * Cờ `dangHoi` bắt buộc phải có: chế độ tìm tháng quét ~365 ngày mất 20-30 giây, trong khi nhịp
+   * hỏi là 3 giây — thiếu cờ này thì các lượt hỏi chồng lên nhau và máy chủ phải quét lại cả năm
+   * hàng chục lần cho cùng một đơn.
+   */
+  async function layKetQua(orderCode: string) {
+    if (dangHoi) return;
+    dangHoi = true;
+    try {
+      const res = await fetch(`/api/dai-cat-loi/xem-ngay-cao-cap/result?orderCode=${encodeURIComponent(orderCode)}`);
+      const data = await res.json();
+      if (!data.ok) return;
+
+      if (data.status === "cancelled") {
+        dungCho();
+        trangThaiEl.textContent = "Đơn hàng đã bị hủy.";
+        return;
+      }
+      if (data.status !== "confirmed") return;
+
+      dungCho();
+      dangChayEl.classList.add("hidden");
+      thanhToanEl.classList.add("hidden");
+      hienKetQua(data);
+    } catch {
+      // Mạng chập chờn — cứ để nhịp hỏi sau thử lại, không báo lỗi làm khách hoảng.
+    } finally {
+      dangHoi = false;
+    }
+  }
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     loiEl.classList.add("hidden");
@@ -608,13 +688,6 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
       ...(namSinhVoChong ? { namSinhVoChong: Number(namSinhVoChong) } : {}),
     };
 
-    const dangChayEl = document.getElementById("xncc-dang-chay")!;
-    const dangChayChiTiet = document.getElementById("xncc-dang-chay-chi-tiet")!;
-    const nutSubmit = form.querySelector('button[type="submit"]') as HTMLButtonElement | null;
-    const tatDangChay = () => {
-      dangChayEl.classList.add("hidden");
-      if (nutSubmit) nutSubmit.disabled = false;
-    };
     const baoLoi = (msg: string) => {
       tatDangChay();
       loiEl.textContent = msg;
@@ -632,48 +705,75 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
     dangChayEl.classList.remove("hidden");
     if (nutSubmit) nutSubmit.disabled = true;
 
+    // Dữ liệu riêng của từng chế độ — gom lại để cả 2 nhánh (thử nghiệm / thu phí) dùng chung.
+    let rieng: Record<string, unknown>;
+    if (cheDo === "giam_dinh") {
+      const ngay = readDateSelects("xncc-ngay");
+      if (!ngay) return baoLoi("Vui lòng chọn đầy đủ ngày cần giám định.");
+      rieng = { ngayGiamDinh: { nam: ngay.year, thang: ngay.month, ngay: ngay.day } };
+    } else if (cheDo === "tim_thang") {
+      rieng = { namDuongLich: Number(namTimSelect.value) };
+    } else {
+      const tu = readDateSelects("xncc-tu");
+      const den = readDateSelects("xncc-den");
+      if (!tu || !den) return baoLoi("Vui lòng chọn đầy đủ ngày bắt đầu và ngày kết thúc.");
+      rieng = {
+        tuNgay: { nam: tu.year, thang: tu.month, ngay: tu.day },
+        denNgay: { nam: den.year, thang: den.month, ngay: den.day },
+      };
+    }
+
     try {
-      if (cheDo === "giam_dinh") {
-        const ngay = readDateSelects("xncc-ngay");
-        if (!ngay) return baoLoi("Vui lòng chọn đầy đủ ngày cần giám định.");
-        const res = await fetch("/api/dai-cat-loi/xem-ngay-cao-cap/test-calculate", {
+      // ── Nhánh THỬ NGHIỆM: gọi thẳng endpoint tính, không tạo đơn, không thu tiền ──
+      if (TEST_MODE) {
+        const url =
+          cheDo === "giam_dinh"
+            ? "/api/dai-cat-loi/xem-ngay-cao-cap/test-calculate"
+            : "/api/dai-cat-loi/xem-ngay-cao-cap/tim-ngay";
+        const res = await fetch(url, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ ...chung, ngayGiamDinh: { nam: ngay.year, thang: ngay.month, ngay: ngay.day } }),
+          body: JSON.stringify({ ...chung, ...rieng, cheDo }),
         });
         const data = await res.json();
-        if (!res.ok || !data.ok) return baoLoi(data.error ?? "Không giám định được.");
+        if (!res.ok || !data.ok) return baoLoi(data.error ?? "Không tính được.");
         tatDangChay();
-        render(data.result as XemNgayCaoCapResult);
-        ketQuaEl.scrollIntoView({ behavior: "smooth", block: "start" });
+        hienKetQua({ ...data, cheDo });
         return;
       }
 
-      let body: Record<string, unknown>;
-      if (cheDo === "tim_thang") {
-        body = { ...chung, cheDo, namDuongLich: Number(namTimSelect.value) };
-      } else {
-        const tu = readDateSelects("xncc-tu");
-        const den = readDateSelects("xncc-den");
-        if (!tu || !den) return baoLoi("Vui lòng chọn đầy đủ ngày bắt đầu và ngày kết thúc.");
-        body = {
-          ...chung,
-          cheDo,
-          tuNgay: { nam: tu.year, thang: tu.month, ngay: tu.day },
-          denNgay: { nam: den.year, thang: den.month, ngay: den.day },
-        };
-      }
-
-      const res = await fetch("/api/dai-cat-loi/xem-ngay-cao-cap/tim-ngay", {
+      // ── Nhánh THU PHÍ: tạo đơn, chờ thanh toán, rồi mới trả kết quả ──
+      const res = await fetch("/api/dai-cat-loi/xem-ngay-cao-cap/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(body),
+        body: JSON.stringify({
+          ...chung,
+          ...rieng,
+          cheDo,
+          customerPhone: (document.getElementById("xncc-sdt") as HTMLInputElement | null)?.value.trim() ?? "",
+          maKhuyenMai: (document.getElementById("xncc-ma-input") as HTMLInputElement | null)?.value.trim() ?? "",
+        }),
       });
       const data = await res.json();
-      if (!res.ok || !data.ok) return baoLoi(data.error ?? "Không tìm được.");
+      if (!res.ok || !data.ok) return baoLoi(data.error ?? "Không tạo được đơn hàng.");
       tatDangChay();
-      if (cheDo === "tim_thang") renderTimThang(data);
-      else renderTimNgay(data);
+      orderCodeEl.textContent = data.orderCode;
+
+      // Mã miễn phí 100%: server đã xác nhận đơn luôn và trả qrUrl = null. Không gán null vào thẻ
+      // ảnh (QR vỡ) rồi bảo khách "đang chờ thanh toán" — lấy kết quả về ngay.
+      if (data.mienPhi) {
+        dangChayChiTiet.textContent = "Đã áp mã miễn phí — đang lấy kết quả…";
+        dangChayEl.classList.remove("hidden");
+        await layKetQua(data.orderCode);
+        return;
+      }
+
+      soTienEl.textContent = `${Number(data.totalAmount).toLocaleString("vi-VN")}đ`;
+      qrImg.src = data.qrUrl;
+      trangThaiEl.textContent = "Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)";
+      thanhToanEl.classList.remove("hidden");
+      thanhToanEl.scrollIntoView({ behavior: "smooth", block: "start" });
+      pollTimer = setInterval(() => layKetQua(data.orderCode), 3000);
     } catch {
       baoLoi("Không tính được. Vui lòng thử lại.");
     }

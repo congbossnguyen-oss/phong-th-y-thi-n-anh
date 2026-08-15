@@ -5,12 +5,13 @@ import { taoDonCongCu } from "../../../../lib/payments/checkout-cong-cu";
 export const prerender = false;
 
 /**
- * Tạo đơn cho module Xem Ngày Cao Cấp (Động Thổ / Nhập Trạch) — chế độ GIÁM ĐỊNH 1 NGÀY.
+ * Tạo đơn cho module Xem Ngày Cao Cấp (Động Thổ / Nhập Trạch).
  *
- * Module này BẮT ĐĂNG NHẬP (khác module Giờ Liệm – Hạ Huyệt): khách có thời gian, chủ động chọn
- * ngày, nên gắn đơn vào tài khoản để xem lại kết quả về sau là hợp lý.
+ * MỘT GIÁ cho cả 3 chế độ (quyết định của Công): giám định 1 ngày, tìm ngày trong khoảng, tìm
+ * tháng trong năm — khách trả tiền để lấy KẾT QUẢ CUỐI CÙNG, không tính theo khối lượng máy chạy.
  *
- * Giá lấy từ bảng giá phía máy chủ; mã khuyến mãi được kiểm và trừ lượt trong taoDonCongCu.
+ * Module này BẮT ĐĂNG NHẬP (khác module Giờ Liệm – Hạ Huyệt): khách chủ động chọn ngày, không gấp,
+ * nên gắn đơn vào tài khoản để xem lại kết quả về sau là hợp lý.
  */
 
 const TOOL_SLUG = "xem-ngay-cao-cap";
@@ -20,9 +21,17 @@ const SON_HOP_LE = [
   "Ngọ", "Đinh", "Mùi", "Khôn", "Thân", "Canh", "Dậu", "Tân", "Tuất", "Càn", "Hợi", "Nhâm",
 ];
 const LOAI_VIEC_HOP_LE = ["dong_tho", "nhap_trach"];
+const CHE_DO_HOP_LE = ["giam_dinh", "tim_ngay", "tim_thang"];
 
 function jsonResponse(body: unknown, status: number): Response {
   return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
+}
+
+function docNgay(v: unknown): { nam: number; thang: number; ngay: number } | null {
+  const o = v as Record<string, unknown> | undefined;
+  const d = { nam: Number(o?.nam), thang: Number(o?.thang), ngay: Number(o?.ngay) };
+  if (!Number.isInteger(d.nam) || !Number.isInteger(d.thang) || !Number.isInteger(d.ngay)) return null;
+  return d;
 }
 
 export const POST: APIRoute = async ({ request, locals }) => {
@@ -36,6 +45,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   }
 
   const b = body as Record<string, unknown>;
+  const cheDo = b.cheDo;
   const loaiViec = b.loaiViec;
   const toaNha = b.toaNha;
   const huongNha = typeof b.huongNha === "string" && b.huongNha ? b.huongNha : undefined;
@@ -44,6 +54,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
   const toaDoSo = b.toaDoSo !== undefined && b.toaDoSo !== "" ? Number(b.toaDoSo) : undefined;
   const customerPhone = typeof b.customerPhone === "string" ? b.customerPhone.trim() : "";
 
+  if (typeof cheDo !== "string" || !CHE_DO_HOP_LE.includes(cheDo)) {
+    return jsonResponse({ ok: false, error: "Chế độ không hợp lệ." }, 400);
+  }
   if (typeof loaiViec !== "string" || !LOAI_VIEC_HOP_LE.includes(loaiViec)) {
     return jsonResponse({ ok: false, error: "Loại việc không hợp lệ." }, 400);
   }
@@ -66,25 +79,49 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return jsonResponse({ ok: false, error: "Vui lòng nhập số điện thoại liên hệ." }, 400);
   }
 
-  const ng = b.ngayGiamDinh as Record<string, unknown> | undefined;
-  const ngayGiamDinh = { nam: Number(ng?.nam), thang: Number(ng?.thang), ngay: Number(ng?.ngay) };
-  if (!Number.isInteger(ngayGiamDinh.nam) || !Number.isInteger(ngayGiamDinh.thang) || !Number.isInteger(ngayGiamDinh.ngay)) {
-    return jsonResponse({ ok: false, error: "Vui lòng chọn đầy đủ ngày cần giám định." }, 400);
-  }
-
-  const input: XemNgayCaoCapInput = {
+  const chung = {
     loaiViec: loaiViec as XemNgayCaoCapInput["loaiViec"],
     toaNha: toaNha as XemNgayCaoCapInput["toaNha"],
     ...(toaDoSo !== undefined ? { toaDoSo } : {}),
     ...(huongNha ? { huongNha: huongNha as XemNgayCaoCapInput["toaNha"] } : {}),
     namSinhGiaChuChinh,
     ...(namSinhVoChong !== undefined ? { namSinhVoChong } : {}),
-    ngayGiamDinh,
   };
 
-  // "Dry run" — tính thử trước khi tạo đơn, để không thu tiền cho input không tính được.
+  // `snapshot` là thứ được lưu vào đơn; sau khi thanh toán, result.ts tính lại kết quả từ đây.
+  let snapshot: Record<string, unknown>;
+  // Ngày dùng để "tính thử" xem bộ input có chạy được không (xem giải thích bên dưới).
+  let ngayThu: { nam: number; thang: number; ngay: number };
+
+  if (cheDo === "giam_dinh") {
+    const ngay = docNgay(b.ngayGiamDinh);
+    if (!ngay) return jsonResponse({ ok: false, error: "Vui lòng chọn đầy đủ ngày cần giám định." }, 400);
+    snapshot = { cheDo, ...chung, ngayGiamDinh: ngay };
+    ngayThu = ngay;
+  } else if (cheDo === "tim_thang") {
+    const namDuongLich = Number(b.namDuongLich);
+    if (!Number.isInteger(namDuongLich) || namDuongLich < 1968 || namDuongLich > 2068) {
+      return jsonResponse({ ok: false, error: "Năm cần tìm phải trong khoảng 1968-2068 (phạm vi bảng Cửu Cung)." }, 400);
+    }
+    snapshot = { cheDo, ...chung, namDuongLich };
+    ngayThu = { nam: namDuongLich, thang: 1, ngay: 15 };
+  } else {
+    const tuNgay = docNgay(b.tuNgay);
+    const denNgay = docNgay(b.denNgay);
+    if (!tuNgay || !denNgay) {
+      return jsonResponse({ ok: false, error: "Vui lòng chọn đầy đủ ngày bắt đầu và ngày kết thúc." }, 400);
+    }
+    snapshot = { cheDo, ...chung, tuNgay, denNgay };
+    ngayThu = tuNgay;
+  }
+
+  // "Tính thử" để không thu tiền cho bộ input không chạy được.
+  //
+  // CHỈ tính thử ĐÚNG 1 NGÀY, kể cả với 2 chế độ tìm kiếm: quét cả năm mất 20-30 giây, chạy thêm
+  // một lượt nữa chỉ để kiểm tra là lãng phí gấp đôi và bắt khách chờ vô ích. Mọi lỗi đầu vào
+  // (tọa/độ số/năm sinh/ngoài phạm vi bảng Cửu Cung) đều lộ ra ngay ở 1 ngày duy nhất này.
   try {
-    calculateXemNgayCaoCap(input);
+    calculateXemNgayCaoCap({ ...chung, ngayGiamDinh: ngayThu });
   } catch (err) {
     return jsonResponse({ ok: false, error: err instanceof Error ? err.message : "Dữ liệu không hợp lệ." }, 400);
   }
@@ -92,7 +129,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
   try {
     const kq = await taoDonCongCu({
       toolSlug: TOOL_SLUG,
-      toolInput: input,
+      toolInput: snapshot,
       userId: locals.user.id,
       customerName: locals.user.name,
       customerPhone,
