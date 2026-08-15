@@ -165,6 +165,8 @@ export interface UngVienGioLiem {
   phamGioSatChu: boolean;
   /** Sao hắc đạo thuộc nhóm kỵ an táng (Bạch Hổ / Nguyên Vũ / Câu Trần / Thiên Hình / Thiên Lao). */
   hacDaoKyAnTang: boolean;
+  /** Chi giờ thuộc Dần/Thân/Tỵ/Hợi — kiêng mềm cho liệm, "nếu được thì tránh". */
+  chiGioThuocTuSinh: boolean;
   diem: number;
 }
 
@@ -420,6 +422,7 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
       canGioDatBangDep: TrungTang.isCanGioDep(hourPillar.can, dayPillar.chi),
       phamGioSatChu: TrungTang.isGioSatChu(chiGio, lunarMat.month),
       hacDaoKyAnTang: TrungTang.isHacDaoKyAnTang(hoangDao.name),
+      chiGioThuocTuSinh: (TrungTang.KHUYEN_TRANH_CHON as readonly Chi[]).includes(chiGio),
       diem: 0,
     });
   }
@@ -445,7 +448,7 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
       hoangDaoTen: c.hoangDaoTen,
       hoangDaoLaCat: c.hoangDaoLaCat,
       boiCanh: "liem",
-      chiGioThuocTuSinh: false, // nhóm này đã bị loại ở vòng lọc tuyệt đối phía trên
+      chiGioThuocTuSinh: c.chiGioThuocTuSinh,
     });
   }
   ungVienGioLiem.sort((a, b) => b.diem - a.diem);

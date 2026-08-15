@@ -56,7 +56,10 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
         </p>
         <p class="mt-1.5 text-sm text-(--color-ink-700)">
           Phương pháp Chưởng Pháp bên dưới được sách quy định rõ là dành cho <strong>trường hợp không trùng tang</strong>.
-          Nếu người mất đang phạm Trùng Tang thì phải xử lý theo hướng khác (trấn/hoá giải trước), không dùng kết quả ở đây.
+        </p>
+        <p class="mt-1.5 text-sm text-(--color-ink-700)">
+          Nếu người mất <strong>đang phạm Trùng Tang</strong> thì hướng xử lý là <strong>tiến hành hoá giải</strong>, và
+          <strong>mang ra ngoài liệm</strong> — không dùng bảng xếp hạng giờ ở đây.
         </p>
         <p class="mt-1.5 text-sm text-(--color-ink-700)">
           Chưa biết có phạm hay không, hãy kiểm tra bằng
@@ -267,6 +270,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
     canGioDatBangDep: boolean;
     phamGioSatChu: boolean;
     hacDaoKyAnTang: boolean;
+    chiGioThuocTuSinh: boolean;
     diem: number;
   }
   interface CanhBaoThanSat {
@@ -420,6 +424,9 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
           nhan: yeuToLabel(c),
           mau: MAU_PHAN_LOAI[c.phanLoaiCung] ?? "text-slate-700",
           thanSat: thanSatChipsHtml(c),
+          ...(c.chiGioThuocTuSinh
+            ? { canhBao: "Giờ Dần/Thân/Tỵ/Hợi thuộc nhóm nên tránh khi liệm — vẫn dùng được nếu không còn lựa chọn nào khá hơn, nhưng có giờ khác tương đương thì nên ưu tiên giờ đó." }
+            : {}),
         }),
       )
       .join("");

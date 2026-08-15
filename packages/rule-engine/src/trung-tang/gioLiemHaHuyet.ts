@@ -181,8 +181,10 @@ export interface YeuToDiemUngVien {
   hoangDaoTen: string;
   hoangDaoLaCat: boolean;
   boiCanh: BoiCanhChonGio;
-  /** Chi giờ thuộc nhóm Dần/Thân/Tỵ/Hợi — chỉ có ý nghĩa trừ điểm khi boiCanh = "ha-huyet"
-   * (ở "liem" nhóm này đã bị loại tuyệt đối trước khi tới bước chấm điểm). */
+  /**
+   * Chi giờ thuộc nhóm Dần/Thân/Tỵ/Hợi. Trừ điểm ở CẢ giờ liệm lẫn giờ hạ huyệt — đây là kiêng
+   * MỀM ("nếu được thì tránh"), khác hẳn với việc CUNG rơi vào nhóm Trùng Tang (loại tuyệt đối).
+   */
   chiGioThuocTuSinh: boolean;
   /** Chỉ dùng cho ngày hạ huyệt: ngày tam hợp/lục hợp với Chi tuổi vong. */
   ngayHopVoiVong?: boolean;
@@ -206,10 +208,14 @@ export function tinhDiemUngVien(y: YeuToDiemUngVien): number {
   if (y.hoangDaoLaCat) diem += 50;
   if (TEN_HOANG_DAO_UU_TIEN.has(y.hoangDaoTen)) diem += 20;
   if (y.canGioDatBangDep) diem += DIEM_TRAN_TU_TANH;
+  // Chi giờ Dần/Thân/Tỵ/Hợi — trừ điểm ở CẢ HAI bối cảnh (liệm lẫn hạ huyệt). Chủ dự án chốt
+  // 2026-08-16: "Dần Thân Tị Hợi thực chất là KIÊNG giờ liệm, hạ huyệt — nếu được thì tránh".
+  // Tức là kiêng MỀM, không phải loại tuyệt đối: giờ như vậy vẫn dùng được khi không còn lựa chọn
+  // nào khá hơn, chỉ luôn bị xếp sau một giờ tương đương mà không phạm.
+  if (y.chiGioThuocTuSinh) diem -= 60;
   if (y.boiCanh === "ha-huyet") {
     if (y.ngayHopVoiVong) diem += 25;
     if (y.trucTot) diem += 5;
-    if (y.chiGioThuocTuSinh) diem -= 60;
   }
   return diem;
 }

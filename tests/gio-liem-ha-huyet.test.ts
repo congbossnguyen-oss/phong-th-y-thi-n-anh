@@ -176,6 +176,36 @@ describe("Cung dùng được — loại Thìn (Nhập Mộ) và Dậu (Thiên D
   });
 });
 
+describe("Dần/Thân/Tỵ/Hợi — kiêng MỀM ở cả liệm lẫn hạ huyệt", () => {
+  // Chủ dự án chốt 2026-08-16: "Dần Thân Tị Hợi thực chất là kiêng giờ liệm, hạ huyệt — nếu được
+  // thì tránh". Tức KHÔNG loại tuyệt đối (khác với CUNG rơi vào nhóm Trùng Tang, cái đó loại thẳng).
+  const nen = { apDungThienDi: true, hoangDaoTen: "", hoangDaoLaCat: false, canGioDatBangDep: false };
+
+  it("trừ điểm ở CẢ hai bối cảnh, không chỉ riêng hạ huyệt", () => {
+    for (const boiCanh of ["liem", "ha-huyet"] as const) {
+      const sach = TrungTang.tinhDiemUngVien({ ...nen, boiCanh, cungGio: "Sửu", phanLoaiCung: "nhap-mo", chiGioThuocTuSinh: false });
+      const pham = TrungTang.tinhDiemUngVien({ ...nen, boiCanh, cungGio: "Sửu", phanLoaiCung: "nhap-mo", chiGioThuocTuSinh: true });
+      expect(sach - pham).toBe(60);
+    }
+  });
+
+  it("vẫn DÙNG ĐƯỢC khi không còn lựa chọn khá hơn — chỉ xếp sau, không bị loại", () => {
+    // Nhập Mộ dùng được + phạm tứ sinh vẫn dương điểm, tức vẫn là ứng viên hợp lệ.
+    const phamNhungNhapMo = TrungTang.tinhDiemUngVien({ ...nen, boiCanh: "liem", cungGio: "Sửu", phanLoaiCung: "nhap-mo", chiGioThuocTuSinh: true });
+    expect(phamNhungNhapMo).toBeGreaterThan(0);
+    // Nhưng luôn phải xếp sau một giờ tương đương mà không phạm.
+    const khongPham = TrungTang.tinhDiemUngVien({ ...nen, boiCanh: "liem", cungGio: "Sửu", phanLoaiCung: "nhap-mo", chiGioThuocTuSinh: false });
+    expect(khongPham).toBeGreaterThan(phamNhungNhapMo);
+  });
+
+  it("engine có gắn cờ này cho ứng viên giờ liệm (không còn hardcode false)", () => {
+    const tatCa = [...(caA().gioLiemDongQuan ?? []), ...(caB().gioLiemDongQuan ?? [])];
+    for (const c of tatCa) {
+      expect(c.chiGioThuocTuSinh).toBe(["Dần", "Thân", "Tỵ", "Hợi"].includes(c.chiGio));
+    }
+  });
+});
+
 describe("Trần Tử Tánh — điểm cộng, KHÔNG phải phép chọn", () => {
   // Chủ dự án chốt 2026-08-16 qua hai câu bổ sung cho nhau: "chọn ngày liệm theo Trần Tử Tánh
   // không dùng" (không dùng làm phép chọn) + "nếu có càng tốt" (trúng thì là điểm cộng).
