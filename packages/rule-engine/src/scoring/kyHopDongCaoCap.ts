@@ -59,6 +59,11 @@ export interface KyHopDongCaoCapDayInput extends TrachCatDayBaseInput {
   tieuLucNham: string;
   /** Các ngày đại kỵ khác khiến phải loại thẳng (Tứ Ly, Tứ Tuyệt, Nguyệt Tận, Thọ Tử...). */
   ngayDaiKyKhac?: readonly string[];
+  /**
+   * Tam Đại Cát Tinh có mặt trong ngày (Sát Cống / Trực Tinh / Nhân Chuyên).
+   * Có ít nhất một sao thì HUNG TINH THÔNG THƯỜNG được hoá giải — xem `locLoaiKyHopDong`.
+   */
+  tamDaiCatTinh?: readonly string[];
 }
 
 /** Thông tin người ký — bản cao cấp cần ĐỦ ngày-tháng-năm sinh để có Nhật Chủ. */
@@ -335,9 +340,10 @@ export function getKyHopDongCaoCapRating(diem: number): string {
 export const THIEU_DU_LIEU_MAC_DINH: readonly string[] = [
   // Chủ dự án đánh dấu "pending_source_verification" ngày 2026-08-15 — chưa chốt được hệ chính.
   "thien_nguyen",
-  // Có phương pháp (phân tầng Đại Sát / Trung Sát / Tiểu Sát) nhưng chưa có bảng xếp sát nào vào
-  // tầng nào, cũng chưa có bảng cát tinh nào cứu được sát nào → chưa cài được.
-  "dai_cat_tinh_hoa_giai",
+  // Hai ngoại lệ của quy tắc hoá giải mà repo CHƯA có công thức phát hiện. Hệ quả: ngày phạm 2 sát
+  // này mà có Tam Đại Cát Tinh sẽ bị hệ thống coi nhầm là "đã hoá giải".
+  "sat_nhap_trung_cung",
+  "bach_ho_nhap_trung_cung",
 ];
 
 const clamp10 = (d: number): number => Math.max(0, Math.min(10, d));
@@ -350,12 +356,33 @@ export function locLoaiKyHopDong(
 ): LyDoLoai[] {
   const lyDo: LyDoLoai[] = [];
 
+  // Quy tắc hoá giải (sơ đồ chủ dự án 2026-08-16): có Tam Đại Cát Tinh thì HUNG TINH THÔNG THƯỜNG
+  // được giảm/hoá, nhưng Kim Thần Thất Sát · Sát Chủ · Thọ Tử · Trung Cung · Bạch Hổ thì KHÔNG.
+  //
+  // Ở module này Tam Nương và Nguyệt Kỵ là hung tinh thông thường → cứu được.
+  // Sát Chủ nằm trong danh sách ngoại lệ → vẫn loại.
+  const coCatTinhHoaGiai = (day.tamDaiCatTinh ?? []).length > 0;
+  const ghiChuHoaGiai = ` (không hoá giải được, dù ngày có ${(day.tamDaiCatTinh ?? []).join(", ")})`;
+
+  // Trực Phá/Bế xét riêng, KHÔNG nằm trong cơ chế hoá giải: Trực là tầng khác với thần sát, và
+  // sơ đồ hoá giải chỉ nói về "hung tinh". Giữ loại thẳng cho tới khi có chỉ đạo khác.
   if (TRUC_LOAI_THANG.includes(day.trucName)) {
     lyDo.push({ ma: "truc_dai_hung", moTa: `Trực ${day.trucName} — đại hung, không dùng để ký kết.` });
   }
-  if (day.tamNuong) lyDo.push({ ma: "tam_nuong", moTa: "Ngày Tam Nương Sát." });
-  if (day.nguyetKy) lyDo.push({ ma: "nguyet_ky", moTa: "Ngày Nguyệt Kỵ (Ngũ Quỷ)." });
-  if (day.satChu) lyDo.push({ ma: "sat_chu", moTa: "Ngày Sát Chủ." });
+
+  if (day.tamNuong && !coCatTinhHoaGiai) {
+    lyDo.push({ ma: "tam_nuong", moTa: "Ngày Tam Nương Sát." });
+  }
+  if (day.nguyetKy && !coCatTinhHoaGiai) {
+    lyDo.push({ ma: "nguyet_ky", moTa: "Ngày Nguyệt Kỵ (Ngũ Quỷ)." });
+  }
+  // Sát Chủ luôn loại — nằm trong danh sách ngoại lệ của sơ đồ.
+  if (day.satChu) {
+    lyDo.push({
+      ma: "sat_chu",
+      moTa: `Ngày Sát Chủ${coCatTinhHoaGiai ? ghiChuHoaGiai : ""}.`,
+    });
+  }
   for (const ten of day.ngayDaiKyKhac ?? []) {
     lyDo.push({ ma: "dai_ky_khac", moTa: `Ngày ${ten}.` });
   }

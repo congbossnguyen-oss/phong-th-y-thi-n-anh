@@ -17,6 +17,8 @@ export interface NgayInfoResult {
   nhiThapBatTu: { index: number; name: string; catHung: "cát" | "hung" };
   hoangDaoHacDaoNgay: "hoàng đạo" | "hắc đạo" | "không xác định";
   thanSat: CatHungValue[];
+  /** Tên các sao trong Tam Đại Cát Tinh có mặt — dùng cho quy tắc hoá giải hung tinh. */
+  tamDaiCatTinh: string[];
   tuoiXungNgay: string[];
   nguyetKy: boolean;
   tamNuong: boolean;
@@ -52,6 +54,9 @@ export function tinhNgayInfo(tuTru: TuTruResult): NgayInfoResult {
   // 4 cát tinh tra theo THIÊN CAN của ngày (Tuế Đức, Tuế Đức Hợp, Nguyệt Đức, Nguyệt Đức Hợp) —
   // hệ khác với `getThanSatTrongNgay` (tra theo Địa Chi), nên gọi riêng rồi gộp danh sách.
   // Gộp ở đây để MỌI module chấm điểm đều nhận được, không phải sửa từng module.
+  // Tam Đại Cát Tinh (Sát Cống · Trực Tinh · Nhân Chuyên) — so CẢ Can lẫn Chi, nên phải gọi riêng.
+  const tamDaiCatTinh = TrachNhat.getTamDaiCatTinhTrongNgay(lunarMonth, dayCan, dayChi);
+
   const catTinhTheoCan = TrachNhat.getCatTinhTheoCanTrongNgay(
     tuTru.tuTru.nam.can as Can,
     lunarMonth,
@@ -78,7 +83,11 @@ export function tinhNgayInfo(tuTru: TuTruResult): NgayInfoResult {
     truc: { index: truc.index, name: truc.name },
     nhiThapBatTu: { index: nhiThapBatTu.index, name: nhiThapBatTu.name, catHung: nhiThapBatTu.catHung },
     hoangDaoHacDaoNgay,
-    thanSat: [...thanSat, ...catTinhTheoCan].map((entry) => ({ name: entry.name, catHung: entry.catHung })),
+    thanSat: [...thanSat, ...catTinhTheoCan, ...tamDaiCatTinh].map((entry) => ({
+      name: entry.name,
+      catHung: entry.catHung,
+    })),
+    tamDaiCatTinh: tamDaiCatTinh.map((e) => e.name),
     tuoiXungNgay: [xungChi],
     nguyetKy,
     tamNuong,

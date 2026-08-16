@@ -10,6 +10,8 @@ export * from "./tieuLucNham.js";
 export * from "./thanSat.js";
 // 4 cát tinh tra theo THIÊN CAN của ngày — khác hệ với thanSat.ts (tra theo Địa Chi).
 export * from "./catTinhTheoCan.js";
+// Tam Đại Cát Tinh (Sát Cống · Trực Tinh · Nhân Chuyên) — so CẢ Can lẫn Chi của ngày.
+export * from "./tamDaiCatTinh.js";
 export * from "./nguyetKy.js";
 export * from "./tamNuong.js";
 export * from "./tamTai.js";
