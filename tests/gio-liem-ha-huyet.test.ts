@@ -367,11 +367,44 @@ describe("Trần Tử Tánh — điểm cộng, KHÔNG phải phép chọn", () 
   });
 });
 
+describe("Nam thuận / nữ nghịch — XUYÊN SUỐT cả phép", () => {
+  // Chủ dự án chốt 2026-08-16: "Nữ phải đếm nghịch xuyên suốt toàn bộ phép Trùng Tang/hạ huyệt.
+  // Không được tính tháng/ngày nghịch nhưng đến Cung Giờ lại chuyển sang thuận."
+  // Trước đây `tinhCungGioHaHuyet` KHÔNG nhận giới tính nên luôn đếm thuận — sai với nữ.
+
+  it("giờ hạ huyệt đếm nghịch cho nữ, thuận cho nam", () => {
+    // Cung_Ngày = Dậu (idx 9). Giờ Mão k=4: nam 9+4=13→Sửu, nữ 9-4=5→Tỵ.
+    expect(TrungTang.tinhCungGioHaHuyet("nam", "Dậu", 4)).toBe("Sửu");
+    expect(TrungTang.tinhCungGioHaHuyet("nu", "Dậu", 4)).toBe("Tỵ");
+    // Lệch hẳn NHÓM cung, không phải lệch nhẹ: Nhập Mộ đổi thành Trùng Tang.
+    expect(TrungTang.phanLoaiCung(TrungTang.tinhCungGioHaHuyet("nam", "Dậu", 4))).toBe("nhap-mo");
+    expect(TrungTang.phanLoaiCung(TrungTang.tinhCungGioHaHuyet("nu", "Dậu", 4))).toBe("trung-tang");
+  });
+
+  it("cùng chiều với 2 hàm còn lại của chưởng pháp — không có hàm nào lệch pha", () => {
+    // Giờ liệm và giờ hạ huyệt phải cho cùng một cung khi cùng Cung_Ngày và cùng chi giờ.
+    for (const gt of ["nam", "nu"] as const) {
+      for (const [chiGio, k] of [["Tý", 1], ["Mão", 4], ["Ngọ", 7], ["Dậu", 10]] as const) {
+        expect(TrungTang.tinhCungGioHaHuyet(gt, "Dậu", k)).toBe(TrungTang.tinhCungTheoChiGio(gt, "Dậu", chiGio));
+      }
+    }
+  });
+
+  it("nam và nữ cho kết quả KHÁC nhau — không còn dùng chung một chiều", () => {
+    const inp = (gioiTinh: "nam" | "nu") => ({
+      gioiTinh, namSinhDuongLich: 1950, namMat: 2026, thangMat: 7, ngayMat: 25,
+      chiGioMat: "Thìn" as const, soNgayDuKienToiChon: 12,
+    });
+    const gio = (t: "nam" | "nu") => (calculateGioLiemHaHuyet(inp(t)).ngayGioHaHuyet ?? []).map((c) => c.chiGio).join(",");
+    expect(gio("nam")).not.toBe(gio("nu"));
+  });
+});
+
 describe("Quy luật bất biến (`chuong_phap.quy_luat_bat_bien`)", () => {
   it("Cung_Ngày thuộc nhóm Nhập Mộ → chỉ k=3/6/9/12 (Dần/Tỵ/Thân/Hợi) đạt Nhập Mộ", () => {
     const kNhapMo: number[] = [];
     for (let k = 1; k <= 12; k++) {
-      if (TrungTang.phanLoaiCung(TrungTang.tinhCungGioHaHuyet("Tuất", k)) === "nhap-mo") kNhapMo.push(k);
+      if (TrungTang.phanLoaiCung(TrungTang.tinhCungGioHaHuyet("nam", "Tuất", k)) === "nhap-mo") kNhapMo.push(k);
     }
     expect(kNhapMo).toEqual([3, 6, 9, 12]);
     expect(TrungTang.nhapMoChiRoiVaoTuSinh("Tuất")).toBe(true);

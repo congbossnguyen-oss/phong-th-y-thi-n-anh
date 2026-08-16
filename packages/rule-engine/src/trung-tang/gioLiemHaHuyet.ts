@@ -160,9 +160,26 @@ export function tinhCungNgayUngVien(gioiTinh: GioiTinh, cungThang: Chi, ngayAmLi
   return Data.CHI[idx]!;
 }
 
-/** Bước 6 — Cung_Giờ hạ huyệt = Cung_Ngày + k (k: Tý=1 ... Hợi=12). */
-export function tinhCungGioHaHuyet(cungNgay: Chi, k: number): Chi {
-  return Data.CHI[mod12(CHI_INDEX.get(cungNgay)! + k)]!;
+/**
+ * Bước 6 — Cung_Giờ hạ huyệt = Cung_Ngày + s*k (k: Tý=1 ... Hợi=12; s = nam +1 / nữ -1).
+ *
+ * ⚠️ TỪNG LÀ LỖI: hàm này trước đây KHÔNG nhận giới tính nên luôn đếm THUẬN, kể cả với người mất
+ * là nữ — trong khi `tinhBonCungTrungTang` và `tinhCungTheoChiGio` (giờ liệm) đều đã đếm nghịch
+ * cho nữ. Hậu quả với nữ là lệch hẳn nhóm cung: Cung_Ngày Dậu, giờ Mão ra Sửu (Nhập Mộ) trong khi
+ * đếm đúng phải ra Tỵ (Trùng Tang).
+ *
+ * Chủ dự án chốt 2026-08-16: "Nữ phải đếm nghịch XUYÊN SUỐT toàn bộ phép Trùng Tang/hạ huyệt.
+ * Không được tính tháng/ngày nghịch nhưng đến Cung Giờ lại chuyển sang thuận. Nam thuận, nữ nghịch
+ * từ đầu đến cuối. Giữ nguyên quy tắc cung khởi và offset giờ Tý hiện có, chỉ sửa chiều tính theo
+ * giới tính."
+ *
+ * Lưu ý đặc tả gốc mục 9 viết `Cung_Gio = (Cung_Ngay + k) mod 12` không có dấu giới tính — nhưng
+ * ngay mục 8 nó cũng viết `Cung_Ngay = (Cung_Thang + N)` không dấu, mà chỗ đó thì buộc phải có
+ * dấu mới đúng. Tức bản thân đặc tả viết tắt, không phải quy định đếm thuận cho nữ.
+ */
+export function tinhCungGioHaHuyet(gioiTinh: GioiTinh, cungNgay: Chi, k: number): Chi {
+  const s = gioiTinh === "nam" ? 1 : -1;
+  return Data.CHI[mod12(CHI_INDEX.get(cungNgay)! + s * k)]!;
 }
 
 export type BoiCanhChonGio = "liem" | "ha-huyet";

@@ -549,7 +549,7 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
       (ngay.hungDaHoaGiai.length > 0 ? DIEM_PHAT_HUNG_DA_HOA_GIAI : 0);
 
     const cungTheoK: Chi[] = [];
-    for (let k = 1; k <= 12; k++) cungTheoK.push(TrungTang.tinhCungGioHaHuyet(ngay.cungNgay, k));
+    for (let k = 1; k <= 12; k++) cungTheoK.push(TrungTang.tinhCungGioHaHuyet(input.gioiTinh, ngay.cungNgay, k));
     // Cùng lý do như bên giờ liệm: chỉ Nhập Mộ DÙNG ĐƯỢC mới chặn tầng Thiên Di dự phòng.
     const coNhapMoTrongNgay = cungTheoK.some((c) => TrungTang.phanLoaiCung(c) === "nhap-mo" && TrungTang.laCungDungDuoc(c));
 
