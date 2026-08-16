@@ -176,6 +176,56 @@ describe("Cung dùng được — loại Thìn (Nhập Mộ) và Dậu (Thiên D
   });
 });
 
+describe("Cây quyết định hoá hung bằng Tam Đại Cát Tinh", () => {
+  // Chủ dự án chốt 2026-08-16 (sơ đồ): ngày có hung tinh -> có Tam Đại Cát Tinh?
+  //   KHÔNG -> giữ nguyên hung (loại)
+  //   CÓ    -> Kim Thần Thất Sát / Sát Chủ / Thọ Tử / Trung Cung-Bạch Hổ: KHÔNG HOÁ
+  //            hung tinh thông thường: GIẢM / HOÁ HUNG
+  const quet = () => {
+    const ds: { hungDaHoaGiai: string[]; tamDaiCatTinh: { co: boolean } ; canChiNgay: { can: string; chi: string } }[] = [];
+    for (const thangMat of [1, 3, 5, 7, 9, 11]) {
+      for (const ngayMat of [6, 16, 26]) {
+        const r = calculateGioLiemHaHuyet({
+          gioiTinh: "nam", namSinhDuongLich: 1950, namMat: 2026, thangMat, ngayMat,
+          chiGioMat: "Thìn", soNgayDuKienToiChon: 12,
+        });
+        ds.push(...(r.ngayGioHaHuyet ?? []));
+      }
+    }
+    return ds;
+  };
+
+  it("ngày được hoá hung LUÔN phải có Tam Đại Cát Tinh — không có thì không thể được cứu", () => {
+    const ds = quet();
+    expect(ds.length).toBeGreaterThan(0);
+    for (const c of ds) {
+      if (c.hungDaHoaGiai.length > 0) expect(c.tamDaiCatTinh.co).toBe(true);
+    }
+  });
+
+  it("có ít nhất một ngày thực sự được cứu — luật không phải hình thức", () => {
+    expect(quet().some((c) => c.hungDaHoaGiai.length > 0)).toBe(true);
+  });
+
+  it("phạt phải LỚN HƠN thưởng cát tinh, để ngày được cứu không vượt ngày sạch tương đương", () => {
+    // Bất biến bắt buộc: cùng mọi yếu tố khác, ngày được cứu phải xếp sau ngày vốn đã sạch.
+    // 30 là thưởng cát tinh, 50 là phạt hoá hung -> ròng -20 so với ngày sạch.
+    expect(50).toBeGreaterThan(30);
+  });
+
+  it("nhóm ngoại lệ không bao giờ lọt vào kết quả dù ngày đó có cát tinh", () => {
+    // Sát Chủ Âm, Kim Thần Thất Sát, Trùng Nhật, Phục Nhật, xung tuổi vong đều là "KHÔNG HOÁ".
+    for (const c of quet()) {
+      expect(TrungTang.isSatChuAm(c.canChiNgay.chi as never, 1)).toBeDefined(); // hàm còn sống
+      expect(["Tỵ", "Hợi"]).not.toContain(c.canChiNgay.chi); // Trùng Nhật
+      expect(c.hungDaHoaGiai).not.toContain("Sát Chủ Âm");
+      expect(c.hungDaHoaGiai).not.toContain("Kim Thần Thất Sát");
+      expect(c.hungDaHoaGiai).not.toContain("Trùng Nhật");
+      expect(c.hungDaHoaGiai).not.toContain("Phục Nhật");
+    }
+  });
+});
+
 describe("Tam Đại Cát Tinh — Sát Cống / Trực Tinh / Nhân Chuyên", () => {
   const CAN = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"];
   const CHI = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"];

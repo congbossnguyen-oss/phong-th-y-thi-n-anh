@@ -296,6 +296,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
     chiGioThuocTuSinh: boolean;
     phamGioSatChu: boolean;
     hacDaoKyAnTang: boolean;
+    hungDaHoaGiai?: string[];
     canhBaoThanSat: CanhBaoThanSat[];
     tamDaiCatTinh?: { co: boolean; ten: string | null };
     diem: number;
@@ -378,8 +379,10 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
   }
 
   /** Nhãn thần sát mức cảnh báo — không loại ứng viên, chỉ để gia chủ và thầy cùng cân nhắc. */
-  function thanSatChipsHtml(y: { hacDaoKyAnTang?: boolean; phamGioSatChu?: boolean; canhBaoThanSat?: CanhBaoThanSat[] }): string {
+  function thanSatChipsHtml(y: { hacDaoKyAnTang?: boolean; phamGioSatChu?: boolean; hungDaHoaGiai?: string[]; canhBaoThanSat?: CanhBaoThanSat[] }): string {
     const nhan: string[] = [];
+    // Ngày lẽ ra bị loại nhưng được Tam Đại Cát Tinh hoá — phải nói rõ hoá cái gì.
+    for (const h of y.hungDaHoaGiai ?? []) nhan.push(`${h} (đã hoá giải)`);
     if (y.phamGioSatChu) nhan.push("Giờ Sát Chủ");
     if (y.hacDaoKyAnTang) nhan.push("Hắc đạo kỵ an táng");
     for (const c of y.canhBaoThanSat ?? []) nhan.push(c.nhan);
