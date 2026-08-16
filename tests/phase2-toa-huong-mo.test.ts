@@ -246,3 +246,178 @@ describe("Cổng kiểm tọa hướng chạy TRƯỚC trang thanh toán (mục 
     if (kq.ketCuc === "qua-cong") expect(kq.thieuDuLieu.length).toBeGreaterThan(0);
   });
 });
+
+describe("Bước ② — phẩm cấp cách cục (classification)", () => {
+  it("thang lớp xét trên TẬP HKNH, không xét từng đôi", () => {
+    expect(TrungTang.xepLopCachCuc([3, 3, 3, 3])).toBe(1); // Nhất Quái Thuần Thanh
+    expect(TrungTang.xepLopCachCuc([3, 8, 3, 8])).toBe(2); // trọn trong cặp Hà Đồ 3-8
+    expect(TrungTang.xepLopCachCuc([3, 7, 7, 3])).toBe(3); // trọn trong cặp Hợp Thập 3-7
+    expect(TrungTang.xepLopCachCuc([3, 8, 7])).toBe(4); // có trụ lạc quẻ → tụt lớp 4
+  });
+
+  it("một trụ lạc quẻ là mất phẩm cấp — khoá đúng chỗ dễ cài sai", () => {
+    // 3 trụ Hà Đồ + 1 trụ lạc thì KHÔNG còn là khóa Hà Đồ. Nếu ai đó sửa sang cách xét từng đôi,
+    // test này gãy.
+    expect(TrungTang.xepLopCachCuc([3, 8, 3, 4])).toBe(4);
+  });
+
+  it("Can Chi mang 2 quẻ thì thử cả hai biến thể và ghi rõ quẻ đã chọn", () => {
+    // Giáp Tý là 1 trong 4 Can Chi mang 2 quẻ (mục 3 đặc tả).
+    const kq = TrungTang.phanLopPhuongAn(
+      {
+        nam: { can: "Giáp", chi: "Tý" },
+        thang: { can: "Ất", chi: "Sửu" },
+        ngay: { can: "Bính", chi: "Dần" },
+      },
+      30,
+    );
+    expect(kq.coTruHaiQue).toBe(true);
+    expect(kq.queDaChon.map((q) => q.tru)).toEqual(["năm", "tháng", "ngày"]);
+    for (const q of kq.queDaChon) expect(q.tenQue ?? q.hknh).toBeDefined();
+  });
+
+  it("bật/tắt trụ Giờ thì số quẻ đã chọn đổi theo, không âm thầm bỏ sót", () => {
+    const coGio = TrungTang.phanLopPhuongAn(
+      {
+        nam: { can: "Bính", chi: "Ngọ" },
+        thang: { can: "Ất", chi: "Sửu" },
+        ngay: { can: "Bính", chi: "Dần" },
+        gio: { can: "Đinh", chi: "Mão" },
+      },
+      30,
+    );
+    const khongGio = TrungTang.phanLopPhuongAn(
+      {
+        nam: { can: "Bính", chi: "Ngọ" },
+        thang: { can: "Ất", chi: "Sửu" },
+        ngay: { can: "Bính", chi: "Dần" },
+      },
+      30,
+    );
+    expect(coGio.queDaChon).toHaveLength(4);
+    expect(khongGio.queDaChon).toHaveLength(3);
+  });
+});
+
+describe("Bước ③ + ④ — bảy chiều đo và trọng số", () => {
+  it("thứ tự 7 chiều đúng thứ hạng chủ dự án chốt, và trọng số giảm dần theo thứ hạng", () => {
+    expect(TrungTang.THU_TU_CHIEU_DO).toEqual([
+      "nhat-khoa-toa",
+      "tru-ho-tro",
+      "nhat-khoa-menh-vong",
+      "dong-khi",
+      "sinh-khac-nhap",
+      "ngu-hanh",
+      "quai-van",
+    ]);
+    const trongSo = TrungTang.THU_TU_CHIEU_DO.map((c) => TrungTang.TRONG_SO_AN_TANG[c]);
+    for (let i = 1; i < trongSo.length; i++) {
+      expect(trongSo[i]!, `hạng ${i + 1} phải nhẹ hơn hạng ${i}`).toBeLessThan(trongSo[i - 1]!);
+    }
+  });
+
+  it("bảy chiều chạy song song — luôn trả đủ 7 giá trị riêng, không cộng gộp", () => {
+    const cachCuc = TrungTang.phanLopPhuongAn(
+      {
+        nam: { can: "Bính", chi: "Ngọ" },
+        thang: { can: "Ất", chi: "Sửu" },
+        ngay: { can: "Bính", chi: "Dần" },
+        gio: { can: "Đinh", chi: "Mão" },
+      },
+      30,
+    );
+    const chieu = TrungTang.danhGiaBayChieu({ cachCuc, quanHeMenhVong: "tam-hop" });
+    expect(chieu).toHaveLength(7);
+    expect(chieu.map((c) => c.chieu)).toEqual([...TrungTang.THU_TU_CHIEU_DO]);
+    for (const c of chieu) {
+      expect(c.heSo).toBeGreaterThanOrEqual(0);
+      expect(c.heSo).toBeLessThanOrEqual(1);
+    }
+  });
+
+  it("sinh/khắc nhập chỉ xét MỘT HƯỚNG Năm→Tháng→Ngày→Giờ", () => {
+    // 4 trụ → đúng 6 cặp một chiều (C(4,2)); 3 trụ → 3 cặp. Nếu ai cài xét cả hai chiều thì số
+    // cặp sẽ gấp đôi và test gãy.
+    const bonTru = TrungTang.phanLopPhuongAn(
+      {
+        nam: { can: "Bính", chi: "Ngọ" },
+        thang: { can: "Ất", chi: "Sửu" },
+        ngay: { can: "Bính", chi: "Dần" },
+        gio: { can: "Đinh", chi: "Mão" },
+      },
+      30,
+    );
+    const baTru = TrungTang.phanLopPhuongAn(
+      {
+        nam: { can: "Bính", chi: "Ngọ" },
+        thang: { can: "Ất", chi: "Sửu" },
+        ngay: { can: "Bính", chi: "Dần" },
+      },
+      30,
+    );
+    expect(TrungTang.xetSinhKhacNhapMotHuong(bonTru).tongCap).toBe(6);
+    expect(TrungTang.xetSinhKhacNhapMotHuong(baTru).tongCap).toBe(3);
+  });
+});
+
+describe("Bước ⑤ — xếp hạng: LỚP TRƯỚC, ĐIỂM SAU", () => {
+  /** Dựng phương án giả với lớp và hệ số chỉ định — để cô lập đúng quy tắc xếp hạng. */
+  function phuongAnGia(id: string, lop: 1 | 2 | 3 | 4, heSo: number): TrungTang.PhuongAnDeXepHang {
+    return {
+      id,
+      cachCuc: {
+        lop,
+        tenLop: TrungTang.TEN_LOP_CACH_CUC[lop],
+        queDaChon: [],
+        coTruHaiQue: false,
+        hknhToa: 3,
+        quaiVanToa: 1,
+      },
+      cacChieu: TrungTang.THU_TU_CHIEU_DO.map((chieu) => ({ chieu, nhan: chieu, heSo, dangNeu: heSo > 0 })),
+      canhBao: [],
+    };
+  }
+
+  it("NGUYÊN TẮC BẤT DI DỊCH: lớp cao điểm bét vẫn đứng trên lớp thấp điểm kịch trần", () => {
+    // Đây là bất biến trung tâm của cả Phase 2 (mục 3): "Hà Đồ + 100 điểm phụ vẫn là Hà Đồ".
+    const ds = TrungTang.xepHangPhuongAn([
+      phuongAnGia("hop-thap-diem-toi-da", 3, 1),
+      phuongAnGia("ha-do-diem-toi-thieu", 2, 0),
+    ]);
+    expect(ds[0]!.id).toBe("ha-do-diem-toi-thieu");
+    expect(ds[0]!.thuHang).toBe(1);
+    expect(ds[1]!.id).toBe("hop-thap-diem-toi-da");
+  });
+
+  it("cùng lớp thì mới so điểm", () => {
+    const ds = TrungTang.xepHangPhuongAn([phuongAnGia("yeu", 2, 0.2), phuongAnGia("manh", 2, 0.9)]);
+    expect(ds[0]!.id).toBe("manh");
+  });
+
+  it("quan hệ đạt được sắp theo thứ hạng chiều, không theo thứ tự ngẫu nhiên", () => {
+    const ds = TrungTang.xepHangPhuongAn([phuongAnGia("a", 1, 1)]);
+    expect(ds[0]!.quanHeDat).toEqual([...TrungTang.THU_TU_CHIEU_DO]);
+  });
+
+  it("câu kết luận KHÔNG được chứa điểm số thô (mục 6 cấm)", () => {
+    const khacLop = TrungTang.cauKetLuanSoSanh(
+      TrungTang.xepHangPhuongAn([phuongAnGia("a", 2, 0.1), phuongAnGia("b", 3, 1)]),
+    );
+    const cungLop = TrungTang.cauKetLuanSoSanh(
+      TrungTang.xepHangPhuongAn([phuongAnGia("a", 2, 0.9), phuongAnGia("b", 2, 0.1)]),
+    );
+    expect(khacLop).toContain("thắng về phẩm cấp cách cục");
+    expect(cungLop).toContain("gia cường mạnh hơn");
+    for (const cau of [khacLop, cungLop]) {
+      // Số thứ tự "Phương án 1/2" là hợp lệ; cấm là cấm điểm số. Bỏ số thứ tự ra rồi soi phần
+      // còn lại — không được sót chữ số nào, cũng không được có chữ "điểm".
+      const conLai = cau!.replace(/phương án \d/gi, "phương án");
+      expect(conLai, `câu lộ điểm: ${cau}`).not.toMatch(/\d/);
+      expect(conLai.toLowerCase()).not.toContain("điểm");
+    }
+  });
+
+  it("chỉ có 1 phương án thì không có câu so sánh", () => {
+    expect(TrungTang.cauKetLuanSoSanh(TrungTang.xepHangPhuongAn([phuongAnGia("a", 1, 1)]))).toBeNull();
+  });
+});

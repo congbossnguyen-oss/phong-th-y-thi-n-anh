@@ -7,3 +7,5 @@ export * from "./tongHop.js";
 export * from "./gioLiemHaHuyet.js";
 export * from "./thanSatAnTang.js";
 export * from "./phase2ToaHuongMo.js";
+export * from "./phase2TrongSo.js";
+export * from "./phase2XepHang.js";
