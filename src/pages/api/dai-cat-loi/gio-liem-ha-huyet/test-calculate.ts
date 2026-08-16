@@ -113,7 +113,15 @@ export const POST: APIRoute = async ({ request }) => {
       ...(b.soNgayDuKienToiChon ? { soNgayDuKienToiChon: Number(b.soNgayDuKienToiChon) } : {}),
     });
 
-    return jsonResponse({ ok: true, result, phase2 }, 200);
+    // Cắt `diemNoiBo` trước khi trả về trình duyệt. Đặc tả mục 6 cấm hiện điểm thô cho khách
+    // "dưới mọi hình thức" — giao diện không vẽ ra là chưa đủ, mở devtools vẫn đọc được JSON.
+    // Điểm chỉ dùng để xếp hạng nội bộ, thứ hạng đã nằm sẵn ở `thuHang`.
+    const phase2SachDiem =
+      phase2.ketCuc === "A" || phase2.ketCuc === "B"
+        ? { ...phase2, phuongAn: phase2.phuongAn.map(({ diemNoiBo: _bo, ...pa }) => pa) }
+        : phase2;
+
+    return jsonResponse({ ok: true, result, phase2: phase2SachDiem }, 200);
   } catch (err) {
     return jsonResponse({ ok: false, error: err instanceof Error ? err.message : "Không tính được." }, 400);
   }
