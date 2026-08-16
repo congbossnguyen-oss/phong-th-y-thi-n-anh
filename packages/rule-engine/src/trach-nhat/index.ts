@@ -12,6 +12,8 @@ export * from "./thanSat.js";
 export * from "./catTinhTheoCan.js";
 // Tam Đại Cát Tinh (Sát Cống · Trực Tinh · Nhân Chuyên) — so CẢ Can lẫn Chi của ngày.
 export * from "./tamDaiCatTinh.js";
+// Sát / Bạch Hổ Nhập Trung Cung — tra theo vị trí ngày trong vòng 60 Hoa Giáp.
+export * from "./nhapTrungCung.js";
 export * from "./nguyetKy.js";
 export * from "./tamNuong.js";
 export * from "./tamTai.js";

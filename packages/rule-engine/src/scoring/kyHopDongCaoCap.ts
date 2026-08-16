@@ -340,10 +340,9 @@ export function getKyHopDongCaoCapRating(diem: number): string {
 export const THIEU_DU_LIEU_MAC_DINH: readonly string[] = [
   // Chủ dự án đánh dấu "pending_source_verification" ngày 2026-08-15 — chưa chốt được hệ chính.
   "thien_nguyen",
-  // Hai ngoại lệ của quy tắc hoá giải mà repo CHƯA có công thức phát hiện. Hệ quả: ngày phạm 2 sát
-  // này mà có Tam Đại Cát Tinh sẽ bị hệ thống coi nhầm là "đã hoá giải".
-  "sat_nhap_trung_cung",
-  "bach_ho_nhap_trung_cung",
+  // Lôi Đình Bạch Hổ Nhập Trung Cung (雷霆白虎入中宮) — hệ RIÊNG, phụ thuộc Can của THÁNG, khác
+  // hẳn Bạch Hổ Nhập Trung Cung đã cài ở `nhapTrungCung.ts`. Chưa có công thức.
+  "loi_dinh_bach_ho_nhap_trung_cung",
 ];
 
 const clamp10 = (d: number): number => Math.max(0, Math.min(10, d));

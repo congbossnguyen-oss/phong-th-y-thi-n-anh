@@ -56,6 +56,8 @@ export function tinhNgayInfo(tuTru: TuTruResult): NgayInfoResult {
   // Gộp ở đây để MỌI module chấm điểm đều nhận được, không phải sửa từng module.
   // Tam Đại Cát Tinh (Sát Cống · Trực Tinh · Nhân Chuyên) — so CẢ Can lẫn Chi, nên phải gọi riêng.
   const tamDaiCatTinh = TrachNhat.getTamDaiCatTinhTrongNgay(lunarMonth, dayCan, dayChi);
+  // Sát / Bạch Hổ Nhập Trung Cung — tra theo vị trí ngày trong vòng 60 Hoa Giáp, hệ khác hẳn.
+  const nhapTrungCung = TrachNhat.getNhapTrungCungTrongNgay(dayCan, dayChi);
 
   const catTinhTheoCan = TrachNhat.getCatTinhTheoCanTrongNgay(
     tuTru.tuTru.nam.can as Can,
@@ -83,7 +85,7 @@ export function tinhNgayInfo(tuTru: TuTruResult): NgayInfoResult {
     truc: { index: truc.index, name: truc.name },
     nhiThapBatTu: { index: nhiThapBatTu.index, name: nhiThapBatTu.name, catHung: nhiThapBatTu.catHung },
     hoangDaoHacDaoNgay,
-    thanSat: [...thanSat, ...catTinhTheoCan, ...tamDaiCatTinh].map((entry) => ({
+    thanSat: [...thanSat, ...catTinhTheoCan, ...tamDaiCatTinh, ...nhapTrungCung].map((entry) => ({
       name: entry.name,
       catHung: entry.catHung,
     })),
