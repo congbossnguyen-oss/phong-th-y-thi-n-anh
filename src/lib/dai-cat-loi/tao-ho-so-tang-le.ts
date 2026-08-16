@@ -36,6 +36,7 @@ export async function taoHoSoTangLe(dauVao: DauVaoHoSo): Promise<KetQuaTaoHoSo> 
       thangMat: dauVao.thangMat,
       ngayMat: dauVao.ngayMat,
       nguyenNhanMat: dauVao.nguyenNhanMat ?? "benh-tuoi-gia",
+      namSinhDuongLich: dauVao.namSinhDuongLich,
       ...(dauVao.soNgayDuKienToiChon ? { soNgayDuKienToiChon: dauVao.soNgayDuKienToiChon } : {}),
     });
     if (phase2.ketCuc === "C") return { taoDuoc: false, lyDo: phase2.thongDiep };

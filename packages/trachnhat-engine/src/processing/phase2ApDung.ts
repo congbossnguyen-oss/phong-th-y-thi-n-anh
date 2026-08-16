@@ -8,7 +8,7 @@
  * Bước ① viết như guard clause: kết cục C thì return sớm, khỏi tính ②-⑤ (mục 7).
  */
 import { getCanChi } from "@thien-anh/calendar-core";
-import { TrungTang } from "@thien-anh/rule-engine";
+import { TrungTang, XemNgayCaoCap } from "@thien-anh/rule-engine";
 import type { UngVienNgayGioHaHuyet } from "./gioLiemHaHuyet.js";
 import { kiemToaHuongTruocThanhToan } from "./phase2CongKiemToaHuong.js";
 
@@ -23,6 +23,11 @@ export interface Phase2Input {
   thangMat: number;
   ngayMat: number;
   nguyenNhanMat: TrungTang.NguyenNhanMat;
+  /**
+   * Năm sinh dương lịch của người mất — dùng quy ra quẻ MỆNH CHỦ cho phép kiểm Tam Tài (mục 2.5).
+   * Bỏ trống thì bỏ qua vế mệnh chủ chứ KHÔNG đoán bừa, và ghi rõ trong `thieuDuLieu`.
+   */
+  namSinhDuongLich?: number;
   soNgayDuKienToiChon?: number;
   /** Mục 2.5 — nguồn cho phép bỏ trụ Giờ nếu quá khó. Mặc định bật. */
   tinhTruGio?: boolean;
@@ -100,6 +105,15 @@ export function apDungPhase2(input: Phase2Input): Phase2Output {
   const { toaHuong } = cong;
   const thieuDuLieu = new Set(cong.thieuDuLieu);
   const biLoai: PhuongAnBiLoai[] = [];
+
+  // Quẻ mệnh chủ (người mất) — quy từ Can Chi năm sinh, tra một lần cho cả vòng lặp.
+  let queMenhVong: { hknh: number } | undefined;
+  if (input.namSinhDuongLich !== undefined && Number.isFinite(input.namSinhDuongLich)) {
+    const cc = getCanChi({ year: input.namSinhDuongLich, month: 6, day: 15, hour: 12, timeZone });
+    queMenhVong = XemNgayCaoCap.quyTruVeQue(cc.year.can, cc.year.chi)[0];
+  } else {
+    thieuDuLieu.add("Không có năm sinh người mất nên chưa xét được vế Mệnh Chủ của Tam Tài.");
+  }
   const deXepHang: TrungTang.PhuongAnDeXepHang[] = [];
 
   for (const pa of input.phuongAnPhase1) {
@@ -139,6 +153,25 @@ export function apDungPhase2(input: Phase2Input): Phase2Output {
     const soTruHoTro = TrungTang.demTruHoTro(cachCuc);
     if (soTruHoTro <= 1) {
       biLoai.push({ id, lyDo: [`Chỉ ${soTruHoTro} trụ hỗ trợ trụ Ngày (nguồn ghi "tuyệt đối tránh")`] });
+      continue;
+    }
+
+    // --- BƯỚC ①, mục 2.5 — TAM TÀI THIÊN-ĐỊA-NHÂN không giao thì LOẠI ---
+    //
+    // Định nghĩa "giao" lấy nguyên của module Xem Ngày Cao Cấp (cùng trường phái, cùng tầng dùng
+    // chung): Nhật Khóa phải giao SƠN GIA (tọa mộ) VÀ giao MỆNH CHỦ. Với việc an táng, mệnh chủ
+    // là người mất — quy từ Can Chi năm sinh.
+    //
+    // ⚠️ Đặc tả chỉ ghi "Tam Tài Thiên-Địa-Nhân không giao → loại" mà không nói rõ ba yếu tố là
+    // gì; đây là chỗ suy luận, đã chọn cách bám sát module anh em thay vì tự định nghĩa mới.
+    const queNgay = cachCuc.queDaChon.find((q) => q.tru === "ngày")!;
+    const giaoToa = XemNgayCaoCap.xetGiao(queNgay.hknh, cachCuc.hknhToa, cachCuc.hknhToa);
+    const giaoMenh = queMenhVong
+      ? XemNgayCaoCap.xetGiao(queNgay.hknh, queMenhVong.hknh, queMenhVong.hknh)
+      : { giaoDuoc: true, mucDat: "khong_giao" as const };
+    if (!giaoToa.giaoDuoc || !giaoMenh.giaoDuoc) {
+      const thieu = [!giaoToa.giaoDuoc ? "tọa mộ" : null, !giaoMenh.giaoDuoc ? "mệnh người mất" : null].filter(Boolean);
+      biLoai.push({ id, lyDo: [`Tam Tài không giao — nhật khóa không giao được với ${thieu.join(" và ")}`] });
       continue;
     }
 

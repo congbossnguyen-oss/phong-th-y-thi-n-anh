@@ -110,6 +110,7 @@ export const POST: APIRoute = async ({ request }) => {
       thangMat,
       ngayMat,
       nguyenNhanMat,
+      namSinhDuongLich,
       ...(b.soNgayDuKienToiChon ? { soNgayDuKienToiChon: Number(b.soNgayDuKienToiChon) } : {}),
     });
 

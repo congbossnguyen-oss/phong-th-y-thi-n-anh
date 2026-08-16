@@ -11,7 +11,7 @@
  *
  * File này hiện cài BƯỚC ① (điều kiện loại / hard constraint). Bước ②-⑤ làm tiếp sau.
  */
-import type { Data } from "@thien-anh/calendar-core";
+import { Data } from "@thien-anh/calendar-core";
 import {
   DANH_SACH_24_SON,
   phuongTuDoSo,
@@ -21,6 +21,7 @@ import {
   phamBatSat,
   phamThaiTue,
   phamTuePha,
+  kiemMoLongBienVan,
   type CungBatQuai,
   type PhuongChinh,
   type TenSon,
@@ -37,6 +38,10 @@ export const NAM_CO_DU_LIEU_DEN = 2068;
 export const DO_RONG_MOI_SON = 15;
 /** Sát ranh giới trong khoảng này (độ) thì yêu cầu đo lại, KHÔNG tự chọn bên (mục 1 đặc tả). */
 export const NGUONG_CANH_BAO_RANH_GIOI = 1;
+
+/** Bảng tra index Can/Chi — `kiemMoLongBienVan` nhận index chứ không nhận tên. */
+const CAN_INDEX = new Map<Can, number>((Data.CAN as readonly Can[]).map((c, i) => [c, i]));
+const CHI_INDEX_NAM = new Map<Chi, number>((Data.CHI as readonly Chi[]).map((c, i) => [c, i]));
 
 function chuanHoaDo(doSo: number): number {
   return ((doSo % 360) + 360) % 360;
@@ -135,7 +140,14 @@ export interface KetQuaSatCapNam {
  * Đây là hàm chạy TRƯỚC TRANG THANH TOÁN (mục 2.1b): phạm thì báo "chưa thu phí" + mời đặt lịch
  * khảo sát, không bao giờ để khách trả 999k rồi mới báo không làm được.
  */
-export function kiemSatCapNam(toaHuong: ToaHuongMo, namAnTang: number, canNam: Can, chiNam: Chi): KetQuaSatCapNam {
+export function kiemSatCapNam(
+  toaHuong: ToaHuongMo,
+  namAnTang: number,
+  canNam: Can,
+  chiNam: Chi,
+  /** Mục 2.1 cho phép tắt Mộ Long Biến Vận; mặc định BẬT theo đề xuất của đặc tả. */
+  batMoLong = true,
+): KetQuaSatCapNam {
   const danhSach: SatCapNam[] = [];
   const thieuDuLieu: string[] = [];
 
@@ -161,6 +173,32 @@ export function kiemSatCapNam(toaHuong: ToaHuongMo, namAnTang: number, canNam: C
   // --- Bát Sát Hoàng Tuyền theo trụ NĂM ---
   if (phamBatSat(toaHuong.cungToa, canNam, chiNam)) danhSach.push({ ten: "Bát Sát Hoàng Tuyền", dao: "toa" });
   if (phamBatSat(toaHuong.cungHuong, canNam, chiNam)) danhSach.push({ ten: "Bát Sát Hoàng Tuyền", dao: "huong" });
+
+  // --- Mộ Long Biến Vận (Thái Tuế Sát mở rộng) ---
+  //
+  // Đặc tả mục 2.1: so nạp âm Thái Tuế năm với nạp âm 4 khố Thìn-Tuất-Sửu-Mùi; Thái Tuế khắc khố
+  // nào thì Long nhóm đó phạm, trùng tọa mộ thì kết cục C. Đặc tả ghi "đề xuất bật mặc định,
+  // cấu hình tắt được" nên có tham số `batMoLong`.
+  //
+  // Dùng lại `kiemMoLongBienVan` của module Xem Ngày Cao Cấp — cùng một phép, không chép bảng.
+  if (batMoLong) {
+    const iCan = CAN_INDEX.get(canNam);
+    const iChi = CHI_INDEX_NAM.get(chiNam);
+    if (iCan !== undefined && iChi !== undefined) {
+      // `kiemMoLongBienVan` NÉM khi cặp Can/Chi không thuộc 60 Giáp Tý (vd Nhâm Mão — sai âm
+      // dương). Lịch thật không sinh ra cặp như vậy, nhưng hàm này là CỔNG KIỂM TRƯỚC THANH TOÁN:
+      // ném ra ngoài thì cả phép kiểm "có được thu phí không" sập theo. Hỏng mục này thì ghi vào
+      // `thieuDuLieu` để nói thật là chưa tra được, chứ không âm thầm coi như sạch.
+      try {
+        const moLong = kiemMoLongBienVan(iCan, iChi, toaHuong.sonToa);
+        if (moLong.pham) danhSach.push({ ten: "Mộ Long Biến Vận", dao: "toa" });
+      } catch (err) {
+        thieuDuLieu.push(
+          `Không tra được Mộ Long Biến Vận cho năm ${canNam} ${chiNam}: ${err instanceof Error ? err.message : "lỗi không rõ"}.`,
+        );
+      }
+    }
+  }
 
   return { phamCapNam: danhSach.length > 0, danhSach, thieuDuLieu };
 }
