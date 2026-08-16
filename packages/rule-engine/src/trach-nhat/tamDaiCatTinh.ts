@@ -167,16 +167,13 @@ export const HUNG_TINH_KHONG_HOA_GIAI: readonly string[] = [
 ];
 
 /**
- * Hai mục trong danh sách ngoại lệ mà hệ thống CHƯA có công thức tính, nên chưa phát hiện được:
- * Sát nhập Trung Cung và Bạch Hổ nhập Trung Cung.
+ * Trước đây Sát/Bạch Hổ nhập Trung Cung nằm ở đây vì chưa có công thức. Nay ĐÃ CÓ — xem
+ * `nhapTrungCung.ts`, công thức `(dayIndex + 5) % 9 === 0` chủ dự án cung cấp 2026-08-16.
  *
- * Hệ quả phải nói rõ với khách: một ngày phạm 2 sát này mà lại có Tam Đại Cát Tinh thì hệ thống sẽ
- * lỡ coi là "đã hoá giải" trong khi thực tế vẫn phải tránh. Liệt kê ở `thieuDuLieu` để minh bạch.
+ * Giữ mảng rỗng thay vì xoá hẳn để tầng gọi (`thieuDuLieu`) không phải sửa, và để chỗ này còn dấu
+ * vết nếu sau lại phát sinh ngoại lệ chưa có công thức.
  */
-export const NGOAI_LE_CHUA_CO_CONG_THUC: readonly string[] = [
-  "sat_nhap_trung_cung",
-  "bach_ho_nhap_trung_cung",
-];
+export const NGOAI_LE_CHUA_CO_CONG_THUC: readonly string[] = [];
 
 export interface KetQuaHoaGiai {
   /** Có ít nhất một trong ba sao. */

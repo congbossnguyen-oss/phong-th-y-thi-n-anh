@@ -363,9 +363,10 @@ export function locLoaiKyHopDong(
   const coCatTinhHoaGiai = (day.tamDaiCatTinh ?? []).length > 0;
   const ghiChuHoaGiai = ` (không hoá giải được, dù ngày có ${(day.tamDaiCatTinh ?? []).join(", ")})`;
 
-  // Trực Phá/Bế xét riêng, KHÔNG nằm trong cơ chế hoá giải: Trực là tầng khác với thần sát, và
-  // sơ đồ hoá giải chỉ nói về "hung tinh". Giữ loại thẳng cho tới khi có chỉ đạo khác.
-  if (TRUC_LOAI_THANG.includes(day.trucName)) {
+  // Trực Phá/Bế: chủ dự án chốt 2026-08-17 là Tam Đại Cát Tinh HOÁ GIẢI ĐƯỢC (bảng phân loại
+  // hung tinh gửi trực tiếp). Trước đó engine loại thẳng — nay xếp cùng nhóm Tam Nương/Nguyệt Kỵ.
+  // Ngày được cứu vẫn bị Bước 3 trừ điểm nặng qua `trucHopKyKet`, nên không thành ngày đẹp.
+  if (TRUC_LOAI_THANG.includes(day.trucName) && !coCatTinhHoaGiai) {
     lyDo.push({ ma: "truc_dai_hung", moTa: `Trực ${day.trucName} — đại hung, không dùng để ký kết.` });
   }
 
