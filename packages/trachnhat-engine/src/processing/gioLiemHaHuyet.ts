@@ -659,9 +659,12 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
       }
       // Trực Phá ≡ Nguyệt Phá — bảng dữ liệu xếp vào nhóm "không hoá giải được".
       if (TrungTang.isTrucKhongHoaGiai(trucCandidate.name)) hungKhongHoaGiai.push("Nguyệt Phá (Trực Phá)");
-      // Ba mục tuyệt đối RIÊNG của tang sự (đặc tả bước 5 xếp vào "điều kiện loại tuyệt đối").
-      // ⚠️ CẦN CHỦ DỰ ÁN XÁC NHẬN: cây quyết định chỉ nói "hung tinh thông thường" được hoá, chưa
-      // nói rõ ba mục này có nằm trong nhóm hoá được hay không. Đang giữ nguyên mức tuyệt đối.
+      // Ba mục tuyệt đối RIÊNG của tang sự (đặc tả bước 5: "điều kiện loại tuyệt đối").
+      // ✔ ĐÃ HỎI VÀ ĐƯỢC CHỦ DỰ ÁN CHỐT 2026-08-16: "không hoá được nhé". Sơ đồ hoá hung chỉ liệt
+      // ngoại lệ Kim Thần Thất Sát / Sát Chủ / Thọ Tử / Trung Cung - Bạch Hổ, nhưng ba mục này
+      // KHÔNG vì thế mà rơi vào nhóm "hung thông thường" — chúng đứng ngoài, giữ mức tuyệt đối.
+      // Trùng Nhật đặc biệt quan trọng: "trùng" chính là cái mà cả module sinh ra để phòng, và
+      // `ngayTrungKy.ts` ghi đây là "cơ sở lý luận vững nhất trong cả sách".
       if (TrungTang.isTrungNhat(canChiCandidate.day.chi)) hungKhongHoaGiai.push("Trùng Nhật");
       if (TrungTang.isPhucNhat(canChiCandidate.day.can, lunarMat.month)) hungKhongHoaGiai.push("Phục Nhật");
       if (canChiCandidate.day.chi === chiXungVong) hungKhongHoaGiai.push("Xung tuổi vong");

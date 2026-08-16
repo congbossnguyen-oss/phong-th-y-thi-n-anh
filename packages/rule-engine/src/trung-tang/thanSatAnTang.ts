@@ -327,9 +327,9 @@ export function isNhanChuyen(canNgay: Can, chiNgay: Chi, thangAmLich: number): b
  * tinh, nhưng riêng Sát Chủ, Thọ Tử, Kim Thần Thất Sát thì không giải được" — cộng thêm nhóm
  * `KHONG_HOA_GIAI_DUOC` vốn đã ghi trong bảng dữ liệu.
  *
- * ⚠️ Danh sách này hiện mới chỉ để TRA CỨU/HIỂN THỊ. Engine CHƯA cho Tam Đại Cát Tinh gỡ bất kỳ
- * lọc cứng nào — vế "giải các hung tinh" nói rất rộng, mà nới sai thì hệ quả là đề xuất một ngày
- * lẽ ra phải loại cho một đám tang. Chờ chủ dự án chốt đúng danh sách hung được phép giải.
+ * Engine dùng danh sách này làm cổng chặn ở bước sàng ngày hạ huyệt: phạm bất kỳ mục nào ở đây
+ * thì loại thẳng, có Tam Đại Cát Tinh cũng không cứu. Mọi hung tinh KHÁC được coi là "hung thông
+ * thường" và sẽ được giảm/hoá khi ngày có cát tinh (kèm nhãn hiển thị + trừ điểm).
  */
 export const TAM_CAT_KHONG_GIAI_DUOC: readonly string[] = [
   "Sát Chủ",
@@ -339,6 +339,11 @@ export const TAM_CAT_KHONG_GIAI_DUOC: readonly string[] = [
   "Nguyệt Phá",
   "Đại Hao",
   "Trực Phá",
+  // Ba mục tuyệt đối riêng của TANG SỰ — chủ dự án chốt 2026-08-16 "không hoá được nhé" khi được
+  // hỏi thẳng. Chúng không nằm trong sơ đồ ngoại lệ, nhưng cũng KHÔNG thuộc nhóm hung thông thường.
+  "Trùng Nhật",
+  "Phục Nhật",
+  "Xung tuổi vong",
 ];
 
 export interface TamDaiCatTinh {

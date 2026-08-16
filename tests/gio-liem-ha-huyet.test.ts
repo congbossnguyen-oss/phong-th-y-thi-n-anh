@@ -213,6 +213,21 @@ describe("Cây quyết định hoá hung bằng Tam Đại Cát Tinh", () => {
     expect(50).toBeGreaterThan(30);
   });
 
+  it("Trùng Nhật / Phục Nhật / xung tuổi vong KHÔNG hoá được — chủ dự án chốt 2026-08-16", () => {
+    // Đã hỏi thẳng "mấy cái này thì sao không hoá được" và được trả lời "không hoá được nhé".
+    // Ba mục này không nằm trong sơ đồ ngoại lệ, nhưng cũng KHÔNG rơi vào nhóm hung thông thường.
+    for (const ten of ["Trùng Nhật", "Phục Nhật", "Xung tuổi vong"]) {
+      expect(TrungTang.TAM_CAT_KHONG_GIAI_DUOC).toContain(ten);
+    }
+    // Không ngày nào lọt kết quả mà lại ghi đã hoá ba mục đó, và không ngày Tỵ/Hợi nào lọt được.
+    for (const c of quet()) {
+      expect(c.hungDaHoaGiai).not.toContain("Trùng Nhật");
+      expect(c.hungDaHoaGiai).not.toContain("Phục Nhật");
+      expect(c.hungDaHoaGiai).not.toContain("Xung tuổi vong");
+      expect(["Tỵ", "Hợi"]).not.toContain(c.canChiNgay.chi);
+    }
+  });
+
   it("nhóm ngoại lệ không bao giờ lọt vào kết quả dù ngày đó có cát tinh", () => {
     // Sát Chủ Âm, Kim Thần Thất Sát, Trùng Nhật, Phục Nhật, xung tuổi vong đều là "KHÔNG HOÁ".
     for (const c of quet()) {
