@@ -11,10 +11,14 @@
  * ⚠️ CỘT "Ghi chú" ở tab "Đơn đã thanh toán" là cột anh tự gõ. Script chỉ THÊM dòng mới
  * (appendRow), không bao giờ ghi đè dòng cũ, nên ghi chú của anh luôn an toàn.
  *
+ * Đây là dự án Apps Script ĐỘC LẬP (không gắn vào Sheet), mở Sheet bằng SHEET_ID bên dưới. Chọn
+ * kiểu độc lập vì mở Apps Script từ menu Sheet luôn bật một tab mới, khó tự động hoá; dự án độc
+ * lập thì vào thẳng script.google.com là sửa được.
+ *
  * CÁCH CÀI ĐẶT:
- * 1. Mở Sheet "Khách hàng trả phí - Phong Thủy Thiên Anh" (đã tạo sẵn trong thư mục
- *    PHONG THỦY THIÊN ANH trên Drive).
- * 2. Extensions (Tiện ích mở rộng) → Apps Script.
+ * 1. Vào script.google.com → "Dự án mới".
+ * 2. Điền SHEET_ID bên dưới bằng id của Sheet "Khách hàng trả phí - Phong Thủy Thiên Anh"
+ *    (đoạn giữa /d/ và /edit trên thanh địa chỉ).
  * 3. Xoá code mẫu, dán toàn bộ nội dung file này vào.
  * 4. Đổi SECRET_TOKEN bên dưới thành 1 chuỗi bí mật tự đặt — KHÁC token của 2 sheet kia.
  * 5. Ctrl+S để lưu.
@@ -29,6 +33,9 @@
  */
 
 const SECRET_TOKEN = "ĐỔI_CHUỖI_NÀY_THÀNH_MẬT_KHẨU_BÍ_MẬT_CỦA_ANH";
+
+/** Id của Sheet "Khách hàng trả phí - Phong Thủy Thiên Anh". */
+const SHEET_ID = "1lz9IsqchqI9kV5g49kcxVfOdcvfpUicEy-N5kLpTzyQ";
 
 const TAB_DON = "Đơn đã thanh toán";
 const TAB_TONG_HOP = "Tổng hợp";
@@ -48,7 +55,7 @@ const COT_DON = [
 ];
 
 function layTab(ten, cotTieuDe) {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = SpreadsheetApp.openById(SHEET_ID);
   let sheet = ss.getSheetByName(ten);
 
   // Sheet được tạo bằng import CSV nên tab đầu mang tên mặc định của Google. Nếu chưa có tab đúng
@@ -110,7 +117,7 @@ function ghiDon(d) {
  * tổng hợp tự cập nhật theo, không cần chạy lại script.
  */
 function capNhatTongHop() {
-  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const ss = SpreadsheetApp.openById(SHEET_ID);
   let sheet = ss.getSheetByName(TAB_TONG_HOP);
   if (!sheet) sheet = ss.insertSheet(TAB_TONG_HOP);
   sheet.clear();
