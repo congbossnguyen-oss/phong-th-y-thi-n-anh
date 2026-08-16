@@ -141,6 +141,17 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
         </div>
 
         <div>
+          <label for="glhh-ho-ten-vong" class="text-sm font-medium text-(--color-ink-800)">Họ tên người mất (tùy chọn)</label>
+          <input
+            type="text"
+            id="glhh-ho-ten-vong"
+            maxlength="80"
+            placeholder="Để in lên hồ sơ PDF"
+            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"
+          />
+        </div>
+
+        <div>
           <label for="glhh-nguyen-nhan" class="text-sm font-medium text-(--color-ink-800)">Nguyên nhân mất</label>
           <select
             id="glhh-nguyen-nhan"
@@ -305,6 +316,20 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
 
       <!-- Kết quả -->
       <div id="glhh-ket-qua" class="mt-6 hidden space-y-6"></div>
+
+      {/* Hồ sơ PDF — đặc tả Phase 2 mục 9: phải là thứ cầm được, in được, đưa họ hàng xem. */}
+      <div id="glhh-khoi-pdf" class="mt-4 hidden">
+        <button
+          type="button"
+          id="glhh-tai-pdf"
+          class="inline-flex items-center gap-2 rounded-(--radius-control) border border-(--color-gold-500) bg-(--color-ivory-100) px-4 py-2.5 text-sm font-medium text-(--color-ink-800) hover:bg-(--color-ivory-200) disabled:opacity-60"
+        >
+          Tải hồ sơ PDF
+        </button>
+        <p class="mt-1.5 text-xs text-(--color-ink-500)">
+          Hồ sơ gồm ngày giờ đề xuất (dương + âm lịch), lý do chọn từng phương án, các tuổi cần tránh mặt và thông tin liên hệ.
+        </p>
+      </div>
     </div>
   </Container>
 </BaseLayout>
@@ -742,6 +767,46 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
   }
   capNhatKhoiToa();
 
+  const khoiPdfEl = document.getElementById("glhh-khoi-pdf")!;
+  const taiPdfBtn = document.getElementById("glhh-tai-pdf") as HTMLButtonElement;
+  /** Payload của lần tính gần nhất — endpoint hồ sơ tự tính lại từ đây, không nhận kết quả sẵn. */
+  let payloadGanNhat: Record<string, unknown> | null = null;
+
+  taiPdfBtn.addEventListener("click", async () => {
+    if (!payloadGanNhat) return;
+    const chuGoc = taiPdfBtn.textContent;
+    taiPdfBtn.disabled = true;
+    taiPdfBtn.textContent = "Đang tạo hồ sơ...";
+    try {
+      const res = await fetch("/api/dai-cat-loi/gio-liem-ha-huyet/ho-so", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payloadGanNhat),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        loiEl.textContent = data?.error ?? "Không tạo được hồ sơ PDF.";
+        loiEl.classList.remove("hidden");
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "ho-so-tang-le.pdf";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      loiEl.textContent = "Không tạo được hồ sơ PDF. Vui lòng thử lại.";
+      loiEl.classList.remove("hidden");
+    } finally {
+      taiPdfBtn.disabled = false;
+      taiPdfBtn.textContent = chuGoc;
+    }
+  });
+
   document.getElementById("glhh-ctp-quay-lai")!.addEventListener("click", () => {
     chuaThuPhiEl.classList.add("hidden");
     toaDoInput.focus();
@@ -767,6 +832,8 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
         thanhToanEl.classList.add("hidden");
         form.classList.add("hidden"); // tránh gửi lại form (tạo đơn mới, thu phí lần nữa) sau khi đã có kết quả
         renderKetQua(data.result as GioLiemHaHuyetResult);
+        if (data.phase2) renderPhase2(data.phase2);
+        khoiPdfEl.classList.remove("hidden");
       } else if (data.status === "cancelled") {
         stopPolling();
         trangThaiEl.textContent = "Đơn hàng đã bị hủy. Vui lòng thử lại.";
@@ -783,6 +850,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
     ketQuaEl.classList.add("hidden");
     chuaThuPhiEl.classList.add("hidden");
     doLaiEl.classList.add("hidden");
+    khoiPdfEl.classList.add("hidden");
     stopPolling();
 
     const gioiTinh = (form.querySelector('input[name="gioiTinh"]:checked') as HTMLInputElement).value;
@@ -884,11 +952,15 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
       ...(Object.keys(thanQuyen).length > 0 ? { thanQuyen } : {}),
       nguyenNhanMat,
       ...(daCoHuyet ? { doSoToa: Number(doSoToaRaw) } : {}),
+      ...(doc("glhh-ho-ten-vong") ? { hoTenNguoiMat: doc("glhh-ho-ten-vong") } : {}),
       customerName,
       customerPhone,
       ...(customerEmail ? { customerEmail } : {}),
       ...(maKhuyenMai ? { maKhuyenMai } : {}),
     };
+    // Ghi lại để nút "Tải hồ sơ PDF" gửi đúng bộ dữ liệu này — dùng chung cho cả luồng thử
+    // nghiệm lẫn luồng thu phí.
+    payloadGanNhat = payload;
 
     // ⚠️ TẠM THỜI (test nội bộ, yêu cầu Công 2026-08-14): gọi thẳng test-calculate.ts, bỏ qua
     // bước tạo đơn + QR SePay. Để bật lại thu phí: đổi endpoint về checkout.ts và khôi phục
@@ -908,6 +980,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
         }
         renderKetQua(data.result as GioLiemHaHuyetResult);
         if (data.phase2) renderPhase2(data.phase2);
+        khoiPdfEl.classList.remove("hidden");
         ketQuaEl.scrollIntoView({ behavior: "smooth", block: "start" });
       } catch {
         loiEl.textContent = "Không tính được. Vui lòng thử lại.";
