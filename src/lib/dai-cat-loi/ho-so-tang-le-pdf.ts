@@ -14,6 +14,7 @@ import { BeVietnamProSemiBoldBase64 } from "../certificate/fonts/BeVietnamPro-Se
 import { BeVietnamProBoldBase64 } from "../certificate/fonts/BeVietnamPro-Bold";
 import { BeVietnamProItalicBase64 } from "../certificate/fonts/BeVietnamPro-Italic";
 import { siteConfig } from "../site-config";
+import { LogoThienAnhBase64 } from "./assets/logo-thien-anh";
 
 const A4 = { w: 595.28, h: 841.89 };
 const LE = 48; // lề trái/phải
@@ -68,6 +69,28 @@ class But {
 
   xuong(d: number): void {
     this.y -= d;
+  }
+
+  /** Vẽ 1 dòng CĂN GIỮA trang. */
+  dongGiua(text: string, o: { size?: number; font?: PDFFont; mau?: RGB; dan?: number } = {}): void {
+    const size = o.size ?? 10;
+    const font = o.font ?? this.f.thuong;
+    this.chua(size + 4);
+    const chu = catVua(text, font, size, A4.w - LE * 2);
+    this.page.drawText(chu, {
+      x: (A4.w - font.widthOfTextAtSize(chu, size)) / 2,
+      y: this.y,
+      size,
+      font,
+      color: o.mau ?? MAU.muc,
+    });
+    this.y -= size + (o.dan ?? 4);
+  }
+
+  /** Vẽ ảnh ở tọa độ tuyệt đối, không đụng tới con trỏ dòng. */
+  anh(img: { width: number; height: number }, x: number, yDay: number, rong: number): void {
+    const cao = (img.height / img.width) * rong;
+    this.page.drawImage(img as Parameters<PDFPage["drawImage"]>[0], { x, y: yDay, width: rong, height: cao });
   }
 
   /** Vẽ 1 dòng, tự cắt cho vừa bề ngang. */
@@ -139,6 +162,25 @@ function ngatDong(text: string, font: PDFFont, size: number, rong: number): stri
   return ra;
 }
 
+/**
+ * Đổi mã nội bộ sang chữ tiếng Việt. Hồ sơ giao cho tang gia TUYỆT ĐỐI không được lọt mã kỹ thuật
+ * kiểu "nhap-mo", "tam-hop" — đây là giấy đưa họ hàng đọc, không phải log hệ thống.
+ */
+const NHAN_PHAN_LOAI: Record<string, string> = {
+  "nhap-mo": "Nhập Mộ",
+  "thien-di": "Thiên Di",
+  "trung-tang": "Trùng Tang",
+};
+const NHAN_HOP_VONG: Record<string, string> = {
+  "tam-hop": "tam hợp",
+  "luc-hop": "lục hợp",
+};
+
+/** Trả về chữ tiếng Việt; gặp mã lạ thì bỏ qua hẳn thay vì in mã ra cho khách đọc. */
+function chuViet(bang: Record<string, string>, ma: unknown): string | null {
+  return typeof ma === "string" ? (bang[ma] ?? null) : null;
+}
+
 function ngayVN(d: { ngay: number; thang: number; nam: number }): string {
   return `${String(d.ngay).padStart(2, "0")}/${String(d.thang).padStart(2, "0")}/${d.nam}`;
 }
@@ -173,11 +215,22 @@ export async function generateHoSoTangLePdf(p: HoSoTangLeParams): Promise<Uint8A
   const b = new But(doc, f);
   const r = p.ketQua ?? {};
 
-  // --- Đầu hồ sơ ---
-  b.dong(siteConfig.name.toUpperCase(), { size: 10, font: dam, mau: MAU.vang, dan: 2 });
-  b.dong(siteConfig.tagline, { size: 8, font: nghieng, mau: MAU.mucNhat, dan: 14 });
-  b.dong("HỒ SƠ CHỌN NGÀY GIỜ TANG LỄ", { size: 17, font: dam, mau: MAU.son, dan: 6 });
-  b.dong("Giờ liệm · Giờ đóng quan · Ngày giờ hạ huyệt", { size: 9, font: nghieng, mau: MAU.mucNhat, dan: 12 });
+  // --- Đầu hồ sơ: logo góc trái, tiêu đề căn giữa ---
+  const logo = await doc.embedPng(Buffer.from(LogoThienAnhBase64, "base64"));
+  const LOGO_RONG = 62;
+  const logoCao = (logo.height / logo.width) * LOGO_RONG;
+  // Vẽ logo trước, neo theo mép trên; khối tiêu đề căn giữa theo bề ngang cả trang nên không bị
+  // logo đẩy lệch — logo nằm ở lớp riêng, không chiếm chỗ trong dòng chảy văn bản.
+  b.anh(logo, LE, A4.h - 46 - logoCao, LOGO_RONG);
+
+  b.y = A4.h - 58;
+  b.dongGiua("HỒ SƠ CHỌN NGÀY TANG LỄ", { size: 16, font: dam, mau: MAU.son, dan: 6 });
+  b.dongGiua("Giờ liệm · Giờ đóng quan · Di quan · Hạ huyệt", { size: 10, font: vua, mau: MAU.vang, dan: 6 });
+  // Tên và khẩu hiệu công ty lùi xuống dưới tiêu đề, vẫn căn giữa cho cân với logo bên trái.
+  b.dongGiua(siteConfig.name.toUpperCase(), { size: 9, font: vua, mau: MAU.mucNhat, dan: 2 });
+  b.dongGiua(siteConfig.tagline, { size: 8, font: nghieng, mau: MAU.mucNhat, dan: 8 });
+  // Chừa đủ chỗ nếu logo cao hơn khối chữ, tránh mục đầu tiên đè lên logo.
+  b.y = Math.min(b.y, A4.h - 46 - logoCao - 14);
 
   // --- Thông tin người mất ---
   b.muc("Thông tin người mất");
@@ -203,8 +256,9 @@ export async function generateHoSoTangLePdf(p: HoSoTangLeParams): Promise<Uint8A
       size: 10,
       font: vua,
     });
+    const phanLoai = chuViet(NHAN_PHAN_LOAI, g.phanLoaiCung);
     const nhan = [
-      `Cung giờ ${g.cungGio} (${g.phanLoaiCung})`,
+      `Cung giờ ${g.cungGio}${phanLoai ? ` (${phanLoai})` : ""}`,
       g.nhapMoTuKy ? "Tứ Kỵ — bất đắc dĩ mới dùng" : null,
       `${g.hoangDaoTen}${g.hoangDaoLaCat ? " (hoàng đạo)" : ""}`,
       g.canGioDatBangDep ? "Can giờ hợp bảng Trần Tử Tánh" : null,
@@ -237,12 +291,14 @@ export async function generateHoSoTangLePdf(p: HoSoTangLeParams): Promise<Uint8A
       `${i + 1}. ${ngayVN(h.ngayDuongLich)}${am ? ` (âm lịch ${am})` : ""} — giờ ${h.chiGio}, ${h.khungGio.batDau}–${h.khungGio.ketThuc}`,
       { size: 10, font: vua },
     );
+    const phanLoai = chuViet(NHAN_PHAN_LOAI, h.phanLoaiCung);
+    const hopVong = chuViet(NHAN_HOP_VONG, h.ngayHopVoiVong);
     const nhan = [
       `Ngày ${h.canChiNgay.can} ${h.canChiNgay.chi}`,
-      `cung giờ ${h.cungGio} (${h.phanLoaiCung})`,
+      `cung giờ ${h.cungGio}${phanLoai ? ` (${phanLoai})` : ""}`,
       `${h.hoangDaoTen}${h.hoangDaoLaCat ? " (hoàng đạo)" : ""}`,
       h.tamDaiCatTinh?.co ? h.tamDaiCatTinh.ten : null,
-      h.ngayHopVoiVong ? `${h.ngayHopVoiVong} với tuổi vong` : null,
+      hopVong ? `ngày ${hopVong} với tuổi vong` : null,
     ].filter(Boolean);
     b.doan(nhan.join(" · "), { size: 8.5, x: LE + 14, mau: MAU.mucNhat });
     if (h.hungDaHoaGiai?.length) {
@@ -291,11 +347,17 @@ export async function generateHoSoTangLePdf(p: HoSoTangLeParams): Promise<Uint8A
   const t = r.tuoiCanTranh;
   if (t) {
     b.muc("Các tuổi cần tránh mặt");
+    // Nhóm 4 có cấu trúc KHÁC các nhóm còn lại: là object { xung, hinh } chứ không phải mảng Chi.
+    // Gộp chung vào vòng lặp mảng thì `Array.isArray` trả false và cả dòng biến mất khỏi hồ sơ —
+    // mất đúng mục quan trọng nhất về an toàn. Vì vậy trải phẳng riêng ở đây.
+    const nhom4 = t.nhom4XungHinh
+      ? [t.nhom4XungHinh.xung, ...(t.nhom4XungHinh.hinh ?? [])].filter(Boolean)
+      : [];
     const nhom: [string, unknown][] = [
       ["Long Hổ Kê Xà (luôn tránh)", t.nhom1LongHoKeXa],
       ["Tam hợp với cung phạm", t.nhom2TamHopCungPham],
       ["Tam hợp với tuổi vong", t.nhom3TamHopTuoiVong],
-      ["Xung / hình với tuổi vong", t.nhom4XungHinh?.tatCa ?? t.nhom4XungHinh],
+      ["Xung / hình với tuổi vong", nhom4],
       ["Thân quyến kỵ giờ liệm", t.nhom6GioLiemKyThanQuyen],
     ];
     for (const [ten, ds] of nhom) {
