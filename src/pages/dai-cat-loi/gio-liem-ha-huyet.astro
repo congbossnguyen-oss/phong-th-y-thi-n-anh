@@ -140,6 +140,62 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
           <p class="mt-1 text-xs text-(--color-ink-500)">Có số này mới tính thêm được giờ động quan (giờ rời nhà), tính lùi từ giờ hạ huyệt.</p>
         </div>
 
+        <div>
+          <label for="glhh-nguyen-nhan" class="text-sm font-medium text-(--color-ink-800)">Nguyên nhân mất</label>
+          <select
+            id="glhh-nguyen-nhan"
+            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"
+          >
+            <option value="benh-tuoi-gia">Bệnh / tuổi già</option>
+            <option value="tai-nan-dot-ngot">Tai nạn / đột ngột</option>
+          </select>
+          <p class="mt-1 text-xs text-(--color-ink-500)">
+            Mất do tai nạn mà chôn trong 3–5 ngày thì theo phép quyền biến "Thừa hung mai táng" được miễn chọn ngày giờ.
+          </p>
+        </div>
+
+        {/*
+          ĐỊNH TUYẾN, KHÔNG PHẢI UPSELL. Nhà chưa có huyệt thì gói cơ bản mới là sản phẩm ĐÚNG với
+          họ — không có tọa mộ để nhập thì nâng cấp là vô nghĩa. Copy ở đây tuyệt đối không được
+          dùng nỗi sợ để đẩy lên gói cao (đặc tả Phase 2 mục 8 cấm).
+        */}
+        <fieldset class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4">
+          <legend class="px-1 text-sm font-medium text-(--color-ink-800)">Gia đình đã có huyệt mộ chưa?</legend>
+          <div class="mt-2 flex flex-col gap-2">
+            <label class="flex items-start gap-2 text-sm text-(--color-ink-700)">
+              <input type="radio" name="glhh-co-huyet" value="chua" checked class="mt-1" />
+              <span>
+                <strong>Chưa có</strong> — hỏa táng, gửi chùa, hoặc chưa mua đất.
+                <span class="block text-xs text-(--color-ink-500)">Chọn giờ liệm, đóng quan và ngày giờ hạ huyệt theo chưởng pháp + thần sát trạch nhật.</span>
+              </span>
+            </label>
+            <label class="flex items-start gap-2 text-sm text-(--color-ink-700)">
+              <input type="radio" name="glhh-co-huyet" value="da-co" class="mt-1" />
+              <span>
+                <strong>Đã có huyệt mộ</strong> — biết tọa độ huyệt.
+                <span class="block text-xs text-(--color-ink-500)">Có thêm bước lọc và xếp hạng lại ngày giờ theo tọa hướng huyệt mộ.</span>
+              </span>
+            </label>
+          </div>
+
+          <div id="glhh-khoi-toa" class="mt-4 hidden">
+            <label for="glhh-toa-do" class="text-sm font-medium text-(--color-ink-800)">Tọa độ huyệt mộ (độ, đo bằng la kinh)</label>
+            <input
+              type="number"
+              id="glhh-toa-do"
+              placeholder="Ví dụ 30 — tọa Sửu"
+              min="0"
+              max="360"
+              step="0.1"
+              class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"
+            />
+            <p class="mt-1 text-xs text-(--color-ink-500)">
+              Đây là số đo <strong>tọa</strong> (lưng huyệt); hướng hệ thống tự suy. Mỗi sơn rộng 15° nên cần đo cho chính xác —
+              lệch một sơn là đổi hẳn kết quả. Nếu số đo rơi sát ranh giới hai sơn, hệ thống sẽ báo để gia đình đo lại.
+            </p>
+          </div>
+        </fieldset>
+
         <details class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3">
           <summary class="cursor-pointer text-sm font-medium text-(--color-ink-800)">Thêm tuổi thân quyến (tùy chọn — để xét giờ liệm kỵ)</summary>
           <div class="mt-3 grid grid-cols-2 gap-2">
@@ -207,6 +263,37 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
       </form>
 
       <div id="glhh-loi" class="mt-4 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm text-(--color-danger-500)"></div>
+
+      {/*
+        MÀN HÌNH "CHƯA THU PHÍ" — hiện khi tọa hướng huyệt phạm sát cấp NĂM (kết cục C). Sát cấp
+        năm thì không ngày giờ nào hoá giải được, nên hệ thống dừng TRƯỚC bước thanh toán. Đây là
+        điểm xây uy tín mạnh nhất của sản phẩm, không phải một thông báo lỗi.
+      */}
+      <div id="glhh-chua-thu-phi" class="mt-6 hidden rounded-(--radius-card) border-2 border-amber-400 bg-amber-50 p-6">
+        <p class="font-display text-lg font-bold text-amber-900">Trường hợp này chúng tôi chưa thu phí</p>
+        <p id="glhh-ctp-ly-do" class="mt-3 text-sm leading-relaxed text-amber-900"></p>
+        <div class="mt-4 flex flex-wrap gap-3">
+          <a
+            href="/lien-he"
+            class="inline-flex items-center rounded-(--radius-control) bg-amber-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-amber-700"
+          >
+            Đặt lịch khảo sát huyệt mộ
+          </a>
+          <button
+            type="button"
+            id="glhh-ctp-quay-lai"
+            class="inline-flex items-center rounded-(--radius-control) border border-amber-600 px-4 py-2.5 text-sm font-medium text-amber-900 hover:bg-amber-100"
+          >
+            Nhập lại tọa độ
+          </button>
+        </div>
+      </div>
+
+      {/* Tọa độ rơi sát ranh giới hai sơn — mời đo lại, chưa bàn tới tiền. */}
+      <div id="glhh-do-lai" class="mt-6 hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-5">
+        <p class="font-medium text-(--color-ink-800)">Cần đo lại tọa độ</p>
+        <p id="glhh-do-lai-ly-do" class="mt-2 text-sm leading-relaxed text-(--color-ink-700)"></p>
+      </div>
 
       <!-- Bước thanh toán -->
       <div id="glhh-thanh-toan" class="mt-6 hidden space-y-4 rounded-2xl border-2 border-amber-300 bg-white p-6 text-center text-slate-900 shadow-lg">
@@ -410,6 +497,15 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
     <a href="/lien-he" class="text-(--color-gold-300) hover:underline">đặt lịch tư vấn</a>.
   </p>`;
 
+  /** Thoát HTML trước khi ghép chuỗi vào innerHTML — tên sát, tên quẻ, ghi chú đều là chuỗi tự do. */
+  function escapeHtml(s: unknown): string {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
   function renderKetQua(result: GioLiemHaHuyetResult) {
     const el = document.getElementById("glhh-ket-qua")!;
 
@@ -549,6 +645,80 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
     el.classList.remove("hidden");
   }
 
+  /**
+   * Kết quả PHASE 2 — chèn thêm vào cuối khối kết quả.
+   *
+   * ⚠️ TUYỆT ĐỐI KHÔNG hiện điểm số thô. Đặc tả mục 6 yêu cầu tách rõ 2 phần "cách cục nền" và
+   * "quan hệ đạt", và cấm hẳn kiểu câu "Hà Đồ 140 điểm tốt hơn Đồng quái khí 120 điểm". Engine đã
+   * để điểm ở trường `diemNoiBo` riêng — không được đọc trường đó ra đây.
+   */
+  function renderPhase2(p2: any) {
+    const el = document.getElementById("glhh-ket-qua")!;
+
+    if (p2.ketCuc === "mien-tru") {
+      el.insertAdjacentHTML(
+        "beforeend",
+        `<div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
+          <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Lọc theo tọa hướng huyệt mộ</p>
+          <p class="mt-2 text-sm font-medium">Áp dụng phép quyền biến: ${escapeHtml(p2.nhanh)}</p>
+          <p class="mt-1 text-sm text-slate-600">${escapeHtml(p2.giaiThich)}</p>
+        </div>`,
+      );
+      return;
+    }
+    if (p2.ketCuc !== "A" && p2.ketCuc !== "B") return;
+
+    const dsHtml = p2.phuongAn
+      .map(
+        (pa: any) => `
+        <div class="rounded-xl border border-amber-200 bg-amber-50/60 p-4">
+          <p class="font-display font-bold text-slate-900">Phương án ${pa.thuHang} — ${escapeHtml(pa.id)}</p>
+          <dl class="mt-2 space-y-1 text-sm">
+            <div class="flex gap-2">
+              <dt class="shrink-0 text-slate-500">Cách cục nền:</dt>
+              <dd class="font-medium text-slate-900">${escapeHtml(pa.cachCuc.tenLop)}</dd>
+            </div>
+            <div class="flex gap-2">
+              <dt class="shrink-0 text-slate-500">Quan hệ đạt:</dt>
+              <dd class="text-slate-800">${pa.quanHeDat.length ? pa.quanHeDat.map(escapeHtml).join(" · ") : "—"}</dd>
+            </div>
+            ${
+              pa.canhBao.length
+                ? `<div class="flex gap-2">
+                     <dt class="shrink-0 text-slate-500">Ghi chú:</dt>
+                     <dd class="text-amber-700">${pa.canhBao.map(escapeHtml).join("; ")}</dd>
+                   </div>`
+                : ""
+            }
+          </dl>
+        </div>`,
+      )
+      .join("");
+
+    el.insertAdjacentHTML(
+      "beforeend",
+      `<div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
+        <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Lọc &amp; xếp hạng theo tọa hướng huyệt mộ</p>
+        <p class="mt-1 text-sm text-slate-600">
+          Tọa ${escapeHtml(p2.toaHuong.sonToa)} ${p2.toaHuong.doSoToa.toFixed(1)}° —
+          hướng ${escapeHtml(p2.toaHuong.sonHuong)} ${p2.toaHuong.doSoHuong.toFixed(1)}°.
+          ${
+            p2.soPhuongAnQuaLoc > 0
+              ? `Đã rà toàn bộ ngày giờ trong khung 20 ngày, loại hết các phương án có sát phương vị đáo tọa hoặc đáo hướng. Dưới đây là những phương án đạt nhất.`
+              : ""
+          }
+        </p>
+        <div class="mt-3 space-y-3">${dsHtml || `<p class="text-sm text-slate-500">Không còn phương án nào qua được lọc tọa hướng — vui lòng liên hệ tư vấn trực tiếp.</p>`}</div>
+        ${p2.cauKetLuan ? `<p class="mt-3 text-sm font-medium text-slate-700">${escapeHtml(p2.cauKetLuan)}</p>` : ""}
+        ${
+          p2.thieuDuLieu.length
+            ? `<p class="mt-3 text-xs text-amber-700">${p2.thieuDuLieu.map(escapeHtml).join(" ")}</p>`
+            : ""
+        }
+      </div>`,
+    );
+  }
+
   const form = document.getElementById("glhh-form") as HTMLFormElement;
   const loiEl = document.getElementById("glhh-loi")!;
   const thanhToanEl = document.getElementById("glhh-thanh-toan")!;
@@ -556,6 +726,27 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
   const qrImg = document.getElementById("glhh-qr") as HTMLImageElement;
   const orderCodeEl = document.getElementById("glhh-order-code")!;
   const trangThaiEl = document.getElementById("glhh-trang-thai")!;
+
+  const khoiToaEl = document.getElementById("glhh-khoi-toa")!;
+  const chuaThuPhiEl = document.getElementById("glhh-chua-thu-phi")!;
+  const doLaiEl = document.getElementById("glhh-do-lai")!;
+  const toaDoInput = document.getElementById("glhh-toa-do") as HTMLInputElement;
+
+  /** Ô tọa độ chỉ hiện khi gia đình đã có huyệt — chưa có huyệt thì nhập tọa độ là vô nghĩa. */
+  function capNhatKhoiToa() {
+    const daCo = (form.querySelector('input[name="glhh-co-huyet"]:checked') as HTMLInputElement)?.value === "da-co";
+    khoiToaEl.classList.toggle("hidden", !daCo);
+  }
+  for (const radio of form.querySelectorAll('input[name="glhh-co-huyet"]')) {
+    radio.addEventListener("change", capNhatKhoiToa);
+  }
+  capNhatKhoiToa();
+
+  document.getElementById("glhh-ctp-quay-lai")!.addEventListener("click", () => {
+    chuaThuPhiEl.classList.add("hidden");
+    toaDoInput.focus();
+    toaDoInput.select();
+  });
 
   let pollTimer: ReturnType<typeof setInterval> | null = null;
 
@@ -590,6 +781,8 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
     loiEl.classList.add("hidden");
     thanhToanEl.classList.add("hidden");
     ketQuaEl.classList.add("hidden");
+    chuaThuPhiEl.classList.add("hidden");
+    doLaiEl.classList.add("hidden");
     stopPolling();
 
     const gioiTinh = (form.querySelector('input[name="gioiTinh"]:checked') as HTMLInputElement).value;
@@ -622,6 +815,57 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
       return;
     }
 
+    const daCoHuyet =
+      (form.querySelector('input[name="glhh-co-huyet"]:checked') as HTMLInputElement)?.value === "da-co";
+    const nguyenNhanMat = (document.getElementById("glhh-nguyen-nhan") as HTMLSelectElement).value;
+    const doSoToaRaw = toaDoInput.value.trim();
+    if (daCoHuyet && doSoToaRaw === "") {
+      loiEl.textContent = "Gia đình đã có huyệt mộ — vui lòng nhập tọa độ huyệt đo bằng la kinh.";
+      loiEl.classList.remove("hidden");
+      return;
+    }
+
+    // ⚠️ CỔNG KIỂM CHẠY TRƯỚC MỌI THỨ, KỂ CẢ TRƯỚC KHI TẠO ĐƠN. Phạm sát cấp năm thì không ngày
+    // giờ nào cứu được, nên phải chặn ở đây — không bao giờ để thu tiền rồi mới báo không làm
+    // được (đặc tả Phase 2 mục 2.1b).
+    if (daCoHuyet) {
+      try {
+        const resKiem = await fetch("/api/dai-cat-loi/gio-liem-ha-huyet/kiem-toa-huong", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            doSoToa: Number(doSoToaRaw),
+            namMat: ngayMat.year,
+            thangMat: ngayMat.month,
+            ngayMat: ngayMat.day,
+          }),
+        });
+        const dataKiem = await resKiem.json();
+        if (!resKiem.ok || !dataKiem.ok) {
+          loiEl.textContent = dataKiem.error ?? "Không kiểm được tọa hướng.";
+          loiEl.classList.remove("hidden");
+          return;
+        }
+        const kq = dataKiem.ketQua;
+        if (kq.ketCuc === "can-do-lai") {
+          document.getElementById("glhh-do-lai-ly-do")!.textContent = kq.thongDiep;
+          doLaiEl.classList.remove("hidden");
+          doLaiEl.scrollIntoView({ behavior: "smooth", block: "center" });
+          return;
+        }
+        if (kq.ketCuc === "C") {
+          document.getElementById("glhh-ctp-ly-do")!.textContent = kq.thongDiep;
+          chuaThuPhiEl.classList.remove("hidden");
+          chuaThuPhiEl.scrollIntoView({ behavior: "smooth", block: "center" });
+          return;
+        }
+      } catch {
+        loiEl.textContent = "Không kiểm được tọa hướng. Vui lòng thử lại.";
+        loiEl.classList.remove("hidden");
+        return;
+      }
+    }
+
     const thanQuyen: Record<string, string> = {};
     if (truongNam) thanQuyen.chiTruongNam = truongNam;
     if (conDauLon) thanQuyen.chiConDauLon = conDauLon;
@@ -638,6 +882,8 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
       ...(soNgayRaw ? { soNgayDuKienToiChon: Number(soNgayRaw) } : {}),
       ...(diChuyenRaw ? { thoiGianDiChuyenPhut: Number(diChuyenRaw) } : {}),
       ...(Object.keys(thanQuyen).length > 0 ? { thanQuyen } : {}),
+      nguyenNhanMat,
+      ...(daCoHuyet ? { doSoToa: Number(doSoToaRaw) } : {}),
       customerName,
       customerPhone,
       ...(customerEmail ? { customerEmail } : {}),
@@ -661,6 +907,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
           return;
         }
         renderKetQua(data.result as GioLiemHaHuyetResult);
+        if (data.phase2) renderPhase2(data.phase2);
         ketQuaEl.scrollIntoView({ behavior: "smooth", block: "start" });
       } catch {
         loiEl.textContent = "Không tính được. Vui lòng thử lại.";

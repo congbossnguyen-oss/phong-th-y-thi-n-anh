@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
-import { calculateGioLiemHaHuyet, type GioLiemHaHuyetInput } from "@thien-anh/trachnhat-engine";
+import { apDungPhase2, calculateGioLiemHaHuyet, type GioLiemHaHuyetInput } from "@thien-anh/trachnhat-engine";
+import type { TrungTang } from "@thien-anh/rule-engine";
 import { Astronomy, type Data } from "@thien-anh/calendar-core";
 
 type Chi = Data.Chi;
@@ -89,7 +90,30 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     const result = calculateGioLiemHaHuyet(input);
-    return jsonResponse({ ok: true, result }, 200);
+
+    // --- PHASE 2 (gói đầy đủ) — chỉ chạy khi gia đình ĐÃ CÓ huyệt mộ và nhập được tọa độ ---
+    const doSoToa = b.doSoToa === undefined || b.doSoToa === "" ? undefined : Number(b.doSoToa);
+    if (doSoToa === undefined) return jsonResponse({ ok: true, result }, 200);
+    if (!Number.isFinite(doSoToa)) {
+      return jsonResponse({ ok: false, error: "Tọa độ huyệt mộ không hợp lệ (cần số đo 0-360°)." }, 400);
+    }
+
+    const nguyenNhanMat: TrungTang.NguyenNhanMat =
+      b.nguyenNhanMat === "tai-nan-dot-ngot" ? "tai-nan-dot-ngot" : "benh-tuoi-gia";
+
+    const phase2 = apDungPhase2({
+      doSoToa,
+      // Lọc trên RỔ RỘNG, không lọc trên top 3 — xem ghi chú `tatCaNgayGioHaHuyet` ở engine: lọc
+      // trên top 3 thì Tam Sát/Bát Sát quét sạch, trả về rỗng.
+      phuongAnPhase1: result.tatCaNgayGioHaHuyet ?? [],
+      namMat,
+      thangMat,
+      ngayMat,
+      nguyenNhanMat,
+      ...(b.soNgayDuKienToiChon ? { soNgayDuKienToiChon: Number(b.soNgayDuKienToiChon) } : {}),
+    });
+
+    return jsonResponse({ ok: true, result, phase2 }, 200);
   } catch (err) {
     return jsonResponse({ ok: false, error: err instanceof Error ? err.message : "Không tính được." }, 400);
   }
