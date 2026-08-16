@@ -540,6 +540,13 @@ export function calculateKyHopDongCaoCapScore(
   const thieuDuLieu = [...THIEU_DU_LIEU_MAC_DINH];
   const lyDoLoai = locLoaiKyHopDong(day, nguoiKy);
 
+  // Dương Công Kỵ — chưa có quy tắc hoá giải (chỉ đạo 2026-08-17). Cảnh báo phải nổi lên KỂ CẢ
+  // khi ngày có Tam Đại Cát Tinh; engine không được tự kết luận là cứu được hay không cứu được.
+  // Đây là cảnh báo, KHÔNG phải lý do loại — thêm lý do loại sẽ là tự đặt ra quy tắc mới.
+  if (day.duongCongKyNhat) {
+    thieuDuLieu.push("duong_cong_ky_chua_co_quy_tac_hoa_giai");
+  }
+
   const nen = tinhDiemNenKyHopDong(day, rules);
   const chuyenBiet = tinhDiemChuyenBietKyKet(day, rules);
   const tieuLucNhamDiem = rules.tieuLucNhamDiem[day.tieuLucNham] ?? 5;

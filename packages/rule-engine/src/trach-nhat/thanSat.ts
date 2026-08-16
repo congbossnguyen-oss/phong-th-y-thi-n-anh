@@ -151,14 +151,16 @@ export const THAN_SAT_THANG: readonly ThanSatThangEntry[] = [
     // Chủ dự án chốt 2026-08-16: lấy bảng 11/8 làm chuẩn, bảng theo sách đã gỡ (xem chú thích ở
     // trên) nên tên "Thiên Giải" từ đây chỉ còn một nghĩa duy nhất.
     //
-    // ⚠️ NGHI GÕ NHẦM Ở THÁNG 4 — đã báo chủ dự án, CHƯA tự sửa vì đây là số liệu gốc:
-    //   tháng  3  4  5  6  7  8  9 10 11 12
-    //   hiện    Tý Dần Dần Mão Thìn Tỵ Ngọ Mùi Thân Dậu   → tháng 4 và 5 trùng nhau, và nhảy cóc
-    //                                                       qua Sửu
-    //   nếu tháng 4 là Sửu thì tháng 3→12 thành dãy tăng đều tuyệt đối: Tý Sửu Dần Mão Thìn Tỵ
-    //   Ngọ Mùi Thân Dậu. Xác suất trùng hợp ngẫu nhiên rất thấp.
-    // Giữ nguyên "Dần" cho tới khi chủ dự án tra lại bảng gốc và xác nhận.
-    chiTheoThang: ["Tỵ", "Hợi", "Tý", "Dần", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân", "Dậu"],
+    // ✅ ĐÃ SỬA THÁNG 4: Dần → Sửu (chủ dự án chốt 2026-08-17 sau khi đối chiếu bảng gốc 11/8).
+    //
+    // Lỗi gốc: bảng cũ ghi tháng 4 = Dần, làm tháng 4 và tháng 5 TRÙNG NHAU và chi Sửu biến mất
+    // khỏi cả bảng. Sau khi sửa, tháng 3→12 chạy liên tục đủ 10 chi không sót:
+    //   3=Tý · 4=Sửu · 5=Dần · 6=Mão · 7=Thìn · 8=Tỵ · 9=Ngọ · 10=Mùi · 11=Thân · 12=Dậu
+    //
+    // Tháng 1 (Tỵ) và tháng 2 (Hợi) KHÔNG nằm trong dãy liên tục đó — giữ nguyên theo bảng gốc,
+    // chủ dự án chỉ đạo rõ không được suy diễn hay đổi hai tháng này.
+    // Công thức tính Thiên Giải không đổi, chỉ đổi đúng một ô dữ liệu.
+    chiTheoThang: ["Tỵ", "Hợi", "Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân", "Dậu"],
   },
 ] as const;
 

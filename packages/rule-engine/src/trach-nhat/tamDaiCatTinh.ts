@@ -167,6 +167,42 @@ export const HUNG_TINH_KHONG_HOA_GIAI: readonly string[] = [
 ];
 
 /**
+ * Hung tinh CHƯA CÓ QUY TẮC HOÁ GIẢI — không thuộc nhóm hoá giải được, cũng không thuộc nhóm
+ * khẳng định không hoá giải được. Engine KHÔNG được tự quyết một trong hai.
+ *
+ * Chỉ đạo chủ dự án 2026-08-17: bảng phân loại có ghi Dương Công Kỵ là "✅ Có*" kèm chú "theo quy
+ * tắc riêng", nhưng quy tắc riêng đó chưa được cung cấp. Cấm suy diễn rằng Sát Cống / Trực Tinh /
+ * Nhân Chuyên hoá giải được nó; cũng cấm tự kết luận là không hoá giải được.
+ *
+ * Hệ quả bắt buộc:
+ *   • Không bao giờ rơi vào `daHoaGiai` — kể cả khi ngày có đủ cả ba cát tinh.
+ *   • Cảnh báo phải được GIỮ NGUYÊN, không bị xoá khi có Tam Đại Cát Tinh.
+ *   • Ngày phạm không tự động thành "dùng được" chỉ vì có cát tinh.
+ *
+ * Khi chủ dự án cung cấp quy tắc thật, chỉ cần chuyển tên sao sang `HUNG_TINH_KHONG_HOA_GIAI`
+ * (nếu không cứu được) hoặc bỏ khỏi mảng này (nếu là hung tinh thường) — không phải sửa engine.
+ */
+export const HUNG_TINH_CHUA_CO_QUY_TAC: readonly string[] = [
+  "Dương Công Kỵ",
+  "Dương Công Kỵ Nhật", // biến thể tên đang dùng ở lớp chấm điểm
+];
+
+/** Kết cục của một hung tinh sau khi áp quy tắc Tam Đại Cát Tinh. */
+export type TrangThaiHoaGiai =
+  /** Được Tam Đại Cát Tinh giảm/hoá. */
+  | "HOA_GIAI"
+  /** Nằm trong nhóm ngoại lệ — cát tinh không cứu được, giữ nguyên đại kỵ. */
+  | "KHONG_HOA_GIAI"
+  /** Chưa có quy tắc để kết luận — engine không được tự quyết. Cảnh báo phải giữ nguyên. */
+  | "CHUA_CO_QUY_TAC_HOA_GIAI";
+
+/** Một hung tinh kèm kết cục của nó — để tầng hiển thị nói đúng từng sao. */
+export interface HungTinhSauHoaGiai {
+  ten: string;
+  trangThai: TrangThaiHoaGiai;
+}
+
+/**
  * Trước đây Sát/Bạch Hổ nhập Trung Cung nằm ở đây vì chưa có công thức. Nay ĐÃ CÓ — xem
  * `nhapTrungCung.ts`, công thức `(dayIndex + 5) % 9 === 0` chủ dự án cung cấp 2026-08-16.
  *
@@ -183,6 +219,23 @@ export interface KetQuaHoaGiai {
   daHoaGiai: string[];
   /** Hung tinh vẫn giữ nguyên vì nằm trong danh sách ngoại lệ. */
   khongHoaGiai: string[];
+  /**
+   * Hung tinh chưa có quy tắc hoá giải — engine không kết luận. Cảnh báo giữ nguyên, tầng gọi
+   * PHẢI hiển thị và KHÔNG được coi như đã hoá giải.
+   */
+  chuaCoQuyTac: string[];
+  /** Toàn bộ hung tinh kèm kết cục từng cái, đúng thứ tự đầu vào. */
+  chiTiet: HungTinhSauHoaGiai[];
+}
+
+/** Phân loại một hung tinh — nguồn sự thật duy nhất cho cả 3 nhóm. */
+export function phanLoaiHungTinh(ten: string, coTamDaiCatTinh: boolean): TrangThaiHoaGiai {
+  // Xét "chưa có quy tắc" TRƯỚC mọi nhánh khác: kể cả khi không có cát tinh, kết luận vẫn là
+  // "chưa biết", không được rơi vào nhánh mặc định nào.
+  if (HUNG_TINH_CHUA_CO_QUY_TAC.includes(ten)) return "CHUA_CO_QUY_TAC_HOA_GIAI";
+  if (!coTamDaiCatTinh) return "KHONG_HOA_GIAI";
+  if (HUNG_TINH_KHONG_HOA_GIAI.includes(ten)) return "KHONG_HOA_GIAI";
+  return "HOA_GIAI";
 }
 
 /**
@@ -198,16 +251,18 @@ export function apQuyTacHoaGiai(
   const tenCatTinh = catTinh.map((c) => c.name);
   const coTamDaiCatTinh = tenCatTinh.length > 0;
 
-  if (!coTamDaiCatTinh) {
-    return { coTamDaiCatTinh: false, tenCatTinh: [], daHoaGiai: [], khongHoaGiai: [...hungTinh] };
-  }
-
   const daHoaGiai: string[] = [];
   const khongHoaGiai: string[] = [];
-  for (const h of hungTinh) {
-    if (HUNG_TINH_KHONG_HOA_GIAI.includes(h)) khongHoaGiai.push(h);
-    else daHoaGiai.push(h);
+  const chuaCoQuyTac: string[] = [];
+  const chiTiet: HungTinhSauHoaGiai[] = [];
+
+  for (const ten of hungTinh) {
+    const trangThai = phanLoaiHungTinh(ten, coTamDaiCatTinh);
+    chiTiet.push({ ten, trangThai });
+    if (trangThai === "HOA_GIAI") daHoaGiai.push(ten);
+    else if (trangThai === "CHUA_CO_QUY_TAC_HOA_GIAI") chuaCoQuyTac.push(ten);
+    else khongHoaGiai.push(ten);
   }
 
-  return { coTamDaiCatTinh: true, tenCatTinh, daHoaGiai, khongHoaGiai };
+  return { coTamDaiCatTinh, tenCatTinh, daHoaGiai, khongHoaGiai, chuaCoQuyTac, chiTiet };
 }
