@@ -1,5 +1,9 @@
 import type { APIRoute } from "astro";
-import { calculateGioLiemHaHuyet, type GioLiemHaHuyetInput } from "@thien-anh/trachnhat-engine";
+import {
+  calculateGioLiemHaHuyet,
+  kiemToaHuongTruocThanhToan,
+  type GioLiemHaHuyetInput,
+} from "@thien-anh/trachnhat-engine";
 import { taoDonCongCu } from "../../../../lib/payments/checkout-cong-cu";
 import { Astronomy, type Data } from "@thien-anh/calendar-core";
 
@@ -123,6 +127,24 @@ export const POST: APIRoute = async ({ request, locals }) => {
   }
   if (dryRun.duoi10Tuoi) {
     return jsonResponse({ ok: false, error: "Người mất dưới 10 tuổi — không tính theo phương pháp này." }, 400);
+  }
+
+  // ⚠️ CHẶN KẾT CỤC C Ở MÁY CHỦ, TRƯỚC KHI TẠO ĐƠN.
+  //
+  // Trang web đã gọi `kiem-toa-huong` trước khi nộp form, nhưng đó chỉ là hàng rào phía trình
+  // duyệt: gọi thẳng endpoint này vẫn tạo được đơn và thu tiền cho một ca mà không ngày giờ nào
+  // cứu được. Quy tắc "phạm sát cấp năm thì KHÔNG THU PHÍ" là cam kết nghiệp vụ, nên phải được
+  // giữ ở nơi khách không sửa được.
+  if (doSoToa !== undefined) {
+    const cong = kiemToaHuongTruocThanhToan({ doSoToa, namMat, thangMat, ngayMat });
+    if (cong.ketCuc === "can-do-lai") {
+      return jsonResponse({ ok: false, error: cong.thongDiep }, 400);
+    }
+    if (cong.ketCuc === "C") {
+      // 409 để tầng gọi phân biệt được với lỗi nhập liệu thường: đây không phải nhập sai, mà là
+      // trường hợp chúng tôi chủ động không nhận phí.
+      return jsonResponse({ ok: false, chuaThuPhi: true, error: cong.thongDiep }, 409);
+    }
   }
 
   try {

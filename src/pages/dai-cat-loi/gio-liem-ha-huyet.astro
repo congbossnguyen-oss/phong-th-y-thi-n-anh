@@ -997,6 +997,14 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
       });
       const data = await res.json();
       if (!res.ok || !data.ok) {
+        // Máy chủ cũng chặn kết cục C (hàng rào thứ hai, phòng khi hàng rào phía trình duyệt bị
+        // bỏ qua). Trường hợp này KHÔNG phải lỗi nhập liệu — hiện đúng màn hình "chưa thu phí".
+        if (data.chuaThuPhi) {
+          document.getElementById("glhh-ctp-ly-do")!.textContent = data.error;
+          chuaThuPhiEl.classList.remove("hidden");
+          chuaThuPhiEl.scrollIntoView({ behavior: "smooth", block: "center" });
+          return;
+        }
         loiEl.textContent = data.error ?? "Không tạo được đơn hàng.";
         loiEl.classList.remove("hidden");
         return;
