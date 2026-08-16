@@ -6,3 +6,4 @@ export * from "./hanhNienThaiTue.js";
 export * from "./tongHop.js";
 export * from "./gioLiemHaHuyet.js";
 export * from "./thanSatAnTang.js";
+export * from "./phase2ToaHuongMo.js";
