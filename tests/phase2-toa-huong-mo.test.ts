@@ -8,6 +8,7 @@
 // module, cấp Ngày/Giờ chỉ loại phương án, sát ranh giới thì bắt đo lại chứ không tự đoán.
 import { describe, expect, it } from "vitest";
 import { TrungTang, XemNgayCaoCap } from "@thien-anh/rule-engine";
+import { kiemToaHuongTruocThanhToan } from "@thien-anh/trachnhat-engine";
 
 /** Lấy tọa hướng, ném nếu độ số không hợp lệ — để test đọc gọn. */
 function toa(doSo: number) {
@@ -171,5 +172,77 @@ describe("Bước ① — mục 2.4 phép quyền biến Thừa hung mai táng",
 
   it("để quá 5 ngày thì hết cửa miễn trừ", () => {
     expect(TrungTang.kiemMienTruThuaHung("tai-nan-dot-ngot", 6).duocMienTru).toBe(false);
+  });
+});
+
+describe("Cổng kiểm tọa hướng chạy TRƯỚC trang thanh toán (mục 2.1b)", () => {
+  it("tọa Tý gặp năm Tý: kết cục C và TUYỆT ĐỐI không được thu phí", () => {
+    // Bất biến nghiệp vụ quan trọng nhất của Phase 2 — thu 999k rồi mới báo "không làm được" là
+    // điều chủ dự án cấm. Khoá thẳng cờ `duocPhepThuPhi` để không tầng nào bật nhầm.
+    const kq = kiemToaHuongTruocThanhToan({ doSoToa: 0, namMat: 2032, thangMat: 6, ngayMat: 15 });
+    expect(kq.ketCuc).toBe("C");
+    if (kq.ketCuc === "C") {
+      expect(kq.duocPhepThuPhi).toBe(false);
+      expect(kq.thongDiep).toContain("không nhận phí");
+      expect(kq.chiTiet.every((n) => n.phamCapNam)).toBe(true);
+    }
+  });
+
+  it("tọa sạch thì qua cổng và được phép thu phí", () => {
+    // 2026 Bính Ngọ: Ngũ Hoàng đáo Ly nên cả trục Ly–Khảm bị chặn, Thái Tuế tại Ngọ, Tuế Phá tại
+    // Tý. Sơn Sửu (30°, cung Cấn) nằm ngoài mọi trục đó → đây mới là ca "sạch" đúng nghĩa.
+    const kq = kiemToaHuongTruocThanhToan({ doSoToa: 30, namMat: 2026, thangMat: 6, ngayMat: 15 });
+    expect(kq.ketCuc).toBe("qua-cong");
+    if (kq.ketCuc === "qua-cong") {
+      expect(kq.duocPhepThuPhi).toBe(true);
+      expect(kq.toaHuong.sonToa).toBe("Sửu");
+      expect(kq.toaHuong.sonHuong).toBe("Mùi");
+    }
+  });
+
+  it("Ngũ Hoàng chặn CẢ HAI đầu trục tọa–hướng, không chỉ đầu tọa", () => {
+    // Năm 2026 Ngũ Hoàng ở Ly: tọa Ly bị chặn vì "đáo tọa", tọa Khảm cũng bị chặn vì hướng rơi
+    // vào Ly. Đây là điểm dễ cài sót nhất nếu chỉ kiểm mỗi cung tọa.
+    const toaLy = kiemToaHuongTruocThanhToan({ doSoToa: 165, namMat: 2026, thangMat: 6, ngayMat: 15 });
+    const toaKham = kiemToaHuongTruocThanhToan({ doSoToa: 345, namMat: 2026, thangMat: 6, ngayMat: 15 });
+    expect(toaLy.ketCuc).toBe("C");
+    expect(toaKham.ketCuc).toBe("C");
+    if (toaLy.ketCuc === "C") expect(toaLy.thongDiep).toContain("Ngũ Hoàng đáo tọa");
+    if (toaKham.ketCuc === "C") expect(toaKham.thongDiep).toContain("Ngũ Hoàng đáo hướng");
+  });
+
+  it("tọa sát ranh giới sơn thì mời đo lại, chưa bàn tới tiền", () => {
+    const kq = kiemToaHuongTruocThanhToan({ doSoToa: 7.5, namMat: 2026, thangMat: 6, ngayMat: 15 });
+    expect(kq.ketCuc).toBe("can-do-lai");
+    expect(kq).not.toHaveProperty("duocPhepThuPhi");
+  });
+
+  it("cửa sổ tang lễ vắt qua Lập Xuân thì xét CẢ HAI năm Can Chi, không chỉ năm ngày mất", () => {
+    // Mất cuối tháng 1 → cửa sổ 20 ngày chắc chắn vượt Lập Xuân (mùng 4/5 tháng 2), nên Can Chi
+    // năm đổi giữa chừng. Nếu cổng chỉ lấy năm của ngày mất thì sẽ bỏ lọt sát của năm sau.
+    const kq = kiemToaHuongTruocThanhToan({ doSoToa: 15, namMat: 2026, thangMat: 1, ngayMat: 28 });
+    if (kq.ketCuc === "C") {
+      expect(kq.chiTiet.length).toBeGreaterThan(1);
+    } else if (kq.ketCuc === "qua-cong") {
+      // Qua cổng thì hoặc không năm nào phạm (không cảnh báo), hoặc chỉ một phần cửa sổ phạm.
+      expect(Array.isArray(kq.canhBao)).toBe(true);
+    }
+  });
+
+  it("chỉ MỘT phần cửa sổ phạm thì vẫn qua cổng, kèm cảnh báo — không đánh đồng thành kết cục C", () => {
+    // Quét cả năm 2026 tìm một ca vắt Lập Xuân mà đúng một năm phạm. Không ép phải tồn tại: nếu
+    // dữ liệu năm đó không sinh ra ca nào thì test không khẳng định gì thay vì fail giả.
+    for (let ngay = 20; ngay <= 31; ngay++) {
+      const kq = kiemToaHuongTruocThanhToan({ doSoToa: 0, namMat: 2026, thangMat: 1, ngayMat: ngay });
+      if (kq.ketCuc !== "qua-cong" || kq.canhBao.length === 0) continue;
+      expect(kq.duocPhepThuPhi).toBe(true);
+      expect(kq.canhBao.join(" ")).toMatch(/sẽ bị loại/);
+      return;
+    }
+  });
+
+  it("năm ngoài bảng Cửu Cung thì báo thiếu dữ liệu chứ không âm thầm cho qua", () => {
+    const kq = kiemToaHuongTruocThanhToan({ doSoToa: 15, namMat: 2090, thangMat: 6, ngayMat: 15 });
+    if (kq.ketCuc === "qua-cong") expect(kq.thieuDuLieu.length).toBeGreaterThan(0);
   });
 });

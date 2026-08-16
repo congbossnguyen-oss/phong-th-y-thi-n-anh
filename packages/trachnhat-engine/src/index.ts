@@ -154,6 +154,12 @@ export type {
   GioDongQuan,
 } from "./processing/gioLiemHaHuyet.js";
 export { calculateGioLiemHaHuyet };
+export { kiemToaHuongTruocThanhToan } from "./processing/phase2CongKiemToaHuong.js";
+export type {
+  CongKiemToaHuongInput,
+  KetQuaCongKiem,
+  NamTrongCuaSo,
+} from "./processing/phase2CongKiemToaHuong.js";
 export type {
   LoaiViec,
   XemNgayCaoCapInput,
