@@ -8,7 +8,6 @@ import { and, eq, sql as rawSql } from "drizzle-orm";
 import { db } from "../db/client";
 import { promoCodes, promoRedemptions } from "../../../db/schema";
 import { ghiLuotDungMaLenSheet } from "../google-sheets-promo";
-import { sendBaoCaoGoogleSheetEmail } from "../email/send";
 
 export interface KetQuaKiemMa {
   hopLe: boolean;
@@ -149,6 +148,8 @@ export async function apDungMaKhiThanhToan(params: {
       .where(eq(promoCodes.id, params.promoCodeId))
       .limit(1);
 
+    // Lượt dùng mã CHỈ ghi Google Sheet, KHÔNG gửi email báo cáo (chủ dự án chốt 2026-08-16).
+    // Đơn thu phí thì vẫn có email — xem `markOrderPaidAndFulfill` trong lib/db/orders.ts.
     const ma = row?.code ?? "";
     await ghiLuotDungMaLenSheet({
       ma,
@@ -162,23 +163,6 @@ export async function apDungMaKhiThanhToan(params: {
       phaiTra: params.totalAmount,
     });
 
-    // Email báo cáo song song với Sheet (yêu cầu anh Công 2026-08-16) — Sheet ghi gì thì báo nấy.
-    const tien = (n: number) => `${n.toLocaleString("vi-VN")}đ`;
-    await sendBaoCaoGoogleSheetEmail({
-      loai: "Lượt dùng mã khuyến mãi",
-      tomTat: `${ma} — ${params.customerName} — giảm ${tien(params.soTienGiam)}`,
-      dong: [
-        { nhan: "Mã khuyến mãi", giaTri: ma },
-        { nhan: "Mã đơn", giaTri: params.orderCode },
-        { nhan: "Công cụ", giaTri: params.toolSlug },
-        { nhan: "Họ tên", giaTri: params.customerName },
-        { nhan: "Số điện thoại", giaTri: params.customerPhone },
-        ...(params.customerEmail ? [{ nhan: "Email", giaTri: params.customerEmail }] : []),
-        { nhan: "Giá gốc", giaTri: tien(params.totalAmount + params.soTienGiam) },
-        { nhan: "Được giảm", giaTri: tien(params.soTienGiam) },
-        { nhan: "Phải trả", giaTri: tien(params.totalAmount) },
-      ],
-    });
     return ma || null;
   } catch (err) {
     console.error(`[promo] Không chốt được mã cho đơn ${params.orderCode}:`, err);
