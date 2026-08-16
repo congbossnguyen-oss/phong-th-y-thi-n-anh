@@ -267,6 +267,18 @@ export interface GioLiemHaHuyetOutput {
   apDungMienTru3Ngay?: boolean;
   /** Top 3 ngày+giờ hạ huyệt. */
   ngayGioHaHuyet?: UngVienNgayGioHaHuyet[];
+  /**
+   * TOÀN BỘ ứng viên hạ huyệt đã xếp hạng, trước khi cắt top 3 — dành riêng cho Phase 2 lọc theo
+   * tọa hướng mộ.
+   *
+   * Lý do phải có: Phase 2 lọc cứng bằng Tam Sát/Bát Sát, riêng Tam Sát đã chặn 3/12 Chi cho tọa
+   * và 3/12 cho hướng, áp lên cả trụ Ngày lẫn trụ Giờ. Đo thực tế 2026-08-16 trên 4 tọa khác nhau:
+   * đưa top 3 sang thì Phase 2 loại sạch 12/12 phương án, trả về rỗng. Phải lọc trên rổ rộng rồi
+   * mới cắt top ở đầu ra Phase 2.
+   *
+   * Tầng hiển thị Phase 1 KHÔNG dùng trường này — vẫn hiện `ngayGioHaHuyet`.
+   */
+  tatCaNgayGioHaHuyet?: UngVienNgayGioHaHuyet[];
   /** true nếu quét hết 20 ngày mà không còn ngày nào qua được lọc tuyệt đối (rất hiếm). */
   khongTimThayNgayHaHuyet?: boolean;
   /** Chỉ có khi khách nhập `thoiGianDiChuyenPhut` và đã tìm được ít nhất 1 giờ hạ huyệt. */
@@ -780,6 +792,7 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
     daNoiLongGioSatChu,
     apDungMienTru3Ngay,
     ngayGioHaHuyet: topHaHuyet,
+    tatCaNgayGioHaHuyet: tatCaGioHaHuyet,
     khongTimThayNgayHaHuyet,
     ...(gioDongQuan ? { gioDongQuan } : {}),
     ...(haHuyetSo1 ? { nhapMoTrungTuSinh: TrungTang.nhapMoChiRoiVaoTuSinh(haHuyetSo1.cungNgay) } : {}),

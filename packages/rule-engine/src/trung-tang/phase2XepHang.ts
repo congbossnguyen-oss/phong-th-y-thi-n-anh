@@ -9,11 +9,17 @@
  *   ⑤ xếp hạng        → `xepHangPhuongAn` (lớp trước, điểm sau — không bao giờ so xuyên lớp)
  *
  * ⚠️ ĐIỂM SUY LUẬN CẦN CHỦ DỰ ÁN XÁC NHẬN — đặc tả mục 3 chỉ ghi thang lớp ("Nhất Quái Thuần
- * Thanh → Hà Đồ → Hợp Thập → thấp hơn") mà không nói rõ lớp được xét trên TẬP nào. Code này hiểu
- * là tập HKNH của {Tọa, trụ Năm, trụ Tháng, trụ Ngày, trụ Giờ nếu bật} — tức phẩm cấp của cả nhật
- * khóa khi phục vụ tọa mộ, chứ không phải quan hệ đôi Ngày↔Tọa (quan hệ đôi đó chính là CHIỀU 1 ở
- * Bước ③, và đặc tả nói rõ hai thang này khác nhau). Nếu chủ dự án muốn hiểu khác, sửa duy nhất
- * hàm `xepLopCachCuc`.
+ * Thanh → Hà Đồ → Hợp Thập → thấp hơn") mà không nói rõ lớp xét trên TẬP nào. Có 3 cách hiểu, đã
+ * đo thực tế trên 108 ứng viên × 24 sơn (2026-08-16) rồi mới chọn:
+ *
+ *   A. Tập {Tọa + các trụ}   → 98.0% rơi lớp 4. Phân lớp gần như là hằng số, mất hết tác dụng.
+ *   B. Chỉ cặp Ngày ↔ Tọa    → phân bố đẹp, NHƯNG trùng đúng CHIỀU 1 ở Bước ③, mà đặc tả mục 4
+ *                              nói rõ hai thang phải khác nhau. Loại vì mâu thuẫn nội tại.
+ *   C. Tập các TRỤ với nhau  → lớp 1-3 chiếm 17.6% (4 trụ) — hiếm nhưng đạt được, đúng tinh thần
+ *      (KHÔNG gồm Tọa)         "Nhất Quái Thuần Thanh" là cách quý; và không giẫm lên chiều 1.
+ *
+ * Đang dùng CÁCH C. Muốn đổi thì sửa đúng một chỗ: lời gọi `xepLopCachCuc` trong
+ * `phanLopPhuongAn` (thêm `toa.hknh` vào mảng là quay về cách A).
  */
 import type { Data } from "@thien-anh/calendar-core";
 import {
@@ -130,7 +136,8 @@ export function phanLopPhuongAn(tuTru: TuTruPhuongAn, doSoToa: number): KetQuaCa
   // Tổ hợp tối đa 2^4 = 16 nhánh, duyệt hết là rẻ và chắc chắn đúng hơn heuristic chọn trước.
   const duyet = (i: number, dangChon: QueHknhQuaiVan[]): void => {
     if (i === ungVienMoiTru.length) {
-      const lop = xepLopCachCuc([toa.hknh, ...dangChon.map((q) => q.hknh)]);
+      // CÁCH C — xét các TRỤ với nhau, không gộp Tọa. Quan hệ với Tọa là việc của chiều 1 ở ③.
+      const lop = xepLopCachCuc(dangChon.map((q) => q.hknh));
       if (totNhat === null || lop < totNhat.lop) totNhat = { lop, chon: [...dangChon] };
       return;
     }

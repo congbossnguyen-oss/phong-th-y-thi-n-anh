@@ -8,7 +8,7 @@
 // module, cấp Ngày/Giờ chỉ loại phương án, sát ranh giới thì bắt đo lại chứ không tự đoán.
 import { describe, expect, it } from "vitest";
 import { TrungTang, XemNgayCaoCap } from "@thien-anh/rule-engine";
-import { kiemToaHuongTruocThanhToan } from "@thien-anh/trachnhat-engine";
+import { apDungPhase2, calculateGioLiemHaHuyet, kiemToaHuongTruocThanhToan } from "@thien-anh/trachnhat-engine";
 
 /** Lấy tọa hướng, ném nếu độ số không hợp lệ — để test đọc gọn. */
 function toa(doSo: number) {
@@ -273,7 +273,7 @@ describe("Bước ② — phẩm cấp cách cục (classification)", () => {
     );
     expect(kq.coTruHaiQue).toBe(true);
     expect(kq.queDaChon.map((q) => q.tru)).toEqual(["năm", "tháng", "ngày"]);
-    for (const q of kq.queDaChon) expect(q.tenQue ?? q.hknh).toBeDefined();
+    for (const q of kq.queDaChon) expect(q.que).toBeTruthy();
   });
 
   it("bật/tắt trụ Giờ thì số quẻ đã chọn đổi theo, không âm thầm bỏ sót", () => {
@@ -419,5 +419,135 @@ describe("Bước ⑤ — xếp hạng: LỚP TRƯỚC, ĐIỂM SAU", () => {
 
   it("chỉ có 1 phương án thì không có câu so sánh", () => {
     expect(TrungTang.cauKetLuanSoSanh(TrungTang.xepHangPhuongAn([phuongAnGia("a", 1, 1)]))).toBeNull();
+  });
+});
+
+describe("Đủ luồng ①→⑤ trên đầu ra thật của Phase 1 (đặc tả mục 7)", () => {
+  /** Chạy Phase 1 một lần rồi tái dùng — Phase 2 là tầng LỌC, không tính lại ngày giờ từ đầu. */
+  const phase1 = calculateGioLiemHaHuyet({
+    gioiTinh: "nam",
+    namSinhDuongLich: 1947,
+    namMat: 2026,
+    thangMat: 9,
+    ngayMat: 10,
+    chiGioMat: "Tuất",
+    soNgayDuKienToiChon: 7,
+  });
+
+  it("Phase 1 phải mở RỔ RỘNG cho Phase 2, không chỉ top 3", () => {
+    // Đo thực tế 2026-08-16: đưa top 3 sang thì Phase 2 loại sạch 12/12 phương án ở cả 4 tọa thử
+    // nghiệm — vì riêng Tam Sát đã chặn 3/12 Chi cho tọa và 3/12 cho hướng, áp lên cả trụ Ngày lẫn
+    // trụ Giờ. Rổ rộng là điều kiện cần để Phase 2 còn gì mà trả.
+    expect(phase1.ngayGioHaHuyet?.length ?? 0).toBeGreaterThan(0);
+    expect(phase1.tatCaNgayGioHaHuyet?.length ?? 0).toBeGreaterThan(phase1.ngayGioHaHuyet!.length);
+  });
+
+  it("lọc trên rổ rộng thì vẫn còn phương án để trả — không rỗng như khi lọc trên top 3", () => {
+    for (const doSoToa of [30, 90, 210, 300]) {
+      const kq = apDungPhase2({
+        doSoToa,
+        phuongAnPhase1: phase1.tatCaNgayGioHaHuyet ?? [],
+        namMat: 2026,
+        thangMat: 9,
+        ngayMat: 10,
+        nguyenNhanMat: "benh-tuoi-gia",
+        soNgayDuKienToiChon: 7,
+      });
+      if (kq.ketCuc !== "A" && kq.ketCuc !== "B") continue;
+      expect(kq.phuongAn.length, `tọa ${doSoToa}° không còn phương án nào`).toBeGreaterThan(0);
+    }
+  });
+
+  it("chạy trọn ①→⑤: trả kết cục A hoặc B, phương án có lớp cách cục và quan hệ đạt", () => {
+    const kq = apDungPhase2({
+      doSoToa: 30, // sơn Sửu, cung Cấn — sạch sát cấp năm 2026 (đã kiểm ở nhóm test trên)
+      phuongAnPhase1: phase1.tatCaNgayGioHaHuyet ?? [],
+      namMat: 2026,
+      thangMat: 9,
+      ngayMat: 10,
+      nguyenNhanMat: "benh-tuoi-gia",
+      soNgayDuKienToiChon: 7,
+    });
+    expect(["A", "B"]).toContain(kq.ketCuc);
+    if (kq.ketCuc !== "A" && kq.ketCuc !== "B") return;
+
+    expect(kq.toaHuong.sonToa).toBe("Sửu");
+    // Mỗi phương án phải mang đủ 2 phần output mục 6 yêu cầu tách riêng: cách cục nền + quan hệ.
+    for (const pa of kq.phuongAn) {
+      expect(pa.cachCuc.tenLop).toBeTruthy();
+      expect(Array.isArray(pa.quanHeDat)).toBe(true);
+      expect(pa.thuHang).toBeGreaterThan(0);
+    }
+    // Vào = qua lọc + bị loại: không được để rơi mất phương án nào giữa đường. Dùng
+    // `soPhuongAnQuaLoc` chứ không dùng `phuongAn.length`, vì đầu ra đã cắt top.
+    expect(kq.soPhuongAnQuaLoc + kq.biLoai.length).toBe(phase1.tatCaNgayGioHaHuyet!.length);
+    expect(kq.phuongAn.length).toBeLessThanOrEqual(kq.soPhuongAnQuaLoc);
+  });
+
+  it("thứ hạng luôn tăng dần và lớp cách cục không bao giờ giảm dần theo thứ hạng", () => {
+    const kq = apDungPhase2({
+      doSoToa: 30,
+      phuongAnPhase1: phase1.tatCaNgayGioHaHuyet ?? [],
+      namMat: 2026,
+      thangMat: 9,
+      ngayMat: 10,
+      nguyenNhanMat: "benh-tuoi-gia",
+      soNgayDuKienToiChon: 7,
+    });
+    if (kq.ketCuc !== "A" && kq.ketCuc !== "B") return;
+    for (let i = 1; i < kq.phuongAn.length; i++) {
+      expect(kq.phuongAn[i]!.thuHang).toBe(i + 1);
+      expect(kq.phuongAn[i]!.cachCuc.lop).toBeGreaterThanOrEqual(kq.phuongAn[i - 1]!.cachCuc.lop);
+    }
+  });
+
+  it("kết cục C thì dừng sớm: không trả phương án nào và không được thu phí", () => {
+    // Tọa 180° = sơn Ngọ, cung Ly — năm 2026 Bính Ngọ phạm cả Ngũ Hoàng lẫn Thái Tuế.
+    const kq = apDungPhase2({
+      doSoToa: 180,
+      phuongAnPhase1: phase1.tatCaNgayGioHaHuyet ?? [],
+      namMat: 2026,
+      thangMat: 9,
+      ngayMat: 10,
+      nguyenNhanMat: "benh-tuoi-gia",
+      soNgayDuKienToiChon: 7,
+    });
+    expect(kq.ketCuc).toBe("C");
+    if (kq.ketCuc === "C") expect(kq.duocPhepThuPhi).toBe(false);
+    expect(kq).not.toHaveProperty("phuongAn");
+  });
+
+  it("miễn trừ Thừa hung chạy TRƯỚC cả cổng tọa hướng — giữ nguyên đề xuất Phase 1", () => {
+    // Cùng tọa 180° đáng lẽ kết cục C, nhưng chết tai nạn chôn trong 4 ngày thì được miễn.
+    const kq = apDungPhase2({
+      doSoToa: 180,
+      phuongAnPhase1: phase1.tatCaNgayGioHaHuyet ?? [],
+      namMat: 2026,
+      thangMat: 9,
+      ngayMat: 10,
+      nguyenNhanMat: "tai-nan-dot-ngot",
+      soNgayDuKienToiChon: 4,
+    });
+    expect(kq.ketCuc).toBe("mien-tru");
+    if (kq.ketCuc === "mien-tru") {
+      expect(kq.nhanh).toBe("Thừa hung mai táng");
+      expect(kq.phuongAn).toEqual(phase1.tatCaNgayGioHaHuyet);
+    }
+  });
+
+  it("tắt trụ Giờ thì vẫn chạy được — mục 2.5 cho phép bỏ trụ Giờ", () => {
+    const kq = apDungPhase2({
+      doSoToa: 30,
+      phuongAnPhase1: phase1.tatCaNgayGioHaHuyet ?? [],
+      namMat: 2026,
+      thangMat: 9,
+      ngayMat: 10,
+      nguyenNhanMat: "benh-tuoi-gia",
+      soNgayDuKienToiChon: 7,
+      tinhTruGio: false,
+    });
+    expect(["A", "B"]).toContain(kq.ketCuc);
+    if (kq.ketCuc !== "A" && kq.ketCuc !== "B") return;
+    for (const pa of kq.phuongAn) expect(pa.cachCuc.queDaChon).toHaveLength(3);
   });
 });
