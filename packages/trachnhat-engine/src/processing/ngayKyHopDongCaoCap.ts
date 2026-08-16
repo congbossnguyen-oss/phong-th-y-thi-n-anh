@@ -173,6 +173,7 @@ function tinhMotNgay(
     napAmNgay: tuTru.napAmNgay.element,
     tieuLucNham: tlnNgay.name,
     tamDaiCatTinh: ngayInfo.tamDaiCatTinh,
+    nhapTrungCung: ngayInfo.nhapTrungCung,
   };
 
   const ketQua = Scoring.calculateKyHopDongCaoCapScore(dayInput, nguoiKy);

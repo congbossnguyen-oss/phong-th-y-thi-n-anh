@@ -31,6 +31,11 @@ export interface TrachCatDayBaseRules {
     duongCongKyNhat: number;
     satChu: number;
     diemTranNeuPham: number;
+    /**
+     * Sát / Bạch Hổ Nhập Trung Cung. TUỲ CHỌN, mặc định -3 nếu module không khai báo — nhờ vậy
+     * thêm được đại sát này mà không phải sửa bộ luật của cả 12 module.
+     */
+    nhapTrungCung?: number;
   };
   ngayCatKhac: {
     diemMoiNgayCat: number;
@@ -48,6 +53,14 @@ export interface TrachCatDayBaseInput {
   satChu: boolean;
   thienDucHop: boolean;
   thienXa: boolean;
+  /**
+   * Ngày phạm Sát / Bạch Hổ Nhập Trung Cung.
+   *
+   * Chủ dự án chốt 2026-08-16: đây là nhóm hung KHÔNG hoá giải được, nên phải ƯU TIÊN HUNG — Tam
+   * Đại Cát Tinh (kể cả Trực Tinh, vốn trùng đúng 7 ngày này trong tháng Tứ Mạnh) không được phép
+   * đảo kết luận thành ngày tốt. Ở lớp nền, nó kéo điểm xuống và áp trần như các ngày đại kỵ khác.
+   */
+  nhapTrungCung?: boolean;
 }
 
 export interface TrachCatDayBaseYeuTo {
@@ -114,6 +127,12 @@ export function tinhTrachCatDayBase(input: TrachCatDayBaseInput, rules: TrachCat
   if (input.satChu) {
     diem += rules.ngayDaiKy.satChu;
     yeuTo.push({ ten: "Sát Chủ", diem: rules.ngayDaiKy.satChu });
+    phamDaiKy = true;
+  }
+  if (input.nhapTrungCung) {
+    const d = rules.ngayDaiKy.nhapTrungCung ?? -3;
+    diem += d;
+    yeuTo.push({ ten: "Sát / Bạch Hổ Nhập Trung Cung (không hoá giải được)", diem: d });
     phamDaiKy = true;
   }
 

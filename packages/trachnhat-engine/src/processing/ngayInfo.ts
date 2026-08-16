@@ -19,6 +19,8 @@ export interface NgayInfoResult {
   thanSat: CatHungValue[];
   /** Tên các sao trong Tam Đại Cát Tinh có mặt — dùng cho quy tắc hoá giải hung tinh. */
   tamDaiCatTinh: string[];
+  /** Ngày phạm Sát / Bạch Hổ Nhập Trung Cung — nhóm hung KHÔNG hoá giải được. */
+  nhapTrungCung: boolean;
   tuoiXungNgay: string[];
   nguyetKy: boolean;
   tamNuong: boolean;
@@ -90,6 +92,7 @@ export function tinhNgayInfo(tuTru: TuTruResult): NgayInfoResult {
       catHung: entry.catHung,
     })),
     tamDaiCatTinh: tamDaiCatTinh.map((e) => e.name),
+    nhapTrungCung: nhapTrungCung.length > 0,
     tuoiXungNgay: [xungChi],
     nguyetKy,
     tamNuong,

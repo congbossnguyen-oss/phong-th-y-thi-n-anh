@@ -375,6 +375,26 @@ export function locLoaiKyHopDong(
   if (day.nguyetKy && !coCatTinhHoaGiai) {
     lyDo.push({ ma: "nguyet_ky", moTa: "Ngày Nguyệt Kỵ (Ngũ Quỷ)." });
   }
+  // Sát / Bạch Hổ Nhập Trung Cung — ƯU TIÊN HUNG (chủ dự án chốt 2026-08-16).
+  //
+  // Bảy ngày Trung Cung trùng khít `TRUC_TINH["Tứ Mạnh"]`, nên trong tháng 1/4/7/10 một ngày có
+  // thể VỪA là Trực Tinh (đại cát) VỪA là Trung Cung (đại hung). Chỉ đạo rõ:
+  //   • Tầng ghi nhận: giữ CẢ HAI thần sát, không cái nào triệt tiêu cái nào.
+  //   • Tầng kết luận: Trung Cung thuộc nhóm không hoá giải được → Trực Tinh KHÔNG được phép đảo
+  //     kết luận thành ngày tốt.
+  //   • KHÔNG dùng luật "tháng Tứ Mạnh thì Trực Tinh không tính".
+  if (day.nhapTrungCung) {
+    const coTrucTinh = (day.tamDaiCatTinh ?? []).includes("Trực Tinh");
+    lyDo.push({
+      ma: "nhap_trung_cung",
+      moTa:
+        "Ngày Sát / Bạch Hổ Nhập Trung Cung — đại hung, không hoá giải được" +
+        (coTrucTinh
+          ? ". Ngày này đồng thời là Trực Tinh, nhưng cát tinh không đảo được kết luận."
+          : "."),
+    });
+  }
+
   // Sát Chủ luôn loại — nằm trong danh sách ngoại lệ của sơ đồ.
   if (day.satChu) {
     lyDo.push({
