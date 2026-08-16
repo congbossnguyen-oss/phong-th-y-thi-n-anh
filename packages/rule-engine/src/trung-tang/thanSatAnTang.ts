@@ -132,6 +132,21 @@ export const TRUC_KHONG_HOA_GIAI: readonly string[] = ["Phá"];
  */
 export const HAC_DAO_KY_AN_TANG: ReadonlySet<string> = new Set(["Bạch Hổ", "Nguyên Vũ", "Câu Trần", "Thiên Hình", "Thiên Lao"]);
 
+/**
+ * Hung KHÔNG hoá được — phần RIÊNG của việc TANG SỰ, chồng thêm lên danh sách dùng chung
+ * `TrachNhat.HUNG_TINH_KHONG_HOA_GIAI` (Kim Thần Thất Sát · Sát Chủ · Thọ Tử · Sát/Bạch Hổ nhập
+ * Trung Cung — đúng ba nhóm ngoại lệ trong sơ đồ chủ dự án).
+ *
+ * Bốn mục dưới đây KHÔNG nằm trong danh sách chung vì chúng chỉ có nghĩa với việc âm. Chủ dự án
+ * được hỏi thẳng "mấy cái này thì sao không hoá được" và chốt 2026-08-16: "không hoá được nhé".
+ */
+export const TAM_CAT_KHONG_GIAI_DUOC_RIENG_TANG_SU: readonly string[] = [
+  "Nguyệt Phá (Trực Phá)",
+  "Trùng Nhật",
+  "Phục Nhật",
+  "Xung tuổi vong",
+];
+
 /** Nhóm thần sát mà nguồn ghi rõ KHÔNG hoá giải được — đã phạm là phải đổi ngày, không trấn yểm. */
 export const KHONG_HOA_GIAI_DUOC: readonly string[] = ["Kim Thần Thất Sát", "Tam Sát", "Nguyệt Phá", "Đại Hao", "Trực Phá"];
 
@@ -260,109 +275,17 @@ export function tinhCatThanNgay(canNgay: Can, canNam: Can, thangAmLich: number):
   };
 }
 
-/* ------------------------------------------------------------------------------------------
- * TAM ĐẠI CÁT TINH — Sát Cống · Trực Tinh · Nhân Chuyên (chủ dự án cung cấp 2026-08-16).
- * Nguồn chính: "Đổng Công Tuyển Trạch Nhật Yếu Lãm".
+/*
+ * TAM ĐẠI CÁT TINH (Sát Cống · Trực Tinh · Nhân Chuyên) KHÔNG khai báo ở đây.
  *
- * An theo NHÓM THÁNG âm lịch (Tứ Mạnh 1-4-7-10 / Tứ Trọng 2-5-8-11 / Tứ Quý 3-6-9-12), tra bằng
- * TRỌN CẶP Can Chi ngày — không phải chỉ Can hoặc chỉ Chi.
+ * Đây là thần sát TRẠCH NHẬT DÙNG CHUNG, không riêng việc âm — mọi module (xem ngày cao cấp, ký
+ * hợp đồng, khai trương...) đều dùng được. Nên bảng + quy tắc hoá giải nằm ở tầng dùng chung
+ * `trach-nhat/tamDaiCatTinh.ts`: `getTamDaiCatTinhTrongNgay()`, `apQuyTacHoaGiai()`,
+ * `HUNG_TINH_KHONG_HOA_GIAI`.
  *
- * Đã tự kiểm trước khi cài, cả 3 phép đều sạch:
- *   - 61/61 cặp Can Chi đều hợp lệ (cùng tính chẵn lẻ Can-Chi), không có cặp nào chép sai.
- *   - Trong cùng một nhóm tháng, 3 sao KHÔNG trùng ngày nào → một ngày chỉ trúng tối đa 1 sao.
- *   - Khớp quy luật dịch nhóm: Trực Tinh(Trọng) = Sát Cống(Mạnh), Trực Tinh(Quý) = Sát Cống(Trọng).
- * ------------------------------------------------------------------------------------------ */
-export type NhomThang = "tu-manh" | "tu-trong" | "tu-quy";
-
-export function nhomThangAmLich(thangAmLich: number): NhomThang {
-  const r = thangAmLich % 3;
-  if (r === 1) return "tu-manh"; // 1, 4, 7, 10
-  if (r === 2) return "tu-trong"; // 2, 5, 8, 11
-  return "tu-quy"; // 3, 6, 9, 12
-}
-
-type CapCanChi = { can: Can; chi: Chi };
-const cc = (can: Can, chi: Chi): CapCanChi => ({ can, chi });
-
-export const SAT_CONG_THEO_NHOM: Readonly<Record<NhomThang, readonly CapCanChi[]>> = {
-  "tu-manh": [cc("Đinh", "Mão"), cc("Bính", "Tý"), cc("Ất", "Dậu"), cc("Giáp", "Ngọ"), cc("Quý", "Mão"), cc("Nhâm", "Tý"), cc("Tân", "Dậu")],
-  "tu-trong": [cc("Bính", "Dần"), cc("Ất", "Hợi"), cc("Giáp", "Thân"), cc("Quý", "Tỵ"), cc("Nhâm", "Dần"), cc("Tân", "Hợi"), cc("Canh", "Thân")],
-  "tu-quy": [cc("Kỷ", "Sửu"), cc("Giáp", "Tuất"), cc("Quý", "Mùi"), cc("Nhâm", "Thìn"), cc("Tân", "Sửu"), cc("Canh", "Tuất"), cc("Kỷ", "Mùi")],
-};
-
-export const TRUC_TINH_THEO_NHOM: Readonly<Record<NhomThang, readonly CapCanChi[]>> = {
-  "tu-manh": [cc("Mậu", "Thìn"), cc("Đinh", "Sửu"), cc("Bính", "Tuất"), cc("Ất", "Mùi"), cc("Giáp", "Thìn"), cc("Quý", "Sửu"), cc("Nhâm", "Tuất")],
-  "tu-trong": [cc("Đinh", "Mão"), cc("Bính", "Tý"), cc("Ất", "Dậu"), cc("Giáp", "Ngọ"), cc("Quý", "Mão"), cc("Nhâm", "Tý"), cc("Tân", "Dậu")],
-  "tu-quy": [cc("Bính", "Dần"), cc("Ất", "Hợi"), cc("Giáp", "Thân"), cc("Quý", "Tỵ"), cc("Nhâm", "Dần"), cc("Tân", "Hợi"), cc("Canh", "Thân")],
-};
-
-/**
- * Nhân Chuyên. ⚠️ Nhóm Tứ Quý có DỊ BẢN ở vị trí 3: bản Đổng Công (đang dùng) ghi **Kỷ Hợi**,
- * một nguồn truyền khác ghi Đinh Mão. Theo bản Đổng Công vì đó là nguồn chính chủ dự án dẫn.
+ * Đã đối chiếu runtime trước khi gỡ bản sao: 3 bảng x 3 nhóm tháng = 9/9 GIỐNG HỆT nhau. Giữ một
+ * nguồn duy nhất để chủ dự án sửa bảng một lần là cả site đổi theo, không phải chép sang từng module.
  */
-export const NHAN_CHUYEN_THEO_NHOM: Readonly<Record<NhomThang, readonly CapCanChi[]>> = {
-  "tu-manh": [cc("Tân", "Mùi"), cc("Canh", "Thìn"), cc("Kỷ", "Sửu"), cc("Mậu", "Tuất"), cc("Đinh", "Mùi"), cc("Bính", "Thìn")],
-  "tu-trong": [cc("Canh", "Ngọ"), cc("Kỷ", "Mão"), cc("Mậu", "Tý"), cc("Đinh", "Dậu"), cc("Bính", "Ngọ"), cc("Ất", "Mão")],
-  "tu-quy": [cc("Kỷ", "Tỵ"), cc("Mậu", "Dần"), cc("Kỷ", "Hợi"), cc("Bính", "Thân"), cc("Ất", "Tỵ"), cc("Giáp", "Dần"), cc("Quý", "Hợi")],
-};
-/** Dị bản Nhân Chuyên nhóm Tứ Quý — nguồn khác ghi Đinh Mão thay cho Kỷ Hợi. Chưa dùng. */
-export const NHAN_CHUYEN_TU_QUY_DI_BAN: CapCanChi = cc("Đinh", "Mão");
-
-function trungBang(bang: readonly CapCanChi[], canNgay: Can, chiNgay: Chi): boolean {
-  return bang.some((e) => e.can === canNgay && e.chi === chiNgay);
-}
-
-export function isSatCong(canNgay: Can, chiNgay: Chi, thangAmLich: number): boolean {
-  return trungBang(SAT_CONG_THEO_NHOM[nhomThangAmLich(thangAmLich)], canNgay, chiNgay);
-}
-export function isTrucTinh(canNgay: Can, chiNgay: Chi, thangAmLich: number): boolean {
-  return trungBang(TRUC_TINH_THEO_NHOM[nhomThangAmLich(thangAmLich)], canNgay, chiNgay);
-}
-export function isNhanChuyen(canNgay: Can, chiNgay: Chi, thangAmLich: number): boolean {
-  return trungBang(NHAN_CHUYEN_THEO_NHOM[nhomThangAmLich(thangAmLich)], canNgay, chiNgay);
-}
-
-/**
- * Hung tinh mà Tam Đại Cát Tinh KHÔNG giải được. Chủ dự án 2026-08-16: "có khả năng giải các hung
- * tinh, nhưng riêng Sát Chủ, Thọ Tử, Kim Thần Thất Sát thì không giải được" — cộng thêm nhóm
- * `KHONG_HOA_GIAI_DUOC` vốn đã ghi trong bảng dữ liệu.
- *
- * Engine dùng danh sách này làm cổng chặn ở bước sàng ngày hạ huyệt: phạm bất kỳ mục nào ở đây
- * thì loại thẳng, có Tam Đại Cát Tinh cũng không cứu. Mọi hung tinh KHÁC được coi là "hung thông
- * thường" và sẽ được giảm/hoá khi ngày có cát tinh (kèm nhãn hiển thị + trừ điểm).
- */
-export const TAM_CAT_KHONG_GIAI_DUOC: readonly string[] = [
-  "Sát Chủ",
-  "Thọ Tử",
-  "Kim Thần Thất Sát",
-  "Tam Sát",
-  "Nguyệt Phá",
-  "Đại Hao",
-  "Trực Phá",
-  // Ba mục tuyệt đối riêng của TANG SỰ — chủ dự án chốt 2026-08-16 "không hoá được nhé" khi được
-  // hỏi thẳng. Chúng không nằm trong sơ đồ ngoại lệ, nhưng cũng KHÔNG thuộc nhóm hung thông thường.
-  "Trùng Nhật",
-  "Phục Nhật",
-  "Xung tuổi vong",
-];
-
-export interface TamDaiCatTinh {
-  satCong: boolean;
-  trucTinh: boolean;
-  nhanChuyen: boolean;
-  /** true khi trúng ít nhất một trong ba sao. */
-  co: boolean;
-  /** Tên sao trúng được, để hiển thị. */
-  ten: string | null;
-}
-
-export function tinhTamDaiCatTinh(canNgay: Can, chiNgay: Chi, thangAmLich: number): TamDaiCatTinh {
-  const satCong = isSatCong(canNgay, chiNgay, thangAmLich);
-  const trucTinh = isTrucTinh(canNgay, chiNgay, thangAmLich);
-  const nhanChuyen = isNhanChuyen(canNgay, chiNgay, thangAmLich);
-  const ten = satCong ? "Sát Cống" : trucTinh ? "Trực Tinh" : nhanChuyen ? "Nhân Chuyên" : null;
-  return { satCong, trucTinh, nhanChuyen, co: ten !== null, ten };
-}
 
 export function isSatChuAm(chiNgay: Chi, thangAmLich: number): boolean {
   return SAT_CHU_AM_THEO_THANG[thangAmLich - 1] === chiNgay;

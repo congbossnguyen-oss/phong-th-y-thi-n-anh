@@ -214,8 +214,8 @@ export interface UngVienNgayGioHaHuyet {
   canhBaoThanSat: TrungTang.CanhBaoThanSat[];
   /** TẦNG 4 — cát thần đạt được của ngày (Tuế Đức / Tuế Đức Hợp / Nguyệt Đức / Nguyệt Đức Hợp). */
   catThan: TrungTang.CatThanNgay;
-  /** Tam Đại Cát Tinh của ngày — Sát Cống / Trực Tinh / Nhân Chuyên. */
-  tamDaiCatTinh: TrungTang.TamDaiCatTinh;
+  /** Tam Đại Cát Tinh của ngày — Sát Cống / Trực Tinh / Nhân Chuyên (bảng ở tầng dùng chung). */
+  tamDaiCatTinh: { co: boolean; ten: string | null };
   /**
    * Hung tinh thông thường của ngày ĐÃ ĐƯỢC Tam Đại Cát Tinh hoá. Rỗng = ngày vốn đã sạch.
    * Không rỗng = ngày này lẽ ra bị loại, được cát tinh cứu — phải hiện rõ cho gia chủ biết.
@@ -508,6 +508,8 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
     canChiNam: Can;
     /** Hung tinh thông thường đã được Tam Đại Cát Tinh hoá — rỗng nghĩa là ngày vốn đã sạch. */
     hungDaHoaGiai: readonly string[];
+    /** Tên các sao trong Tam Đại Cát Tinh mà ngày này trúng. */
+    tenCatTinh: readonly string[];
   }
 
   /** Thần sát mức cảnh báo của một ngày ứng viên — không loại, chỉ gắn nhãn. */
@@ -539,7 +541,7 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
     // TẦNG 4 — cát thần của ngày. Nguồn ghi ngày có cát thần/Hoàng Đạo có thể "hung hoá cát", nên
     // đây là điểm CỘNG cho ngày, đứng riêng với các tầng lọc phía trên.
     const catThan = TrungTang.tinhCatThanNgay(ngay.canChiNgay.can, ngay.canChiNam, ngay.thangAmLich);
-    const tamDaiCatTinh = TrungTang.tinhTamDaiCatTinh(ngay.canChiNgay.can, ngay.canChiNgay.chi, ngay.thangAmLich);
+    const tamDaiCatTinh = { co: ngay.tenCatTinh.length > 0, ten: ngay.tenCatTinh[0] ?? null };
     const diemCatThan =
       (catThan.tueDuc ? DIEM_TUE_DUC : 0) +
       (catThan.tueDucHop ? DIEM_TUE_DUC_HOP : 0) +
@@ -629,6 +631,7 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
       canChiNam: canChiMat.year.can,
       // Nhánh miễn trừ ≤3 ngày KHÔNG sàng ngày (giữ nguyên ngày mất) nên không có hung nào được hoá.
       hungDaHoaGiai: [],
+      tenCatTinh: TrachNhat.getTamDaiCatTinhTrongNgay(lunarMat.month, canChiMat.day.can, canChiMat.day.chi).map((c) => c.name),
     });
   } else {
     const chiXungVong = TrachNhat.getLucXungChi(chiTuoiVong);
@@ -685,9 +688,12 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
       if (TrungTang.isNguyetHai(canChiCandidate.day.chi, lunarCandidate.month)) hungThongThuong.push("Nguyệt Hại");
       if (TrungTang.isTuPhe(canChiCandidate.day.can, canChiCandidate.day.chi, muaTuPhe)) hungThongThuong.push("Tứ Phế");
 
-      const catTinhCuaNgay = TrungTang.tinhTamDaiCatTinh(canChiCandidate.day.can, canChiCandidate.day.chi, lunarCandidate.month);
-      // Có hung thông thường mà KHÔNG có cát tinh -> giữ nguyên hung, loại ngày.
-      if (hungThongThuong.length > 0 && !catTinhCuaNgay.co) continue;
+      // Áp quy tắc hoá giải bằng tầng DÙNG CHUNG — bảng + chính sách ngoại lệ nằm ở
+      // `trach-nhat/tamDaiCatTinh.ts`, không nhân bản trong module này.
+      const catTinhEntries = TrachNhat.getTamDaiCatTinhTrongNgay(lunarCandidate.month, canChiCandidate.day.can, canChiCandidate.day.chi);
+      const ketQuaHoa = TrachNhat.apQuyTacHoaGiai(catTinhEntries, hungThongThuong);
+      // Còn hung nào chưa hoá được (kể cả trường hợp ngày không có cát tinh) -> loại ngày.
+      if (ketQuaHoa.khongHoaGiai.length > 0) continue;
 
       // TẦNG 3 (quan hệ ngày với TỌA huyệt) thuộc PHASE 2 — chủ dự án chốt 2026-08-16: mọi thứ
       // liên quan tọa hướng mộ để Phase 2. Module này không nhận hướng huyệt, không lọc phương vị.
@@ -703,7 +709,8 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
         thangAmLich: lunarCandidate.month,
         ngayAmLich: lunarCandidate.day,
         canChiNam: canChiCandidate.year.can,
-        hungDaHoaGiai: hungThongThuong,
+        hungDaHoaGiai: ketQuaHoa.daHoaGiai,
+        tenCatTinh: ketQuaHoa.tenCatTinh,
       });
     }
 
