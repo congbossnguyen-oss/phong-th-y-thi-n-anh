@@ -49,6 +49,15 @@ export async function taoDonCongCu(params: {
    * chuyền thẳng số tiền client gửi lên, nếu không khách tự khai giá bao nhiêu cũng được.
    */
   soTienGocGhiDe?: number;
+  /**
+   * Tài khoản QUẢN TRỊ đang kiểm thử → đơn 0đ, tự xác nhận, đi trọn luồng thật (tạo đơn → xác
+   * nhận → trả kết quả → gửi email) mà không phải chuyển khoản.
+   *
+   * ⚠️ Tầng gọi PHẢI lấy cờ này từ phiên đăng nhập phía máy chủ (`locals.user.isAdmin`), tuyệt
+   * đối không nhận từ dữ liệu client gửi lên — nếu không thì ai cũng tự khai là quản trị để dùng
+   * miễn phí toàn bộ công cụ thu phí.
+   */
+  laQuanTri?: boolean;
 }): Promise<KetQuaTaoDon | LoiTaoDon> {
   const soTienGoc = params.soTienGocGhiDe ?? GIA_CONG_CU[params.toolSlug];
   const ma = chuanHoaMa(params.maKhuyenMai ?? "");
@@ -57,7 +66,12 @@ export async function taoDonCongCu(params: {
   let promoCodeId: string | undefined;
   let moTaGiam: string | undefined;
 
-  if (ma) {
+  // Quản trị kiểm thử: miễn toàn bộ. CỐ Ý không đụng tới mã khuyến mãi — nếu vẫn chạy nhánh mã
+  // thì mỗi lần anh test sẽ đốt mất một lượt của mã thật đang phát cho khách.
+  if (params.laQuanTri) {
+    soTienGiam = soTienGoc;
+    moTaGiam = "Tài khoản quản trị — miễn phí để kiểm thử";
+  } else if (ma) {
     const kq = await kiemMaKhuyenMai({ ma, toolSlug: params.toolSlug, soTienGoc });
     if (!kq.hopLe) {
       return { ok: false, error: kq.lyDo ?? "Mã khuyến mãi không dùng được.", loiMaKhuyenMai: true };

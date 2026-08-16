@@ -151,6 +151,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
   try {
     const kq = await taoDonCongCu({
       toolSlug: TOOL_SLUG,
+      // Cờ lấy từ PHIÊN ĐĂNG NHẬP phía máy chủ, không phải từ dữ liệu client gửi lên.
+      laQuanTri: locals.user?.isAdmin === true,
       // Bậc giá suy từ CHÍNH tọa độ đã kiểm ở trên, không lấy từ client. Khách khai gói nào
       // không quan trọng — có tọa mộ thì mới chạy Phase 2, và đúng lúc đó mới tính giá đầy đủ.
       soTienGocGhiDe: giaGioLiemHaHuyet(doSoToa !== undefined),

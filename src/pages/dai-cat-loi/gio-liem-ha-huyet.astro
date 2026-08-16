@@ -196,19 +196,41 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
           </div>
 
           <div id="glhh-khoi-toa" class="mt-4 hidden">
-            <label for="glhh-toa-do" class="text-sm font-medium text-(--color-ink-800)">Tọa độ huyệt mộ (độ, đo bằng la kinh)</label>
-            <input
-              type="number"
-              id="glhh-toa-do"
-              placeholder="Ví dụ 30 — tọa Sửu"
-              min="0"
-              max="360"
-              step="0.1"
-              class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"
-            />
+            <p class="text-sm font-medium text-(--color-ink-800)">Số đo huyệt mộ (độ, đo bằng la kinh)</p>
             <p class="mt-1 text-xs text-(--color-ink-500)">
-              Đây là số đo <strong>tọa</strong> (lưng huyệt); hướng hệ thống tự suy. Mỗi sơn rộng 15° nên cần đo cho chính xác —
-              lệch một sơn là đổi hẳn kết quả. Nếu số đo rơi sát ranh giới hai sơn, hệ thống sẽ báo để gia đình đo lại.
+              Gia đình đo được số nào thì nhập số đó — <strong>tọa</strong> (lưng huyệt) hoặc <strong>hướng</strong> (mặt huyệt).
+              Nhập một ô, ô còn lại tự hiện ra, vì tọa và hướng luôn đối nhau 180°.
+            </p>
+            <div class="mt-2 grid gap-3 sm:grid-cols-2">
+              <div>
+                <label for="glhh-toa-do" class="text-xs text-(--color-ink-600)">Tọa (lưng huyệt)</label>
+                <input
+                  type="number"
+                  id="glhh-toa-do"
+                  placeholder="Ví dụ 30 — tọa Sửu"
+                  min="0"
+                  max="360"
+                  step="0.1"
+                  class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"
+                />
+              </div>
+              <div>
+                <label for="glhh-huong-do" class="text-xs text-(--color-ink-600)">Hướng (mặt huyệt)</label>
+                <input
+                  type="number"
+                  id="glhh-huong-do"
+                  placeholder="Ví dụ 210 — hướng Mùi"
+                  min="0"
+                  max="360"
+                  step="0.1"
+                  class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"
+                />
+              </div>
+            </div>
+            <p id="glhh-quy-doi" class="mt-1.5 text-xs text-(--color-gold-700)"></p>
+            <p class="mt-1 text-xs text-(--color-ink-500)">
+              Mỗi sơn rộng 15° nên cần đo cho chính xác — lệch một sơn là đổi hẳn kết quả. Nếu số đo rơi sát ranh giới hai sơn,
+              hệ thống sẽ báo để gia đình đo lại.
             </p>
           </div>
         </fieldset>
@@ -764,6 +786,34 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
   const toaDoInput = document.getElementById("glhh-toa-do") as HTMLInputElement;
 
   const nhanNutEl = document.getElementById("glhh-nhan-nut");
+  const huongDoInput = document.getElementById("glhh-huong-do") as HTMLInputElement;
+  const quyDoiEl = document.getElementById("glhh-quy-doi")!;
+
+  /**
+   * Tọa và hướng luôn đối nhau 180°, nên gia đình đo được số nào thì nhập số đó.
+   *
+   * Chỉ điền ô còn lại, KHÔNG tự sửa ô người dùng đang gõ — nếu hai ô cùng ghi đè lẫn nhau thì
+   * con trỏ nhảy lung tung và không sửa nổi số đã nhập. Máy chủ vẫn chỉ nhận `doSoToa`.
+   */
+  function doiSang180(v: string): string {
+    const n = Number(v);
+    if (v.trim() === "" || !Number.isFinite(n)) return "";
+    return String(Math.round((((n + 180) % 360) + 360) % 360 * 10) / 10);
+  }
+
+  function moTaQuyDoi() {
+    const toa = toaDoInput.value.trim();
+    quyDoiEl.textContent = toa === "" ? "" : `Hệ thống sẽ tính theo tọa ${toa}° — hướng ${doiSang180(toa)}°.`;
+  }
+
+  toaDoInput.addEventListener("input", () => {
+    huongDoInput.value = doiSang180(toaDoInput.value);
+    moTaQuyDoi();
+  });
+  huongDoInput.addEventListener("input", () => {
+    toaDoInput.value = doiSang180(huongDoInput.value);
+    moTaQuyDoi();
+  });
 
   /**
    * Ô tọa độ chỉ hiện khi gia đình đã có huyệt — chưa có huyệt thì nhập tọa độ là vô nghĩa.
@@ -903,7 +953,7 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
     const nguyenNhanMat = (document.getElementById("glhh-nguyen-nhan") as HTMLSelectElement).value;
     const doSoToaRaw = toaDoInput.value.trim();
     if (daCoHuyet && doSoToaRaw === "") {
-      loiEl.textContent = "Gia đình đã có huyệt mộ — vui lòng nhập tọa độ huyệt đo bằng la kinh.";
+      loiEl.textContent = "Gia đình đã có huyệt mộ — vui lòng nhập số đo tọa hoặc hướng huyệt (đo bằng la kinh).";
       loiEl.classList.remove("hidden");
       return;
     }

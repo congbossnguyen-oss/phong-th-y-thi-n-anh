@@ -38,6 +38,8 @@ export const POST: APIRoute = async ({ request, locals }) => {
   try {
     const kq = await taoDonCongCu({
       toolSlug: TOOL_SLUG,
+      // Cờ lấy từ PHIÊN ĐĂNG NHẬP phía máy chủ, không phải từ dữ liệu client gửi lên.
+      laQuanTri: locals.user?.isAdmin === true,
       toolInput: doc.input,
       userId: locals.user?.id ?? null,
       customerName,

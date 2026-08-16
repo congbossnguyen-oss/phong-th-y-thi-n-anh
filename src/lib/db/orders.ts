@@ -1,6 +1,6 @@
 import { and, eq } from "drizzle-orm";
 import { db } from "./client";
-import { orders, orderItems, courseEnrollments } from "../../../db/schema";
+import { orders, orderItems, courseEnrollments, users } from "../../../db/schema";
 import { generateOrderCode } from "../payments/sepay";
 import { products } from "../placeholder-data";
 import { getCourseBySlug } from "../cms/queries";
@@ -222,12 +222,21 @@ export async function markOrderPaidAndFulfill(orderId: string) {
   // Hiện chỉ ghi đơn CÔNG CỤ thu phí, đúng phạm vi anh Công yêu cầu. Muốn thống kê cả khóa học /
   // vật phẩm thì bỏ điều kiện orderType bên dưới và bổ sung tên hiển thị tương ứng.
   if (order.orderType === "tool") {
+    // Đơn của TÀI KHOẢN QUẢN TRỊ là đơn kiểm thử 0đ — không được ghi vào sổ doanh thu, cũng
+    // không gửi email báo cáo. Sổ chỉ được chứa doanh thu thật, nếu không mỗi lần anh Công test
+    // là sổ lại phát sinh một dòng ảo phải đi dọn.
+    let laDonKiemThu = false;
+    if (order.userId) {
+      const [nguoiDat] = await db.select({ isAdmin: users.isAdmin }).from(users).where(eq(users.id, order.userId)).limit(1);
+      laDonKiemThu = nguoiDat?.isAdmin === true;
+    }
+
     const duocGiam = Number(order.promoDiscountAmount ?? 0);
     const thucThu = Number(order.totalAmount);
     const giaGoc = thucThu + duocGiam;
     const tenCongCu = TEN_CONG_CU_HIEN_THI[order.toolSlug ?? ""] ?? order.toolSlug ?? "";
 
-    const daGhiSheet = await ghiDonThuPhiLenSheet({
+    const daGhiSheet = laDonKiemThu ? true : await ghiDonThuPhiLenSheet({
       maDon: order.orderCode,
       toolSlug: order.toolSlug ?? "",
       hoTen: order.customerName,
@@ -244,7 +253,7 @@ export async function markOrderPaidAndFulfill(orderId: string) {
     // không ai biết; email là bản sao độc lập để đối chiếu, và khi Sheet lỗi thì email có cảnh
     // báo để anh nhập tay.
     const tien = (n: number) => `${n.toLocaleString("vi-VN")}đ`;
-    await sendBaoCaoGoogleSheetEmail({
+    if (!laDonKiemThu) await sendBaoCaoGoogleSheetEmail({
       loai: "Đơn thu phí",
       tomTat: `${tenCongCu} — ${order.customerName} — ${tien(thucThu)}`,
       dong: [
