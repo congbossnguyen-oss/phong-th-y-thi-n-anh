@@ -86,7 +86,18 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return jsonResponse({ ok: false, error: err instanceof Error ? err.message : "Dữ liệu thân quyến không hợp lệ." }, 400);
   }
 
-  const input: GioLiemHaHuyetInput = {
+  // Phần bổ sung của Phase 2 — phải lưu cùng snapshot, nếu không email gửi sau thanh toán sẽ
+  // dựng ra hồ sơ THIẾU mục tọa hướng mà khách đã trả tiền cho nó.
+  const doSoToa = b.doSoToa === undefined || b.doSoToa === "" ? undefined : Number(b.doSoToa);
+  if (doSoToa !== undefined && !Number.isFinite(doSoToa)) {
+    return jsonResponse({ ok: false, error: "Tọa độ huyệt mộ không hợp lệ." }, 400);
+  }
+
+  const input: GioLiemHaHuyetInput & {
+    hoTenNguoiMat?: string;
+    nguyenNhanMat?: "benh-tuoi-gia" | "tai-nan-dot-ngot";
+    doSoToa?: number;
+  } = {
     gioiTinh: gioiTinh as GioLiemHaHuyetInput["gioiTinh"],
     namSinhDuongLich,
     namMat,
@@ -98,6 +109,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
     // Quãng đường nhà → huyệt, dùng để trừ lùi ra giờ động quan (bước 6b). Bỏ trống thì không
     // tính giờ động quan — engine tự validate khoảng 5-480 phút ở "dry run" bên dưới.
     ...(b.thoiGianDiChuyenPhut ? { thoiGianDiChuyenPhut: Number(b.thoiGianDiChuyenPhut) } : {}),
+    ...(typeof b.hoTenNguoiMat === "string" && b.hoTenNguoiMat.trim() ? { hoTenNguoiMat: b.hoTenNguoiMat.trim().slice(0, 80) } : {}),
+    ...(b.nguyenNhanMat === "tai-nan-dot-ngot" ? { nguyenNhanMat: "tai-nan-dot-ngot" as const } : {}),
+    ...(doSoToa !== undefined ? { doSoToa } : {}),
   };
 
   // "Dry run" — tính thử trước khi tạo đơn, để không thu tiền cho input không tính được.

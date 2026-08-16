@@ -8,7 +8,9 @@ import {
   sendProductOrderConfirmedEmail,
   sendCourseOrderConfirmedEmail,
   sendBaoCaoGoogleSheetEmail,
+  sendHoSoTangLeEmail,
 } from "../email/send";
+import { taoHoSoTangLe, type DauVaoHoSo } from "../dai-cat-loi/tao-ho-so-tang-le";
 import { apDungMaKhiThanhToan } from "../payments/promo";
 import { ghiDonThuPhiLenSheet, TEN_CONG_CU_HIEN_THI } from "../google-sheets-don-thu-phi";
 
@@ -262,6 +264,35 @@ export async function markOrderPaidAndFulfill(orderId: string) {
       ],
       sheetLoi: !daGhiSheet,
     });
+
+    // Gửi hồ sơ PDF tang lễ kèm email. Đặt ở ĐÂY vì hàm này chỉ chạy đúng một lần cho mỗi đơn
+    // (đã chặn bởi `order.status === "confirmed"` ở đầu hàm) — nếu gửi từ endpoint `result.ts`
+    // thì trang kết quả poll 3 giây/lần sẽ bắn ra hàng loạt email trùng.
+    //
+    // Bọc try/catch riêng: dựng PDF nặng hơn hẳn gửi email thường, và webhook SePay phải trả 200
+    // trong 30s. Hỏng khâu này thì đơn vẫn phải được ghi nhận là đã thanh toán — khách vẫn tải
+    // được hồ sơ từ trang kết quả nên không mất thứ đã mua.
+    if (order.toolSlug === "gio-liem-ha-huyet" && order.customerEmail && order.toolInputSnapshot) {
+      try {
+        const dauVao = JSON.parse(order.toolInputSnapshot) as DauVaoHoSo;
+        const hoSo = await taoHoSoTangLe(dauVao);
+        if (hoSo.taoDuoc) {
+          await sendHoSoTangLeEmail({
+            to: order.customerEmail,
+            orderCode: order.orderCode,
+            customerName: order.customerName,
+            hoTenNguoiMat: dauVao.hoTenNguoiMat ?? null,
+            pdfBytes: hoSo.pdf,
+          });
+        } else {
+          // Kết cục C lẽ ra đã bị chặn TRƯỚC trang thanh toán, nên tới đây là bất thường —
+          // log để còn lần ra, chứ không im lặng bỏ qua.
+          console.error(`[ho-so-tang-le] Đơn ${order.orderCode} không dựng được hồ sơ: ${hoSo.lyDo}`);
+        }
+      } catch (err) {
+        console.error(`[ho-so-tang-le] Lỗi dựng/gửi hồ sơ cho đơn ${order.orderCode}:`, err);
+      }
+    }
   }
 
   if (order.orderType === "course" && order.courseRef && order.userId) {

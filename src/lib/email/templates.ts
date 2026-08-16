@@ -1,3 +1,5 @@
+import { siteConfig } from "../site-config";
+
 const BRAND = {
   ink: "#241a15",
   ivory: "#fdfaf5",
@@ -198,5 +200,41 @@ export function baoCaoGoogleSheetEmail(params: {
   return {
     subject: `[${params.loai}] ${params.tomTat}`,
     html: layout({ previewText: params.tomTat, title: params.loai, bodyHtml }),
+  };
+}
+
+/**
+ * Email kèm HỒ SƠ PDF chọn ngày giờ tang lễ (module Giờ Liệm – Hạ Huyệt).
+ *
+ * Giọng văn phải rất tiết chế: người nhận đang có tang. Không cảm ơn hoa mỹ, không mời chào dịch
+ * vụ khác, không "chúc mừng" — chỉ đưa đúng thứ họ đã trả tiền và cách liên hệ khi cần hỏi thêm.
+ */
+export function hoSoTangLeEmail(params: {
+  orderCode: string;
+  customerName: string;
+  hoTenNguoiMat?: string | null;
+}): { subject: string; html: string } {
+  const bodyHtml = `
+    <p>Kính gửi ${params.customerName},</p>
+    <p>
+      Hồ sơ chọn ngày giờ tang lễ${params.hoTenNguoiMat ? ` cho ${params.hoTenNguoiMat}` : ""} được đính kèm
+      trong email này, gồm giờ liệm, giờ đóng quan, giờ di quan, ngày giờ hạ huyệt và các tuổi cần tránh mặt.
+    </p>
+    <table role="presentation" width="100%" style="margin-top:16px;border-top:1px solid #e8dfcd;padding-top:12px;">
+      ${infoRow("Mã đơn hàng", params.orderCode)}
+    </table>
+    <p style="margin-top:20px;">
+      Gia đình nên in hồ sơ ra để tiện đối chiếu tại chỗ. Nếu có điểm nào cần hỏi thêm, xin liên hệ trực tiếp
+      hotline ${siteConfig.hotline} — chúng tôi hỗ trợ ngoài giờ trong trường hợp tang sự.
+    </p>
+  `;
+
+  return {
+    subject: `Hồ sơ chọn ngày giờ tang lễ — đơn ${params.orderCode}`,
+    html: layout({
+      previewText: "Hồ sơ chọn ngày giờ tang lễ được đính kèm trong email này.",
+      title: "Hồ sơ chọn ngày giờ tang lễ",
+      bodyHtml,
+    }),
   };
 }

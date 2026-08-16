@@ -6,6 +6,7 @@ import {
   courseCertificateEmail,
   consultationRequestEmail,
   baoCaoGoogleSheetEmail,
+  hoSoTangLeEmail,
 } from "./templates";
 
 // Gửi email không được phép làm sập luồng nghiệp vụ chính (vd webhook thanh toán phải trả 200
@@ -98,4 +99,24 @@ export async function sendBaoCaoGoogleSheetEmail(params: {
   const to = import.meta.env.CONTACT_NOTIFICATION_EMAIL || siteConfig.email;
   const cc = import.meta.env.CONTACT_NOTIFICATION_CC_EMAIL || "congboss.nguyen@gmail.com";
   await safeSend(to, subject, html, undefined, cc);
+}
+
+/**
+ * Gửi HỒ SƠ PDF tang lễ kèm email (module Giờ Liệm – Hạ Huyệt).
+ *
+ * Dùng `safeSend` như mọi email khác: gửi thất bại chỉ log lại, KHÔNG throw — webhook SePay phải
+ * trả 200 trong 30s, và tuyệt đối không được để lỗi email làm hỏng việc ghi nhận đơn đã thanh
+ * toán. Khách vẫn tải được hồ sơ từ trang kết quả, nên email hụt không làm mất thứ đã mua.
+ */
+export async function sendHoSoTangLeEmail(params: {
+  to: string;
+  orderCode: string;
+  customerName: string;
+  hoTenNguoiMat?: string | null;
+  pdfBytes: Uint8Array;
+}) {
+  const { subject, html } = hoSoTangLeEmail(params);
+  await safeSend(params.to, subject, html, [
+    { filename: `ho-so-tang-le-${params.orderCode}.pdf`, content: Buffer.from(params.pdfBytes) },
+  ]);
 }
