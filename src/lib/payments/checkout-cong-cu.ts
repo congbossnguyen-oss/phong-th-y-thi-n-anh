@@ -41,8 +41,16 @@ export async function taoDonCongCu(params: {
   customerEmail: string | null;
   /** Mã khách nhập (có thể rỗng/không có). */
   maKhuyenMai?: string;
+  /**
+   * Ghi đè giá gốc cho công cụ có NHIỀU BẬC GIÁ (hiện chỉ module tang lễ: 499k gói cơ bản /
+   * 999k gói đầy đủ khi có tọa hướng mộ).
+   *
+   * ⚠️ Tầng gọi phải tự tính con số này Ở PHÍA MÁY CHỦ từ dữ liệu đã kiểm — tuyệt đối không
+   * chuyền thẳng số tiền client gửi lên, nếu không khách tự khai giá bao nhiêu cũng được.
+   */
+  soTienGocGhiDe?: number;
 }): Promise<KetQuaTaoDon | LoiTaoDon> {
-  const soTienGoc = GIA_CONG_CU[params.toolSlug];
+  const soTienGoc = params.soTienGocGhiDe ?? GIA_CONG_CU[params.toolSlug];
   const ma = chuanHoaMa(params.maKhuyenMai ?? "");
 
   let soTienGiam = 0;

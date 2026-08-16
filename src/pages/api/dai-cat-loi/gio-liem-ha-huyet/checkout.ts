@@ -5,6 +5,7 @@ import {
   type GioLiemHaHuyetInput,
 } from "@thien-anh/trachnhat-engine";
 import { taoDonCongCu } from "../../../../lib/payments/checkout-cong-cu";
+import { giaGioLiemHaHuyet } from "../../../../lib/payments/gia-cong-cu";
 import { Astronomy, type Data } from "@thien-anh/calendar-core";
 
 type Chi = Data.Chi;
@@ -150,6 +151,9 @@ export const POST: APIRoute = async ({ request, locals }) => {
   try {
     const kq = await taoDonCongCu({
       toolSlug: TOOL_SLUG,
+      // Bậc giá suy từ CHÍNH tọa độ đã kiểm ở trên, không lấy từ client. Khách khai gói nào
+      // không quan trọng — có tọa mộ thì mới chạy Phase 2, và đúng lúc đó mới tính giá đầy đủ.
+      soTienGocGhiDe: giaGioLiemHaHuyet(doSoToa !== undefined),
       toolInput: input,
       userId: locals.user?.id ?? null,
       customerName,

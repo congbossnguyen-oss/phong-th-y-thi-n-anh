@@ -12,6 +12,33 @@ export const GIA_CONG_CU = {
 
 export type ToolSlug = keyof typeof GIA_CONG_CU;
 
+/**
+ * Module tang lễ có HAI BẬC GIÁ (đặc tả Phase 2 mục 8) — đây là ĐỊNH TUYẾN, không phải upsell:
+ *
+ *   - Gia đình CHƯA có huyệt (hỏa táng, gửi chùa, chưa mua đất) → gói cơ bản là sản phẩm ĐÚNG với
+ *     họ. Không có tọa mộ để nhập thì gói đầy đủ vô nghĩa, tuyệt đối không gợi ý nâng cấp.
+ *   - Gia đình ĐÃ có huyệt → gói đầy đủ mới đúng; gói cơ bản với họ là thiếu, không phải rẻ hơn.
+ *
+ * `GIA_CONG_CU["gio-liem-ha-huyet"]` giữ nguyên bằng giá gói cơ bản để các chỗ dùng chung (bảng
+ * giá, mã khuyến mãi, trang danh sách công cụ) không phải sửa gì.
+ */
+export const GIA_GIO_LIEM_HA_HUYET = {
+  /** Chỉ Phase 1 — chưởng pháp + thần sát trạch nhật. */
+  coBan: 499000,
+  /** Phase 1 + Phase 2 — lọc và xếp hạng lại theo tọa hướng huyệt mộ. Chủ dự án chốt 2026-08-17. */
+  dayDu: 1000000,
+} as const;
+
+/**
+ * Bậc giá suy từ việc CÓ TỌA ĐỘ HUYỆT hay không.
+ *
+ * ⚠️ Chỉ được gọi ở phía máy chủ với tọa độ đã kiểm. Không bao giờ nhận bậc giá do client gửi —
+ * nếu không, ai cũng tự khai "gói cơ bản" rồi vẫn nhận kết quả Phase 2.
+ */
+export function giaGioLiemHaHuyet(coToaHuyet: boolean): number {
+  return coToaHuyet ? GIA_GIO_LIEM_HA_HUYET.dayDu : GIA_GIO_LIEM_HA_HUYET.coBan;
+}
+
 export function laToolSlug(v: unknown): v is ToolSlug {
   // Dùng Object.hasOwn chứ KHÔNG dùng `in`: toán tử `in` xét cả chuỗi nguyên mẫu nên
   // laToolSlug("toString") / ("constructor") sẽ trả về true, lọt qua kiểm tra đầu vào.
