@@ -683,6 +683,15 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
       if (TrungTang.isTrungNhat(canChiCandidate.day.chi)) hungKhongHoaGiai.push("Trùng Nhật");
       if (TrungTang.isPhucNhat(canChiCandidate.day.can, lunarMat.month)) hungKhongHoaGiai.push("Phục Nhật");
       if (canChiCandidate.day.chi === chiXungVong) hungKhongHoaGiai.push("Xung tuổi vong");
+      // ĐẠI HAO — đặc tả Phase 2 mục 2.3 xếp vào nhóm "không hoá giải được, loại thẳng". Bảng
+      // nằm ở tầng trạch nhật dùng chung (`THAN_SAT_THANG`), nguồn ghi rõ "NHỮNG NGÀY ĐẠI HAO TỨ
+      // KHÍ QUAN PHÙ KỴ AN TÁNG" nên đúng phạm vi việc âm của module này.
+      //
+      // ⚠️ Trước 2026-08-17 tên "Đại Hao" chỉ nằm trong hằng số `KHONG_HOA_GIAI_DUOC` mà KHÔNG có
+      // chỗ nào kiểm — danh sách cấm chỉ tồn tại trên giấy. Đây là chỗ thực thi nó.
+      if (TrachNhat.getThanSatTrongNgay(lunarCandidate.month, canChiCandidate.day.chi).some((t) => t.name === "Đại Hao")) {
+        hungKhongHoaGiai.push("Đại Hao");
+      }
 
       if (hungKhongHoaGiai.length > 0) continue;
 

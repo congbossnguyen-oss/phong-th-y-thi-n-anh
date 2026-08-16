@@ -7,8 +7,18 @@
 // chứng minh mình copy đúng). Thay vào đó khoá các QUAN HỆ mà đặc tả khẳng định — cấp Năm chặn cả
 // module, cấp Ngày/Giờ chỉ loại phương án, sát ranh giới thì bắt đo lại chứ không tự đoán.
 import { describe, expect, it } from "vitest";
-import { TrungTang, XemNgayCaoCap } from "@thien-anh/rule-engine";
+import { TrachNhat, TrungTang, XemNgayCaoCap } from "@thien-anh/rule-engine";
 import { apDungPhase2, calculateGioLiemHaHuyet, kiemToaHuongTruocThanhToan } from "@thien-anh/trachnhat-engine";
+import { readFileSync } from "node:fs";
+
+/**
+ * Mã nguồn các tầng CÓ QUYỀN LOẠI phương án — đọc thẳng để kiểm "danh sách cấm có được thực thi
+ * không". Tam Sát/Bát Sát bị loại ở tầng quy tắc thuần (theo tọa/hướng), phần còn lại ở facade.
+ */
+const NGUON_FACADE =
+  readFileSync("packages/trachnhat-engine/src/processing/gioLiemHaHuyet.ts", "utf8") +
+  readFileSync("packages/trachnhat-engine/src/processing/phase2ApDung.ts", "utf8") +
+  readFileSync("packages/rule-engine/src/trung-tang/phase2ToaHuongMo.ts", "utf8");
 
 /** Lấy tọa hướng, ném nếu độ số không hợp lệ — để test đọc gọn. */
 function toa(doSo: number) {
@@ -549,5 +559,31 @@ describe("Đủ luồng ①→⑤ trên đầu ra thật của Phase 1 (đặc t
     expect(["A", "B"]).toContain(kq.ketCuc);
     if (kq.ketCuc !== "A" && kq.ketCuc !== "B") return;
     for (const pa of kq.phuongAn) expect(pa.cachCuc.queDaChon).toHaveLength(3);
+  });
+});
+
+describe("Mục 2.3 — nhóm hung KHÔNG hoá giải được phải thật sự bị kiểm", () => {
+  it("Đại Hao được nhận diện đủ 12 tháng ở bảng dùng chung", () => {
+    // Bảng: T1→Ngọ, T2→Mùi, ... (nguồn "NHỮNG NGÀY ĐẠI HAO TỨ KHÍ QUAN PHÙ KỴ AN TÁNG").
+    const CHI_THEO_THANG = ["Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi", "Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ"];
+    for (let thang = 1; thang <= 12; thang++) {
+      const ten = TrachNhat.getThanSatTrongNgay(thang, CHI_THEO_THANG[thang - 1] as never).map((t) => t.name);
+      expect(ten, `tháng ${thang}`).toContain("Đại Hao");
+    }
+  });
+
+  it("mọi tên trong KHONG_HOA_GIAI_DUOC đều có chỗ thực thi, không chỉ nằm trên giấy", () => {
+    // Bài học 2026-08-17: "Đại Hao" từng nằm trong hằng số này suốt mà KHÔNG có dòng code nào
+    // kiểm — danh sách cấm chỉ tồn tại trên giấy. Test này chặn việc đó tái diễn: mỗi tên phải
+    // xuất hiện ở tầng facade (nơi đẩy vào `hungKhongHoaGiai`), hoặc là bí danh đã biết.
+    const BI_DANH: Record<string, string> = {
+      "Nguyệt Phá": "Nguyệt Phá (Trực Phá)",
+      "Trực Phá": "Nguyệt Phá (Trực Phá)",
+      "Tam Sát": "Tam Sát đáo", // Phase 2 kiểm theo tọa/hướng, chuỗi khác
+    };
+    for (const ten of TrungTang.KHONG_HOA_GIAI_DUOC) {
+      const canTim = BI_DANH[ten] ?? ten;
+      expect(NGUON_FACADE, `"${ten}" nằm trong danh sách cấm nhưng không có chỗ nào kiểm`).toContain(canTim);
+    }
   });
 });
