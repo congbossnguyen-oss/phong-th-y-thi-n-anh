@@ -81,3 +81,63 @@ export const MUC_QUAI_VAN = {
  * sang đây. Vì vậy chiều 7 hiện chỉ tính 4 quan hệ Quái Vận đã có bảng.
  */
 export const THIEN_Y_QUAI_VAN_CHUA_CO_BANG = true;
+
+// -------------------------------------------------------------------------------------------
+// MỨC ĐỘ THẦN SÁT — LOẠI THẲNG hay TRỪ ĐIỂM
+// -------------------------------------------------------------------------------------------
+
+/**
+ * Chủ dự án chốt 2026-08-17: "trừ điểm thì hay hơn... kể cả xét tọa hướng ok rồi, nếu thần sát
+ * xấu vẫn phải cân nhắc, nếu được giờ hoàng đạo thì cực tốt".
+ *
+ * Lý do đổi: khi nối đủ mọi bộ lọc theo đúng đặc tả, đo được chỉ còn 1-8 trong 24 sơn có phương
+ * án — phần lớn tang gia nhập tọa mộ vào là nhận màn hình "chưa thu phí". Không phải engine sai,
+ * mà là chồng quá nhiều mức tuyệt đối lên nhau. Nay chỉ giữ tuyệt đối những gì chủ dự án đã nói
+ * rõ là KHÔNG HOÁ GIẢI ĐƯỢC; phần còn lại hạ xuống trừ điểm và hiện cảnh báo để thầy cân nhắc.
+ *
+ * ⚠️ Danh sách LOẠI THẲNG dưới đây là thứ chủ dự án đã chốt bằng lời, không được tự ý nới:
+ * "không hóa được nhé" (2026-08-16) cho Kim Thần Thất Sát / Thọ Tử / Sát Chủ / Trung Cung -
+ * Bạch Hổ, cộng nhóm tuyệt đối riêng của tang sự.
+ */
+export const THAN_SAT_LOAI_THANG: readonly string[] = [
+  "Kim Thần Thất Sát",
+  "Thọ Tử",
+  "Sát Chủ Âm",
+  "Nguyệt Phá (Trực Phá)",
+  "Đại Hao",
+  "Trùng Nhật",
+  "Phục Nhật",
+  "Xung tuổi vong",
+];
+
+/**
+ * Điểm trừ cho các mục nay chỉ CÂN NHẮC chứ không loại.
+ *
+ * ⚠️ MỌI mức trừ PHẢI lớn hơn điểm dương tối đa một phương án có thể đạt:
+ *     7 chiều (30+22+16+12+9+6+5 = 100) + thưởng giờ hoàng đạo (40) = 140.
+ *
+ * Vì sao bắt buộc: phương án sạch phải LUÔN đứng trên phương án dính sát. Bản đầu đặt 50-120 và
+ * đo thấy ngay hậu quả — phương án đứng số 1 lại mang ghi chú "chỉ 0 trụ hỗ trợ (tuyệt đối
+ * tránh)", chỉ vì được giờ hoàng đạo nên điểm vượt lên. Gia đình đọc hồ sơ là lấy phương án số 1,
+ * nên để một phương án có sát đứng đầu là nguy hiểm hơn hẳn việc nó bị xếp cuối.
+ *
+ * Sát nặng hơn thì trừ nhiều hơn, để khi buộc phải chọn trong đám có sát thì cái nhẹ vẫn nổi lên.
+ */
+export const DIEM_TRU_THAN_SAT: Readonly<Record<string, number>> = {
+  "Tam Sát": 320,
+  "Bát Sát": 300,
+  "Ngũ Hoàng tháng": 260,
+  "Tam Tài không giao": 220,
+  "Thiếu trụ hỗ trợ": 200,
+  "Sao 28 kỵ an táng": 180,
+};
+
+/** Trừ mặc định khi gặp tên lạ — vẫn phải nặng hơn mọi phần thưởng cộng lại (tối đa 140). */
+export const DIEM_TRU_MAC_DINH = 200;
+
+/**
+ * Thưởng thêm khi phương án rơi đúng GIỜ HOÀNG ĐẠO — chủ dự án: "nếu được giờ hoàng đạo thì cực
+ * tốt". Đặt cao hơn chiều nặng nhất (Nhật Khóa ↔ Tọa = 30) để nó thật sự kéo được thứ hạng, song
+ * vẫn thấp hơn mọi mức trừ ở trên nên KHÔNG cứu nổi một phương án dính sát nặng.
+ */
+export const DIEM_THUONG_GIO_HOANG_DAO = 40;

@@ -611,23 +611,28 @@ describe("Cổng kiểm ĐẦY ĐỦ — lọc sạch phương án cũng không 
     soNgayDuKienToiChon: 7,
   };
 
-  it("tọa không phạm sát cấp năm NHƯNG lọc sạch phương án thì vẫn KHÔNG thu phí", () => {
-    // Đây là ca trước 2026-08-17 sẽ thu tiền rồi trả về tay trắng: qua được cổng cấp năm nên
-    // được tính tiền, nhưng Tam Sát + cổng Tứ Trụ quét sạch 96/96 phương án.
-    const kq = kiemDayDuTruocThanhToan({ ...CHUNG, doSoToa: 30 });
-    expect(kq.ketCuc).toBe("rong");
-    if (kq.ketCuc !== "rong") return;
-    expect(kq.duocPhepThuPhi).toBe(false);
-    expect(kq.lyDoChinh.length).toBeGreaterThan(0);
-    // Phải nói được nguyên nhân, không chỉ báo "không có kết quả".
-    expect(kq.thongDiep).toContain("không nhận phí");
-    expect(kq.thongDiep).toMatch(/Tam Sát|trụ hỗ trợ|Tam Tài/);
+  it("hễ lọc sạch phương án thì KHÔNG thu phí, và phải nói được nguyên nhân", () => {
+    // ⚠️ KHÔNG khoá theo tọa cụ thể. Trước 2026-08-17 tọa 30 rỗng thật (mọi thần sát đều là mức
+    // tuyệt đối); sau khi chủ dự án chốt "trừ điểm thì hay hơn", tọa 30 lại còn 72 phương án.
+    // Cái đáng khoá là HỢP ĐỒNG của kết cục "rỗng", không phải tọa nào rơi vào nó.
+    const rong = XemNgayCaoCap.DANH_SACH_24_SON.map((s) =>
+      kiemDayDuTruocThanhToan({ ...CHUNG, doSoToa: s.doTam }),
+    ).find((kq) => kq.ketCuc === "rong");
+
+    // Ca thử này có thể không còn sơn nào rỗng — hợp lệ, không ép phải có.
+    if (rong?.ketCuc !== "rong") return;
+    expect(rong.duocPhepThuPhi).toBe(false);
+    expect(rong.lyDoChinh.length).toBeGreaterThan(0);
+    // Phải nói được nguyên nhân, không chỉ báo trống rỗng "không có kết quả".
+    expect(rong.thongDiep).toContain("không nhận phí");
   });
 
   it("khi lọc sạch mà chưởng pháp vẫn có kết quả thì báo còn dùng được gói cơ bản", () => {
-    const kq = kiemDayDuTruocThanhToan({ ...CHUNG, doSoToa: 30 });
-    if (kq.ketCuc !== "rong") return;
-    expect(kq.conGoiCoBan).toBe(true);
+    const rong = XemNgayCaoCap.DANH_SACH_24_SON.map((s) =>
+      kiemDayDuTruocThanhToan({ ...CHUNG, doSoToa: s.doTam }),
+    ).find((kq) => kq.ketCuc === "rong");
+    if (rong?.ketCuc !== "rong") return;
+    expect(rong.conGoiCoBan).toBe(true);
   });
 
   it("mọi kết cục KHÔNG cho đi tiếp đều mang cờ duocPhepThuPhi = false", () => {
@@ -648,5 +653,67 @@ describe("Cổng kiểm ĐẦY ĐỦ — lọc sạch phương án cũng không 
     if (son?.ketCuc !== "qua-cong") return;
     expect(son.duocPhepThuPhi).toBe(true);
     expect(son.soPhuongAn).toBeGreaterThan(0);
+  });
+});
+
+describe("Thần sát: trừ điểm thay vì loại (chủ dự án chốt 2026-08-17)", () => {
+  function pa(id: string, thanSat: string[], gioHoangDao: boolean): TrungTang.PhuongAnDeXepHang {
+    return {
+      id,
+      cachCuc: {
+        lop: 4,
+        tenLop: TrungTang.TEN_LOP_CACH_CUC[4],
+        queDaChon: [],
+        coTruHaiQue: false,
+        hknhToa: 3,
+        quaiVanToa: 1,
+      },
+      // Cho ĐẠT TỐI ĐA mọi chiều — để chứng minh điểm dương dù kịch trần cũng không cứu nổi.
+      cacChieu: TrungTang.THU_TU_CHIEU_DO.map((chieu) => ({ chieu, nhan: chieu, heSo: 1, dangNeu: true })),
+      canhBao: [],
+      ...(thanSat.length > 0 ? { thanSatCanNhac: thanSat } : {}),
+      gioHoangDao,
+    };
+  }
+
+  it("phương án SẠCH luôn đứng trên phương án có thần sát, kể cả khi bên kia được giờ hoàng đạo", () => {
+    // Bài học 2026-08-17: bản đầu đặt điểm trừ 50-120, đo ra phương án số 1 lại mang ghi chú
+    // "chỉ 0 trụ hỗ trợ — tuyệt đối tránh" chỉ vì nó trúng giờ hoàng đạo. Gia đình đọc hồ sơ là
+    // lấy phương án số 1, nên để một phương án có sát đứng đầu là nguy hiểm.
+    const ds = TrungTang.xepHangPhuongAn([
+      pa("co-sat-nhung-hoang-dao", ["Thiếu trụ hỗ trợ"], true),
+      pa("sach-khong-hoang-dao", [], false),
+    ]);
+    expect(ds[0]!.id).toBe("sach-khong-hoang-dao");
+  });
+
+  it("mọi mức trừ đều nặng hơn tổng điểm dương tối đa (7 chiều + giờ hoàng đạo)", () => {
+    const duongToiDa =
+      TrungTang.THU_TU_CHIEU_DO.reduce((t, c) => t + TrungTang.TRONG_SO_AN_TANG[c], 0) +
+      TrungTang.DIEM_THUONG_GIO_HOANG_DAO;
+    for (const [ten, tru] of Object.entries(TrungTang.DIEM_TRU_THAN_SAT)) {
+      expect(tru, `"${ten}" trừ nhẹ hơn điểm dương tối đa (${duongToiDa}) — sẽ leo lên đầu`).toBeGreaterThan(duongToiDa);
+    }
+    expect(TrungTang.DIEM_TRU_MAC_DINH).toBeGreaterThan(duongToiDa);
+  });
+
+  it("trong nhóm CÙNG có sát, sát nhẹ hơn vẫn nổi lên trên", () => {
+    const ds = TrungTang.xepHangPhuongAn([
+      pa("tam-sat-nang", ["Tam Sát"], false),
+      pa("sao-28-nhe", ["Sao 28 kỵ an táng"], false),
+    ]);
+    expect(ds[0]!.id).toBe("sao-28-nhe");
+  });
+
+  it("giờ hoàng đạo được nêu đầu tiên trong phần quan hệ đạt", () => {
+    const ds = TrungTang.xepHangPhuongAn([pa("a", [], true)]);
+    expect(ds[0]!.quanHeDat[0]).toBe("Đúng giờ hoàng đạo");
+  });
+
+  it("danh sách LOẠI THẲNG chỉ giữ những gì chủ dự án đã chốt là không hoá giải được", () => {
+    // Chốt cứng để không ai (kể cả phiên sau) lặng lẽ hạ một mục tuyệt đối xuống trừ điểm.
+    for (const ten of ["Kim Thần Thất Sát", "Thọ Tử", "Sát Chủ Âm", "Đại Hao", "Trùng Nhật", "Phục Nhật"]) {
+      expect(TrungTang.THAN_SAT_LOAI_THANG, `"${ten}" phải giữ mức tuyệt đối`).toContain(ten);
+    }
   });
 });

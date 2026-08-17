@@ -123,19 +123,30 @@ export function apDungPhase2(input: Phase2Input): Phase2Output {
     // từng phương án — không mượn Can Chi của ngày mất, vì cửa sổ quét có thể vắt qua Lập Xuân.
     const canChi = getCanChi({ year: nam, month: thang, day: ngay, hour: 12, timeZone });
 
-    // --- BƯỚC ① phần cấp ngày / giờ / tháng: phạm là LOẠI, không phải trừ điểm ---
-    const lyDoLoai: string[] = [];
-    lyDoLoai.push(...TrungTang.kiemSatCapNgayGio(toaHuong, pa.canChiNgay, "ngày").lyDo);
-    if (tinhTruGio) {
-      lyDoLoai.push(...TrungTang.kiemSatCapNgayGio(toaHuong, { can: pa.canGio, chi: pa.chiGio }, "giờ").lyDo);
+    // --- BƯỚC ① cấp ngày / giờ / tháng ---
+    //
+    // ⚠️ ĐỔI MỨC 2026-08-17 theo chủ dự án: "trừ điểm thì hay hơn... nếu thần sát xấu vẫn phải
+    // cân nhắc". Sát phương vị ở cấp NGÀY/GIỜ nay KHÔNG loại phương án nữa mà trừ điểm nặng rồi
+    // hiện ra cho thầy tự quyết. Sát cấp NĂM vẫn giữ tuyệt đối (kết cục C, đã chặn từ cổng).
+    //
+    // Lý do: đo được chỉ 1-8 trong 24 sơn còn phương án khi mọi thứ đều là mức tuyệt đối — phần
+    // lớn tang gia sẽ không nhận được gì.
+    const thanSatCanNhac: string[] = [];
+    const chiTietCanNhac: string[] = [];
+    const satNgay = TrungTang.kiemSatCapNgayGio(toaHuong, pa.canChiNgay, "ngày");
+    const satGio = tinhTruGio
+      ? TrungTang.kiemSatCapNgayGio(toaHuong, { can: pa.canGio, chi: pa.chiGio }, "giờ")
+      : { loai: false, lyDo: [] as string[] };
+    for (const ly of [...satNgay.lyDo, ...satGio.lyDo]) {
+      chiTietCanNhac.push(ly);
+      // Quy về tên nhóm để tra bảng điểm trừ; giữ nguyên câu đầy đủ ở `chiTietCanNhac`.
+      thanSatCanNhac.push(ly.startsWith("Tam Sát") ? "Tam Sát" : "Bát Sát");
     }
     const nguHoangThang = TrungTang.kiemNguHoangThang(toaHuong, nam, canChi.month.can, canChi.month.chi);
     if (nguHoangThang.thieuDuLieu) thieuDuLieu.add(nguHoangThang.thieuDuLieu);
-    if (nguHoangThang.loai && nguHoangThang.lyDo) lyDoLoai.push(nguHoangThang.lyDo);
-
-    if (lyDoLoai.length > 0) {
-      biLoai.push({ id, lyDo: lyDoLoai });
-      continue;
+    if (nguHoangThang.loai && nguHoangThang.lyDo) {
+      chiTietCanNhac.push(nguHoangThang.lyDo);
+      thanSatCanNhac.push("Ngũ Hoàng tháng");
     }
 
     // --- BƯỚC ② phẩm cấp cách cục ---
@@ -152,8 +163,8 @@ export function apDungPhase2(input: Phase2Input): Phase2Output {
     // --- BƯỚC ①, mục 2.5 — cổng vào Tứ Trụ: 0-1 trụ hỗ trợ là "tuyệt đối tránh" ---
     const soTruHoTro = TrungTang.demTruHoTro(cachCuc);
     if (soTruHoTro <= 1) {
-      biLoai.push({ id, lyDo: [`Chỉ ${soTruHoTro} trụ hỗ trợ trụ Ngày (nguồn ghi "tuyệt đối tránh")`] });
-      continue;
+      chiTietCanNhac.push(`Chỉ ${soTruHoTro} trụ hỗ trợ trụ Ngày (nguồn ghi "tuyệt đối tránh")`);
+      thanSatCanNhac.push("Thiếu trụ hỗ trợ");
     }
 
     // --- BƯỚC ①, mục 2.5 — TAM TÀI THIÊN-ĐỊA-NHÂN không giao thì LOẠI ---
@@ -171,8 +182,8 @@ export function apDungPhase2(input: Phase2Input): Phase2Output {
       : { giaoDuoc: true, mucDat: "khong_giao" as const };
     if (!giaoToa.giaoDuoc || !giaoMenh.giaoDuoc) {
       const thieu = [!giaoToa.giaoDuoc ? "tọa mộ" : null, !giaoMenh.giaoDuoc ? "mệnh người mất" : null].filter(Boolean);
-      biLoai.push({ id, lyDo: [`Tam Tài không giao — nhật khóa không giao được với ${thieu.join(" và ")}`] });
-      continue;
+      chiTietCanNhac.push(`Tam Tài không giao — nhật khóa không giao được với ${thieu.join(" và ")}`);
+      thanSatCanNhac.push("Tam Tài không giao");
     }
 
     // --- BƯỚC ③ bảy chiều đo ---
@@ -185,7 +196,11 @@ export function apDungPhase2(input: Phase2Input): Phase2Output {
       id,
       cachCuc,
       cacChieu,
+      ...(thanSatCanNhac.length > 0 ? { thanSatCanNhac } : {}),
+      // Chủ dự án: "nếu được giờ hoàng đạo thì cực tốt" — thưởng thêm ở tầng xếp hạng.
+      gioHoangDao: pa.hoangDaoLaCat === true,
       canhBao: [
+        ...chiTietCanNhac.map((c) => `Cần cân nhắc: ${c}`),
         ...TrungTang.canhBaoMem(cachCuc, false),
         ...(cachCuc.coTruHaiQue
           ? [`Có trụ mang 2 quẻ — đã chọn: ${cachCuc.queDaChon.map((q) => `${q.tru} ${q.que}`).join(", ")}`]

@@ -41,6 +41,9 @@ import {
   THU_TU_CHIEU_DO,
   TRONG_SO_AN_TANG,
   type ChieuDoPhase2,
+  DIEM_TRU_THAN_SAT,
+  DIEM_TRU_MAC_DINH,
+  DIEM_THUONG_GIO_HOANG_DAO,
   type MucMenhVong,
   type MucNhatKhoaToa,
 } from "./phase2TrongSo.js";
@@ -362,8 +365,16 @@ export function canhBaoMem(cachCuc: KetQuaCachCuc, ngayPhamSatChuDuong: boolean)
  * BƯỚC ④ — điểm tổng hợp. CHỈ dùng để xếp hạng nội bộ trong cùng lớp ở Bước ②; tuyệt đối không so
  * xuyên lớp, và không bao giờ hiển thị cho khách (mục 6 cấm hiện điểm thô).
  */
-export function tinhDiemNoiBoLop(cacChieu: readonly GiaTriChieu[]): number {
-  return cacChieu.reduce((tong, c) => tong + TRONG_SO_AN_TANG[c.chieu] * c.heSo, 0);
+export function tinhDiemNoiBoLop(
+  cacChieu: readonly GiaTriChieu[],
+  thanSatCanNhac: readonly string[] = [],
+  gioHoangDao = false,
+): number {
+  const diemChieu = cacChieu.reduce((tong, c) => tong + TRONG_SO_AN_TANG[c.chieu] * c.heSo, 0);
+  // Trừ nặng hơn tổng mọi phần thưởng, để phương án dính sát không bao giờ leo trên phương án
+  // sạch — nhưng vẫn còn trong danh sách để thầy nhìn thấy mà cân nhắc.
+  const diemTru = thanSatCanNhac.reduce((tong, ten) => tong + (DIEM_TRU_THAN_SAT[ten] ?? DIEM_TRU_MAC_DINH), 0);
+  return diemChieu + (gioHoangDao ? DIEM_THUONG_GIO_HOANG_DAO : 0) - diemTru;
 }
 
 export interface PhuongAnDeXepHang {
@@ -372,6 +383,13 @@ export interface PhuongAnDeXepHang {
   cachCuc: KetQuaCachCuc;
   cacChieu: GiaTriChieu[];
   canhBao: string[];
+  /**
+   * Thần sát đáng CÂN NHẮC — không loại phương án, nhưng trừ điểm nặng và phải hiện cho thầy
+   * thấy. Khác `canhBao` (ghi chú mềm, không ảnh hưởng thứ hạng).
+   */
+  thanSatCanNhac?: string[];
+  /** Phương án rơi đúng giờ hoàng đạo — chủ dự án: "được giờ hoàng đạo thì cực tốt". */
+  gioHoangDao?: boolean;
 }
 
 export interface PhuongAnDaXepHang extends PhuongAnDeXepHang {
@@ -394,11 +412,14 @@ export function xepHangPhuongAn(dsPhuongAn: readonly PhuongAnDeXepHang[]): Phuon
   return dsPhuongAn
     .map((p) => ({
       ...p,
-      diemNoiBo: tinhDiemNoiBoLop(p.cacChieu),
-      quanHeDat: [...p.cacChieu]
-        .filter((c) => c.dangNeu)
-        .sort((a, b) => thuTuChieu.get(a.chieu)! - thuTuChieu.get(b.chieu)!)
-        .map((c) => c.nhan),
+      diemNoiBo: tinhDiemNoiBoLop(p.cacChieu, p.thanSatCanNhac ?? [], p.gioHoangDao ?? false),
+      quanHeDat: [
+        ...(p.gioHoangDao ? ["Đúng giờ hoàng đạo"] : []),
+        ...[...p.cacChieu]
+          .filter((c) => c.dangNeu)
+          .sort((a, b) => thuTuChieu.get(a.chieu)! - thuTuChieu.get(b.chieu)!)
+          .map((c) => c.nhan),
+      ],
       thuHang: 0,
     }))
     .sort((a, b) => (a.cachCuc.lop !== b.cachCuc.lop ? a.cachCuc.lop - b.cachCuc.lop : b.diemNoiBo - a.diemNoiBo))
