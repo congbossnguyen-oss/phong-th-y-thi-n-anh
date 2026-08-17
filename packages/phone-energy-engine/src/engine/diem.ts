@@ -120,42 +120,76 @@ export function tinhDiemTongQuan(params: {
     });
   }
 
+  // Ranh giới ba số cuối. Một cặp có thể nằm TRỌN trong đuôi, hoặc chỉ vắt qua ranh giới (chữ số
+  // trái nằm ngoài, chữ số phải nằm trong) — hai trường hợp này không được tính như nhau.
+  const batDauDuoi = Math.max(0, params.soDaChuanHoa.length - 3);
+  const viTriDuoi = (c: KetQuaCap): "trọn trong đuôi" | "vắt qua đuôi" | "giữa dãy" => {
+    if (c.capGoc.viTriTrai >= batDauDuoi) return "trọn trong đuôi";
+    if (c.capGoc.viTriPhai >= batDauDuoi) return "vắt qua đuôi";
+    return "giữa dãy";
+  };
+
   // 2. Tỷ lệ cát/hung sau khi áp Cơ chế A. Hung đã được hoá giải tính như cát.
   //
   // Phục Vị bị LOẠI khỏi cả tử số lẫn mẫu số: bảng tra gốc tuy xếp nó vào nhóm cát tinh nhưng ghi
   // rõ chủ đề là "trung tính, giữ nguyên trạng", và mô tả của nó là trì trệ, thiếu động lực tiến
   // thủ. Tính Phục Vị như một cát tinh thật sẽ thổi phồng tỷ lệ cát của những dãy toàn Phục Vị —
   // đúng lỗi chủ dự án chỉ ra ở số 0945406666 ngày 2026-08-17.
+  //
+  // Chủ dự án chỉ tiếp 2026-08-17 ở số 0961676131: tỷ lệ này trước đây ĐẾM ĐẦU NGƯỜI — mỗi cặp một
+  // phiếu, bất kể mạnh yếu và bất kể nằm ở đâu. Sai hai chỗ so với chính nguyên tắc đã chốt:
+  //   • Bảng tra ghi rõ "cát tinh Cấp 1 mang lại hiệu quả tốt rõ rệt hơn, hung tinh Cấp 1 cũng gây
+  //     hại rõ rệt hơn Cấp 4" — nên phải nhân hệ số cấp độ.
+  //   • Ba số cuối là chỗ quyết định kết cục (SKILL Bước 3), đã được áp trọng số gấp 3 ở phần năm
+  //     mặt và cách cục, nhưng thang điểm tổng thì chưa — khiến một Thiên Y cấp 1 ở đuôi bị một
+  //     Tuyệt Mệnh ở đầu dãy triệt tiêu ngang phân.
   const capCoHuong = capGoc.filter((c) => c.ten !== "Phục Vị");
   if (capCoHuong.length > 0) {
-    const soCat = capCoHuong.filter((c) => c.catHung === "cát" || c.daHoaGiai).length;
-    const tyLe = soCat / capCoHuong.length;
+    let tongCat = 0;
+    let tongTatCa = 0;
+    for (const c of capCoHuong) {
+      const vt = viTriDuoi(c);
+      const trongSo =
+        HE_SO_CAP[c.capDo] * (vt === "trọn trong đuôi" ? 3 : vt === "vắt qua đuôi" ? 2 : 1);
+      tongTatCa += trongSo;
+      if (c.catHung === "cát" || c.daHoaGiai) tongCat += trongSo;
+    }
+    const tyLe = tongCat / tongTatCa;
     const d = lamTron((tyLe - 0.5) * 2 * w.tyLeCatHung);
     diem += d;
+    const soCat = capCoHuong.filter((c) => c.catHung === "cát" || c.daHoaGiai).length;
     thanhPhan.push({
       ten: "Tỷ lệ cát / hung toàn dãy",
       diem: d,
-      ghiChu: `${soCat} trên ${capCoHuong.length} cặp có hướng rõ ràng là cát (Phục Vị trung tính không tính vào đây).`,
+      ghiChu: `${soCat} trên ${capCoHuong.length} cặp có hướng rõ ràng là cát. Cặp càng mạnh (cấp 1) và càng gần ba số cuối thì càng nặng ký; Phục Vị trung tính không tính vào đây.`,
     });
   }
 
   // 3. Năng lượng ở 3 số đuôi — chỗ quyết định kết cục.
   if (capTrongDuoi.length > 0) {
     let tong = 0;
+    let tongTrongSo = 0;
     for (const c of capTrongDuoi) {
+      // Cặp chỉ vắt qua ranh giới (một chữ số nằm ngoài ba số cuối) chỉ được tính nửa phần — nó
+      // không thật sự là kết cục. Trước đây tính nguyên phần, nên ở 0961676131 một Lục Sát nửa
+      // trong nửa ngoài triệt tiêu mất một Thiên Y cấp 1 nằm trọn trong đuôi.
+      const phan = viTriDuoi(c) === "trọn trong đuôi" ? 1 : 0.5;
       const heSo = HE_SO_CAP[c.capDo];
       // Phục Vị ở đuôi KHÔNG được cộng điểm: kết bằng năng lượng trung tính nghĩa là mọi việc dừng
       // ở chỗ giữ nguyên trạng, không có kết quả rõ ràng.
       const huong = c.ten === "Phục Vị" ? 0 : c.catHung === "cát" ? 1 : -1;
-      tong += huong * heSo;
+      tong += huong * heSo * phan;
+      tongTrongSo += phan;
     }
-    const trungBinh = tong / capTrongDuoi.length;
+    const trungBinh = tongTrongSo === 0 ? 0 : tong / tongTrongSo;
     const d = lamTron(trungBinh * w.nangLuongDuoi);
     diem += d;
     thanhPhan.push({
       ten: "Năng lượng ba số đuôi",
       diem: d,
-      ghiChu: capTrongDuoi.map((c) => `${c.capGoc.cap} ${c.ten}`).join(", "),
+      ghiChu: capTrongDuoi
+        .map((c) => `${c.capGoc.cap} ${c.ten}${viTriDuoi(c) === "vắt qua đuôi" ? " (vắt qua ranh giới, tính nửa phần)" : ""}`)
+        .join(", "),
     });
   }
 
