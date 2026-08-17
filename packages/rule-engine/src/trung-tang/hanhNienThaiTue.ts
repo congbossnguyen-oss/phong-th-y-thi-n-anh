@@ -10,9 +10,13 @@
  * Tức đúng HAI khâu: tẩm liệm và hạ huyệt — KHÔNG mở rộng sang nhập quan hay đóng cá. Và mức
  * kiêng là tránh ra xa, mạnh hơn "đứng lánh, quay mặt đi" áp cho các nhóm tuổi khác.
  *
- * ⚠️ Bản OCR còn một câu đứt đoạn ngay sau đó: "Hoặc 6 tuổi này trong lúc tang ma của xóm, làng,
- * người táng" — có vẻ mở rộng sang cả đám tang hàng xóm/trong làng, nhưng chữ vỡ nên KHÔNG suy
- * đoán và KHÔNG cài. Cần chủ dự án xác nhận từ bản sách giấy.
+ * PHẠM VI — chủ dự án tra bản sách giấy và cấp nguyên văn câu mà bản OCR làm vỡ (2026-08-17):
+ *   "Hoặc 6 tuổi này trong lúc tang ma của làng xóm, bà con, trong lúc tẩm liệm, hạ táng không
+ *    nên ở gần huyệt."
+ *
+ * Tức phạm vi KHÔNG chỉ đám tang trong nhà: sáu tuổi này đi đám tang của làng xóm, bà con cũng
+ * phải tránh ở gần huyệt, vẫn đúng hai khâu tẩm liệm và hạ táng. Đây là điểm rộng hơn hẳn các
+ * nhóm tuổi khác (vốn chỉ xét trong tang lễ đang tính), nên phải nói rõ cho gia đình.
  *
  * Bảng gốc trong sách (tr. 63-67) bị lỗi OCR (cột lệch) nên KHÔNG dùng — bảng dưới đây là bảng
  * tra sẵn đầy đủ 60 dòng, đã đối chiếu khớp 100% với công thức gốc ("khởi Nhất Khảm tại năm kế
