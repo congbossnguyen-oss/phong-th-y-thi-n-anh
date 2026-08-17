@@ -10,7 +10,9 @@ import { GIA_GIO_LIEM_HA_HUYET, dinhDangTien } from "../../lib/payments/gia-cong
 // ⚠️ Module này CỐ Ý KHÔNG bắt đăng nhập (quyết định của Công), khác với Xem Ngày Cao Cấp:
 // khách dùng ngay lúc gia đình vừa có tang, thường nửa đêm và đang rối — bắt tạo tài khoản lúc đó
 // là rào cản sai chỗ. Kết quả truy cập bằng orderCode làm "vé".
-export const prerender = true;
+// Render phía máy chủ (không prerender tĩnh) để đọc được phiên đăng nhập — cần cho việc nhận
+// diện tài khoản QUẢN TRỊ ở dưới. Prerender thì `Astro.locals.user` luôn rỗng lúc build.
+export const prerender = false;
 
 const CHI_LIST = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"];
 // Cờ thử nghiệm: true = bỏ bước thanh toán, nộp form ra kết quả ngay (không tạo đơn thật).
@@ -18,7 +20,17 @@ const CHI_LIST = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "M�
 // thoại, mã khuyến mãi) phải ẩn đi lúc đang thử nghiệm, nếu không khách nhập mã, thấy báo giảm
 // giá thành công, rồi form lại nộp sang test-calculate: mã không đi đâu cả mà khách tưởng đã
 // dùng mất mã tặng. Script đọc lại cờ này qua data-test-mode trên thẻ form (1 nguồn sự thật).
-const TEST_MODE = true;
+//
+// ⚠️ CHỈ TẮT THỬ NGHIỆM CHO TÀI KHOẢN QUẢN TRỊ.
+//
+// Chủ dự án cần test trọn luồng thu phí (tạo đơn → xác nhận → trả kết quả → gửi email), nhưng
+// tắt hẳn cờ này thì bất kỳ khách nào vào đúng link cũng bị thu tiền thật — mà module vẫn đang
+// gỡ khỏi menu công khai, tức chưa sẵn sàng mở bán. Nên:
+//   - Quản trị  → đi LUỒNG THẬT, đơn 0đ tự xác nhận (xem `laQuanTri` ở checkout-cong-cu.ts).
+//   - Khách     → giữ nguyên chế độ thử nghiệm, không tạo đơn, không thu tiền.
+// Muốn mở bán thật thì đổi `TEST_MODE` thành `false` cứng.
+const laQuanTri = Astro.locals.user?.isAdmin === true;
+const TEST_MODE = !laQuanTri;
 
 const TOOL_SLUG = "gio-liem-ha-huyet";
 // Hai bậc giá — xem ghi chú "định tuyến, không phải upsell" ở lib/payments/gia-cong-cu.ts.
@@ -50,7 +62,16 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
   <Container class="py-16">
     <div class="mx-auto max-w-2xl">
       <div class="mb-4 rounded-(--radius-card) border-2 border-amber-400 bg-amber-50 p-4 text-sm font-medium text-amber-800">
-        🧪 ĐANG THỬ NGHIỆM NỘI BỘ — tạm gỡ khỏi menu công khai, tạm bỏ bước thanh toán để test nhanh. Nộp form là ra kết quả ngay, không tạo đơn hàng thật.
+        {laQuanTri ? (
+          <>
+            🔑 ĐANG XEM BẰNG TÀI KHOẢN QUẢN TRỊ — chạy TRỌN luồng thu phí thật (tạo đơn → xác nhận → trả kết quả → gửi email),
+            nhưng đơn được miễn phí nên không phải chuyển khoản. Đơn kiểm thử không vào sổ doanh thu.
+          </>
+        ) : (
+          <>
+            🧪 ĐANG THỬ NGHIỆM NỘI BỘ — tạm gỡ khỏi menu công khai, tạm bỏ bước thanh toán để test nhanh. Nộp form là ra kết quả ngay, không tạo đơn hàng thật.
+          </>
+        )}
       </div>
       {/* Phạm vi áp dụng — chủ dự án yêu cầu 2026-08-16 ghi ngay đầu module. Nguồn sách ghi rõ ở
       tiêu đề mục: "Tính giờ nhập liệm, hạ huyệt (DÙNG CHO TRƯỜNG HỢP KHÔNG TRÙNG TANG)". Gia đình
