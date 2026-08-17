@@ -163,8 +163,9 @@ export type {
   KetQuaCongKiemDayDu,
 } from "./processing/phase2CongKiemToaHuong.js";
 export { apDungPhase2 } from "./processing/phase2ApDung.js";
-export { calculateCuoiHoiRange } from "./processing/cuoiHoi.js";
+export { calculateCuoiHoiRange, calculateGioCuoiHoi } from "./processing/cuoiHoi.js";
 export type { CuoiHoiRangeInput, CuoiHoiRangeResult, CuoiHoiNgay } from "./processing/cuoiHoi.js";
+export type { CuoiHoiGioInput, CuoiHoiGioResult, CuoiHoiGio } from "./processing/cuoiHoi.js";
 export type { Phase2Input, Phase2Output, PhuongAnBiLoai } from "./processing/phase2ApDung.js";
 export type {
   LoaiViec,

@@ -7,8 +7,8 @@
  * ⚠️ Dùng lại toàn bộ tầng dùng chung (Scoring, TrachNhat, getSolarTerms) — không số hoá lại. Xem
  * ghi chú khảo sát ở `packages/rule-engine/src/cuoi-hoi/cuoiHoi.ts`.
  */
-import { getSolarTerms, getSolarDateFromLunar, getLunarDate, type Data } from "@thien-anh/calendar-core";
-import { CuoiHoi, Scoring } from "@thien-anh/rule-engine";
+import { getSolarTerms, getSolarDateFromLunar, getLunarDate, Data } from "@thien-anh/calendar-core";
+import { CuoiHoi, Scoring, TrachNhat } from "@thien-anh/rule-engine";
 import { tinhTuTru } from "./tuTru.js";
 import { tinhNgayInfo } from "./ngayInfo.js";
 
@@ -81,6 +81,141 @@ function laThangDu(lunar: { year: number; month: number; day: number; isLeapMont
   const sau29 = new Date(jdMung1 + 29 * 86_400_000);
   const lunarSau29 = getLunarDate({ year: sau29.getUTCFullYear(), month: sau29.getUTCMonth() + 1, day: sau29.getUTCDate(), hour: 12, timeZone });
   return lunarSau29.day === 30;
+}
+
+/** Khung giờ dương lịch của 12 giờ Địa Chi (index 0=Tý ... 11=Hợi). */
+const KHUNG_GIO: readonly string[] = [
+  "23:00–01:00", "01:00–03:00", "03:00–05:00", "05:00–07:00",
+  "07:00–09:00", "09:00–11:00", "11:00–13:00", "13:00–15:00",
+  "15:00–17:00", "17:00–19:00", "19:00–21:00", "21:00–23:00",
+];
+
+export interface CuoiHoiGioInput {
+  namSinhCoDau: number;
+  namSinhChuRe: number;
+  /** Ngày cưới đã chọn (dương lịch) — thường là một ngày lấy từ kết quả tầng ngày. */
+  solarDate: { year: number; month: number; day: number };
+  nghiLe: CuoiHoi.NghiLeCuoiHoi;
+  uuTien?: CuoiHoi.UuTienCuoiHoi;
+  timeZone: string;
+  /** Số giờ trả về sau xếp hạng, mặc định 12 (đủ cả ngày). */
+  soGioTraVe?: number;
+}
+
+export interface CuoiHoiGio {
+  chiGio: Chi;
+  khungGio: string;
+  diemCoDau: number;
+  diemChuRe: number;
+  /** Điểm cặp đôi chỉ tính riêng phần GIỜ (0-10). */
+  diemGio: number;
+  /** Điểm tổng hợp đã gộp ngày + giờ theo tỷ trọng nghi lễ (0-10). */
+  diemTongHop: number;
+  hang: CuoiHoi.HangCuoiHoi;
+  tenHang: string;
+  ghiChu: string[];
+}
+
+export interface CuoiHoiGioResult {
+  solarDate: { year: number; month: number; day: number };
+  lunarDate: { year: number; month: number; day: number; isLeapMonth: boolean };
+  chiNgay: Chi;
+  tenNghiLe: string;
+  /** Điểm cặp đôi của NGÀY (0-10) — nền để gộp với từng giờ. */
+  diemNgay: number;
+  /** Ngày này có phạm đại kỵ (loại thẳng ở tầng ngày) không — để cảnh báo. */
+  ngayBiLoai: boolean;
+  lyDoLoaiNgay: string[];
+  /** Cảnh báo của ngày (Chu Đường / Hoà Thượng Sát / Khí Vãng Vong — chỉ thành hôn). */
+  canhBaoNgay: string[];
+  gioXepHang: CuoiHoiGio[];
+}
+
+/**
+ * Chấm điểm 12 giờ trong một ngày cưới đã chọn, gộp với điểm ngày → điểm tổng hợp.
+ *
+ * Dùng cho tầng "chọn giờ" sau khi khách đã chọn được ngày ở tầng trước. Mọi Can Chi / hoàng đạo
+ * giờ / Tiểu Lục Nhâm tính THẬT rồi gọi hàm thuần `CuoiHoi.chamDiemGioCuoiHoi`.
+ */
+export function calculateGioCuoiHoi(input: CuoiHoiGioInput): CuoiHoiGioResult {
+  const coDau = Scoring.getNguoiTuoi(input.namSinhCoDau);
+  const chuRe = Scoring.getNguoiTuoi(input.namSinhChuRe);
+  const uuTien = input.uuTien ?? "can-bang";
+
+  const tuTru = tinhTuTru({ solarDate: input.solarDate, timeZone: input.timeZone });
+  const ngayInfo = tinhNgayInfo(tuTru);
+
+  const chiNgay = tuTru.tuTru.ngay.chi as Chi;
+  const dayCan = tuTru.tuTru.ngay.can as Data.Can;
+  const chiNgayIndex = Data.CHI.indexOf(chiNgay);
+
+  // ── Điểm NGÀY (tái dùng đúng tầng ngày để làm nền gộp) ──
+  const diemNgayCoDau = Scoring.calculateXuatHanhCaNhanDayPersonal(coDau, dayCan, chiNgay).diem;
+  const diemNgayChuRe = Scoring.calculateXuatHanhCaNhanDayPersonal(chuRe, dayCan, chiNgay).diem;
+  const thangDu = laThangDu(tuTru.lunarDate, input.timeZone);
+  const tiet = tietVaNgayThu(input.solarDate.year, tuTru.julianDayNumber);
+
+  const kqNgay = CuoiHoi.chamDiemNgayCuoiHoi(
+    {
+      chiNgay,
+      diemNgayCoDau,
+      diemNgayChuRe,
+      hoangDao: ngayInfo.hoangDaoHacDaoNgay === "hoàng đạo",
+      trucTot: ["Thành", "Khai", "Mãn", "Bình", "Định"].includes(ngayInfo.truc.name),
+      tuCat: ngayInfo.nhiThapBatTu.catHung === "cát",
+      catTinhCoMat: ngayInfo.thanSat.filter((t) => t.catHung === "cát").map((t) => t.name),
+      thanSatCoMat: ngayInfo.thanSat.map((t) => t.name),
+      chiNamCoDau: coDau.chi,
+      chiNamChuRe: chuRe.chi,
+      chiNamXet: tuTru.tuTru.nam.chi as Chi,
+      chiNamSinhChuRe: chuRe.chi,
+      ngayAmLich: tuTru.lunarDate.day,
+      thangDu,
+      ...(tiet ? { tietKhi: tiet.tiet, ngayThuTuTiet: tiet.ngayThu } : {}),
+    },
+    input.nghiLe,
+    uuTien,
+  );
+
+  // ── 12 GIỜ ──
+  const gioXepHang: CuoiHoiGio[] = [];
+  for (let h = 0; h < 12; h++) {
+    const chiGio = Data.CHI[h]!;
+    const hoangDaoCat = TrachNhat.getHoangDaoHacDaoGio(chiNgayIndex, h).catHung === "cát";
+    const tieuLucNhamCat = TrachNhat.getTieuLucNham(tuTru.lunarDate.month, tuTru.lunarDate.day, h).hour.catHung === "cát";
+
+    const kqGio = CuoiHoi.chamDiemGioCuoiHoi(
+      { chiGio, chiNamCoDau: coDau.chi, chiNamChuRe: chuRe.chi, hoangDaoCat, tieuLucNhamCat },
+      uuTien,
+    );
+
+    const diemTongHop = CuoiHoi.ketHopNgayGio(kqNgay.diemCapDoi, kqGio.diemCapDoi, input.nghiLe);
+    gioXepHang.push({
+      chiGio,
+      khungGio: KHUNG_GIO[h]!,
+      diemCoDau: kqGio.diemCoDau,
+      diemChuRe: kqGio.diemChuRe,
+      diemGio: kqGio.diemCapDoi,
+      diemTongHop,
+      hang: CuoiHoi.xepHangCuoiHoi(diemTongHop),
+      tenHang: CuoiHoi.TEN_HANG[CuoiHoi.xepHangCuoiHoi(diemTongHop)],
+      ghiChu: kqGio.ghiChu,
+    });
+  }
+
+  gioXepHang.sort((a, b) => b.diemTongHop - a.diemTongHop);
+
+  return {
+    solarDate: input.solarDate,
+    lunarDate: tuTru.lunarDate,
+    chiNgay,
+    tenNghiLe: CuoiHoi.TEN_NGHI_LE[input.nghiLe],
+    diemNgay: kqNgay.diemCapDoi,
+    ngayBiLoai: kqNgay.loai,
+    lyDoLoaiNgay: kqNgay.lyDoLoai,
+    canhBaoNgay: kqNgay.canhBao,
+    gioXepHang: gioXepHang.slice(0, input.soGioTraVe ?? 12),
+  };
 }
 
 export function calculateCuoiHoiRange(input: CuoiHoiRangeInput): CuoiHoiRangeResult {

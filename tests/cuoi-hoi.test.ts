@@ -346,3 +346,48 @@ describe("Khí Vãng Vong (công thức chủ dự án cấp 2026-08-17)", () =>
     expect(CuoiHoi.tietCoKhiVangVong("Lập Xuân")).toBe(true);
   });
 });
+
+// ─────────────────────────────────────────────────────────────────────────────
+// TẦNG GIỜ (mục 22, 24)
+// ─────────────────────────────────────────────────────────────────────────────
+describe("Chấm điểm GIỜ cưới hỏi (mục 22)", () => {
+  it("giờ ↔ người: tam hợp cao hơn lục hợp, lục xung thấp nhất", () => {
+    // Thân-Tý-Thìn tam hợp; Tý-Sửu lục hợp; Tý-Ngọ lục xung.
+    expect(CuoiHoi.diemGioVoiNguoi("Thân", "Tý")).toBeGreaterThan(CuoiHoi.diemGioVoiNguoi("Sửu", "Tý"));
+    expect(CuoiHoi.diemGioVoiNguoi("Sửu", "Tý")).toBeGreaterThan(CuoiHoi.diemGioVoiNguoi("Ngọ", "Tý"));
+    expect(CuoiHoi.diemGioVoiNguoi("Ngọ", "Tý")).toBeLessThan(5);
+  });
+
+  it("giờ hoàng đạo + Tiểu Lục Nhâm cát nâng điểm so với hắc đạo + hung", () => {
+    const base = { chiGio: "Tý" as const, chiNamCoDau: "Tý" as const, chiNamChuRe: "Tý" as const };
+    const tot = CuoiHoi.chamDiemGioCuoiHoi({ ...base, hoangDaoCat: true, tieuLucNhamCat: true });
+    const xau = CuoiHoi.chamDiemGioCuoiHoi({ ...base, hoangDaoCat: false, tieuLucNhamCat: false });
+    expect(tot.diemCapDoi).toBeGreaterThan(xau.diemCapDoi);
+    expect(tot.ghiChu).toContain("Giờ hoàng đạo");
+    expect(tot.ghiChu).toContain("Tiểu Lục Nhâm cát");
+  });
+
+  it("cân điểm hai người: giờ lệch (hợp cô dâu, xung chú rể) thua giờ đều cho cả hai", () => {
+    const chung = { hoangDaoCat: true, tieuLucNhamCat: true };
+    // Cô dâu Tý, chú rể Thìn (tam hợp với nhau). Giờ Thân: tam hợp cả hai (Thân-Tý-Thìn) → đều, cao.
+    const deu = CuoiHoi.chamDiemGioCuoiHoi({ chiGio: "Thân", chiNamCoDau: "Tý", chiNamChuRe: "Thìn", ...chung });
+    // Giờ Ngọ: lục xung Tý (cô dâu xấu), trung tính Thìn (chú rể tạm) → lệch mạnh.
+    const lech = CuoiHoi.chamDiemGioCuoiHoi({ chiGio: "Ngọ", chiNamCoDau: "Tý", chiNamChuRe: "Thìn", ...chung });
+    expect(deu.diemCapDoi).toBeGreaterThan(lech.diemCapDoi);
+  });
+});
+
+describe("Gộp ngày + giờ (mục 24)", () => {
+  it("đón dâu nặng giờ hơn thành hôn: cùng ngày tốt + giờ xấu thì đón dâu tụt sâu hơn", () => {
+    const ngayTot = 9;
+    const gioXau = 3;
+    const donDau = CuoiHoi.ketHopNgayGio(ngayTot, gioXau, "don-dau"); // 45/55
+    const thanhHon = CuoiHoi.ketHopNgayGio(ngayTot, gioXau, "thanh-hon"); // 60/40
+    expect(donDau).toBeLessThan(thanhHon);
+  });
+
+  it("nằm trong [0,10] và bằng trung bình có trọng số", () => {
+    // an-hoi 60/40: (8*60 + 6*40)/100 = 7.2
+    expect(CuoiHoi.ketHopNgayGio(8, 6, "an-hoi")).toBeCloseTo(7.2, 5);
+  });
+});

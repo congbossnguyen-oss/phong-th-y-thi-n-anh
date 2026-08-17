@@ -189,6 +189,18 @@ export const VIEC_TRACH_NHAT_THEO_NGHI_LE: Readonly<Record<NghiLeCuoiHoi, readon
   "dang-ky-ket-hon": ["ký kết", "giao dịch", "giá thú"],
 };
 
+/**
+ * Gộp điểm NGÀY và điểm GIỜ thành điểm tổng hợp cho một nghi lễ (mục 24).
+ *
+ * Tỷ trọng lấy từ `TY_TRONG_NGAY_GIO` — đón dâu nặng giờ hơn, ăn hỏi/thành hôn nặng ngày hơn.
+ * Cả hai đầu vào trên thang 0-10, trả về 0-10.
+ */
+export function ketHopNgayGio(diemNgay10: number, diemGio10: number, nghiLe: NghiLeCuoiHoi): number {
+  const ty = TY_TRONG_NGAY_GIO[nghiLe];
+  const diem = (diemNgay10 * ty.ngay + diemGio10 * ty.gio) / (ty.ngay + ty.gio);
+  return Math.max(0, Math.min(10, Math.round(diem * 10) / 10));
+}
+
 export interface DiemHyTinh {
   /** 0-100, đã gộp cả 3 lớp và thưởng song hỷ. */
   diem: number;
