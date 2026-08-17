@@ -8,18 +8,18 @@
  *   ④ trọng số        → `tinhDiemNoiBoLop` (chỉ để xếp hạng NỘI BỘ trong cùng lớp)
  *   ⑤ xếp hạng        → `xepHangPhuongAn` (lớp trước, điểm sau — không bao giờ so xuyên lớp)
  *
- * ⚠️ ĐIỂM SUY LUẬN CẦN CHỦ DỰ ÁN XÁC NHẬN — đặc tả mục 3 chỉ ghi thang lớp ("Nhất Quái Thuần
- * Thanh → Hà Đồ → Hợp Thập → thấp hơn") mà không nói rõ lớp xét trên TẬP nào. Có 3 cách hiểu, đã
- * đo thực tế trên 108 ứng viên × 24 sơn (2026-08-16) rồi mới chọn:
+ * ⚠️ TẬP XÉT LỚP — CHỦ DỰ ÁN CHỐT 2026-08-17: "tính tọa nhé", tức xếp lớp trên tập
+ * {Tọa + trụ Năm + trụ Tháng + trụ Ngày + trụ Giờ}.
  *
- *   A. Tập {Tọa + các trụ}   → 98.0% rơi lớp 4. Phân lớp gần như là hằng số, mất hết tác dụng.
- *   B. Chỉ cặp Ngày ↔ Tọa    → phân bố đẹp, NHƯNG trùng đúng CHIỀU 1 ở Bước ③, mà đặc tả mục 4
- *                              nói rõ hai thang phải khác nhau. Loại vì mâu thuẫn nội tại.
- *   C. Tập các TRỤ với nhau  → lớp 1-3 chiếm 17.6% (4 trụ) — hiếm nhưng đạt được, đúng tinh thần
- *      (KHÔNG gồm Tọa)         "Nhất Quái Thuần Thanh" là cách quý; và không giẫm lên chiều 1.
+ * Đặc tả mục 3 không nói rõ tập nào nên trước đó đã đo thử 3 cách trên 108 ứng viên × 24 sơn:
  *
- * Đang dùng CÁCH C. Muốn đổi thì sửa đúng một chỗ: lời gọi `xepLopCachCuc` trong
- * `phanLopPhuongAn` (thêm `toa.hknh` vào mảng là quay về cách A).
+ *   A. Tập {Tọa + các trụ}   → 98.0% rơi lớp 4  ← ĐANG DÙNG (chủ dự án chốt)
+ *   B. Chỉ cặp Ngày ↔ Tọa    → phân bố đẹp nhưng trùng đúng CHIỀU 1 ở Bước ③. Loại.
+ *   C. Tập các trụ, bỏ Tọa   → lớp 1-3 chiếm 17.6%.
+ *
+ * Hệ quả đã báo và chủ dự án vẫn chọn A: gần như mọi phương án cùng rơi "Cách thấp hơn", nên
+ * việc phân hơn kém giữa các phương án chủ yếu do điểm 7 chiều ở Bước ④ quyết định, chứ không
+ * do lớp. Đây là lựa chọn chuyên môn, không phải giới hạn kỹ thuật.
  */
 import type { Data } from "@thien-anh/calendar-core";
 import {
@@ -136,8 +136,8 @@ export function phanLopPhuongAn(tuTru: TuTruPhuongAn, doSoToa: number): KetQuaCa
   // Tổ hợp tối đa 2^4 = 16 nhánh, duyệt hết là rẻ và chắc chắn đúng hơn heuristic chọn trước.
   const duyet = (i: number, dangChon: QueHknhQuaiVan[]): void => {
     if (i === ungVienMoiTru.length) {
-      // CÁCH C — xét các TRỤ với nhau, không gộp Tọa. Quan hệ với Tọa là việc của chiều 1 ở ③.
-      const lop = xepLopCachCuc(dangChon.map((q) => q.hknh));
+      // Gộp cả Tọa vào tập xét lớp (chủ dự án chốt 2026-08-17).
+      const lop = xepLopCachCuc([toa.hknh, ...dangChon.map((q) => q.hknh)]);
       if (totNhat === null || lop < totNhat.lop) totNhat = { lop, chon: [...dangChon] };
       return;
     }
