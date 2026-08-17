@@ -276,6 +276,13 @@ export async function generateHoSoTangLePdf(p: HoSoTangLeParams): Promise<Uint8A
     });
   }
 
+  // --- Giờ động quan ---
+  if (r.gioDongQuan) {
+    b.muc("Giờ động quan — di quan (giờ rời nhà đưa đi)");
+    b.dong(`Sớm nhất ${r.gioDongQuan.somNhat} — muộn nhất ${r.gioDongQuan.muonNhat}`, { size: 10, font: vua });
+    b.doan("Tính lùi từ giờ hạ huyệt phương án 1, đã trừ thời gian di chuyển và đệm đi sớm.", { size: 8.5, mau: MAU.mucNhat });
+  }
+
   // --- Ngày giờ hạ huyệt ---
   b.muc("Ngày giờ hạ huyệt");
   const haHuyet: any[] = r.ngayGioHaHuyet ?? [];
@@ -305,13 +312,6 @@ export async function generateHoSoTangLePdf(p: HoSoTangLeParams): Promise<Uint8A
       b.doan(`Hung tinh đã được cát tinh hoá: ${h.hungDaHoaGiai.join(", ")}`, { size: 8.5, x: LE + 14, font: nghieng, mau: MAU.son });
     }
   });
-
-  // --- Giờ động quan ---
-  if (r.gioDongQuan) {
-    b.muc("Giờ động quan (giờ rời nhà)");
-    b.dong(`Sớm nhất ${r.gioDongQuan.somNhat} — muộn nhất ${r.gioDongQuan.muonNhat}`, { size: 10, font: vua });
-    b.doan("Tính lùi từ giờ hạ huyệt phương án 1, đã trừ thời gian di chuyển và đệm đi sớm.", { size: 8.5, mau: MAU.mucNhat });
-  }
 
   // --- PHASE 2 ---
   if (p.phase2 && (p.phase2.ketCuc === "A" || p.phase2.ketCuc === "B")) {
