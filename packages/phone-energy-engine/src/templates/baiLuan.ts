@@ -85,13 +85,17 @@ export function dungBaiLuan(params: {
       `Cặp ${c.capGoc.cap} mang năng lượng ${c.ten} ${mucDoBangLoi(c.capDo)} — ${loiDongTinh(c.dongTinh)}.`,
     ];
     for (const h of c.hieuUng) {
-      phan.push(`Có số ${h.so} ${h.viTriTuongDoi} cặp này: ${h.moTa}.`);
+      const noiSo5 =
+        h.soLapLai !== undefined
+          ? ` (số 5 đọc thành Phục Vị ${h.soLapLai}${h.soLapLai})`
+          : "";
+      phan.push(`Có số ${h.so} ${h.viTriTuongDoi} cặp này${noiSo5}: ${h.moTa}.`);
       if (h.yNghiaLinhVuc) {
         phan.push(`Cụ thể ở mặt ${h.yNghiaLinhVuc}.`);
       }
       if (h.lamManhHungTinh) {
         phan.push("Đây là điểm cần lưu ý vì nó làm năng lượng xấu mạnh thêm chứ không giảm đi.");
-      } else if (c.catHung === "cát" && h.so === 5 && h.hieuUng === "khuếch đại") {
+      } else if (c.catHung === "cát" && h.so === 5) {
         // Số 5 làm mạnh lên bất kể gốc cát hay hung — gặp cát tinh thì đây là điểm cộng, phải nói
         // rõ chứ không chỉ cảnh báo một chiều khi gặp hung tinh.
         phan.push("Với một năng lượng tốt thì đây là điểm cộng — mặt lợi được nhân lên và bền hơn.");

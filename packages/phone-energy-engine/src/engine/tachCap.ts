@@ -91,19 +91,49 @@ function dienGiaiLinhVuc(ten: string): string {
   return phan.length > 0 ? phan.join(", ") : "";
 }
 
-/** Diễn giải hiệu ứng của số 5 theo vị trí — nguyên văn ý của mục 4b. */
+/**
+ * Chữ số mà một số 5 lặp lại — tức chữ số hợp lệ đứng ngay TRƯỚC nó.
+ *
+ * Một chuỗi 5 liền nhau cùng trỏ về một gốc: "1455" thì cả hai số 5 đều lặp lại số 4, vì bản thân
+ * số 5 đứng trước cũng đã là số 4 rồi.
+ *
+ * Trả `null` khi không xác định được — số 5 đứng đầu dãy (không có gì để lặp), hoặc chữ số đứng
+ * trước là số 0 (số 0 không mang năng lượng Bát Quái nên không có gì để nhân đôi). Hai trường hợp
+ * này tài liệu không nêu, và chủ dự án chốt là "không liên quan" — KHÔNG được suy diễn thêm.
+ */
+function goCuaSo5(so: string, viTri5: number): number | null {
+  for (let i = viTri5 - 1; i >= 0; i--) {
+    const d = Number(so[i]);
+    if (d === 5) continue;
+    return d === 0 ? null : i;
+  }
+  return null;
+}
+
+/**
+ * Diễn giải hiệu ứng của số 5.
+ *
+ * Chủ dự án chốt 2026-08-17 cơ chế thật của số 5: nó là **Phục Vị của chữ số đứng ngay trước nó**
+ * ("chủ yếu phải xem số trước số 5 là gì mới biết được"). Ba ví dụ chuẩn:
+ *
+ * - `985` → 5 lặp số 8 thành Phục Vị 88, đứng NGAY SAU cặp 98 nên **kích phát** cặp 98 lên.
+ * - `859` → 5 lặp số 8 thành Phục Vị 88, nằm GIỮA cặp 89 nên **kéo dài** cặp 89 ra.
+ * - `598` → số 5 đứng đầu dãy, không có gì trước để lặp nên **không liên quan** tới cặp 98.
+ *
+ * Vì số 5 luôn dính vào chữ số bên TRÁI, nó không bao giờ tác động lên cặp nằm bên phải nó. Nhóm
+ * "trước" của bản cũ vì thế bị bỏ hẳn, chứ không phải đổi thành "giữ nguyên".
+ *
+ * Cơ chế này khớp với chính mô tả Phục Vị trong `moTa8Tinh.ts`: "Phục Vị nối mạch và khuếch đại
+ * năng lượng đứng ngay trước nó — trước là cát thì càng cát, trước là hung thì càng hung".
+ */
 const HIEU_UNG_5 = {
-  trước: {
-    hieuUng: "giữ nguyên" as const,
-    moTa: "số 5 đứng trước nên năng lượng giữ nguyên tính chất, không đổi",
-  },
   giữa: {
-    hieuUng: "đột hiển" as const,
-    moTa: "số 5 chen vào giữa khiến năng lượng này bộc lộ rõ ra ngoài, nhìn là thấy ngay",
+    hieuUng: "kéo dài" as const,
+    moTa: "số 5 lặp lại chữ số đứng trước thành Phục Vị, nối mạch cho cặp này kéo dài thêm ra",
   },
   sau: {
-    hieuUng: "khuếch đại" as const,
-    moTa: "số 5 đứng ngay sau làm năng lượng mạnh gấp đôi và kéo dài hơn bình thường",
+    hieuUng: "kích phát" as const,
+    moTa: "số 5 lặp lại chữ số đứng trước thành Phục Vị, kích phát cặp này bộc lộ mạnh ra ngoài",
   },
 };
 
@@ -124,10 +154,14 @@ const HIEU_UNG_0 = {
 };
 
 /**
- * Lớp 2 — với mỗi số 5 / số 0, xác định nó đứng trước, giữa hay ngay sau từng cặp gốc.
+ * Lớp 2 — với mỗi số 5 / số 0, xác định quan hệ của nó với một cặp gốc.
  *
- * Một chữ số có thể vừa là "giữa" của cặp này vừa là "trước" của cặp kế — tài liệu mô tả hiệu ứng
- * theo TỪNG CẶP, nên trả về đủ các quan hệ thay vì ép chọn một.
+ * Hai chữ số đi theo hai cơ chế KHÁC NHAU, không dùng chung công thức vị trí:
+ *
+ * - **Số 0** giữ nguyên cách cũ: xét nó đứng trước / giữa / ngay sau cặp. Một số 0 có thể vừa là
+ *   "giữa" của cặp này vừa là "trước" của cặp kế, nên trả về đủ các quan hệ.
+ * - **Số 5** bám vào chữ số bên TRÁI nó (xem `HIEU_UNG_5`): nó chỉ tác động lên đúng cặp chứa chữ
+ *   số đó, và không bao giờ tác động lên cặp nằm bên phải.
  */
 export function tinhHieuUngSo50(soDaChuanHoa: string, capGoc: CapGoc): HieuUngSo50[] {
   const ds: HieuUngSo50[] = [];
@@ -139,9 +173,21 @@ export function tinhHieuUngSo50(soDaChuanHoa: string, capGoc: CapGoc): HieuUngSo
     if (!SO_NGOAI_BAT_QUAI.has(d)) continue;
 
     let viTriTuongDoi: "trước" | "giữa" | "sau" | null = null;
-    if (i > capGoc.viTriTrai && i < capGoc.viTriPhai) viTriTuongDoi = "giữa";
-    else if (i === capGoc.viTriTrai - 1) viTriTuongDoi = "trước";
-    else if (i > capGoc.viTriPhai) {
+    let soLapLai: number | undefined;
+
+    if (d === 5) {
+      const iGoc = goCuaSo5(soDaChuanHoa, i);
+      if (iGoc === null) continue; // số 5 đầu dãy hoặc sau số 0 — không liên quan cặp nào.
+      // Số 5 chỉ nói chuyện với cặp chứa chính chữ số nó lặp lại.
+      if (iGoc === capGoc.viTriTrai) viTriTuongDoi = "giữa";
+      else if (iGoc === capGoc.viTriPhai) viTriTuongDoi = "sau";
+      else continue;
+      soLapLai = Number(soDaChuanHoa[iGoc]);
+    } else if (i > capGoc.viTriTrai && i < capGoc.viTriPhai) {
+      viTriTuongDoi = "giữa";
+    } else if (i === capGoc.viTriTrai - 1) {
+      viTriTuongDoi = "trước";
+    } else if (i > capGoc.viTriPhai) {
       // "Ngay sau" tính cả một chuỗi 0/5 liền nhau ngay sau cặp — tài liệu nói chuỗi dài thì hiệu
       // ứng kéo dài tương ứng, nên vẫn thuộc nhóm "sau".
       const chenGiua = soDaChuanHoa
@@ -152,12 +198,14 @@ export function tinhHieuUngSo50(soDaChuanHoa: string, capGoc: CapGoc): HieuUngSo
     }
     if (!viTriTuongDoi) continue;
 
-    const bang = d === 5 ? HIEU_UNG_5 : HIEU_UNG_0;
-    const { hieuUng, moTa } = bang[viTriTuongDoi];
+    const { hieuUng, moTa } =
+      d === 5
+        ? HIEU_UNG_5[viTriTuongDoi as "giữa" | "sau"]
+        : HIEU_UNG_0[viTriTuongDoi];
 
-    // Hung tinh gặp 0 hoặc 5 đều nguy hiểm hơn (nguyên tắc chốt mục 4b) — trừ số 5 đứng trước, vốn
-    // được nêu rõ là giữ nguyên, không đổi.
-    const lamManhHungTinh = laHung && !(d === 5 && viTriTuongDoi === "trước");
+    // Số 5 chỉ còn hai hiệu ứng kích phát/kéo dài — cả hai đều làm hung tinh mạnh thêm. Số 0 đi
+    // cùng hung tinh cũng luôn nguy hiểm hơn (nguyên tắc chốt mục 4b).
+    const lamManhHungTinh = laHung;
 
     // Số 0 ẩn hoặc làm mất năng lượng thì nói rõ mất ở MẶT NÀO của cuộc sống — dựa vào lĩnh vực
     // của chính tinh đó. Chỉ áp cho số 0, và chỉ khi hiệu ứng thực sự là ẩn/mất.
@@ -173,6 +221,7 @@ export function tinhHieuUngSo50(soDaChuanHoa: string, capGoc: CapGoc): HieuUngSo
       hieuUng,
       moTa,
       lamManhHungTinh,
+      ...(soLapLai !== undefined ? { soLapLai } : {}),
       ...(yNghiaLinhVuc ? { yNghiaLinhVuc } : {}),
     });
   }

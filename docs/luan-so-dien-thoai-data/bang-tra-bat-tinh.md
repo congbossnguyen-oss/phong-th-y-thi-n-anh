@@ -54,6 +54,32 @@ Nguyên tắc chung: **số 5 = Hỏa dương (khuếch đại/x2 năng lượng
 
 **Với hung tinh, số 5 đứng sau gần như chắc chắn (~100%) sẽ khuếch đại x2 mức độ nguy hiểm** — đây là hiệu ứng cần cảnh báo mạnh nhất trong mục 4b.
 
+> #### ⚠️ CHỦ DỰ ÁN CHỐT 2026-08-17 — cơ chế thật của số 5 (bảng trên giữ nguyên làm tư liệu, engine cài theo mục này)
+>
+> Bảng trên mô tả hiệu ứng theo **vị trí tương đối** với cặp gốc. Cách đọc đó không đủ, vì nó không
+> nói được số 5 lấy năng lượng từ đâu. Cơ chế đúng:
+>
+> **Số 5 lặp lại chữ số đứng ngay TRƯỚC nó, tạo thành một cặp Phục Vị.** Nguyên văn: *"chủ yếu phải
+> xem số trước số 5 là gì mới biết được"*. Điều này khớp với chính mô tả Phục Vị trong
+> `mo-ta-8-tinh.md`: "Phục Vị nối mạch và khuếch đại năng lượng đứng ngay trước nó".
+>
+> | Ví dụ | Số 5 lặp | Cặp gốc | Quan hệ | Hiệu ứng |
+> |---|---|---|---|---|
+> | `985` | số 8 → Phục Vị 88 | 98 | Phục Vị đứng **ngay sau** cặp | **kích phát** cặp 98 bộc lộ mạnh ra ngoài |
+> | `859` | số 8 → Phục Vị 88 | 89 | Phục Vị nằm **giữa** cặp | **kéo dài** cặp 89 thêm ra |
+> | `598` | *không có gì phía trước* | 98 | — | **không liên quan** |
+>
+> Hệ quả bắt buộc: vì số 5 luôn dính vào chữ số bên TRÁI, **nó không bao giờ tác động lên cặp nằm
+> bên phải nó**. Dòng "Đứng **trước** cặp gốc → giữ nguyên" của bảng cũ vì thế bị bỏ hẳn, chứ không
+> phải đổi thành hiệu ứng khác. Với `3598`, số 5 lặp số 3 nên chỉ chạm vào cặp 39, không đụng cặp 98.
+>
+> Hai trường hợp tài liệu KHÔNG nêu, engine để trống chứ không suy diễn: số 5 đứng đầu dãy (không có
+> gì để lặp) và số 5 đi ngay sau số 0 (số 0 không mang năng lượng Bát Quái nên không có gì để nhân
+> đôi). Một chuỗi số 5 liền nhau thì cùng trỏ về một gốc — `1455` thì cả hai số 5 đều là số 4.
+>
+> Tên hiệu ứng trong engine đổi theo đúng chữ chủ dự án dùng: `đột hiển` → **`kéo dài`**,
+> `khuếch đại` → **`kích phát`**. Bảng số 0 bên dưới KHÔNG đổi.
+
 ### Số 0
 
 | Vị trí số 0 | Hiệu ứng | Ví dụ |

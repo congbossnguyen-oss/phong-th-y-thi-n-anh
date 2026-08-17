@@ -59,8 +59,8 @@ export interface CapGoc {
 /** Hiệu ứng của một số 5 hoặc số 0 lên một cặp gốc. */
 export type LoaiHieuUng =
   | "giữ nguyên"
-  | "đột hiển"
-  | "khuếch đại"
+  | "kích phát"
+  | "kéo dài"
   | "ẩn ngầm"
   | "mất hẳn";
 
@@ -74,6 +74,11 @@ export interface HieuUngSo50 {
   moTa: string;
   /** true khi hiệu ứng này làm một hung tinh mạnh lên — cần cảnh báo đậm. */
   lamManhHungTinh: boolean;
+  /**
+   * Chỉ có với số 5: chữ số đứng ngay trước nó mà nó lặp lại để thành Phục Vị.
+   * Vd "985" → soLapLai = 8, tức 8-5 đọc thành Phục Vị 88.
+   */
+  soLapLai?: number;
   /**
    * Số 0 ẩn hoặc làm mất năng lượng thì cụ thể là mất ở mặt nào của cuộc sống.
    * Rỗng với số 5, và rỗng với cặp Phục Vị (bảng gốc không gán lĩnh vực cho Phục Vị).
