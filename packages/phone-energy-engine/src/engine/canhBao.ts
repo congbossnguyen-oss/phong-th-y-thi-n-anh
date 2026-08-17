@@ -46,7 +46,7 @@ export function tongHopCanhBao(
     ds.push({
       ma: "tu_dai_giai_khong",
       tieuDe: "Đuôi số là số 0 — tứ đại giai không",
-      moTa: "Đây là cảnh báo nặng: dù bận rộn đến đâu thì cuối cùng vẫn dễ về con số không, hoặc không tài phú, hoặc không sự nghiệp, hoặc không tình cảm, hoặc không sức khỏe.",
+      moTa: "Đây là cảnh báo nặng: dù bận rộn đến đâu thì cuối cùng vẫn dễ về con số không, hoặc không tài phú, hoặc không sự nghiệp, hoặc không tình cảm, hoặc không sức khỏe. Riêng người đi tu, sống hướng nội, buông bỏ danh lợi thì lại hợp với đuôi số này.",
       mucDo: "nặng",
     });
   }

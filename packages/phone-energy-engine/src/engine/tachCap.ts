@@ -14,6 +14,7 @@
 import { traCap } from "../data/batTinh.js";
 import type { CapGoc, HieuUngSo50, KetQuaCap } from "../types.js";
 import { dongHayTinh } from "../data/batTinh.js";
+import { LINH_VUC_THEO_TINH, Y_NGHIA_SO_0_THEO_LINH_VUC } from "../data/luuYDacBiet.js";
 
 /** Chữ số không tham gia Bát Quái Hậu Thiên nên bị nhảy qua khi ghép cặp gốc. */
 const SO_NGOAI_BAT_QUAI = new Set([0, 5]);
@@ -70,6 +71,24 @@ export function tachCapGoc(soDaChuanHoa: string): CapGoc[] {
     });
   }
   return ds;
+}
+
+/**
+ * Số 0 ẩn/làm mất năng lượng của một tinh thì cụ thể là mất ở mặt nào của cuộc sống.
+ *
+ * Ghép hai bảng đều lấy từ tài liệu: lĩnh vực của tinh (cột chủ đề bảng tra Bát tinh) và ý nghĩa số
+ * 0 trong từng lĩnh vực. Trả chuỗi rỗng nếu tinh đó không được bảng gốc gán lĩnh vực nào — Phục Vị
+ * rơi vào trường hợp này, và KHÔNG được gán bừa.
+ */
+function dienGiaiLinhVuc(ten: string): string {
+  const linhVuc = LINH_VUC_THEO_TINH[ten] ?? [];
+  const phan = linhVuc
+    .map((lv) => {
+      const y = Y_NGHIA_SO_0_THEO_LINH_VUC[lv];
+      return y ? `${lv} ${y}` : null;
+    })
+    .filter((x): x is string => x !== null);
+  return phan.length > 0 ? phan.join(", ") : "";
 }
 
 /** Diễn giải hiệu ứng của số 5 theo vị trí — nguyên văn ý của mục 4b. */
@@ -140,6 +159,13 @@ export function tinhHieuUngSo50(soDaChuanHoa: string, capGoc: CapGoc): HieuUngSo
     // được nêu rõ là giữ nguyên, không đổi.
     const lamManhHungTinh = laHung && !(d === 5 && viTriTuongDoi === "trước");
 
+    // Số 0 ẩn hoặc làm mất năng lượng thì nói rõ mất ở MẶT NÀO của cuộc sống — dựa vào lĩnh vực
+    // của chính tinh đó. Chỉ áp cho số 0, và chỉ khi hiệu ứng thực sự là ẩn/mất.
+    const yNghiaLinhVuc =
+      d === 0 && traCuu && (hieuUng === "ẩn ngầm" || hieuUng === "mất hẳn")
+        ? dienGiaiLinhVuc(traCuu.ten)
+        : undefined;
+
     ds.push({
       so: d as 5 | 0,
       viTri: i,
@@ -147,6 +173,7 @@ export function tinhHieuUngSo50(soDaChuanHoa: string, capGoc: CapGoc): HieuUngSo
       hieuUng,
       moTa,
       lamManhHungTinh,
+      ...(yNghiaLinhVuc ? { yNghiaLinhVuc } : {}),
     });
   }
   return ds;

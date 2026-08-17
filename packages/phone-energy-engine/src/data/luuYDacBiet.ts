@@ -29,6 +29,27 @@ export const Y_NGHIA_SO_0_THEO_LINH_VUC: Readonly<Record<string, string>> = {
   "sức khỏe": "dễ phát sinh bệnh tật",
 };
 
+/**
+ * Mỗi Bát tinh thuộc lĩnh vực nào — để biết số 0 chen vào cặp đó thì diễn giải theo dòng nào của
+ * `Y_NGHIA_SO_0_THEO_LINH_VUC`.
+ *
+ * Ánh xạ này KHÔNG tự nghĩ ra: lấy đúng cột chủ đề của từng tinh trong bảng tra gốc
+ * (`bang-tra-bat-tinh.md` mục 2-3). Tinh nào chủ đề gộp nhiều mặt thì liệt kê đủ các mặt đó.
+ *
+ * ⚠️ Phục Vị CỐ Ý để trống: chủ đề của nó trong bảng gốc là "trung tính, giữ nguyên trạng", không
+ * ứng với lĩnh vực nào trong bảy lĩnh vực trên. Gán bừa một lĩnh vực cho nó là bịa.
+ */
+export const LINH_VUC_THEO_TINH: Readonly<Record<string, readonly string[]>> = {
+  "Thiên Y": ["tiền tài"],
+  "Diên Niên": ["sự nghiệp", "sức khỏe"],
+  "Sinh Khí": ["quý nhân"],
+  "Phục Vị": [],
+  "Tuyệt Mệnh": ["tiền tài", "sức khỏe", "tai họa"],
+  "Ngũ Quỷ": ["tai họa"],
+  "Lục Sát": ["tình cảm"],
+  "Họa Hại": ["tai họa"],
+};
+
 export const BAN_CHAT_SO_0 =
   "Người có nhiều số 0 thường thông minh, hay suy nghĩ sâu, thích triết lý. Mặt tích cực là trí tuệ sâu sắc; mặt tiêu cực là thiếu tập trung, do dự, hay trở thành cầu nối giúp người khác thành công còn bản thân khó tích luỹ.";
 
