@@ -238,16 +238,29 @@ export interface UngVienNgayGioHaHuyet {
  * (b) Vẫn theo mặc định đặc tả: KHÔNG sàng thần sát cho giờ động quan, vì nó là giờ DẪN XUẤT chứ
  *     không phải giờ được chọn — khác với giờ liệm và giờ hạ huyệt (hai giờ đó có sàng thần sát).
  */
+/**
+ * Khâu đưa tang gồm HAI MỐC và MỘT CHẶNG, theo đúng định nghĩa chủ dự án chốt 2026-08-17:
+ *
+ *   - ĐỘNG QUAN (mốc)  — thời điểm bắt đầu đưa linh cữu đi, rời khỏi nơi quàn.
+ *   - DI QUAN (chặng)  — quá trình đưa linh cữu từ nơi quàn tới nơi an táng/hoả táng.
+ *   - HẠ HUYỆT (mốc)   — thời điểm đặt quan xuống huyệt.
+ *
+ * ⚠️ Di quan KHÔNG phải một giờ riêng để chọn — nó là chặng đường NẰM GIỮA động quan và hạ huyệt,
+ * độ dài đúng bằng `thoiGianDiChuyenPhut` gia đình khai. Đã có lúc định thêm một mốc "nhấc linh
+ * cữu" sớm hơn vài phút, nhưng con số đó không có nguồn nào nên bỏ hẳn — engine chỉ trình bày thứ
+ * suy được từ dữ liệu thật.
+ */
 export interface GioDongQuan {
-  /** Phương án hạ huyệt số 1 mà khoảng này được trừ lùi từ đó. */
+  /** Phương án hạ huyệt số 1 mà mọi mốc được trừ lùi từ đó. */
   theoHaHuyet: { ngayDuongLich: NgayDuongLich; chiGio: Chi; batDau: string };
-  /** Nên rời nhà từ mốc này (đã trừ cả đệm đi sớm). */
-  khuyenNghiTu: { gio: string; ngayDuongLich: NgayDuongLich };
-  /** Muộn nhất phải rời nhà (chỉ trừ quãng đường, không còn đệm). */
-  muonNhat: { gio: string; ngayDuongLich: NgayDuongLich };
+  /** ĐỘNG QUAN — nên bắt đầu đưa linh cữu đi từ mốc này (đã trừ cả đệm tới sớm). */
+  dongQuanKhuyenNghi: { gio: string; ngayDuongLich: NgayDuongLich };
+  /** ĐỘNG QUAN — muộn nhất phải khởi hành (chỉ trừ quãng đường, không còn đệm). */
+  dongQuanMuonNhat: { gio: string; ngayDuongLich: NgayDuongLich };
+  /** Độ dài chặng DI QUAN (phút) — chính là quãng đường gia đình khai. */
   thoiGianDiChuyenPhut: number;
   demPhut: number;
-  /** Cảnh báo khi khoảng động quan rơi vào đêm khuya hoặc sớm hơn giờ liệm phương án 1. */
+  /** Cảnh báo khi mốc tính ra rơi vào đêm khuya hoặc sớm hơn giờ liệm phương án 1. */
   canhBao?: string;
 }
 
@@ -357,6 +370,12 @@ function tapNgayTuTuyetTuLy(namTu: number, namDen: number): { tuTuyet: Set<numbe
 }
 
 /** Mục 9b — trừ lùi từ giờ hạ huyệt phương án 1 để ra khoảng động quan. */
+/**
+ * Trừ lùi từ giờ hạ huyệt ra mốc động quan:
+ *
+ *   hạ huyệt  −  chặng di quan          = động quan MUỘN NHẤT
+ *   động quan muộn nhất  −  đệm tới sớm = động quan KHUYẾN NGHỊ
+ */
 function tinhGioDongQuan(
   haHuyet: UngVienNgayGioHaHuyet,
   jdnHaHuyet: number,
@@ -386,8 +405,8 @@ function tinhGioDongQuan(
 
   return {
     theoHaHuyet: { ngayDuongLich: haHuyet.ngayDuongLich, chiGio: haHuyet.chiGio, batDau: haHuyet.khungGio.batDau },
-    khuyenNghiTu: moTa(mocKhuyenNghi),
-    muonNhat: moTa(mocMuonNhat),
+    dongQuanKhuyenNghi: moTa(mocKhuyenNghi),
+    dongQuanMuonNhat: moTa(mocMuonNhat),
     thoiGianDiChuyenPhut,
     demPhut,
     ...(canhBao ? { canhBao } : {}),

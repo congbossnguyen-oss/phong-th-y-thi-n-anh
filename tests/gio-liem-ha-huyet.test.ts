@@ -592,14 +592,14 @@ describe("Giờ động quan (mục 9b — trừ lùi từ giờ hạ huyệt)",
     const dq = calculateGioLiemHaHuyet({ ...input, thoiGianDiChuyenPhut: 90 }).gioDongQuan!;
     expect(dq.thoiGianDiChuyenPhut).toBe(90);
     expect(dq.demPhut).toBe(45);
-    expect(lech(dq.theoHaHuyet.batDau, dq.muonNhat.gio)).toBe(90);
-    expect(lech(dq.muonNhat.gio, dq.khuyenNghiTu.gio)).toBe(45);
+    expect(lech(dq.theoHaHuyet.batDau, dq.dongQuanMuonNhat.gio)).toBe(90);
+    expect(lech(dq.dongQuanMuonNhat.gio, dq.dongQuanKhuyenNghi.gio)).toBe(45);
   });
 
   it("cảnh báo khi khoảng động quan rơi vào đêm khuya (23h-5h)", () => {
     // Quãng đường rất dài đẩy giờ rời nhà lùi vào đêm — phải bật cảnh báo.
     const dq = calculateGioLiemHaHuyet({ ...input, thoiGianDiChuyenPhut: 470 }).gioDongQuan!;
-    const p = phut(dq.khuyenNghiTu.gio);
+    const p = phut(dq.dongQuanKhuyenNghi.gio);
     if (p >= 23 * 60 || p < 5 * 60) expect(dq.canhBao).toMatch(/đêm khuya/);
     else expect(dq.canhBao).toBeUndefined();
   });
@@ -607,8 +607,8 @@ describe("Giờ động quan (mục 9b — trừ lùi từ giờ hạ huyệt)",
   it("đệm cấu hình được", () => {
     const dq = calculateGioLiemHaHuyet({ ...input, thoiGianDiChuyenPhut: 30, demDongQuanPhut: 0 }).gioDongQuan!;
     expect(dq.demPhut).toBe(0);
-    expect(dq.khuyenNghiTu.gio).toBe(dq.muonNhat.gio);
-    expect(lech(dq.theoHaHuyet.batDau, dq.muonNhat.gio)).toBe(30);
+    expect(dq.dongQuanKhuyenNghi.gio).toBe(dq.dongQuanMuonNhat.gio);
+    expect(lech(dq.theoHaHuyet.batDau, dq.dongQuanMuonNhat.gio)).toBe(30);
   });
 
   it("từ chối quãng đường ngoài khoảng 5-480 phút", () => {

@@ -463,8 +463,8 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
   }
   interface GioDongQuan {
     theoHaHuyet: { ngayDuongLich: NgayDL; chiGio: string; batDau: string };
-    khuyenNghiTu: { gio: string; ngayDuongLich: NgayDL };
-    muonNhat: { gio: string; ngayDuongLich: NgayDL };
+    dongQuanKhuyenNghi: { gio: string; ngayDuongLich: NgayDL };
+    dongQuanMuonNhat: { gio: string; ngayDuongLich: NgayDL };
     thoiGianDiChuyenPhut: number;
     demPhut: number;
     canhBao?: string;
@@ -628,30 +628,21 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
     // Giờ ĐỘNG QUAN (chuyển quan tài ra khỏi nhà) — khác giờ ĐÓNG QUAN (đậy nắp) ở khối trên.
     // Là giờ dẫn xuất: lấy giờ hạ huyệt phương án 1 trừ lùi quãng đường, nên trả về một KHOẢNG.
     const dq = result.gioDongQuan;
+    // Động quan là MỐC, di quan là CHẶNG — không dựng di quan thành một giờ riêng để chọn.
     const dongQuanHtml = dq
       ? `<div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
-          <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Giờ động quan — di quan (giờ rời nhà đưa đi)</p>
-          <p class="mt-1 text-xs text-slate-500">Tính lùi từ phương án hạ huyệt số 1 (${ngayLabel(dq.theoHaHuyet.ngayDuongLich)} giờ ${dq.theoHaHuyet.chiGio}, bắt đầu ${dq.theoHaHuyet.batDau}), trừ ${dq.thoiGianDiChuyenPhut} phút di chuyển${dq.demPhut > 0 ? ` và ${dq.demPhut} phút đi sớm dự phòng` : ""}.</p>
-          <div class="mt-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
-            <p class="font-display text-lg font-bold text-slate-900">Nên rời nhà trong khoảng ${dq.khuyenNghiTu.gio} – ${dq.muonNhat.gio}</p>
-            <p class="mt-1 text-sm text-slate-600">Ngày ${ngayLabel(dq.khuyenNghiTu.ngayDuongLich)}. Tới sớm rồi chờ luôn an toàn; chỉ tới muộn mới ảnh hưởng giờ hạ huyệt.</p>
-            ${dq.canhBao ? `<p class="mt-1.5 text-xs text-amber-600">⚠️ ${dq.canhBao}</p>` : ""}
-          </div>
+          <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Giờ động quan — bắt đầu đưa linh cữu đi</p>
+          <p class="mt-3 text-sm"><strong>Nên khởi hành lúc ${dq.dongQuanKhuyenNghi.gio}</strong>, ngày ${ngayLabel(dq.dongQuanKhuyenNghi.ngayDuongLich)}</p>
+          <p class="mt-1 text-sm">Muộn nhất phải khởi hành lúc ${dq.dongQuanMuonNhat.gio}, ngày ${ngayLabel(dq.dongQuanMuonNhat.ngayDuongLich)}</p>
+          <p class="mt-2 text-sm text-slate-600">
+            <strong>Di quan</strong> — chặng đưa linh cữu từ nơi quàn tới huyệt: khoảng ${dq.thoiGianDiChuyenPhut} phút đường đi,
+            cộng ${dq.demPhut} phút tới sớm chờ sẵn.
+          </p>
+          <p class="mt-1 text-xs text-slate-500">Hai mốc trên trừ lùi từ giờ hạ huyệt ${dq.theoHaHuyet.batDau} ngày ${ngayLabel(dq.theoHaHuyet.ngayDuongLich)} (giờ ${dq.theoHaHuyet.chiGio}).</p>
+          ${dq.canhBao ? `<p class="mt-2 text-xs text-(--color-cinnabar-500)">${escapeHtml(dq.canhBao)}</p>` : ""}
         </div>`
       : "";
 
-    // Tuổi phải tránh mặt lúc nhập quan / khâm liệm / đóng cá / hạ huyệt. Nhóm Long Hổ Kê Xà đặt
-    // riêng lên đầu vì đây là quy tắc cứng ("người tuổi Thìn, Dần, Dậu, Tỵ không bao giờ được đứng
-    // nhìn nhập liệm"), các nhóm còn lại phụ thuộc tuổi vong và tứ cung nên xếp sau.
-    const tct = result.tuoiCanTranh;
-    // Lọc trùng: một chi có thể vừa là tuổi xung vừa nằm trong bộ tam hình (vd vong tuổi Dần thì
-    // Thân vừa xung vừa hình), hiện 2 lần rất khó hiểu cho gia chủ.
-    const chipList = (ds: string[]) => {
-      const uniq = [...new Set(ds)];
-      return uniq.length === 0
-        ? `<span class="text-sm text-slate-400">—</span>`
-        : uniq.map((c) => `<span class="rounded-md bg-white px-2 py-0.5 text-sm font-semibold text-slate-800 ring-1 ring-slate-200">${c}</span>`).join(" ");
-    };
     const tuoiTranhHtml = tct
       ? `<div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
           <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Tuổi cần tránh mặt</p>

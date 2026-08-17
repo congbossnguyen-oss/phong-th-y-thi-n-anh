@@ -278,23 +278,29 @@ export async function generateHoSoTangLePdf(p: HoSoTangLeParams): Promise<Uint8A
     });
   }
 
-  // --- Giờ động quan ---
+  // --- Giờ động quan + chặng di quan ---
   //
-  // ⚠️ Bản trước in ra "Sớm nhất undefined — muộn nhất [object Object]" vì dùng sai tên trường:
-  // `khuyenNghiTu` và `muonNhat` là OBJECT { gio, ngayDuongLich }, không phải chuỗi giờ. Hồ sơ
-  // giao cho tang gia thì một dòng vô nghĩa như vậy là hỏng cả tờ giấy.
+  // Động quan là MỐC (bắt đầu đưa linh cữu đi), di quan là CHẶNG (đường từ nơi quàn tới huyệt).
+  // Trình bày đúng như vậy, không dựng di quan thành một giờ riêng để chọn.
   const dq = r.gioDongQuan;
-  if (dq?.khuyenNghiTu && dq?.muonNhat) {
-    b.muc("Giờ động quan — di quan (giờ rời nhà đưa đi)");
-    b.dong(`Nên rời nhà lúc ${dq.khuyenNghiTu.gio}, ngày ${ngayVN(dq.khuyenNghiTu.ngayDuongLich)}`, {
+  if (dq?.dongQuanKhuyenNghi && dq?.dongQuanMuonNhat) {
+    b.muc("Giờ động quan — bắt đầu đưa linh cữu đi");
+    b.dong(`Nên khởi hành lúc ${dq.dongQuanKhuyenNghi.gio}, ngày ${ngayVN(dq.dongQuanKhuyenNghi.ngayDuongLich)}`, {
       size: 10,
       font: vua,
     });
-    b.dong(`Muộn nhất phải rời nhà lúc ${dq.muonNhat.gio}, ngày ${ngayVN(dq.muonNhat.ngayDuongLich)}`, { size: 10 });
+    b.dong(`Muộn nhất phải khởi hành lúc ${dq.dongQuanMuonNhat.gio}, ngày ${ngayVN(dq.dongQuanMuonNhat.ngayDuongLich)}`, {
+      size: 10,
+    });
+    b.xuong(2);
+    b.doan(
+      `Di quan — chặng đưa linh cữu từ nơi quàn tới huyệt: khoảng ${dq.thoiGianDiChuyenPhut} phút đường đi, ` +
+        `cộng ${dq.demPhut} phút tới sớm chờ sẵn.`,
+      { size: 9 },
+    );
     if (dq.theoHaHuyet) {
       b.doan(
-        `Tính lùi từ giờ hạ huyệt ${dq.theoHaHuyet.batDau} ngày ${ngayVN(dq.theoHaHuyet.ngayDuongLich)} ` +
-          `(giờ ${dq.theoHaHuyet.chiGio}), trừ ${dq.thoiGianDiChuyenPhut} phút đi đường và ${dq.demPhut} phút tới sớm chờ sẵn.`,
+        `Hai mốc trên trừ lùi từ giờ hạ huyệt ${dq.theoHaHuyet.batDau} ngày ${ngayVN(dq.theoHaHuyet.ngayDuongLich)} (giờ ${dq.theoHaHuyet.chiGio}).`,
         { size: 8.5, mau: MAU.mucNhat },
       );
     }
