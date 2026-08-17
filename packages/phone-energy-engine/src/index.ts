@@ -35,6 +35,8 @@ export { NHOM_NGHE, traNhomNghe } from "./data/ngheNghiep.js";
 export { CACH_CUC } from "./data/cachCuc.js";
 export { dungTongKet } from "./engine/tongKet.js";
 export type { TongKet, CachCucTrungKhop, DoiChieuNghe, MucDoHopNghe } from "./engine/tongKet.js";
+export { luanNamMat } from "./engine/namMat.js";
+export type { MatDoiSong, MucDoMat } from "./engine/namMat.js";
 
 /** Tinh xuất hiện nhiều nhất trong dãy. Hoà thì lấy tinh gặp trước, không tự chọn ngẫu nhiên. */
 function timTinhChuDao(tenTinh: TenTinh[]): { ten: TenTinh; soLan: number } | null {

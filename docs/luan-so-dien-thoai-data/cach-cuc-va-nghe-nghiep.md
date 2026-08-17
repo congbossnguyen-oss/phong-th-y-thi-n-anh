@@ -40,6 +40,30 @@ Cài trong `phone-energy-engine`: `src/data/cachCuc.ts`, `src/data/ngheNghiep.ts
 
 Một dãy số có thể trúng nhiều cách cục cùng lúc — đó là bình thường, engine liệt kê hết.
 
+## Năm mặt đời sống (`src/engine/namMat.ts`)
+
+Chủ dự án bổ sung 2026-08-17: phần kết luận phải chốt rõ theo **quan vận, tài vận, sức khoẻ, nhân
+duyên, may mắn**. Mỗi tinh được xếp vào cột "đẩy lên" hay "kéo xuống" của một mặt đều trích được từ
+`mo-ta-8-tinh.md` hoặc cột chủ đề của bảng tra — trường `canCu` giữ nguyên văn, có unit test chặn
+việc thêm mặt mà bỏ trống căn cứ.
+
+| Mặt | Đẩy lên | Kéo xuống |
+|---|---|---|
+| Tài vận | Thiên Y (1), Diên Niên (0.5) | Tuyệt Mệnh (1), Ngũ Quỷ (0.5), Họa Hại (0.5) |
+| Quan vận | Diên Niên (1), Thiên Y (0.5) | Ngũ Quỷ (1), Họa Hại (0.5), Phục Vị (0.5) |
+| Nhân duyên | Thiên Y (1), Sinh Khí (1) | Lục Sát (1), Ngũ Quỷ (0.5), Họa Hại (0.5), Tuyệt Mệnh (0.5) |
+| Sức khoẻ | Diên Niên (1), Sinh Khí (0.5) | Tuyệt Mệnh (1), Ngũ Quỷ (1), Họa Hại (0.5), Lục Sát (0.5) |
+| May mắn, quý nhân | Sinh Khí (1), Thiên Y (1) | Ngũ Quỷ (1), Họa Hại (1), Lục Sát (0.5), Tuyệt Mệnh (0.5), **Diên Niên (0.5)** |
+
+> **Không xếp theo lối "cát tinh thì tốt mọi mặt".** Bằng chứng: Diên Niên là cát tinh, rất mạnh cho
+> quan vận và sức khoẻ, nhưng lại nằm ở cột **kéo xuống** của mặt may mắn — vì tài liệu ghi rõ
+> *"Tự thân đi làm, ít vận quý nhân — mọi thứ dựa vào chính mình"*. Phục Vị cũng vậy: trung tính với
+> hầu hết các mặt nhưng kéo quan vận xuống vì *"dễ bỏ lỡ cơ hội tốt vì quá bảo thủ"*.
+
+Cách tính: mỗi cặp góp `hệ số cột × hệ số cấp độ × (ở đuôi ? 3 : 1)`, chuẩn hoá về thang −100..100.
+Tinh **trung lập** với một mặt (không nằm ở cả hai cột) thì không được kéo vào mẫu số. Bốn mức:
+≥50 rất tốt · ≥15 tốt · ≥−15 trung bình · còn lại cần lưu ý.
+
 ## Bảng nhóm nghề
 
 Ánh xạ đều lấy từ mục **Sự nghiệp / Tài vận / Quý nhân** của `mo-ta-8-tinh.md`.

@@ -802,10 +802,53 @@ const namNay = new Date().getFullYear();
         </p>`;
     }
 
+    // Năm mặt đời sống — thanh ngang hai chiều, gốc ở giữa: phải là được, trái là cần lưu ý.
+    const MAU_MUC: Record<string, string> = {
+      "rất tốt": "#10b981",
+      "tốt": "#84cc16",
+      "trung bình": "#f59e0b",
+      "cần lưu ý": "#ef4444",
+    };
+    const oNamMat = (tk.namMat ?? [])
+      .map((m: any) => {
+        const mau = MAU_MUC[m.mucDo] ?? "#9ca3af";
+        const rong = Math.min(50, Math.abs(m.diem) / 2);
+        const thanh =
+          m.diem >= 0
+            ? `<div class="absolute inset-y-0 left-1/2" style="width:${rong}%;background:${mau}"></div>`
+            : `<div class="absolute inset-y-0" style="right:50%;width:${rong}%;background:${mau}"></div>`;
+        const keNguon = (nhan: string, ds: string[], mauChu: string) =>
+          ds.length
+            ? `<p class="mt-1 text-[11px] text-(--color-ink-700)"><span class="font-bold ${mauChu}">${nhan}:</span> ${esc(ds.join(", "))}</p>`
+            : "";
+        return `
+        <li class="rounded-(--radius-control) border border-(--color-ivory-300) p-3">
+          <div class="flex items-baseline justify-between gap-2">
+            <span class="font-display text-base font-bold text-(--color-ink-900)">${esc(m.ten)}</span>
+            <span class="text-xs font-bold uppercase" style="color:${mau}">${esc(m.mucDo)}</span>
+          </div>
+          <div class="relative mt-2 h-2.5 w-full overflow-hidden rounded-full bg-(--color-ivory-300)">
+            ${thanh}
+            <div class="absolute inset-y-0 left-1/2 w-px bg-(--color-ink-900)/40"></div>
+          </div>
+          <p class="mt-2 text-sm leading-relaxed text-(--color-ink-800)">${noiBat(esc(m.dienGiai))}</p>
+          ${keNguon("Nhờ", m.dangDayLen, "text-emerald-600")}
+          ${keNguon("Bị kéo bởi", m.dangKeoXuong, "text-red-500")}
+        </li>`;
+      })
+      .join("");
+
     return khung(
       "Tổng kết về số này",
       `${oDuoi}
-       <ul class="mt-4 space-y-2.5">${dsCachCuc}</ul>
+       <p class="mt-5 text-[11px] font-bold tracking-wider text-(--color-ink-700)">NĂM MẶT CỦA SỐ NÀY</p>
+       <ul class="mt-2 grid gap-2.5">${oNamMat}</ul>
+       <p class="mt-2 text-xs text-(--color-ink-600)">
+         Vạch dọc ở giữa là mốc trung tính — thanh lệch phải là mặt được, lệch trái là mặt cần lưu ý.
+         Năng lượng nằm ở ba số cuối được tính nặng gấp ba lần năng lượng giữa dãy.
+       </p>
+       <p class="mt-5 text-[11px] font-bold tracking-wider text-(--color-ink-700)">CÁCH CỤC CỦA SỐ NÀY</p>
+       <ul class="mt-2 space-y-2.5">${dsCachCuc}</ul>
        ${oNghe}
        <p class="mt-4 rounded-(--radius-control) bg-(--color-ivory-200) p-3.5 text-sm font-medium leading-relaxed text-(--color-ink-900)">
          ${noiBat(esc(tk.ketLuan))}

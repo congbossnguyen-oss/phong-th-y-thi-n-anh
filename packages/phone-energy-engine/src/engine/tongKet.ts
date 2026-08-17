@@ -7,6 +7,7 @@
  */
 import { CACH_CUC, type BoiCanhCachCuc, type LoaiCachCuc } from "../data/cachCuc.js";
 import { traNhomNghe } from "../data/ngheNghiep.js";
+import { luanNamMat, type MatDoiSong } from "./namMat.js";
 import type { KetQuaCap, TenTinh } from "../types.js";
 
 /** Một cặp ở ba số cuối nặng bằng bấy nhiêu cặp nằm giữa dãy. */
@@ -36,6 +37,8 @@ export interface TongKet {
   /** Tên các tinh ở ba số cuối, theo thứ tự trong dãy. */
   tinhODuoi: TenTinh[];
   cachCuc: CachCucTrungKhop[];
+  /** Tài vận — Quan vận — Nhân duyên — Sức khoẻ — May mắn, luôn đủ 5 mục theo thứ tự này. */
+  namMat: MatDoiSong[];
   doiChieuNghe: DoiChieuNghe | null;
   /** Hai đến ba câu chốt cuối cùng. */
   ketLuan: string;
@@ -131,6 +134,8 @@ export function dungTongKet(params: {
     canCu: c.canCu,
   }));
 
+  const namMat = luanNamMat(capGoc, capTrongDuoi);
+
   const doiChieuNghe = params.maNghe
     ? doiChieuNgheNghiep(params.maNghe, capGoc, capTrongDuoi)
     : null;
@@ -162,9 +167,18 @@ export function dungTongKet(params: {
       "Dãy số không rơi vào cách cục đặc thù nào trong bảng — nghĩa là nó ở mức bình thường, không có điểm bật hẳn lên cũng không có khuyết điểm nặng.",
     );
   }
+  const matManh = namMat.filter((m) => m.mucDo === "rất tốt" || m.mucDo === "tốt");
+  const matYeu = namMat.filter((m) => m.mucDo === "cần lưu ý");
+  if (matManh.length > 0) {
+    cau.push(`Được nhất ở mặt: ${matManh.map((m) => m.ten.toLowerCase()).join(", ")}.`);
+  }
+  if (matYeu.length > 0) {
+    cau.push(`Yếu nhất ở mặt: ${matYeu.map((m) => m.ten.toLowerCase()).join(", ")}.`);
+  }
+
   if (doiChieuNghe) {
     cau.push(`Đối chiếu với nghề ${doiChieuNghe.nhom.toLowerCase()}: ${doiChieuNghe.mucDo}.`);
   }
 
-  return { baSoDuoi, tinhODuoi, cachCuc, doiChieuNghe, ketLuan: cau.join(" ") };
+  return { baSoDuoi, tinhODuoi, cachCuc, namMat, doiChieuNghe, ketLuan: cau.join(" ") };
 }
