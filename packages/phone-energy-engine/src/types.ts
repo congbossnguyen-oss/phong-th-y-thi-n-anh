@@ -164,8 +164,11 @@ export interface ThongKe {
   tongSoCap: number;
   soCapCat: number;
   soCapHung: number;
+  /** Cặp Phục Vị — trung tính, tách riêng khỏi cát và hung. */
+  soCapTrungTinh: number;
   tyLeCat: number;
   tyLeHung: number;
+  tyLeTrungTinh: number;
   /** Tỷ trọng từng Bát tinh trong dãy, sắp giảm dần. */
   theoTinh: { ten: TenTinh; catHung: CatHung; soLan: number; tyLe: number }[];
   /** Tỷ trọng ngũ hành, tính trên TỪNG CHỮ SỐ (kể cả 0 và 5 vốn có hành riêng). */

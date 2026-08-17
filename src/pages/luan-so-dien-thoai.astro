@@ -407,7 +407,7 @@ const namNay = new Date().getFullYear();
         <div class="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
           ${o("Năng lượng chủ đạo", kq.tinhChuDao ? esc(kq.tinhChuDao.ten) : "—")}
           ${o("Năng lượng kết", kq.ketCuc.capTrongDuoi.length ? esc(kq.ketCuc.capTrongDuoi[kq.ketCuc.capTrongDuoi.length - 1].ten) : "—")}
-          ${o("Cát / Hung", `${tk.tyLeCat}% / ${tk.tyLeHung}%`)}
+          ${o("Cát / Trung tính / Hung", `${tk.tyLeCat}% · ${tk.tyLeTrungTinh}% · ${tk.tyLeHung}%`)}
           ${o("Đại vận căn cước", vanHienTai ? `${esc(vanHienTai.ten)} (${esc(vanHienTai.cap)})` : "—")}
         </div>
       </section>`;
@@ -505,12 +505,22 @@ const namNay = new Date().getFullYear();
   function khoiDoLuong(kq: any): string {
     const tk = kq.thongKe;
     const mucTinh = tk.theoTinh.map((t: any) => ({ nhan: t.ten, tyLe: t.tyLe, mau: mauCuaTinh(t.ten) }));
+    const mucCatHung = [
+      { nhan: "Cát", tyLe: tk.tyLeCat, mau: "#10b981" },
+      { nhan: "Trung tính (Phục Vị)", tyLe: tk.tyLeTrungTinh, mau: "#a3a3a3" },
+      { nhan: "Hung", tyLe: tk.tyLeHung, mau: "#ef4444" },
+    ];
     const mucHanh = tk.theoNguHanh.map((h: any) => ({ nhan: h.hanh, tyLe: h.tyLe, mau: MAU_NGU_HANH[h.hanh]! }));
     return khung(
       "Đo &amp; so sánh năng lượng",
       `<div class="grid gap-6 lg:grid-cols-[auto_1fr] lg:items-center">
-         ${donut(tk.tyLeCat, "#10b981", `${tk.tyLeCat}%`, "cát tinh", 140)}
+         ${donut(tk.tyLeCat, "#10b981", `${tk.tyLeCat}%`, "năng lượng tốt", 140)}
          <div class="space-y-5">
+           <div>
+             <p class="mb-1.5 text-xs font-semibold uppercase tracking-wide text-(--color-ink-600)">Cát / Trung tính / Hung</p>
+             ${thanhTyTrong(mucCatHung)}
+             <p class="mt-1.5 text-xs text-(--color-ink-600)">Phục Vị được xếp riêng vào nhóm trung tính — bảng gốc ghi chủ đề của nó là "giữ nguyên trạng", không đẩy việc tiến lên cũng không kéo lùi.</p>
+           </div>
            <div>
              <p class="mb-1.5 text-xs font-semibold uppercase tracking-wide text-(--color-ink-600)">Tỷ trọng từng năng lượng</p>
              ${thanhTyTrong(mucTinh)}

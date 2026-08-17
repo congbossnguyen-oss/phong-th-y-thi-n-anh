@@ -13,8 +13,11 @@ const lamTron1 = (n: number) => Math.round(n * 10) / 10;
 
 export function tinhThongKe(capGoc: KetQuaCap[]): ThongKe {
   const tong = capGoc.length;
-  const soCapCat = capGoc.filter((c) => c.catHung === "cát").length;
-  const soCapHung = tong - soCapCat;
+  // Phục Vị tách riêng thành nhóm TRUNG TÍNH thay vì gộp vào cát: bảng tra gốc ghi chủ đề của nó là
+  // "trung tính, giữ nguyên trạng". Gộp vào cát sẽ khiến một dãy toàn Phục Vị hiện lên như dãy đẹp.
+  const soCapTrungTinh = capGoc.filter((c) => c.ten === "Phục Vị").length;
+  const soCapCat = capGoc.filter((c) => c.catHung === "cát" && c.ten !== "Phục Vị").length;
+  const soCapHung = tong - soCapCat - soCapTrungTinh;
 
   // --- Tỷ trọng theo từng Bát tinh ---
   const demTinh = new Map<TenTinh, { catHung: "cát" | "hung"; soLan: number }>();
@@ -66,8 +69,10 @@ export function tinhThongKe(capGoc: KetQuaCap[]): ThongKe {
     tongSoCap: tong,
     soCapCat,
     soCapHung,
+    soCapTrungTinh,
     tyLeCat: tong > 0 ? lamTron1((soCapCat / tong) * 100) : 0,
     tyLeHung: tong > 0 ? lamTron1((soCapHung / tong) * 100) : 0,
+    tyLeTrungTinh: tong > 0 ? lamTron1((soCapTrungTinh / tong) * 100) : 0,
     theoTinh,
     theoNguHanh,
     song,

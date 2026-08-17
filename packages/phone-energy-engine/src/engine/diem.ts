@@ -105,15 +105,21 @@ export function tinhDiemTongQuan(params: {
   }
 
   // 2. Tỷ lệ cát/hung sau khi áp Cơ chế A. Hung đã được hoá giải tính như cát.
-  if (capGoc.length > 0) {
-    const soCat = capGoc.filter((c) => c.catHung === "cát" || c.daHoaGiai).length;
-    const tyLe = soCat / capGoc.length;
+  //
+  // Phục Vị bị LOẠI khỏi cả tử số lẫn mẫu số: bảng tra gốc tuy xếp nó vào nhóm cát tinh nhưng ghi
+  // rõ chủ đề là "trung tính, giữ nguyên trạng", và mô tả của nó là trì trệ, thiếu động lực tiến
+  // thủ. Tính Phục Vị như một cát tinh thật sẽ thổi phồng tỷ lệ cát của những dãy toàn Phục Vị —
+  // đúng lỗi chủ dự án chỉ ra ở số 0945406666 ngày 2026-08-17.
+  const capCoHuong = capGoc.filter((c) => c.ten !== "Phục Vị");
+  if (capCoHuong.length > 0) {
+    const soCat = capCoHuong.filter((c) => c.catHung === "cát" || c.daHoaGiai).length;
+    const tyLe = soCat / capCoHuong.length;
     const d = lamTron((tyLe - 0.5) * 2 * w.tyLeCatHung);
     diem += d;
     thanhPhan.push({
       ten: "Tỷ lệ cát / hung toàn dãy",
       diem: d,
-      ghiChu: `${soCat} trên ${capGoc.length} cặp là cát (đã tính phần được hoá giải).`,
+      ghiChu: `${soCat} trên ${capCoHuong.length} cặp có hướng rõ ràng là cát (Phục Vị trung tính không tính vào đây).`,
     });
   }
 
@@ -122,8 +128,9 @@ export function tinhDiemTongQuan(params: {
     let tong = 0;
     for (const c of capTrongDuoi) {
       const heSo = HE_SO_CAP[c.capDo];
-      // Phục Vị là cát nhưng trung tính, không kéo điểm lên như ba cát tinh kia.
-      const huong = c.ten === "Phục Vị" ? 0.2 : c.catHung === "cát" ? 1 : -1;
+      // Phục Vị ở đuôi KHÔNG được cộng điểm: kết bằng năng lượng trung tính nghĩa là mọi việc dừng
+      // ở chỗ giữ nguyên trạng, không có kết quả rõ ràng.
+      const huong = c.ten === "Phục Vị" ? 0 : c.catHung === "cát" ? 1 : -1;
       tong += huong * heSo;
     }
     const trungBinh = tong / capTrongDuoi.length;
