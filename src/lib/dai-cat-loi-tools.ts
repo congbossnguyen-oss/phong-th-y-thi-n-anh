@@ -12,6 +12,7 @@ export const STANDALONE_TOOL_PATHS = [
   "/xem-ngay-tot-xau",
   "/tinh-trung-tang",
   "/tra-cuu-menh",
+  "/luan-so-dien-thoai",
 ] as const;
 
 export const daiCatLoiTools: DaiCatLoiTool[] = [

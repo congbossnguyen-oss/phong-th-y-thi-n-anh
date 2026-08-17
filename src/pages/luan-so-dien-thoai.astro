@@ -1,0 +1,291 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/ui/PageHero.astro";
+import Container from "../components/ui/Container.astro";
+import Button from "../components/ui/Button.astro";
+import { siteConfig } from "../lib/site-config";
+
+export const prerender = true;
+
+const hotlineHref = `tel:${siteConfig.hotline.replace(/\s/g, "")}`;
+---
+
+<BaseLayout
+  title="Luận Số Điện Thoại"
+  description="Luận số điện thoại theo Bát Cực Linh Số: tách cặp Bát tinh, xét hiệu ứng số 5 và số 0, chấm điểm năng lượng và chỉ ra hướng hoá giải. Công cụ miễn phí, không cần đăng nhập."
+>
+  <PageHero
+    eyebrow="Công cụ miễn phí"
+    title="Luận Số Điện Thoại"
+    description="Nhập số điện thoại, hệ thống tách từng cặp năng lượng theo phương pháp Bát Cực Linh Số, chấm điểm tổng quan và viết bài luận chi tiết. Không cần đăng nhập, không thu phí."
+    breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Luận Số Điện Thoại" }]}
+  />
+
+  <Container class="py-16">
+    <div class="mx-auto max-w-3xl">
+      <div class="mb-6 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-4 text-sm text-(--color-ink-600)">
+        Phương pháp dùng ở đây là <strong>Bát Cực Linh Số</strong> (Số Tự Năng Lượng Học), có bảng tra
+        và quy tắc riêng — khác các cách xem sim phổ biến trên mạng. Số tự năng lượng chỉ là một yếu
+        tố từ trường hỗ trợ, không phải yếu tố quyết định vận mệnh.
+      </div>
+
+      <form
+        id="lsdt-form"
+        class="flex flex-col gap-4 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6"
+      >
+        <div>
+          <label for="lsdt-so" class="text-sm font-medium text-(--color-ink-800)">
+            Số điện thoại cần luận <span class="text-(--color-danger-500)">*</span>
+          </label>
+          <input
+            id="lsdt-so"
+            type="tel"
+            inputmode="numeric"
+            required
+            placeholder="Ví dụ: 0912 345 678"
+            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"
+          />
+        </div>
+
+        <details class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3">
+          <summary class="cursor-pointer text-sm font-medium text-(--color-ink-800)">
+            Thông tin thêm (không bắt buộc — có thì luận sâu hơn)
+          </summary>
+          <div class="mt-3 grid gap-3">
+            <div>
+              <label for="lsdt-cccd" class="text-sm text-(--color-ink-700)">
+                Số căn cước công dân (12 số)
+              </label>
+              <input
+                id="lsdt-cccd"
+                type="text"
+                inputmode="numeric"
+                maxlength="12"
+                placeholder="Mở khoá phần vận thế theo tuổi và hướng hoá giải"
+                class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-white px-3 py-2.5 text-sm text-(--color-ink-800)"
+              />
+              <p class="mt-1 text-xs text-(--color-ink-500)">
+                Chỉ dùng để tính ngay trên máy chủ rồi trả kết quả — hệ thống không lưu lại số căn
+                cước của anh/chị.
+              </p>
+            </div>
+
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label for="lsdt-gioi-tinh" class="text-sm text-(--color-ink-700)">Giới tính</label>
+                <select
+                  id="lsdt-gioi-tinh"
+                  class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-white px-3 py-2.5 text-sm text-(--color-ink-800)"
+                >
+                  <option value="">Không chọn</option>
+                  <option value="nam">Nam</option>
+                  <option value="nữ">Nữ</option>
+                </select>
+              </div>
+              <div>
+                <label for="lsdt-muc-dich" class="text-sm text-(--color-ink-700)">Quan tâm nhất đến</label>
+                <select
+                  id="lsdt-muc-dich"
+                  class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-white px-3 py-2.5 text-sm text-(--color-ink-800)"
+                >
+                  <option value="tổng quát">Tổng quát</option>
+                  <option value="tài lộc">Tài lộc</option>
+                  <option value="hôn nhân">Hôn nhân</option>
+                  <option value="sự nghiệp">Sự nghiệp</option>
+                  <option value="sức khỏe">Sức khỏe</option>
+                  <option value="học hành">Học hành</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <Button type="submit" size="lg">Luận số này</Button>
+      </form>
+
+      <div id="lsdt-dang-chay" class="mt-4 hidden rounded-(--radius-card) border border-(--color-gold-500)/40 bg-(--color-gold-400)/10 p-4 text-sm text-(--color-ink-700)">
+        <p class="font-medium text-(--color-ink-900)">⏳ Đang tách cặp và tra bảng năng lượng…</p>
+      </div>
+
+      <div id="lsdt-loi" class="mt-4 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm text-(--color-danger-500)"></div>
+
+      <div id="lsdt-ket-qua" class="mt-8 hidden"></div>
+
+      <!-- CTA mời liên hệ chuyên gia — hiện sau khi có kết quả, và luôn có ở cuối trang. -->
+      <div id="lsdt-cta" class="mt-8 hidden rounded-(--radius-card) border-2 border-(--color-gold-400) bg-(--color-gold-400)/10 p-6 text-center">
+        <p class="font-display text-lg font-bold text-(--color-ink-900)">
+          Muốn tìm số hợp với mình?
+        </p>
+        <p class="mx-auto mt-2 max-w-xl text-sm text-(--color-ink-700)">
+          Công cụ này chỉ luận số anh/chị đang dùng. Để <strong>chọn được một dãy số hợp mệnh</strong>,
+          cần đối chiếu thêm lá số Bát Tự và Dụng Thần — việc này phải làm thủ công theo từng người,
+          máy không tự quyết được. Chuyên gia của Phong Thủy Thiên Anh sẽ hỗ trợ anh/chị tìm số phù hợp.
+        </p>
+        <div class="mt-5 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <a
+            href={hotlineHref}
+            class="flex w-full items-center justify-center gap-2 rounded-(--radius-pill) bg-(--color-gold-400) px-6 py-3 text-sm font-semibold text-(--color-on-accent) hover:bg-(--color-gold-300) sm:w-auto"
+          >
+            📞 Gọi chuyên gia: {siteConfig.hotline}
+          </a>
+          <a
+            href="/lien-he"
+            class="flex w-full items-center justify-center gap-2 rounded-(--radius-pill) border border-(--color-gold-400) px-6 py-3 text-sm font-semibold text-(--color-gold-400) hover:bg-(--color-ivory-200) sm:w-auto"
+          >
+            Đặt lịch tư vấn tìm số
+          </a>
+        </div>
+      </div>
+    </div>
+  </Container>
+</BaseLayout>
+
+<script>
+  const form = document.getElementById("lsdt-form") as HTMLFormElement;
+  const oDangChay = document.getElementById("lsdt-dang-chay")!;
+  const oLoi = document.getElementById("lsdt-loi")!;
+  const oKetQua = document.getElementById("lsdt-ket-qua")!;
+  const oCta = document.getElementById("lsdt-cta")!;
+
+  const esc = (s: string) =>
+    s.replace(/[&<>"']/g, (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!,
+    );
+
+  /** Màu theo nhãn điểm — ngưỡng khớp với engine (80/65/50/35). */
+  function mauTheoDiem(diem: number): string {
+    if (diem >= 80) return "text-emerald-600";
+    if (diem >= 65) return "text-lime-600";
+    if (diem >= 50) return "text-amber-600";
+    if (diem >= 35) return "text-orange-600";
+    return "text-red-600";
+  }
+
+  function veKetQua(kq: any): string {
+    const cap = kq.capGoc
+      .map(
+        (c: any) =>
+          `<span class="inline-flex items-center gap-1 rounded-(--radius-pill) border px-2.5 py-1 text-xs ${
+            c.catHung === "cát"
+              ? "border-emerald-300 bg-emerald-50 text-emerald-800"
+              : "border-red-300 bg-red-50 text-red-800"
+          }"><strong>${c.capGoc.cap}</strong> ${esc(c.ten)}${c.daHoaGiai ? " ✓đã hoá" : ""}</span>`,
+      )
+      .join(" ");
+
+    const canhBao = kq.canhBao.length
+      ? `<div class="mt-4 rounded-(--radius-card) border border-amber-300 bg-amber-50 p-4">
+           <p class="text-sm font-semibold text-amber-900">Cảnh báo cần lưu ý</p>
+           <ul class="mt-2 list-disc space-y-1 pl-5 text-sm text-amber-900">
+             ${kq.canhBao.map((c: any) => `<li><strong>${esc(c.tieuDe)}</strong> — ${esc(c.moTa)}</li>`).join("")}
+           </ul>
+         </div>`
+      : "";
+
+    const thanhPhan = kq.diem.thanhPhan
+      .map(
+        (t: any) =>
+          `<li class="flex items-start justify-between gap-3 border-b border-(--color-ivory-300) py-1.5 last:border-0">
+             <span class="text-(--color-ink-700)">${esc(t.ten)}<br><span class="text-xs text-(--color-ink-500)">${esc(t.ghiChu)}</span></span>
+             <strong class="shrink-0 ${t.diem >= 0 ? "text-emerald-700" : "text-red-700"}">${t.diem > 0 ? "+" : ""}${t.diem}</strong>
+           </li>`,
+      )
+      .join("");
+
+    const baiLuan = kq.baiLuan
+      .map(
+        (d: any) =>
+          `<section class="mt-6">
+             <h3 class="font-display text-lg font-semibold text-(--color-ink-900)">${esc(d.tieuDe)}</h3>
+             ${d.noiDung.map((p: string) => `<p class="mt-2 text-sm leading-relaxed text-(--color-ink-700)">${esc(p)}</p>`).join("")}
+           </section>`,
+      )
+      .join("");
+
+    return `
+      <div class="rounded-(--radius-card) border-2 border-(--color-gold-400) bg-white p-6 shadow-lg">
+        <p class="text-sm text-(--color-ink-500)">Số ${esc(kq.soDaChuanHoa)}</p>
+        <p class="mt-1 font-display text-5xl font-bold ${mauTheoDiem(kq.diem.diem)}">${kq.diem.diem}<span class="text-2xl">/100</span></p>
+        <p class="mt-1 text-lg font-semibold text-(--color-ink-900)">${esc(kq.diem.nhan)}</p>
+
+        <div class="mt-4 grid gap-3 sm:grid-cols-2">
+          <div class="rounded-(--radius-control) bg-(--color-ivory-100) p-3">
+            <p class="text-xs uppercase tracking-wide text-(--color-ink-500)">Năng lượng chủ đạo</p>
+            <p class="mt-0.5 font-semibold text-(--color-ink-900)">${kq.tinhChuDao ? esc(kq.tinhChuDao.ten) : "Không có tinh nào nổi trội"}</p>
+          </div>
+          <div class="rounded-(--radius-control) bg-(--color-ivory-100) p-3">
+            <p class="text-xs uppercase tracking-wide text-(--color-ink-500)">Ba số cuối — kết cục</p>
+            <p class="mt-0.5 font-semibold text-(--color-ink-900)">${esc(kq.ketCuc.baSoDuoi)}</p>
+          </div>
+        </div>
+
+        <div class="mt-4">
+          <p class="text-xs uppercase tracking-wide text-(--color-ink-500)">Các cặp năng lượng</p>
+          <div class="mt-2 flex flex-wrap gap-1.5">${cap}</div>
+        </div>
+
+        ${canhBao}
+
+        <details class="mt-4 rounded-(--radius-control) border border-(--color-ivory-300) p-3">
+          <summary class="cursor-pointer text-sm font-medium text-(--color-ink-800)">Điểm được tính thế nào?</summary>
+          <ul class="mt-2 text-sm">${thanhPhan}</ul>
+          <p class="mt-2 text-xs text-(--color-ink-500)">
+            Thang điểm này do Phong Thủy Thiên Anh thiết kế để tóm tắt nhanh, không có trong tài liệu
+            gốc. Phần luận chi tiết bên dưới mới là nội dung theo đúng phương pháp.
+          </p>
+        </details>
+
+        <a href="#lsdt-bai-luan" class="mt-4 inline-block text-sm font-semibold text-(--color-gold-400) hover:underline">
+          Xem luận giải chi tiết ↓
+        </a>
+      </div>
+
+      <div id="lsdt-bai-luan" class="mt-6 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6">
+        <h2 class="font-display text-xl font-bold text-(--color-ink-950)">Luận giải chi tiết</h2>
+        ${baiLuan}
+      </div>
+    `;
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    oLoi.classList.add("hidden");
+    oKetQua.classList.add("hidden");
+    oCta.classList.add("hidden");
+    oDangChay.classList.remove("hidden");
+
+    const payload = {
+      soDienThoai: (document.getElementById("lsdt-so") as HTMLInputElement).value,
+      cccd: (document.getElementById("lsdt-cccd") as HTMLInputElement).value,
+      gioiTinh: (document.getElementById("lsdt-gioi-tinh") as HTMLSelectElement).value,
+      mucDich: (document.getElementById("lsdt-muc-dich") as HTMLSelectElement).value,
+    };
+
+    try {
+      // Gửi bằng fetch/JSON chứ không dùng POST form thuần: form HTML gốc bị chặn CSRF trong
+      // trình duyệt của Zalo/Facebook, và số điện thoại không nên nằm trên thanh địa chỉ.
+      const res = await fetch("/api/luan-so-dien-thoai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      oDangChay.classList.add("hidden");
+
+      if (!res.ok || !data.ok) {
+        oLoi.textContent = data.error ?? "Có lỗi xảy ra, vui lòng thử lại.";
+        oLoi.classList.remove("hidden");
+        return;
+      }
+
+      oKetQua.innerHTML = veKetQua(data.ketQua);
+      oKetQua.classList.remove("hidden");
+      oCta.classList.remove("hidden");
+      oKetQua.scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch {
+      oDangChay.classList.add("hidden");
+      oLoi.textContent = "Không kết nối được tới máy chủ. Vui lòng thử lại.";
+      oLoi.classList.remove("hidden");
+    }
+  });
+</script>
