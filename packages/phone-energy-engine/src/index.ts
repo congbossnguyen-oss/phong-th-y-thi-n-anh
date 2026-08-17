@@ -13,9 +13,11 @@ import { luanKetCuc } from "./engine/ketCuc.js";
 import { tongHopCanhBao } from "./engine/canhBao.js";
 import { luan10Nhom } from "./engine/nhomTuTruong.js";
 import { tinhDiemTongQuan } from "./engine/diem.js";
+import { tinhThongKe } from "./engine/thongKe.js";
 import {
   apDungCoCheB,
   chuanHoaCccd,
+  thieuDuLieuVuotTuoi,
   tinhVanThe,
 } from "./engine/vanThe.js";
 import { dungBaiLuan } from "./templates/baiLuan.js";
@@ -62,12 +64,26 @@ export function luanSoDienThoai(input: LuanSoDienThoaiInput): LuanSoDienThoaiRes
   const nhomTuTruong = luan10Nhom(capGoc, input.mucDich ?? "tổng quát");
   const tinhChuDao = timTinhChuDao(capGoc.map((c) => c.ten));
 
+  // Tuổi ta tính tròn theo năm dương — đủ chính xác để biết đang ở giai đoạn vận thế nào, vì mỗi
+  // giai đoạn dài 5-15 năm nên lệch vài tháng không đổi kết luận.
+  const tuoiHienTai =
+    input.namSinh && Number.isInteger(input.namSinh)
+      ? new Date().getFullYear() - input.namSinh
+      : null;
+
   // Bước 5 + Cơ chế B — chỉ chạy được khi có căn cước.
   let vanThe = null as LuanSoDienThoaiResult["vanThe"];
   let hoaGiai: LuanSoDienThoaiResult["hoaGiai"] = [];
   if (input.cccd) {
     const cccd = chuanHoaCccd(input.cccd);
     vanThe = tinhVanThe(cccd);
+    if (tuoiHienTai !== null) {
+      for (const g of vanThe) {
+        g.laHienTai = tuoiHienTai >= g.tuoiTu && tuoiHienTai < g.tuoiDen;
+      }
+      const vuot = thieuDuLieuVuotTuoi(vanThe, tuoiHienTai);
+      if (vuot) thieuDuLieu.push(vuot);
+    }
     hoaGiai = apDungCoCheB(vanThe, capGoc);
   }
 
@@ -80,7 +96,10 @@ export function luanSoDienThoai(input: LuanSoDienThoaiInput): LuanSoDienThoaiRes
 
   const coHoTroCccd = hoaGiai.some((g) => g.cachHoaGiai.includes("ĐÃ có sẵn"));
 
+  const thongKe = tinhThongKe(capGoc);
+
   const diem = tinhDiemTongQuan({
+    soDaChuanHoa,
     capGoc,
     capTrongDuoi: ketCuc.capTrongDuoi,
     canhBao,
@@ -99,6 +118,7 @@ export function luanSoDienThoai(input: LuanSoDienThoaiInput): LuanSoDienThoaiRes
     hoaGiai,
     thieuDuLieu,
     coCccd: Boolean(input.cccd),
+    loiKhen: diem.loiKhen,
   });
 
   return {
@@ -111,6 +131,8 @@ export function luanSoDienThoai(input: LuanSoDienThoaiInput): LuanSoDienThoaiRes
     canhBao,
     vanThe,
     hoaGiai,
+    thongKe,
+    tuoiHienTai,
     diem,
     baiLuan,
     thieuDuLieu,

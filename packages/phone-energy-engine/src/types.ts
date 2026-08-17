@@ -117,6 +117,8 @@ export interface GiaiDoanVanThe {
   cap: string;
   tuoiTu: number;
   tuoiDen: number;
+  /** Giai đoạn khách đang ở — chỉ xác định được khi có năm sinh. */
+  laHienTai?: boolean;
   ten: TenTinh | null;
   capDo: CapDo | null;
   catHung: CatHung | null;
@@ -140,6 +142,11 @@ export interface GoiYHoaGiai {
 export interface ScoreCard {
   diem: number;
   nhan: string;
+  /**
+   * Lời chúc mừng khi số đạt mức tốt trở lên. Chuỗi rỗng với số ở mức trung bình hoặc kém — không
+   * khen lấy lệ, vì khen sai chỗ thì mất tin tưởng.
+   */
+  loiKhen: string;
   thanhPhan: { ten: string; diem: number; ghiChu: string }[];
 }
 
@@ -148,6 +155,26 @@ export interface LuanSoDienThoaiInput {
   cccd?: string;
   gioiTinh?: GioiTinh;
   mucDich?: MucDich;
+  /** Năm sinh dương lịch — chỉ dùng để biết khách đang ở giai đoạn vận thế nào. */
+  namSinh?: number;
+}
+
+/** Số liệu tổng hợp cho phần biểu đồ. Tính sẵn ở engine để tầng hiển thị không phải tự suy. */
+export interface ThongKe {
+  tongSoCap: number;
+  soCapCat: number;
+  soCapHung: number;
+  tyLeCat: number;
+  tyLeHung: number;
+  /** Tỷ trọng từng Bát tinh trong dãy, sắp giảm dần. */
+  theoTinh: { ten: TenTinh; catHung: CatHung; soLan: number; tyLe: number }[];
+  /** Tỷ trọng ngũ hành, tính trên TỪNG CHỮ SỐ (kể cả 0 và 5 vốn có hành riêng). */
+  theoNguHanh: { hanh: NguHanh; soLan: number; tyLe: number }[];
+  /**
+   * Giá trị năng lượng từng cặp theo thứ tự trong dãy, thang -100..100 — dùng vẽ biểu đồ sóng.
+   * Dương là cát, âm là hung, độ lớn theo cấp độ.
+   */
+  song: { cap: string; ten: TenTinh; giaTri: number }[];
 }
 
 export interface LuanSoDienThoaiResult {
@@ -165,6 +192,9 @@ export interface LuanSoDienThoaiResult {
   canhBao: CanhBao[];
   vanThe: GiaiDoanVanThe[] | null;
   hoaGiai: GoiYHoaGiai[];
+  thongKe: ThongKe;
+  /** Tuổi suy từ năm sinh, null nếu khách không nhập. */
+  tuoiHienTai: number | null;
   diem: ScoreCard;
   /** Bài luận văn xuôi 8 bước, ghép từ template — không gọi AI. */
   baiLuan: { tieuDe: string; noiDung: string[] }[];

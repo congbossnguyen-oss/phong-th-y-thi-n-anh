@@ -92,9 +92,11 @@ export function luanBo3So(soDaChuanHoa: string, capGoc: KetQuaCap[]): Bo3So[] {
         bo,
         capTrai: null,
         capPhai: null,
+        // KHÔNG nhắc lại chuỗi số ở đầu câu: tầng hiển thị đã in nó thành nhãn ngay trước câu này,
+        // lặp lại thành ra đọc hai lần cùng một con số.
         dienGiai: cauHieuUng
-          ? `Đoạn "${bo}" có số ${bo.includes("5") ? "5" : "0"} tham gia: ${cauHieuUng}.`
-          : `Đoạn "${bo}" chứa số ngoài Bát Quái, xét theo hiệu ứng thay vì ghép cặp.`,
+          ? `Có số ${bo.includes("5") ? "5" : "0"} xen vào đoạn này: ${cauHieuUng}.`
+          : `Đoạn này chứa số ngoài Bát Quái nên xét theo hiệu ứng, không ghép cặp trái–phải.`,
         hoaGiaiNoiBo: false,
       });
       continue;

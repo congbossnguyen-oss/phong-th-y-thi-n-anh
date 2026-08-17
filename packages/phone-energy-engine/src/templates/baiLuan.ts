@@ -59,6 +59,8 @@ export function dungBaiLuan(params: {
   hoaGiai: GoiYHoaGiai[];
   thieuDuLieu: ThieuDuLieu[];
   coCccd: boolean;
+  /** Lời chúc mừng khi số đạt mức tốt trở lên; chuỗi rỗng thì bỏ qua. */
+  loiKhen: string;
 }): DoanBaiLuan[] {
   const {
     soDaChuanHoa,
@@ -72,6 +74,7 @@ export function dungBaiLuan(params: {
     hoaGiai,
     thieuDuLieu,
     coCccd,
+    loiKhen,
   } = params;
 
   const doan: DoanBaiLuan[] = [];
@@ -176,6 +179,7 @@ export function dungBaiLuan(params: {
 
   // --- Bước 7: tổng hợp & cảnh báo ---
   const cauTongHop: string[] = [];
+  if (loiKhen) cauTongHop.push(loiKhen);
   if (canhBao.length > 0) {
     for (const c of canhBao) cauTongHop.push(`${c.tieuDe}: ${c.moTa}`);
   } else {

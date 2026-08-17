@@ -46,6 +46,14 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   const cccdRaw = typeof body.cccd === "string" ? body.cccd.trim() : "";
+  const namNay = new Date().getFullYear();
+  const namSinh =
+    typeof body.namSinh === "number" && Number.isInteger(body.namSinh)
+      ? body.namSinh
+      : undefined;
+  // Năm sinh phi lý thì bỏ qua chứ không báo lỗi — nó là trường tuỳ chọn, chặn cả yêu cầu vì một ô
+  // phụ nhập sai là làm khó khách.
+  const namSinhHopLe = namSinh && namSinh >= 1900 && namSinh <= namNay ? namSinh : undefined;
   const gioiTinhRaw = typeof body.gioiTinh === "string" ? body.gioiTinh : "";
   const mucDichRaw = typeof body.mucDich === "string" ? body.mucDich : "";
 
@@ -62,6 +70,7 @@ export const POST: APIRoute = async ({ request }) => {
       ...(cccdRaw ? { cccd: cccdRaw } : {}),
       ...(gioiTinh ? { gioiTinh } : {}),
       ...(mucDich ? { mucDich } : {}),
+      ...(namSinhHopLe ? { namSinh: namSinhHopLe } : {}),
     });
     return jsonResponse({ ok: true, ketQua }, 200);
   } catch (err) {

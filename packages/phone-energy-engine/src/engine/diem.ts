@@ -19,6 +19,19 @@ export interface TrongSoDiem {
   hoTroCccd: number;
   moiCanhBao: number;
   toiDaTruCanhBao: number;
+  /** Trừ cho MỖI số 0 nằm trong thân số (số 0 đầu nhà mạng đã bị bỏ trước đó). */
+  moiSo0TrongDay: number;
+  toiDaTruSo0: number;
+  /** Dãy không có cặp Sinh Khí nào. */
+  thieuSinhKhi: number;
+  /** Dãy không có cặp Diên Niên nào. */
+  thieuDienNien: number;
+  /** Một loại năng lượng chiếm quá nửa dãy — mất cân bằng, đơn điệu. Mức trừ tối thiểu. */
+  motTinhApDao: number;
+  /** Mức trừ khi CẢ dãy chỉ có đúng một loại năng lượng. */
+  motTinhApDaoToiDa: number;
+  /** Ngưỡng tỷ lệ coi là áp đảo. */
+  nguongApDao: number;
 }
 
 export const TRONG_SO_MAC_DINH: TrongSoDiem = {
@@ -30,6 +43,22 @@ export const TRONG_SO_MAC_DINH: TrongSoDiem = {
   hoTroCccd: 10,
   moiCanhBao: -10,
   toiDaTruCanhBao: -20,
+  // Chủ dự án chốt 2026-08-17: CỨ có số 0 nằm giữa dãy là đã gãy trường khí, không đợi tới số 0
+  // thứ hai hay tới ngưỡng "số gãy" (>2) của tài liệu. Nên trừ ngay từ số 0 đầu tiên trong thân số.
+  moiSo0TrongDay: -9,
+  toiDaTruSo0: -30,
+  // Ba khoản trừ vì MẤT CÂN BẰNG, thêm 2026-08-17 sau khi chủ dự án chỉ ra một dãy toàn Phục Vị
+  // vẫn được chấm cao. Đều có căn cứ trong tài liệu:
+  //   • Mục 4e: "không nên toàn một loại cát tinh mà thiếu các cát tinh khác — dễ quá thả lỏng,
+  //     cần có sự lưu thông, luân chuyển".
+  //   • Mô tả Diên Niên: "đây là năng lượng quan trọng nhất trong số điện thoại nhưng thường bị
+  //     coi nhẹ" — thiếu hẳn là một khuyết thật sự.
+  //   • Mô tả Sinh Khí: là "cứu mạng chi tinh", thiếu thì không có quý nhân, việc gì cũng tự thân.
+  thieuSinhKhi: -10,
+  thieuDienNien: -10,
+  motTinhApDao: -18,
+  motTinhApDaoToiDa: -30,
+  nguongApDao: 50,
 };
 
 /** Trọng số của từng cấp độ khi quy năng lượng ra điểm — cấp 1 mạnh nhất. */
@@ -50,6 +79,7 @@ export function nhanTheoDiem(diem: number): string {
 const lamTron = (n: number) => Math.round(n * 10) / 10;
 
 export function tinhDiemTongQuan(params: {
+  soDaChuanHoa: string;
   capGoc: KetQuaCap[];
   capTrongDuoi: KetQuaCap[];
   canhBao: CanhBao[];
@@ -138,6 +168,81 @@ export function tinhDiemTongQuan(params: {
     });
   }
 
+  // 7. Số 0 nằm trong thân số — gãy trường khí. Số 0 đầu nhà mạng đã bị bỏ khi chuẩn hoá nên mọi
+  // số 0 còn lại ở đây đều là số 0 nằm giữa hoặc cuối dãy.
+  const soLuong0 = params.soDaChuanHoa.split("").filter((c) => c === "0").length;
+  if (soLuong0 >= 1) {
+    const d = Math.max(w.toiDaTruSo0, soLuong0 * w.moiSo0TrongDay);
+    diem += d;
+    thanhPhan.push({
+      ten: soLuong0 === 1 ? "Có số 0 nằm giữa dãy" : `Có ${soLuong0} số 0 trong dãy`,
+      diem: d,
+      ghiChu: "Số 0 làm gãy trường khí: việc dễ dang dở, gần đến nơi lại hỏng.",
+    });
+  }
+
+  // 8. Mất cân bằng — dãy thiếu hẳn một cát tinh trụ cột, hoặc bị một loại năng lượng lấn át.
+  if (capGoc.length > 0) {
+    if (!coMat.has("Sinh Khí")) {
+      diem += w.thieuSinhKhi;
+      thanhPhan.push({
+        ten: "Không có Sinh Khí",
+        diem: w.thieuSinhKhi,
+        ghiChu: "Thiếu năng lượng quý nhân — việc gì cũng phải tự thân, ít người đỡ.",
+      });
+    }
+    if (!coMat.has("Diên Niên")) {
+      diem += w.thieuDienNien;
+      thanhPhan.push({
+        ten: "Không có Diên Niên",
+        diem: w.thieuDienNien,
+        ghiChu: "Thiếu năng lượng sự nghiệp và sức bền — dãy số kém ổn định, thiếu nhất quán.",
+      });
+    }
+
+    const demTheoTinh = new Map<string, number>();
+    for (const c of capGoc) demTheoTinh.set(c.ten, (demTheoTinh.get(c.ten) ?? 0) + 1);
+    let tenApDao = "";
+    let soLanApDao = 0;
+    for (const [ten, n] of demTheoTinh) {
+      if (n > soLanApDao) {
+        tenApDao = ten;
+        soLanApDao = n;
+      }
+    }
+    const tyLeApDao = (soLanApDao / capGoc.length) * 100;
+    if (tyLeApDao > w.nguongApDao) {
+      // Trừ tăng dần theo mức áp đảo: vừa quá nửa thì trừ mức tối thiểu, chiếm trọn dãy thì trừ
+      // mức tối đa. Áp một mức cố định sẽ đánh đồng dãy 51% với dãy 100%, trong khi tài liệu nhấn
+      // mạnh "quá cường sinh hại" — càng đơn điệu càng hại.
+      const mucVuot = (tyLeApDao - w.nguongApDao) / (100 - w.nguongApDao);
+      const d = Math.round(w.motTinhApDao + (w.motTinhApDaoToiDa - w.motTinhApDao) * mucVuot);
+      diem += d;
+      thanhPhan.push({
+        ten: `${tenApDao} chiếm ${Math.round(tyLeApDao)}% dãy số`,
+        diem: d,
+        ghiChu: `${soLanApDao} trên ${capGoc.length} cặp cùng một loại năng lượng — dãy đơn điệu, thiếu lưu thông. Dù là cát tinh, quá cường vẫn sinh hại.`,
+      });
+    }
+  }
+
   const cuoi = Math.max(0, Math.min(100, Math.round(diem)));
-  return { diem: cuoi, nhan: nhanTheoDiem(cuoi), thanhPhan };
+  return { diem: cuoi, nhan: nhanTheoDiem(cuoi), loiKhen: loiKhenTheoDiem(cuoi), thanhPhan };
+}
+
+/**
+ * Lời khen theo mức điểm. Chỉ khen từ mức "tốt" trở lên — số trung bình hoặc kém thì để trống,
+ * khen lấy lệ sẽ làm khách mất tin vào phần luận phía dưới.
+ */
+export function loiKhenTheoDiem(diem: number): string {
+  if (diem >= 90) {
+    return "Xin chúc mừng — đây là một số điện thoại đẹp xuất sắc, rất hiếm gặp. Anh/chị nên giữ số này lâu dài.";
+  }
+  if (diem >= 80) {
+    return "Xin chúc mừng — đây là một số điện thoại đẹp, năng lượng rất tốt. Anh/chị nên giữ số này lâu dài.";
+  }
+  if (diem >= 65) {
+    return "Chúc mừng anh/chị đã chọn được một số phù hợp — dãy số này có nền năng lượng tốt.";
+  }
+  return "";
 }

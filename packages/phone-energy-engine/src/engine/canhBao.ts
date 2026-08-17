@@ -33,6 +33,20 @@ export function tongHopCanhBao(
     });
   }
 
+  // Chủ dự án chốt 2026-08-17: chỉ cần MỘT số 0 nằm trong thân số là đã gãy trường khí. Số 0 đầu
+  // nhà mạng đã bị bỏ lúc chuẩn hoá nên mọi số 0 đếm được ở đây đều nằm giữa hoặc cuối dãy.
+  //
+  // Cảnh báo "số gãy" theo ngưỡng >2 của tài liệu vẫn giữ nguyên bên dưới, vì đó là câu chữ của
+  // sách và mô tả một mức độ nặng hơn — hai cảnh báo bổ sung cho nhau, không thay thế nhau.
+  if (so0 >= 1) {
+    ds.push({
+      ma: "gay_truong_khi",
+      tieuDe: so0 === 1 ? "Có số 0 nằm giữa dãy — gãy trường khí" : `Có ${so0} số 0 — gãy trường khí`,
+      moTa: "Số 0 cắt mạch năng lượng của dãy số: mọi việc dễ dang dở, gần đến nơi lại hỏng, khó đi đến cùng.",
+      mucDo: "nặng",
+    });
+  }
+
   if (so0 > NGUONG.soLuong0) {
     ds.push({
       ma: "so_gay",
