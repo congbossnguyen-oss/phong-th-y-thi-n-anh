@@ -47,9 +47,10 @@ export type UuTienCuoiHoi = "can-bang" | "uu-tien-co-dau" | "uu-tien-chu-re";
  * không gọi engine chưa có như thể đã có.
  */
 export const THIEU_DU_LIEU_CUOI_HOI: readonly string[] = [
-  "Khí Vãng Vong (chỉ áp Thành hôn) — chưa có bảng tiết khí tương ứng trong kho",
-  "Chu Đường bất lợi: trực Phu / trực Phụ (chỉ áp Thành hôn) — chưa có công thức",
-  "Hoà thượng sát / ni cô sát (chỉ áp Thành hôn) — chưa có công thức",
+  // Chu Đường đã có công thức (chủ dự án cấp 2026-08-17) → xem `chuDuong.ts`, đã gỡ khỏi danh sách.
+  // Nhưng 6/8 trực còn lại chưa có luận — xem `TRUC_CHU_DUONG_CHUA_CO_LUAN`.
+  "Ni Cô Sát — nguồn CẤM suy ra bằng cách đảo bảng Hoà Thượng Sát; chờ nguồn riêng",
+  "Mức độ phạt của Hoà Thượng Sát — nguồn nói rõ chưa đủ căn cứ để tự chốt loại thẳng hay trừ bao nhiêu",
   "Giờ Quý Nhân Đăng Thiên Môn — chưa số hoá",
 ];
 
