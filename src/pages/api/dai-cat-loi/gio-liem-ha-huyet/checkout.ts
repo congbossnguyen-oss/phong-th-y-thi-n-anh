@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
 import {
   calculateGioLiemHaHuyet,
-  kiemToaHuongTruocThanhToan,
+  kiemDayDuTruocThanhToan,
   type GioLiemHaHuyetInput,
 } from "@thien-anh/trachnhat-engine";
 import { taoDonCongCu } from "../../../../lib/payments/checkout-cong-cu";
@@ -137,14 +137,34 @@ export const POST: APIRoute = async ({ request, locals }) => {
   // cứu được. Quy tắc "phạm sát cấp năm thì KHÔNG THU PHÍ" là cam kết nghiệp vụ, nên phải được
   // giữ ở nơi khách không sửa được.
   if (doSoToa !== undefined) {
-    const cong = kiemToaHuongTruocThanhToan({ doSoToa, namMat, thangMat, ngayMat });
+    // Chạy TRỌN Phase 2 chứ không chỉ kiểm kết cục C: đo 2026-08-17 cho thấy có tọa hướng bị lọc
+    // sạch mọi phương án dù không phạm sát cấp năm. Thu tiền rồi trả về tay trắng thì với tang
+    // gia còn tệ hơn kết cục C.
+    const cong = kiemDayDuTruocThanhToan({
+      doSoToa,
+      namMat,
+      thangMat,
+      ngayMat,
+      gioiTinh: input.gioiTinh,
+      namSinhDuongLich,
+      chiGioMat: input.chiGioMat,
+      ...(input.soNgayDuKienToiChon ? { soNgayDuKienToiChon: input.soNgayDuKienToiChon } : {}),
+      ...(thanQuyen ? { thanQuyen } : {}),
+      ...(input.nguyenNhanMat ? { nguyenNhanMat: input.nguyenNhanMat } : {}),
+    });
     if (cong.ketCuc === "can-do-lai") {
       return jsonResponse({ ok: false, error: cong.thongDiep }, 400);
     }
+    // 409 để tầng gọi phân biệt được với lỗi nhập liệu thường: đây không phải nhập sai, mà là
+    // trường hợp chúng tôi chủ động không nhận phí.
     if (cong.ketCuc === "C") {
-      // 409 để tầng gọi phân biệt được với lỗi nhập liệu thường: đây không phải nhập sai, mà là
-      // trường hợp chúng tôi chủ động không nhận phí.
       return jsonResponse({ ok: false, chuaThuPhi: true, error: cong.thongDiep }, 409);
+    }
+    if (cong.ketCuc === "rong") {
+      return jsonResponse(
+        { ok: false, chuaThuPhi: true, error: cong.thongDiep, conGoiCoBan: cong.conGoiCoBan },
+        409,
+      );
     }
   }
 

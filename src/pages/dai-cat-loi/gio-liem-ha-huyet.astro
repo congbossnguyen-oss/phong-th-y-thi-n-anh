@@ -311,6 +311,26 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
       <div id="glhh-chua-thu-phi" class="mt-6 hidden rounded-(--radius-card) border-2 border-amber-400 bg-amber-50 p-6">
         <p class="font-display text-lg font-bold text-amber-900">Trường hợp này chúng tôi chưa thu phí</p>
         <p id="glhh-ctp-ly-do" class="mt-3 text-sm leading-relaxed text-amber-900"></p>
+
+        {/*
+          Chỉ hiện khi lọc theo tọa hướng không ra phương án nào NHƯNG phần chưởng pháp vẫn có kết
+          quả. Đây là nói thật — phần không làm được thì không thu tiền — chứ không phải hạ giá để
+          vớt khách. Vì vậy không có câu nào thúc ép hay đếm ngược.
+        */}
+        <div id="glhh-goi-co-ban" class="mt-4 hidden rounded-(--radius-control) border border-amber-300 bg-white/70 p-4">
+          <p class="text-sm font-medium text-amber-900">Gia đình vẫn có thể dùng gói cơ bản</p>
+          <p class="mt-1 text-sm leading-relaxed text-amber-900">
+            Phần chọn giờ liệm, giờ đóng quan và ngày giờ hạ huyệt theo chưởng pháp vẫn cho kết quả bình thường.
+            Chỉ riêng bước lọc theo tọa hướng huyệt mộ là không ra phương án nào, nên chúng tôi không thu phần phí đó.
+          </p>
+          <button
+            type="button"
+            id="glhh-chuyen-co-ban"
+            class="mt-3 inline-flex items-center rounded-(--radius-control) border border-amber-600 px-4 py-2 text-sm font-medium text-amber-900 hover:bg-amber-100"
+          >
+            Dùng gói cơ bản
+          </button>
+        </div>
         <div class="mt-4 flex flex-wrap gap-3">
           <a
             href="/lien-he"
@@ -872,6 +892,20 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
     }
   });
 
+  const goiCoBanEl = document.getElementById("glhh-goi-co-ban")!;
+
+  // Chuyển sang gói cơ bản = bỏ tọa mộ đi rồi tính lại. Không giữ lại tọa độ để tránh cảnh khách
+  // tưởng mình vẫn được lọc theo tọa hướng mà thực ra không.
+  document.getElementById("glhh-chuyen-co-ban")!.addEventListener("click", () => {
+    (form.querySelector('input[name="glhh-co-huyet"][value="chua"]') as HTMLInputElement).click();
+    toaDoInput.value = "";
+    huongDoInput.value = "";
+    quyDoiEl.textContent = "";
+    chuaThuPhiEl.classList.add("hidden");
+    goiCoBanEl.classList.add("hidden");
+    form.requestSubmit();
+  });
+
   document.getElementById("glhh-ctp-quay-lai")!.addEventListener("click", () => {
     chuaThuPhiEl.classList.add("hidden");
     toaDoInput.focus();
@@ -971,6 +1005,11 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
             namMat: ngayMat.year,
             thangMat: ngayMat.month,
             ngayMat: ngayMat.day,
+            gioiTinh,
+            namSinhDuongLich: Number(namSinhDuongLich),
+            chiGioMat,
+            ...(soNgayRaw ? { soNgayDuKienToiChon: Number(soNgayRaw) } : {}),
+            nguyenNhanMat,
           }),
         });
         const dataKiem = await resKiem.json();
@@ -986,8 +1025,12 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
           doLaiEl.scrollIntoView({ behavior: "smooth", block: "center" });
           return;
         }
-        if (kq.ketCuc === "C") {
+        // Kết cục C, hoặc lọc sạch không còn phương án nào — cả hai đều KHÔNG thu phí.
+        if (kq.ketCuc === "C" || kq.ketCuc === "rong") {
           document.getElementById("glhh-ctp-ly-do")!.textContent = kq.thongDiep;
+          // Phần lọc theo tọa hướng không làm được thì không thu tiền phần đó — nhưng Phase 1 vẫn
+          // có kết quả, nên mời gói cơ bản. Đây là nói thật, không phải hạ giá để vớt khách.
+          goiCoBanEl.classList.toggle("hidden", kq.ketCuc !== "rong" || !kq.conGoiCoBan);
           chuaThuPhiEl.classList.remove("hidden");
           chuaThuPhiEl.scrollIntoView({ behavior: "smooth", block: "center" });
           return;

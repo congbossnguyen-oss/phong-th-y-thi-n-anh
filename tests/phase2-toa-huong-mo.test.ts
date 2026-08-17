@@ -8,7 +8,12 @@
 // module, cấp Ngày/Giờ chỉ loại phương án, sát ranh giới thì bắt đo lại chứ không tự đoán.
 import { describe, expect, it } from "vitest";
 import { TrachNhat, TrungTang, XemNgayCaoCap } from "@thien-anh/rule-engine";
-import { apDungPhase2, calculateGioLiemHaHuyet, kiemToaHuongTruocThanhToan } from "@thien-anh/trachnhat-engine";
+import {
+  apDungPhase2,
+  calculateGioLiemHaHuyet,
+  kiemDayDuTruocThanhToan,
+  kiemToaHuongTruocThanhToan,
+} from "@thien-anh/trachnhat-engine";
 import { readFileSync } from "node:fs";
 
 /**
@@ -585,5 +590,53 @@ describe("Mục 2.3 — nhóm hung KHÔNG hoá giải được phải thật s�
       const canTim = BI_DANH[ten] ?? ten;
       expect(NGUON_FACADE, `"${ten}" nằm trong danh sách cấm nhưng không có chỗ nào kiểm`).toContain(canTim);
     }
+  });
+});
+
+describe("Cổng kiểm ĐẦY ĐỦ — lọc sạch phương án cũng không thu phí", () => {
+  const CHUNG = {
+    gioiTinh: "nam" as const,
+    namSinhDuongLich: 1947,
+    namMat: 2026,
+    thangMat: 7,
+    ngayMat: 10,
+    chiGioMat: "Tuất" as const,
+    soNgayDuKienToiChon: 7,
+  };
+
+  it("tọa không phạm sát cấp năm NHƯNG lọc sạch phương án thì vẫn KHÔNG thu phí", () => {
+    // Đây là ca trước 2026-08-17 sẽ thu tiền rồi trả về tay trắng: qua được cổng cấp năm nên
+    // được tính tiền, nhưng Tam Sát + cổng Tứ Trụ quét sạch 96/96 phương án.
+    const kq = kiemDayDuTruocThanhToan({ ...CHUNG, doSoToa: 30 });
+    expect(kq.ketCuc).toBe("rong");
+    if (kq.ketCuc !== "rong") return;
+    expect(kq.duocPhepThuPhi).toBe(false);
+    expect(kq.lyDoChinh.length).toBeGreaterThan(0);
+    // Phải nói được nguyên nhân, không chỉ báo "không có kết quả".
+    expect(kq.thongDiep).toContain("không nhận phí");
+    expect(kq.thongDiep).toMatch(/Tam Sát|trụ hỗ trợ|Tam Tài/);
+  });
+
+  it("khi lọc sạch mà chưởng pháp vẫn có kết quả thì báo còn dùng được gói cơ bản", () => {
+    const kq = kiemDayDuTruocThanhToan({ ...CHUNG, doSoToa: 30 });
+    if (kq.ketCuc !== "rong") return;
+    expect(kq.conGoiCoBan).toBe(true);
+  });
+
+  it("mọi kết cục KHÔNG cho đi tiếp đều mang cờ duocPhepThuPhi = false", () => {
+    // Bất biến trung tâm: không tầng nào được phép tự suy ra "chắc là thu được".
+    for (const doSoToa of [180, 30, 165]) {
+      const kq = kiemDayDuTruocThanhToan({ ...CHUNG, doSoToa });
+      if (kq.ketCuc === "qua-cong") expect(kq.duocPhepThuPhi).toBe(true);
+      else if (kq.ketCuc !== "can-do-lai") expect(kq.duocPhepThuPhi).toBe(false);
+    }
+  });
+
+  it("tọa còn phương án thì cho đi tiếp và nói rõ còn bao nhiêu", () => {
+    const kq = kiemDayDuTruocThanhToan({ ...CHUNG, doSoToa: 210 });
+    expect(kq.ketCuc).toBe("qua-cong");
+    if (kq.ketCuc !== "qua-cong") return;
+    expect(kq.duocPhepThuPhi).toBe(true);
+    expect(kq.soPhuongAn).toBeGreaterThan(0);
   });
 });

@@ -11,6 +11,8 @@
  */
 import { getCanChi } from "@thien-anh/calendar-core";
 import { TrungTang } from "@thien-anh/rule-engine";
+import { calculateGioLiemHaHuyet, type GioLiemHaHuyetInput } from "./gioLiemHaHuyet.js";
+import { apDungPhase2 } from "./phase2ApDung.js";
 
 const DEFAULT_TIME_ZONE = "Asia/Ho_Chi_Minh";
 /** Cửa sổ quét của Phase 1 là 20 ngày — cổng kiểm phải phủ đúng bấy nhiêu. */
@@ -58,6 +60,19 @@ export type KetQuaCongKiem =
       thieuDuLieu: string[];
       duocPhepThuPhi: true;
     };
+
+/** Gom lý do bị loại thành nhóm để nói cho gia đình biết vì sao không còn phương án nào. */
+export function gomLyDoBiLoai(biLoai: readonly { lyDo: string[] }[]): { nhom: string; soLan: number }[] {
+  const dem = new Map<string, number>();
+  for (const b of biLoai) {
+    // Lấy lý do ĐẦU TIÊN làm đại diện: đó là lý do khiến phương án bị loại sớm nhất.
+    const goc = (b.lyDo[0] ?? "").split("—")[0]!.trim().split(" theo ")[0]!.trim();
+    if (goc) dem.set(goc, (dem.get(goc) ?? 0) + 1);
+  }
+  return [...dem.entries()]
+    .map(([nhom, soLan]) => ({ nhom, soLan }))
+    .sort((a, b) => b.soLan - a.soLan);
+}
 
 function tenSonVaHuong(t: TrungTang.ToaHuongMo): string {
   return `tọa ${t.sonToa} ${t.doSoToa.toFixed(1)}° – hướng ${t.sonHuong} ${t.doSoHuong.toFixed(1)}°`;
@@ -129,4 +144,99 @@ export function kiemToaHuongTruocThanhToan(input: CongKiemToaHuongInput): KetQua
   }
 
   return { ketCuc: "qua-cong", toaHuong, canhBao, thieuDuLieu: [...thieuDuLieu], duocPhepThuPhi: true };
+}
+
+// -------------------------------------------------------------------------------------------
+// CỔNG KIỂM ĐẦY ĐỦ — chạy TRỌN Phase 2 trước khi thu tiền
+// -------------------------------------------------------------------------------------------
+
+export interface CongKiemDayDuInput extends CongKiemToaHuongInput {
+  gioiTinh: GioLiemHaHuyetInput["gioiTinh"];
+  namSinhDuongLich: number;
+  chiGioMat: GioLiemHaHuyetInput["chiGioMat"];
+  soNgayDuKienToiChon?: number;
+  thanQuyen?: GioLiemHaHuyetInput["thanQuyen"];
+  nguyenNhanMat?: TrungTang.NguyenNhanMat;
+}
+
+export type KetQuaCongKiemDayDu =
+  | { ketCuc: "can-do-lai"; thongDiep: string }
+  | { ketCuc: "C"; thongDiep: string; duocPhepThuPhi: false }
+  /**
+   * Qua được cổng cấp năm nhưng LỌC HẾT SẠCH phương án — với gia đình thì cũng tệ ngang kết cục
+   * C, nên cũng không thu phí. `conGoiCoBan` cho biết Phase 1 vẫn có kết quả để mời gói cơ bản.
+   */
+  | {
+      ketCuc: "rong";
+      thongDiep: string;
+      lyDoChinh: { nhom: string; soLan: number }[];
+      conGoiCoBan: boolean;
+      duocPhepThuPhi: false;
+    }
+  | { ketCuc: "qua-cong"; toaHuong: TrungTang.ToaHuongMo; soPhuongAn: number; duocPhepThuPhi: true };
+
+/**
+ * Kiểm ĐẦY ĐỦ trước thanh toán: chạy trọn Phase 1 + Phase 2 rồi mới quyết có thu phí hay không.
+ *
+ * Vì sao không dừng ở kiểm kết cục C như trước: đo thực tế 2026-08-17 cho thấy sau khi nối đủ
+ * Đại Hao / Mộ Long / Tam Tài, có tọa hướng bị lọc sạch 96/96 phương án dù KHÔNG phạm sát cấp
+ * năm. Thu 1.000.000đ rồi trả về "không có phương án nào" thì với tang gia còn tệ hơn kết cục C —
+ * ít ra kết cục C đã chặn từ đầu và không lấy tiền.
+ *
+ * Chạy trọn ①→⑤ ở đây không tốn kém: toàn bộ là hàm thuần tra bảng, không gọi mạng, không AI.
+ */
+export function kiemDayDuTruocThanhToan(input: CongKiemDayDuInput): KetQuaCongKiemDayDu {
+  const cong = kiemToaHuongTruocThanhToan(input);
+  if (cong.ketCuc === "can-do-lai") return cong;
+  if (cong.ketCuc === "C") return { ketCuc: "C", thongDiep: cong.thongDiep, duocPhepThuPhi: false };
+
+  const phase1 = calculateGioLiemHaHuyet({
+    gioiTinh: input.gioiTinh,
+    namSinhDuongLich: input.namSinhDuongLich,
+    namMat: input.namMat,
+    thangMat: input.thangMat,
+    ngayMat: input.ngayMat,
+    chiGioMat: input.chiGioMat,
+    ...(input.soNgayDuKienToiChon ? { soNgayDuKienToiChon: input.soNgayDuKienToiChon } : {}),
+    ...(input.thanQuyen ? { thanQuyen: input.thanQuyen } : {}),
+    ...(input.timeZone ? { timeZone: input.timeZone } : {}),
+  });
+
+  const phase2 = apDungPhase2({
+    doSoToa: input.doSoToa,
+    phuongAnPhase1: phase1.tatCaNgayGioHaHuyet ?? [],
+    namMat: input.namMat,
+    thangMat: input.thangMat,
+    ngayMat: input.ngayMat,
+    nguyenNhanMat: input.nguyenNhanMat ?? "benh-tuoi-gia",
+    namSinhDuongLich: input.namSinhDuongLich,
+    ...(input.soNgayDuKienToiChon ? { soNgayDuKienToiChon: input.soNgayDuKienToiChon } : {}),
+    ...(input.timeZone ? { timeZone: input.timeZone } : {}),
+  });
+
+  // Miễn trừ Thừa hung: giữ nguyên đề xuất Phase 1, không lọc theo tọa → luôn có kết quả.
+  if (phase2.ketCuc === "mien-tru") {
+    return { ketCuc: "qua-cong", toaHuong: cong.toaHuong, soPhuongAn: phase2.phuongAn.length, duocPhepThuPhi: true };
+  }
+  if (phase2.ketCuc === "C") return { ketCuc: "C", thongDiep: phase2.thongDiep, duocPhepThuPhi: false };
+  if (phase2.ketCuc === "can-do-lai") return { ketCuc: "can-do-lai", thongDiep: phase2.thongDiep };
+
+  if (phase2.soPhuongAnQuaLoc > 0) {
+    return { ketCuc: "qua-cong", toaHuong: cong.toaHuong, soPhuongAn: phase2.soPhuongAnQuaLoc, duocPhepThuPhi: true };
+  }
+
+  const lyDoChinh = gomLyDoBiLoai(phase2.biLoai).slice(0, 3);
+  const conGoiCoBan = (phase1.ngayGioHaHuyet?.length ?? 0) > 0;
+  const keTen = lyDoChinh.map((l) => `${l.nhom} (${l.soLan} phương án)`).join("; ");
+  return {
+    ketCuc: "rong",
+    lyDoChinh,
+    conGoiCoBan,
+    duocPhepThuPhi: false,
+    thongDiep:
+      `Với huyệt ${tenSonVaHuong(cong.toaHuong)}, toàn bộ ngày giờ trong khung 20 ngày đều vướng sát phương vị nên ` +
+      `không còn phương án nào đạt. Nguyên nhân chính: ${keTen || "nhiều tầng sát chồng nhau"}. ` +
+      `Chúng tôi không nhận phí cho trường hợp này — xin mời gia đình đặt lịch khảo sát để bàn phương án huyệt, ` +
+      `hoặc trao đổi trực tiếp với thầy.`,
+  };
 }

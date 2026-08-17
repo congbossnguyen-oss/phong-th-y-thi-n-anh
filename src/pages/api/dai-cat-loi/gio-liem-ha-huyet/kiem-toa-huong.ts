@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { kiemToaHuongTruocThanhToan } from "@thien-anh/trachnhat-engine";
+import { kiemDayDuTruocThanhToan } from "@thien-anh/trachnhat-engine";
 
 export const prerender = false;
 
@@ -37,8 +37,24 @@ export const POST: APIRoute = async ({ request }) => {
     return jsonResponse({ ok: false, error: "Ngày mất không hợp lệ." }, 400);
   }
 
+  const gioiTinh = b.gioiTinh === "nu" ? "nu" : "nam";
+  const chiGioMat = typeof b.chiGioMat === "string" ? b.chiGioMat : "";
+  if (!chiGioMat) return jsonResponse({ ok: false, error: "Thiếu giờ mất." }, 400);
+
   try {
-    const ketQua = kiemToaHuongTruocThanhToan({ doSoToa, namMat, thangMat, ngayMat });
+    // Chạy TRỌN Phase 2 chứ không chỉ kiểm sát cấp năm — có tọa hướng không phạm cấp năm nhưng
+    // vẫn bị lọc sạch mọi phương án, và với gia đình thì cũng tệ ngang kết cục C.
+    const ketQua = kiemDayDuTruocThanhToan({
+      doSoToa,
+      namMat,
+      thangMat,
+      ngayMat,
+      gioiTinh,
+      namSinhDuongLich: Number(b.namSinhDuongLich),
+      chiGioMat: chiGioMat as never,
+      ...(b.soNgayDuKienToiChon ? { soNgayDuKienToiChon: Number(b.soNgayDuKienToiChon) } : {}),
+      ...(b.nguyenNhanMat === "tai-nan-dot-ngot" ? { nguyenNhanMat: "tai-nan-dot-ngot" as const } : {}),
+    });
     // Trả nguyên trạng thái engine, kể cả cờ `duocPhepThuPhi` — tầng giao diện không được tự suy.
     return jsonResponse({ ok: true, ketQua }, 200);
   } catch (err) {
