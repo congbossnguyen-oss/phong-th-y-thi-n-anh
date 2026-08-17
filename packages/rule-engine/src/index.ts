@@ -7,6 +7,7 @@
 export * as TrachNhat from "./trach-nhat/index.js";
 export * as Scoring from "./scoring/index.js";
 export * as TrungTang from "./trung-tang/index.js";
+export * as CuoiHoi from "./cuoi-hoi/index.js";
 export * as HoangOcKimLau from "./hoang-oc-kim-lau/index.js";
 export * as ConSoMayMan from "./con-so-may-man/index.js";
 export * as CungMenhBatTrach from "./cung-menh-bat-trach/index.js";
