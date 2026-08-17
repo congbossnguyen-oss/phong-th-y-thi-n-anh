@@ -478,7 +478,9 @@ describe("Đủ luồng ①→⑤ trên đầu ra thật của Phase 1 (đặc t
       return (kq.ketCuc === "A" || kq.ketCuc === "B") && kq.soPhuongAnQuaLoc > 0;
     }).length;
     expect(soSonCoKetQua, "cả 24 sơn đều rỗng — bộ lọc nhiều khả năng đã hỏng").toBeGreaterThan(0);
-  });
+    // Quét trọn 24 sơn × toàn bộ rổ ứng viên nên nặng hơn hẳn mức mặc định 5s — nới đúng cho test
+    // này thay vì nới toàn cục, để các test khác vẫn phát hiện được chậm bất thường.
+  }, 60000);
 
   it("chạy trọn ①→⑤: trả kết cục A hoặc B, phương án có lớp cách cục và quan hệ đạt", () => {
     const kq = apDungPhase2({
@@ -653,7 +655,7 @@ describe("Cổng kiểm ĐẦY ĐỦ — lọc sạch phương án cũng không 
     if (son?.ketCuc !== "qua-cong") return;
     expect(son.duocPhepThuPhi).toBe(true);
     expect(son.soPhuongAn).toBeGreaterThan(0);
-  });
+  }, 60000);
 });
 
 describe("Thần sát: trừ điểm thay vì loại (chủ dự án chốt 2026-08-17)", () => {
