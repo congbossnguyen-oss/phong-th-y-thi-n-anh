@@ -4,6 +4,7 @@ import PageHero from "../components/ui/PageHero.astro";
 import Container from "../components/ui/Container.astro";
 import Button from "../components/ui/Button.astro";
 import { siteConfig } from "../lib/site-config";
+import { NHOM_NGHE } from "@thien-anh/phone-energy-engine";
 
 export const prerender = true;
 
@@ -41,6 +42,26 @@ const namNay = new Date().getFullYear();
             placeholder="Ví dụ: 0912 345 678"
             class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-3 text-base font-semibold tracking-wide text-(--color-ink-900)"
           />
+        </div>
+
+        <div>
+          <label for="lsdt-nghe" class="text-sm font-semibold text-(--color-ink-900)">
+            Công việc hiện tại của anh/chị
+          </label>
+          <select
+            id="lsdt-nghe"
+            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-3 text-base text-(--color-ink-900)"
+          >
+            <option value="">— Chưa chọn —</option>
+            {NHOM_NGHE.filter((n) => n.ma !== "khac").map((n) => (
+              <option value={n.ma}>{n.ten}</option>
+            ))}
+            <option value="khac">Ngành khác / chưa đi làm</option>
+          </select>
+          <p class="mt-1 text-xs text-(--color-ink-600)">
+            Chọn nghề thì phần tổng kết cuối bài sẽ nói rõ dãy số này có hợp với công việc anh/chị
+            đang làm hay không. Bỏ trống vẫn luận được, chỉ thiếu phần đối chiếu nghề.
+          </p>
         </div>
 
         <details class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3">
@@ -695,6 +716,102 @@ const namNay = new Date().getFullYear();
     return khung("Luận giải chi tiết", phan, "Bấm vào từng mục để mở rộng.");
   }
 
+  /**
+   * Bảng tổng kết — khối chốt cuối bài. Trọng tâm là BA SỐ CUỐI, các cặp còn lại chỉ phụ trợ.
+   *
+   * Toàn bộ nội dung lấy nguyên từ `kq.tongKet` của engine; ở đây chỉ lo trình bày.
+   */
+  function khoiTongKet(kq: any): string {
+    const tk = kq.tongKet;
+    if (!tk) return "";
+
+    const mauLoai: Record<string, { vien: string; nen: string; chu: string; nhan: string }> = {
+      "tốt": { vien: "border-emerald-500", nen: "bg-emerald-500/10", chu: "text-emerald-600", nhan: "ĐIỂM MẠNH" },
+      "hai mặt": { vien: "border-amber-500", nen: "bg-amber-500/10", chu: "text-amber-600", nhan: "HAI MẶT" },
+      "cần lưu ý": { vien: "border-red-500", nen: "bg-red-500/10", chu: "text-red-500", nhan: "CẦN LƯU Ý" },
+    };
+
+    const duoi = tk.tinhODuoi.length
+      ? [...new Set(tk.tinhODuoi as string[])]
+          .map(
+            (t) =>
+              `<span class="rounded-full px-2.5 py-1 text-xs font-bold" style="background:${mauCuaTinh(t)}22;color:${mauCuaTinh(t)}">${esc(t)}</span>`,
+          )
+          .join(" ")
+      : `<span class="text-sm text-(--color-ink-600)">Không tạo được cặp năng lượng nào</span>`;
+
+    const oDuoi = `
+      <div class="rounded-(--radius-control) border-2 border-(--color-gold-400) bg-(--color-gold-400)/10 p-4">
+        <p class="text-[11px] font-bold tracking-wider text-(--color-ink-700)">BA SỐ CUỐI — CHỖ QUYẾT ĐỊNH KẾT CỤC</p>
+        <p class="mt-1 font-mono text-3xl font-black tracking-widest text-(--color-ink-900)">${esc(tk.baSoDuoi)}</p>
+        <div class="mt-2 flex flex-wrap gap-1.5">${duoi}</div>
+        <p class="mt-2 text-xs text-(--color-ink-700)">
+          Các cặp còn lại trong dãy chỉ đóng vai phụ trợ cho phần này.
+        </p>
+      </div>`;
+
+    const dsCachCuc = tk.cachCuc.length
+      ? tk.cachCuc
+          .map((c: any) => {
+            const m = mauLoai[c.loai] ?? mauLoai["hai mặt"];
+            return `
+            <li class="rounded-(--radius-control) border-l-4 ${m.vien} ${m.nen} p-3.5">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="text-[10px] font-bold tracking-wider ${m.chu}">${m.nhan}</span>
+                <span class="font-display text-base font-bold text-(--color-ink-900)">${esc(c.ten)}</span>
+              </div>
+              <p class="mt-1.5 text-sm leading-relaxed text-(--color-ink-800)">${noiBat(esc(c.dienGiai))}</p>
+            </li>`;
+          })
+          .join("")
+      : `<li class="rounded-(--radius-control) border border-(--color-ivory-300) p-3.5 text-sm text-(--color-ink-800)">
+           Dãy số không rơi vào cách cục đặc thù nào — ở mức bình thường, không có điểm bật hẳn lên
+           cũng không có khuyết điểm nặng.
+         </li>`;
+
+    let oNghe = "";
+    if (tk.doiChieuNghe) {
+      const n = tk.doiChieuNghe;
+      const mauMuc: Record<string, string> = {
+        "rất phù hợp": "border-emerald-500 bg-emerald-500/10 text-emerald-600",
+        "phù hợp": "border-emerald-500/60 bg-emerald-500/5 text-emerald-600",
+        "tạm được": "border-amber-500 bg-amber-500/10 text-amber-600",
+        "chưa phù hợp": "border-red-500 bg-red-500/10 text-red-500",
+      };
+      const the = (nhan: string, ds: string[], mau: string) =>
+        ds.length
+          ? `<p class="mt-1.5 text-xs text-(--color-ink-800)"><span class="font-bold ${mau}">${nhan}:</span> ${esc(ds.join(", "))}</p>`
+          : "";
+      oNghe = `
+        <div class="mt-4 rounded-(--radius-control) border-2 ${mauMuc[n.mucDo] ?? "border-(--color-ivory-300)"} p-4">
+          <p class="text-[11px] font-bold tracking-wider text-(--color-ink-700)">SO VỚI CÔNG VIỆC HIỆN TẠI</p>
+          <p class="mt-1 font-display text-lg font-bold text-(--color-ink-900)">
+            ${esc(n.nhom)} — <span class="uppercase">${esc(n.mucDo)}</span>
+          </p>
+          ${the("Đang đỡ cho nghề", n.dangHoTro, "text-emerald-600")}
+          ${the("Đang kéo lại", n.dangCanTro, "text-red-500")}
+          <p class="mt-2 text-sm leading-relaxed text-(--color-ink-800)">${noiBat(esc(n.dienGiai))}</p>
+        </div>`;
+    } else {
+      oNghe = `
+        <p class="mt-4 rounded-(--radius-control) border border-dashed border-(--color-ivory-300) p-3 text-xs text-(--color-ink-700)">
+          Chọn thêm mục <strong class="text-(--color-ink-900)">Công việc hiện tại</strong> ở phần
+          nhập liệu để xem dãy số này có hợp với nghề anh/chị đang làm hay không.
+        </p>`;
+    }
+
+    return khung(
+      "Tổng kết về số này",
+      `${oDuoi}
+       <ul class="mt-4 space-y-2.5">${dsCachCuc}</ul>
+       ${oNghe}
+       <p class="mt-4 rounded-(--radius-control) bg-(--color-ivory-200) p-3.5 text-sm font-medium leading-relaxed text-(--color-ink-900)">
+         ${noiBat(esc(tk.ketLuan))}
+       </p>`,
+      "Luận chính từ ba số cuối — chỗ quyết định kết cục của cả dãy.",
+    );
+  }
+
   function veKetQua(kq: any): string {
     return [
       khoiDiem(kq),
@@ -706,6 +823,7 @@ const namNay = new Date().getFullYear();
       khoiDaiVan(kq),
       khoiCanhBao(kq),
       khoiBaiLuan(kq),
+      khoiTongKet(kq),
     ].join("");
   }
 
@@ -723,6 +841,7 @@ const namNay = new Date().getFullYear();
       gioiTinh: (document.getElementById("lsdt-gioi-tinh") as HTMLSelectElement).value,
       mucDich: (document.getElementById("lsdt-muc-dich") as HTMLSelectElement).value,
       namSinh: namSinhRaw ? Number(namSinhRaw) : undefined,
+      ngheNghiep: (document.getElementById("lsdt-nghe") as HTMLSelectElement).value,
     };
 
     try {

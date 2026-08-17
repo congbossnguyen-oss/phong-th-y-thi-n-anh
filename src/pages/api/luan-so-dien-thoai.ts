@@ -3,6 +3,7 @@ import {
   LoiCccd,
   LoiSoDienThoai,
   luanSoDienThoai,
+  NHOM_NGHE,
   type MucDich,
   type GioiTinh,
 } from "@thien-anh/phone-energy-engine";
@@ -64,6 +65,11 @@ export const POST: APIRoute = async ({ request }) => {
     ? (mucDichRaw as MucDich)
     : undefined;
 
+  // Nghề nghiệp là trường tuỳ chọn, chỉ nhận đúng mã có trong bảng nhóm nghề của engine. Mã lạ thì
+  // bỏ qua để engine khỏi phải đoán khách làm gì.
+  const ngheRaw = typeof body.ngheNghiep === "string" ? body.ngheNghiep : "";
+  const ngheNghiep = NHOM_NGHE.some((n) => n.ma === ngheRaw) ? ngheRaw : undefined;
+
   try {
     const ketQua = luanSoDienThoai({
       soDienThoai,
@@ -71,6 +77,7 @@ export const POST: APIRoute = async ({ request }) => {
       ...(gioiTinh ? { gioiTinh } : {}),
       ...(mucDich ? { mucDich } : {}),
       ...(namSinhHopLe ? { namSinh: namSinhHopLe } : {}),
+      ...(ngheNghiep ? { ngheNghiep } : {}),
     });
     return jsonResponse({ ok: true, ketQua }, 200);
   } catch (err) {

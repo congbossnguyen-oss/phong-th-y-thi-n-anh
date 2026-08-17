@@ -3,6 +3,7 @@
  *
  * Nguyên tắc xuyên suốt: gặp tổ hợp không có trong bảng thì trả `thieuDuLieu`, KHÔNG suy đoán.
  */
+import type { TongKet } from "./engine/tongKet.js";
 
 /** 8 từ trường năng lượng số. Phục Vị là cát nhưng mang tính trung lập. */
 export type TenTinh =
@@ -162,6 +163,8 @@ export interface LuanSoDienThoaiInput {
   mucDich?: MucDich;
   /** Năm sinh dương lịch — chỉ dùng để biết khách đang ở giai đoạn vận thế nào. */
   namSinh?: number;
+  /** Mã nhóm nghề (xem `data/ngheNghiep.ts`). Bỏ trống thì engine không luận phần đối chiếu nghề. */
+  ngheNghiep?: string;
 }
 
 /** Số liệu tổng hợp cho phần biểu đồ. Tính sẵn ở engine để tầng hiển thị không phải tự suy. */
@@ -204,6 +207,8 @@ export interface LuanSoDienThoaiResult {
   /** Tuổi suy từ năm sinh, null nếu khách không nhập. */
   tuoiHienTai: number | null;
   diem: ScoreCard;
+  /** Bảng tổng kết cuối bài — luận chính từ ba số cuối, kèm đối chiếu nghề nghiệp nếu khách nhập. */
+  tongKet: TongKet;
   /** Bài luận văn xuôi 8 bước, ghép từ template — không gọi AI. */
   baiLuan: { tieuDe: string; noiDung: string[] }[];
   thieuDuLieu: ThieuDuLieu[];
