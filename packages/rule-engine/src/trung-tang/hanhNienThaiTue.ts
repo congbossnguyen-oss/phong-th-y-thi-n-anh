@@ -1,7 +1,18 @@
 /**
  * TRÙNG TANG — Hành Niên Tầm Thái Tuế Áp Tuế Chủ (bổ trợ Bước 5, nguồn Chương 1 §1 + Chương 9
  * "Sổ Tay Tang Sự"). Mỗi năm (Can Chi năm mất) có đúng 6 tuổi (Can Chi lục thập hoa giáp) bị
- * Thái Tuế áp — phải tránh xa lúc tẩm liệm và hạ huyệt.
+ * Thái Tuế áp.
+ *
+ * CÁCH KIÊNG — nguyên văn Chương IX (đã tra lại 2026-08-17 theo yêu cầu chủ dự án):
+ *   "(6 người cần tránh mặt lúc tẩm liệm và hạ huyệt) ... Những [người] có 6 tuổi này, trong lúc
+ *    tẩm liệm, hạ [huyệt] nên TRÁNH RA XA HUYỆT thì đặng kiết."
+ *
+ * Tức đúng HAI khâu: tẩm liệm và hạ huyệt — KHÔNG mở rộng sang nhập quan hay đóng cá. Và mức
+ * kiêng là tránh ra xa, mạnh hơn "đứng lánh, quay mặt đi" áp cho các nhóm tuổi khác.
+ *
+ * ⚠️ Bản OCR còn một câu đứt đoạn ngay sau đó: "Hoặc 6 tuổi này trong lúc tang ma của xóm, làng,
+ * người táng" — có vẻ mở rộng sang cả đám tang hàng xóm/trong làng, nhưng chữ vỡ nên KHÔNG suy
+ * đoán và KHÔNG cài. Cần chủ dự án xác nhận từ bản sách giấy.
  *
  * Bảng gốc trong sách (tr. 63-67) bị lỗi OCR (cột lệch) nên KHÔNG dùng — bảng dưới đây là bảng
  * tra sẵn đầy đủ 60 dòng, đã đối chiếu khớp 100% với công thức gốc ("khởi Nhất Khảm tại năm kế

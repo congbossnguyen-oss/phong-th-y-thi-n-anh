@@ -405,7 +405,10 @@ export async function generateHoSoTangLePdf(p: HoSoTangLeParams): Promise<Uint8A
         font: vua,
         dan: 2,
       });
-      b.doan("Tránh mặt lúc: Khâm liệm · Hạ huyệt — theo nguồn, các tuổi này phải tránh xa hai khâu đó.", {
+      // Nguyên văn "Sổ Tay Tang Sự" Chương IX: "(6 người cần tránh mặt lúc tẩm liệm và hạ huyệt)
+      // ... trong lúc tẩm liệm, hạ [huyệt] nên tránh ra xa huyệt thì đặng kiết."
+      // Nguồn nói TRÁNH RA XA, không phải chỉ đứng lánh hay quay mặt đi — giữ đúng mức đó.
+      b.doan("Tránh mặt lúc: TẨM LIỆM và HẠ HUYỆT. Theo sách, sáu tuổi này nên tránh ra xa huyệt thì được tốt.", {
         size: 8.5,
         x: LE + 14,
         mau: MAU.mucNhat,
@@ -414,7 +417,7 @@ export async function generateHoSoTangLePdf(p: HoSoTangLeParams): Promise<Uint8A
 
     b.xuong(4);
     b.doan(
-      "Người thuộc các tuổi trên không nên có mặt ở khâu đã ghi. Nếu buộc phải có mặt thì đứng tránh ra, quay mặt đi, không nhìn trực tiếp vào thi hài hay huyệt.",
+      "Người thuộc các tuổi trên không nên có mặt ở khâu đã ghi. Nếu buộc phải có mặt thì đứng tránh ra, quay mặt đi, không nhìn trực tiếp vào thi hài hay huyệt. Riêng sáu tuổi Hành Niên Tầm Thái Tuế thì nên tránh hẳn ra xa huyệt.",
       { size: 8.5, font: nghieng, mau: MAU.mucNhat },
     );
   }
