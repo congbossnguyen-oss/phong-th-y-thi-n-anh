@@ -322,4 +322,288 @@ export const Y_NGHIA_TUNG_CAP: Readonly<Record<string, YNghiaCap>> = {
     honNhan:
       "Là người giữ vai trò chủ đạo trong gia đình, trung thành, tận tuỵ. Nhưng cũng khá nghiêm khắc và dễ ôm hết trách nhiệm về mình.",
   },
+
+  // ─────────────────────────── SINH KHÍ — Quý nhân ───────────────────────────
+  "14": {
+    tinhCach:
+      "Lạc quan, tuỳ duyên, biểu đạt cởi mở, tính cách phóng khoáng, không câu nệ tiểu tiết.",
+    taiVan:
+      "Quý nhân mang tài lộc đến từ những cơ hội bất ngờ, dễ có lộc nhưng cần chú ý quản lý tài chính.",
+    suNghiep:
+      "Giỏi giao tiếp, biết phối hợp và điều phối quan hệ, có quý nhân giúp đỡ và tạo cơ hội.",
+    nhanDuyen:
+      "Quan hệ xã hội tốt, nhân duyên đẹp như cá gặp nước, thường được nhiều người giúp đỡ.",
+    sucKhoe:
+      "Dễ mắc các bệnh liên quan đến ngũ quan nếu phản ứng cảm xúc không kiểm soát.",
+    hocTap:
+      "Mở lòng tiếp nhận tri thức, tiếp thu thông tin nhanh chóng, học tập toàn diện.",
+    camXuc:
+      "Dễ gần, vui vẻ, thích giao tiếp; có sự ngọt ngào, hài hước và duyên ngầm trong cách thể hiện tình cảm.",
+    honNhan:
+      "Vợ chồng hoà hợp như đàn hoà điệu, có duyên lành từ kiếp trước, tương kính như tân.",
+  },
+  "41": {
+    tinhCach: "Lạc quan, không câu nệ tiểu tiết.",
+    taiVan:
+      "Quý nhân mang tài lộc đến từ những cơ hội bất ngờ, dễ có lộc nhưng cần chú ý quản lý tài chính.",
+    suNghiep:
+      "Giỏi giao tiếp, biết phối hợp và điều phối quan hệ, có quý nhân giúp đỡ và tạo cơ hội.",
+    nhanDuyen:
+      "Quan hệ xã hội tốt, nhân duyên đẹp như cá gặp nước, thường được nhiều người giúp đỡ.",
+    sucKhoe:
+      "Dễ mắc các bệnh về dạ dày, đường ruột và các bệnh liên quan đến ngũ quan nếu phản ứng cảm xúc không kiểm soát.",
+    hocTap:
+      "Mở lòng tiếp nhận tri thức, tiếp thu thông tin nhanh chóng, học tập toàn diện.",
+    camXuc:
+      "Dễ gần, vui vẻ, thích giao tiếp; có sự ngọt ngào, hài hước và duyên ngầm trong cách thể hiện tình cảm.",
+    honNhan:
+      "Vợ chồng hoà hợp như đàn hoà điệu, có duyên lành từ kiếp trước, tương kính như tân.",
+  },
+  "67": {
+    tinhCach:
+      "Lạc quan, tuỳ duyên, biểu đạt cởi mở, tính cách phóng khoáng, không câu nệ tiểu tiết.",
+    taiVan:
+      "Quý nhân mang tài lộc đến từ các cơ hội bất ngờ; tài lộc xuất hiện không theo kế hoạch nhưng thuận lợi.",
+    suNghiep:
+      "Giỏi giao tiếp, biết phối hợp và điều phối quan hệ; nhận được sự nâng đỡ từ quý nhân, có khả năng kết nối tốt.",
+    nhanDuyen:
+      "Quan hệ xã hội phong phú, được nhiều người giúp đỡ, nhân duyên thuận lợi như cá gặp nước.",
+    sucKhoe:
+      "Dễ mắc các bệnh về tiêu hoá như đường ruột, dạ dày, hoặc các vấn đề liên quan đến ngũ quan nếu phản ứng cảm xúc quá đà.",
+    hocTap:
+      "Cởi mở tiếp nhận thông tin mới, học tập toàn diện, tiếp thu nhanh, ham học hỏi.",
+    camXuc:
+      "Ngọt ngào, vui vẻ, hài hước, dễ hoà đồng và thích giao lưu — là người đem lại cảm xúc tích cực cho người khác.",
+    honNhan:
+      "Hoà thuận như đàn tranh hoà âm, vợ chồng ăn ý, phối hợp dịu dàng, tình cảm và có duyên lành hỗ trợ nhau.",
+  },
+  "76": {
+    tinhCach:
+      "Lạc quan, vui vẻ, thân thiện, hoạt bát. Biểu đạt mạnh mẽ, cảm xúc dồi dào, dễ tạo thiện cảm với người xung quanh. Có tài giao tiếp và kết nối, phù hợp với môi trường cần sự phối hợp linh hoạt.",
+    taiVan:
+      "Dễ gặp quý nhân mang lại cơ hội tài chính bất ngờ, hay có lộc từ mối quan hệ. Tuy nhiên chi tiêu thoáng, dễ tiêu tiền vì cảm xúc, nên cần học cách tiết chế và kiểm soát tài chính tốt hơn. Tài vận phát triển nhanh nếu biết tận dụng các mối quan hệ và năng lượng kết nối.",
+    suNghiep:
+      "Nổi bật ở khả năng giao tiếp, ngoại giao, làm cầu nối, PR, thương lượng. Hợp với các lĩnh vực đối ngoại, bán hàng, truyền thông, nghệ thuật, chăm sóc khách hàng. Dễ thành công khi làm việc theo nhóm hoặc có người nâng đỡ tạo đà.",
+    nhanDuyen:
+      "Quý nhân rất đông, đặc biệt là những người lớn tuổi, có vị trí cao, hoặc rất hào sảng. Quan hệ xã hội rộng rãi như cá gặp nước, được nhiều người yêu quý và sẵn sàng hỗ trợ. Mỗi cơ hội lớn thường đi kèm với một mối liên kết quý giá.",
+    sucKhoe:
+      "Dễ gặp vấn đề do ăn uống thất thường; một số bệnh lý ở ngũ quan (mắt, tai, mũi, miệng, họng) nếu làm việc quá sức hoặc thiếu nghỉ ngơi.",
+    hocTap:
+      "Học nhanh, mở lòng đón nhận kiến thức mới, đa năng, thích ứng tốt. Phù hợp học tập qua hình ảnh, âm thanh, giao tiếp hoặc thực tiễn. Đôi khi thiếu tập trung nếu môi trường quá đơn điệu hoặc khuôn mẫu.",
+    camXuc:
+      "Người sống tình cảm, ngọt ngào, biết cách làm người khác vui. Có khiếu hài hước, năng lượng tích cực, giúp kết nối và lan toả. Tuy nhiên cần chú ý tránh bị lệ thuộc cảm xúc vào sự công nhận từ bên ngoài.",
+    honNhan:
+      "Cuộc sống hôn nhân thường dễ hoà hợp, ít mâu thuẫn, duyên tốt lành. Người này thích đối phương biết lắng nghe, giao tiếp tình cảm rõ ràng. Nếu kết hôn với người biết chia sẻ sẽ có hôn nhân hạnh phúc và ngọt ngào.",
+  },
+  "93": {
+    tinhCach: "Lạc quan, tuỳ duyên, biểu đạt cởi mở, không để tâm tiểu tiết.",
+    taiVan:
+      "Quý nhân mang tài lộc đến từ những nguồn bất ngờ, nhưng dễ bị phân tâm bởi những thứ hoa lệ, hào nhoáng.",
+    suNghiep:
+      "Giỏi giao tiếp, điều phối, quan hệ xã giao tốt, được quý nhân đề bạt và hỗ trợ.",
+    nhanDuyen:
+      "Quan hệ xã hội như cá gặp nước, nhận được nhiều sự giúp đỡ từ người khác.",
+    sucKhoe:
+      "Dễ mắc các bệnh về tiêu hoá, dạ dày và các bệnh liên quan đến cơ quan tiêu hoá do dễ bị kích ứng.",
+    hocTap: "Học tập toàn diện, ham học hỏi, dễ tiếp nhận thông tin.",
+    camXuc:
+      "Ngọt ngào, duyên dáng, hài hước, dễ hoà hợp trong giao tiếp và các mối quan hệ.",
+    honNhan:
+      "Phối hợp ăn ý, vợ chồng như đàn tranh hoà âm; tình cảm hoà thuận, có duyên tâm linh.",
+  },
+  "39": {
+    tinhCach:
+      "Lạc quan, cởi mở, biểu đạt linh hoạt, không câu nệ tiểu tiết, dễ thích nghi với môi trường xung quanh.",
+    taiVan:
+      "Quý nhân mang lại tài lộc từ các cơ hội bất ngờ. Tài vận hanh thông nếu biết kiểm soát chi tiêu và giữ sự khiêm nhường.",
+    suNghiep:
+      "Giao tiếp tốt, biết điều phối và phối hợp quan hệ. Dễ có quý nhân nâng đỡ, công việc thuận lợi nhờ sự kết nối.",
+    nhanDuyen:
+      "Quan hệ xã giao phong phú, có nhiều người giúp đỡ, nhân duyên thuận lợi như cá gặp nước, dễ gặp người tốt.",
+    sucKhoe:
+      "Dễ gặp các vấn đề về tiêu hoá (ruột, dạ dày), bệnh liên quan đến ngũ quan (tai, mắt, mũi, miệng), hoặc phản ứng do cảm xúc.",
+    hocTap:
+      "Có khả năng tiếp thu thông tin nhanh, học tốt theo phương pháp toàn diện, mở lòng đón nhận kiến thức mới.",
+    camXuc:
+      "Hài hước, duyên dáng, dễ tạo thiện cảm. Biết cách biểu đạt cảm xúc nhẹ nhàng, thích giao tiếp thân thiện, hoà đồng.",
+    honNhan:
+      "Vợ chồng hoà hợp, ăn ý như đàn tranh hoà âm; có duyên lành, quan hệ nhẹ nhàng và vui vẻ.",
+  },
+  "82": {
+    tinhCach:
+      "Lạc quan, cởi mở, biểu đạt linh hoạt, không câu nệ tiểu tiết, dễ hoà nhập với mọi người.",
+    taiVan:
+      "Quý nhân mang đến tài lộc bất ngờ, dễ gặp may mắn về tiền bạc; tài vận thuận lợi nhưng cần học cách quản lý.",
+    suNghiep:
+      "Giao tiếp tốt, phối hợp hài hoà, dễ tạo quan hệ xã hội, được quý nhân nâng đỡ, sự nghiệp phát triển từ kết nối.",
+    nhanDuyen:
+      "Quan hệ xã giao tốt như cá gặp nước, có nhiều quý nhân giúp đỡ, được yêu mến và hỗ trợ từ nhiều phía.",
+    sucKhoe:
+      "Dễ mắc bệnh về tiêu hoá như đường ruột, dạ dày, và các bệnh về ngũ quan nếu dễ bị kích thích cảm xúc hoặc căng thẳng.",
+    hocTap:
+      "Tiếp thu nhanh, cởi mở trong học tập, ham học hỏi, dễ tiếp cận kiến thức mới, hợp với học nhiều nguồn đa chiều.",
+    camXuc:
+      "Ngọt ngào, hài hước, biết cách tạo thiện cảm, giàu cảm xúc, dễ kết nối qua giao tiếp thân thiện và thông minh.",
+    honNhan:
+      "Duyên lành, vợ chồng hoà hợp như đàn tranh hoà điệu, có nhân duyên tốt lành, yêu thương chân thành.",
+  },
+  "28": {
+    tinhCach:
+      "Tính cách tươi sáng, cởi mở, dễ gần. Thích nghi tốt, có xu hướng sống lạc quan, hoà đồng, linh hoạt. Khả năng giao tiếp và lan toả cảm xúc tích cực mạnh mẽ, là mẫu người dễ tạo thiện cảm.",
+    taiVan:
+      "Số mở vận tài chính do quý nhân nâng đỡ hoặc cơ duyên bất ngờ. Có duyên với tài lộc ngoài dự tính, thường xuất hiện khi kết nối đúng người đúng lúc. Tuy nhiên dễ tiêu pha tuỳ hứng, cần rèn tính kỷ luật tài chính.",
+    suNghiep:
+      "Thế mạnh trong các lĩnh vực giao tiếp, môi giới, PR, truyền thông, kết nối đối tác. Biết cách xây dựng mạng lưới xã hội và tận dụng hiệu quả các mối quan hệ. Thường thuận lợi nhờ bạn bè, cộng sự, hoặc có người nâng đỡ âm thầm.",
+    nhanDuyen:
+      "Vận quý nhân rất mạnh, người giúp đỡ xuất hiện trong các mối quan hệ giao tiếp đời thường. Quý nhân thường là người rộng lượng, hào sảng, chủ động nâng đỡ. Càng đi ra ngoài, càng mở lòng thì càng dễ gặp được cơ hội.",
+    sucKhoe:
+      "Cần chú ý các vấn đề tiêu hoá, dạ dày, đường ruột và bệnh liên quan ngũ quan (mắt, mũi, miệng). Dễ bị ảnh hưởng bởi ăn uống không kiểm soát và căng thẳng xã giao kéo dài.",
+    hocTap:
+      "Có xu hướng học tập theo kiểu đa chiều, tổng hợp, linh hoạt, không thích khuôn mẫu. Học nhanh, bắt sóng tốt, tiếp cận thông tin hiện đại rất giỏi. Tuy nhiên dễ thiếu chiều sâu, cần tập trung rèn luyện tính chuyên môn hoá nếu muốn phát triển bền vững.",
+    camXuc:
+      "Tính cách ngọt ngào, tình cảm, dễ kết nối. Trong cảm xúc, người mang số này thường dễ mở lòng, dễ cảm, dễ yêu. Tuy nhiên cần chú ý giao tiếp quá rộng khiến mất tập trung cảm xúc cho người quan trọng.",
+    honNhan:
+      "Hôn nhân nhiều thuận duyên, vợ chồng hoà hợp, ăn nói vui vẻ, dễ đạt đồng thuận. Dễ gặp được bạn đời tốt khi mở lòng và giao tiếp rộng rãi. Mối quan hệ trong hôn nhân thường mang tính bạn bè, hỗ trợ nhiều chiều.",
+  },
+
+  // ──────────────────── PHỤC VỊ — Trung tính, giữ nguyên trạng ────────────────────
+  "11": {
+    tinhCach:
+      "Tính cách bảo thủ, thận trọng, khó thay đổi. Có xu hướng quan sát và thu mình thay vì chủ động thể hiện. Không quyết đoán, thường bị giằng co trong nội tâm hoặc phụ thuộc vào ý kiến của người khác. Tính cách ẩn nhẫn, nhẫn nại, âm thầm quan sát cuộc đời.",
+    taiVan:
+      "Tài vận có tính ổn định nhưng không tăng trưởng nhanh. Thích sự chắc chắn, ít khi mạo hiểm — vì vậy có thể bỏ lỡ cơ hội lớn. Phù hợp với các công việc cố định, bền vững, không cần đối đầu hoặc cạnh tranh khốc liệt.",
+    suNghiep:
+      "Phát triển chậm nhưng vững, không ưa tranh đấu. Thường phù hợp với các vai trò hậu phương, trợ lý, cố vấn, hoặc những công việc chuyên môn cần chi tiết, kỹ lưỡng, ổn định lâu dài. Dễ trì hoãn, thiếu động lực khi không có người thúc đẩy từ bên ngoài.",
+    nhanDuyen:
+      "Quý nhân thường là người thân, bạn bè lâu năm, người từng có duyên sâu nặng. Không dễ mở lòng với người lạ, nên quý nhân có vai trò âm thầm, không phô trương. Các mối quan hệ thường bền lâu nhưng cần được chủ động duy trì.",
+    sucKhoe:
+      "Dễ mắc các bệnh liên quan đến tim mạch, não bộ, hệ nội tiết, bệnh mạn tính kéo dài. Có thể liên quan đến các vấn đề khó phát hiện hoặc âm ỉ trong thời gian dài do không giải phóng được năng lượng cảm xúc.",
+    hocTap:
+      "Có năng lực phân tích, suy luận, tổng hợp; tốc độ học chậm nhưng chắc, theo chu trình. Học tốt nhất khi được tự nghiên cứu, đào sâu, phân tích logic. Hợp với lĩnh vực khoa học, y học, kỹ thuật, nghiên cứu hoặc phân tích dữ liệu.",
+    camXuc:
+      "Cảm xúc có xu hướng nội tâm hoá, kìm nén, không dễ thể hiện. Dễ rơi vào trạng thái tự cô lập hoặc đợi chờ không lời hứa, dẫn đến trầm mặc hoặc hụt hẫng. Cần học cách chia sẻ và mở lòng một cách chủ động để chữa lành.",
+    honNhan:
+      "Trong hôn nhân, người này thường yêu âm thầm, ít thể hiện nhưng sâu sắc. Đối phương có thể thấy họ lạnh lùng, thiếu lãng mạn, nhưng thực chất lại là người rất có trách nhiệm và gắn bó. Nếu không biết giao tiếp cảm xúc, dễ dẫn đến hiểu lầm kéo dài.",
+  },
+  "22": {
+    tinhCach:
+      "Giữ gìn, bị động, chần chừ, không giỏi quyết; ẩn nhẫn và quan sát.",
+    taiVan: "Cầu tài theo hướng thu nhập ổn định.",
+    suNghiep:
+      "Làm việc chậm chạp, bị động, làm nhiều nhưng không hiệu quả cao; đầu tư không quyết đoán.",
+    nhanDuyen:
+      "Giao tiếp bị động, các mối quan hệ chủ yếu đến từ gia đình và bạn bè thân thiết.",
+    sucKhoe: "Bệnh thường khó phát hiện sớm.",
+    hocTap:
+      "Tư duy phân tích tốt, giỏi tổ hợp logic, có khả năng nghiên cứu chuyên sâu.",
+    camXuc:
+      "Nội tâm, hay giữ trong lòng; bị động trong tình cảm, không dễ bộc lộ.",
+    honNhan:
+      "Bình lặng, ít thay đổi, dễ rơi vào trạng thái trì trệ, thiếu sự linh hoạt trong mối quan hệ.",
+  },
+  "88": {
+    tinhCach:
+      "Thường có xu hướng trầm tĩnh, dè dặt, ít bộc lộ suy nghĩ ra ngoài. Tư duy phân tích sâu, chậm nhưng chắc. Giống như “núi tĩnh tại”, cần thời gian quan sát trước khi hành động. Khó đưa ra quyết định nhanh, dễ lưỡng lự, nhưng khi đã quyết sẽ rất kiên định.",
+    taiVan:
+      "Ưa thích sự ổn định, tài lộc đến chậm rãi, tích tiểu thành đại, tránh đầu tư mạo hiểm. Thích hợp với hình thức kiếm tiền dài hạn, bền vững như tiết kiệm, đầu tư bất động sản, đất đai. Dễ gặp khó khăn ban đầu, nhưng càng về sau càng ổn định nếu kiên trì.",
+    suNghiep:
+      "Có thiên hướng làm việc trong môi trường ổn định, quy củ, có hệ thống như nghiên cứu, giáo dục, kỹ thuật, kế toán. Hợp với vai trò phụ tá, hỗ trợ, cố vấn hơn là vị trí lãnh đạo tuyến đầu. Cần học cách dũng cảm hành động, tránh trì hoãn quá lâu mà đánh mất cơ hội.",
+    nhanDuyen:
+      "Quý nhân đến âm thầm và chậm rãi, thường là người thân quen, bạn bè, họ hàng, người từng gặp từ trước. Có thể được giúp đỡ bởi người giỏi lập kế hoạch, điềm đạm, sống nguyên tắc. Đôi khi khó kết nối với quý nhân mới do bản thân không cởi mở.",
+    sucKhoe:
+      "Dễ gặp vấn đề tim mạch, huyết áp, hệ tuần hoàn; não bộ, nội tạng âm tính (tim, gan, thận); bệnh mãn tính kéo dài, khó phát hiện sớm nếu thiếu chăm sóc.",
+    hocTap:
+      "Tư duy thiên về chiều sâu, phân tích và phản tư nội tại, giỏi trong các lĩnh vực đòi hỏi sự tỉ mỉ. Có thể học tốt nếu được tạo môi trường yên tĩnh, ít biến động. Phù hợp với nghiên cứu chuyên sâu, tổng hợp và phân tích số liệu, dữ liệu, công nghệ, lập trình.",
+    camXuc:
+      "Cảm xúc thiên về nội tâm, dễ tự khép mình, thích suy ngẫm và phân tích tình cảm, không biểu lộ nhiều. Có thể tự “phong ấn” cảm xúc, khó chia sẻ, dễ cô lập. Nếu bị tổn thương sẽ chọn cách im lặng, khiến người khác khó hiểu.",
+    honNhan:
+      "Hôn nhân thiên về ổn định, thực tế, không phô trương. Có xu hướng ngại thay đổi, dễ chọn sống vì trách nhiệm thay vì cảm xúc mãnh liệt. Cần học cách giao tiếp cảm xúc, thể hiện yêu thương rõ ràng hơn.",
+  },
+  "99": {
+    tinhCach:
+      "Nội tâm, kín đáo, có xu hướng giữ gìn và thụ động. Dễ do dự, ít khi đưa ra quyết định nhanh chóng, thường âm thầm quan sát.",
+    taiVan:
+      "Cầu tài an toàn, tích tiểu thành đại. Không thích mạo hiểm, có xu hướng tích luỹ tài chính từ nguồn thu ổn định.",
+    suNghiep: "Ngại thay đổi, thường chậm rãi trong hành động và suy nghĩ.",
+    nhanDuyen:
+      "Quý nhân chủ yếu đến từ người thân, bạn bè lâu năm. Quan hệ xã hội không rộng, nhưng gắn bó bền vững.",
+    sucKhoe:
+      "Cần lưu ý các vấn đề về tim mạch, não bộ, bệnh tiềm ẩn khó phát hiện sớm. Có thể dễ mắc bệnh mãn tính, kéo dài.",
+    hocTap:
+      "Phù hợp với các lĩnh vực cần phân tích sâu, nghiên cứu, logic. Năng lực tư duy phân tích rất tốt.",
+    camXuc:
+      "Khó mở lòng, dễ bị động trong chuyện tình cảm. Thường chờ đợi hoặc phân tích nội tâm hơn là thể hiện ra ngoài.",
+    honNhan:
+      "Bình ổn, ít biến động. Tuy nhiên thiếu sự chủ động trong cảm xúc và tương tác, dễ khiến tình cảm trở nên tẻ nhạt nếu không được nuôi dưỡng.",
+  },
+  "66": {
+    tinhCach:
+      "Giữ gìn sự ổn định, ít dao động, chần chừ không quyết, giỏi ẩn nhẫn và quan sát.",
+    taiVan: "Cầu tài một cách ổn định, thành tựu nhỏ nhưng nhiều.",
+    suNghiep:
+      "Làm việc chậm, bị trì hoãn, làm nhiều nhưng thu được ít. Đầu tư kém hiệu quả.",
+    nhanDuyen:
+      "Giao tiếp bị động, các mối quan hệ với người thân và bạn bè làm chủ đạo.",
+    sucKhoe:
+      "Dễ mắc các bệnh về tim mạch, hệ thần kinh và các bệnh mãn tính, tiềm ẩn và kéo dài.",
+    hocTap:
+      "Phân tích logic, tư duy tổ hợp, hợp học chuyên sâu, nghiên cứu chuyên ngành.",
+    camXuc: "Tự khép kín, bị động, chờ đợi, nội tâm, hay giữ trong lòng.",
+    honNhan:
+      "Bốn bình tám ổn, bình lặng, ít biến động, không có nhiều thay đổi.",
+  },
+  "77": {
+    tinhCach:
+      "Giữ gìn, bị động, thiếu quyết đoán, hay do dự. Giỏi quan sát và ẩn nhẫn, ít khi chủ động.",
+    taiVan:
+      "Theo đuổi sự ổn định, thích cầu tài an toàn; thành quả không nhiều nhưng đều đặn, thu nhập ổn định.",
+    suNghiep:
+      "Làm việc chậm rãi, dễ bị trì hoãn; suy nghĩ nhiều nhưng hành động ít, đầu tư cẩn trọng.",
+    nhanDuyen:
+      "Các mối quan hệ chủ yếu đến từ gia đình và bạn bè thân thiết; dễ bị động trong kết giao xã hội.",
+    sucKhoe:
+      "Dễ mắc các bệnh liên quan đến tim, não, hệ thần kinh; bệnh tiềm ẩn, mạn tính hoặc kéo dài, khó phát hiện sớm.",
+    hocTap:
+      "Giỏi tư duy phân tích, khả năng tổ hợp logic tốt, phù hợp với nghiên cứu chuyên sâu, suy nghĩ có chiều sâu.",
+    camXuc:
+      "Nội tâm, khép kín, dễ chờ đợi hoặc bị động trong cảm xúc, ít bộc lộ, giàu sự trầm lặng bên trong.",
+    honNhan:
+      "Quan hệ bình lặng, ít sóng gió, nhưng cũng dễ trì trệ và nhàm chán nếu không được nuôi dưỡng cảm xúc thường xuyên.",
+  },
+  "33": {
+    tinhCach:
+      "Thụ động, dè dặt, dễ do dự, không quyết đoán. Thường ẩn mình quan sát, không chủ động tiến lên.",
+    taiVan:
+      "Ưa chuộng sự ổn định, cầu tài an toàn; lợi nhuận ít nhưng chắc. Dễ tích luỹ nhưng khó bứt phá nhanh.",
+    suNghiep:
+      "Làm việc chậm rãi, dễ bị trì hoãn; có xu hướng suy nghĩ nhiều nhưng hành động ít. Phù hợp công việc cần sự kiên trì.",
+    nhanDuyen:
+      "Duyên quý nhân không nhiều. Chủ yếu dựa vào mối quan hệ thân thuộc như gia đình, người thân cận; ít mở rộng xã hội.",
+    sucKhoe:
+      "Dễ gặp vấn đề về tim, não, hệ thần kinh; bệnh tiềm ẩn, mãn tính kéo dài hoặc khó phát hiện sớm.",
+    hocTap:
+      "Phù hợp với nghiên cứu sâu, học thuật nghiêm túc và thiên về lý trí.",
+    camXuc:
+      "Nội tâm khép kín, ít bộc lộ. Dễ chờ đợi, bị động trong cảm xúc. Giàu suy tư và có chiều sâu cảm nhận.",
+    honNhan:
+      "Bình lặng, ổn định, ít sóng gió. Tuy nhiên dễ thiếu lửa tình yêu nếu không chủ động nuôi dưỡng cảm xúc.",
+  },
+  "44": {
+    tinhCach:
+      "Tính cách thận trọng, bảo thủ, ít chủ động. Dễ trì hoãn, phân vân do dự, mất cơ hội vì chậm bước. Tâm trí thường ẩn nhẫn quan sát, ít thể hiện suy nghĩ ra bên ngoài.",
+    taiVan:
+      "Có xu hướng tìm kiếm sự ổn định, thu nhập thường đến từ các nguồn đều đặn, ít mạo hiểm. Khó phát nhanh nhưng giữ được, phù hợp với công việc hưởng lương cố định, đầu tư an toàn. Nếu không thay đổi tư duy sẽ khó tạo bứt phá tài chính.",
+    suNghiep:
+      "Thích làm việc trong môi trường có quy tắc rõ ràng, ghét thay đổi bất ngờ. Có khả năng duy trì công việc lâu dài, làm tốt ở vai trò hỗ trợ, hậu cần, phân tích. Dễ rơi vào trạng thái trì trệ, thiếu chủ động, chờ người khác đẩy tiến độ.",
+    nhanDuyen:
+      "Có quý nhân là người thân, bạn bè lâu năm hoặc đồng nghiệp đáng tin, thường xuất hiện trong môi trường quen thuộc. Mối quan hệ quý nhân thiên về sự hỗ trợ chậm rãi, âm thầm. Tuy nhiên ít có mối duyên đột phá, cần chủ động nhiều hơn để mở rộng mối quan hệ.",
+    sucKhoe:
+      "Dễ mắc bệnh âm ỉ, mạn tính, khó phát hiện sớm. Cần chú ý đến các biểu hiện mất ngủ, lo âu kéo dài, thiếu năng lượng sống.",
+    hocTap:
+      "Giỏi tư duy phân tích, tổng hợp, nghiên cứu chiều sâu. Hợp với phương pháp học lý luận, hệ thống, lặp lại; không phù hợp với kiểu học cảm hứng, bùng nổ. Dễ thành công trong các lĩnh vực đòi hỏi sự kiên trì, bền bỉ và khả năng tổng hợp thông tin phức tạp.",
+    camXuc:
+      "Nội tâm kín đáo, cảm xúc không dễ bộc lộ. Dễ bị tổn thương âm thầm, tự chịu đựng, không chia sẻ. Nếu không biết cách giải toả cảm xúc, dễ sinh ra trầm cảm và cảm giác cô đơn trong tập thể.",
+    honNhan:
+      "Cuộc hôn nhân nhìn ngoài bình lặng, nhưng dễ thiếu sự kết nối cảm xúc sâu sắc. Người mang số này thường bị động trong tình cảm, ít thể hiện nhu cầu hoặc mong muốn. Nếu không mở lòng, dễ tạo khoảng cách dù bên ngoài vẫn giữ sự ổn định.",
+  },
 };

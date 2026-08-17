@@ -40,7 +40,7 @@ const namNay = new Date().getFullYear();
             required
             autocomplete="off"
             placeholder="Ví dụ: 0912 345 678"
-            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-3 text-base font-semibold tracking-wide text-(--color-ink-900)"
+            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-400) bg-(--color-ivory-50) px-3 py-3 text-base font-semibold tracking-wide text-(--color-ink-900) placeholder:font-normal placeholder:text-(--color-ink-600)"
           />
         </div>
 
@@ -50,7 +50,7 @@ const namNay = new Date().getFullYear();
           </label>
           <select
             id="lsdt-nghe"
-            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-3 text-base text-(--color-ink-900)"
+            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-400) bg-(--color-ivory-50) px-3 py-3 text-base text-(--color-ink-900)"
           >
             <option value="">— Chưa chọn —</option>
             {NHOM_NGHE.filter((n) => n.ma !== "khac").map((n) => (
@@ -80,7 +80,7 @@ const namNay = new Date().getFullYear();
                 maxlength="12"
                 autocomplete="off"
                 placeholder="Mở khoá Đại vận trình và hướng hoá giải"
-                class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-white px-3 py-2.5 text-sm text-(--color-ink-900)"
+                class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-400) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-900) placeholder:text-(--color-ink-600)"
               />
               <p class="mt-1 text-xs text-(--color-ink-600)">
                 Chỉ dùng để tính rồi trả kết quả ngay — hệ thống không lưu lại số căn cước.
@@ -97,14 +97,14 @@ const namNay = new Date().getFullYear();
                   min="1900"
                   max={namNay}
                   placeholder="1984"
-                  class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-white px-3 py-2.5 text-sm text-(--color-ink-900)"
+                  class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-400) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-900) placeholder:text-(--color-ink-600)"
                 />
               </div>
               <div>
                 <label for="lsdt-gioi-tinh" class="text-sm font-medium text-(--color-ink-800)">Giới tính</label>
                 <select
                   id="lsdt-gioi-tinh"
-                  class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-white px-3 py-2.5 text-sm text-(--color-ink-900)"
+                  class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-400) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-900)"
                 >
                   <option value="">—</option>
                   <option value="nam">Nam</option>
@@ -115,7 +115,7 @@ const namNay = new Date().getFullYear();
                 <label for="lsdt-muc-dich" class="text-sm font-medium text-(--color-ink-800)">Quan tâm</label>
                 <select
                   id="lsdt-muc-dich"
-                  class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-white px-3 py-2.5 text-sm text-(--color-ink-900)"
+                  class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-400) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-900)"
                 >
                   <option value="tổng quát">Tổng quát</option>
                   <option value="tài lộc">Tài lộc</option>
