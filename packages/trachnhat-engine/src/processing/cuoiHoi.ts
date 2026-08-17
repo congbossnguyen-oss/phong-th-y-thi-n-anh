@@ -295,3 +295,136 @@ export function calculateCuoiHoiRange(input: CuoiHoiRangeInput): CuoiHoiRangeRes
     thieuDuLieu: CuoiHoi.THIEU_DU_LIEU_CUOI_HOI,
   };
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════════════════════
+// LỊCH CƯỚI HỎI TRỌN GÓI — chọn ngày + giờ cho cả chuỗi 4 nghi lễ, sắp theo trình tự thời gian.
+// ═══════════════════════════════════════════════════════════════════════════════════════════════
+
+/** Thứ tự nghi lễ trong một chuỗi cưới hỏi truyền thống. */
+const THU_TU_NGHI_LE: readonly CuoiHoi.NghiLeCuoiHoi[] = ["an-hoi", "don-dau", "thanh-hon", "dang-ky-ket-hon"];
+
+export interface LichCuoiHoiInput {
+  namSinhCoDau: number;
+  namSinhChuRe: number;
+  startDate: { year: number; month: number; day: number };
+  endDate: { year: number; month: number; day: number };
+  uuTien?: CuoiHoi.UuTienCuoiHoi;
+  timeZone: string;
+}
+
+export interface LichCuoiHoiMuc {
+  nghiLe: CuoiHoi.NghiLeCuoiHoi;
+  tenNghiLe: string;
+  solarDate: { year: number; month: number; day: number } | null;
+  lunarDate: { year: number; month: number; day: number; isLeapMonth: boolean } | null;
+  chiNgay: Chi | null;
+  diemNgay: number;
+  hang: CuoiHoi.HangCuoiHoi | null;
+  tenHang: string;
+  /** Tối đa 3 giờ đẹp nhất trong ngày đã chọn. */
+  gioTot: { chiGio: Chi; khungGio: string; diem: number; tenHang: string }[];
+  canhBao: string[];
+  /** Không tìm được ngày phù hợp trong khoảng (vd sau ăn hỏi không còn ngày đẹp). */
+  khongCoNgay: boolean;
+}
+
+export interface LichCuoiHoiResult {
+  muc: LichCuoiHoiMuc[];
+  ghiChu: string[];
+}
+
+function soSanhNgay(a: { year: number; month: number; day: number }, b: { year: number; month: number; day: number }): number {
+  return Date.UTC(a.year, a.month - 1, a.day) - Date.UTC(b.year, b.month - 1, b.day);
+}
+
+/**
+ * Lập lịch trọn gói: tìm ngày + giờ đẹp nhất cho từng nghi lễ, ràng buộc trình tự thời gian —
+ * ăn hỏi trước; đón dâu / thành hôn phải cùng ngày hoặc sau ăn hỏi; đăng ký kết hôn linh hoạt
+ * (chọn ngày đẹp nhất toàn khoảng vì mang tính thủ tục hành chính).
+ *
+ * Ngày phạm đại kỵ đã bị loại sẵn ở tầng ngày nên không bao giờ lọt vào lịch.
+ */
+export function calculateLichCuoiHoi(input: LichCuoiHoiInput): LichCuoiHoiResult {
+  const uuTien = input.uuTien ?? "can-bang";
+  const baseRange = { namSinhCoDau: input.namSinhCoDau, namSinhChuRe: input.namSinhChuRe, startDate: input.startDate, endDate: input.endDate, uuTien, timeZone: input.timeZone };
+
+  // Lấy toàn bộ ngày đạt (đã lọc đại kỵ), xếp theo điểm giảm dần, cho từng nghi lễ.
+  const xepHangTheoNghiLe = new Map<CuoiHoi.NghiLeCuoiHoi, CuoiHoiNgay[]>();
+  for (const nghiLe of THU_TU_NGHI_LE) {
+    const r = calculateCuoiHoiRange({ ...baseRange, nghiLe, soNgayTraVe: 400 });
+    xepHangTheoNghiLe.set(nghiLe, r.ngayXepHang);
+  }
+
+  // Chọn ngày tốt nhất cho một nghi lễ (danh sách đã xếp theo điểm giảm dần).
+  const totNhat = (nghiLe: CuoiHoi.NghiLeCuoiHoi): CuoiHoiNgay | null => (xepHangTheoNghiLe.get(nghiLe) ?? [])[0] ?? null;
+  // Ngày tốt nhất phải SỚM HƠN HẲN một mốc (cho ăn hỏi phải trước ngày cưới).
+  const totNhatTruoc = (nghiLe: CuoiHoi.NghiLeCuoiHoi, moc: { year: number; month: number; day: number }): CuoiHoiNgay | null =>
+    (xepHangTheoNghiLe.get(nghiLe) ?? []).find((n) => soSanhNgay(n.solarDate, moc) < 0) ?? null;
+  // Bản ghi của một nghi lễ đúng vào một ngày cụ thể (cho đón dâu = cùng ngày thành hôn).
+  const dungNgay = (nghiLe: CuoiHoi.NghiLeCuoiHoi, ngay: { year: number; month: number; day: number }): CuoiHoiNgay | null =>
+    (xepHangTheoNghiLe.get(nghiLe) ?? []).find((n) => soSanhNgay(n.solarDate, ngay) === 0) ?? null;
+
+  // 1) Ngày cưới = ngày tốt nhất cho THÀNH HÔN (mốc chính của cả chuỗi).
+  const thanhHon = totNhat("thanh-hon");
+  // 2) Đón dâu = cùng ngày cưới (buổi sáng cùng ngày); nếu ngày đó đại kỵ với đón dâu thì lấy ngày đón dâu tốt nhất.
+  const donDau = thanhHon ? (dungNgay("don-dau", thanhHon.solarDate) ?? totNhat("don-dau")) : totNhat("don-dau");
+  // 3) Ăn hỏi = ngày tốt nhất TRƯỚC ngày cưới; nếu khoảng không còn ngày trước thì lấy tốt nhất toàn khoảng.
+  const anHoi = thanhHon ? (totNhatTruoc("an-hoi", thanhHon.solarDate) ?? totNhat("an-hoi")) : totNhat("an-hoi");
+  // 4) Đăng ký kết hôn = thủ tục, chọn ngày đẹp nhất toàn khoảng.
+  const dangKy = totNhat("dang-ky-ket-hon");
+
+  const daChon: Record<CuoiHoi.NghiLeCuoiHoi, CuoiHoiNgay | null> = {
+    "an-hoi": anHoi,
+    "don-dau": donDau,
+    "thanh-hon": thanhHon,
+    "dang-ky-ket-hon": dangKy,
+  };
+
+  const muc: LichCuoiHoiMuc[] = THU_TU_NGHI_LE.map((nghiLe) => {
+    const ngay = daChon[nghiLe];
+    if (!ngay) {
+      return {
+        nghiLe,
+        tenNghiLe: CuoiHoi.TEN_NGHI_LE[nghiLe],
+        solarDate: null, lunarDate: null, chiNgay: null,
+        diemNgay: 0, hang: null, tenHang: "",
+        gioTot: [], canhBao: [], khongCoNgay: true,
+      };
+    }
+    const gio = calculateGioCuoiHoi({
+      namSinhCoDau: input.namSinhCoDau,
+      namSinhChuRe: input.namSinhChuRe,
+      solarDate: ngay.solarDate,
+      nghiLe,
+      uuTien,
+      timeZone: input.timeZone,
+    });
+    return {
+      nghiLe,
+      tenNghiLe: CuoiHoi.TEN_NGHI_LE[nghiLe],
+      solarDate: ngay.solarDate,
+      lunarDate: ngay.lunarDate,
+      chiNgay: ngay.chiNgay,
+      diemNgay: ngay.diemCapDoi,
+      hang: ngay.hang,
+      tenHang: ngay.tenHang,
+      gioTot: gio.gioXepHang.slice(0, 3).map((g) => ({ chiGio: g.chiGio, khungGio: g.khungGio, diem: g.diemTongHop, tenHang: g.tenHang })),
+      canhBao: ngay.canhBao,
+      khongCoNgay: false,
+    };
+  });
+
+  // Sắp theo trình tự thời gian: nghi lễ có ngày đứng trước; nghi lễ không có ngày xuống cuối.
+  muc.sort((a, b) => {
+    if (!a.solarDate) return 1;
+    if (!b.solarDate) return -1;
+    return soSanhNgay(a.solarDate, b.solarDate);
+  });
+
+  const ghiChu: string[] = [
+    "Đón dâu và thành hôn thường diễn ra cùng một ngày (đón dâu buổi sáng, thành hôn trong ngày) — nếu hai ngày trùng nhau là hợp lệ.",
+    "Đăng ký kết hôn mang tính thủ tục nên chọn ngày đẹp nhất toàn khoảng, không ràng buộc trước/sau lễ.",
+  ];
+
+  return { muc, ghiChu };
+}

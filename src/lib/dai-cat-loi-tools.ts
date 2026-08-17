@@ -47,6 +47,12 @@ export const daiCatLoiTools: DaiCatLoiTool[] = [
     desc: "Tìm ngày đẹp để mở cửa kinh doanh, khai trương — có thể xét tuổi chủ.",
   },
   {
+    href: "/dai-cat-loi/lich-cuoi-hoi",
+    icon: "🗓️",
+    title: "Lập Lịch Cưới Hỏi Trọn Gói",
+    desc: "Chọn ngày + giờ đẹp cho cả 4 nghi lễ trong một lần, sắp theo trình tự thời gian.",
+  },
+  {
     href: "/dai-cat-loi/ngay-cuoi-hoi",
     icon: "💍",
     title: "Xem Ngày Cưới Hỏi",

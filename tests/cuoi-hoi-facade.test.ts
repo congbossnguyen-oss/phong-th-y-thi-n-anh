@@ -61,3 +61,46 @@ describe("calculateGioCuoiHoi — tầng giờ", () => {
     expect(range.soNgayBiLoai).toBeGreaterThan(0);
   });
 });
+
+import { calculateLichCuoiHoi } from "@thien-anh/trachnhat-engine";
+
+describe("calculateLichCuoiHoi — lịch trọn gói", () => {
+  const r = calculateLichCuoiHoi({
+    namSinhCoDau: 1998,
+    namSinhChuRe: 1996,
+    startDate: { year: 2026, month: 11, day: 1 },
+    endDate: { year: 2027, month: 1, day: 31 },
+    timeZone: TZ,
+  });
+  const jd = (d: any) => Date.UTC(d.year, d.month - 1, d.day);
+  const byLe = (le: string) => r.muc.find((m) => m.nghiLe === le)!;
+
+  it("trả đủ 4 nghi lễ, sắp theo trình tự thời gian", () => {
+    expect(r.muc).toHaveLength(4);
+    const coNgay = r.muc.filter((m) => m.solarDate);
+    for (let i = 1; i < coNgay.length; i++) {
+      expect(jd(coNgay[i]!.solarDate)).toBeGreaterThanOrEqual(jd(coNgay[i - 1]!.solarDate));
+    }
+  });
+
+  it("ăn hỏi diễn ra TRƯỚC ngày thành hôn", () => {
+    const anHoi = byLe("an-hoi");
+    const thanhHon = byLe("thanh-hon");
+    expect(anHoi.solarDate).not.toBeNull();
+    expect(thanhHon.solarDate).not.toBeNull();
+    expect(jd(anHoi.solarDate)).toBeLessThan(jd(thanhHon.solarDate));
+  });
+
+  it("đón dâu cùng ngày với thành hôn (ngày cưới)", () => {
+    expect(jd(byLe("don-dau").solarDate)).toBe(jd(byLe("thanh-hon").solarDate));
+  });
+
+  it("mỗi mục có ngày đều kèm giờ đẹp (tối đa 3)", () => {
+    for (const m of r.muc) {
+      if (m.solarDate) {
+        expect(m.gioTot.length).toBeGreaterThan(0);
+        expect(m.gioTot.length).toBeLessThanOrEqual(3);
+      }
+    }
+  });
+});
