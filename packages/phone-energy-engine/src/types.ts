@@ -58,8 +58,12 @@ export interface CapGoc {
 }
 
 /** Hiệu ứng của một số 5 hoặc số 0 lên một cặp gốc. */
-/** Số 5 đẩy năng lượng lên (kích phát / kéo dài); số 0 kéo năng lượng xuống (ẩn ngầm / mất hẳn). */
-export type LoaiHieuUng = "kích phát" | "kéo dài" | "ẩn ngầm" | "mất hẳn";
+/**
+ * Số 5 đẩy năng lượng lên (kích phát / kéo dài).
+ * Số 0 rẽ theo bản chất cặp: với cát tinh thì "giảm nửa lực" (giảm chứ không mất hẳn), với hung
+ * tinh thì "tăng nặng".
+ */
+export type LoaiHieuUng = "kích phát" | "kéo dài" | "giảm nửa lực" | "tăng nặng";
 
 export interface HieuUngSo50 {
   /** 5 hoặc 0. */

@@ -140,14 +140,36 @@ const HIEU_UNG_5 = {
   },
 };
 
-const HIEU_UNG_0 = {
+/**
+ * Hiệu ứng số 0 lên một cặp CÁT tinh.
+ *
+ * Chủ dự án chốt (Chương 3–4 sách): số 0 làm **giảm còn một nửa lực** của cát tinh, KHÔNG triệt tiêu
+ * hoàn toàn. Bản cũ ghi "mất hẳn / từ có thành không" là sai — đã đổi.
+ */
+const HIEU_UNG_0_CAT = {
   giữa: {
-    hieuUng: "ẩn ngầm" as const,
-    moTa: "số 0 lặp lại chữ số đứng trước thành Phục Vị nhưng làm năng lượng giảm đi: cặp này vẫn tồn tại mà hoạt động ngầm, khó phát giác sớm",
+    hieuUng: "giảm nửa lực" as const,
+    moTa: "số 0 chen vào giữa làm năng lượng tốt này ẩn bớt, chỉ còn khoảng một nửa lực và hoạt động ngầm — giảm chứ không mất hẳn",
   },
   sau: {
-    hieuUng: "mất hẳn" as const,
-    moTa: "số 0 lặp lại chữ số đứng trước thành Phục Vị nhưng làm năng lượng giảm đi: đứng ngay sau nên rút mất luôn, từ có thành không",
+    hieuUng: "giảm nửa lực" as const,
+    moTa: "số 0 đứng ngay sau rút bớt khoảng một nửa lực của năng lượng tốt này — giảm chứ không triệt tiêu hoàn toàn",
+  },
+};
+
+/**
+ * Hiệu ứng số 0 lên một cặp HUNG tinh.
+ *
+ * Cùng nguồn: số 0 đi với hung tinh thì **làm mức độ nghiêm trọng nặng thêm** (ngược chiều với cát).
+ */
+const HIEU_UNG_0_HUNG = {
+  giữa: {
+    hieuUng: "tăng nặng" as const,
+    moTa: "số 0 chen vào giữa khiến năng lượng xấu này ngấm ngầm, khó phát giác sớm nhưng mức độ nặng hơn",
+  },
+  sau: {
+    hieuUng: "tăng nặng" as const,
+    moTa: "số 0 đứng ngay sau đẩy năng lượng xấu này nặng thêm về mức độ nghiêm trọng",
   },
 };
 
@@ -177,18 +199,17 @@ export function tinhHieuUngSo50(soDaChuanHoa: string, capGoc: CapGoc): HieuUngSo
     else continue;
 
     const soLapLai = Number(soDaChuanHoa[iGoc]);
-    const { hieuUng, moTa } = (d === 5 ? HIEU_UNG_5 : HIEU_UNG_0)[viTriTuongDoi];
+    // Số 5 luôn làm mạnh lên (kích phát/kéo dài). Số 0 rẽ theo bản chất cặp: với cát tinh thì giảm
+    // còn một nửa lực, với hung tinh thì làm nặng thêm — đúng nguyên tắc Chương 3–4 sách.
+    const bang = d === 5 ? HIEU_UNG_5 : laHung ? HIEU_UNG_0_HUNG : HIEU_UNG_0_CAT;
+    const { hieuUng, moTa } = bang[viTriTuongDoi];
 
-    // Cả bốn hiệu ứng đều đẩy hung tinh theo hướng xấu: số 5 làm nó mạnh thêm, số 0 làm nó ngấm
-    // ngầm/mất kiểm soát. Nguyên tắc chốt mục 4b: hung tinh gặp 0 hay 5 đều nguy hiểm hơn.
+    // Hung tinh gặp 0 hay 5 đều nguy hiểm hơn (mục 4b). Với cát tinh, số 0 làm yếu đi — không đánh
+    // dấu là "làm mạnh hung tinh".
     const lamManhHungTinh = laHung;
 
-    // Số 0 ẩn hoặc làm mất năng lượng thì nói rõ mất ở MẶT NÀO của cuộc sống — dựa vào lĩnh vực
-    // của chính tinh đó. Chỉ áp cho số 0, và chỉ khi hiệu ứng thực sự là ẩn/mất.
-    const yNghiaLinhVuc =
-      d === 0 && traCuu && (hieuUng === "ẩn ngầm" || hieuUng === "mất hẳn")
-        ? dienGiaiLinhVuc(traCuu.ten)
-        : undefined;
+    // Số 0 tác động lên cặp thì nói rõ ở MẶT NÀO của cuộc sống — dựa vào lĩnh vực của chính tinh đó.
+    const yNghiaLinhVuc = d === 0 && traCuu ? dienGiaiLinhVuc(traCuu.ten) : undefined;
 
     ds.push({
       so: d as 5 | 0,

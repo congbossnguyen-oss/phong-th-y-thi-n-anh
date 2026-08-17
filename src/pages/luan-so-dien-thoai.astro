@@ -616,7 +616,9 @@ const namNay = new Date().getFullYear();
     for (const c of kq.capGoc) {
       for (const h of c.hieuUng) {
         const la0 = h.so === 0;
-        const xau = h.lamManhHungTinh || h.hieuUng === "mất hẳn" || h.hieuUng === "ẩn ngầm";
+        // Số 0 luôn là chiều xấu (giảm cát tinh còn nửa, hoặc làm hung tinh nặng thêm); số 5 làm
+        // mạnh lên nên tốt với cát tinh, chỉ xấu khi làm mạnh hung tinh.
+        const xau = la0 || h.lamManhHungTinh;
         const mauHieuUng = xau ? "text-red-500" : h.so === 5 ? "text-emerald-500" : "text-(--color-ink-700)";
         dong.push(`
           <tr class="border-t border-(--color-ivory-300)">
@@ -669,8 +671,9 @@ const namNay = new Date().getFullYear();
          Khác nhau ở chiều tác động. <strong class="text-(--color-ink-800)">Số 5 làm năng lượng
          mạnh lên</strong>: đứng ngay sau một cặp thì kích phát cặp ấy bộc lộ rõ ra ngoài, nằm giữa
          một cặp thì kéo dài cặp ấy thêm ra — gặp cát tinh là tốt, gặp hung tinh là nguy hiểm gấp
-         đôi. <strong class="text-(--color-ink-800)">Số 0 thì ngược lại, làm năng lượng giảm
-         đi</strong>: nằm giữa thì cặp ấy ẩn ngầm, đứng ngay sau thì mất hẳn — đây chính là hiện
+         đôi. <strong class="text-(--color-ink-800)">Số 0 thì ngược lại</strong>: với cát tinh nó
+         làm <strong class="text-(--color-ink-800)">giảm còn khoảng một nửa lực</strong> — giảm chứ
+         không triệt tiêu hoàn toàn; với hung tinh thì lại làm mức xấu nặng thêm. Đây chính là hiện
          tượng gãy trường khí.
        </p>`,
     );
