@@ -1,0 +1,184 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import Container from "../../components/ui/Container.astro";
+import Button from "../../components/ui/Button.astro";
+
+export const prerender = true;
+---
+
+<BaseLayout
+  title="Xem Ngày Cưới Hỏi"
+  description="Chọn ngày đẹp cho ăn hỏi, đón dâu, thành hôn, đăng ký kết hôn — chấm điểm riêng cô dâu, chú rể và cặp đôi theo hợp tuổi, hỷ tinh (Hồng Loan/Thiên Hỷ) và trạch cát, rồi mới tổng hợp."
+>
+  <PageHero
+    eyebrow="Đại Cát Lợi"
+    title="Xem Ngày Cưới Hỏi"
+    description="Nhập năm sinh cô dâu + chú rể và khoảng ngày — hệ thống xếp hạng ngày đẹp cho từng nghi lễ, chấm điểm độc lập hai người rồi cân lại."
+    breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Đại Cát Lợi", href: "/dai-cat-loi" }, { label: "Xem Ngày Cưới Hỏi" }]}
+  />
+
+  <Container class="py-16">
+    <div class="mx-auto max-w-2xl">
+      <form id="ch-form" class="flex flex-col gap-4 rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
+        <div class="grid grid-cols-2 gap-3">
+          <div class="space-y-2 rounded-xl border border-slate-200 p-3">
+            <p class="text-xs font-semibold text-(--color-cinnabar-500)">👰 Cô dâu</p>
+            <label for="ch-nam-co-dau" class="text-xs text-slate-500">Năm sinh (dương lịch)</label>
+            <input type="number" id="ch-nam-co-dau" min="1940" max="2010" required placeholder="vd 1998" class="w-full rounded-(--radius-control) border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800" />
+          </div>
+          <div class="space-y-2 rounded-xl border border-slate-200 p-3">
+            <p class="text-xs font-semibold text-(--color-gold-700)">🤵 Chú rể</p>
+            <label for="ch-nam-chu-re" class="text-xs text-slate-500">Năm sinh (dương lịch)</label>
+            <input type="number" id="ch-nam-chu-re" min="1940" max="2010" required placeholder="vd 1996" class="w-full rounded-(--radius-control) border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800" />
+          </div>
+        </div>
+
+        <div>
+          <label for="ch-nghi-le" class="text-sm font-medium text-slate-700">Nghi lễ</label>
+          <select id="ch-nghi-le" class="mt-1.5 w-full rounded-(--radius-control) border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800">
+            <option value="thanh-hon">Thành hôn (cưới)</option>
+            <option value="an-hoi">Ăn hỏi</option>
+            <option value="don-dau">Đón dâu</option>
+            <option value="dang-ky-ket-hon">Đăng ký kết hôn</option>
+          </select>
+          <p class="mt-1 text-xs text-slate-500">Mỗi nghi lễ xét tiêu chí riêng — thành hôn kỵ chặt hơn ăn hỏi.</p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="ch-tu-ngay" class="text-xs font-medium text-slate-600">Từ ngày</label>
+            <input type="date" id="ch-tu-ngay" required class="mt-1 w-full rounded-(--radius-control) border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800" />
+          </div>
+          <div>
+            <label for="ch-den-ngay" class="text-xs font-medium text-slate-600">Đến ngày</label>
+            <input type="date" id="ch-den-ngay" required class="mt-1 w-full rounded-(--radius-control) border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800" />
+          </div>
+        </div>
+
+        <div>
+          <label for="ch-uu-tien" class="text-sm font-medium text-slate-700">Ưu tiên</label>
+          <select id="ch-uu-tien" class="mt-1.5 w-full rounded-(--radius-control) border border-slate-300 bg-white px-3 py-2.5 text-sm text-slate-800">
+            <option value="can-bang">Cân bằng hai người</option>
+            <option value="uu-tien-co-dau">Ưu tiên cô dâu</option>
+            <option value="uu-tien-chu-re">Ưu tiên chú rể</option>
+          </select>
+        </div>
+
+        <Button type="submit" size="lg">Tìm ngày đẹp</Button>
+      </form>
+
+      <div id="ch-loi" class="mt-3 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-3 text-sm text-(--color-danger-500)"></div>
+
+      <div id="ch-ket-qua" class="mt-6 hidden space-y-3"></div>
+
+      <p class="mt-4 text-xs text-(--color-ink-500)">
+        Đánh giá theo hệ thống phong thủy đã cấu hình (hợp tuổi ngày, hỷ tinh Hồng Loan/Thiên Hỷ, trạch cát, hoàng đạo, trực,
+        Nhị Thập Bát Tú). Điểm cô dâu và chú rể chấm độc lập rồi mới cân — ngày chỉ tốt cho một người sẽ không được xếp cao.
+        Kết quả mang tính tham khảo, không thay thế tư vấn trực tiếp.
+      </p>
+    </div>
+  </Container>
+</BaseLayout>
+
+<script>
+  const form = document.getElementById("ch-form") as HTMLFormElement;
+  const loiEl = document.getElementById("ch-loi")!;
+  const ketQuaEl = document.getElementById("ch-ket-qua")!;
+
+  function escapeHtml(s: unknown): string {
+    return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+  }
+
+  const MAU_HANG: Record<string, string> = {
+    "dai-cat": "text-emerald-600",
+    "rat-tot": "text-emerald-600",
+    tot: "text-amber-600",
+    "co-the-dung": "text-slate-600",
+    "khong-thuan": "text-(--color-cinnabar-500)",
+    "khong-nen-chon": "text-(--color-cinnabar-500)",
+  };
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    loiEl.classList.add("hidden");
+    ketQuaEl.classList.add("hidden");
+
+    const namCoDau = (document.getElementById("ch-nam-co-dau") as HTMLInputElement).value;
+    const namChuRe = (document.getElementById("ch-nam-chu-re") as HTMLInputElement).value;
+    const nghiLe = (document.getElementById("ch-nghi-le") as HTMLSelectElement).value;
+    const tuNgay = (document.getElementById("ch-tu-ngay") as HTMLInputElement).value;
+    const denNgay = (document.getElementById("ch-den-ngay") as HTMLInputElement).value;
+    const uuTien = (document.getElementById("ch-uu-tien") as HTMLSelectElement).value;
+
+    if (!namCoDau || !namChuRe || !tuNgay || !denNgay) {
+      loiEl.textContent = "Vui lòng nhập đủ năm sinh hai người và khoảng ngày.";
+      loiEl.classList.remove("hidden");
+      return;
+    }
+
+    try {
+      const qs = new URLSearchParams({
+        namSinhCoDau: namCoDau,
+        namSinhChuRe: namChuRe,
+        nghiLe,
+        tuNgay,
+        denNgay,
+        uuTien,
+      });
+      const res = await fetch(`/api/ngay-cuoi-hoi?${qs.toString()}`);
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        loiEl.textContent = data.error ?? "Không tính được.";
+        loiEl.classList.remove("hidden");
+        return;
+      }
+      renderKetQua(data.result);
+      ketQuaEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch {
+      loiEl.textContent = "Không tính được. Vui lòng thử lại.";
+      loiEl.classList.remove("hidden");
+    }
+  });
+
+  function renderKetQua(r: any) {
+    const dsHtml = (r.ngayXepHang as any[])
+      .map((n, i) => {
+        const huy = ["🥇", "🥈", "🥉"][i] ?? `${i + 1}.`;
+        const catTinh = n.catTinhMoTa.length
+          ? `<p class="mt-1 text-xs text-emerald-700">✨ ${n.catTinhMoTa.map(escapeHtml).join(" · ")}</p>`
+          : "";
+        const canhBao = n.canhBao.length
+          ? `<p class="mt-1 text-xs text-(--color-cinnabar-500)">⚠ ${n.canhBao.map(escapeHtml).join("; ")}</p>`
+          : "";
+        return `
+          <div class="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+            <div class="flex items-baseline justify-between">
+              <p class="font-display font-bold text-slate-900">${huy} ${n.solarDate.day}/${n.solarDate.month}/${n.solarDate.year}
+                <span class="ml-1 text-xs font-normal text-slate-500">(ÂL ${n.lunarDate.day}/${n.lunarDate.month}${n.lunarDate.isLeapMonth ? " nhuận" : ""} · ngày ${escapeHtml(n.chiNgay)})</span>
+              </p>
+              <p class="font-display text-lg font-bold ${MAU_HANG[n.hang] ?? "text-slate-700"}">${n.diemCapDoi}/10</p>
+            </div>
+            <p class="text-xs font-semibold ${MAU_HANG[n.hang] ?? "text-slate-600"}">${escapeHtml(n.tenHang)}</p>
+            <p class="mt-1 text-sm text-slate-600">👰 Cô dâu ${n.diemCoDau}/10 · 🤵 Chú rể ${n.diemChuRe}/10</p>
+            ${catTinh}
+            ${canhBao}
+          </div>`;
+      })
+      .join("");
+
+    const rong = (r.ngayXepHang as any[]).length === 0;
+    ketQuaEl.innerHTML = `
+      <div class="rounded-2xl border-2 border-amber-300 bg-white p-6 shadow-lg">
+        <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Ngày đẹp cho ${escapeHtml(r.tenNghiLe)}</p>
+        ${r.soNgayBiLoai > 0 ? `<p class="mt-1 text-xs text-slate-500">Đã loại ${r.soNgayBiLoai} ngày phạm đại kỵ.</p>` : ""}
+        <div class="mt-3 space-y-2">${dsHtml || `<p class="text-sm text-slate-500">Không có ngày nào đạt trong khoảng đã chọn — thử mở rộng khoảng ngày.</p>`}</div>
+        ${
+          !rong && r.thieuDuLieu?.length
+            ? `<p class="mt-3 border-t border-slate-100 pt-2 text-[11px] text-slate-400">Chưa xét (thiếu dữ liệu): ${(r.thieuDuLieu as string[]).map(escapeHtml).join("; ")}</p>`
+            : ""
+        }
+      </div>`;
+    ketQuaEl.classList.remove("hidden");
+  }
+</script>
