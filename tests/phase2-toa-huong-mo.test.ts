@@ -457,20 +457,27 @@ describe("Đủ luồng ①→⑤ trên đầu ra thật của Phase 1 (đặc t
     expect(phase1.tatCaNgayGioHaHuyet?.length ?? 0).toBeGreaterThan(phase1.ngayGioHaHuyet!.length);
   });
 
-  it("lọc trên rổ rộng thì vẫn còn phương án để trả — không rỗng như khi lọc trên top 3", () => {
-    for (const doSoToa of [30, 90, 210, 300]) {
+  it("không phải mọi tọa hướng đều bị lọc sạch — ít nhất một sơn còn phương án", () => {
+    // ⚠️ KHÔNG khoá theo một tọa cụ thể. Đo 2026-08-17 sau khi nối đủ Thọ Tử + 28 sao: chỉ còn
+    // khoảng 1-8 trong 24 sơn có phương án, và sơn nào "sạch" thì đổi theo từng ca. Khoá cứng
+    // "tọa 210 phải có kết quả" là khoá một sự trùng hợp, không phải quy tắc.
+    //
+    // Bất biến đáng khoá: module không được chết với MỌI hướng — nếu 24/24 sơn đều rỗng thì bộ
+    // lọc đã hỏng chứ không phải phong thuỷ khắt khe.
+    const soSonCoKetQua = XemNgayCaoCap.DANH_SACH_24_SON.filter((son) => {
       const kq = apDungPhase2({
-        doSoToa,
+        doSoToa: son.doTam,
         phuongAnPhase1: phase1.tatCaNgayGioHaHuyet ?? [],
         namMat: 2026,
         thangMat: 9,
         ngayMat: 10,
         nguyenNhanMat: "benh-tuoi-gia",
+        namSinhDuongLich: 1947,
         soNgayDuKienToiChon: 7,
       });
-      if (kq.ketCuc !== "A" && kq.ketCuc !== "B") continue;
-      expect(kq.phuongAn.length, `tọa ${doSoToa}° không còn phương án nào`).toBeGreaterThan(0);
-    }
+      return (kq.ketCuc === "A" || kq.ketCuc === "B") && kq.soPhuongAnQuaLoc > 0;
+    }).length;
+    expect(soSonCoKetQua, "cả 24 sơn đều rỗng — bộ lọc nhiều khả năng đã hỏng").toBeGreaterThan(0);
   });
 
   it("chạy trọn ①→⑤: trả kết cục A hoặc B, phương án có lớp cách cục và quan hệ đạt", () => {
@@ -633,10 +640,13 @@ describe("Cổng kiểm ĐẦY ĐỦ — lọc sạch phương án cũng không 
   });
 
   it("tọa còn phương án thì cho đi tiếp và nói rõ còn bao nhiêu", () => {
-    const kq = kiemDayDuTruocThanhToan({ ...CHUNG, doSoToa: 210 });
-    expect(kq.ketCuc).toBe("qua-cong");
-    if (kq.ketCuc !== "qua-cong") return;
-    expect(kq.duocPhepThuPhi).toBe(true);
-    expect(kq.soPhuongAn).toBeGreaterThan(0);
+    // Tìm sơn nào còn phương án thay vì khoá cứng một tọa — sơn "sạch" đổi theo từng ca.
+    const son = XemNgayCaoCap.DANH_SACH_24_SON.map((s) =>
+      kiemDayDuTruocThanhToan({ ...CHUNG, doSoToa: s.doTam }),
+    ).find((kq) => kq.ketCuc === "qua-cong");
+    expect(son, "không sơn nào qua được cổng — cần xem lại bộ lọc").toBeDefined();
+    if (son?.ketCuc !== "qua-cong") return;
+    expect(son.duocPhepThuPhi).toBe(true);
+    expect(son.soPhuongAn).toBeGreaterThan(0);
   });
 });

@@ -57,6 +57,11 @@ const DI_CHUYEN_PHUT_TOI_DA = 480;
 /** Khung "đêm khuya" dùng để cảnh báo giờ động quan bất khả thi (23h-5h). */
 const DEM_KHUYA_TU_PHUT = 23 * 60;
 const DEM_KHUYA_DEN_PHUT = 5 * 60;
+/**
+ * 4 trong 28 sao kỵ riêng việc AN TÁNG (đặc tả Phase 2 mục 2.2). Không phải cứ sao "hung" là
+ * loại — bảng 28 sao có tới 14 sao hung, loại hết thì không còn ngày nào. Chỉ đúng 4 sao này.
+ */
+const SAO_28_KY_AN_TANG = new Set(["Giác", "Cang", "Khuê", "Tỉnh"]);
 
 /** Giờ dân sự đại diện (0-23) cho mỗi Chi giờ — cùng quy ước với `gioBang.ts`. */
 function representativeHour(chiIndex: number): number {
@@ -719,9 +724,20 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
       //
       // ⚠️ Trước 2026-08-17 tên "Đại Hao" chỉ nằm trong hằng số `KHONG_HOA_GIAI_DUOC` mà KHÔNG có
       // chỗ nào kiểm — danh sách cấm chỉ tồn tại trên giấy. Đây là chỗ thực thi nó.
-      if (TrachNhat.getThanSatTrongNgay(lunarCandidate.month, canChiCandidate.day.chi).some((t) => t.name === "Đại Hao")) {
-        hungKhongHoaGiai.push("Đại Hao");
-      }
+      const thanSatNgay = TrachNhat.getThanSatTrongNgay(lunarCandidate.month, canChiCandidate.day.chi);
+      if (thanSatNgay.some((t) => t.name === "Đại Hao")) hungKhongHoaGiai.push("Đại Hao");
+
+      // THỌ TỬ — đặc tả Phase 2 mục 2.2 xếp vào nhóm LOẠI ngày, và sơ đồ hoá hung của chủ dự án
+      // liệt Thọ Tử vào ngoại lệ mà Tam Đại Cát Tinh KHÔNG cứu được → thuộc nhóm không hoá giải.
+      //
+      // ⚠️ Bảng nằm ở `thanSat.ts` dưới tên "Thụ Tử" — cùng một sao, chỉ khác cách phiên âm
+      // (`tamDaiCatTinh.ts` đã ghi chú điều này). Trước 2026-08-17 tưởng là chưa có bảng nên bỏ
+      // trống suốt; thực ra đã có sẵn ở tầng dùng chung.
+      if (thanSatNgay.some((t) => t.name === "Thụ Tử" || t.name === "Thọ Tử")) hungKhongHoaGiai.push("Thọ Tử");
+
+      // 28 SAO — mục 2.2 loại 4 sao Giác, Cang, Khuê, Tỉnh với việc an táng.
+      const sao28 = TrachNhat.getNhiThapBatTu(jdnCandidate);
+      if (SAO_28_KY_AN_TANG.has(sao28.name)) hungKhongHoaGiai.push(`Sao ${sao28.name}`);
 
       if (hungKhongHoaGiai.length > 0) continue;
 
