@@ -32,6 +32,12 @@ export interface TrongSoDiem {
   motTinhApDaoToiDa: number;
   /** Ngưỡng tỷ lệ coi là áp đảo. */
   nguongApDao: number;
+  /** Phục Vị áp đảo: mức trừ riêng, nhẹ hơn, vì nó là tinh TRUNG TÍNH chứ không phải hung tinh. */
+  phucViApDao: number;
+  /** Phục Vị áp đảo cũng có mặt được: sức chịu đựng, độ bền, khó bị quật ngã. */
+  phucViBenBi: number;
+  /** Trần cho cả NHÓM mất cân bằng (thiếu Sinh Khí + thiếu Diên Niên + áp đảo) — chống trừ trùng. */
+  toiDaTruMatCanBang: number;
 }
 
 export const TRONG_SO_MAC_DINH: TrongSoDiem = {
@@ -59,6 +65,16 @@ export const TRONG_SO_MAC_DINH: TrongSoDiem = {
   motTinhApDao: -18,
   motTinhApDaoToiDa: -30,
   nguongApDao: 50,
+  // Chủ dự án chốt 2026-08-17 (lần 2): Phục Vị áp đảo KHÔNG được đánh như hung tinh áp đảo. Nguyên
+  // văn: "dù gì nó cũng có năng lượng phục vị, thì sức chịu đựng rất lớn, tuy nhiên lại ngại thay
+  // đổi". Đây là đặc tính hai mặt, nên tách thành một khoản cộng và một khoản trừ nhẹ, thay cho mức
+  // trừ tăng dần -18..-30 vốn dành cho tinh có hướng rõ ràng.
+  phucViApDao: -10,
+  phucViBenBi: 15,
+  // Trần chống trừ trùng: thiếu Sinh Khí, thiếu Diên Niên và một tinh áp đảo thực chất cùng mô tả
+  // một khuyết điểm (dãy thiếu động lực, không lưu thông). Cộng dồn cả ba là phạt ba lần cho một
+  // lỗi, đủ để dìm mọi dãy nhiều Phục Vị xuống 0 điểm.
+  toiDaTruMatCanBang: -25,
 };
 
 /** Trọng số của từng cấp độ khi quy năng lượng ra điểm — cấp 1 mạnh nhất. */
@@ -165,13 +181,18 @@ export function tinhDiemTongQuan(params: {
   }
 
   // 6. Cảnh báo đặc biệt.
-  if (canhBao.length > 0) {
-    const d = Math.max(w.toiDaTruCanhBao, canhBao.length * w.moiCanhBao);
+  //
+  // Bỏ `gay_truong_khi` ra khỏi nhóm này: nó nói đúng cái mà mục 7 bên dưới đã trừ theo số lượng số
+  // 0. Để cả hai cùng chạy là trừ hai lần cho cùng một con số 0 — lỗi này làm 0945406666 mất 19
+  // điểm chỉ vì một chữ số, và là một phần lý do nó rơi xuống 0.
+  const canhBaoTinhDiem = canhBao.filter((c) => c.ma !== "gay_truong_khi");
+  if (canhBaoTinhDiem.length > 0) {
+    const d = Math.max(w.toiDaTruCanhBao, canhBaoTinhDiem.length * w.moiCanhBao);
     diem += d;
     thanhPhan.push({
       ten: "Cảnh báo đặc biệt",
       diem: d,
-      ghiChu: canhBao.map((c) => c.tieuDe).join("; "),
+      ghiChu: canhBaoTinhDiem.map((c) => c.tieuDe).join("; "),
     });
   }
 
@@ -189,18 +210,21 @@ export function tinhDiemTongQuan(params: {
   }
 
   // 8. Mất cân bằng — dãy thiếu hẳn một cát tinh trụ cột, hoặc bị một loại năng lượng lấn át.
+  //
+  // Cả nhóm bị chặn bởi `toiDaTruMatCanBang`, vì ba khoản dưới đây thực chất mô tả cùng một khuyết
+  // điểm. Cộng dồn không giới hạn thì mọi dãy nhiều Phục Vị đều bị dìm xuống 0 điểm.
   if (capGoc.length > 0) {
+    const matCanBang: ScoreCard["thanhPhan"] = [];
+
     if (!coMat.has("Sinh Khí")) {
-      diem += w.thieuSinhKhi;
-      thanhPhan.push({
+      matCanBang.push({
         ten: "Không có Sinh Khí",
         diem: w.thieuSinhKhi,
         ghiChu: "Thiếu năng lượng quý nhân — việc gì cũng phải tự thân, ít người đỡ.",
       });
     }
     if (!coMat.has("Diên Niên")) {
-      diem += w.thieuDienNien;
-      thanhPhan.push({
+      matCanBang.push({
         ten: "Không có Diên Niên",
         diem: w.thieuDienNien,
         ghiChu: "Thiếu năng lượng sự nghiệp và sức bền — dãy số kém ổn định, thiếu nhất quán.",
@@ -219,16 +243,45 @@ export function tinhDiemTongQuan(params: {
     }
     const tyLeApDao = (soLanApDao / capGoc.length) * 100;
     if (tyLeApDao > w.nguongApDao) {
-      // Trừ tăng dần theo mức áp đảo: vừa quá nửa thì trừ mức tối thiểu, chiếm trọn dãy thì trừ
-      // mức tối đa. Áp một mức cố định sẽ đánh đồng dãy 51% với dãy 100%, trong khi tài liệu nhấn
-      // mạnh "quá cường sinh hại" — càng đơn điệu càng hại.
-      const mucVuot = (tyLeApDao - w.nguongApDao) / (100 - w.nguongApDao);
-      const d = Math.round(w.motTinhApDao + (w.motTinhApDaoToiDa - w.motTinhApDao) * mucVuot);
-      diem += d;
+      if (tenApDao === "Phục Vị") {
+        // Phục Vị áp đảo là chuyện hai mặt, không phải thuần xấu: nền năng lượng rất lì, chịu đựng
+        // tốt, nhưng đứng yên và ngại thay đổi. Ghi nhận cả hai mặt thay vì chỉ phạt.
+        diem += w.phucViBenBi;
+        thanhPhan.push({
+          ten: `Phục Vị chiếm ${Math.round(tyLeApDao)}% dãy số — sức chịu đựng lớn`,
+          diem: w.phucViBenBi,
+          ghiChu: `${soLanApDao} trên ${capGoc.length} cặp là Phục Vị: nền năng lượng rất bền, chịu áp lực tốt, khó bị quật ngã, giữ được cái đang có.`,
+        });
+        matCanBang.push({
+          ten: "Nhưng ngại thay đổi",
+          diem: w.phucViApDao,
+          ghiChu: "Mặt trái của cùng năng lượng đó: mọi việc dễ giữ nguyên trạng, thiếu động lực bứt phá, cơ hội mới đến thì chậm nắm bắt.",
+        });
+      } else {
+        // Trừ tăng dần theo mức áp đảo: vừa quá nửa thì trừ mức tối thiểu, chiếm trọn dãy thì trừ
+        // mức tối đa. Áp một mức cố định sẽ đánh đồng dãy 51% với dãy 100%, trong khi tài liệu nhấn
+        // mạnh "quá cường sinh hại" — càng đơn điệu càng hại.
+        const mucVuot = (tyLeApDao - w.nguongApDao) / (100 - w.nguongApDao);
+        matCanBang.push({
+          ten: `${tenApDao} chiếm ${Math.round(tyLeApDao)}% dãy số`,
+          diem: Math.round(w.motTinhApDao + (w.motTinhApDaoToiDa - w.motTinhApDao) * mucVuot),
+          ghiChu: `${soLanApDao} trên ${capGoc.length} cặp cùng một loại năng lượng — dãy đơn điệu, thiếu lưu thông. Dù là cát tinh, quá cường vẫn sinh hại.`,
+        });
+      }
+    }
+
+    for (const p of matCanBang) {
+      diem += p.diem;
+      thanhPhan.push(p);
+    }
+    const tongMatCanBang = matCanBang.reduce((s, p) => s + p.diem, 0);
+    if (tongMatCanBang < w.toiDaTruMatCanBang) {
+      const buLai = w.toiDaTruMatCanBang - tongMatCanBang;
+      diem += buLai;
       thanhPhan.push({
-        ten: `${tenApDao} chiếm ${Math.round(tyLeApDao)}% dãy số`,
-        diem: d,
-        ghiChu: `${soLanApDao} trên ${capGoc.length} cặp cùng một loại năng lượng — dãy đơn điệu, thiếu lưu thông. Dù là cát tinh, quá cường vẫn sinh hại.`,
+        ten: "Giới hạn trừ mất cân bằng",
+        diem: buLai,
+        ghiChu: `Các khoản trên cùng nói về một khuyết điểm nên không cộng dồn quá ${-w.toiDaTruMatCanBang} điểm.`,
       });
     }
   }

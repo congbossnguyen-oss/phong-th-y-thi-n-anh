@@ -36,10 +36,12 @@ Chỉ hỏi lại Công phần còn thiếu nếu Công yêu cầu luận sâu (
 
 **Bắt buộc luận theo từng bộ 3 số liên tiếp trên TOÀN DÃY (không chỉ ở đuôi):** với mỗi bộ 3 số liền kề (abc, bcd, cde...), xác định 2 cặp gốc chồng lấn bên trong nó (ab và bc), tra Bát tinh từng cặp, rồi **ghép nghĩa cặp trái + cặp phải thành 1 câu diễn giải liền mạch** theo đúng nguyên tắc trái-phải ở `references/10-nhom-tu-truong.md` mục "Nguyên tắc đọc vị trí trái-phải". Ví dụ mẫu: "986" = 98 (Họa Hại — lời nói/khẩu) + 86 (Thiên Y — tài) → diễn giải "dùng lời nói để sinh tiền tài, nhân duyên, khẩu tài". Không chỉ liệt kê tên tinh + cấp độ rời rạc từng cặp — phải viết thành câu diễn giải ý nghĩa thực tế cho từng bộ 3 số, trình bày nối tiếp từ đầu dãy đến cuối dãy. **Nếu bộ 3 số có chứa số 0 hoặc số 5** (không tách được gọn thành 2 cặp trái-phải độc lập), dùng lại kết quả đã phân tích ở mục 4b cho vị trí đó thay vì ép ghép cặp — không tạo diễn giải trái-phải giả tạo cho trường hợp này.
 
-**Bắt buộc áp dụng mục 4b (hiệu ứng số 5 và số 0)** — hai chữ số này đi theo hai cơ chế khác nhau, không dùng chung công thức:
+**Bắt buộc áp dụng mục 4b (hiệu ứng số 5 và số 0)** — cả hai chữ số dùng CHUNG một cơ chế: xem chữ số đứng **ngay trước** nó là số mấy, vì số 5 / số 0 lặp lại chữ số đó thành một cặp Phục Vị. Chỉ khác nhau ở chiều:
 
-- **Số 0**: xác định nó đứng trước / giữa / ngay sau cặp gốc nào, rồi nêu hiệu ứng tương ứng (giữ nguyên / ẩn ngầm / mất hẳn).
-- **Số 5**: xem chữ số đứng **ngay trước** nó là số mấy — số 5 lặp lại chữ số đó thành một cặp Phục Vị. Phục Vị ấy đứng ngay sau một cặp thì **kích phát** cặp đó, nằm giữa một cặp thì **kéo dài** cặp đó. Số 5 không bao giờ tác động lên cặp nằm bên phải nó; số 5 ở đầu dãy thì không liên quan cặp nào. (Chủ dự án chốt 2026-08-17 — xem khối cảnh báo trong `bang-tra-bat-tinh.md` mục 4b.)
+- **Số 5 làm mạnh lên**: Phục Vị đứng ngay sau một cặp thì **kích phát** cặp đó, nằm giữa một cặp thì **kéo dài** cặp đó.
+- **Số 0 làm giảm đi**: đứng ngay sau một cặp thì cặp đó **mất hẳn**, nằm giữa một cặp thì **ẩn ngầm**.
+
+Cả hai đều bám sang trái nên **không bao giờ tác động lên cặp nằm bên phải chúng**; đứng ở đầu dãy thì không liên quan cặp nào. (Chủ dự án chốt 2026-08-17 — xem khối cảnh báo trong `bang-tra-bat-tinh.md` mục 4b.)
 
 Đặc biệt cảnh báo mạnh khi số 5 hoặc số 0 làm mạnh thêm một hung tinh.
 

@@ -57,28 +57,28 @@ export interface CapGoc {
 }
 
 /** Hiệu ứng của một số 5 hoặc số 0 lên một cặp gốc. */
-export type LoaiHieuUng =
-  | "giữ nguyên"
-  | "kích phát"
-  | "kéo dài"
-  | "ẩn ngầm"
-  | "mất hẳn";
+/** Số 5 đẩy năng lượng lên (kích phát / kéo dài); số 0 kéo năng lượng xuống (ẩn ngầm / mất hẳn). */
+export type LoaiHieuUng = "kích phát" | "kéo dài" | "ẩn ngầm" | "mất hẳn";
 
 export interface HieuUngSo50 {
   /** 5 hoặc 0. */
   so: 5 | 0;
   viTri: number;
   /** Vị trí tương đối so với cặp gốc. */
-  viTriTuongDoi: "trước" | "giữa" | "sau";
+  /**
+   * Vị trí so với cặp gốc mà nó tác động. Chỉ có "giữa" và "sau": số 0/5 luôn lặp lại chữ số bên
+   * TRÁI mình nên không bao giờ đứng "trước" cặp mà nó ảnh hưởng.
+   */
+  viTriTuongDoi: "giữa" | "sau";
   hieuUng: LoaiHieuUng;
   moTa: string;
   /** true khi hiệu ứng này làm một hung tinh mạnh lên — cần cảnh báo đậm. */
   lamManhHungTinh: boolean;
   /**
-   * Chỉ có với số 5: chữ số đứng ngay trước nó mà nó lặp lại để thành Phục Vị.
+   * Chữ số đứng ngay trước nó mà nó lặp lại để thành Phục Vị — cả số 5 lẫn số 0 đều có.
    * Vd "985" → soLapLai = 8, tức 8-5 đọc thành Phục Vị 88.
    */
-  soLapLai?: number;
+  soLapLai: number;
   /**
    * Số 0 ẩn hoặc làm mất năng lượng thì cụ thể là mất ở mặt nào của cuộc sống.
    * Rỗng với số 5, và rỗng với cặp Phục Vị (bảng gốc không gán lĩnh vực cho Phục Vị).
