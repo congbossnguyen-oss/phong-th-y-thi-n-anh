@@ -481,6 +481,7 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
     gioDongQuan?: GioDongQuan;
     nhapMoTrungTuSinh?: boolean;
     daNoiLongGioSatChu?: boolean;
+    hanhNienThaiTue?: string[];
     tuoiCanTranh?: {
       nhom1LongHoKeXa: string[];
       nhom2TamHopCungPham: string[];
@@ -658,16 +659,18 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
           <div class="mt-3 rounded-xl border border-(--color-cinnabar-500)/30 bg-(--color-cinnabar-500)/5 p-4">
             <p class="text-sm font-bold text-(--color-cinnabar-500)">Long Hổ Kê Xà — tuyệt đối không được có mặt</p>
             <div class="mt-1.5 flex flex-wrap gap-1.5">${chipList(tct.nhom1LongHoKeXa)}</div>
-            <p class="mt-2 text-xs text-slate-600">Nhóm này áp dụng trong mọi trường hợp, không phụ thuộc tuổi người mất.</p>
+            <p class="mt-2 text-xs text-slate-600">Tránh mặt lúc: <strong>Khâm liệm · Nhập quan · Đóng cá · Hạ huyệt</strong>. Nhóm này áp dụng trong mọi trường hợp, không phụ thuộc tuổi người mất.</p>
           </div>
           <div class="mt-2 grid gap-2 sm:grid-cols-2">
             <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
               <p class="text-sm font-semibold text-slate-700">Tam hợp với tuổi người mất</p>
               <div class="mt-1.5 flex flex-wrap gap-1.5">${chipList(tct.nhom3TamHopTuoiVong)}</div>
+              <p class="mt-2 text-xs text-slate-600">Tránh mặt lúc: Khâm liệm · Nhập quan · Đóng cá · Hạ huyệt.</p>
             </div>
             <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
               <p class="text-sm font-semibold text-slate-700">Xung / hình với tuổi người mất</p>
               <div class="mt-1.5 flex flex-wrap gap-1.5">${chipList([tct.nhom4XungHinh.xung, ...tct.nhom4XungHinh.hinh])}</div>
+              <p class="mt-2 text-xs text-slate-600">Tránh mặt lúc: Khâm liệm · Nhập quan · Đóng cá · Hạ huyệt.</p>
             </div>
             ${
               tct.nhom2TamHopCungPham.length > 0
@@ -678,6 +681,19 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
                 : ""
             }
           </div>
+          ${
+            (result.hanhNienThaiTue?.length ?? 0) > 0
+              ? `<div class="mt-2 rounded-xl border border-(--color-cinnabar-500)/30 bg-(--color-cinnabar-500)/5 p-4">
+                   <p class="text-sm font-bold text-(--color-cinnabar-500)">Hành Niên Tầm Thái Tuế — 6 tuổi bị Thái Tuế áp trong năm mất</p>
+                   <div class="mt-1.5 flex flex-wrap gap-1.5">${chipList(result.hanhNienThaiTue!)}</div>
+                   <p class="mt-2 text-xs text-slate-600">
+                     Tránh mặt lúc: <strong>Khâm liệm · Hạ huyệt</strong>.
+                     Nhóm này ghi đích danh Can Chi (ví dụ "Giáp Ngọ") nên hẹp hơn hẳn các nhóm trên —
+                     chỉ đúng 6 tuổi này, không phải cả 12 con giáp.
+                   </p>
+                 </div>`
+              : ""
+          }
           <p class="mt-3 text-xs text-slate-600">
             <strong>Phạm vi:</strong> chỉ người huyết thống trực hệ với người mất (cha, mẹ, vợ/chồng, con, anh chị em ruột, cháu nội).
             Con dâu, con rể, cháu ngoại và người ngoài <strong>không</strong> chịu tác động.

@@ -60,6 +60,7 @@ export async function taoHoSoTangLe(dauVao: DauVaoHoSo): Promise<KetQuaTaoHoSo> 
     ketQua,
     ...(phase2 ? { phase2 } : {}),
     amLichHaHuyet,
+    ...(ketQua.hanhNienThaiTue ? { hanhNienThaiTue: ketQua.hanhNienThaiTue } : {}),
   });
 
   return { taoDuoc: true, pdf };

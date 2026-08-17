@@ -294,6 +294,15 @@ export interface GioLiemHaHuyetOutput {
    */
   tuoiCanTranh?: TrungTang.TuoiCanTranhKetQua;
   /**
+   * HÀNH NIÊN TẦM THÁI TUẾ — 6 tuổi (Can Chi lục thập hoa giáp) bị Thái Tuế áp trong NĂM MẤT.
+   * Nguồn ghi: phải tránh xa lúc tẩm liệm và hạ huyệt.
+   *
+   * Khác 5 nhóm ở `tuoiCanTranh`: các nhóm kia trả về CHI (12 con giáp) nên ai tuổi Tý là dính
+   * hết; nhóm này trả về CAN CHI đầy đủ nên chỉ đúng 6 tuổi cụ thể — hẹp hơn nhiều, và vì thế
+   * cũng chính xác hơn khi dặn dò gia đình.
+   */
+  hanhNienThaiTue?: readonly string[];
+  /**
    * Quy luật bất biến: Cung_Ngày hạ huyệt thuộc nhóm Nhập Mộ → chỉ 4 giờ Dần/Tỵ/Thân/Hợi đạt
    * Nhập Mộ, mà đó đúng là 4 giờ khuyến nghị tránh khi chôn. Bật cờ này để tầng hiển thị giải
    * thích vì sao không có giờ nào đạt đồng thời cả hai tiêu chí.
@@ -401,6 +410,8 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
   const lunarMat = getLunarDate({ year: input.namMat, month: input.thangMat, day: input.ngayMat, timeZone });
   const bonCung = TrungTang.tinhBonCungTrungTang(input.gioiTinh, tuoiTa, lunarMat.month, lunarMat.day, input.chiGioMat);
   const jdnMat = Astronomy.julianDayNumber(input.namMat, input.thangMat, input.ngayMat);
+  // Can Chi NĂM MẤT — Hành Niên Tầm Thái Tuế tra theo năm mất, KHÔNG theo năm sinh của vong.
+  const canChiNamMat = getCanChi({ year: input.namMat, month: input.thangMat, day: input.ngayMat, hour: 12, timeZone }).year;
   const idxGioMat = Data.CHI.indexOf(input.chiGioMat);
   const chiTuoiVong = Scoring.getChi(input.namSinhDuongLich);
   const canNamSinhVong = Scoring.getCan(input.namSinhDuongLich);
@@ -796,6 +807,7 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
     duoi10Tuoi: false,
     bonCung,
     tuoiCanTranh,
+    hanhNienThaiTue: TrungTang.getHanhNienThaiTue(canChiNamMat.can, canChiNamMat.chi),
     gioLiemDongQuan: topGioLiem,
     thanQuyenDaNoiLong: locThanQuyen.daNoiLong,
     daNoiLongGioSatChu,

@@ -200,6 +200,8 @@ export interface HoSoTangLeParams {
   phase2?: any;
   /** Ngày âm lịch tương ứng từng phương án hạ huyệt, do tầng gọi tra sẵn. */
   amLichHaHuyet?: Record<string, string>;
+  /** 6 tuổi Hành Niên Tầm Thái Tuế của năm mất. */
+  hanhNienThaiTue?: readonly string[];
 }
 
 export async function generateHoSoTangLePdf(p: HoSoTangLeParams): Promise<Uint8Array> {
@@ -277,10 +279,26 @@ export async function generateHoSoTangLePdf(p: HoSoTangLeParams): Promise<Uint8A
   }
 
   // --- Giờ động quan ---
-  if (r.gioDongQuan) {
+  //
+  // ⚠️ Bản trước in ra "Sớm nhất undefined — muộn nhất [object Object]" vì dùng sai tên trường:
+  // `khuyenNghiTu` và `muonNhat` là OBJECT { gio, ngayDuongLich }, không phải chuỗi giờ. Hồ sơ
+  // giao cho tang gia thì một dòng vô nghĩa như vậy là hỏng cả tờ giấy.
+  const dq = r.gioDongQuan;
+  if (dq?.khuyenNghiTu && dq?.muonNhat) {
     b.muc("Giờ động quan — di quan (giờ rời nhà đưa đi)");
-    b.dong(`Sớm nhất ${r.gioDongQuan.somNhat} — muộn nhất ${r.gioDongQuan.muonNhat}`, { size: 10, font: vua });
-    b.doan("Tính lùi từ giờ hạ huyệt phương án 1, đã trừ thời gian di chuyển và đệm đi sớm.", { size: 8.5, mau: MAU.mucNhat });
+    b.dong(`Nên rời nhà lúc ${dq.khuyenNghiTu.gio}, ngày ${ngayVN(dq.khuyenNghiTu.ngayDuongLich)}`, {
+      size: 10,
+      font: vua,
+    });
+    b.dong(`Muộn nhất phải rời nhà lúc ${dq.muonNhat.gio}, ngày ${ngayVN(dq.muonNhat.ngayDuongLich)}`, { size: 10 });
+    if (dq.theoHaHuyet) {
+      b.doan(
+        `Tính lùi từ giờ hạ huyệt ${dq.theoHaHuyet.batDau} ngày ${ngayVN(dq.theoHaHuyet.ngayDuongLich)} ` +
+          `(giờ ${dq.theoHaHuyet.chiGio}), trừ ${dq.thoiGianDiChuyenPhut} phút đi đường và ${dq.demPhut} phút tới sớm chờ sẵn.`,
+        { size: 8.5, mau: MAU.mucNhat },
+      );
+    }
+    if (dq.canhBao) b.doan(dq.canhBao, { size: 8.5, font: nghieng, mau: MAU.son });
   }
 
   // --- Ngày giờ hạ huyệt ---
@@ -353,20 +371,44 @@ export async function generateHoSoTangLePdf(p: HoSoTangLeParams): Promise<Uint8A
     const nhom4 = t.nhom4XungHinh
       ? [t.nhom4XungHinh.xung, ...(t.nhom4XungHinh.hinh ?? [])].filter(Boolean)
       : [];
-    const nhom: [string, unknown][] = [
-      ["Long Hổ Kê Xà (luôn tránh)", t.nhom1LongHoKeXa],
-      ["Tam hợp với cung phạm", t.nhom2TamHopCungPham],
-      ["Tam hợp với tuổi vong", t.nhom3TamHopTuoiVong],
-      ["Xung / hình với tuổi vong", nhom4],
-      ["Thân quyến kỵ giờ liệm", t.nhom6GioLiemKyThanQuyen],
+    // Mỗi nhóm ghi RÕ tránh mặt vào lúc nào — dặn "tránh mặt" chung chung thì gia đình không biết
+    // phải giữ ai ra ngoài ở khâu nào, mà mỗi khâu lại cách nhau hàng giờ.
+    const LUC_TAT_CA = "Khâm liệm · Nhập quan · Đóng cá · Hạ huyệt";
+    const nhom: { ten: string; ds: unknown; luc: string }[] = [
+      { ten: "Long Hổ Kê Xà (luôn tránh)", ds: t.nhom1LongHoKeXa, luc: LUC_TAT_CA },
+      { ten: "Tam hợp với cung phạm", ds: t.nhom2TamHopCungPham, luc: LUC_TAT_CA },
+      { ten: "Tam hợp với tuổi người mất", ds: t.nhom3TamHopTuoiVong, luc: LUC_TAT_CA },
+      { ten: "Xung / hình với tuổi người mất", ds: nhom4, luc: LUC_TAT_CA },
+      { ten: "Thân quyến kỵ giờ liệm", ds: t.nhom6GioLiemKyThanQuyen, luc: "Khâm liệm · Nhập quan" },
     ];
-    for (const [ten, ds] of nhom) {
+    for (const { ten, ds, luc } of nhom) {
       const arr = Array.isArray(ds) ? ds : [];
       if (arr.length === 0) continue;
-      b.doan(`${ten}: ${arr.join(", ")}`, { size: 9 });
+      b.dong(`${ten}: ${arr.join(", ")}`, { size: 9, font: vua, dan: 2 });
+      b.doan(`Tránh mặt lúc: ${luc}`, { size: 8.5, x: LE + 14, mau: MAU.mucNhat });
     }
+
+    // HÀNH NIÊN TẦM THÁI TUẾ — tra theo Can Chi NĂM MẤT, cho ra 6 tuổi Can Chi đầy đủ.
+    // Khác các nhóm trên (chỉ nêu Chi, nên cả 5 người tuổi Tý đều dính): nhóm này chỉ đích danh
+    // 6 tuổi, hẹp hơn nhiều nên dặn dò cũng chính xác hơn.
+    const hanhNien: string[] = Array.isArray(p.hanhNienThaiTue) ? [...p.hanhNienThaiTue] : [];
+    if (hanhNien.length > 0) {
+      b.xuong(4);
+      b.dong(`Hành Niên Tầm Thái Tuế (6 tuổi bị Thái Tuế áp trong năm mất): ${hanhNien.join(", ")}`, {
+        size: 9,
+        font: vua,
+        dan: 2,
+      });
+      b.doan("Tránh mặt lúc: Khâm liệm · Hạ huyệt — theo nguồn, các tuổi này phải tránh xa hai khâu đó.", {
+        size: 8.5,
+        x: LE + 14,
+        mau: MAU.mucNhat,
+      });
+    }
+
+    b.xuong(4);
     b.doan(
-      "Người thuộc các tuổi trên không nên có mặt lúc khâm liệm, nhập quan, đóng cá và hạ huyệt. Nếu buộc phải có mặt thì đứng tránh ra, không nhìn trực tiếp.",
+      "Người thuộc các tuổi trên không nên có mặt ở khâu đã ghi. Nếu buộc phải có mặt thì đứng tránh ra, quay mặt đi, không nhìn trực tiếp vào thi hài hay huyệt.",
       { size: 8.5, font: nghieng, mau: MAU.mucNhat },
     );
   }
