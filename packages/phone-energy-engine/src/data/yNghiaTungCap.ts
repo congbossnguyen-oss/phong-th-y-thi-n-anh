@@ -19,16 +19,22 @@
  * nội dung, xem ghi chú trong file khuyết OCR.
  */
 
-/** Tám mặt mà Chương 2 luận cho mỗi cặp. Thiếu mặt nào là do OCR cắt, không phải sách thiếu. */
+/**
+ * Tám mặt mà Chương 2 luận cho mỗi cặp.
+ *
+ * Mọi mặt để **tuỳ chọn**: chỗ nào OCR cắt cụt hẳn hoặc nguồn ghi nhầm sang tinh khác thì bỏ TRỐNG
+ * chứ không bịa cho đầy. Tầng hiển thị chỉ in mặt nào có dữ liệu. Danh sách chỗ khuyết ghi trong
+ * `docs/luan-so-dien-thoai-data/chuong2-tien-do-va-khuyet-ocr.md`.
+ */
 export interface YNghiaCap {
-  tinhCach: string;
-  taiVan: string;
-  suNghiep: string;
-  nhanDuyen: string;
-  sucKhoe: string;
-  hocTap: string;
-  camXuc: string;
-  honNhan: string;
+  tinhCach?: string;
+  taiVan?: string;
+  suNghiep?: string;
+  nhanDuyen?: string;
+  sucKhoe?: string;
+  hocTap?: string;
+  camXuc?: string;
+  honNhan?: string;
 }
 
 export const Y_NGHIA_TUNG_CAP: Readonly<Record<string, YNghiaCap>> = {
@@ -605,5 +611,568 @@ export const Y_NGHIA_TUNG_CAP: Readonly<Record<string, YNghiaCap>> = {
       "Nội tâm kín đáo, cảm xúc không dễ bộc lộ. Dễ bị tổn thương âm thầm, tự chịu đựng, không chia sẻ. Nếu không biết cách giải toả cảm xúc, dễ sinh ra trầm cảm và cảm giác cô đơn trong tập thể.",
     honNhan:
       "Cuộc hôn nhân nhìn ngoài bình lặng, nhưng dễ thiếu sự kết nối cảm xúc sâu sắc. Người mang số này thường bị động trong tình cảm, ít thể hiện nhu cầu hoặc mong muốn. Nếu không mở lòng, dễ tạo khoảng cách dù bên ngoài vẫn giữ sự ổn định.",
+  },
+
+  // ─────────────────────── NGŨ QUỶ — Biến động, thị phi ───────────────────────
+  "18": {
+    tinhCach:
+      "Cá tính mạnh mẽ, dị biệt, khó đoán, thường có suy nghĩ khác người. Tư duy đa chiều nhưng dễ bất định, hay thay đổi cảm xúc và quyết định đột ngột. Là người dễ nổi nóng, có thể phản ứng mạnh khi bị đẩy vào thế bị động. Có khuynh hướng cực đoan hoặc nhạy cảm quá mức, nên dễ tự tạo áp lực tinh thần.",
+    taiVan:
+      "Có năng lực lập kế hoạch tài chính, nhưng dễ dính vào tiền bạc ngắn hạn, thiếu bền vững. Tài lộc thường đến bất ngờ, nhưng cũng rất dễ biến mất trong chớp mắt nếu không kiểm soát cảm xúc. Hợp với nghề nghiệp cần biến động, sáng tạo, hoặc những công việc ứng biến nhanh.",
+    suNghiep:
+      "Có năng lực đi đường riêng, tạo thương hiệu cá nhân mạnh. Tuy nhiên sự nghiệp dễ gặp nhiều biến số, khó đi đường thẳng. Nếu không đủ bản lĩnh hoặc không biết “lùi một bước để tiến xa”, dễ rơi vào chu kỳ lên nhanh xuống gấp.",
+    nhanDuyen:
+      "Ít người thật sự hiểu được nội tâm của người số 18. Quý nhân đến thường là những người nhạy cảm tâm linh, hoặc người từng trải, có thể soi gương cho nội tâm này. Tuy nhiên duyên đến - duyên đi nhanh, dễ có cảm giác bị bỏ rơi nếu không học được cách kiểm soát lòng tin và sự kỳ vọng.",
+    sucKhoe:
+      "Dễ mắc các bệnh về mất ngủ, tim mạch, huyết áp, rối loạn thần kinh, máu huyết; các bệnh có tính bùng phát hoặc đột ngột (cấp tính). Cần học cách giải toả tâm lý, tránh tích tụ cảm xúc trong cơ thể.",
+    hocTap:
+      "Có phản xạ nhanh, nhạy bén, dễ tiếp thu những môn cần ứng biến hoặc sáng tạo. Có thiên hướng nghệ thuật, vận động, trình diễn, nhưng khó học theo kiểu khô cứng, gò bó. Nếu rèn được sự tập trung, người này sẽ rất giỏi trong việc tự học và tạo đột phá.",
+    camXuc:
+      "Cảm xúc dao động mạnh, nhiều nghi ngờ, khó giữ ổn định lâu dài. Khi yêu, yêu cực kỳ mãnh liệt, nhưng dễ mất kiểm soát hoặc rơi vào trạng thái bất an. Cần có người đồng hành biết cách lắng nghe tầng sâu của tâm lý thì mới hoá giải được tổn thương bên trong.",
+    honNhan:
+      "Hôn nhân nhiều thăng trầm, dễ chia xa, hợp rồi lại tan nếu không có sự tin tưởng. Tính khí bất định, nóng nảy, nhạy cảm dễ khiến đối phương không hiểu được cảm xúc thật. Cần chọn bạn đời có tính vững vàng, biết lắng nghe và mềm mỏng để cân bằng năng lượng.",
+  },
+  "81": {
+    tinhCach:
+      "Hành xử độc lập, xu hướng ngược dòng, biến hoá phức tạp, cảm xúc dễ thay đổi, nóng giận thất thường.",
+    taiVan:
+      "Tài lộc dễ mất do đầu tư thiếu tính toán; nghiêng về tài vận may rủi, đầu tư mạo hiểm, dễ mất trong tích tắc.",
+    suNghiep:
+      "Có nhiều ý tưởng nhưng thiếu kế hoạch dài hạn; thích hợp ngành sáng tạo nhưng khó ổn định, dễ làm nhiều nhưng không chuyên sâu.",
+    nhanDuyen:
+      "Quan hệ xã hội phức tạp, nhiều bí mật; khó xác định ai là người thật sự giúp đỡ, dễ rơi vào trạng thái khó nắm bắt.",
+    sucKhoe:
+      "Dễ mắc các bệnh liên quan đến mất ngủ, tim mạch, huyết áp; bệnh cấp tính bộc phát đột ngột.",
+    hocTap:
+      "Nhạy bén, phản ứng nhanh; có thiên hướng nghệ thuật và vận động, học qua trải nghiệm nhiều hơn sách vở.",
+    camXuc:
+      "Biến đổi thất thường, dễ phản ứng thái quá, cảm xúc khó ổn định, hay nghi ngờ hoặc rơi vào cực đoan tình cảm.",
+    honNhan:
+      "Tình cảm không ổn định, dễ hợp rồi tan, thật giả lẫn lộn, dễ gặp khó khăn trong việc duy trì mối quan hệ lâu dài.",
+  },
+  "79": {
+    tinhCach:
+      "Tính cách nóng lạnh thất thường, dễ thay đổi, nhiều ý tưởng nhưng thiếu tính ổn định. Thường hành động theo cảm xúc bộc phát, có cá tính độc lập và mạnh mẽ, thích nổi bật, khác biệt. Tư duy sắc bén, sáng tạo cao, nhưng nếu không được kiểm soát tốt sẽ dẫn đến hành vi cực đoan hoặc bốc đồng. Có xu hướng tự cô lập hoặc làm việc một mình vì khó hoà nhập với các quy chuẩn tập thể.",
+    taiVan:
+      "Có khả năng kiếm tiền nhanh nhờ vào các lĩnh vực sáng tạo, nghệ thuật, đầu tư rủi ro; nhưng cũng dễ mất trắng nếu không có kế hoạch rõ ràng. Tài lộc đến nhanh nhưng khó giữ bền nếu không được quản lý bởi người đồng hành đáng tin. Dễ sa vào chi tiêu cảm tính, thiếu chiến lược tích luỹ lâu dài.",
+    suNghiep:
+      "Thường thích làm việc tự do, phù hợp môi trường không khuôn khổ hoặc cơ cấu hành chính. Có thể thành công trong các ngành nghề có tính linh hoạt như nghệ thuật, truyền thông, thời trang, tâm linh hoặc kinh doanh đột phá. Tuy nhiên dễ bị rối định hướng nếu không xác lập mục tiêu rõ ràng.",
+    nhanDuyen:
+      "Ít quý nhân chủ động giúp đỡ nếu bản thân không thay đổi thái độ sống. Quý nhân chỉ đến khi bản mệnh bình ổn tâm trí, tránh cực đoan, mở lòng học hỏi và biết tiếp thu ý kiến. Quý nhân có thể là người lớn tuổi, trưởng thành, hoặc có tính âm - trầm, giúp cân bằng năng lượng hoả mạnh mẽ của bản mệnh.",
+    sucKhoe:
+      "Dễ mắc các vấn đề về tim mạch, huyết áp, mất ngủ, căng thẳng, bốc hoả, đột phát nội tạng. Cần chú ý đặc biệt đến các bệnh lý do căng thẳng thần kinh hoặc rối loạn vận hành khí huyết. Phù hợp với các phương pháp dưỡng sinh kết hợp vận động, thiền định, thở sâu.",
+    hocTap:
+      "Trí thông minh, phản xạ nhanh, nhưng thiếu kiên nhẫn. Có thiên hướng nổi trội về ngôn ngữ, vận động, sáng tạo, biểu đạt cảm xúc. Cần phương pháp học đi kèm trải nghiệm thực tế, không phù hợp với kiểu học nhồi nhét khô khan.",
+    camXuc:
+      "Tình cảm mãnh liệt, dễ yêu - dễ giận - dễ rạn nứt. Tâm trạng thường thay đổi theo môi trường và đối tượng, rất cần học cách điều tiết cảm xúc. Nếu có thể rèn luyện sự bình tĩnh và ổn định nội tâm, sẽ trở thành người bạn đời thú vị và đầy cuốn hút.",
+    honNhan:
+      "Hôn nhân dễ xảy ra bất ổn nếu cả hai người đều quá nóng tính hoặc độc lập. Có xu hướng yêu và kết hôn nhanh, nhưng cũng dễ tan vỡ nếu thiếu nền tảng thấu hiểu. Hợp với người có tính cách trầm ổn, biết bao dung và tạo không gian riêng cho đối phương.",
+  },
+  "97": {
+    tinhCach:
+      "Hành xử độc lập, biến hoá khó lường, cảm xúc thất thường, dễ nổi giận.",
+    taiVan:
+      "Tài chính nghiêng về may rủi, tài lộc đến rồi đi rất nhanh.",
+    suNghiep:
+      "Nhiều ý tưởng nhưng thiếu chiến lược dài hạn; có thể thành công đột phá nhưng khó bền vững, thường làm nhiều việc một lúc.",
+    nhanDuyen:
+      "Các mối quan hệ xã hội phức tạp, mang tính ẩn mật, khó xác định ai là người giúp đỡ thực sự.",
+    sucKhoe:
+      "Dễ mắc các bệnh liên quan đến mất ngủ, tim mạch, huyết dịch; dễ sinh các bệnh cấp tính bất ngờ.",
+    hocTap:
+      "Phản xạ nhanh nhạy, giỏi vận động và các môn nghệ thuật, thiên hướng cảm hứng mạnh mẽ.",
+    camXuc:
+      "Tâm trạng biến đổi thất thường, hay nghi ngờ, khó ổn định tình cảm.",
+    honNhan:
+      "Hợp rồi tan vỡ, thật giả lẫn lộn, khó giữ gìn mối quan hệ lâu dài.",
+  },
+  "36": {
+    tinhCach:
+      "Độc lập, mạnh mẽ, sáng tạo, luôn muốn làm điều gì đó theo cách riêng. Thích nổi bật, dễ thay đổi ý kiến đột ngột, đôi lúc cực đoan hoặc nóng vội. Tâm trạng thay đổi nhanh chóng, dễ bốc đồng, yêu ghét rõ ràng.",
+    taiVan:
+      "Có khả năng kiếm tiền tốt khi theo nghề sáng tạo, nghệ thuật, marketing, kinh doanh cá thể hoặc đầu tư. Tuy nhiên rất dễ bị tổn thất tài chính nếu ra quyết định trong lúc nóng giận hoặc tin sai người. Cần học cách kiểm soát dòng tiền, tránh chi tiêu theo cảm xúc.",
+    suNghiep:
+      "Có tố chất khởi nghiệp, thích làm việc độc lập hoặc trong môi trường tự do sáng tạo. Dễ thành công nếu biết kiên trì, nhưng hay nản, bỏ cuộc giữa chừng vì cảm xúc chi phối. Hợp với công việc nghệ thuật, truyền thông, thể thao, giải trí, hoặc các ngành yêu cầu phản xạ nhanh.",
+    nhanDuyen:
+      "Quý nhân xuất hiện thường là người phụ nữ thông minh mạnh mẽ, hoặc người có tư duy phá cách. Mối quan hệ quý nhân thường ban đầu trái chiều, mâu thuẫn, nhưng về sau lại giúp bạn thức tỉnh.",
+    sucKhoe:
+      "Dễ mắc các vấn đề tim mạch, huyết áp, rối loạn nhịp tim; khó ngủ, mất ngủ do cảm xúc không ổn định; các bệnh cấp tính, bộc phát nhanh như đau dạ dày, mệt tim đột ngột. Nên chú ý thiền định, tập thể dục nhẹ và giữ môi trường sống ổn định.",
+    hocTap:
+      "Có trực giác cao, khả năng cảm nhận tinh tế, đầu óc phản ứng nhanh. Tuy nhiên lại thiếu kiên nhẫn, dễ mất tập trung nếu không có đam mê rõ ràng. Hợp học qua trải nghiệm thực tế hơn là lý thuyết dài dòng.",
+    camXuc:
+      "Cảm xúc mãnh liệt nhưng bất ổn, dễ yêu sớm, yêu sâu, nhưng cũng dễ đổ vỡ. Khó tin người, dễ nghi ngờ, nên thường cảm thấy thiếu an toàn trong các mối quan hệ. Khi trưởng thành, nếu biết chữa lành cảm xúc, sẽ trở thành người bạn đời thú vị, sâu sắc và có chiều sâu tâm hồn.",
+    honNhan:
+      "Hôn nhân dễ đến rồi đi nếu không đủ bình tĩnh, mềm mỏng, thấu hiểu. Người có số 36 rất dễ cãi vã, xung đột trong hôn nhân nếu không rèn luyện cách lắng nghe và điều tiết cảm xúc. Khi gặp đúng người biết “giải mã tâm hồn”, sẽ trở nên trung thành và hỗ trợ đắc lực.",
+  },
+  "63": {
+    tinhCach:
+      "Độc lập, cá tính mạnh, biến hoá thất thường, dễ nổi giận, cảm xúc thay đổi khó kiểm soát.",
+    taiVan:
+      "Có tài nhưng khó giữ tiền; dễ mất mát tài sản do đầu tư thiếu tính toán, hoặc tiêu xài theo cảm xúc.",
+    suNghiep:
+      "Nhiều tài năng, ý tưởng phong phú, nhưng thiếu ổn định; dễ thay đổi ngành nghề, làm nhiều việc một lúc.",
+    nhanDuyen:
+      "Các mối quan hệ phức tạp, nhiều bí mật hoặc khó nắm bắt; dễ gặp người giúp nhưng cũng dễ vướng vào thị phi.",
+    sucKhoe:
+      "Dễ mắc các bệnh liên quan đến mất ngủ, tim mạch, huyết áp, hoặc bệnh cấp tính bộc phát nhanh.",
+    hocTap:
+      "Phản xạ nhanh, có năng khiếu nghệ thuật hoặc thể thao; học tốt qua trải nghiệm thực tế.",
+    camXuc:
+      "Cảm xúc biến động thất thường, yêu ghét bất định, dễ nghi ngờ, thiếu ổn định trong tình cảm.",
+    honNhan:
+      "Quan hệ dễ chia ly, tái hợp, thật giả khó phân, dễ thay đổi hoặc bị chi phối bởi cảm xúc nhất thời.",
+  },
+  "24": {
+    tinhCach:
+      "Độc lập, có xu hướng hành động theo ý mình. Biến hoá thất thường, tâm trạng dễ thay đổi. Dễ nổi giận hoặc phản ứng cực đoan.",
+    taiVan:
+      "Tài đến và đi nhanh chóng, dễ bị cám dỗ đầu tư, ham mê những hình thức rủi ro cao như cờ bạc, đầu cơ. Tài chính không ổn định.",
+    suNghiep:
+      "Có đầu óc chiến lược, sáng tạo, nhưng dễ phân tâm, thiếu kiên trì nên khó theo đuổi một hướng đến cùng.",
+    nhanDuyen:
+      "Quan hệ xã hội phức tạp, thường đến rồi đi, ít người có thể giúp đỡ lâu dài.",
+    sucKhoe:
+      "Dễ gặp các bệnh liên quan đến tim mạch, máu huyết, hệ thần kinh, mất ngủ hoặc các bệnh cấp tính do cảm xúc chi phối.",
+    hocTap:
+      "Có khả năng phản xạ nhanh, học tốt các bộ môn nghệ thuật hoặc vận động. Tuy nhiên dễ chán, thiếu kiên trì trong học tập dài hạn.",
+    camXuc:
+      "Cảm xúc khó đoán khiến người khác khó hiểu và khó gần gũi lâu dài.",
+    honNhan:
+      "Dễ xảy ra xung đột, mâu thuẫn vì bất đồng quan điểm hoặc sự không nhất quán trong tình cảm. Tình duyên có nhiều thử thách, dễ thay đổi. Quý nhân khó bền vững.",
+  },
+  "42": {
+    tinhCach:
+      "Có cá tính độc lập, tư duy ngược dòng, không dễ bị ảnh hưởng bởi người khác. Tâm lý biến đổi nhanh, dễ nóng giận, phản ứng mạnh mẽ khi bị khiêu khích. Dễ thay đổi quyết định, có khuynh hướng đa đoan và biến động.",
+    taiVan:
+      "Có thể kiếm tiền nhanh nếu biết nắm bắt cơ hội, nhưng dễ bị cám dỗ đầu tư sai lệch. Cần đề phòng các hình thức tài chính mạo hiểm, không minh bạch. Dễ bị hao tài do các quyết định cảm tính hoặc theo cảm hứng nhất thời.",
+    suNghiep:
+      "Sở hữu trí tưởng tượng phong phú, có thể thành công trong nghề sáng tạo, nghệ thuật, kỹ năng đặc thù. Dễ phân tâm, nhiều hướng đi nhưng thiếu kiên trì theo đuổi đến cùng. Nếu vượt qua tính cách hay thay đổi, sẽ phát triển mạnh trong môi trường cạnh tranh.",
+    nhanDuyen:
+      "Có quý nhân nhưng thường đến rồi đi nhanh, khó giữ được mối quan hệ lâu dài. Người giúp thường là duyên bất ngờ, nhưng tính khí bản thân dễ làm mất đi sự hỗ trợ. Muốn có quý nhân bền thì cần rèn tính điềm tĩnh, biết giữ lời và tránh đối đầu.",
+    sucKhoe:
+      "Dễ gặp vấn đề về tim mạch, giấc ngủ, huyết áp; bệnh đột ngột hoặc các triệu chứng thần kinh, tâm lý. Cần đặc biệt lưu ý hành Hoả vượng quá mức, gây rối loạn trong cơ thể.",
+    hocTap:
+      "Thông minh, phản xạ nhanh, học nhanh nếu có cảm hứng. Thích hợp với nghệ thuật, sáng tạo, vận động, không phù hợp kiểu học thụ động. Dễ bị chán nản, thay đổi mục tiêu học tập, cần có định hướng rõ ràng.",
+    camXuc:
+      "Dễ rơi vào trạng thái thay đổi cảm xúc liên tục, có lúc yêu có lúc ghét nhanh chóng. Tình yêu nhiều màu sắc nhưng thiếu ổn định, dễ xảy ra mâu thuẫn. Đôi lúc nghi ngờ, đa nghi, khó kiểm soát tâm trạng.",
+    honNhan:
+      "Dễ rơi vào tình huống hôn nhân phân ly, không bền, nếu không học cách nhẫn nhịn. Có xu hướng tranh cãi, phân tích rạch ròi, dẫn đến tổn thương tình cảm. Hôn nhân tốt chỉ đến khi bản thân biết lắng nghe và tiết chế sự cực đoan.",
+  },
+
+  // ─────────────────── TUYỆT MỆNH — Phá tài, kiện tụng, bệnh tật ───────────────────
+  // ⚠️ Cặp 69 CỐ Ý bỏ trống: trong bản OCR, khối "69" mang nguyên nội dung của Phục Vị 66 (ổn định,
+  // ẩn nhẫn, "Bốn bình tám ổn") — sai tinh, không dùng được cho một cặp Tuyệt Mệnh. Xem file khuyết.
+  "12": {
+    tinhCach:
+      "Thẳng thắn, dám nói dám làm, hành động trực tiếp, luôn cố gắng và nỗ lực không ngừng.",
+    taiVan:
+      "Dám đầu tư mạo hiểm, thường gặp rủi ro lớn; được nhiều cũng có thể mất nhiều.",
+    suNghiep:
+      "Quyết đoán trong đầu tư, trí tuệ đi đôi với dũng cảm, thích thử thách và chinh phục.",
+    nhanDuyen:
+      "Quan hệ xã hội thường rơi vào cực đoan — hoặc là quý nhân hỗ trợ lớn, hoặc dễ bị cô lập, phân cực.",
+    sucKhoe: "Dễ mắc bệnh về gan, thận, hệ tiết niệu và sinh sản.",
+    hocTap:
+      "Ghi nhớ tốt, tư duy mạnh, thích chinh phục tri thức chưa biết, học qua trải nghiệm thực tế.",
+    camXuc:
+      "Yêu ghét rõ ràng, dám yêu dám hận, dễ bị tổn thương nếu tình cảm không được đáp lại, dễ hành động cực đoan.",
+    honNhan:
+      "Không ổn định, dễ xảy ra va chạm hoặc tan vỡ bất ngờ, có thể vì xung đột hoặc khác biệt về tính cách.",
+  },
+  "21": {
+    tinhCach:
+      "Tư duy mạnh, quyết đoán, không ngại khó khăn, dám nói, dám làm. Có thể hơi bốc đồng, bộc trực, thẳng tính, đôi khi khiến người khác bị sốc. Có năng lượng chiến binh tiên phong, không thích bị ràng buộc, ghét sự mập mờ.",
+    taiVan:
+      "Tài vận dễ dao động mạnh, có lúc kiếm được rất nhiều tiền, nhưng cũng dễ bị mất trắng. Thường phù hợp với ngành đầu tư, kinh doanh, chứng khoán, mạo hiểm, công nghệ, khởi nghiệp, nhưng không nên đặt tất cả trứng vào một giỏ. Khi chưa làm chủ cảm xúc, dễ vung tay quá trán hoặc gặp cảnh hao tổn lớn vì quyết định sai lúc nóng vội.",
+    suNghiep:
+      "Phù hợp với công việc cần phá cách, đổi mới, cạnh tranh cao, nhiều thử thách, như sales, startup, lãnh đạo đội nhóm. Có khả năng gây dựng từ con số 0, nhưng cần học cách quản trị rủi ro. Nếu phát triển đúng hướng, sự nghiệp bùng nổ nhanh và tạo dấu ấn cá nhân rõ nét.",
+    nhanDuyen:
+      "Quý nhân thường đến trong những giai đoạn khủng hoảng, như người dẫn đường bất ngờ. Có thể là người từng đối đầu, nhưng về sau lại trở thành người hỗ trợ đắc lực. Mối quan hệ quý nhân mang tính nghiệp duyên sâu sắc, giúp bạn học bài học quan trọng của cuộc đời.",
+    sucKhoe:
+      "Điểm yếu liên quan đến gan mật, hệ tiết niệu, sinh dục; dễ gặp vấn đề rối loạn nội tiết, hệ bài tiết. Người nữ dễ có vấn đề liên quan tử cung, kinh nguyệt. Nên tránh lối sống thất thường, thiếu ngủ, ăn uống không điều độ khiến cơ thể suy yếu nhanh.",
+    // hocTap: OCR lặp lại đúng đoạn Nhân duyên, mục Học tập thật bị mất — bỏ trống, không mượn từ cặp khác.
+    camXuc:
+      "Nội tâm phức tạp, dễ rơi vào trạng thái yêu cực độ, hận cực điểm. Có xu hướng yêu cuồng sống vội, nhiều lần tổn thương vì dốc lòng không đúng người. Khi trưởng thành sẽ biết cách yêu thông minh và có giới hạn hơn.",
+    honNhan:
+      "Tình duyên dao động, dễ đổ vỡ nếu thiếu sự kiểm soát cảm xúc. Cần học cách giao tiếp không gây tổn thương, kiểm soát lời nói khi nóng giận. Khi kết hôn đúng người, sẽ là trụ cột mạnh mẽ, biết gánh vác và bảo vệ gia đình.",
+  },
+  "96": {
+    tinhCach:
+      "Cá tính mạnh, thẳng thắn, trực diện, dứt khoát. Luôn dám nghĩ, dám làm, dám đấu tranh, có bản lĩnh vượt thử thách. Tính cách quyết liệt, không vòng vo, thích cạnh tranh công bằng.",
+    taiVan:
+      "Có khả năng thu hút tài lộc từ đầu tư mạo hiểm hoặc những ngành nghề cần tốc độ và sự quyết đoán. Tài vận dạng “thắng lớn, rủi ro cao” — rất dễ thành công vang dội nhưng cũng có nguy cơ trượt dốc bất ngờ nếu không kiểm soát cảm xúc. Khả năng kiếm tiền nhanh nhưng cũng dễ hụt hơi nếu không biết giữ.",
+    suNghiep:
+      "Dễ thành công khi theo đuổi các ngành liên quan đến thương trường, quân sự, kỹ thuật, công nghệ. Có tinh thần chiến binh, thích cạnh tranh, chấp nhận rủi ro, càng bị thách thức càng toả sáng. Tuy nhiên cần học cách kiên định và có chiến lược, tránh làm mọi việc kiểu “bốc đồng, đốt cháy giai đoạn”.",
+    nhanDuyen:
+      "Quý nhân thường xuất hiện trong biến cố, như “tái ông thất mã”; cũng dễ gặp “người gây biến”. Số này thường gặp quý nhân theo dạng nghiệp quả, dạy những bài học lớn.",
+    sucKhoe:
+      "Dễ mắc các bệnh liên quan đến gan, thận, huyết áp, tiểu đường, hệ tiết niệu, sinh sản. Cần chú trọng điều chỉnh chế độ ăn uống và nhịp sinh hoạt, tránh làm việc quá độ hoặc stress liên tục.",
+    hocTap:
+      "Ghi nhớ và phản xạ cực kỳ nhanh, học nhanh, áp dụng nhanh. Tư duy đột phá, sáng tạo, không theo lối mòn, phù hợp với nghiên cứu tình huống thực tế. Tuy nhiên dễ mất kiên nhẫn nếu nội dung quá lý thuyết hoặc dài dòng.",
+    camXuc:
+      "Cảm xúc thiên về cực đoan: yêu hết mình, ghét rất rõ. Dễ bị chi phối bởi cảm xúc nhất thời, đôi khi cực đoan đòi hỏi hoặc khó tha thứ. Nếu biết điều tiết cảm xúc, có thể trở thành người truyền cảm hứng mạnh mẽ.",
+    honNhan:
+      "Dễ nảy sinh mâu thuẫn do khác biệt quan điểm và thiếu kiên nhẫn. Có tính bốc đồng, kết hôn chóng vánh cũng chia tay nhanh. Cần tìm người đủ bản lĩnh đối trọng thì hôn nhân mới bền.",
+  },
+  "48": {
+    tinhCach:
+      "Thẳng thắn, dám đương đầu và bộc trực. Hành động rõ ràng, quyết đoán. Luôn cố gắng và nỗ lực hết mình.",
+    taiVan:
+      "Có xu hướng đầu tư mạo hiểm, không sợ rủi ro. Tài lộc biến động lớn, có thể lên rất cao rồi xuống cũng rất nhanh, thăng trầm bất ngờ.",
+    suNghiep:
+      "Dám đầu tư và quyết đoán trong hành động. Thường đảm nhiệm song song nhiều vai trò. Có khuynh hướng chinh phục và thích vượt thử thách.",
+    nhanDuyen:
+      "Quan hệ quý nhân thường cực đoan: hoặc được giúp hết lòng, hoặc bị cô lập. Có thể gặp người phân cực rõ rệt — hoặc là cứu tinh, hoặc là đối đầu.",
+    sucKhoe:
+      "Dễ mắc bệnh về gan, thận, tiểu đường, hệ sinh dục và tiết niệu. Cần đề phòng bệnh mãn tính hoặc liên quan đến nội tiết.",
+    hocTap:
+      "Tư duy phân tích mạnh, ghi nhớ tốt, có khả năng tiếp thu qua trải nghiệm, thích đối đầu với những điều chưa biết.",
+    camXuc:
+      "Yêu ghét rõ ràng, cực đoan trong tình cảm. Khi yêu thì hết mình, khi thất vọng thì dễ rơi vào thái cực ngược lại.",
+    honNhan:
+      "Tình cảm không ổn định, dễ xảy ra xung đột, thay đổi đột ngột. Có thể dẫn đến tan vỡ nếu không có sự thấu hiểu và kiểm soát cảm xúc.",
+  },
+  "84": {
+    tinhCach:
+      "Thẳng thắn, dám nói, dám làm, trực diện, quyết đoán rõ ràng, quả cảm, giàu nghị lực.",
+    taiVan:
+      "Dám đầu tư, chấp nhận rủi ro cao, dễ được cũng dễ mất, biến động lớn; có thể thịnh vượng hoặc phá sản.",
+    suNghiep:
+      "Đầu tư quyết liệt, thích học hỏi song song, thích chinh phục và đối mặt thử thách.",
+    nhanDuyen:
+      "Quan hệ quý nhân dễ thay đổi, dễ gặp người hai mặt, hoặc phân hoá rõ ràng như nước với lửa.",
+    sucKhoe: "Dễ mắc bệnh về gan, thận, hệ tiết niệu và sinh sản.",
+    hocTap:
+      "Ghi nhớ tốt, tư duy mạnh, ưa phân tích và khám phá điều chưa biết, thích chinh phục tri thức mới.",
+    camXuc:
+      "Tình cảm rõ ràng, yêu ghét rành mạch, dám yêu dám hận, dễ hành động cực đoan nếu cảm xúc bị tổn thương.",
+    honNhan:
+      "Tính cách không ổn định, dễ thay đổi trong thời điểm nhất định, dễ có va chạm hoặc chia ly đột ngột.",
+  },
+  "37": {
+    tinhCach: "Thẳng thắn, dám nói dám làm, hành động trực tiếp, quyết đoán rõ ràng.",
+    taiVan:
+      "Dễ đầu tư liều lĩnh, theo kiểu “được ăn cả, ngã về không”, tài vận lên xuống thất thường.",
+    suNghiep:
+      "Quyết đoán trong đầu tư, có dũng khí và trí tuệ để đối mặt thử thách, thích chinh phục và hành động.",
+    nhanDuyen:
+      "Quan hệ dễ phân cực rõ ràng: hoặc cực tốt, tương trợ hết mình, hoặc tuyệt giao — phân hoá hai thái cực.",
+    sucKhoe: "Dễ gặp vấn đề về gan, thận, hệ sinh dục và tiết niệu.",
+    hocTap:
+      "Ghi nhớ tốt, tư duy mạnh, khả năng phân tích và xử lý thông tin tốt, thích học hỏi từ thử thách.",
+    camXuc:
+      "Tình cảm rõ ràng, yêu ghét phân minh; khi yêu thì hết lòng, khi tổn thương dễ đi vào cực đoan.",
+    honNhan:
+      "Tính cách không ổn định, dễ thay đổi, mâu thuẫn xuất hiện bất ngờ, có thể dẫn đến chia tay chóng vánh nếu không kiểm soát cảm xúc.",
+  },
+  "73": {
+    tinhCach:
+      "Tính cách mạnh mẽ, dám nghĩ dám làm, không ngại va chạm. Hành động quyết đoán, trực diện, không vòng vo. Rất dễ chinh phục thử thách nhưng thiếu sự mềm mại trong xử lý tình huống. Khi đã đặt mục tiêu, người này sẽ làm đến cùng, có thể hy sinh cả bản thân để đạt được.",
+    taiVan:
+      "Có số mệnh đầu tư, dấn thân liều lĩnh. Tài vận đến nhanh nhưng cũng dễ mất nếu không kiểm soát được tham vọng, nóng vội và lòng tin vào rủi ro. Hợp với mô hình kinh doanh cá nhân, đầu tư tự do, tài chính, hoặc thương trường có tính cạnh tranh.",
+    suNghiep:
+      "Sự nghiệp mang tính chinh chiến, thử thách liên tục, không ổn định. Dễ thành công nếu làm chủ hoặc theo các con đường độc lập, tự khai phá. Nếu theo công việc truyền thống sẽ bị gò bó, khó phát huy. Cần có môi trường áp lực cao, cạnh tranh thì mới phát triển.",
+    nhanDuyen:
+      "Quý nhân thường đến vào lúc khủng hoảng, giúp chuyển hướng. Có hai nhóm quý nhân: một là người từng trải, dám thẳng thắn nói thật; hai là người đồng chí hướng nhưng không nhiều. Người mang số 73 cần học cách nhìn người và giữ lòng kiên định trước thị phi.",
+    sucKhoe:
+      "Dễ gặp vấn đề về gan, thận, tiểu đường, đường tiết niệu sinh dục, hoặc các bệnh chuyển hoá. Dễ suy nhược nếu làm việc quá sức hoặc căng thẳng kéo dài. Cần tránh thức khuya và bỏ ăn khi áp lực, dễ tạo bệnh tiềm ẩn.",
+    hocTap:
+      "Tư duy sắc bén, phản xạ mạnh, học rất nhanh khi bị ép hoặc khi có mục tiêu rõ ràng. Tuy nhiên dễ thiếu sự bền bỉ trong việc trau dồi chiều sâu nếu không được định hướng tốt. Cần tránh học kiểu “được chăng hay chớ”, cần rèn tư duy lập chiến lược.",
+    camXuc:
+      "Cảm xúc có phần cực đoan: rất yêu, rất ghét; yêu sâu đậm nhưng dễ quay lưng dứt khoát khi thất vọng. Có phần nóng tính, khó kiểm soát cảm xúc, dễ mất đi người mình quý vì bộc phát. Cần học cách điều tiết cảm xúc để giữ vững các mối quan hệ.",
+    honNhan:
+      "Hôn nhân dễ gặp nhiều thử thách. Tình duyên nhiều biến động, có thể trải qua những cuộc tình dữ dội hoặc rạn nứt vì bất đồng quan điểm. Cần tìm người có sự mềm mỏng, hiểu biết tâm lý, biết cảm hoá thì mới bền vững.",
+  },
+
+  // ─────────────────── LỤC SÁT — Đào hoa, thương tổn tình cảm ───────────────────
+  "16": {
+    tinhCach:
+      "Dịu dàng, mềm mỏng, dễ do dự, khó quyết đoán. Thường quá thận trọng nên dễ để tuột mất cơ hội.",
+    taiVan:
+      "Tài lộc phụ thuộc vào các mối quan hệ, đặc biệt trong ngành nghề dịch vụ. Tuy nhiên dễ hao tổn tiền bạc vì tình cảm.",
+    suNghiep:
+      "Phù hợp với ngành chăm sóc người khác, làm đẹp, nghệ thuật hoặc công việc phục vụ công chúng.",
+    nhanDuyen:
+      "Thường có duyên với nhiều người, đặc biệt là người khác giới, rất thu hút nhờ sự mềm mại, ân cần và tinh tế. Tuy nhiên vì tính cách do dự, bị cảm xúc chi phối, nên dễ lỡ duyên tốt, hoặc gặp người không phù hợp nhưng khó dứt ra. Họ cần học cách lắng nghe trực giác, phân biệt giữa cảm xúc nhất thời và giá trị lâu dài, mới mong kết nối được mối nhân duyên tốt đẹp và bền vững.",
+    sucKhoe:
+      "Cần giữ tinh thần tích cực, quan tâm đến sức khoẻ thần kinh và làn da.",
+    hocTap:
+      "Khả năng học qua cảm xúc, thẩm mỹ cao, phù hợp các ngành liên quan đến nghệ thuật.",
+    camXuc:
+      "Người sống tình cảm, tinh tế nhưng dễ bị phụ thuộc cảm xúc vào người khác.",
+    honNhan:
+      "Duyên với người khác giới mạnh, dễ thu hút và được yêu mến, nhưng nếu không tỉnh táo dễ vướng vào các mối quan hệ phức tạp hoặc mệt mỏi tình cảm.",
+  },
+  "61": {
+    tinhCach:
+      "Dịu dàng, nhạy cảm, do dự, thiếu quyết đoán. Hay quá thận trọng nên dễ bỏ lỡ cơ hội.",
+    taiVan:
+      "Tài lộc đến từ các mối quan hệ hoặc ngành dịch vụ, nhưng dễ bị ảnh hưởng bởi cảm xúc, vì yêu mà mất tiền.",
+    suNghiep:
+      "Có sức hút lớn, phù hợp với công việc liên quan đến làm đẹp, nghệ thuật, thẩm mỹ hoặc dịch vụ công.",
+    nhanDuyen:
+      "Có nhiều nhân duyên khác giới, sức hút tự nhiên cao trong các mối quan hệ.",
+    sucKhoe:
+      "Dễ mắc các bệnh về tiêu hoá (ruột, dạ dày), da liễu, bệnh về thần kinh hoặc lo âu, trầm cảm nhẹ.",
+    hocTap:
+      "Học tốt qua nghệ thuật, có khiếu thẩm mỹ, thiên về cảm xúc. Phù hợp với môi trường học tập giàu tính sáng tạo.",
+    camXuc:
+      "Tình cảm sâu sắc, dễ rung động, suy nghĩ tinh tế và giàu cảm xúc, nhưng đôi khi rơi vào trạng thái suy diễn và buồn vu vơ.",
+    honNhan:
+      "Nhân duyên với người khác giới mạnh, dễ thu hút người bên ngoài, nhưng cần tỉnh táo để tránh rối rắm và mệt mỏi tình cảm.",
+  },
+  "47": {
+    tinhCach:
+      "Mềm mỏng, hay do dự, thiếu quyết đoán; quá thận trọng nên dễ bỏ lỡ cơ hội.",
+    taiVan:
+      "Tài lộc đến từ các mối quan hệ xã hội và phục vụ người khác, nhưng dễ bị ảnh hưởng bởi cảm xúc hoặc tình cảm.",
+    suNghiep:
+      "Có sức hút và duyên dáng, phù hợp với ngành làm đẹp, dịch vụ công chúng, nghệ thuật hoặc truyền thông.",
+    nhanDuyen:
+      "Có nhiều mối nhân duyên đặc biệt, được yêu mến rộng rãi, có sức hấp dẫn từ ngoại hình và khí chất.",
+    sucKhoe:
+      "Dễ gặp vấn đề về tiêu hoá (ruột, dạ dày), da liễu, thần kinh và các bệnh liên quan đến căng thẳng hoặc trầm cảm.",
+    hocTap:
+      "Có năng khiếu thẩm mỹ, nghệ thuật và học qua cảm xúc, thiên hướng học sáng tạo.",
+    camXuc:
+      "Nội tâm sâu sắc, giàu cảm xúc, suy nghĩ tinh tế, dễ bị tổn thương vì tình cảm, yêu hết lòng và dễ vướng bận.",
+    honNhan:
+      "Duyên với người khác giới mạnh mẽ, dễ kết duyên với người ngoại quốc hoặc khác biệt tính cách; dễ bị cuốn hút nhưng cũng dễ rơi vào trạng thái mâu thuẫn nội tâm.",
+  },
+  "74": {
+    tinhCach:
+      "Là người cẩn trọng, phân tích kỹ, thường do dự khi phải ra quyết định lớn. Tính cách mềm mại, thiên về cảm xúc, đa sầu đa cảm và dễ lo xa. Nội tâm sâu sắc, yêu cái đẹp và có gu thẩm mỹ tinh tế.",
+    taiVan:
+      "Có duyên với nghề dịch vụ, hỗ trợ, chăm sóc khách hàng, làm nghề “cho đi”. Tiền bạc đến từ sự phục vụ, tạo giá trị cho người khác, không thích tranh giành. Cần tránh vì tình mà hao tài hoặc bị cuốn vào các khoản chi không kiểm soát vì cảm xúc.",
+    suNghiep:
+      "Hợp với nghề giáo dục, tư vấn. Có duyên trong lĩnh vực làm đẹp, phụ nữ hoặc môi trường giàu tính nữ, sáng tạo. Toả sáng trong các ngành yêu cầu sự tinh tế, thẩm mỹ và cảm xúc.",
+    nhanDuyen:
+      "Quý nhân là người có gu thẩm mỹ, phụ nữ lớn tuổi, người làm nghệ thuật hoặc chữa lành. Có nhiều người yêu quý vì sự nhẹ nhàng, tinh tế và thấu cảm. Quý nhân thường không đến trực diện mà đến theo cách kín đáo, nhẹ nhàng, nên cần biết quan sát để nhận ra.",
+    sucKhoe:
+      "Dễ gặp vấn đề dạ dày, ruột, tiêu hoá, đặc biệt khi lo lắng kéo dài. Làn da, nội tiết, rối loạn hệ miễn dịch hoặc stress thần kinh âm ỉ.",
+    hocTap:
+      "Có khả năng học trị liệu, thẩm mỹ, văn chương. Khả năng cảm nhận cái đẹp tốt, thích học bằng trải nghiệm trực giác hoặc hình ảnh thị giác. Dễ bị phân tán nếu môi trường học tập thiếu cảm hứng hoặc quá khô khan.",
+    camXuc:
+      "Tâm lý nhạy cảm, cầu cao về sự thấu hiểu và đồng điệu cảm xúc. Thường sống nội tâm, đôi khi dễ rơi vào lo âu, u uất nếu không được sẻ chia. Nếu biết khai thác, đây là người có khả năng chữa lành cảm xúc cho người khác.",
+    honNhan:
+      "Tình cảm khá lý tưởng nếu kết nối được với người biết chia sẻ và nâng đỡ tinh thần. Tuy nhiên cũng dễ gặp các mối nhân duyên bất ổn, lỡ nhịp, mối quan hệ bị cảm xúc dẫn dắt. Hôn nhân cần có sự đồng cảm tinh tế, tránh gượng ép theo mô típ truyền thống cứng nhắc.",
+  },
+  "38": {
+    tinhCach:
+      "Tính cách dịu dàng, tinh tế, suy nghĩ thấu đáo. Tuy nhiên có xu hướng do dự, dễ phân tâm và quá thận trọng, khiến chậm ra quyết định. Người có số 38 thường mang khí chất nghệ sĩ, sống nội tâm và sâu sắc.",
+    taiVan:
+      "Tài vận đến nhờ mối quan hệ và khả năng cá nhân. Dễ kiếm tiền qua nghề sáng tạo, chăm sóc, nghệ thuật, hoặc dịch vụ cá nhân hoá. Tuy nhiên có thể bị ảnh hưởng bởi cảm xúc, khiến tài lộc không ổn định nếu thiếu bản lĩnh.",
+    suNghiep:
+      "Rất phù hợp với các ngành thẩm mỹ, làm đẹp, thiết kế, sáng tạo, nghệ thuật, viết lách, tư vấn tâm lý, giáo dục cảm xúc. Có sức hút cá nhân cao, dễ thu hút khách hàng hoặc được yêu mến trong môi trường nữ tính, nhẹ nhàng. Tuy nhiên đôi khi thiếu sự quyết liệt để bứt phá.",
+    nhanDuyen:
+      "Quý nhân là người cùng tần số cảm xúc, dễ đồng cảm và giúp đỡ chân thành. Duyên đến nhờ cách ứng xử tinh tế, hoà nhã. Nữ giới thường được nâng đỡ nhiều hơn nếu làm nghề liên quan đến phụ nữ, thẩm mỹ, giáo dục, trị liệu.",
+    sucKhoe:
+      "Dễ gặp vấn đề về đường ruột, tiêu hoá, da liễu; các bệnh mãn tính về thần kinh, tâm lý như lo âu, trầm cảm nhẹ, rối loạn cảm xúc.",
+    hocTap:
+      "Tư duy hợp các môn nghệ thuật, thiết kế, văn học, tâm lý. Có gu cảm nhận tinh tế, khả năng phân tích thẩm mỹ bẩm sinh. Nếu được rèn luyện trong môi trường đúng, người mang số 38 dễ trở thành chuyên gia trong lĩnh vực mỹ thuật, nghệ thuật ứng dụng, chữa lành.",
+    camXuc:
+      "Rất nhạy cảm, sống thiên về chiều sâu và cảm xúc. Có nội tâm phong phú, tâm hồn nghệ sĩ, nhưng dễ bị ảnh hưởng bởi cảm xúc tiêu cực nếu không được lắng nghe đúng và đủ.",
+    honNhan:
+      "Có duyên tình phong phú nhưng dễ rơi vào các mối quan hệ phức tạp nếu không rõ ràng về cảm xúc. Cần người bạn đời hiểu tâm hồn, chia sẻ được giá trị tinh thần. Khi ổn định, đời sống hôn nhân hài hoà và đầy cảm xúc.",
+  },
+  "83": {
+    tinhCach:
+      "Dịu dàng, biết cân nhắc, nhưng dễ do dự, chần chừ. Quá thận trọng khiến bỏ lỡ cơ hội. Nội tâm dễ dao động.",
+    taiVan:
+      "Kiếm tiền dựa vào giao tiếp, dịch vụ, nghề liên quan đến phụ nữ. Tài lộc đến từ các mối quan hệ, nhưng cũng dễ bị chi phối bởi cảm xúc.",
+    suNghiep:
+      "Có sức hấp dẫn, phù hợp với các lĩnh vực làm đẹp, truyền thông hoặc nghệ thuật. Dễ được công chúng chú ý bởi ngoại hình và sự tinh tế.",
+    nhanDuyen:
+      "Có nhiều người khác giới giúp đỡ. Nhân duyên phong phú, nhưng cũng dễ bị hiểu lầm hoặc vướng vào thị phi tình cảm.",
+    sucKhoe:
+      "Dễ mắc bệnh về đường ruột, tiêu hoá, da liễu; ngoài ra còn liên quan đến căng thẳng thần kinh.",
+    hocTap:
+      "Có năng khiếu về thẩm mỹ, nghệ thuật, sáng tạo. Học qua cảm xúc và trực giác.",
+    camXuc:
+      "Nhạy cảm, suy nghĩ nhiều, dễ bị tổn thương. Có đời sống nội tâm phong phú nhưng dễ vướng vào rối ren tình cảm.",
+    honNhan:
+      "Dễ có duyên với người khác giới mạnh mẽ, nhưng dễ gặp rắc rối vì đào hoa. Có thể có những trải nghiệm yêu đương phức tạp hoặc tình huống ngoài ý muốn.",
+  },
+  "29": {
+    tinhCach:
+      "Dịu dàng, tinh tế, nhưng hay do dự và thiếu quyết đoán. Có xu hướng quá thận trọng trong mọi việc, đôi khi khiến bản thân mệt mỏi.",
+    taiVan:
+      "Tài lộc đến từ các mối quan hệ xã hội, dịch vụ hoặc làm đẹp. Dễ bị ảnh hưởng bởi cảm xúc, tài chính phụ thuộc nhiều vào mối quan hệ.",
+    suNghiep:
+      "Có sức hút tự nhiên, phù hợp ngành nghề liên quan đến nghệ thuật, làm đẹp, thẩm mỹ, hoặc chăm sóc cộng đồng. Giỏi giao tiếp và tạo thiện cảm.",
+    nhanDuyen:
+      "Có sức hút với người khác, tuy nhiên các mối quan hệ thường phức tạp, dễ rơi vào hiểu lầm tình cảm.",
+    sucKhoe:
+      "Dễ mắc các bệnh về hệ tiêu hoá (ruột, dạ dày), da liễu, và các vấn đề tâm lý như lo âu, căng thẳng hoặc trầm cảm.",
+    hocTap:
+      "Có thiên hướng nghệ thuật, thẩm mỹ. Học tốt qua cảm xúc, óc quan sát và năng khiếu sáng tạo; phù hợp với các ngành sáng tác.",
+    camXuc:
+      "Cảm xúc phong phú, tinh tế và sâu sắc. Dễ rung động, nhưng cũng dễ buồn và bị tổn thương vì tình cảm.",
+    honNhan:
+      "Duyên với khác giới mạnh mẽ. Dễ gặp được người thú vị, nhưng cũng cần tỉnh táo để tránh những mối quan hệ rắc rối hoặc cảm tính.",
+  },
+  "92": {
+    tinhCach:
+      "Có khí chất ôn hoà, uyển chuyển, cảm xúc sâu, cẩn trọng và thường suy nghĩ quá nhiều trước khi quyết định. Tính cách có phần do dự, dễ phân vân trước lựa chọn. Ưu điểm là có con mắt nghệ thuật, tinh tế, sống sâu sắc, hợp nghề giáo dục, tâm lý.",
+    taiVan:
+      "Tài lộc đến thông qua mối quan hệ xã hội, giao tiếp, thuyết phục và phục vụ. Dễ nhận được sự giúp đỡ tài chính từ người khác hoặc từ công việc mang tính nghệ thuật, dịch vụ, làm đẹp. Tuy nhiên cần chú ý xu hướng bị cảm xúc chi phối, dễ bị tổn hao tài lộc do tin người, bị ảnh hưởng bởi tình cảm.",
+    suNghiep:
+      "Có năng lực cao trong lĩnh vực truyền thông, quảng bá, giáo dục, tâm lý, chăm sóc sắc đẹp, dịch vụ cộng đồng. Có sức hút đặc biệt từ phong thái và năng lực cá nhân, đặc biệt khi làm việc với người khác phái. Thích hợp công việc cần ngoại giao, tạo dựng hình ảnh, làm đẹp, hỗ trợ.",
+    nhanDuyen:
+      "Có nhiều quý nhân, đặc biệt là người khác giới hoặc người có gu thẩm mỹ cao, giàu trải nghiệm xã hội. Tương tác tốt với người tinh tế, có khả năng thuyết phục và có nền tảng nghệ thuật, xã giao. Tuy nhiên cũng dễ bị ảnh hưởng bởi thị phi, cảm xúc cá nhân; nếu không giữ vững bản thân dễ bị tổn thương.",
+    sucKhoe:
+      "Dễ gặp vấn đề về tiêu hoá (ruột, dạ dày), da liễu; não bộ rối loạn, lo âu, trầm cảm nhẹ. Do cảm xúc sâu sắc, khi bị stress dễ ảnh hưởng tới sức khoẻ tổng thể.",
+    hocTap:
+      "Có thiên hướng học về mỹ thuật, làm đẹp, tâm lý, văn học, nghệ thuật, thiết kế, biểu đạt. Đặc biệt có khả năng thẩm mỹ và đánh giá tinh tế, rất phù hợp nghề liên quan đến sáng tạo.",
+    camXuc:
+      "Tâm hồn sâu sắc, nhạy cảm, nội tâm phong phú, giàu lòng trắc ẩn. Nhưng đôi khi cảm xúc trở thành điểm yếu, khiến dễ tổn thương, dễ bị lệ thuộc vào tình cảm. Cần học cách kiểm soát cảm xúc, tránh sa đà vào ảo tưởng hoặc quá đa cảm.",
+    honNhan:
+      "Số này đào hoa, có sức hút từ ánh nhìn, phong thái. Tuy nhiên hôn nhân dễ gặp thử thách nếu không có sự đồng cảm sâu sắc và giao tiếp rõ ràng. Dễ vướng vào các mối quan hệ phức tạp nếu không kiểm soát cảm xúc và lòng thương người.",
+  },
+
+  // ─────────────────── HỌA HẠI — Khẩu thiệt, tai họa bất ngờ ───────────────────
+  "17": {
+    tinhCach:
+      "Ưa nói năng, thích thể hiện bản thân qua lời nói, có tài hùng biện, dễ thu hút sự chú ý nhờ ngôn từ.",
+    taiVan:
+      "Tài lộc đến từ lời ăn tiếng nói, dễ kiếm tiền nhờ giao tiếp; tuy nhiên cũng dễ mất tiền vì lời nói thiếu cẩn trọng.",
+    suNghiep:
+      "Giỏi nghề liên quan đến ngôn ngữ, khả năng thuyết phục tốt, sức ảnh hưởng từ lời nói mạnh mẽ.",
+    nhanDuyen:
+      "Quan hệ xã hội rộng nhờ tài ăn nói; giỏi giao thiệp nên dễ được người giúp đỡ, nhưng cũng dễ bị ganh ghét vì quá giỏi lời.",
+    sucKhoe:
+      "Dễ mắc bệnh liên quan đến miệng, họng, hệ hô hấp và các bệnh vùng ngực.",
+    hocTap:
+      "Giỏi ngôn ngữ, học nhanh qua lời nói, khả năng diễn đạt tốt, thông minh bẩm sinh về ngôn từ.",
+    camXuc:
+      "Thích ngọt ngào, khéo ăn nói, dễ gây hiểu lầm vì lời nói không nhất quán, có xu hướng dùng lời để điều khiển cảm xúc.",
+    honNhan:
+      "Mâu thuẫn xuất phát từ tranh cãi, xung đột do lời nói; hay có thể giả tạo hoặc dễ hiểu lầm nhau.",
+  },
+  "71": {
+    tinhCach:
+      "Tính cách cứng rắn, cãi lý mạnh, dễ nổi nóng. Có xu hướng đối đầu, tranh luận, dễ gây mâu thuẫn do lời nói.",
+    taiVan:
+      "Có tài ăn nói, kiếm tiền bằng lời nói, nhưng dễ phá tài do thiếu tiết chế ngôn từ hoặc vì lời nói gây hoạ.",
+    suNghiep:
+      "Hợp với nghề nghiệp liên quan đến giao tiếp, giảng dạy, thuyết trình. Khả năng diễn đạt và thuyết phục tốt, dễ thăng tiến nếu biết điều chỉnh giọng điệu và cảm xúc.",
+    nhanDuyen:
+      "Có quý nhân trợ giúp từ mối quan hệ xã hội, nhưng cũng dễ gặp thị phi do ngôn từ gây hiểu nhầm — “miệng là gốc của thành công, cũng là gốc của thất bại”.",
+    sucKhoe:
+      "Dễ mắc bệnh liên quan đến họng, miệng, phổi, hoặc đường hô hấp, ngực. Cần tránh nói nhiều khi căng thẳng hoặc xúc động.",
+    hocTap:
+      "Có khiếu về ngôn ngữ, khả năng học nhanh, giỏi thuyết trình, tranh luận. Tư duy sắc bén, thông minh, nhưng cần học cách lắng nghe và tiết chế lời nói.",
+    camXuc:
+      "Dễ ghen tuông, nghi ngờ. Cảm xúc dao động mạnh, dễ bị tổn thương hoặc gây tổn thương người khác bằng lời nói.",
+    honNhan:
+      "Thường xuyên xảy ra cãi vã, xung đột vì lời nói. Dễ có mối quan hệ tình cảm phức tạp hoặc giả dối, dẫn đến tổn thương tình cảm.",
+  },
+  "89": {
+    tinhCach:
+      "Cứng đầu, bướng bỉnh, dễ giận, khí thế mạnh mẽ. Thường hay tranh cãi, có xu hướng quyết liệt trong lời nói và hành xử.",
+    taiVan:
+      "Kiếm tiền bằng khả năng ăn nói, thuyết phục. Tài vận đến từ lời nói, nhưng cũng dễ mất tài vì nói quá đà hoặc không kiểm soát lời lẽ.",
+    suNghiep:
+      "Thành công nhờ khả năng diễn đạt, làm việc liên quan đến truyền thông, thuyết trình, đào tạo. Có tài tranh biện và thuyết phục người khác.",
+    nhanDuyen:
+      "Các mối quan hệ xã hội phức tạp, dễ có quý nhân từ việc giao tiếp. Tuy nhiên “thành bởi miệng, bại cũng bởi miệng” là đặc trưng.",
+    sucKhoe:
+      "Dễ gặp bệnh liên quan đến miệng, họng, thanh quản, hoặc đường hô hấp. Cần chú ý phổi khi căng thẳng hoặc nói quá nhiều.",
+    hocTap:
+      "Có khiếu về ngôn ngữ, giao tiếp; khả năng học ngoại ngữ hoặc các ngành liên quan đến diễn đạt, trình bày rất tốt.",
+    camXuc:
+      "Dễ nghi ngờ, nhiều lo toan; tình cảm dễ bị chi phối bởi ngôn từ. Nếu cảm xúc không kiểm soát tốt, có thể dễ gây hiểu lầm với người khác.",
+    honNhan:
+      "Dễ xảy ra cãi vã, bất đồng do lời nói. Nếu kiểm soát được cách giao tiếp thì có thể ổn định. Tránh nói lời tổn thương trong mối quan hệ.",
+  },
+  "98": {
+    tinhCach:
+      "Cứng rắn, thẳng thắn, dễ bộc lộ cảm xúc. Khí chất mạnh, dễ cáu giận, đôi khi cực đoan. Thường thắng bằng lời nói.",
+    taiVan:
+      "Có duyên tài từ lời nói, giao tiếp, đàm phán, thuyết phục. Tuy nhiên cũng dễ hao tài vì tranh cãi hoặc phát ngôn không đúng lúc.",
+    suNghiep:
+      "Thích hợp với các nghề cần giao tiếp, giảng dạy, truyền thông, diễn thuyết. Khả năng biện luận mạnh mẽ, dễ chinh phục người khác bằng lời nói.",
+    nhanDuyen:
+      "Quý nhân thường đến qua giao tiếp, đàm phán, hoặc qua các mối quan hệ xã hội. Tuy nhiên nếu không chế được lời nói, quý nhân có thể thành tiểu nhân.",
+    sucKhoe:
+      "Cần chú ý đến cổ, họng khi nói nhiều; các bệnh về miệng và phổi, đặc biệt khi làm việc liên quan đến giọng nói.",
+    hocTap:
+      "Có khiếu ngôn ngữ, thích học ngoại ngữ, nghệ thuật diễn đạt, văn chương. Có tài biện luận và trí nhớ từ ngữ tốt.",
+    camXuc:
+      "Dễ đa nghi, ghen tuông, hoặc hiểu nhầm. Có xu hướng nói nhiều và dễ vướng vào thị phi tình cảm do lời nói chưa được kiểm soát.",
+    honNhan:
+      "Tình cảm dễ phát sinh mâu thuẫn vì bất đồng quan điểm hoặc lời nói thiếu kiềm chế. Tuy nhiên nếu cả hai cùng trưởng thành trong giao tiếp, có thể hoà hợp bền vững.",
+  },
+  "46": {
+    tinhCach:
+      "Tính cách mạnh mẽ, bộc trực, có phần nóng nảy và dễ xảy ra mâu thuẫn. Có khuynh hướng phản biện giỏi, lý luận sắc bén, nhưng đôi lúc lời nói quá đà gây hiểu lầm. Bản mệnh thường khó kiểm soát cảm xúc khi tranh luận, dễ biến lời nói thành dao hai lưỡi.",
+    taiVan:
+      "Có năng lực kiếm tiền qua giao tiếp, thuyết trình, giảng dạy, thương lượng hoặc các nghề sử dụng ngôn từ. Tuy nhiên vì “tài từ miệng mà ra, hoạ cũng từ miệng mà đến”, khó tích luỹ tiền bạc lâu dài nếu vướng vào thị phi hoặc tranh cãi trong quan hệ làm ăn.",
+    suNghiep:
+      "Thành công khi phát huy khả năng ngôn ngữ, hùng biện, tư duy phản biện. Có thể gặt hái thành công trong truyền thông, marketing, giáo dục, luật, chính trị hoặc tư vấn. Điểm yếu là dễ mất cơ hội do phát ngôn thiếu cẩn trọng, cần trau dồi khả năng lắng nghe và kiềm chế.",
+    nhanDuyen:
+      "Có người hỗ trợ khi biết nói đúng thời điểm, đúng cách; quý nhân thường đến từ môi trường học thuật, nghề nghiệp hoặc truyền thông. Dễ “mất duyên” nếu nói quá đà; ít nói mà đúng lúc, đúng lời thì sẽ đắc quý nhân.",
+    sucKhoe:
+      "Dễ mắc các bệnh liên quan đến miệng, phế quản, thanh quản, họng, hoặc vùng ngực. Căng thẳng tinh thần cao. Cần hạn chế đồ cay nóng, giữ ấm cổ và giảm nói chuyện khi căng thẳng.",
+    hocTap:
+      "Có tài năng ngôn ngữ thiên bẩm, nói tốt, viết giỏi, tư duy nhanh. Nếu định hướng đúng, dễ trở thành học giả, nhà văn, nhà tư vấn hoặc giảng viên xuất sắc. Cần học cách lắng nghe và chắt lọc thông tin để tăng chiều sâu kiến thức.",
+    camXuc:
+      "Hay nghi ngờ, đa nghi trong chuyện tình cảm; đôi khi nói lời làm tổn thương đối phương mà không nhận ra. Nên học cách biểu đạt mềm mại, nhẹ nhàng để tránh gây căng thẳng. Có xu hướng lý trí trong tình cảm, điều này cần được cân bằng bằng sự thấu cảm.",
+    honNhan:
+      "Hôn nhân dễ gặp xung đột vì lời nói, tranh cãi thường xuyên nếu không kiểm soát tốt. Tuy nhiên nếu biết tiết chế và rèn luyện sự nhẫn nhịn, sẽ thành công với người bạn đời biết lắng nghe và bao dung. Tránh nói lời cay nghiệt hoặc quyết định trong lúc nóng giận.",
+  },
+  "64": {
+    tinhCach:
+      "Mềm mỏng nhưng có phần cứng đầu, hay lý luận, phản ứng nhanh trong giao tiếp, đôi khi quá sắc sảo.",
+    taiVan:
+      "Tài lộc đến từ lời nói, biết cách nói chuyện để thu hút cơ hội tài chính; tuy nhiên cũng dễ bị phá tài vì lời nói thiếu cẩn trọng.",
+    suNghiep:
+      "Giỏi nghề liên quan đến ngôn ngữ, khả năng thuyết phục tốt, thành công dựa vào năng lực nói và biểu đạt.",
+    nhanDuyen:
+      "Có khả năng kết nối xã hội tốt; lời nói có thể giúp xây dựng quan hệ nhưng cũng có thể làm hỏng nếu thiếu kiểm soát.",
+    sucKhoe:
+      "Dễ gặp vấn đề về miệng, họng, phổi, ngực và các bệnh về hệ hô hấp, đặc biệt do nói quá nhiều hoặc căng thẳng cảm xúc.",
+    hocTap:
+      "Có năng khiếu ngôn ngữ, học tốt qua nghe và nói, có tài năng thiên bẩm trong diễn đạt và hùng biện.",
+    camXuc:
+      "Giàu cảm xúc nhưng dễ bị dao động bởi lời ngon tiếng ngọt; hay nghi ngờ và mâu thuẫn trong tình cảm.",
+    honNhan:
+      "Mối quan hệ dễ gặp tranh cãi, khó giữ được hoà khí nếu thiếu sự thấu hiểu trong lời ăn tiếng nói, dễ có hiểu lầm do lời nói.",
+  },
+  "23": {
+    tinhCach:
+      "Tính cách cứng rắn, nói năng bộc trực, dễ xung đột. Hay tranh cãi, không kiêng nể, dễ nổi giận. Khẩu nghiệp mạnh, thường bị tai họa vì lời nói.",
+    taiVan:
+      "Có năng lực kiếm tiền bằng giao tiếp, ngôn ngữ. Nhưng dễ mất lộc vì lời nói không kiểm soát, hay làm ăn phá tài do không giữ kín. Tài vận bất ổn nếu không biết tiết chế khẩu khí.",
+    suNghiep:
+      "Có năng khiếu thuyết trình, đàm phán, giảng dạy. Tuy nhiên cần học cách điều tiết lời nói và cảm xúc, nếu không dễ bị phản ứng ngược trong môi trường chuyên nghiệp.",
+    nhanDuyen:
+      "Có thể gặp quý nhân từ lời nói, nhưng cũng thất bại do lời nói. Khẩu nghiệp là điểm vừa mạnh vừa yếu — cần cẩn trọng trong giao tiếp.",
+    sucKhoe:
+      "Dễ mắc bệnh liên quan đến miệng, thanh quản, họng, phổi, ngực, đường hô hấp. Có nguy cơ bị bệnh mãn tính nếu sống căng thẳng hoặc nói quá nhiều.",
+    hocTap:
+      "Trí tuệ nhanh nhạy, học giỏi ngôn ngữ, biểu đạt, truyền đạt. Rất có khiếu với nghệ thuật biểu diễn, nói chuyện, viết lách.",
+    camXuc:
+      "Cảm xúc nhiều chiều, nhạy cảm với lời khen chê. Dễ yêu, dễ nghi ngờ, hay suy diễn; nếu không làm chủ sẽ tự chuốc buồn phiền.",
+    honNhan:
+      "Tình duyên trắc trở do xung đột trong lời ăn tiếng nói. Cãi vã liên tục, dễ có những mối quan hệ thị phi, giả dối.",
+  },
+  "32": {
+    tinhCach:
+      "Cứng rắn, nóng nảy, dễ bộc phát cảm xúc. Có xu hướng tranh luận thẳng thắn quá mức, dễ xảy ra xung đột trong giao tiếp.",
+    taiVan:
+      "Tài lộc đến từ khả năng giao tiếp, nói chuyện, thương lượng. Tuy nhiên lời nói nếu thiếu tiết chế dễ dẫn đến phá tài, mất cơ hội.",
+    suNghiep:
+      "Phù hợp với công việc liên quan đến giao tiếp, giáo dục, truyền thông.",
+    nhanDuyen:
+      "Quý nhân đến qua quan hệ xã hội, đối thoại, nhưng cũng dễ thành tiểu nhân nếu bất hoà vì lời nói. “Miệng tài” có thể là điểm mạnh hoặc điểm yếu.",
+    sucKhoe:
+      "Cần đề phòng bệnh liên quan đến miệng, họng, phổi, đặc biệt là do căng thẳng và phát ngôn nhiều. Có thể mắc bệnh về hô hấp hoặc ngực.",
+    hocTap:
+      "Có tài năng trong học ngôn ngữ, hùng biện, văn chương. Nhanh nhạy với từ ngữ, có năng khiếu về nghệ thuật trình bày, biểu đạt.",
+    camXuc:
+      "Dễ dao động, nghi ngờ, ghen tuông; suy nghĩ nhiều và dễ nói ra trong tình cảm.",
+    honNhan:
+      "Dễ xảy ra cãi vã, bất đồng vì lời nói. Tình cảm dễ phát sinh tranh chấp, đặc biệt nếu thiếu sự kiềm chế khi tức giận hoặc ghen tuông.",
   },
 };

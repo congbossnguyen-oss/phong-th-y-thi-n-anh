@@ -31,6 +31,8 @@ export { hoaGiaiNoiBo, luanBo3So, chuoiHungDaiNhat } from "./engine/bo3So.js";
 export { tinhDiemTongQuan, nhanTheoDiem, TRONG_SO_MAC_DINH } from "./engine/diem.js";
 export { traCap, TAT_CA_TINH, CAT_TINH, HUNG_TINH } from "./data/batTinh.js";
 export { MO_TA_8_TINH } from "./data/moTa8Tinh.js";
+export { Y_NGHIA_TUNG_CAP } from "./data/yNghiaTungCap.js";
+export type { YNghiaCap } from "./data/yNghiaTungCap.js";
 export { NHOM_NGHE, traNhomNghe } from "./data/ngheNghiep.js";
 export { CACH_CUC } from "./data/cachCuc.js";
 export { dungTongKet } from "./engine/tongKet.js";

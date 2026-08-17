@@ -166,7 +166,7 @@ const namNay = new Date().getFullYear();
 </BaseLayout>
 
 <script>
-  import { MO_TA_8_TINH } from "@thien-anh/phone-energy-engine";
+  import { MO_TA_8_TINH, Y_NGHIA_TUNG_CAP } from "@thien-anh/phone-energy-engine";
 
   const form = document.getElementById("lsdt-form") as HTMLFormElement;
   const oDangChay = document.getElementById("lsdt-dang-chay")!;
@@ -954,6 +954,59 @@ const namNay = new Date().getFullYear();
     );
   }
 
+  /**
+   * Ý nghĩa RIÊNG của từng cặp số trong dãy, theo 8 mặt — số hoá từ Chương 2 "Sim Nói Gì Về Bạn".
+   *
+   * Đây là tầng chi tiết nhất: 18 khác 81, 13 khác 31. Chỉ hiện cặp nào có trong bảng 63 cặp; cặp
+   * 69 và vài mục lẻ mà nguồn khuyết thì bỏ qua, không hiện dòng trống.
+   */
+  function khoiTungCap(kq: any): string {
+    const MUC: [string, string][] = [
+      ["tinhCach", "Tính cách"],
+      ["taiVan", "Tài vận"],
+      ["suNghiep", "Sự nghiệp"],
+      ["nhanDuyen", "Nhân duyên"],
+      ["sucKhoe", "Sức khoẻ"],
+      ["hocTap", "Học tập"],
+      ["camXuc", "Cảm xúc"],
+      ["honNhan", "Hôn nhân"],
+    ];
+    const daHien = new Set<string>();
+    const muc: string[] = [];
+    let i = 0;
+    for (const c of kq.capGoc) {
+      const cap = c.capGoc.cap as string;
+      if (daHien.has(cap)) continue;
+      const y = (Y_NGHIA_TUNG_CAP as any)[cap];
+      if (!y) continue;
+      daHien.add(cap);
+      const mau = mauCuaTinh(c.ten);
+      const hang = MUC.filter(([k]) => y[k]).map(
+        ([k, ten]) => `
+        <div class="mt-2">
+          <span class="text-[10px] font-bold tracking-wider text-(--color-ink-600)">${ten.toUpperCase()}</span>
+          <p class="text-sm leading-relaxed text-(--color-ink-800)">${noiBat(esc(y[k]))}</p>
+        </div>`,
+      );
+      muc.push(`
+        <details class="border-b border-(--color-ivory-300) py-3 last:border-0" ${i === 0 ? "open" : ""}>
+          <summary class="flex cursor-pointer flex-wrap items-center gap-2">
+            <span class="font-mono text-lg font-black tracking-wider" style="color:${mau}">${esc(cap)}</span>
+            <span class="font-display text-base font-bold" style="color:${mau}">${esc(c.ten)}</span>
+            <span class="rounded-full bg-(--color-ivory-200) px-2 py-0.5 text-[11px] font-bold text-(--color-ink-700)">cấp ${c.capDo}</span>
+          </summary>
+          <div class="mt-1 pl-1">${hang.join("")}</div>
+        </details>`);
+      i++;
+    }
+    if (muc.length === 0) return "";
+    return khung(
+      "Ý nghĩa chi tiết từng cặp số",
+      muc.join(""),
+      "Từng cặp số có nội dung riêng theo 8 mặt — trích từ Chương 2 sách “Sim Nói Gì Về Bạn”. Mỗi cặp chỉ hiện một lần dù lặp lại trong dãy.",
+    );
+  }
+
   function veKetQua(kq: any): string {
     return [
       khoiDiem(kq),
@@ -962,6 +1015,7 @@ const namNay = new Date().getFullYear();
       khoiDoLuong(kq),
       khoiSo05(kq),
       khoiSongTinh(kq),
+      khoiTungCap(kq),
       khoiTungTinh(kq),
       khoiSucKhoe(kq),
       khoiDaiVan(kq),
