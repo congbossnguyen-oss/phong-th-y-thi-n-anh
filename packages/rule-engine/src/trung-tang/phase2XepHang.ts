@@ -17,7 +17,7 @@
  *   B. Chỉ cặp Ngày ↔ Tọa    → phân bố đẹp nhưng trùng đúng CHIỀU 1 ở Bước ③. Loại.
  *   C. Tập các trụ, bỏ Tọa   → lớp 1-3 chiếm 17.6%.
  *
- * Hệ quả đã báo và chủ dự án vẫn chọn A: gần như mọi phương án cùng rơi "Cách thấp hơn", nên
+ * Hệ quả đã báo và chủ dự án vẫn chọn A: gần như mọi phương án cùng rơi lớp 4 ("Cách thường"), nên
  * việc phân hơn kém giữa các phương án chủ yếu do điểm 7 chiều ở Bước ④ quyết định, chứ không
  * do lớp. Đây là lựa chọn chuyên môn, không phải giới hạn kỹ thuật.
  */
@@ -68,11 +68,19 @@ export interface TuTruPhuongAn {
 /** Bốn lớp của thang tổng thể, mục 3. Số càng nhỏ càng cao. */
 export type LopCachCuc = 1 | 2 | 3 | 4;
 
+/**
+ * Tên lớp hiển thị cho khách.
+ *
+ * Lớp 4 gọi là "Cách thường" chứ KHÔNG phải "Cách thấp hơn": vì tập xét lớp có gồm Tọa nên ~99%
+ * phương án rơi vào lớp này, tức đây là mức bình thường chứ không phải mức kém. Với gia đình đang
+ * tang, đọc chữ "thấp" trên hồ sơ mình vừa trả tiền là cảm giác rất khác — mà bản chất phương án
+ * không hề kém, chỉ là không trúng ba cách quý hiếm gặp.
+ */
 export const TEN_LOP_CACH_CUC: Readonly<Record<LopCachCuc, string>> = {
   1: "Nhất Quái Thuần Thanh",
   2: "Hà Đồ",
   3: "Hợp Thập",
-  4: "Cách thấp hơn",
+  4: "Cách thường",
 };
 
 const HA_DO_CAP: readonly (readonly number[])[] = [
