@@ -78,21 +78,38 @@ export function goiYTen(input: GoiYTenInput): GoiYTenResult {
     return hanh && hanhHop.has(hanh) && (a.gioiTinh === gioiVN || a.gioiTinh === "Unisex");
   });
 
-  // Bước 4-5: ghép tên, lập cục, chấm điểm.
   const hanhChinh = hanhKhuyetKhaDi[0]?.hanh ?? "Mộc";
   const tapKhuyet = new Set(hanhKhuyetKhaDi.map((h) => h.hanh));
-  const daCham: TenGoiY[] = ungVien.map((a) => {
-    const hanh = MA_SANG_HANH[a.hanh];
+  const laDienThucCua = (hanh: NguHanh) =>
+    tapKhuyet.has(hanh) || [...tapKhuyet].some((k) => SINH_CHO[k] === hanh);
+
+  // Khách để TRỐNG đệm → hệ thống gợi ý luôn cả Đệm + Tên (ghép hai âm tiết hợp mệnh).
+  // Khách ĐÃ nhập đệm → giữ cố định, chỉ gợi ý phần tên.
+  const goiYCaDem = dem.length === 0;
+  if (goiYCaDem) {
+    canhBao.push(
+      "Bạn để trống tên đệm nên hệ thống gợi ý luôn cả cặp Đệm + Tên hợp mệnh; nếu đã có đệm mong muốn, hãy nhập vào để chỉ gợi ý phần tên.",
+    );
+  }
+
+  // Bước 4-5: ghép, lập cục, chấm điểm.
+  const daCham: TenGoiY[] = [];
+  const CAP_POOL = 40; // chặn số ứng viên mỗi vế để bounded ~1600 tổ hợp.
+  const poolDem = ungVien.slice(0, CAP_POOL);
+  const poolTen = ungVien.slice(0, CAP_POOL);
+
+  const themUngVien = (demAmTiet: (typeof ungVien)[number] | null, tenAmTiet: (typeof ungVien)[number]) => {
+    const demList = demAmTiet ? [demAmTiet.ten] : dem;
     const { tuDaiCuc } = lapTuDaiCuc({
       ho: input.ho,
-      dem,
-      ten: a.ten,
+      dem: demList,
+      ten: tenAmTiet.ten,
       gioiTinh: input.gioiTinh,
       hanhKhuyet: hanhChinh,
     });
     const m = tuDaiCuc.menhCuc;
-    // Điền Thực nếu âm tiết mang chính hành khuyết; hành sinh-cho cũng tính Điền Thực.
-    const laDienThuc = tapKhuyet.has(hanh) || [...tapKhuyet].some((k) => SINH_CHO[k] === hanh);
+    const hanhTen = MA_SANG_HANH[tenAmTiet.hanh];
+    const laDienThuc = laDienThucCua(hanhTen) || (demAmTiet ? laDienThucCua(MA_SANG_HANH[demAmTiet.hanh]) : false);
     const d = chamDiem(
       m.tinhCuc.catHung,
       m.dongCuc.catHung,
@@ -101,25 +118,36 @@ export function goiYTen(input: GoiYTenInput): GoiYTenResult {
       tuDaiCuc.phucDucCuc.catHung,
       laDienThuc,
     );
-    return {
-      hoTenDayDu: [input.ho, ...dem, a.ten].join(" "),
-      ten: a.ten,
-      hanh,
-      yNghia: a.yNghia,
-      soNet: a.soNet,
+    daCham.push({
+      hoTenDayDu: [input.ho, ...demList, tenAmTiet.ten].join(" "),
+      ten: tenAmTiet.ten,
+      hanh: hanhTen,
+      yNghia: tenAmTiet.yNghia,
+      soNet: tenAmTiet.soNet,
+      ...(demAmTiet ? { demGoiY: demAmTiet.ten, yNghiaDem: demAmTiet.yNghia } : {}),
       menhCuc: m,
       diem: d,
       loaiTinhDanh: laDienThuc ? "Điền Thực" : "Bất Tương",
-    };
-  });
+    });
+  };
 
-  // Khử tên trùng (một âm tiết có thể nằm ở hai hành hợp) — giữ bản điểm cao nhất.
-  const theoTen = new Map<string, TenGoiY>();
-  for (const t of daCham) {
-    const cu = theoTen.get(t.ten);
-    if (!cu || t.diem > cu.diem) theoTen.set(t.ten, t);
+  if (goiYCaDem) {
+    for (const d of poolDem) for (const t of poolTen) {
+      if (d.ten === t.ten) continue; // tránh "Minh Minh"
+      themUngVien(d, t);
+    }
+  } else {
+    for (const t of ungVien) themUngVien(null, t);
   }
-  const duyNhat = [...theoTen.values()];
+
+  // Khử trùng theo TÊN ĐẦY ĐỦ (đệm + tên) — giữ bản điểm cao nhất.
+  const theoKhoa = new Map<string, TenGoiY>();
+  for (const t of daCham) {
+    const khoa = `${t.demGoiY ?? ""}|${t.ten}`;
+    const cu = theoKhoa.get(khoa);
+    if (!cu || t.diem > cu.diem) theoKhoa.set(khoa, t);
+  }
+  const duyNhat = [...theoKhoa.values()];
 
   // Xếp hạng: điểm giảm dần, ưu tiên Điền Thực khi bằng điểm.
   duyNhat.sort((a, b) => b.diem - a.diem || (a.loaiTinhDanh === "Điền Thực" ? -1 : 1));

@@ -56,14 +56,15 @@ const hotlineHref = `tel:${siteConfig.hotline.replace(/\s/g, "")}`;
 
         <div class="grid gap-4 sm:grid-cols-2">
           <div>
-            <label for="dtc-dem" class="text-sm font-semibold text-(--color-ink-900)">Tên đệm (nếu có)</label>
+            <label for="dtc-dem" class="text-sm font-semibold text-(--color-ink-900)">Tên đệm mong muốn</label>
             <input
               id="dtc-dem"
               type="text"
               autocomplete="off"
-              placeholder="Ví dụ: Minh, Thị… (để trống cũng được)"
+              placeholder="Để trống để gợi ý cả đệm"
               class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-400) bg-(--color-ivory-50) px-3 py-3 text-base text-(--color-ink-900) placeholder:text-(--color-ink-600)"
             />
+            <p class="mt-1 text-xs text-(--color-ink-600)">Bỏ trống thì hệ thống gợi ý luôn cả đệm + tên hợp mệnh.</p>
           </div>
           <div>
             <label for="dtc-gioi-tinh" class="text-sm font-semibold text-(--color-ink-900)">
@@ -205,19 +206,26 @@ const hotlineHref = `tel:${siteConfig.hotline.replace(/\s/g, "")}`;
       : "";
 
     const dsTen = kq.danhSachTen.length
-      ? kq.danhSachTen.map((t: any, i: number) => `
-        <li class="flex items-start gap-3 rounded-(--radius-control) border border-(--color-ivory-300) p-3.5 ${i < 3 ? "bg-(--color-gold-400)/8" : ""}">
-          <span class="mt-0.5 inline-flex size-7 shrink-0 items-center justify-center rounded-full bg-(--color-gold-400) text-xs font-bold text-(--color-on-accent)">${i + 1}</span>
+      ? kq.danhSachTen.map((t: any, i: number) => {
+          const top3 = i < 3;
+          const ngh: string[] = [];
+          if (t.demGoiY && t.yNghiaDem) ngh.push(`đệm <strong>${esc(t.demGoiY)}</strong>: ${esc(t.yNghiaDem)}`);
+          if (t.yNghia) ngh.push(`tên <strong>${esc(t.ten)}</strong>: ${esc(t.yNghia)}`);
+          return `
+        <li class="flex items-start gap-3 rounded-(--radius-control) p-3.5 ${top3 ? "border-2 border-(--color-gold-400) bg-(--color-gold-400)/12 shadow-md" : "border border-(--color-ivory-300)"}">
+          <span class="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-full ${top3 ? "bg-(--color-gold-400) text-(--color-on-accent)" : "bg-(--color-ivory-300) text-(--color-ink-700)"} text-sm font-black">${i + 1}</span>
           <div class="min-w-0 flex-1">
             <div class="flex flex-wrap items-baseline gap-2">
-              <span class="font-display text-lg font-bold text-(--color-ink-900)">${esc(t.hoTenDayDu)}</span>
+              ${top3 ? `<span class="rounded-full bg-(--color-gold-400) px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-(--color-on-accent)">Hợp nhất</span>` : ""}
+              <span class="font-display ${top3 ? "text-xl" : "text-lg"} font-bold text-(--color-ink-900)">${esc(t.hoTenDayDu)}</span>
               <span class="rounded-full px-2 py-0.5 text-[11px] font-bold" style="background:${MAU_HANH[t.hanh]}22;color:${MAU_HANH[t.hanh]}">${esc(t.hanh)}</span>
               <span class="text-[11px] font-semibold ${t.loaiTinhDanh === "Điền Thực" ? "text-emerald-600" : "text-(--color-ink-600)"}">${esc(t.loaiTinhDanh)}</span>
             </div>
-            ${t.yNghia ? `<p class="mt-0.5 text-sm text-(--color-ink-700)">${esc(t.yNghia)}</p>` : ""}
+            ${ngh.length ? `<p class="mt-0.5 text-sm text-(--color-ink-700)">${ngh.join(" · ")}</p>` : ""}
             <p class="mt-1 text-xs text-(--color-ink-600)">Mệnh Cục ${t.menhCuc.tinhCuc.so} (${esc(t.menhCuc.tinhCuc.ten ?? "—")}) · ${esc(t.menhCuc.luanKetHop)}</p>
           </div>
-        </li>`).join("")
+        </li>`;
+        }).join("")
       : `<li class="rounded-(--radius-control) border border-(--color-ivory-300) p-4 text-sm text-(--color-ink-700)">Chưa có tên phù hợp trong kho — vui lòng liên hệ chuyên gia.</li>`;
 
     return `

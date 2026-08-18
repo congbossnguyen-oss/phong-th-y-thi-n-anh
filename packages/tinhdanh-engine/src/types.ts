@@ -64,11 +64,15 @@ export interface TuDaiCuc {
 /** Một tên ứng viên đã chấm điểm (chức năng gợi ý). */
 export interface TenGoiY {
   hoTenDayDu: string;
-  /** Chỉ phần tên riêng được gợi ý. */
+  /** Phần tên riêng được gợi ý. */
   ten: string;
   hanh: NguHanh;
   yNghia: string | null;
   soNet: number | null;
+  /** Đệm được hệ thống gợi ý (chỉ khi khách để trống đệm để nhờ gợi ý cả đệm). */
+  demGoiY?: string;
+  /** Ý nghĩa của đệm gợi ý. */
+  yNghiaDem?: string;
   menhCuc: MenhCuc;
   diem: number;
   /** Điền Thực / Phản Thực / Bất Tương so với Hành Khuyết. */

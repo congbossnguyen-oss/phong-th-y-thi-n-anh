@@ -58,7 +58,7 @@ export const POST: APIRoute = async ({ request }) => {
       ngay,
       ...(gio !== undefined ? { gio } : {}),
       ...(phut !== undefined ? { phut } : {}),
-      soLuong: 15,
+      soLuong: 20,
     });
     return jsonResponse({ ok: true, ketQua }, 200);
   } catch (err) {
