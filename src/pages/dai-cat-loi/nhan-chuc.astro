@@ -252,7 +252,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
         // "mục 15/35"…) cho khách — đây là ghi chú nội bộ, gây rối và lộ chi tiết engine.
         return `<li class="flex gap-2">
           <span class="${iconMau} font-bold leading-6">${icon}</span>
-          <span class="flex-1 leading-6"><span class="font-medium ${mau}">${esc(y.ten)}</span> <span class="text-xs font-bold text-slate-400">(${esc(y.diem)})</span></span>
+          <span class="flex-1 leading-6"><span class="font-medium ${mau}">${esc(y.ten)}</span> <span class="text-xs font-bold text-slate-400">(${esc(y.diem)}/10)</span></span>
         </li>`;
       })
       .join("");
@@ -313,6 +313,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
           <p class="font-display text-lg font-extrabold text-slate-900 sm:text-xl">Tìm được <span class="text-amber-600">${esc(r.soNgayDung)}</span> ngày tốt${chuc} <span class="text-sm font-normal text-slate-400">/ ${esc(r.tongSoNgayQuet)} ngày đã quét</span></p>
         </div>
         ${nhatChu}
+        <p class="mt-2 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-500">💡 Điểm mỗi ngày (x/10) là <strong>trung bình có trọng số</strong> của các nhóm yếu tố (nên–kỵ theo việc, công danh, tuổi–mệnh, Thập Thần, hoàng/hắc đạo) — <strong>không phải cộng dồn</strong> từng dòng. Mở "Vì sao ngày này?" để xem điểm thành phần.</p>
         <div class="mt-4 space-y-3">${r.ketQua.map(theNgay).join("")}</div>
       </div>`;
     }
