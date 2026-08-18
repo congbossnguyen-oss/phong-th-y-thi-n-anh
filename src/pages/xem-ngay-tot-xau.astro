@@ -123,6 +123,32 @@ export const prerender = true;
           </div>
 
           <div class="mt-5 border-t border-slate-200 pt-5">
+            <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Trực hôm nay hợp việc gì?</p>
+            <p id="kq-truc-tinh-chat" class="mt-1 text-sm text-slate-600"></p>
+            <div class="mt-3 flex flex-col gap-2 sm:flex-row sm:items-center">
+              <label for="muc-dich-xem-ngay" class="text-sm font-medium text-slate-700">Xem cho việc:</label>
+              <select
+                id="muc-dich-xem-ngay"
+                class="rounded-(--radius-control) border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 focus:border-amber-400 focus:outline-none focus:ring-2 focus:ring-amber-400/20"
+              ></select>
+            </div>
+            <div id="kq-truc-muc-dich" class="mt-3"></div>
+            <div class="mt-3 grid gap-2 sm:grid-cols-2">
+              <div class="rounded-xl border border-emerald-200 bg-emerald-50/60 p-3">
+                <p class="text-xs font-bold uppercase tracking-wide text-emerald-700">Nên làm</p>
+                <p id="kq-truc-nen" class="mt-1 text-sm text-slate-700"></p>
+              </div>
+              <div class="rounded-xl border border-rose-200 bg-rose-50/60 p-3">
+                <p class="text-xs font-bold uppercase tracking-wide text-rose-700">Kỵ làm</p>
+                <p id="kq-truc-ky" class="mt-1 text-sm text-slate-700"></p>
+              </div>
+            </div>
+            <p class="mt-2 text-[11px] italic text-slate-400">
+              Trực chỉ là một lớp tham chiếu theo mục đích — kết luận ngày còn phải xét thần sát, hoàng đạo và tuổi bên dưới.
+            </p>
+          </div>
+
+          <div class="mt-5 border-t border-slate-200 pt-5">
             <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Thần sát trong ngày</p>
             <div id="kq-than-sat" class="mt-2 flex flex-wrap gap-2"></div>
           </div>
@@ -298,7 +324,22 @@ export const prerender = true;
       thang: { can: string; chi: string };
       ngay: { can: string; chi: string };
     };
-    truc: { index: number; name: string };
+    truc: {
+      index: number;
+      name: string;
+      tinhChat?: string;
+      danhGia?: "tot" | "than_trong" | "xau";
+      nen?: string[];
+      ky?: string[];
+    };
+    trucMucDich?: {
+      truc: string;
+      mucDich: string;
+      mucDichLabel: string;
+      mucDo: "dai-cat" | "hop" | "binh-thuong" | "ky";
+      nhan: string;
+      moTa: string;
+    }[];
     nhiThapBatTu: { index: number; name: string; catHung: "cát" | "hung" };
     hoangDaoHacDaoNgay: "hoàng đạo" | "hắc đạo" | "không xác định";
     thanSat: CatHungValue[];
@@ -470,6 +511,32 @@ export const prerender = true;
   function catHungBadge(name: string, catHung: "cát" | "hung"): string {
     const cls = catHung === "cát" ? "bg-(--color-cinnabar-500) text-(--color-gold-100)" : "bg-black text-white";
     return `<span class="rounded-(--radius-pill) px-2.5 py-1 text-xs font-bold ${cls}">${name}</span>`;
+  }
+
+  const MUC_DO_STYLE: Record<string, string> = {
+    "dai-cat": "border-emerald-300 bg-emerald-50 text-emerald-800",
+    hop: "border-lime-300 bg-lime-50 text-lime-800",
+    "binh-thuong": "border-slate-300 bg-slate-50 text-slate-700",
+    ky: "border-rose-300 bg-rose-50 text-rose-800",
+  };
+
+  type TrucMucDichItem = NonNullable<TrachNhatOutput["trucMucDich"]>[number];
+
+  // Vẽ mức độ Trực cho mục đích đang chọn. Đọc dữ liệu MỚI NHẤT gắn trên select (`_data`) để đổi
+  // ngày rồi đổi mục đích vẫn đúng — không dùng biến closure của lần tra trước.
+  function renderTrucMucDich(select: HTMLSelectElement): void {
+    const list = (select as unknown as { _data?: TrucMucDichItem[] })._data ?? [];
+    const box = document.getElementById("kq-truc-muc-dich")!;
+    const m = list.find((x) => x.mucDich === select.value) ?? list[0];
+    if (!m) {
+      box.innerHTML = "";
+      return;
+    }
+    const cls = MUC_DO_STYLE[m.mucDo] ?? MUC_DO_STYLE["binh-thuong"]!;
+    box.innerHTML = `<div class="rounded-xl border ${cls} p-3">
+      <p class="font-display text-base font-bold">${m.nhan} · ${m.mucDichLabel}</p>
+      <p class="mt-0.5 text-sm">${m.moTa}</p>
+    </div>`;
   }
 
   // --- Giờ xuất hành (Tiểu Lục Nhâm) — nhóm 12 giờ theo 6 tên, mỗi tên đúng 2 khung giờ/ngày.
@@ -783,6 +850,35 @@ export const prerender = true;
     document.getElementById("kq-tiet-khi")!.textContent = data.tietKhi?.name ?? "—";
 
     document.getElementById("kq-truc")!.textContent = data.truc.name;
+
+    // ----- Trực hôm nay hợp việc gì (bảng 12 Trực theo mục đích) -----
+    const tinhChatEl = document.getElementById("kq-truc-tinh-chat")!;
+    tinhChatEl.textContent = data.truc.tinhChat
+      ? `Trực ${data.truc.name} — ${data.truc.tinhChat}.`
+      : `Trực ${data.truc.name}.`;
+    document.getElementById("kq-truc-nen")!.textContent =
+      data.truc.nen && data.truc.nen.length ? data.truc.nen.join(", ") : "—";
+    document.getElementById("kq-truc-ky")!.textContent =
+      data.truc.ky && data.truc.ky.length ? data.truc.ky.join(", ") : "—";
+
+    const mucDichSelect = document.getElementById("muc-dich-xem-ngay") as HTMLSelectElement;
+    const trucMucDich = data.trucMucDich ?? [];
+    // Gắn dữ liệu mới nhất lên chính phần tử select để listener (thêm 1 lần) luôn đọc đúng
+    // ngày hiện tại — tránh bug closure giữ dữ liệu của ngày tra trước đó.
+    (mucDichSelect as unknown as { _data: typeof trucMucDich })._data = trucMucDich;
+    // Đổ option 1 lần từ dữ liệu máy chủ (nhãn mục đích lấy từ engine, 1 nguồn sự thật).
+    if (mucDichSelect.options.length === 0 && trucMucDich.length > 0) {
+      mucDichSelect.innerHTML = trucMucDich
+        .map((m) => `<option value="${m.mucDich}">${m.mucDichLabel}</option>`)
+        .join("");
+    }
+    renderTrucMucDich(mucDichSelect);
+    // Gắn listener 1 lần; mỗi lần đổi mục đích chỉ lọc tại chỗ, không gọi lại máy chủ.
+    if (!mucDichSelect.dataset.wired) {
+      mucDichSelect.dataset.wired = "1";
+      mucDichSelect.addEventListener("change", () => renderTrucMucDich(mucDichSelect));
+    }
+
     tuBadgeEl.innerHTML = catHungBadge(data.nhiThapBatTu.name, data.nhiThapBatTu.catHung);
     document.getElementById("kq-hoang-hac-ngay")!.textContent = data.hoangDaoHacDaoNgay;
 
