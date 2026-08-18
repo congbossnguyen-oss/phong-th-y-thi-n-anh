@@ -1,4 +1,5 @@
 import type { APIRoute } from "astro";
+import { checkRateLimit } from "../../lib/rate-limit";
 import { calculateChonNgayGiaoDichRange, type AssetType, type TransactionPurpose } from "@thien-anh/trachnhat-engine";
 
 export const prerender = false;
@@ -13,7 +14,11 @@ function jsonResponse(body: unknown, status: number): Response {
   });
 }
 
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ url, request, clientAddress }) => {
+  // Quét khoảng ngày (nặng): 20 lần / phút / IP.
+  const limited = checkRateLimit({ request, clientAddress }, { key: "free-giao-dich", max: 20, windowMs: 60_000 });
+  if (limited) return limited;
+
   const params = url.searchParams;
   const assetType = params.get("assetType");
   const purpose = params.get("purpose");

@@ -1,4 +1,5 @@
 import type { APIRoute } from "astro";
+import { checkRateLimit } from "../../lib/rate-limit";
 import { calculateGiaoTeTiecTungRange } from "@thien-anh/trachnhat-engine";
 
 export const prerender = false;
@@ -16,7 +17,11 @@ function daysInGregorianMonth(year: number, month: number): number {
   return new Date(Date.UTC(year, month, 0)).getUTCDate();
 }
 
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ url, request, clientAddress }) => {
+  // Quét khoảng ngày (nặng): 20 lần / phút / IP.
+  const limited = checkRateLimit({ request, clientAddress }, { key: "free-giao-te", max: 20, windowMs: 60_000 });
+  if (limited) return limited;
+
   const params = url.searchParams;
   const yearRaw = params.get("year");
   const monthRaw = params.get("month");

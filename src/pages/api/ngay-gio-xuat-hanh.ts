@@ -1,4 +1,5 @@
 import type { APIRoute } from "astro";
+import { checkRateLimit } from "../../lib/rate-limit";
 import {
   calculateXuatHanhCaNhanRange,
   calculateXuatHanhCaNhanMotNgay,
@@ -33,7 +34,11 @@ function jsonResponse(body: unknown, status: number): Response {
   });
 }
 
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ url, request, clientAddress }) => {
+  // Quét khoảng ngày (nặng): 20 lần / phút / IP.
+  const limited = checkRateLimit({ request, clientAddress }, { key: "free-xuat-hanh", max: 20, windowMs: 60_000 });
+  if (limited) return limited;
+
   const params = url.searchParams;
   const purpose = params.get("purpose");
   const gioiTinh = params.get("gioiTinh");
