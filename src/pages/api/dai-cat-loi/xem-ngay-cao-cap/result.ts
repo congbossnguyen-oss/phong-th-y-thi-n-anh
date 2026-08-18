@@ -6,6 +6,7 @@ import {
   type XemNgayCaoCapInput,
 } from "@thien-anh/trachnhat-engine";
 import { getOrderByCode } from "../../../../lib/db/orders";
+import { checkRateLimit } from "../../../../lib/rate-limit";
 
 export const prerender = false;
 
@@ -32,7 +33,10 @@ function gonNgay(n: Record<string, unknown>) {
   return gon;
 }
 
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ url, request, clientAddress }) => {
+  const limited = checkRateLimit({ request, clientAddress }, { key: "result-xncc", max: 60, windowMs: 60_000 });
+  if (limited) return limited;
+
   const orderCode = url.searchParams.get("orderCode");
   if (!orderCode) {
     return jsonResponse({ ok: false, error: "Thiếu mã đơn hàng." }, 400);

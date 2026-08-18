@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { calculateXemNgayCaoCap, type XemNgayCaoCapInput } from "@thien-anh/trachnhat-engine";
 import { taoDonCongCu } from "../../../../lib/payments/checkout-cong-cu";
+import { checkRateLimit } from "../../../../lib/rate-limit";
 
 export const prerender = false;
 
@@ -34,7 +35,10 @@ function docNgay(v: unknown): { nam: number; thang: number; ngay: number } | nul
   return d;
 }
 
-export const POST: APIRoute = async ({ request, locals }) => {
+export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
+  const limited = checkRateLimit({ request, clientAddress }, { key: "checkout-xncc", max: 10, windowMs: 60_000 });
+  if (limited) return limited;
+
   // ⚠️ CỐ Ý KHÔNG bắt đăng nhập (chủ dự án chốt 2026-08-16) — giống 2 module thu phí còn lại.
   // Kết quả truy cập bằng orderCode làm "vé".
 

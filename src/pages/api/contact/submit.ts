@@ -2,10 +2,15 @@ import type { APIRoute } from "astro";
 import { createConsultationRequest } from "../../../lib/db/consultationRequests";
 import { sendConsultationRequestEmail } from "../../../lib/email/send";
 import { appendConsultationRequestToSheet } from "../../../lib/google-sheets";
+import { checkRateLimit } from "../../../lib/rate-limit";
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, clientAddress }) => {
+  // Chống spam form + lạm dụng gửi email/Google Sheet (tốn phí): 5 lần / phút / IP.
+  const limited = checkRateLimit({ request, clientAddress }, { key: "contact", max: 5, windowMs: 60_000 });
+  if (limited) return limited;
+
   // Form gửi bằng fetch()/JSON (thay vì HTML form POST thuần) để tránh bị Astro CSRF
   // (security.checkOrigin) chặn nhầm trên trình duyệt trong app (Zalo/Facebook) không gửi
   // header Origin — checkOrigin chỉ kiểm tra Content-Type form-urlencoded/multipart/text,

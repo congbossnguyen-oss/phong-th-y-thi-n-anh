@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import { timNgayXemNgayCaoCap, timThangTrongNam, type XemNgayCaoCapInput } from "@thien-anh/trachnhat-engine";
+import { checkRateLimit } from "../../../../lib/rate-limit";
 
 export const prerender = false;
 
@@ -29,7 +30,11 @@ function gonNgay(n: Record<string, unknown>) {
   return gon;
 }
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, clientAddress }) => {
+  // Endpoint quét nặng (cả năm ~365 ngày): 15 lần / phút / IP.
+  const limited = checkRateLimit({ request, clientAddress }, { key: "tim-ngay-xncc", max: 15, windowMs: 60_000 });
+  if (limited) return limited;
+
   const body = await request.json().catch(() => null);
   if (!body || typeof body !== "object") {
     return jsonResponse({ ok: false, error: "Dữ liệu gửi lên không hợp lệ." }, 400);

@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { calculateNgayKyHopDongCaoCap, type NgayKyHopDongCaoCapInput } from "@thien-anh/trachnhat-engine";
 import { getOrderByCode } from "../../../../lib/db/orders";
 import { jsonResponse, TOOL_SLUG } from "./_chung";
+import { checkRateLimit } from "../../../../lib/rate-limit";
 
 export const prerender = false;
 
@@ -12,7 +13,10 @@ export const prerender = false;
  * ⚠️ CỐ Ý không kiểm tra chính chủ: module này không bắt đăng nhập, orderCode là "vé" (8 ký tự
  * ngẫu nhiên từ bộ 32 ký tự). Cùng lý do đã ghi ở module tang lễ.
  */
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ url, request, clientAddress }) => {
+  const limited = checkRateLimit({ request, clientAddress }, { key: "result-ky-hd", max: 60, windowMs: 60_000 });
+  if (limited) return limited;
+
   const orderCode = url.searchParams.get("orderCode");
   if (!orderCode) return jsonResponse({ ok: false, error: "Thiếu mã đơn hàng." }, 400);
 

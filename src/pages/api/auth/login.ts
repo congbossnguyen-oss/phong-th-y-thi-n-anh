@@ -5,11 +5,16 @@ import { users } from "../../../../db/schema";
 import { verifyPassword } from "../../../lib/auth/password";
 import { createSession, SESSION_COOKIE_NAME } from "../../../lib/auth/session";
 import { getClientIp } from "../../../lib/auth/client-ip";
+import { checkRateLimit } from "../../../lib/rate-limit";
 
 export const prerender = false;
 
 export const POST: APIRoute = async (context) => {
   const { request, cookies } = context;
+
+  // Chống brute-force mật khẩu: 8 lần thử / phút / IP.
+  const limited = checkRateLimit(context, { key: "login", max: 8, windowMs: 60_000 });
+  if (limited) return limited;
   const body = await request.json().catch(() => null);
   const email = body?.email?.trim().toLowerCase();
   const password = body?.password;

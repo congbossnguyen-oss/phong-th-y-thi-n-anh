@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { calculateCuoiHoiTronGoi } from "@thien-anh/trachnhat-engine";
 import { taoDonCongCu } from "../../../../lib/payments/checkout-cong-cu";
 import { docInput, jsonResponse, TOOL_SLUG } from "./_chung";
+import { checkRateLimit } from "../../../../lib/rate-limit";
 
 export const prerender = false;
 
@@ -11,7 +12,10 @@ export const prerender = false;
  * KHÔNG bắt đăng nhập — giống các module thu phí khác, kết quả truy cập bằng orderCode làm "vé".
  * Nếu khách đang đăng nhập thì gắn đơn vào tài khoản để họ xem lại được.
  */
-export const POST: APIRoute = async ({ request, locals }) => {
+export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
+  const limited = checkRateLimit({ request, clientAddress }, { key: "checkout-cuoi-hoi", max: 10, windowMs: 60_000 });
+  if (limited) return limited;
+
   const body = await request.json().catch(() => null);
   const doc = docInput(body);
   if (!doc.ok) return jsonResponse({ ok: false, error: doc.error }, 400);

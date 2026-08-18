@@ -1,10 +1,14 @@
 import type { APIRoute } from "astro";
 import { createCourseOrder } from "../../../lib/db/orders";
 import { getSepayQrUrl } from "../../../lib/payments/sepay";
+import { checkRateLimit } from "../../../lib/rate-limit";
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request, locals }) => {
+export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
+  const limited = checkRateLimit({ request, clientAddress }, { key: "checkout-course", max: 10, windowMs: 60_000 });
+  if (limited) return limited;
+
   if (!locals.user) {
     return new Response(JSON.stringify({ ok: false, error: "Cần đăng nhập." }), { status: 401 });
   }

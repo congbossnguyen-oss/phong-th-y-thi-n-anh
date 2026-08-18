@@ -6,6 +6,7 @@ import {
 } from "@thien-anh/trachnhat-engine";
 import { taoDonCongCu } from "../../../../lib/payments/checkout-cong-cu";
 import { giaGioLiemHaHuyet } from "../../../../lib/payments/gia-cong-cu";
+import { checkRateLimit } from "../../../../lib/rate-limit";
 import { Astronomy, type Data } from "@thien-anh/calendar-core";
 
 type Chi = Data.Chi;
@@ -28,7 +29,10 @@ function parseChiOptional(value: unknown): Chi | undefined {
   return value as Chi;
 }
 
-export const POST: APIRoute = async ({ request, locals }) => {
+export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
+  const limited = checkRateLimit({ request, clientAddress }, { key: "checkout-gio-liem", max: 10, windowMs: 60_000 });
+  if (limited) return limited;
+
   // ⚠️ Module này CỐ Ý KHÔNG bắt đăng nhập (quyết định của Công): khách dùng ngay lúc gia đình
   // vừa có tang, thường nửa đêm và đang rối — bắt tạo tài khoản lúc đó là rào cản sai chỗ.
   // Kết quả truy cập bằng orderCode làm "vé". Khác với Xem Ngày Cao Cấp (có bắt đăng nhập).

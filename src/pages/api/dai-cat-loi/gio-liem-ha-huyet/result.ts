@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { calculateGioLiemHaHuyet, type GioLiemHaHuyetInput } from "@thien-anh/trachnhat-engine";
 import { getOrderByCode } from "../../../../lib/db/orders";
+import { checkRateLimit } from "../../../../lib/rate-limit";
 
 export const prerender = false;
 
@@ -10,7 +11,10 @@ function jsonResponse(body: unknown, status: number): Response {
   return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 }
 
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ url, request, clientAddress }) => {
+  const limited = checkRateLimit({ request, clientAddress }, { key: "result-gio-liem", max: 60, windowMs: 60_000 });
+  if (limited) return limited;
+
   const orderCode = url.searchParams.get("orderCode");
   if (!orderCode) {
     return jsonResponse({ ok: false, error: "Thiếu mã đơn hàng." }, 400);

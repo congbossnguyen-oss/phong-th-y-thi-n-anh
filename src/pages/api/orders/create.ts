@@ -1,10 +1,14 @@
 import type { APIRoute } from "astro";
 import { createProductOrder } from "../../../lib/db/orders";
 import { getSepayQrUrl } from "../../../lib/payments/sepay";
+import { checkRateLimit } from "../../../lib/rate-limit";
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request, locals }) => {
+export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
+  const limited = checkRateLimit({ request, clientAddress }, { key: "checkout-order", max: 10, windowMs: 60_000 });
+  if (limited) return limited;
+
   const body = await request.json().catch(() => null);
 
   const name = body?.name?.trim();
