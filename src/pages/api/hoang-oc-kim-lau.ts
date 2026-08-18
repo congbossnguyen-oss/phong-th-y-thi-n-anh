@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import { calculateHoangOcKimLau, calculateHoangOcKimLauRange } from "@thien-anh/trachnhat-engine";
+import { checkRateLimit } from "../../lib/rate-limit";
 
 export const prerender = false;
 
@@ -10,7 +11,7 @@ function jsonResponse(body: unknown, status: number): Response {
   });
 }
 
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ url, request, clientAddress }) => {
   const params = url.searchParams;
   const namSinhRaw = params.get("namSinh");
   const tuNamRaw = params.get("tuNam");
@@ -27,6 +28,10 @@ export const GET: APIRoute = async ({ url }) => {
 
   try {
     if (tuNamRaw !== null && denNamRaw !== null) {
+      // CHỈ chặn mode quét khoảng năm (Range); mode xem 1 năm (namXem) nhẹ không giới hạn.
+      const limited = checkRateLimit({ request, clientAddress }, { key: "free-hoang-oc", max: 20, windowMs: 60_000 });
+      if (limited) return limited;
+
       const tuNam = Number(tuNamRaw);
       const denNam = Number(denNamRaw);
       if (!Number.isInteger(tuNam) || !Number.isInteger(denNam)) {

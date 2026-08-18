@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import { calculateChonNamSinhCon } from "@thien-anh/trachnhat-engine";
+import { checkRateLimit } from "../../lib/rate-limit";
 
 export const prerender = false;
 
@@ -12,7 +13,11 @@ function jsonResponse(body: unknown, status: number): Response {
   });
 }
 
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ url, request, clientAddress }) => {
+  // Luôn quét khoảng năm (nặng): 20 lần / phút / IP.
+  const limited = checkRateLimit({ request, clientAddress }, { key: "free-chon-nam-sinh", max: 20, windowMs: 60_000 });
+  if (limited) return limited;
+
   const params = url.searchParams;
   const namSinhChaRaw = params.get("namSinhCha");
   const namSinhMeRaw = params.get("namSinhMe");

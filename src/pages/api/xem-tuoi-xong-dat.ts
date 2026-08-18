@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import { calculateXemTuoiXongDat } from "@thien-anh/trachnhat-engine";
+import { checkRateLimit } from "../../lib/rate-limit";
 
 export const prerender = false;
 
@@ -10,7 +11,11 @@ function jsonResponse(body: unknown, status: number): Response {
   });
 }
 
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ url, request, clientAddress }) => {
+  // Luôn quét nhiều tuổi ứng viên (nặng): 20 lần / phút / IP.
+  const limited = checkRateLimit({ request, clientAddress }, { key: "free-xem-tuoi-xong-dat", max: 20, windowMs: 60_000 });
+  if (limited) return limited;
+
   const params = url.searchParams;
   const giaChuNamSinhRaw = params.get("giaChuNamSinh");
   const namXongRaw = params.get("namXong");

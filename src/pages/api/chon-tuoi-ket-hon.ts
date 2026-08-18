@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import { calculateChonTuoiKetHon, timTuoiKetHonPhuHop } from "@thien-anh/trachnhat-engine";
+import { checkRateLimit } from "../../lib/rate-limit";
 
 export const prerender = false;
 
@@ -19,12 +20,16 @@ function parseGioiTinh(raw: string | null, nhan: string): "nam" | "nu" {
   return raw as "nam" | "nu";
 }
 
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ url, request, clientAddress }) => {
   const params = url.searchParams;
   const mode = params.get("mode") ?? "so-sanh";
 
   try {
     if (mode === "tim-hop") {
+      // CHỈ chặn mode "tìm" (quét khoảng năm); mode so-sánh 2 người nhẹ không giới hạn.
+      const limited = checkRateLimit({ request, clientAddress }, { key: "free-chon-tuoi", max: 20, windowMs: 60_000 });
+      if (limited) return limited;
+
       const namSinhRaw = params.get("namSinh");
       const gioiTinhRaw = params.get("gioiTinh");
       const timGioiTinhRaw = params.get("timGioiTinh");
