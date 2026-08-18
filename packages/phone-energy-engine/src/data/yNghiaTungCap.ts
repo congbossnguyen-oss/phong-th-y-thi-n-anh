@@ -814,6 +814,22 @@ export const Y_NGHIA_TUNG_CAP: Readonly<Record<string, YNghiaCap>> = {
     honNhan:
       "Dễ nảy sinh mâu thuẫn do khác biệt quan điểm và thiếu kiên nhẫn. Có tính bốc đồng, kết hôn chóng vánh cũng chia tay nhanh. Cần tìm người đủ bản lĩnh đối trọng thì hôn nhân mới bền.",
   },
+  // Cặp 69 bị bản OCR "Sim Nói Gì Về Bạn" ghi hỏng (lẫn sang Phục Vị 66). Hai mặt dưới đây lấy từ
+  // cuốn "Thiên Mệnh Giàu Sang" (Ánh Dương): tinhCach là đặc tính chung của từ trường Tuyệt Mệnh
+  // (áp cho mọi cặp Tuyệt Mệnh, gồm 69); taiVan là phần riêng cho cặp 69/96. Sáu mặt còn lại để
+  // trống vì cuốn này tổ chức theo từ trường, không luận riêng 8 mặt cho từng cặp — KHÔNG bịa.
+  "69": {
+    tinhCach:
+      "Mang đặc tính chung của từ trường Tuyệt Mệnh: cuộc sống dao động mạnh, có thể đi từ vinh quang đến khổ cực, tính cách cực đoan, dứt khoát. Người sở hữu có tài năng vượt trội nhưng dễ gặp tai nạn hoặc kiện tụng.",
+    taiVan:
+      "Trong nhóm Tuyệt Mệnh, cặp 69/96 được xếp ở mức mạnh. Tài vận phần lớn phản ánh sự sa lầy trong những quyết định đầu tư sai lầm, khiến tiền bạc bị cuốn vào vòng xoáy, dễ nghĩ đến chuyện buông bỏ khiến tài lộc đứt gãy, mất kết nối. Cần cân nhắc thật kỹ trước mỗi quyết định lớn về tiền.",
+    suNghiep: "",
+    nhanDuyen: "",
+    sucKhoe: "",
+    hocTap: "",
+    camXuc: "",
+    honNhan: "",
+  },
   "48": {
     tinhCach:
       "Thẳng thắn, dám đương đầu và bộc trực. Hành động rõ ràng, quyết đoán. Luôn cố gắng và nỗ lực hết mình.",

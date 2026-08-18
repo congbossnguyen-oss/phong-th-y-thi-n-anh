@@ -71,13 +71,13 @@ Câu thật là *"…đặt giá trị đạo đức và nhân **văn** lên **h
 Khi số hoá **chỉ được ghép lại đúng trật tự từ** và bỏ ký tự rác OCR (`\_`, `Iượng` → `lượng`,
 `agoàa` …). **Không thêm ý mới, không diễn giải rộng ra, không gộp ý từ cặp khác sang.**
 
-## Tiến độ — HOÀN TẤT 63/64
+## Tiến độ — HOÀN TẤT 64/64
 
 - [x] Thiên Y — 13, 31, 68, 86, 49, 94, 27, 72
 - [x] Diên Niên — 19, 91, 78, 87, 34, 43, 26, 62
 - [x] Sinh Khí — 14, 41, 67, 76, 93, 39, 82, 28
 - [x] Phục Vị — 11, 22, 99, 88, 77, 66, 44, 33
-- [x] Tuyệt Mệnh — 12, 21, 96, 84, 48, 73, 37 (**69 thiếu — nguồn ghi nhầm sang Phục Vị**)
+- [x] Tuyệt Mệnh — 12, 21, 69, 96, 84, 48, 73, 37 (**69 lấp từ cuốn "Thiên Mệnh Giàu Sang", chỉ 2 mặt**)
 - [x] Ngũ Quỷ — 18, 81, 97, 79, 36, 63, 42, 24
 - [x] Lục Sát — 16, 61, 74, 47, 38, 83, 92, 29
 - [x] Họa Hại — 17, 71, 89, 98, 64, 46, 32, 23
@@ -87,25 +87,41 @@ accordion 8 mặt. Cặp/mục nào khuyết thì bỏ trống, không hiện d�
 
 ### Chỗ còn khuyết cần bản gốc rõ hơn để bổ sung
 
-- **Cặp 69 (Tuyệt Mệnh)** — cả khối bị nguồn ghi nhầm thành nội dung Phục Vị 66. Bỏ hẳn khỏi dữ liệu.
+- **Cặp 69 (Tuyệt Mệnh)** — bản OCR "Sim Nói Gì Về Bạn" ghi nhầm cả khối sang Phục Vị 66. Đã lấp
+  bằng cuốn **"Thiên Mệnh Giàu Sang" (Ánh Dương)**: mục **Tính cách** (đặc tính chung từ trường
+  Tuyệt Mệnh) + **Tài vận** (riêng cặp 69/96). Sáu mặt còn lại **để trống** vì cuốn này tổ chức
+  theo từ trường, không luận riêng 8 mặt từng cặp. Cần bản "Sim Nói Gì Về Bạn" rõ hơn để đủ 8 mặt.
 - **Cặp 21 (Tuyệt Mệnh) — mục Học tập** — OCR lặp lại đúng đoạn Nhân duyên, mục Học tập thật bị mất.
 - **Cặp 68 — Sức khoẻ**; **cặp 86 — Sức khoẻ & Học tập** — OCR cắt cụt, chỉ khôi phục được tối thiểu.
 
-## Nguyên tắc mới phát hiện ở cuối sách (Chương 3–4) — CHƯA đưa vào engine, chờ chủ dự án chốt
+## Ba tài liệu bổ sung của Ánh Dương (chủ dự án gửi 2026-08-18)
 
-Bản OCR còn có Chương 3 ("Nhận diện sim ảnh hưởng không tốt") và Chương 4 ("Công thức luận sim").
-Nhiều điểm trùng và làm rõ các quyết định engine đã có, vài điểm MỚI:
+Đã lưu vào repo cùng thư mục: `bat-cuc-linh-so-chuyen-sau.ocr.md`, `thien-menh-giau-sang.ocr.md`,
+`bi-quyet-thuc-day-su-giau-co.ocr.md`.
 
-1. **"Kết đuôi chính là ĐIỂM CỰC ĐẠI"** — xác nhận nguyên tắc ba số cuối là chính đã cài. Sách còn
-   chia dãy theo **Khởi (3 số đầu) – Diễn (3 số giữa) – Kết (4 số cuối)**.
-2. **"Nếu từ 5 tinh (loại) thì là không tốt, dưới 5 thì xét tiếp"** — một ngưỡng đa dạng cụ thể,
-   engine hiện chưa có mốc "5 loại tinh".
-3. **Số 0** — xác nhận: "0 đi với hung tinh thì tăng cấp độ nghiêm trọng, đi với cát tinh thì giảm
-   năng lượng cát còn một nửa, KHÔNG triệt tiêu hoàn toàn". Engine đang cho số 0 làm mất hẳn ở vị
-   trí sau — cần soát lại so với "còn một nửa".
-4. **Điểm THÁI CỰC / điểm TRŨNG** (vd 696, 6868, đuôi 00/05/50): khi có điểm này thì chỉ cần luận
-   quanh nó, không cần nhìn số cuối. Engine chưa có khái niệm này.
-5. **Điểm gãy giữa dãy**: "sim mở đầu cát, kết cấu sau trượt dần tạo điểm gãy ở giữa" — gần với ý
-   "số 0 ở giữa gãy trường khí" nhưng rộng hơn.
+**Bản chất:** cả ba tổ chức theo **8 từ trường** (không theo 64 cặp riêng như "Sim Nói Gì Về Bạn"
+Chương 2), nên KHÔNG trám thẳng được 8-mặt-từng-cặp. Nhưng bổ sung được:
 
-Đây là danh sách để chủ dự án chọn có mở rộng engine không, không tự cài vì đụng tới thang điểm.
+- **Thiên Mệnh Giàu Sang** — xếp hạng mạnh/yếu từng cặp trong mỗi từ trường (vd Tuyệt Mệnh: 12/21
+  mạnh nhất, 69/96 mạnh, 37/73 yếu nhất) + luận tài vận sâu theo từ trường. Đã dùng để lấp cặp 69.
+- **Bát Cực Linh Số Chuyên Sâu** — công thức hoá giải cụ thể (a→e) + "hung tinh không chắc đã hung".
+  Có thể làm giàu `hoa-giai.md` nếu chủ dự án muốn.
+- **Bí Quyết Thúc Đẩy Sự Giàu Có** — phần lớn là Kinh Dịch / Hà Đồ / Lạc Thư / 64 quẻ / Lục thập
+  hoa giáp, **đã bị loại khỏi engine theo yêu cầu chủ dự án**. Giữ làm tham khảo.
+
+## Điểm đã xác nhận / đã cài từ các nguồn này
+
+1. **Số 0 giảm 1/2 lực** — ĐÃ CÀI 2026-08-18. Cuốn "Thiên Mệnh Giàu Sang" xác nhận: "số 0 nằm
+   giữa mang ý nghĩa như Phục Vị của số trước". Engine đã đổi "mất hẳn" → "giảm nửa lực" cho cát
+   tinh, "tăng nặng" cho hung tinh.
+2. **Số 5 = cây cầu / Phục Vị của số trước** — cuốn "Thiên Mệnh Giàu Sang" xác nhận đúng cơ chế
+   engine đã cài ("số 5 nằm giữa như cây cầu kết nối hai số").
+3. **"Kết đuôi là ĐIỂM CỰC ĐẠI"** — xác nhận nguyên tắc ba số cuối là chính (đã cài). Sách chia dãy
+   theo **Khởi (3 đầu) – Diễn (3 giữa) – Kết (4 cuối)**.
+
+## Điểm MỚI chờ chủ dự án chốt (chưa cài vì đụng thang điểm)
+
+1. **Ngưỡng "5 loại tinh"** — "từ 5 loại tinh trở lên là không tốt, dưới 5 xét tiếp". Engine chưa
+   có mốc đếm số LOẠI tinh trong dãy.
+2. **Điểm THÁI CỰC / điểm TRŨNG** (vd 696, 6868, đuôi 00/05/50): khi có thì chỉ luận quanh nó.
+3. **Làm giàu bảng hoá giải** từ công thức a→e của cuốn "Bát Cực Linh Số Chuyên Sâu".
