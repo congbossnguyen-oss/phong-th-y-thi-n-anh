@@ -76,6 +76,9 @@ export function calculateNgayKyHopDongRange(input: NgayKyHopDongRangeInput): Nga
     days.push(tinhMotNgay(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate(), input.timeZone, nguoiKy));
   }
 
-  const ngayXepHang = [...days].sort((a, b) => b.diem - a.diem);
+  let ngayXepHang = [...days].sort((a, b) => b.diem - a.diem);
+  // XUNG tuổi người ký = LOẠI HẲN (chủ dự án chốt 2026-08-19). Chỉ loại trực xung Địa Chi;
+  // Hình/Hại/Phá vẫn giữ. Chỉ áp khi có năm sinh người ký.
+  if (nguoiKy) ngayXepHang = ngayXepHang.filter((d) => !d.nguoiKy?.chi.xung);
   return { ngayXepHang };
 }

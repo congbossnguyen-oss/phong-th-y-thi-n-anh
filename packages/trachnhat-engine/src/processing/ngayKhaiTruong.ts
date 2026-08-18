@@ -76,6 +76,10 @@ export function calculateNgayKhaiTruongRange(input: NgayKhaiTruongRangeInput): N
     days.push(tinhMotNgay(d.getUTCFullYear(), d.getUTCMonth() + 1, d.getUTCDate(), input.timeZone, chu));
   }
 
-  const ngayXepHang = [...days].sort((a, b) => b.diem - a.diem);
+  let ngayXepHang = [...days].sort((a, b) => b.diem - a.diem);
+  // XUNG tuổi chủ = LOẠI HẲN (chủ dự án chốt 2026-08-19: "xung tuổi quá xấu"). Chỉ loại trực
+  // xung của Địa Chi; Hình/Hại/Phá vẫn giữ (chỉ trừ điểm + cảnh báo badge ở trang). Chỉ áp khi
+  // có năm sinh chủ.
+  if (chu) ngayXepHang = ngayXepHang.filter((d) => !d.tuoiChu?.chi.xung);
   return { ngayXepHang };
 }
