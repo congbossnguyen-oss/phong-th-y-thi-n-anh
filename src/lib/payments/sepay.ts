@@ -1,4 +1,4 @@
-import { randomBytes } from "node:crypto";
+import { randomBytes, createHash, timingSafeEqual } from "node:crypto";
 
 // Tiền tố mã đơn hàng — nhúng vào nội dung chuyển khoản để đối soát webhook SePay với đơn hàng.
 const ORDER_CODE_PREFIX = "THA";
@@ -65,11 +65,24 @@ export interface SepayWebhookPayload {
 }
 
 /**
+ * So sánh hai chuỗi trong THỜI GIAN HẰNG ĐỊNH để chống timing attack.
+ *
+ * Băm SHA-256 cả hai vế về đúng 32 byte trước khi `timingSafeEqual`:
+ *   - `timingSafeEqual` ném lỗi nếu hai buffer khác độ dài, mà so trực tiếp chuỗi thô còn làm lộ
+ *     độ dài secret qua thời gian → băm xong luôn cùng 32 byte, che cả độ dài lẫn nội dung.
+ */
+function soSanhHangDinh(a: string, b: string): boolean {
+  const ha = createHash("sha256").update(a).digest();
+  const hb = createHash("sha256").update(b).digest();
+  return timingSafeEqual(ha, hb);
+}
+
+/**
  * Xác thực request webhook thực sự đến từ SePay qua header Authorization: "Apikey <token>"
  * (cấu hình trùng SEPAY_WEBHOOK_SECRET ở SePay dashboard > Webhooks > Authorization).
  */
 export function verifySepayWebhookAuth(authorizationHeader: string | null): boolean {
   const secret = import.meta.env.SEPAY_WEBHOOK_SECRET;
-  if (!secret) return false;
-  return authorizationHeader === `Apikey ${secret}`;
+  if (!secret || !authorizationHeader) return false;
+  return soSanhHangDinh(authorizationHeader, `Apikey ${secret}`);
 }
