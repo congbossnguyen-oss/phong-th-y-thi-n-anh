@@ -428,3 +428,91 @@ export function calculateLichCuoiHoi(input: LichCuoiHoiInput): LichCuoiHoiResult
 
   return { muc, ghiChu };
 }
+
+// ═══════════════════════════════════════════════════════════════════════════════════════════════
+// DỊCH VỤ THU PHÍ TRỌN GÓI — một facade duy nhất phục vụ cả 2 chế độ (dùng chung cho checkout/result).
+// ═══════════════════════════════════════════════════════════════════════════════════════════════
+
+export type CheDoCuoiHoi = "tron-goi" | "tung-nghi-le";
+
+export interface CuoiHoiTronGoiInput {
+  namSinhCoDau: number;
+  namSinhChuRe: number;
+  startDate: { year: number; month: number; day: number };
+  endDate: { year: number; month: number; day: number };
+  uuTien?: CuoiHoi.UuTienCuoiHoi;
+  timeZone: string;
+  cheDo: CheDoCuoiHoi;
+  /** Bắt buộc khi cheDo = "tung-nghi-le". */
+  nghiLe?: CuoiHoi.NghiLeCuoiHoi;
+  /** Số ngày trả về ở chế độ từng nghi lễ (mặc định 8). */
+  soNgayTraVe?: number;
+}
+
+/** Một ngày (chế độ từng nghi lễ) kèm sẵn giờ đẹp — để không cần gọi endpoint giờ riêng. */
+export interface CuoiHoiNgayVoiGio extends CuoiHoiNgay {
+  gioTot: { chiGio: Chi; khungGio: string; diem: number; tenHang: string }[];
+}
+
+export type CuoiHoiTronGoiResult =
+  | { cheDo: "tron-goi"; lich: LichCuoiHoiResult }
+  | {
+      cheDo: "tung-nghi-le";
+      nghiLe: CuoiHoi.NghiLeCuoiHoi;
+      tenNghiLe: string;
+      soNgayBiLoai: number;
+      ngayXepHang: CuoiHoiNgayVoiGio[];
+    };
+
+/**
+ * Facade cho dịch vụ cưới hỏi trọn gói (thu phí). Dispatch theo `cheDo`:
+ *   - "tron-goi"    → lịch cả 4 nghi lễ theo trình tự thời gian (calculateLichCuoiHoi).
+ *   - "tung-nghi-le"→ xếp hạng ngày cho một nghi lễ, mỗi ngày kèm sẵn 3 giờ đẹp nhất.
+ *
+ * Thuần/deterministic để result.ts tính lại được từ input đã lưu.
+ */
+export function calculateCuoiHoiTronGoi(input: CuoiHoiTronGoiInput): CuoiHoiTronGoiResult {
+  const uuTien = input.uuTien ?? "can-bang";
+  if (input.cheDo === "tron-goi") {
+    return {
+      cheDo: "tron-goi",
+      lich: calculateLichCuoiHoi({
+        namSinhCoDau: input.namSinhCoDau,
+        namSinhChuRe: input.namSinhChuRe,
+        startDate: input.startDate,
+        endDate: input.endDate,
+        uuTien,
+        timeZone: input.timeZone,
+      }),
+    };
+  }
+
+  const nghiLe = input.nghiLe ?? "thanh-hon";
+  const range = calculateCuoiHoiRange({
+    namSinhCoDau: input.namSinhCoDau,
+    namSinhChuRe: input.namSinhChuRe,
+    startDate: input.startDate,
+    endDate: input.endDate,
+    nghiLe,
+    uuTien,
+    timeZone: input.timeZone,
+    soNgayTraVe: input.soNgayTraVe ?? 8,
+  });
+
+  const ngayXepHang: CuoiHoiNgayVoiGio[] = range.ngayXepHang.map((n) => {
+    const gio = calculateGioCuoiHoi({
+      namSinhCoDau: input.namSinhCoDau,
+      namSinhChuRe: input.namSinhChuRe,
+      solarDate: n.solarDate,
+      nghiLe,
+      uuTien,
+      timeZone: input.timeZone,
+    });
+    return {
+      ...n,
+      gioTot: gio.gioXepHang.slice(0, 3).map((g) => ({ chiGio: g.chiGio, khungGio: g.khungGio, diem: g.diemTongHop, tenHang: g.tenHang })),
+    };
+  });
+
+  return { cheDo: "tung-nghi-le", nghiLe, tenNghiLe: range.tenNghiLe, soNgayBiLoai: range.soNgayBiLoai, ngayXepHang };
+}

@@ -47,18 +47,6 @@ export const daiCatLoiTools: DaiCatLoiTool[] = [
     desc: "Tìm ngày đẹp để mở cửa kinh doanh, khai trương — có thể xét tuổi chủ.",
   },
   {
-    href: "/dai-cat-loi/lich-cuoi-hoi",
-    icon: "🗓️",
-    title: "Lập Lịch Cưới Hỏi Trọn Gói",
-    desc: "Chọn ngày + giờ đẹp cho cả 4 nghi lễ trong một lần, sắp theo trình tự thời gian.",
-  },
-  {
-    href: "/dai-cat-loi/ngay-cuoi-hoi",
-    icon: "💍",
-    title: "Xem Ngày Cưới Hỏi",
-    desc: "Chọn ngày đẹp cho ăn hỏi, đón dâu, thành hôn, đăng ký kết hôn — chấm điểm riêng cô dâu, chú rể rồi cân cặp đôi.",
-  },
-  {
     href: "/dai-cat-loi/tuoi-hop-lam-an",
     icon: "🤝",
     title: "Tuổi Hợp Làm Ăn",
@@ -164,5 +152,12 @@ export const paidTools: PaidTool[] = [
     title: "Ngày Giờ Ký Kết Hợp Đồng – Bản Cao Cấp",
     desc: "Lọc loại ngày đại kỵ trước, rồi chấm điểm theo Thập Nhị Trực, 28 Tú, Tiểu Lục Nhâm và lớp Thập Thần theo Nhật Chủ người ký. Chọn luôn giờ ký trong ngày.",
     priceLabel: "299.000đ / lượt",
+  },
+  {
+    href: "/dai-cat-loi/ngay-cuoi-hoi",
+    icon: "💍",
+    title: "Xem Ngày Cưới Hỏi Trọn Gói",
+    desc: "Chọn ngày & giờ đẹp cho cả chuỗi cưới hỏi (ăn hỏi, đón dâu, thành hôn, đăng ký) — chấm điểm riêng cô dâu, chú rể rồi cân cặp đôi, lập lịch cả 4 nghi lễ theo trình tự thời gian.",
+    priceLabel: "499.000đ / lượt",
   },
 ];

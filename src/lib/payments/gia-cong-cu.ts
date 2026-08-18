@@ -8,6 +8,7 @@ export const GIA_CONG_CU = {
   "gio-liem-ha-huyet": 499000,
   "xem-ngay-cao-cap": 999000,
   "ngay-ky-hop-dong-cao-cap": 299000,
+  "ngay-cuoi-hoi": 499000,
 } as const;
 
 export type ToolSlug = keyof typeof GIA_CONG_CU;
