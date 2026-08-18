@@ -4,7 +4,11 @@ import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import { paidTools } from "../../lib/dai-cat-loi-tools";
 
-export const prerender = true;
+// SSR để đọc phiên đăng nhập: thẻ đánh dấu adminOnly chỉ hiện cho quản trị (đang thử nghiệm).
+export const prerender = false;
+
+const laQuanTri = Astro.locals.user?.isAdmin === true;
+const dsHienThi = paidTools.filter((m) => !m.adminOnly || laQuanTri);
 ---
 
 <BaseLayout
@@ -26,7 +30,7 @@ export const prerender = true;
 
     <div class="mx-auto grid max-w-4xl gap-4 sm:grid-cols-2">
       {
-        paidTools.map((m) => (
+        dsHienThi.map((m) => (
           <a
             href={m.href}
             class="relative flex flex-col gap-2 rounded-2xl border-2 border-(--color-gold-400) bg-white p-6 text-slate-900 shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl"
@@ -34,6 +38,11 @@ export const prerender = true;
             <span class="absolute -top-3 right-4 rounded-(--radius-pill) bg-(--color-gold-400) px-3 py-1 text-xs font-semibold text-(--color-on-accent) shadow">
               {m.priceLabel}
             </span>
+            {m.adminOnly && (
+              <span class="absolute -top-3 left-4 rounded-(--radius-pill) bg-slate-800 px-3 py-1 text-xs font-semibold text-white shadow">
+                🔒 Chỉ quản trị (đang thử nghiệm)
+              </span>
+            )}
             <span class="text-3xl">{m.icon}</span>
             <span class="font-display text-lg font-bold text-slate-900">{m.title}</span>
             <span class="text-sm text-slate-500">{m.desc}</span>
