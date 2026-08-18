@@ -170,4 +170,11 @@ export const paidTools: PaidTool[] = [
     // Khách THẤY thẻ này bình thường nhưng CHƯA dùng được — trang tự hiện "sắp ra mắt" cho khách,
     // chỉ tài khoản quản trị mới chạy được (đang thử nghiệm). Khi phát hành thì bỏ khoá ở trang.
   },
+  {
+    href: "/dai-cat-loi/dat-ten-cho-con",
+    icon: "🍼",
+    title: "Đặt Tên Cho Con Theo Việt Danh Học",
+    desc: "Từ ngày giờ sinh của bé, hệ thống lập Tứ Trụ theo tiết khí, chỉ ra ngũ hành còn thiếu cần bổ, rồi gợi ý danh sách tên đẹp hợp mệnh — mỗi tên chấm điểm theo Tứ Đại Cục 81 số.",
+    priceLabel: "499.000đ / lượt",
+  },
 ];

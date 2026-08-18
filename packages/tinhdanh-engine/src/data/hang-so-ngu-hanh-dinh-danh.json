@@ -1,0 +1,11 @@
+{
+  "_nguon": "Danh Tính Học Tập 1 — dùng khi tên KHÔNG có chữ đệm (thay Đệm trong công thức Hậu Vận / Phúc Đức Cục)",
+  "hangSo": {
+    "Thuy":  { "nam": 1, "nu": 6 },
+    "Hoa":   { "nam": 7, "nu": 2 },
+    "Moc":   { "nam": 3, "nu": 8 },
+    "Kim":   { "nam": 9, "nu": 4 },
+    "Tho":   { "nam": 5, "nu": 10 }
+  },
+  "_luuY": "'Hành' ở đây là Hành Khuyết (Dụng Thần) của bản mệnh xác định ở Bước 2, không phải hành của họ/tên."
+}

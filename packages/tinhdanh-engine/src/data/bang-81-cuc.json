@@ -1,0 +1,492 @@
+{
+  "_nguon": "Danh Tính Học Tập 1 — Bảng 81 Cục (Việt Danh Học)",
+  "_ghiChu": "Cục 24 bị mất tên gốc do lỗi OCR khi số hóa tài liệu; nội dung ý nghĩa vẫn còn nguyên vẹn.",
+  "cuc": [
+    {
+      "so": 1,
+      "ten": "Thái Cực (Nhất Cực)",
+      "yNghia": "Khởi đầu vạn vật, thành công rực rỡ, phú quý vinh hiển, trường thọ (cần bát tự phối hợp tốt)",
+      "catHung": "cat"
+    },
+    {
+      "so": 2,
+      "ten": "Nhất Thất Cô Thiết",
+      "yNghia": "Phân ly, cô độc",
+      "catHung": "hung"
+    },
+    {
+      "so": 3,
+      "ten": "Cát Tường",
+      "yNghia": "Thành đạt như ý",
+      "catHung": "cat"
+    },
+    {
+      "so": 4,
+      "ten": "Hung Biến",
+      "yNghia": "Tai họa, mọi sự suy vi bại hoại; cần nhẫn nại, phục thiện mới cải biến được",
+      "catHung": "hung"
+    },
+    {
+      "so": 5,
+      "ten": "Chủng Trúc Thành Lâm",
+      "yNghia": "Phúc lộc, trường thọ",
+      "catHung": "cat"
+    },
+    {
+      "so": 6,
+      "ten": "Bình Ổn",
+      "yNghia": "Số của người hào kiệt",
+      "catHung": "cat"
+    },
+    {
+      "so": 7,
+      "ten": "Tính Hãn",
+      "yNghia": "Cương nghị, quyết đoán, có chí tiến thủ",
+      "catHung": "cat"
+    },
+    {
+      "so": 8,
+      "ten": "Kiên Cường",
+      "yNghia": "Ý chí kiên cường, nỗ lực vươn lên",
+      "catHung": "cat"
+    },
+    {
+      "so": 9,
+      "ten": "Phá Chi Nhập Hải",
+      "yNghia": "Cùng khổ, khốn đốn",
+      "catHung": "hung"
+    },
+    {
+      "so": 10,
+      "ten": "Linh Ám (Hãm)",
+      "yNghia": "Vạn sự kết cục bi thảm",
+      "catHung": "hung"
+    },
+    {
+      "so": 11,
+      "ten": "Hạn Miêu Phùng Vũ",
+      "yNghia": "Như mạ gặp mưa sau hạn — chuyển nguy thành an",
+      "catHung": "cat"
+    },
+    {
+      "so": 12,
+      "ten": "Quật Tỉnh Vô Tuyền",
+      "yNghia": "Ý chí bạc nhược, gia đình lạnh lẽo, làm nhiều không thu được kết quả",
+      "catHung": "hung"
+    },
+    {
+      "so": 13,
+      "ten": "Xuân Nhật Mẫu Đơn",
+      "yNghia": "Hoa mẫu đơn nở ngày xuân",
+      "catHung": "cat"
+    },
+    {
+      "so": 14,
+      "ten": "Phá Triệu",
+      "yNghia": "Lưu lạc góc bể chân trời, bất đắc chí",
+      "catHung": "hung"
+    },
+    {
+      "so": 15,
+      "ten": "Phúc Thọ",
+      "yNghia": "Phúc và thọ",
+      "catHung": "cat"
+    },
+    {
+      "so": 16,
+      "ten": "Hậu Trọng",
+      "yNghia": "Có quý nhân phù trợ",
+      "catHung": "cat"
+    },
+    {
+      "so": 17,
+      "ten": "Cương Cường",
+      "yNghia": "Khả năng đột phá vượt mọi gian khổ",
+      "catHung": "cat"
+    },
+    {
+      "so": 18,
+      "ten": "Thiết Kính Trùng Ma",
+      "yNghia": "Lau lại kính cũ — hữu trí, thành công",
+      "catHung": "cat"
+    },
+    {
+      "so": 19,
+      "ten": "Đa Nạn",
+      "yNghia": "Gặp nhiều tai họa",
+      "catHung": "hung"
+    },
+    {
+      "so": 20,
+      "ten": "Ốc Hạ Tàng Kim",
+      "yNghia": "Biểu thị thất bại",
+      "catHung": "hung"
+    },
+    {
+      "so": 21,
+      "ten": "Minh Nguyệt Trung Thiên",
+      "yNghia": "Thành công rực rỡ",
+      "catHung": "cat"
+    },
+    {
+      "so": 22,
+      "ten": "Thu Thảo",
+      "yNghia": "Thích tranh đấu",
+      "catHung": "banCatBanHung"
+    },
+    {
+      "so": 23,
+      "ten": "Tráng Lệ",
+      "yNghia": "Vận thịnh vượng (nam viên mãn, nữ dễ lưu lạc/khắc phu hại tử)",
+      "catHung": "cat"
+    },
+    {
+      "so": 24,
+      "ten": "(chưa rõ tên gốc)",
+      "yNghia": "Giàu sang phú quý, tài trí mưu lược, tay trắng làm nên sự nghiệp, ôn hòa thuần lương",
+      "catHung": "cat"
+    },
+    {
+      "so": 25,
+      "ten": "Anh Tuấn",
+      "yNghia": "Cương nghị, thông tuệ linh mẫn",
+      "catHung": "cat"
+    },
+    {
+      "so": 26,
+      "ten": "Biến Quái",
+      "yNghia": "Kỳ dị, cổ quái, lập dị",
+      "catHung": "banCatBanHung"
+    },
+    {
+      "so": 27,
+      "ten": "Tăng Trưởng",
+      "yNghia": "Tham vọng không đạt",
+      "catHung": "hung"
+    },
+    {
+      "so": 28,
+      "ten": "Khoát Thủy Phù Bình",
+      "yNghia": "Trôi nổi lênh đênh",
+      "catHung": "hung"
+    },
+    {
+      "so": 29,
+      "ten": "Bất Bình",
+      "yNghia": "Thành công lớn",
+      "catHung": "cat"
+    },
+    {
+      "so": 30,
+      "ten": "Phi Vận",
+      "yNghia": "Bất mãn vì không gặp vận (sinh bất phùng thời)",
+      "catHung": "banCatBanHung"
+    },
+    {
+      "so": 31,
+      "ten": "Xuân Nhật Khai Hoa",
+      "yNghia": "Trí dũng song toàn",
+      "catHung": "cat"
+    },
+    {
+      "so": 32,
+      "ten": "Báo Ẩn Kim Sơn",
+      "yNghia": "May mắn không ngờ",
+      "catHung": "cat"
+    },
+    {
+      "so": 33,
+      "ten": "Thăng Thiên",
+      "yNghia": "Tài đức song toàn",
+      "catHung": "cat"
+    },
+    {
+      "so": 34,
+      "ten": "Phá Gia",
+      "yNghia": "Gặp nhiều tai họa, phá tán",
+      "catHung": "hung"
+    },
+    {
+      "so": 35,
+      "ten": "Cao Lâu Vọng Nguyệt",
+      "yNghia": "Vận phát triển nghệ thuật",
+      "catHung": "cat"
+    },
+    {
+      "so": 36,
+      "ten": "Ba Đào",
+      "yNghia": "Chìm nổi lênh đênh",
+      "catHung": "hung"
+    },
+    {
+      "so": 37,
+      "ten": "Mãnh Hổ Xuất Lâm",
+      "yNghia": "Hiển đạt",
+      "catHung": "cat"
+    },
+    {
+      "so": 38,
+      "ten": "Ma Thiết Thành Trâm",
+      "yNghia": "Mài sắt thành kim — kiên trì nhẫn nại hơn người",
+      "catHung": "cat"
+    },
+    {
+      "so": 39,
+      "ten": "Phú Quý",
+      "yNghia": "Hưởng vinh hoa phú quý",
+      "catHung": "cat"
+    },
+    {
+      "so": 40,
+      "ten": "Thoái An",
+      "yNghia": "An phận thủ thường",
+      "catHung": "binhHoa"
+    },
+    {
+      "so": 41,
+      "ten": "Hữu Đức",
+      "yNghia": "Có đức nên luôn gặp may mắn",
+      "catHung": "cat"
+    },
+    {
+      "so": 42,
+      "ten": "Hàn Thiền Tại Liễu",
+      "yNghia": "Con ve mùa lạnh — nghèo khó",
+      "catHung": "hung"
+    },
+    {
+      "so": 43,
+      "ten": "Tán Tài",
+      "yNghia": "Cần đề phòng tai họa, hao tổn tài",
+      "catHung": "hung"
+    },
+    {
+      "so": 44,
+      "ten": "Phiền Muộn",
+      "yNghia": "Lực bất tòng tâm",
+      "catHung": "hung"
+    },
+    {
+      "so": 45,
+      "ten": "Thuận Phong",
+      "yNghia": "Thuận buồm xuôi gió",
+      "catHung": "cat"
+    },
+    {
+      "so": 46,
+      "ten": "Lãng Lý Đào Kim",
+      "yNghia": "Phá tán tổ nghiệp",
+      "catHung": "hung"
+    },
+    {
+      "so": 47,
+      "ten": "Điểm Thiết Thành Kim",
+      "yNghia": "Rèn sắt thành kim",
+      "catHung": "cat"
+    },
+    {
+      "so": 48,
+      "ten": "Khô Tùng Lập Hạc",
+      "yNghia": "Hạc đứng trên cây tùng",
+      "catHung": "cat"
+    },
+    {
+      "so": 49,
+      "ten": "Chuyển Biến",
+      "yNghia": "Cát hung lành dữ, họa phúc khôn lường",
+      "catHung": "banCatBanHung"
+    },
+    {
+      "so": 50,
+      "ten": "Tiểu Chu Nhập Hải",
+      "yNghia": "Liều lĩnh",
+      "catHung": "hung"
+    },
+    {
+      "so": 51,
+      "ten": "Trù Trầm",
+      "yNghia": "Chìm nổi lênh đênh, Đông thành Tây bại",
+      "catHung": "banCatBanHung"
+    },
+    {
+      "so": 52,
+      "ten": "Đạt Miên",
+      "yNghia": "Lý tưởng cao cả",
+      "catHung": "cat"
+    },
+    {
+      "so": 53,
+      "ten": "Khúc Khuyển Thôi Xa",
+      "yNghia": "Người đẩy xe",
+      "catHung": "banCatBanHung"
+    },
+    {
+      "so": 54,
+      "ten": "Thạch Thương Tài Hoa",
+      "yNghia": "Có tài năng nhưng hay gặp tai nạn, khó thành công",
+      "catHung": "hung"
+    },
+    {
+      "so": 55,
+      "ten": "Thiện Ác",
+      "yNghia": "Ngoài ngọt trong đắng",
+      "catHung": "banCatBanHung"
+    },
+    {
+      "so": 56,
+      "ten": "Lãng Lý Hành Chu",
+      "yNghia": "Thuyền đi trên sóng",
+      "catHung": "hung"
+    },
+    {
+      "so": 57,
+      "ten": "Nguyệt Chiếu Thanh Tùng",
+      "yNghia": "Trăng chiếu ngọn Tùng Sơn",
+      "catHung": "cat"
+    },
+    {
+      "so": 58,
+      "ten": "Văn Hành Ngộ Nguyệt",
+      "yNghia": "Trong hung có cát",
+      "catHung": "banCatBanHung"
+    },
+    {
+      "so": 59,
+      "ten": "Hàn Thiền Bi Phong",
+      "yNghia": "Bất tài",
+      "catHung": "hung"
+    },
+    {
+      "so": 60,
+      "ten": "Vô Mưu",
+      "yNghia": "Thích tranh danh đoạt lợi, hãm hại người khác",
+      "catHung": "hung"
+    },
+    {
+      "so": 61,
+      "ten": "Mẫu Đơn Phù Dung",
+      "yNghia": "Trong cát có hung",
+      "catHung": "banCatBanHung"
+    },
+    {
+      "so": 62,
+      "ten": "Suy Bại",
+      "yNghia": "Hay gặp tai họa",
+      "catHung": "hung"
+    },
+    {
+      "so": 63,
+      "ten": "Chu Quy Bình Phố",
+      "yNghia": "Phú quý song toàn",
+      "catHung": "cat"
+    },
+    {
+      "so": 64,
+      "ten": "Phi Mệnh",
+      "yNghia": "Khắc cha mẹ",
+      "catHung": "hung"
+    },
+    {
+      "so": 65,
+      "ten": "Cự Lưu Quy Hải",
+      "yNghia": "Mọi sông đều đổ về biển",
+      "catHung": "cat"
+    },
+    {
+      "so": 66,
+      "ten": "Nham Đầu Bộ Mã",
+      "yNghia": "Ngựa đi trên đỉnh núi — đa sầu đa cảm, hay thất bại",
+      "catHung": "hung"
+    },
+    {
+      "so": 67,
+      "ten": "Thông Đạt",
+      "yNghia": "Ý chí kiên cường",
+      "catHung": "cat"
+    },
+    {
+      "so": 68,
+      "ten": "Thuận Phong Suy Phàm",
+      "yNghia": "Nhiều may mắn, thuận buồm xuôi gió",
+      "catHung": "cat"
+    },
+    {
+      "so": 69,
+      "ten": "Phi Nghiệp",
+      "yNghia": "Suốt đời nghèo khó (có tài nhưng không có nghề nghiệp)",
+      "catHung": "hung"
+    },
+    {
+      "so": 70,
+      "ten": "Tàn Cúc Phùng Sương",
+      "yNghia": "Cô độc",
+      "catHung": "hung"
+    },
+    {
+      "so": 71,
+      "ten": "Thạch Thượng Kim Hoa",
+      "yNghia": "Trong hung có cát",
+      "catHung": "banCatBanHung"
+    },
+    {
+      "so": 72,
+      "ten": "Lao Khổ",
+      "yNghia": "Gian nan, vất vả",
+      "catHung": "hung"
+    },
+    {
+      "so": 73,
+      "ten": "Vô Dũng",
+      "yNghia": "Người hèn yếu",
+      "catHung": "hung"
+    },
+    {
+      "so": 74,
+      "ten": "Tàn Hoa Kinh Sương",
+      "yNghia": "Luôn gặp nghịch cảnh",
+      "catHung": "hung"
+    },
+    {
+      "so": 75,
+      "ten": "Tiến Thủ",
+      "yNghia": "Hay tranh đấu",
+      "catHung": "banCatBanHung"
+    },
+    {
+      "so": 76,
+      "ten": "Ly Tán",
+      "yNghia": "Mình làm người khác hưởng",
+      "catHung": "hung"
+    },
+    {
+      "so": 77,
+      "ten": "Bán Cát",
+      "yNghia": "Sướng khổ khó phân, trong cát tàng hung",
+      "catHung": "banCatBanHung"
+    },
+    {
+      "so": 78,
+      "ten": "Bán Hung",
+      "yNghia": "Trong hung có cát (kém hơn cục 77)",
+      "catHung": "banCatBanHung"
+    },
+    {
+      "so": 79,
+      "ten": "Vân Đầu Vọng Nguyệt",
+      "yNghia": "Mây che đầu, chờ mây tan để nhìn trăng — nghèo khổ",
+      "catHung": "hung"
+    },
+    {
+      "so": 80,
+      "ten": "Hung Họa",
+      "yNghia": "Luôn gặp hung tai",
+      "catHung": "hung"
+    },
+    {
+      "so": 81,
+      "ten": "Hoàn Bổn Quy Nguyên",
+      "yNghia": "Cát — quay về gốc, viên mãn",
+      "catHung": "cat"
+    }
+  ]
+}

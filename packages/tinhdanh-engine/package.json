@@ -1,0 +1,33 @@
+{
+  "name": "@thien-anh/tinhdanh-engine",
+  "version": "0.1.0",
+  "description": "Tính Danh Học (Việt Danh Học): lập Tứ Trụ theo tiết khí, xác lập Hành Khuyết, Tứ Đại Cục 81 số, gợi ý tên cho con từ kho 3.459 âm tiết. Hàm thuần, không gọi AI lúc chạy.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@thien-anh/calendar-core": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4"
+  },
+  "keywords": ["tinh-danh-hoc", "viet-danh-hoc", "dat-ten-cho-con", "tu-dai-cuc"],
+  "license": "UNLICENSED",
+  "private": true
+}

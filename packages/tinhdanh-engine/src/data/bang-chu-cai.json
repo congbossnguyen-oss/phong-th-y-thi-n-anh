@@ -1,0 +1,12 @@
+{
+  "_nguon": "Danh Tính Học Tập 1, Chương I — Việt Danh Học",
+  "_ghiChu": "Dùng cho phương pháp Việt Danh Học. Áp dụng cho chữ cái Latinh không dấu (bỏ dấu thanh điệu trước khi tra).",
+  "bangChuCai": {
+    "A": 1, "B": 2, "C": 3, "D": 4, "DD": 5,
+    "E": 6, "G": 7, "H": 8, "I": 9, "K": 10,
+    "L": 11, "M": 12, "N": 13, "O": 14, "P": 15,
+    "Q": 16, "R": 17, "S": 18, "T": 19, "U": 20,
+    "V": 21, "X": 22, "Y": 23, "J": 24, "W": 25, "Z": 26
+  },
+  "_luuY": "Chữ 'Đ' quy về mã 'DD' trong bảng trên (giá trị 5) vì JSON key không thuận tiện chứa ký tự Đ; khi build, chuyển Đ→DD trước khi tra."
+}
