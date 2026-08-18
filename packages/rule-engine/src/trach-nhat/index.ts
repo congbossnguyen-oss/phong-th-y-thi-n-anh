@@ -1,6 +1,8 @@
 export * from "./truc.js";
 // Bảng đánh giá tổng quát 12 Trực — mốc tham chiếu, KHÔNG dùng trực tiếp để chấm điểm.
 export * from "./trucDanhGiaTongQuat.js";
+// Chân Lộc / Chân Dương Quý / Chân Âm Quý theo Can năm sinh (khớp cả Can+Chi ngày).
+export * from "./chanLocQuyNhan.js";
 export * from "./thangCanChi.js";
 export * from "./lucXung.js";
 export * from "./nhiThapBatTu.js";
