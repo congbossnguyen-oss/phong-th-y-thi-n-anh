@@ -127,7 +127,7 @@ export const daiCatLoiTools: DaiCatLoiTool[] = [
  */
 export const TOTAL_TOOL_COUNT = daiCatLoiTools.length + STANDALONE_TOOL_PATHS.length;
 
-// Nhóm "Dịch vụ thu phí" — tách riêng khỏi daiCatLoiTools (miễn phí) theo yêu cầu Công, có hub
+// Nhóm "Dịch vụ VIP" (trước tên "Dịch vụ thu phí") — tách riêng khỏi daiCatLoiTools (miễn phí) theo yêu cầu Công, có hub
 // riêng (/dai-cat-loi/dich-vu-thu-phi) và badge giá tiền nổi bật trên từng thẻ.
 export type PaidTool = {
   href: string;

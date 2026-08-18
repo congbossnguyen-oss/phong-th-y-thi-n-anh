@@ -58,7 +58,7 @@ export const mainNav: NavItem[] = [
       { label: "Xem ngày tốt xấu", href: "/xem-ngay-tot-xau" },
       { label: "Luận số điện thoại", href: "/luan-so-dien-thoai" },
       { label: "Tính Trùng Tang", href: "/tinh-trung-tang" },
-      { label: "⭐ Dịch vụ thu phí", href: "/dai-cat-loi/dich-vu-thu-phi" },
+      { label: "⭐ Dịch vụ VIP", href: "/dai-cat-loi/dich-vu-thu-phi" },
     ],
   },
 ];
