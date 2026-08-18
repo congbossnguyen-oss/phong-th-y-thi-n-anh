@@ -222,7 +222,15 @@ const namNay = new Date().getFullYear();
     );
   }
 
-  const khung = (tieuDe: string, ruot: string, phu = "") => `
+  const khung = (tieuDe: string, ruot: string, phu = "", noiBat = false) =>
+    noiBat
+      ? `
+    <section class="mt-8 rounded-(--radius-card) border-2 border-(--color-gold-400) bg-(--color-gold-400)/10 p-6 shadow-lg">
+      <h2 class="text-center font-display text-2xl font-black tracking-wide text-(--color-ink-900)">${tieuDe}</h2>
+      ${phu ? `<p class="mx-auto mt-1.5 max-w-xl text-center text-sm text-(--color-ink-700)">${phu}</p>` : ""}
+      <div class="mt-5">${ruot}</div>
+    </section>`
+      : `
     <section class="mt-6 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-5">
       <h2 class="font-display text-lg font-bold text-(--color-ink-900)">${tieuDe}</h2>
       ${phu ? `<p class="mt-1 text-sm text-(--color-ink-600)">${phu}</p>` : ""}
@@ -857,6 +865,7 @@ const namNay = new Date().getFullYear();
          ${noiBat(esc(tk.ketLuan))}
        </p>`,
       "Luận chính từ ba số cuối — chỗ quyết định kết cục của cả dãy.",
+      true,
     );
   }
 
