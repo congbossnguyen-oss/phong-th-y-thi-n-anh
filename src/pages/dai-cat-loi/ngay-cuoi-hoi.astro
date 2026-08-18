@@ -17,7 +17,9 @@ const laQuanTri = Astro.locals.user?.isAdmin === true;
 
 // Cờ thử nghiệm: true = bỏ bước thanh toán, nộp form ra kết quả ngay (không tạo đơn thật). Chỉ có ý
 // nghĩa với quản trị vì khách không tới được form. Script đọc lại cờ qua data-test-mode.
-const TEST_MODE = true;
+// ĐÃ BẬT THU PHÍ + MỞ BÁN (chủ dự án chốt 2026-08-18): khách thấy form và thanh toán thật; admin vẫn
+// được checkout-cong-cu tạo đơn 0đ tự xác nhận (cờ laQuanTri từ phiên đăng nhập) nên test miễn phí.
+const TEST_MODE = false;
 
 const TOOL_SLUG = "ngay-cuoi-hoi";
 const TOOL_PRICE = GIA_CONG_CU[TOOL_SLUG];
@@ -42,22 +44,14 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
 
   <Container class="py-16">
     <div class="mx-auto max-w-2xl">
-      {!laQuanTri && (
-      <div class="rounded-2xl border-2 border-amber-300 bg-white p-8 text-center text-slate-900 shadow-lg">
-        <p class="text-4xl">💍</p>
-        <p class="mt-3 font-display text-xl font-bold">Dịch vụ sắp ra mắt</p>
-        <p class="mt-2 text-sm text-slate-600">
-          Công cụ chọn ngày & giờ cưới hỏi trọn gói đang trong giai đoạn hoàn thiện. Vui lòng quay lại sau,
-          hoặc <a href="/lien-he" class="font-medium text-(--color-gold-300) hover:underline">liên hệ để được tư vấn trực tiếp</a>.
-        </p>
+      {laQuanTri && (
+      <div class="mb-4 rounded-(--radius-card) border-2 border-amber-400 bg-amber-50 p-4 text-sm font-medium text-amber-800">
+        🔒 CHẾ ĐỘ QUẢN TRỊ — đơn của bạn được tạo ở mức 0đ và tự xác nhận để test trọn luồng thu phí ({TOOL_PRICE_LABEL}/lượt với khách).
       </div>
       )}
 
-      {laQuanTri && (
+      {true && (
       <>
-      <div class="mb-4 rounded-(--radius-card) border-2 border-amber-400 bg-amber-50 p-4 text-sm font-medium text-amber-800">
-        🔒 CHẾ ĐỘ QUẢN TRỊ — chỉ tài khoản của bạn thấy trang này. Đang thử nghiệm ({TOOL_PRICE_LABEL}/lượt khi phát hành), bỏ bước thanh toán để test nhanh.
-      </div>
 
       <div class="mb-6 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-4 text-sm text-(--color-ink-600)">
         <p class="font-medium text-(--color-ink-800)">Dịch vụ gồm những gì</p>

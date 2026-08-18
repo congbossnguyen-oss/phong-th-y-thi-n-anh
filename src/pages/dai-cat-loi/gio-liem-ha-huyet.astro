@@ -28,9 +28,10 @@ const CHI_LIST = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "M�
 // gỡ khỏi menu công khai, tức chưa sẵn sàng mở bán. Nên:
 //   - Quản trị  → đi LUỒNG THẬT, đơn 0đ tự xác nhận (xem `laQuanTri` ở checkout-cong-cu.ts).
 //   - Khách     → giữ nguyên chế độ thử nghiệm, không tạo đơn, không thu tiền.
-// Muốn mở bán thật thì đổi `TEST_MODE` thành `false` cứng.
+// ĐÃ MỞ BÁN + THU PHÍ (chủ dự án chốt 2026-08-18): khách thanh toán thật; admin vẫn được
+// checkout-cong-cu tạo đơn 0đ tự xác nhận (cờ laQuanTri từ phiên đăng nhập) nên test miễn phí.
 const laQuanTri = Astro.locals.user?.isAdmin === true;
-const TEST_MODE = !laQuanTri;
+const TEST_MODE = false;
 
 const TOOL_SLUG = "gio-liem-ha-huyet";
 // Hai bậc giá — xem ghi chú "định tuyến, không phải upsell" ở lib/payments/gia-cong-cu.ts.
@@ -61,18 +62,12 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
 
   <Container class="py-16">
     <div class="mx-auto max-w-2xl">
+      {laQuanTri && (
       <div class="mb-4 rounded-(--radius-card) border-2 border-amber-400 bg-amber-50 p-4 text-sm font-medium text-amber-800">
-        {laQuanTri ? (
-          <>
-            🔑 ĐANG XEM BẰNG TÀI KHOẢN QUẢN TRỊ — chạy TRỌN luồng thu phí thật (tạo đơn → xác nhận → trả kết quả → gửi email),
-            nhưng đơn được miễn phí nên không phải chuyển khoản. Đơn kiểm thử không vào sổ doanh thu.
-          </>
-        ) : (
-          <>
-            🧪 ĐANG THỬ NGHIỆM NỘI BỘ — tạm gỡ khỏi menu công khai, tạm bỏ bước thanh toán để test nhanh. Nộp form là ra kết quả ngay, không tạo đơn hàng thật.
-          </>
-        )}
+        🔑 ĐANG XEM BẰNG TÀI KHOẢN QUẢN TRỊ — chạy TRỌN luồng thu phí thật (tạo đơn → xác nhận → trả kết quả → gửi email),
+        nhưng đơn được miễn phí nên không phải chuyển khoản. Đơn kiểm thử không vào sổ doanh thu.
       </div>
+      )}
       {/* Phạm vi áp dụng — chủ dự án yêu cầu 2026-08-16 ghi ngay đầu module. Nguồn sách ghi rõ ở
       tiêu đề mục: "Tính giờ nhập liệm, hạ huyệt (DÙNG CHO TRƯỜNG HỢP KHÔNG TRÙNG TANG)". Gia đình
       có vong ĐANG phạm trùng tang mà dùng nhầm bảng này thì sai phương pháp, nên phải cảnh báo

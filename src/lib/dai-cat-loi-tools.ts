@@ -177,4 +177,11 @@ export const paidTools: PaidTool[] = [
     desc: "Từ ngày giờ sinh của bé, hệ thống lập Tứ Trụ theo tiết khí, chỉ ra ngũ hành còn thiếu cần bổ, rồi gợi ý danh sách tên đẹp hợp mệnh — mỗi tên chấm điểm theo Tứ Đại Cục 81 số.",
     priceLabel: "499.000đ / lượt",
   },
+  {
+    href: "/dai-cat-loi/nhan-chuc",
+    icon: "🎖️",
+    title: "Chọn Ngày Giờ Nhận Chức",
+    desc: "Tìm ngày & giờ tốt để nhận chức, nhậm chức, bổ nhiệm — lọc hung sát trước (Kim Thần, Sát Chủ, Thọ Tử, Lục Xung tuổi), ưu tiên công danh theo 28 Tú, Thập Nhị Trực và lớp Thập Thần Chính Quan.",
+    priceLabel: "499.000đ / lượt",
+  },
 ];

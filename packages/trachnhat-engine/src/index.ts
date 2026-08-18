@@ -187,6 +187,15 @@ export type {
   TimNgayInput,
 } from "./processing/xemNgayCaoCapTimNgay.js";
 export { timNgayXemNgayCaoCap, timThangTrongNam };
+// Ngày Giờ Nhận Chức (dịch vụ VIP) — engine riêng, xem chú thích đầu file cho quy tắc TODO/PENDING.
+export {
+  calculateNhanChuc,
+  type NhanChucInput,
+  type NhanChucResult,
+  type NhanChucNgay,
+  type GioNhanChucDeXuat,
+  type NgaySinhDayDu as NhanChucNgaySinhDayDu,
+} from "./processing/nhanChuc.js";
 
 export * from "./types.js";
 

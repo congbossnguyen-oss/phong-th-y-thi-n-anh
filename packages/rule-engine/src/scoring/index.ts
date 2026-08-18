@@ -16,3 +16,5 @@ export * from "./ngayKhaiQuang.js";
 export * from "./huongXuatHanh.js";
 export * from "./xuatHanhCaNhanTongHop.js";
 export * from "./suaChuaCaiTaoNha.js";
+// Ngày Giờ Nhận Chức (dịch vụ VIP) — xem chú thích đầu file `nhanChuc.ts` cho quy tắc TODO/PENDING_CONFIRMATION.
+export * from "./nhanChuc.js";
