@@ -6,10 +6,14 @@ const ORDER_CODE_PREFIX = "THA";
 /**
  * Sinh mã đơn hàng ngắn, duy nhất, dễ đọc khi hiện trên nội dung chuyển khoản
  * (chỉ chữ hoa + số, không ký tự dễ nhầm như 0/O, 1/I).
+ *
+ * Độ dài 12 ký tự (bảng 32 → ~60 bit ngẫu nhiên) để mã KHÓ DÒ: dùng luôn làm "vé" xem kết quả nên
+ * cần đủ entropy chống enumeration (nâng từ 8 ký tự/~40 bit). Alphabet 32 chia hết 256 nên
+ * `b % 32` KHÔNG lệch phân phối. Mã cũ 8 ký tự vẫn đối soát được (xem regex ở extractOrderCode…).
  */
 export function generateOrderCode(): string {
   const alphabet = "23456789ABCDEFGHJKLMNPQRSTUVWXYZ";
-  const bytes = randomBytes(8);
+  const bytes = randomBytes(12);
   let code = "";
   for (const b of bytes) {
     code += alphabet[b % alphabet.length];
@@ -23,7 +27,9 @@ export function generateOrderCode(): string {
  * nên phải tìm theo mẫu thay vì so khớp chính xác toàn chuỗi.
  */
 export function extractOrderCodeFromContent(content: string): string | null {
-  const match = content.toUpperCase().match(new RegExp(`${ORDER_CODE_PREFIX}[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{8}`));
+  // {8,12} khớp CẢ mã mới 12 ký tự LẪN mã cũ 8 ký tự (tương thích ngược cho đơn tạo trước khi
+  // nâng độ dài); greedy nên ưu tiên bắt trọn 12 ký tự của mã mới.
+  const match = content.toUpperCase().match(new RegExp(`${ORDER_CODE_PREFIX}[23456789ABCDEFGHJKLMNPQRSTUVWXYZ]{8,12}`));
   return match ? match[0] : null;
 }
 
