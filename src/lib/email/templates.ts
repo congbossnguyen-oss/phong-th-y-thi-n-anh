@@ -10,6 +10,19 @@ const BRAND = {
 const formatPrice = (price: number) =>
   Number(price).toLocaleString("vi-VN", { style: "currency", currency: "VND" });
 
+/**
+ * Trung hoà ký tự HTML trước khi chèn dữ liệu người dùng vào email — chống HTML/link injection
+ * (vd khách nhập thẻ <a> vào ô "Nội dung" form liên hệ → chèn link giả mạo vào hộp thư quản trị).
+ */
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
 function siteUrl(): string {
   return (import.meta.env.PUBLIC_SITE_URL || "http://localhost:4321").replace(/\/$/, "");
 }
@@ -18,7 +31,7 @@ function layout(opts: { previewText: string; title: string; bodyHtml: string }):
   return `<!doctype html>
 <html lang="vi">
   <body style="margin:0;padding:0;background-color:#f3ede2;font-family:Georgia,'Times New Roman',serif;">
-    <span style="display:none;font-size:1px;color:#f3ede2;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">${opts.previewText}</span>
+    <span style="display:none;font-size:1px;color:#f3ede2;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden;">${escapeHtml(opts.previewText)}</span>
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#f3ede2;padding:32px 16px;">
       <tr>
         <td align="center">
@@ -30,7 +43,7 @@ function layout(opts: { previewText: string; title: string; bodyHtml: string }):
             </tr>
             <tr>
               <td style="padding:32px;color:${BRAND.ink};font-size:15px;line-height:1.6;">
-                <h1 style="margin:0 0 16px;font-size:20px;color:${BRAND.ink};">${opts.title}</h1>
+                <h1 style="margin:0 0 16px;font-size:20px;color:${BRAND.ink};">${escapeHtml(opts.title)}</h1>
                 ${opts.bodyHtml}
               </td>
             </tr>
@@ -49,8 +62,8 @@ function layout(opts: { previewText: string; title: string; bodyHtml: string }):
 
 function infoRow(label: string, value: string): string {
   return `<tr>
-    <td style="padding:6px 0;color:#6b5c4c;font-size:14px;">${label}</td>
-    <td style="padding:6px 0;text-align:right;font-weight:bold;color:${BRAND.ink};font-size:14px;">${value}</td>
+    <td style="padding:6px 0;color:#6b5c4c;font-size:14px;">${escapeHtml(label)}</td>
+    <td style="padding:6px 0;text-align:right;font-weight:bold;color:${BRAND.ink};font-size:14px;">${escapeHtml(value)}</td>
   </tr>`;
 }
 
@@ -64,15 +77,15 @@ export function productOrderConfirmedEmail(params: {
   const itemsHtml = params.items
     .map(
       (it) => `<tr>
-        <td style="padding:6px 0;color:${BRAND.ink};font-size:14px;">${it.name} × ${it.qty}</td>
+        <td style="padding:6px 0;color:${BRAND.ink};font-size:14px;">${escapeHtml(it.name)} × ${it.qty}</td>
         <td style="padding:6px 0;text-align:right;color:${BRAND.ink};font-size:14px;">${formatPrice(it.price * it.qty)}</td>
       </tr>`
     )
     .join("");
 
   const bodyHtml = `
-    <p>Xin chào ${params.customerName},</p>
-    <p>Thiên Anh đã nhận được thanh toán cho đơn hàng <strong>#${params.orderCode}</strong>. Đơn hàng của bạn đang được chuẩn bị và sẽ sớm được giao đến địa chỉ đã cung cấp.</p>
+    <p>Xin chào ${escapeHtml(params.customerName)},</p>
+    <p>Thiên Anh đã nhận được thanh toán cho đơn hàng <strong>#${escapeHtml(params.orderCode)}</strong>. Đơn hàng của bạn đang được chuẩn bị và sẽ sớm được giao đến địa chỉ đã cung cấp.</p>
     <table role="presentation" width="100%" style="margin-top:16px;border-top:1px solid #e8dfcd;padding-top:12px;">
       ${itemsHtml}
     </table>
@@ -99,8 +112,8 @@ export function courseOrderConfirmedEmail(params: {
   const courseUrl = `${siteUrl()}/hoc-vien/khoa-hoc/${params.courseSlug}`;
 
   const bodyHtml = `
-    <p>Xin chào ${params.customerName},</p>
-    <p>Cảm ơn bạn đã đăng ký khóa học <strong>${params.courseName}</strong> tại Phong Thủy Thiên Anh. Thanh toán của bạn đã được xác nhận và khóa học đã được kích hoạt trong tài khoản.</p>
+    <p>Xin chào ${escapeHtml(params.customerName)},</p>
+    <p>Cảm ơn bạn đã đăng ký khóa học <strong>${escapeHtml(params.courseName)}</strong> tại Phong Thủy Thiên Anh. Thanh toán của bạn đã được xác nhận và khóa học đã được kích hoạt trong tài khoản.</p>
     <table role="presentation" width="100%" style="margin-top:16px;border-top:1px solid #e8dfcd;padding-top:12px;">
       ${infoRow("Mã đơn hàng", `#${params.orderCode}`)}
       ${infoRow("Học phí", formatPrice(params.totalAmount))}
@@ -132,7 +145,7 @@ export function consultationRequestEmail(params: {
       ${params.email ? infoRow("Email", params.email) : ""}
       ${params.topic ? infoRow("Nhu cầu tư vấn", params.topic) : ""}
     </table>
-    ${params.message ? `<p style="margin-top:16px;color:${BRAND.ink};"><strong>Nội dung:</strong><br/>${params.message.replace(/\n/g, "<br/>")}</p>` : ""}
+    ${params.message ? `<p style="margin-top:16px;color:${BRAND.ink};"><strong>Nội dung:</strong><br/>${escapeHtml(params.message).replace(/\n/g, "<br/>")}</p>` : ""}
     <p style="margin-top:20px;">Vui lòng liên hệ lại khách trong vòng 24 giờ làm việc.</p>
   `;
 
@@ -148,8 +161,8 @@ export function courseCertificateEmail(params: {
   certificateCode: string;
 }): { subject: string; html: string } {
   const bodyHtml = `
-    <p>Xin chào ${params.customerName},</p>
-    <p>Chúc mừng bạn đã hoàn thành khóa học <strong>${params.courseName}</strong>! Chứng chỉ hoàn thành khóa học được đính kèm trong email này.</p>
+    <p>Xin chào ${escapeHtml(params.customerName)},</p>
+    <p>Chúc mừng bạn đã hoàn thành khóa học <strong>${escapeHtml(params.courseName)}</strong>! Chứng chỉ hoàn thành khóa học được đính kèm trong email này.</p>
     <table role="presentation" width="100%" style="margin-top:16px;border-top:1px solid #e8dfcd;padding-top:12px;">
       ${infoRow("Mã chứng chỉ", params.certificateCode)}
     </table>
@@ -190,7 +203,7 @@ export function baoCaoGoogleSheetEmail(params: {
 
   const bodyHtml = `
     ${canhBao}
-    <p>${params.loai} vừa được ghi nhận trên website.</p>
+    <p>${escapeHtml(params.loai)} vừa được ghi nhận trên website.</p>
     <table role="presentation" width="100%" style="margin-top:16px;border-top:1px solid #e8dfcd;padding-top:12px;">
       ${params.dong.map((d) => infoRow(d.nhan, d.giaTri)).join("")}
     </table>
@@ -215,9 +228,9 @@ export function hoSoTangLeEmail(params: {
   hoTenNguoiMat?: string | null;
 }): { subject: string; html: string } {
   const bodyHtml = `
-    <p>Kính gửi ${params.customerName},</p>
+    <p>Kính gửi ${escapeHtml(params.customerName)},</p>
     <p>
-      Hồ sơ chọn ngày giờ tang lễ${params.hoTenNguoiMat ? ` cho ${params.hoTenNguoiMat}` : ""} được đính kèm
+      Hồ sơ chọn ngày giờ tang lễ${params.hoTenNguoiMat ? ` cho ${escapeHtml(params.hoTenNguoiMat)}` : ""} được đính kèm
       trong email này, gồm giờ liệm, giờ đóng quan, giờ di quan, ngày giờ hạ huyệt và các tuổi cần tránh mặt.
     </p>
     <table role="presentation" width="100%" style="margin-top:16px;border-top:1px solid #e8dfcd;padding-top:12px;">
