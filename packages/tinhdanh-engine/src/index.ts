@@ -9,6 +9,8 @@
  */
 export * from "./types.js";
 export { goiYTen } from "./engine/goiYTen.js";
+export { danhGiaTen, GIOI_HAN_DANH_GIA } from "./engine/danhGiaTen.js";
+export type { DanhGiaTenInput } from "./engine/danhGiaTen.js";
 export { lapTuTru, tinhDiemNguHanh, chonHanhKhuyet, tyLeNguHanh } from "./engine/tuTru.js";
 export { lapTuDaiCuc, thanhPhanNet } from "./engine/tuDaiCuc.js";
 export { tinhSoNet } from "./engine/soNet.js";

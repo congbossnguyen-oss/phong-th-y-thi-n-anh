@@ -12,7 +12,7 @@ import { chonHanhKhuyet, lapTuTru, tinhDiemNguHanh, tyLeNguHanh } from "./tuTru.
 import type { GoiYTenInput, GoiYTenResult, NguHanh, TenGoiY } from "../types.js";
 
 /** Hành sinh RA hành khuyết (bổ hành này cũng là Điền Thực). Vd Mộc sinh Hỏa → bổ Hỏa dùng Mộc. */
-const SINH_CHO: Readonly<Record<NguHanh, NguHanh>> = {
+export const SINH_CHO: Readonly<Record<NguHanh, NguHanh>> = {
   Hỏa: "Mộc", Thổ: "Hỏa", Kim: "Thổ", Thủy: "Kim", Mộc: "Thủy",
 };
 
@@ -22,14 +22,14 @@ function hanhHopChoKhuyet(khuyet: NguHanh): Set<NguHanh> {
 }
 
 /** cát = +1, hung = −1, bán cát bán hung / bình hoà = 0 (trung tính). */
-function huong(catHung: string): number {
+export function huong(catHung: string): number {
   if (catHung === "cat") return 1;
   if (catHung === "hung") return -1;
   return 0;
 }
 
 /** Điểm một tên ứng viên: ưu tiên Mệnh Cục (TC+ĐC) > Vận > Phúc Đức, cộng thưởng Điền Thực. */
-function chamDiem(
+export function chamDiem(
   menhTc: string,
   menhDc: string,
   tien: string,

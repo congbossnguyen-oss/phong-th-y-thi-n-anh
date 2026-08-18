@@ -126,6 +126,28 @@ const hotlineHref = `tel:${siteConfig.hotline.replace(/\s/g, "")}`;
       <div id="dtc-loi" class="mt-4 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm font-semibold text-(--color-danger-500)"></div>
       <div id="dtc-ket-qua" class="mt-8 hidden"></div>
 
+      <!-- Đánh giá tên khách đã chọn — dùng chung ngày sinh nhập ở trên, tối đa 10 tên -->
+      <div class="mt-10 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
+        <h2 class="font-display text-lg font-bold text-(--color-ink-900)">Hoặc: đánh giá những tên bạn đã ưng</h2>
+        <p class="mt-1 text-sm text-(--color-ink-600)">
+          Nhập tối đa <strong>10 tên</strong> bạn đang cân nhắc (mỗi dòng một tên, có thể kèm đệm, ví dụ
+          <em>Gia Bảo</em>). Hệ thống sẽ chấm điểm từng tên theo Tứ Trụ của bé và xếp hạng tên hợp nhất.
+          Dùng chung ngày sinh đã nhập ở trên.
+        </p>
+        <textarea
+          id="dtc-danh-sach"
+          rows="4"
+          placeholder={"Gia Bảo\nMinh Tuấn\nĐức Anh"}
+          class="mt-3 w-full rounded-(--radius-control) border border-(--color-ivory-400) bg-(--color-ivory-50) px-3 py-3 text-base text-(--color-ink-900) placeholder:text-(--color-ink-600)"
+        ></textarea>
+        <Button id="dtc-nut-danh-gia" type="button" size="lg" class="mt-3">Đánh giá các tên này</Button>
+        <div id="dtc-dg-dang-chay" class="mt-4 hidden rounded-(--radius-card) border border-(--color-gold-500)/40 bg-(--color-gold-400)/10 p-4 text-sm font-medium text-(--color-ink-900)">
+          ⏳ Đang chấm điểm từng tên…
+        </div>
+        <div id="dtc-dg-loi" class="mt-4 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm font-semibold text-(--color-danger-500)"></div>
+        <div id="dtc-dg-ket-qua" class="mt-6 hidden"></div>
+      </div>
+
       <div class="mt-10 rounded-(--radius-card) border-2 border-(--color-gold-400) bg-(--color-gold-400)/10 p-6 text-center">
         <p class="font-display text-lg font-bold text-(--color-ink-900)">Muốn chuyên gia luận kỹ và chốt tên?</p>
         <p class="mx-auto mt-2 max-w-xl text-sm font-medium text-(--color-ink-800)">
@@ -297,6 +319,93 @@ const hotlineHref = `tel:${siteConfig.hotline.replace(/\s/g, "")}`;
       oDangChay.classList.add("hidden");
       oLoi.textContent = "Không kết nối được máy chủ. Vui lòng thử lại.";
       oLoi.classList.remove("hidden");
+    }
+  });
+
+  // ---------------------------------------------------------- Đánh giá tên khách chọn
+  const nutDG = document.getElementById("dtc-nut-danh-gia")!;
+  const oDgChay = document.getElementById("dtc-dg-dang-chay")!;
+  const oDgLoi = document.getElementById("dtc-dg-loi")!;
+  const oDgKq = document.getElementById("dtc-dg-ket-qua")!;
+
+  function veKetQuaDanhGia(kq: any): string {
+    const khuyet = kq.hanhKhuyetKhaDi.map((h: any) => h.hanh).join(" / ");
+    const rows = kq.danhGia.map((t: any, i: number) => {
+      const top = i === 0;
+      const mauLoai = t.loaiTinhDanh === "Điền Thực" ? "text-emerald-600"
+        : t.loaiTinhDanh === "Bất Tương" ? "text-red-500" : "text-(--color-ink-600)";
+      return `
+      <li class="flex items-start gap-3 rounded-(--radius-control) p-3.5 ${top ? "border-2 border-emerald-500 bg-emerald-500/10 shadow-md" : "border border-(--color-ivory-300)"}">
+        <span class="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-full ${top ? "bg-emerald-500 text-white" : "bg-(--color-ivory-300) text-(--color-ink-700)"} text-sm font-black">${t.xepHang}</span>
+        <div class="min-w-0 flex-1">
+          <div class="flex flex-wrap items-baseline gap-2">
+            ${top ? `<span class="rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">Hợp nhất</span>` : ""}
+            <span class="font-display text-lg font-bold text-(--color-ink-900)">${esc(t.hoTenDayDu)}</span>
+            ${t.hanhTen.length ? `<span class="text-[11px] text-(--color-ink-600)">hành ${t.hanhTen.map((h: string) => esc(h)).join(", ")}</span>` : ""}
+            <span class="text-[11px] font-semibold ${mauLoai}">${esc(t.loaiTinhDanh)}</span>
+          </div>
+          <p class="mt-0.5 text-sm text-(--color-ink-800)">${esc(t.nhanXet)}</p>
+          <p class="mt-1 text-xs text-(--color-ink-600)">Mệnh Cục ${t.menhCuc.tinhCuc.so} (${esc(t.menhCuc.tinhCuc.ten ?? "—")}) / ${t.menhCuc.dongCuc.so} (${esc(t.menhCuc.dongCuc.ten ?? "—")})</p>
+          ${t.canhBao.length ? `<p class="mt-1 text-xs text-amber-600">${t.canhBao.map((c: string) => esc(c)).join(" ")}</p>` : ""}
+        </div>
+      </li>`;
+    }).join("");
+    return `
+      <p class="mb-3 text-sm text-(--color-ink-700)">Bé đang cần bổ hành <strong>${esc(khuyet)}</strong>. Xếp hạng các tên bạn chọn theo mức hợp mệnh:</p>
+      <ul class="space-y-2.5">${rows}</ul>`;
+  }
+
+  nutDG.addEventListener("click", async () => {
+    oDgLoi.classList.add("hidden");
+    oDgKq.classList.add("hidden");
+
+    const val = (id: string) => (document.getElementById(id) as HTMLInputElement).value.trim();
+    const ho = val("dtc-ho");
+    const gioiTinh = (document.getElementById("dtc-gioi-tinh") as HTMLSelectElement).value;
+    if (!ho || !gioiTinh || !val("dtc-ngay") || !val("dtc-thang") || !val("dtc-nam")) {
+      oDgLoi.textContent = "Vui lòng điền đủ họ, giới tính và ngày sinh của bé ở phần trên trước đã.";
+      oDgLoi.classList.remove("hidden");
+      return;
+    }
+    const danhSach = (document.getElementById("dtc-danh-sach") as HTMLTextAreaElement).value
+      .split("\n").map((s) => s.trim()).filter(Boolean);
+    if (danhSach.length === 0) {
+      oDgLoi.textContent = "Vui lòng nhập ít nhất một tên để đánh giá.";
+      oDgLoi.classList.remove("hidden");
+      return;
+    }
+
+    oDgChay.classList.remove("hidden");
+    const payload = {
+      cheDo: "danh-gia",
+      ho, gioiTinh,
+      ngay: Number(val("dtc-ngay")),
+      thang: Number(val("dtc-thang")),
+      nam: Number(val("dtc-nam")),
+      gio: val("dtc-gio") ? Number(val("dtc-gio")) : undefined,
+      phut: val("dtc-phut") ? Number(val("dtc-phut")) : undefined,
+      danhSach,
+    };
+    try {
+      const res = await fetch("/api/dat-ten-cho-con", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      oDgChay.classList.add("hidden");
+      if (!res.ok || !data.ok) {
+        oDgLoi.textContent = data.error || "Có lỗi xảy ra, vui lòng thử lại.";
+        oDgLoi.classList.remove("hidden");
+        return;
+      }
+      oDgKq.innerHTML = veKetQuaDanhGia(data.ketQua);
+      oDgKq.classList.remove("hidden");
+      oDgKq.scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch {
+      oDgChay.classList.add("hidden");
+      oDgLoi.textContent = "Không kết nối được máy chủ. Vui lòng thử lại.";
+      oDgLoi.classList.remove("hidden");
     }
   });
 </script>

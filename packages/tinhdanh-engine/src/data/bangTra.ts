@@ -49,6 +49,30 @@ export const MA_SANG_HANH: Readonly<Record<MaHanh, NguHanh>> = {
   Hoa: "Hỏa",
   Tho: "Thổ",
 };
+/**
+ * Tra hành của một âm tiết tên bất kỳ (khách tự nhập) — gộp cả kho đẹp và kho gốc 3.459 âm tiết.
+ * Một âm tiết có thể mang nhiều hành; trả về TẤT CẢ hành tìm thấy. Rỗng nghĩa là không tra được.
+ */
+const _bangHanhTheoTen: Map<string, Set<NguHanh>> = (() => {
+  const m = new Map<string, Set<NguHanh>>();
+  const them = (ten: string, hanh: NguHanh) => {
+    const k = ten.trim().toLowerCase();
+    if (!k) return;
+    if (!m.has(k)) m.set(k, new Set());
+    m.get(k)!.add(hanh);
+  };
+  for (const a of KHO_TEN_DEP) them(a.ten, MA_SANG_HANH[a.hanh]);
+  for (const a of KHO_TEN) {
+    const h = MA_SANG_HANH[a.hanh as MaHanh];
+    if (h) them(a.ten, h);
+  }
+  return m;
+})();
+
+export function traHanhCuaTen(ten: string): NguHanh[] {
+  return [...(_bangHanhTheoTen.get(ten.trim().toLowerCase()) ?? [])];
+}
+
 export const HANH_SANG_MA: Readonly<Record<NguHanh, MaHanh>> = {
   Kim: "Kim",
   Mộc: "Moc",

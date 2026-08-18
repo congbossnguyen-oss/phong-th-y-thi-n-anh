@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { goiYTen, type GioiTinh } from "@thien-anh/tinhdanh-engine";
+import { goiYTen, danhGiaTen, GIOI_HAN_DANH_GIA, type GioiTinh } from "@thien-anh/tinhdanh-engine";
 
 export const prerender = false;
 
@@ -48,21 +48,33 @@ export const POST: APIRoute = async ({ request }) => {
   const phutNum = Number(body.phut);
   const phut = Number.isInteger(phutNum) && phutNum >= 0 && phutNum <= 59 ? phutNum : undefined;
 
+  // Chế độ: "goi-y" (mặc định) gợi ý tên; "danh-gia" đánh giá danh sách tên khách tự chọn.
+  const cheDo = body.cheDo === "danh-gia" ? "danh-gia" : "goi-y";
+  const chung = {
+    ho,
+    gioiTinh: gioiTinhRaw as GioiTinh,
+    nam,
+    thang,
+    ngay,
+    ...(gio !== undefined ? { gio } : {}),
+    ...(phut !== undefined ? { phut } : {}),
+  };
+
   try {
-    const ketQua = goiYTen({
-      ho,
-      dem,
-      gioiTinh: gioiTinhRaw as GioiTinh,
-      nam,
-      thang,
-      ngay,
-      ...(gio !== undefined ? { gio } : {}),
-      ...(phut !== undefined ? { phut } : {}),
-      soLuong: 20,
-    });
-    return jsonResponse({ ok: true, ketQua }, 200);
+    if (cheDo === "danh-gia") {
+      const danhSach = Array.isArray(body.danhSach)
+        ? body.danhSach.filter((s: unknown) => typeof s === "string").map((s: string) => s.trim()).filter(Boolean)
+        : [];
+      if (danhSach.length === 0) {
+        return jsonResponse({ error: "Vui lòng nhập ít nhất một tên để đánh giá." }, 400);
+      }
+      const ketQua = danhGiaTen({ ...chung, danhSach: danhSach.slice(0, GIOI_HAN_DANH_GIA) });
+      return jsonResponse({ ok: true, cheDo, ketQua }, 200);
+    }
+    const ketQua = goiYTen({ ...chung, dem, soLuong: 20 });
+    return jsonResponse({ ok: true, cheDo, ketQua }, 200);
   } catch (err) {
-    console.error("[dat-ten-cho-con] Lỗi khi gợi ý tên:", err);
-    return jsonResponse({ error: "Có lỗi khi gợi ý tên. Vui lòng thử lại." }, 500);
+    console.error("[dat-ten-cho-con] Lỗi:", err);
+    return jsonResponse({ error: "Có lỗi khi xử lý. Vui lòng thử lại." }, 500);
   }
 };

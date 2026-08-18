@@ -106,3 +106,36 @@ export interface GoiYTenResult {
   danhSachTen: TenGoiY[];
   canhBaoThieuDuLieu: string[];
 }
+
+/** Kết quả đánh giá MỘT tên khách tự nhập. */
+export interface DanhGiaMotTen {
+  hoTenDayDu: string;
+  ten: string;
+  dem: string[];
+  /** Hành của tên (tra từ kho). Rỗng nếu không tra được. */
+  hanhTen: NguHanh[];
+  /** Tên có bổ đúng Hành Khuyết không. null khi không tra được hành. */
+  hopHanhKhuyet: boolean | null;
+  loaiTinhDanh: "Điền Thực" | "Bất Tương" | "Chưa xác định";
+  menhCuc: MenhCuc;
+  tienVan: Cuc;
+  hauVan: Cuc;
+  phucDucCuc: Cuc;
+  tuTucCuc: Cuc;
+  diem: number;
+  xepHang: number;
+  nhanXet: string;
+  canhBao: string[];
+}
+
+export interface DanhGiaTenResult {
+  ho: string;
+  gioiTinh: GioiTinh;
+  tuTru: TuTru;
+  diemNguHanh: DiemNguHanh;
+  tyLeNguHanh: Record<NguHanh, number>;
+  hanhKhuyetKhaDi: HanhKhuyet[];
+  /** Đã đánh giá và xếp hạng, tên tốt nhất lên đầu. */
+  danhGia: DanhGiaMotTen[];
+  canhBaoThieuDuLieu: string[];
+}
