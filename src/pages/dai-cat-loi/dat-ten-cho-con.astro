@@ -3,19 +3,29 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
+import MaKhuyenMai from "../../components/ui/MaKhuyenMai.astro";
 import { siteConfig } from "../../lib/site-config";
 import { dinhDangTien, GIA_CONG_CU } from "../../lib/payments/gia-cong-cu";
 
-export const prerender = true;
+// Render phía máy chủ (không prerender) để đọc được phiên đăng nhập — cần nhận diện tài khoản
+// QUẢN TRỊ (test 0đ trọn luồng thật). Prerender thì Astro.locals.user luôn rỗng lúc build.
+export const prerender = false;
 
 const namNay = new Date().getFullYear();
-const gia = dinhDangTien(GIA_CONG_CU["dat-ten-cho-con"]);
+const TOOL_SLUG = "dat-ten-cho-con";
+const TOOL_PRICE = GIA_CONG_CU["dat-ten-cho-con"];
+const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
 const hotlineHref = `tel:${siteConfig.hotline.replace(/\s/g, "")}`;
+
+// ĐÃ MỞ BÁN + THU PHÍ (chủ dự án chốt 2026-08-18): khách thanh toán thật qua QR; tài khoản quản
+// trị được checkout-cong-cu tạo đơn 0đ tự xác nhận (cờ laQuanTri lấy từ phiên đăng nhập) nên vẫn
+// test miễn phí trọn luồng. Không bắt đăng nhập với khách — orderCode làm "vé" mở kết quả.
+const laQuanTri = Astro.locals.user?.isAdmin === true;
 ---
 
 <BaseLayout
   title="Đặt Tên Cho Con Theo Việt Danh Học"
-  description="Từ ngày giờ sinh của bé, lập Tứ Trụ theo tiết khí, chỉ ra ngũ hành còn thiếu cần bổ, rồi gợi ý danh sách tên đẹp hợp mệnh — mỗi tên chấm điểm theo Tứ Đại Cục 81 số. Dịch vụ VIP."
+  description="Từ ngày giờ sinh của bé, lập Tứ Trụ theo tiết khí, chỉ ra ngũ hành còn thiếu cần bổ, rồi gợi ý danh sách 20 tên đẹp hợp mệnh — mỗi tên chấm điểm theo Tứ Đại Cục 81 số. Kèm chức năng đánh giá tên bạn đã chọn. Dịch vụ VIP 499.000đ/lượt, thanh toán qua QR."
 >
   <PageHero
     eyebrow="⭐ Dịch vụ VIP"
@@ -31,9 +41,17 @@ const hotlineHref = `tel:${siteConfig.hotline.replace(/\s/g, "")}`;
 
   <Container class="py-12">
     <div class="mx-auto max-w-4xl">
-      <div class="mb-4 rounded-(--radius-card) border-2 border-amber-400 bg-amber-50 p-4 text-sm font-medium text-amber-800">
-        🧪 Đang trong giai đoạn thử nghiệm — hiện <strong>chạy thử miễn phí</strong>. Khi phát hành
-        chính thức, phí là <strong>{gia}/lượt</strong>.
+      {laQuanTri && (
+        <div class="mb-4 rounded-(--radius-card) border-2 border-emerald-400 bg-emerald-50 p-4 text-sm font-medium text-emerald-800">
+          🔧 Bạn đang đăng nhập bằng <strong>tài khoản quản trị</strong> — đơn sẽ là 0đ, tự xác nhận,
+          đi trọn luồng thật để kiểm thử (không mất phí).
+        </div>
+      )}
+
+      <div class="mb-4 rounded-(--radius-card) border-2 border-(--color-gold-400) bg-(--color-gold-400)/10 p-4 text-sm font-medium text-(--color-ink-800)">
+        ⭐ Dịch vụ VIP — phí <strong>{TOOL_PRICE_LABEL}/lượt</strong>. Một lần thanh toán mở cả
+        <strong> gợi ý 20 tên hợp mệnh</strong> và <strong>đánh giá tên bạn đã chọn</strong> (tối đa 10 tên).
+        Thanh toán qua QR, không cần tạo tài khoản.
       </div>
 
       <form
@@ -117,22 +135,45 @@ const hotlineHref = `tel:${siteConfig.hotline.replace(/\s/g, "")}`;
           </p>
         </details>
 
-        <Button type="submit" size="lg">Gợi ý tên cho con</Button>
+        <div class="border-t border-(--color-ivory-300) pt-4">
+          <p class="text-sm font-medium text-(--color-ink-800)">Thông tin liên hệ (để nhận kết quả sau khi thanh toán)</p>
+          <div class="mt-2 grid gap-3">
+            <input id="dtc-ten" type="text" placeholder="Họ tên" required
+              class="w-full rounded-(--radius-control) border border-(--color-ivory-400) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-900) placeholder:text-(--color-ink-600)" />
+            <input id="dtc-sdt" type="tel" placeholder="Số điện thoại" required
+              class="w-full rounded-(--radius-control) border border-(--color-ivory-400) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-900) placeholder:text-(--color-ink-600)" />
+            <input id="dtc-email" type="email" placeholder="Email (tùy chọn)"
+              class="w-full rounded-(--radius-control) border border-(--color-ivory-400) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-900) placeholder:text-(--color-ink-600)" />
+          </div>
+        </div>
+
+        <MaKhuyenMai idPrefix="dtc-ma" toolSlug={TOOL_SLUG} giaGoc={TOOL_PRICE} />
+
+        <Button type="submit" size="lg">
+          <span id="dtc-nhan-nut">Thanh toán {TOOL_PRICE_LABEL} & Gợi ý tên cho con</span>
+        </Button>
       </form>
 
-      <div id="dtc-dang-chay" class="mt-4 hidden rounded-(--radius-card) border border-(--color-gold-500)/40 bg-(--color-gold-400)/10 p-4 text-sm font-medium text-(--color-ink-900)">
-        ⏳ Đang lập Tứ Trụ và tra kho tên…
-      </div>
       <div id="dtc-loi" class="mt-4 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm font-semibold text-(--color-danger-500)"></div>
+
+      <!-- Bước thanh toán -->
+      <div id="dtc-thanh-toan" class="mt-6 hidden space-y-4 rounded-2xl border-2 border-(--color-gold-400) bg-white p-6 text-center text-slate-900 shadow-lg">
+        <p class="font-display text-lg font-bold">Quét mã QR để thanh toán {TOOL_PRICE_LABEL}</p>
+        <img id="dtc-qr" src="" alt="Mã QR thanh toán" class="mx-auto h-64 w-64 rounded-xl border border-slate-200" />
+        <p class="text-sm text-slate-600">Mã đơn hàng: <strong id="dtc-order-code"></strong></p>
+        <p id="dtc-trang-thai" class="text-sm font-medium text-amber-600">Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)</p>
+      </div>
+
+      <!-- Kết quả gợi ý tên (sau khi thanh toán) -->
       <div id="dtc-ket-qua" class="mt-8 hidden"></div>
 
-      <!-- Đánh giá tên khách đã chọn — dùng chung ngày sinh nhập ở trên, tối đa 10 tên -->
-      <div class="mt-10 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
-        <h2 class="font-display text-lg font-bold text-(--color-ink-900)">Hoặc: đánh giá những tên bạn đã ưng</h2>
+      <!-- Đánh giá tên khách đã chọn — MỞ KHÓA sau khi thanh toán, dùng chung đơn (không tính thêm phí) -->
+      <div id="dtc-dg-khoi" class="mt-10 hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
+        <h2 class="font-display text-lg font-bold text-(--color-ink-900)">Đánh giá những tên bạn đã ưng</h2>
         <p class="mt-1 text-sm text-(--color-ink-600)">
           Nhập tối đa <strong>10 tên</strong> bạn đang cân nhắc (mỗi dòng một tên, có thể kèm đệm, ví dụ
-          <em>Gia Bảo</em>). Hệ thống sẽ chấm điểm từng tên theo Tứ Trụ của bé và xếp hạng tên hợp nhất.
-          Dùng chung ngày sinh đã nhập ở trên.
+          <em>Gia Bảo</em>). Hệ thống chấm điểm từng tên theo Tứ Trụ của bé và xếp hạng tên hợp nhất.
+          Dùng chung đơn đã thanh toán — <strong>không tính thêm phí</strong>.
         </p>
         <textarea
           id="dtc-danh-sach"
@@ -169,9 +210,16 @@ const hotlineHref = `tel:${siteConfig.hotline.replace(/\s/g, "")}`;
 
 <script>
   const form = document.getElementById("dtc-form") as HTMLFormElement;
-  const oDangChay = document.getElementById("dtc-dang-chay")!;
   const oLoi = document.getElementById("dtc-loi")!;
   const oKetQua = document.getElementById("dtc-ket-qua")!;
+  const oThanhToan = document.getElementById("dtc-thanh-toan")!;
+  const qrImg = document.getElementById("dtc-qr") as HTMLImageElement;
+  const orderCodeEl = document.getElementById("dtc-order-code")!;
+  const trangThaiEl = document.getElementById("dtc-trang-thai")!;
+  const dgKhoi = document.getElementById("dtc-dg-khoi")!;
+
+  // Mã đơn đã thanh toán — làm "vé" mở chức năng đánh giá tên (endpoint danh-gia kiểm lại phía máy chủ).
+  let orderCodeDaTra: string | null = null;
 
   const esc = (s: string) =>
     String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
@@ -281,13 +329,47 @@ const hotlineHref = `tel:${siteConfig.hotline.replace(/\s/g, "")}`;
       </section>`;
   }
 
+  // ------------------------------------------------------------------ Thanh toán + poll
+  let pollTimer: ReturnType<typeof setInterval> | null = null;
+  function stopPolling() {
+    if (pollTimer) clearInterval(pollTimer);
+    pollTimer = null;
+  }
+
+  async function pollResult(orderCode: string) {
+    try {
+      const res = await fetch(`/api/dat-ten-cho-con/result?orderCode=${encodeURIComponent(orderCode)}`);
+      const data = await res.json();
+      if (!res.ok || !data.ok) return; // giữ trạng thái chờ, thử lại lần sau
+
+      if (data.status === "confirmed") {
+        stopPolling();
+        orderCodeDaTra = orderCode;
+        trangThaiEl.textContent = "Đã thanh toán — kết quả hiển thị bên dưới.";
+        oThanhToan.classList.add("hidden");
+        form.classList.add("hidden"); // tránh nộp lại form (tạo đơn mới, thu phí lần nữa)
+        oKetQua.innerHTML = veKetQua(data.ketQua);
+        oKetQua.classList.remove("hidden");
+        dgKhoi.classList.remove("hidden"); // mở khóa chức năng đánh giá tên
+        oKetQua.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else if (data.status === "cancelled") {
+        stopPolling();
+        trangThaiEl.textContent = "Đơn hàng đã bị hủy. Vui lòng thử lại.";
+      }
+    } catch {
+      // lỗi mạng tạm thời — chờ lần poll kế tiếp
+    }
+  }
+
   form.addEventListener("submit", async (e) => {
     e.preventDefault();
     oLoi.classList.add("hidden");
+    oThanhToan.classList.add("hidden");
     oKetQua.classList.add("hidden");
-    oDangChay.classList.remove("hidden");
+    stopPolling();
 
     const val = (id: string) => (document.getElementById(id) as HTMLInputElement).value.trim();
+    const maKhuyenMai = (document.getElementById("dtc-ma-input") as HTMLInputElement | null)?.value.trim() ?? "";
     const payload = {
       ho: val("dtc-ho"),
       dem: val("dtc-dem"),
@@ -297,32 +379,45 @@ const hotlineHref = `tel:${siteConfig.hotline.replace(/\s/g, "")}`;
       nam: Number(val("dtc-nam")),
       gio: val("dtc-gio") ? Number(val("dtc-gio")) : undefined,
       phut: val("dtc-phut") ? Number(val("dtc-phut")) : undefined,
+      customerName: val("dtc-ten"),
+      customerPhone: val("dtc-sdt"),
+      customerEmail: val("dtc-email"),
+      ...(maKhuyenMai ? { maKhuyenMai } : {}),
     };
 
     try {
-      const res = await fetch("/api/dat-ten-cho-con", {
+      const res = await fetch("/api/dat-ten-cho-con/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
       const data = await res.json();
-      oDangChay.classList.add("hidden");
       if (!res.ok || !data.ok) {
-        oLoi.textContent = data.error || "Có lỗi xảy ra, vui lòng thử lại.";
+        oLoi.textContent = data.error || "Không tạo được đơn hàng. Vui lòng thử lại.";
         oLoi.classList.remove("hidden");
         return;
       }
-      oKetQua.innerHTML = veKetQua(data.ketQua);
-      oKetQua.classList.remove("hidden");
-      oKetQua.scrollIntoView({ behavior: "smooth", block: "start" });
+
+      // Mã miễn phí 100% / tài khoản quản trị: server xác nhận đơn luôn, qrUrl = null → lấy kết quả ngay.
+      if (data.mienPhi) {
+        orderCodeEl.textContent = data.orderCode;
+        await pollResult(data.orderCode);
+        return;
+      }
+
+      qrImg.src = data.qrUrl;
+      orderCodeEl.textContent = data.orderCode;
+      trangThaiEl.textContent = "Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)";
+      oThanhToan.classList.remove("hidden");
+      oThanhToan.scrollIntoView({ behavior: "smooth", block: "start" });
+      pollTimer = setInterval(() => pollResult(data.orderCode), 3000);
     } catch {
-      oDangChay.classList.add("hidden");
       oLoi.textContent = "Không kết nối được máy chủ. Vui lòng thử lại.";
       oLoi.classList.remove("hidden");
     }
   });
 
-  // ---------------------------------------------------------- Đánh giá tên khách chọn
+  // ---------------------------------------------------------- Đánh giá tên khách chọn (đã mở khóa)
   const nutDG = document.getElementById("dtc-nut-danh-gia")!;
   const oDgChay = document.getElementById("dtc-dg-dang-chay")!;
   const oDgLoi = document.getElementById("dtc-dg-loi")!;
@@ -359,11 +454,8 @@ const hotlineHref = `tel:${siteConfig.hotline.replace(/\s/g, "")}`;
     oDgLoi.classList.add("hidden");
     oDgKq.classList.add("hidden");
 
-    const val = (id: string) => (document.getElementById(id) as HTMLInputElement).value.trim();
-    const ho = val("dtc-ho");
-    const gioiTinh = (document.getElementById("dtc-gioi-tinh") as HTMLSelectElement).value;
-    if (!ho || !gioiTinh || !val("dtc-ngay") || !val("dtc-thang") || !val("dtc-nam")) {
-      oDgLoi.textContent = "Vui lòng điền đủ họ, giới tính và ngày sinh của bé ở phần trên trước đã.";
+    if (!orderCodeDaTra) {
+      oDgLoi.textContent = "Vui lòng thanh toán để mở chức năng đánh giá tên.";
       oDgLoi.classList.remove("hidden");
       return;
     }
@@ -376,21 +468,11 @@ const hotlineHref = `tel:${siteConfig.hotline.replace(/\s/g, "")}`;
     }
 
     oDgChay.classList.remove("hidden");
-    const payload = {
-      cheDo: "danh-gia",
-      ho, gioiTinh,
-      ngay: Number(val("dtc-ngay")),
-      thang: Number(val("dtc-thang")),
-      nam: Number(val("dtc-nam")),
-      gio: val("dtc-gio") ? Number(val("dtc-gio")) : undefined,
-      phut: val("dtc-phut") ? Number(val("dtc-phut")) : undefined,
-      danhSach,
-    };
     try {
-      const res = await fetch("/api/dat-ten-cho-con", {
+      const res = await fetch("/api/dat-ten-cho-con/danh-gia", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({ orderCode: orderCodeDaTra, danhSach }),
       });
       const data = await res.json();
       oDgChay.classList.add("hidden");
