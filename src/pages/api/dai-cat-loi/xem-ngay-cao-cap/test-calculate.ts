@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import { calculateXemNgayCaoCap, type XemNgayCaoCapInput } from "@thien-anh/trachnhat-engine";
+import { checkRateLimit } from "../../../../lib/rate-limit";
 
 export const prerender = false;
 
@@ -20,7 +21,11 @@ function jsonResponse(body: unknown, status: number): Response {
   return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 }
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, clientAddress }) => {
+  // Endpoint QUÉT NẶNG (giám định ngày, dễ bị lạm dụng nhất nhóm): 15 lần / phút / IP.
+  const limited = checkRateLimit({ request, clientAddress }, { key: "testcalc-xncc", max: 15, windowMs: 60_000 });
+  if (limited) return limited;
+
   const body = await request.json().catch(() => null);
   if (!body || typeof body !== "object") {
     return jsonResponse({ ok: false, error: "Dữ liệu gửi lên không hợp lệ." }, 400);

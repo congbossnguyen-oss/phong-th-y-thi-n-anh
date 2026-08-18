@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { apDungPhase2, calculateGioLiemHaHuyet, type GioLiemHaHuyetInput } from "@thien-anh/trachnhat-engine";
 import type { TrungTang } from "@thien-anh/rule-engine";
 import { Astronomy, type Data } from "@thien-anh/calendar-core";
+import { checkRateLimit } from "../../../../lib/rate-limit";
 
 type Chi = Data.Chi;
 
@@ -28,7 +29,11 @@ function parseChiOptional(value: unknown): Chi | undefined {
   return value as Chi;
 }
 
-export const POST: APIRoute = async ({ request }) => {
+export const POST: APIRoute = async ({ request, clientAddress }) => {
+  // Endpoint tính nặng (đang là đường tính thật lúc TEST_MODE): 15 lần / phút / IP.
+  const limited = checkRateLimit({ request, clientAddress }, { key: "testcalc-gio-liem", max: 15, windowMs: 60_000 });
+  if (limited) return limited;
+
   const body = await request.json().catch(() => null);
   if (!body || typeof body !== "object") {
     return jsonResponse({ ok: false, error: "Dữ liệu gửi lên không hợp lệ." }, 400);
