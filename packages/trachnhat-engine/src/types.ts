@@ -39,7 +39,15 @@ export interface TrachNhatOutput {
     thang: CanChiValue;
     ngay: CanChiValue;
   };
-  truc: { index: number; name: string };
+  /** Trực của ngày + dữ liệu tham chiếu (tính chất, đánh giá tổng quát, việc nên/kỵ). */
+  truc: {
+    index: number;
+    name: string;
+    tinhChat: string;
+    danhGia: "tot" | "than_trong" | "xau";
+    nen: string[];
+    ky: string[];
+  };
   nhiThapBatTu: { index: number; name: string; catHung: "cát" | "hung" };
   hoangDaoHacDaoNgay: "hoàng đạo" | "hắc đạo" | "không xác định";
   thanSat: CatHungValue[];

@@ -13,7 +13,19 @@ type Chi = Data.Chi;
 type Can = Data.Can;
 
 export interface NgayInfoResult {
-  truc: { index: number; name: string };
+  /**
+   * Trực của ngày + dữ liệu tham chiếu (tính chất, đánh giá tổng quát, nên/kỵ) lấy sẵn từ
+   * `TrachNhat.getTrucDanhGiaTongQuat` — để MỌI module xem ngày và trang hiển thị dùng chung,
+   * không phải tự tra lại. `nen`/`ky` là NHÃN tham chiếu, không phải điểm số (xem trucDanhGiaTongQuat.ts).
+   */
+  truc: {
+    index: number;
+    name: string;
+    tinhChat: string;
+    danhGia: "tot" | "than_trong" | "xau";
+    nen: string[];
+    ky: string[];
+  };
   nhiThapBatTu: { index: number; name: string; catHung: "cát" | "hung" };
   hoangDaoHacDaoNgay: "hoàng đạo" | "hắc đạo" | "không xác định";
   thanSat: CatHungValue[];
@@ -50,6 +62,8 @@ export function tinhNgayInfo(tuTru: TuTruResult): NgayInfoResult {
   const lunarMonth = tuTru.lunarDate.month;
 
   const truc = TrachNhat.getTruc(tuTru.dayChiIndex, tuTru.monthOrderIndex);
+  // Dữ liệu tham chiếu của Trực (tính chất, nên/kỵ theo mục đích) — bảng chung ở rule-engine.
+  const trucRef = TrachNhat.getTrucDanhGiaTongQuat(truc.name);
   const nhiThapBatTu = TrachNhat.getNhiThapBatTu(tuTru.julianDayNumber);
   const hoangDaoHacDaoNgay = TrachNhat.getNgayHoangDaoHacDao(lunarMonth, tuTru.dayChiIndex);
   const thanSat = TrachNhat.getThanSatTrongNgay(lunarMonth, dayChi);
@@ -84,7 +98,14 @@ export function tinhNgayInfo(tuTru: TuTruResult): NgayInfoResult {
   const phamThaiTue = TrachNhat.getPhamThaiTueTheoNam(tuTru.tuTru.nam.chi as Chi);
 
   return {
-    truc: { index: truc.index, name: truc.name },
+    truc: {
+      index: truc.index,
+      name: truc.name,
+      tinhChat: trucRef?.tinhChat ?? "",
+      danhGia: trucRef?.danhGia ?? "than_trong",
+      nen: trucRef ? [...trucRef.nen] : [],
+      ky: trucRef ? [...trucRef.ky] : [],
+    },
     nhiThapBatTu: { index: nhiThapBatTu.index, name: nhiThapBatTu.name, catHung: nhiThapBatTu.catHung },
     hoangDaoHacDaoNgay,
     thanSat: [...thanSat, ...catTinhTheoCan, ...tamDaiCatTinh, ...nhapTrungCung].map((entry) => ({

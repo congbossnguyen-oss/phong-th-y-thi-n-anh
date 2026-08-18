@@ -35,6 +35,20 @@ import { timNgayXemNgayCaoCap, timThangTrongNam } from "./processing/xemNgayCaoC
 import { tinhTuTru } from "./processing/tuTru.js";
 import type { TrachNhatInput, TrachNhatOutput } from "./types.js";
 import { validateTrachNhatInput } from "./validation.js";
+import { TrachNhat } from "@thien-anh/rule-engine";
+
+// Bảng 12 Trực (tính chất, nên/kỵ, mức độ theo mục đích) — mở ra ở facade để các trang/module xem
+// ngày lấy dữ liệu trực tiếp mà không phải phụ thuộc thẳng vào rule-engine. `ngayInfo.truc` cũng đã
+// bao sẵn tinhChat/danhGia/nen/ky cho từng ngày; hàm `danhGiaTrucTheoMucDich` dùng khi cần chấm mức
+// độ theo MỘT mục đích cụ thể (vd trang "xem ngày" cho việc ký hợp đồng).
+export const getTrucDanhGiaTongQuat = TrachNhat.getTrucDanhGiaTongQuat;
+export const danhGiaTrucTheoMucDich = TrachNhat.danhGiaTrucTheoMucDich;
+export const TRUC_DANH_GIA_TONG_QUAT = TrachNhat.TRUC_DANH_GIA_TONG_QUAT;
+export const MUC_DICH_LABEL = TrachNhat.MUC_DICH_LABEL;
+export type TrucTongQuatEntry = TrachNhat.TrucTongQuatEntry;
+export type TrucMucDo = TrachNhat.MucDo;
+export type TrucMucDichKey = TrachNhat.MucDichKey;
+export type KetQuaTrucMucDich = TrachNhat.KetQuaTrucMucDich;
 
 export type { MonthGridInput, MonthGridResult, MonthGridDay } from "./processing/monthGrid.js";
 export { calculateMonthGrid };
