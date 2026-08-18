@@ -167,8 +167,7 @@ export const paidTools: PaidTool[] = [
     title: "Xem Ngày Cưới Hỏi Trọn Gói",
     desc: "Chọn ngày & giờ đẹp cho cả chuỗi cưới hỏi (ăn hỏi, đón dâu, thành hôn, đăng ký) — chấm điểm riêng cô dâu, chú rể rồi cân cặp đôi, lập lịch cả 4 nghi lễ theo trình tự thời gian.",
     priceLabel: "499.000đ / lượt",
-    // Đang giai đoạn CHỈ QUẢN TRỊ test (Công yêu cầu chưa cho khách). Hub chỉ hiện thẻ này cho
-    // admin; trang tự khoá theo `Astro.locals.user.isAdmin`. Khi phát hành: bỏ cờ adminOnly này.
-    adminOnly: true,
+    // Khách THẤY thẻ này bình thường nhưng CHƯA dùng được — trang tự hiện "sắp ra mắt" cho khách,
+    // chỉ tài khoản quản trị mới chạy được (đang thử nghiệm). Khi phát hành thì bỏ khoá ở trang.
   },
 ];
