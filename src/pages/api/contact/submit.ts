@@ -38,6 +38,24 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     return Response.json({ ok: false, error: "missing_fields" }, { status: 400 });
   }
 
+  // Giới hạn độ dài (chống phình DB / lạm dụng email) — server là nơi kiểm cuối cùng, không tin
+  // client. Ngưỡng rộng rãi, đủ cho nhu cầu thật.
+  if (
+    name.length > 100 ||
+    phone.length > 20 ||
+    (email !== null && email.length > 150) ||
+    (topic !== null && topic.length > 100) ||
+    (message !== null && message.length > 3000)
+  ) {
+    return Response.json({ ok: false, error: "too_long" }, { status: 400 });
+  }
+
+  // Validate định dạng email nếu có nhập (không bắt buộc, nhưng đã nhập thì phải đúng dạng).
+  const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (email !== null && !EMAIL_RE.test(email)) {
+    return Response.json({ ok: false, error: "invalid_email" }, { status: 400 });
+  }
+
   // Lưu DB và gửi email thông báo không được phép làm hỏng trải nghiệm gửi form của khách —
   // nếu 1 trong 2 lỗi (vd chưa cấu hình DATABASE_URL/RESEND_API_KEY ở môi trường nào đó), vẫn
   // log lại đầy đủ và trả về thành công cho khách, không chặn luồng chính.
