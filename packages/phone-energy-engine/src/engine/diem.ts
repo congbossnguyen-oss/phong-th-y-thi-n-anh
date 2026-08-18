@@ -38,6 +38,9 @@ export interface TrongSoDiem {
   phucViBenBi: number;
   /** Trần cho cả NHÓM mất cân bằng (thiếu Sinh Khí + thiếu Diên Niên + áp đảo) — chống trừ trùng. */
   toiDaTruMatCanBang: number;
+  /** Từ 5 cặp hung tinh (chưa hoá giải) trở lên là chắc chắn xấu — trần điểm bị kéo xuống band kém. */
+  nguongNhieuHung: number;
+  tranDiemNhieuHung: number;
 }
 
 export const TRONG_SO_MAC_DINH: TrongSoDiem = {
@@ -75,6 +78,11 @@ export const TRONG_SO_MAC_DINH: TrongSoDiem = {
   // một khuyết điểm (dãy thiếu động lực, không lưu thông). Cộng dồn cả ba là phạt ba lần cho một
   // lỗi, đủ để dìm mọi dãy nhiều Phục Vị xuống 0 điểm.
   toiDaTruMatCanBang: -25,
+  // Chủ dự án chốt 2026-08-18 theo Chương 3 sách: "nếu từ 5 tinh thì là không tốt". Đã xác nhận
+  // "5 tinh" = 5 cặp HUNG tinh. Từ 5 cặp hung (chưa hoá giải) trở lên là chắc chắn xấu, nên chặn
+  // trần điểm ở band "Nên cân nhắc đổi số" thay vì chỉ trừ tuyến tính.
+  nguongNhieuHung: 5,
+  tranDiemNhieuHung: 30,
 };
 
 /** Trọng số của từng cấp độ khi quy năng lượng ra điểm — cấp 1 mạnh nhất. */
@@ -318,6 +326,19 @@ export function tinhDiemTongQuan(params: {
         ghiChu: `Các khoản trên cùng nói về một khuyết điểm nên không cộng dồn quá ${-w.toiDaTruMatCanBang} điểm.`,
       });
     }
+  }
+
+  // 9. Nhiều hung tinh — chặn trần. Từ 5 cặp hung tinh CHƯA hoá giải trở lên thì dù các khoản trên
+  // có cộng được bao nhiêu, dãy vẫn phải nằm ở band kém: sách nói thẳng "từ 5 tinh là không tốt".
+  const soHungChuaHoaGiai = capGoc.filter((c) => c.catHung === "hung" && !c.daHoaGiai).length;
+  if (soHungChuaHoaGiai >= w.nguongNhieuHung && diem > w.tranDiemNhieuHung) {
+    const keo = w.tranDiemNhieuHung - diem;
+    diem += keo;
+    thanhPhan.push({
+      ten: `Có ${soHungChuaHoaGiai} cặp hung tinh chưa hoá giải`,
+      diem: keo,
+      ghiChu: `Từ ${w.nguongNhieuHung} cặp hung tinh trở lên là chắc chắn xấu — điểm bị chặn ở mức thấp dù có vài cặp cát xen vào.`,
+    });
   }
 
   const cuoi = Math.max(0, Math.min(100, Math.round(diem)));

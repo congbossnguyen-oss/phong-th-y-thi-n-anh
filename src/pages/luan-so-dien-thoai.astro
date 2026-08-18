@@ -1010,10 +1010,56 @@ const namNay = new Date().getFullYear();
     );
   }
 
+  /**
+   * Khởi – Diễn – Kết: đọc dãy số theo trục đời người, kèm cảnh báo điểm gãy giữa dãy.
+   * Ba khối nằm cạnh nhau như dòng thời gian, có mũi tên chỉ chiều đi lên hay đi xuống.
+   */
+  function khoiKhoiDienKet(kq: any): string {
+    const k = kq.khoiDienKet;
+    if (!k) return "";
+    const MAU: Record<string, string> = {
+      "tốt": "#10b981",
+      "trung bình": "#f59e0b",
+      "cần lưu ý": "#ef4444",
+    };
+    const cot = k.giaiDoan
+      .map((g: any) => {
+        const mau = MAU[g.mucDo] ?? "#9ca3af";
+        return `
+        <div class="flex-1 rounded-(--radius-control) border-t-4 p-3" style="border-color:${mau};background:${mau}14">
+          <p class="text-[11px] font-bold tracking-wider text-(--color-ink-700)">${esc(g.ten.toUpperCase())}</p>
+          <p class="mt-0.5 font-mono text-xl font-black tracking-widest text-(--color-ink-900)">${esc(g.chuSo || "—")}</p>
+          <p class="mt-1 text-[11px] font-bold uppercase" style="color:${mau}">${esc(g.mucDo)}</p>
+          <p class="mt-1 text-xs text-(--color-ink-700)">${esc(g.yNghia)}</p>
+          ${g.tinh.length ? `<p class="mt-1 text-[11px] text-(--color-ink-600)">${g.tinh.map((t: string) => esc(t)).join(" · ")}</p>` : ""}
+        </div>`;
+      })
+      .join(`<div class="flex items-center px-1 text-(--color-ink-500)">→</div>`);
+
+    const muiTen: Record<string, string> = {
+      "đi lên": "↗ đi lên",
+      "đi xuống": "↘ đi xuống",
+      "trồi sụt": "↕ trồi sụt",
+      "giữ đều": "→ giữ đều",
+    };
+    const bang = k.diemGay
+      ? `<span class="rounded-full bg-red-500/15 px-2.5 py-1 text-xs font-bold text-red-500">⚠ Điểm gãy giữa dãy</span>`
+      : `<span class="rounded-full bg-(--color-ivory-200) px-2.5 py-1 text-xs font-bold text-(--color-ink-800)">${esc(muiTen[k.xuHuong] ?? k.xuHuong)}</span>`;
+
+    return khung(
+      "Khởi – Diễn – Kết (đọc theo đời người)",
+      `<div class="mb-3">${bang}</div>
+       <div class="flex items-stretch gap-1">${cot}</div>
+       <p class="mt-3 rounded-(--radius-control) bg-(--color-ivory-200) p-3 text-sm leading-relaxed text-(--color-ink-900)">${noiBat(esc(k.nhanDinh))}</p>`,
+      "Ba số đầu là gốc rễ (Khởi), mấy số giữa là diễn biến (Diễn), bốn số cuối là kết quả (Kết).",
+    );
+  }
+
   function veKetQua(kq: any): string {
     return [
       khoiDiem(kq),
       khung("Sơ đồ dải năng lượng", veSoDo(kq)),
+      khoiKhoiDienKet(kq),
       khoiViSao(kq),
       khoiDoLuong(kq),
       khoiSo05(kq),

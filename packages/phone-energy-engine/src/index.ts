@@ -15,6 +15,7 @@ import { luan10Nhom } from "./engine/nhomTuTruong.js";
 import { tinhDiemTongQuan } from "./engine/diem.js";
 import { tinhThongKe } from "./engine/thongKe.js";
 import { dungTongKet } from "./engine/tongKet.js";
+import { luanKhoiDienKet } from "./engine/khoiDienKet.js";
 import {
   apDungCoCheB,
   chuanHoaCccd,
@@ -39,6 +40,8 @@ export { dungTongKet } from "./engine/tongKet.js";
 export type { TongKet, CachCucTrungKhop, DoiChieuNghe, MucDoHopNghe } from "./engine/tongKet.js";
 export { luanNamMat } from "./engine/namMat.js";
 export type { MatDoiSong, MucDoMat } from "./engine/namMat.js";
+export { luanKhoiDienKet } from "./engine/khoiDienKet.js";
+export type { KhoiDienKet, GiaiDoanDoi, XuHuong } from "./engine/khoiDienKet.js";
 
 /** Tinh xuất hiện nhiều nhất trong dãy. Hoà thì lấy tinh gặp trước, không tự chọn ngẫu nhiên. */
 function timTinhChuDao(tenTinh: TenTinh[]): { ten: TenTinh; soLan: number } | null {
@@ -115,6 +118,8 @@ export function luanSoDienThoai(input: LuanSoDienThoaiInput): LuanSoDienThoaiRes
     coHoTroCccd,
   });
 
+  const khoiDienKet = luanKhoiDienKet(soDaChuanHoa, capGoc);
+
   const tongKet = dungTongKet({
     baSoDuoi: ketCuc.baSoDuoi,
     capGoc,
@@ -151,6 +156,7 @@ export function luanSoDienThoai(input: LuanSoDienThoaiInput): LuanSoDienThoaiRes
     tuoiHienTai,
     diem,
     tongKet,
+    khoiDienKet,
     baiLuan,
     thieuDuLieu,
   };

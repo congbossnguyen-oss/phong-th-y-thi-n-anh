@@ -4,6 +4,7 @@
  * Nguyên tắc xuyên suốt: gặp tổ hợp không có trong bảng thì trả `thieuDuLieu`, KHÔNG suy đoán.
  */
 import type { TongKet } from "./engine/tongKet.js";
+import type { KhoiDienKet } from "./engine/khoiDienKet.js";
 
 /** 8 từ trường năng lượng số. Phục Vị là cát nhưng mang tính trung lập. */
 export type TenTinh =
@@ -213,6 +214,8 @@ export interface LuanSoDienThoaiResult {
   diem: ScoreCard;
   /** Bảng tổng kết cuối bài — luận chính từ ba số cuối, kèm đối chiếu nghề nghiệp nếu khách nhập. */
   tongKet: TongKet;
+  /** Luận theo trục đời người Khởi – Diễn – Kết, kèm cảnh báo điểm gãy giữa dãy. */
+  khoiDienKet: KhoiDienKet;
   /** Bài luận văn xuôi 8 bước, ghép từ template — không gọi AI. */
   baiLuan: { tieuDe: string; noiDung: string[] }[];
   thieuDuLieu: ThieuDuLieu[];
