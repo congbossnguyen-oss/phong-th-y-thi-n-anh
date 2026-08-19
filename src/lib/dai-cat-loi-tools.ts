@@ -137,9 +137,19 @@ export type PaidTool = {
   priceLabel: string;
   /** true = đang thử nghiệm nội bộ, CHỈ hiện thẻ cho tài khoản quản trị (khách không thấy). */
   adminOnly?: boolean;
+  /** true = gắn nhãn "BEST ⭐" nổi bật trên thẻ (dịch vụ đề cử). */
+  best?: boolean;
 };
 
 export const paidTools: PaidTool[] = [
+  {
+    href: "/dai-cat-loi/dinh-huong-nghe-nghiep",
+    icon: "🎯",
+    title: "Định Hướng Nghề Nghiệp (Bát Tự × Tử Vi)",
+    desc: "Kết hợp hai hệ Bát Tự và Tử Vi để định hướng nghề: 5 trục năng lực, nhóm ngành nên theo, xu hướng Quan Lộc ↔ Kinh Doanh, các giai đoạn vận và mức đồng thuận giữa hai hệ. Kết quả kèm PDF gửi về email.",
+    priceLabel: "499.000đ / lượt",
+    best: true,
+  },
   {
     href: "/dai-cat-loi/gio-liem-ha-huyet",
     icon: "🕯️",
