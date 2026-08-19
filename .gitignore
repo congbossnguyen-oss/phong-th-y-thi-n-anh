@@ -25,3 +25,6 @@ pnpm-debug.log*
 
 # Bản xuất mã khuyến mãi (chứa mã thật — không đưa lên git)
 ma-khuyen-mai.csv
+
+# Bản sao lưu DB — chứa dữ liệu khách + hash mật khẩu, TUYỆT ĐỐI không commit
+backups/
