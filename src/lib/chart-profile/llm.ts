@@ -151,12 +151,20 @@ export async function callBatTuLlm(
   }
 
   const input = toolUse.input as Record<string, unknown>;
+
+  // Thiếu field CỐT LÕI (model thỉnh thoảng bỏ sót) → coi như phản hồi lỗi tạm để index.ts KHÔNG
+  // cache hồ sơ rỗng; lần xem sau sẽ tự gọi lại AI thay vì kẹt "Chưa xác định" vĩnh viễn.
+  if (input.vuong_suy == null || input.dung_than == null || input.hy_than == null || input.manh_phai == null) {
+    return { ok: false, reason: "phan_hoi_khong_hop_le", detail: "Model thiếu trường bắt buộc (vuong_suy/dung_than/hy_than/manh_phai)." };
+  }
+  // Null-safe: field vắng → "insufficient_data" thay vì chuỗi "undefined".
+  const s = (v: unknown) => (v == null ? "insufficient_data" : String(v));
   try {
     const bat_tu = {
-      vuong_suy: String(input.vuong_suy),
-      dung_than: String(input.dung_than),
-      hy_than: String(input.hy_than),
-      ky_than: String(input.ky_than),
+      vuong_suy: s(input.vuong_suy),
+      dung_than: s(input.dung_than),
+      hy_than: s(input.hy_than),
+      ky_than: s(input.ky_than),
       cach_cuc: Array.isArray(input.cach_cuc) ? input.cach_cuc.map(String) : [],
       thap_than_noi_bat: Array.isArray(input.thap_than_noi_bat) ? input.thap_than_noi_bat.map(String) : [],
     } as LlmBatTuOutput["bat_tu"];
