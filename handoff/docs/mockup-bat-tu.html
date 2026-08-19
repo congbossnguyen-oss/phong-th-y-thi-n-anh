@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bố cục — Module Định hướng Nghề nghiệp theo Bát Tự</title>
+<style>
+  :root{
+    --bg:#F5F6F8; --card:#FFFFFF; --ink:#1F2937; --muted:#6B7280; --line:#E5E7EB;
+    --brand:#2E5AAC; --brand2:#7C3AED; --good:#2E9E6B; --warn:#E0A400; --soft:#EEF2FA;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,'Segoe UI',sans-serif;line-height:1.5}
+  .wrap{max-width:960px;margin:0 auto;padding:20px}
+  .note{background:#FFF7E6;border:1px solid #F2D98A;color:#7a5a00;font-size:12px;padding:8px 12px;border-radius:8px;margin-bottom:16px}
+  header.top{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;border-radius:14px;padding:18px 22px;margin-bottom:16px}
+  header.top h1{margin:0;font-size:20px}
+  header.top p{margin:4px 0 0;opacity:.9;font-size:13px}
+  .grid{display:grid;gap:14px}
+  .g2{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:1fr 1fr 1fr}
+  @media(max-width:760px){.g2,.g3{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+  .card h2{margin:0 0 10px;font-size:14px;letter-spacing:.02em;color:var(--brand);text-transform:uppercase}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:6px 12px;font-size:13px}
+  .chip b{color:var(--brand)}
+  .kpis{display:flex;gap:10px;flex-wrap:wrap}
+  .kpi{flex:1;min-width:120px;background:var(--soft);border-radius:10px;padding:10px 12px}
+  .kpi .l{font-size:11px;color:var(--muted)}
+  .kpi .v{font-size:15px;font-weight:bold}
+  .gauge{position:relative;height:44px;margin-top:6px}
+  .gauge .bar{position:absolute;top:16px;left:0;right:0;height:10px;border-radius:6px;
+    background:linear-gradient(90deg,#2E5AAC,#B8C4DE 45%,#DDBBE8 55%,#7C3AED)}
+  .gauge .mark{position:absolute;top:8px;width:4px;height:26px;background:#111;border-radius:2px}
+  .gauge .ends{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:30px}
+  .dom{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:9px;margin-bottom:7px;font-size:13px}
+  .dom .rank{font-weight:bold;width:18px;color:var(--muted)}
+  .p1{background:#E7F0FF} .p2{background:#EAF7F0} .p3{background:#FBF0FF}
+  .col-t{font-size:12px;font-weight:bold;margin-bottom:8px;text-transform:uppercase;letter-spacing:.03em}
+  .t1{color:var(--brand)} .t2{color:var(--good)} .t3{color:#9333EA}
+  .path{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:13px}
+  .path .step{background:var(--soft);border:1px solid var(--line);border-radius:9px;padding:8px 10px;text-align:center;flex:1;min-width:88px}
+  .path .step .a{font-size:11px;color:var(--muted)}
+  .path .arw{color:var(--muted);font-weight:bold}
+  .tl{position:relative;margin-top:8px}
+  .tl .row{display:flex;height:26px;border-radius:6px;overflow:hidden;margin-bottom:6px}
+  .tl .seg{display:flex;align-items:center;justify-content:center;font-size:11px;color:#fff}
+  .tl .axis{display:flex;justify-content:space-between;font-size:11px;color:var(--muted)}
+  .src{font-size:11px;color:var(--muted);margin-top:6px}
+  .tag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:6px;border:1px solid var(--line);color:var(--muted);margin-left:4px}
+  footer{font-size:12px;color:var(--muted);text-align:center;margin:18px 0}
+  .legend{font-size:11px;color:var(--muted);margin-top:6px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="note">⚠ Đây là SƠ ĐỒ BỐ CỤC (mockup) với dữ liệu MẪU — minh họa cách mục luận hiển thị, chưa phải kết quả thật.</div>
+
+  <header class="top">
+    <h1>🧭 Bản đồ Định hướng Nghề nghiệp — theo Bát Tự</h1>
+    <p>Nam · 14/03/1996 · 09:20 · (dữ liệu mẫu)</p>
+  </header>
+
+  <!-- 1. Dải tóm tắt lá số (từ ENGINE CHUNG) -->
+  <div class="card" style="margin-bottom:14px">
+    <h2>Tóm tắt lá số <span class="tag">SOURCE</span></h2>
+    <div class="chips">
+      <span class="chip">Nhật chủ: <b>Giáp (Mộc)</b></span>
+      <span class="chip">Vượng suy: <b>Vượng</b></span>
+      <span class="chip">Dụng thần: <b>Thủy</b></span>
+      <span class="chip">Hỷ thần: <b>Kim</b></span>
+      <span class="chip">Cơ chế (Manh Phái): <b>Tài chế Ấn</b></span>
+      <span class="chip">Cục: <b>Phản Cục</b></span>
+    </div>
+  </div>
+
+  <div class="grid g2" style="margin-bottom:14px">
+    <!-- 2. Radar 5 trục -->
+    <div class="card">
+      <h2>Hồ sơ 5 trục nghề <span class="tag">THIEN_ANH_MODEL</span></h2>
+      <svg viewBox="0 0 260 220" width="100%" height="210">
+        <g transform="translate(130,110)">
+          <!-- lưới ngũ giác -->
+          <polygon points="0,-90 85,-28 53,73 -53,73 -85,-28" fill="none" stroke="#E5E7EB"/>
+          <polygon points="0,-60 57,-19 35,49 -35,49 -57,-19" fill="none" stroke="#EEF2FA"/>
+          <polygon points="0,-30 28,-9 18,24 -18,24 -28,-9" fill="none" stroke="#EEF2FA"/>
+          <!-- dữ liệu mẫu: CM45 QL40 QLy70 KD85 DT66 (đỉnh trên xoay CW) -->
+          <polygon points="0,-40 66,-22 37,52 -47,64 -56,-19"
+                   fill="rgba(46,90,172,.22)" stroke="#2E5AAC" stroke-width="2"/>
+          <!-- nhãn trục -->
+          <text x="0" y="-98" text-anchor="middle" font-size="11" fill="#374151">Chuyên môn</text>
+          <text x="95" y="-26" text-anchor="start" font-size="11" fill="#374151">Quan lộc</text>
+          <text x="60" y="90" text-anchor="middle" font-size="11" fill="#374151">Quản lý</text>
+          <text x="-60" y="90" text-anchor="middle" font-size="11" fill="#374151">Kinh doanh</text>
+          <text x="-95" y="-26" text-anchor="end" font-size="11" fill="#374151">Đầu tư</text>
+        </g>
+      </svg>
+      <div class="legend">Thang minh họa (chưa calibrate 0–100). Nguồn: cơ chế Manh Phái × Hiệu suất Tố công.</div>
+    </div>
+
+    <!-- 3. Gauge Quan lộc <-> Kinh doanh -->
+    <div class="card">
+      <h2>Thiên hướng Quan lộc ↔ Kinh doanh</h2>
+      <div class="gauge">
+        <div class="bar"></div>
+        <!-- mark ở +45 (nghiêng kinh doanh) -> 72% chiều ngang -->
+        <div class="mark" style="left:72%"></div>
+        <div class="ends"><span>◀ Quan lộc / tổ chức</span><span>Kinh doanh / tự chủ ▶</span></div>
+      </div>
+      <div style="margin-top:14px">
+        <div class="kpi" style="background:#EAF7F0">
+          <div class="l">KẾT LUẬN TỰ ĐỘNG</div>
+          <div class="v" style="font-size:14px">Nghiêng tự chủ → thương mại → kinh doanh</div>
+        </div>
+      </div>
+      <div class="src">Nguồn: Phản Cục (Manh Phái) + cơ chế Tài chế Ấn <span class="tag">THIEN_ANH_MODEL</span></div>
+    </div>
+  </div>
+
+  <!-- 4. Nhóm ngành 3+3+3 -->
+  <div class="card" style="margin-bottom:14px">
+    <h2>Nhóm ngành phù hợp (tối đa 3 + 3 + 3)</h2>
+    <div class="grid g3">
+      <div>
+        <div class="col-t t1">● Ưu tiên</div>
+        <div class="dom p1"><span class="rank">1</span> Quản trị – Kinh doanh</div>
+        <div class="dom p1"><span class="rank">2</span> Truyền thông – Ngôn ngữ</div>
+        <div class="dom p1"><span class="rank">3</span> Kinh tế – Tài chính</div>
+      </div>
+      <div>
+        <div class="col-t t2">● Phù hợp</div>
+        <div class="dom p2"><span class="rank">4</span> Bất động sản – Tài sản</div>
+        <div class="dom p2"><span class="rank">5</span> Công nghệ – Kỹ thuật</div>
+        <div class="dom p2"><span class="rank">6</span> Luật – Chính sách</div>
+      </div>
+      <div>
+        <div class="col-t t3">● Có thể xem xét</div>
+        <div class="dom p3"><span class="rank">7</span> Giáo dục – Tư vấn</div>
+        <div class="dom p3"><span class="rank">8</span> Nghệ thuật – Thiết kế</div>
+        <div class="dom p3" style="opacity:.5"><span class="rank">—</span> (không đủ tín hiệu)</div>
+      </div>
+    </div>
+    <div class="src">Nguồn: cơ chế Manh Phái → ngành + Dụng thần Thủy/Kim → ngành. Không ép đủ 3 khi thiếu tín hiệu.</div>
+  </div>
+
+  <!-- 5. Timeline Đại vận Bát Tự (1 hệ, không ghép) -->
+  <div class="card" style="margin-bottom:14px">
+    <h2>Đại vận Bát Tự <span class="tag">SOURCE</span></h2>
+    <div class="tl">
+      <div class="row">
+        <div class="seg" style="flex:1;background:#9CA3AF">8–18 Học</div>
+        <div class="seg" style="flex:1;background:#2E9E6B">18–28 Chuyên môn</div>
+        <div class="seg" style="flex:1;background:#2E5AAC">28–38 Tài vận ▲</div>
+        <div class="seg" style="flex:1;background:#7C3AED">38–48 Kinh doanh</div>
+        <div class="seg" style="flex:1;background:#B7791F">48–58 Tích sản</div>
+      </div>
+      <div class="axis"><span>8</span><span>18</span><span>28</span><span>38</span><span>48</span><span>58</span></div>
+    </div>
+    <div class="src">Chỉ 1 timeline Bát Tự (v1 chưa ghép Đại hạn Tử Vi). ▲ = giai đoạn Dụng thần vượng.</div>
+  </div>
+
+  <!-- 6. Career path -->
+  <div class="card" style="margin-bottom:14px">
+    <h2>Con đường nên đi</h2>
+    <div class="path">
+      <div class="step"><div>🎓 Đại học</div><div class="a">18–22</div></div>
+      <span class="arw">→</span>
+      <div class="step"><div>💼 Chuyên môn</div><div class="a">22–28</div></div>
+      <span class="arw">→</span>
+      <div class="step"><div>💰 Kinh doanh</div><div class="a">28–38</div></div>
+      <span class="arw">→</span>
+      <div class="step"><div>📈 Mở rộng</div><div class="a">38–48</div></div>
+      <span class="arw">→</span>
+      <div class="step"><div>🏦 Tích sản</div><div class="a">48+</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>Vì sao? (bấm mở giải thích)</h2>
+    <p style="font-size:13px;margin:0;color:#374151">
+      Nhật chủ Giáp Mộc vượng, Dụng thần là Thủy (cần lưu thông) — hợp lĩnh vực giao tiếp/thương mại.
+      Cơ chế Manh Phái "Tài chế Ấn" + Phản Cục cho thấy xu hướng thực nghiệp, tự chủ hơn là đi trong tổ chức.
+      Vì vậy nhóm ngành ưu tiên nghiêng về Quản trị – Kinh doanh và Truyền thông.
+    </p>
+    <div class="src">SOURCE = luận Bát Tự · THIEN_ANH_MODEL = quy đổi sang trục/ngành · SUPPORTING_INFERENCE = suy luận bổ trợ</div>
+  </div>
+
+  <footer>
+    Định hướng theo cấu trúc lá số — KHÔNG phải định mệnh. Mô hình phân tích của Thiên Anh Quân Sư.
+  </footer>
+
+</div>
+</body>
+</html>

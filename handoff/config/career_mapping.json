@@ -1,0 +1,225 @@
+{
+  "_meta": {
+    "name": "career_mapping",
+    "version": "2.1",
+    "source_type": "THIEN_ANH_MODEL",
+    "aligns_with": "domain_mapping v1.2",
+    "scale": "Trọng số ordinal +2/+1/0/-1/-2 (section 12). CHƯA calibrate 0-100.",
+    "responsibility": "File NÀY là NGUỒN DUY NHẤT của career_vector (5 trục nghề). domain_mapping.json KHÔNG được chứa career_vector — chỉ chứa điểm domain + major.",
+    "warning": "Con số là bản nháp, cần Công duyệt. Mô tả cách cục lấy từ 4 skill; việc gán sang 5 trục là mô hình tổng hợp, không phải cổ pháp.",
+    "axes": [
+      "specialist",
+      "authority",
+      "management",
+      "business",
+      "investment"
+    ]
+  },
+  "_contract": {
+    "note": "Claude Code phải assert: tập key ở đây == tập key tương ứng trong domain_mapping v1.1 (trừ phần domain chỉ có ở domain_mapping). Chạy validate_mapping.py để kiểm.",
+    "archetype_keys": [
+      "tu_phu_vu_tuong",
+      "sat_pha_liem_tham",
+      "co_nguyet_dong_luong"
+    ],
+    "phu_cach_keys": [
+      "cu_nhat",
+      "cu_co_mao_dau",
+      "tham_vu_dong_hanh",
+      "tang_ho_thu_menh",
+      "van_tinh_am_cung",
+      "dich_ma"
+    ],
+    "mechanism_keys": [
+      "thuc_thuong_che_quan_sat",
+      "tai_che_an",
+      "quan_sat_che_ty_kiep",
+      "an_che_thuc_thuong",
+      "ty_kiep_che_tai",
+      "hoa_quan_sat_sinh_an",
+      "thuc_than_sinh_tai",
+      "thuong_quan_sinh_tai",
+      "hop_dung",
+      "che_mo_kho"
+    ]
+  },
+  "tam_hop_archetype": {
+    "_role": "ARCHETYPE nền. Chỉ áp dụng khi lá số ĐẠT cách (đủ bộ sao ở Mệnh/Di/Tài/Quan).",
+    "tu_phu_vu_tuong": {
+      "label": "Tử Phủ Vũ Tướng",
+      "archetype_key": "organizer",
+      "vector": {
+        "specialist": 1,
+        "authority": 2,
+        "management": 2,
+        "business": 1,
+        "investment": 2
+      }
+    },
+    "sat_pha_liem_tham": {
+      "label": "Sát Phá (Liêm) Tham",
+      "archetype_key": "pioneer",
+      "vector": {
+        "specialist": 0,
+        "authority": 1,
+        "management": 2,
+        "business": 2,
+        "investment": 1
+      }
+    },
+    "co_nguyet_dong_luong": {
+      "label": "Cơ Nguyệt Đồng Lương",
+      "archetype_key": "specialist",
+      "vector": {
+        "specialist": 2,
+        "authority": 1,
+        "management": 1,
+        "business": 0,
+        "investment": 1
+      }
+    }
+  },
+  "tam_hop_phu_cach": {
+    "_role": "Tinh chỉnh archetype. CHỈ cộng khi lá số đạt đúng điều kiện của cách.",
+    "cu_nhat": {
+      "label": "Cự Nhật",
+      "vector": {
+        "authority": 2,
+        "management": 2
+      }
+    },
+    "cu_co_mao_dau": {
+      "label": "Cự Cơ Mão Dậu",
+      "vector": {
+        "business": 2,
+        "specialist": 1
+      }
+    },
+    "tham_vu_dong_hanh": {
+      "label": "Tham Vũ Đồng Hành",
+      "vector": {
+        "business": 2,
+        "management": 1
+      }
+    },
+    "tang_ho_thu_menh": {
+      "label": "Tang Hổ Thủ Mệnh",
+      "vector": {
+        "authority": 2,
+        "specialist": 2
+      }
+    },
+    "van_tinh_am_cung": {
+      "label": "Văn Tinh Ám Củng",
+      "vector": {
+        "specialist": 2
+      }
+    },
+    "dich_ma": {
+      "label": "Mẫu Người Dịch Mã",
+      "vector": {
+        "business": 1
+      }
+    }
+  },
+  "manh_phai_mechanism": {
+    "_role": "CƠ CHẾ. Điều chỉnh archetype nền. Bỏ hoàn toàn tầng phú quý.",
+    "thuc_thuong_che_quan_sat": {
+      "label": "Thực Thương chế Quan Sát",
+      "direction": "leadership_authority",
+      "vector": {
+        "management": 2,
+        "authority": 1
+      }
+    },
+    "tai_che_an": {
+      "label": "Tài chế Ấn",
+      "direction": "business_finance",
+      "vector": {
+        "business": 2,
+        "investment": 1
+      }
+    },
+    "quan_sat_che_ty_kiep": {
+      "label": "Quan Sát chế Tỷ Kiếp",
+      "direction": "authority_management",
+      "vector": {
+        "authority": 2,
+        "management": 2
+      }
+    },
+    "an_che_thuc_thuong": {
+      "label": "Ấn chế Thực Thương",
+      "direction": "specialist_academic",
+      "vector": {
+        "specialist": 2,
+        "authority": 1
+      }
+    },
+    "ty_kiep_che_tai": {
+      "label": "Tỷ Kiếp chế Tài",
+      "direction": "business_partner",
+      "vector": {
+        "business": 1
+      }
+    },
+    "hoa_quan_sat_sinh_an": {
+      "label": "Hóa Quan/Sát sinh Ấn",
+      "direction": "authority_by_expertise",
+      "vector": {
+        "authority": 2,
+        "management": 1,
+        "specialist": 1
+      }
+    },
+    "thuc_than_sinh_tai": {
+      "label": "Thực Thần sinh Tài",
+      "direction": "skill_to_income",
+      "vector": {
+        "specialist": 2,
+        "business": 1
+      }
+    },
+    "thuong_quan_sinh_tai": {
+      "label": "Thương Quan sinh Tài",
+      "direction": "creative_product",
+      "vector": {
+        "business": 2,
+        "specialist": 1
+      }
+    },
+    "hop_dung": {
+      "label": "Hợp Dụng",
+      "direction": "network_broker",
+      "vector": {
+        "business": 1,
+        "authority": 1
+      }
+    },
+    "che_mo_kho": {
+      "label": "Chế Mộ Khố",
+      "direction": "wealth_accumulation",
+      "vector": {
+        "investment": 2
+      }
+    }
+  },
+  "authority_business_axis": {
+    "_role": "Trục -100 (thiên Quan lộc) .. 0 .. +100 (thiên Kinh doanh). Chỉ là nudge, không dùng một mình.",
+    "chinh_cuc_pull": -40,
+    "phan_cuc_pull": 40,
+    "note": "Cộng thêm nudge từ archetype (organizer/specialist kéo âm; pioneer kéo dương) và cung Quan Lộc/Tài Bạch/Thiên Di của Tử Vi. Công thức tổng hợp cuối gắn nhãn THIEN_ANH_MODEL."
+  },
+  "to_cong_strength_factor": {
+    "_role": "Hiệu Suất Tố Công chỉ nhân vào ĐỘ MẠNH, KHÔNG đổi hướng (section 6).",
+    "xung": 1.0,
+    "hinh": 0.7,
+    "hai": 0.4,
+    "note": "Tổ hợp chưa được tài liệu xếp hạng -> insufficient_data, không tự suy."
+  },
+  "bat_tu_dung_than_layer_pointer": {
+    "_role": "Lớp Dụng thần -> ngành nằm ở domain_mapping v1.1 (khối bat_tu_dung_than_layer, trạng thái PENDING_SOURCE_VERIFICATION). File này KHÔNG lặp lại nội dung đó — chỉ ghi nhận sự tồn tại để engine biết đường tra.",
+    "status": "PENDING_SOURCE_VERIFICATION",
+    "reason": "Ánh xạ Dụng Kim->tài chính/cơ khí, Dụng Mộc->giáo dục/gỗ/y... chưa có trong file nguồn 4 skill -> chưa bật ở engine v1.1 để tránh tự bịa."
+  }
+}

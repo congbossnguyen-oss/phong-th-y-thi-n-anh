@@ -1,0 +1,61 @@
+{
+  "_meta": {
+    "name": "bat_tu_nganh_ngu_hanh",
+    "version": "0.1-draft",
+    "source_type": "THIEN_ANH_MODEL",
+    "status": "DRAFT_FOR_EXPERT_APPROVAL",
+    "note": "Bảng Dụng/Hỷ thần (ngũ hành) -> 10 nhóm ngành. Đây là mô hình Thiên Anh do chuyên gia (Công) duyệt, KHÔNG trích nguyên cổ pháp. Quy tắc ngũ hành -> lĩnh vực là kiến thức phổ biến trong nghề, cần Công rà từng dòng trước khi khóa.",
+    "scale": { "high": 2, "medium": 1, "neutral": 0, "avoid": -1 },
+    "apply_rule": "domain_nudge = bang[dung_than]*1.0 + bang[hy_than]*0.5 . Cộng vào điểm domain đã có từ manh_phai_mechanism (domain_mapping.json). Không đổi hướng career_vector."
+  },
+
+  "nguu_hanh_to_domain": {
+    "kim": {
+      "label": "Kim (kim loại, quy tắc, sắc bén)",
+      "domains": {
+        "economics_finance": 2, "management_business": 1, "technology_engineering": 2,
+        "science_research": 0, "health_medicine": 0, "law_policy_social": 2,
+        "media_language": 0, "education_consulting": 0, "arts_design": 0, "real_estate_assets": 1
+      },
+      "vi_du_nghe": "tài chính/ngân hàng, cơ khí – kỹ thuật, luật pháp, quân đội/công an, kim hoàn, ô tô"
+    },
+    "moc": {
+      "label": "Mộc (sinh trưởng, giáo dục, y)",
+      "domains": {
+        "economics_finance": 0, "management_business": 0, "technology_engineering": 0,
+        "science_research": 1, "health_medicine": 2, "law_policy_social": 0,
+        "media_language": 1, "education_consulting": 2, "arts_design": 1, "real_estate_assets": 0
+      },
+      "vi_du_nghe": "giáo dục, y – dược, xuất bản/văn hóa, gỗ – nội thất – kiến trúc, nông lâm, thời trang"
+    },
+    "thuy": {
+      "label": "Thủy (lưu động, giao tiếp, thương mại)",
+      "domains": {
+        "economics_finance": 1, "management_business": 2, "technology_engineering": 0,
+        "science_research": 0, "health_medicine": 0, "law_policy_social": 0,
+        "media_language": 2, "education_consulting": 0, "arts_design": 0, "real_estate_assets": 0
+      },
+      "vi_du_nghe": "thương mại/kinh doanh, vận tải – logistics, du lịch, truyền thông, thủy sản, đồ uống"
+    },
+    "hoa": {
+      "label": "Hỏa (năng lượng, ánh sáng, biểu đạt)",
+      "domains": {
+        "economics_finance": 0, "management_business": 1, "technology_engineering": 2,
+        "science_research": 0, "health_medicine": 1, "law_policy_social": 0,
+        "media_language": 2, "education_consulting": 0, "arts_design": 2, "real_estate_assets": 0
+      },
+      "vi_du_nghe": "năng lượng/điện, công nghệ – điện tử, marketing – quảng cáo, nghệ thuật biểu diễn, ẩm thực, mỹ phẩm"
+    },
+    "tho": {
+      "label": "Thổ (ổn định, chứa đựng, đất)",
+      "domains": {
+        "economics_finance": 0, "management_business": 1, "technology_engineering": 0,
+        "science_research": 1, "health_medicine": 0, "law_policy_social": 1,
+        "media_language": 0, "education_consulting": 1, "arts_design": 0, "real_estate_assets": 2
+      },
+      "vi_du_nghe": "bất động sản – xây dựng, nông nghiệp, quản lý – hành chính, bảo hiểm, khoáng sản, kho vận"
+    }
+  },
+
+  "warning": "Bát Tự chọn nghề theo hành mình CẦN (Dụng/Hỷ thần), không phải hành mình nhiều. Engine phải lấy dung_than/hy_than từ hồ sơ lá số, KHÔNG lấy hành của Nhật chủ."
+}

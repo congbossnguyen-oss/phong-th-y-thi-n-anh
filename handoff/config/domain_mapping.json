@@ -1,0 +1,718 @@
+{
+  "version": "1.2",
+  "source_type": "THIEN_ANH_MODEL",
+  "status": "DRAFT_FOR_CALIBRATION",
+  "description": "Bản v1.2: chuẩn hóa key cơ chế, loại career_vector trùng, thêm 6 cách phụ Tam Hợp, luật 3+3+3, weight ngành con, khử trùng ngành, và schema chờ xác minh cho lớp Dụng thần. Đây là mô hình Thiên Anh, không phải bảng cổ pháp nguyên gốc. v1.2: tách 6 cách phụ ra mục tam_hop_phu_cach (không trộn vào archetypes).",
+  "scale": {
+    "high": 2,
+    "medium": 1,
+    "neutral": 0,
+    "low": -1,
+    "avoid": -2
+  },
+  "archetypes": {
+    "tu_phu_vu_tuong": {
+      "label": "Tử Phủ Vũ Tướng",
+      "domains": {
+        "economics_finance": 2,
+        "management_business": 2,
+        "technology_engineering": 0,
+        "science_research": 1,
+        "health_medicine": 0,
+        "law_policy_social": 2,
+        "media_language": -1,
+        "education_consulting": 1,
+        "arts_design": -1,
+        "real_estate_assets": 2
+      },
+      "rationale": "Archetype tổ chức, vị trí, quản trị, quyền-quý-phú; ưu tiên các lĩnh vực có cơ cấu, quản lý và tích sản."
+    },
+    "sat_pha_liem_tham": {
+      "label": "Sát Phá Liêm Tham",
+      "domains": {
+        "economics_finance": 1,
+        "management_business": 2,
+        "technology_engineering": 1,
+        "science_research": 0,
+        "health_medicine": -1,
+        "law_policy_social": 1,
+        "media_language": 1,
+        "education_consulting": 0,
+        "arts_design": 1,
+        "real_estate_assets": 1
+      },
+      "rationale": "Archetype khai phá, cạnh tranh, dám nghĩ dám làm; ưu tiên kinh doanh, quản lý, lĩnh vực biến động và tạo mới."
+    },
+    "co_nguyet_dong_luong": {
+      "label": "Cơ Nguyệt Đồng Lương",
+      "domains": {
+        "economics_finance": 0,
+        "management_business": 0,
+        "technology_engineering": 1,
+        "science_research": 2,
+        "health_medicine": 1,
+        "law_policy_social": 1,
+        "media_language": 1,
+        "education_consulting": 2,
+        "arts_design": 1,
+        "real_estate_assets": -1
+      },
+      "rationale": "Archetype tri thức, văn hóa, tham mưu và chuyên môn sâu; ưu tiên khoa học, giáo dục, tư vấn và nghề chuyên môn."
+    }
+  },
+  "tam_hop_phu_cach": {
+    "cu_nhat": {
+      "label": "Cự Nhật",
+      "domains": {
+        "economics_finance": 0,
+        "management_business": 1,
+        "technology_engineering": 0,
+        "science_research": 0,
+        "health_medicine": 0,
+        "law_policy_social": 2,
+        "media_language": 1,
+        "education_consulting": 1,
+        "arts_design": 0,
+        "real_estate_assets": 0
+      },
+      "rationale": "Cách phụ dùng tinh chỉnh theo bản nháp: thiên Quan lộc/Lãnh đạo, phản biện công khai, chính trực; nếu đạt đúng điều kiện của cách mới kích hoạt.",
+      "source_type": "THIEN_ANH_MODEL"
+    },
+    "cu_co_mao_dau": {
+      "label": "Cự Cơ Mão Dậu",
+      "domains": {
+        "economics_finance": 1,
+        "management_business": 1,
+        "technology_engineering": 0,
+        "science_research": 0,
+        "health_medicine": 0,
+        "law_policy_social": 1,
+        "media_language": 2,
+        "education_consulting": 1,
+        "arts_design": 0,
+        "real_estate_assets": 0
+      },
+      "rationale": "Cách phụ dùng tinh chỉnh theo bản nháp: khuynh hướng doanh thương, hùng biện, giao tiếp; chỉ kích hoạt khi lá số đạt cách.",
+      "source_type": "THIEN_ANH_MODEL"
+    },
+    "tham_vu_dong_hanh": {
+      "label": "Tham Vũ Đồng Hành",
+      "domains": {
+        "economics_finance": 2,
+        "management_business": 2,
+        "technology_engineering": 0,
+        "science_research": 0,
+        "health_medicine": 0,
+        "law_policy_social": 0,
+        "media_language": 1,
+        "education_consulting": 0,
+        "arts_design": 0,
+        "real_estate_assets": 1
+      },
+      "rationale": "Cách phụ dùng tinh chỉnh theo bản nháp: thiên thương trường, khiếu kinh doanh, óc tổ chức; chỉ kích hoạt khi lá số đạt cách.",
+      "source_type": "THIEN_ANH_MODEL"
+    },
+    "tang_ho_thu_menh": {
+      "label": "Tang Hổ Thủ Mệnh",
+      "domains": {
+        "economics_finance": 0,
+        "management_business": 1,
+        "technology_engineering": 0,
+        "science_research": 0,
+        "health_medicine": 0,
+        "law_policy_social": 2,
+        "media_language": 1,
+        "education_consulting": 1,
+        "arts_design": 0,
+        "real_estate_assets": 0
+      },
+      "rationale": "Cách phụ dùng tinh chỉnh theo bản nháp: đa tài, suy luận/hùng biện/thuyết phục; thiên chính trị, ngoại giao, luật pháp khi đạt cách.",
+      "source_type": "THIEN_ANH_MODEL"
+    },
+    "van_tinh_am_cung": {
+      "label": "Văn Tinh Ám Củng",
+      "domains": {
+        "economics_finance": 0,
+        "management_business": 0,
+        "technology_engineering": 0,
+        "science_research": 2,
+        "health_medicine": 0,
+        "law_policy_social": 0,
+        "media_language": 1,
+        "education_consulting": 2,
+        "arts_design": 2,
+        "real_estate_assets": -1
+      },
+      "rationale": "Cách phụ dùng tinh chỉnh theo bản nháp: học thuật/nghệ thuật, thông minh hiếu học; chỉ kích hoạt khi đạt cách.",
+      "source_type": "THIEN_ANH_MODEL"
+    },
+    "dich_ma": {
+      "label": "Mẫu Người Dịch Mã",
+      "domains": {
+        "economics_finance": 1,
+        "management_business": 1,
+        "technology_engineering": 1,
+        "science_research": 0,
+        "health_medicine": 0,
+        "law_policy_social": 0,
+        "media_language": 1,
+        "education_consulting": 1,
+        "arts_design": 0,
+        "real_estate_assets": 1
+      },
+      "rationale": "Cách tinh chỉnh theo bản nháp: năng động, tháo vát, thích di chuyển/đổi mới; phù hợp các lĩnh vực linh hoạt.",
+      "source_type": "THIEN_ANH_MODEL"
+    }
+  },
+  "mechanisms": {
+    "thuc_thuong_che_quan_sat": {
+      "label": "Thực Thương chế Quan Sát",
+      "domains": {
+        "economics_finance": 0,
+        "management_business": 1,
+        "technology_engineering": 1,
+        "science_research": 1,
+        "health_medicine": 0,
+        "law_policy_social": 1,
+        "media_language": 2,
+        "education_consulting": 1,
+        "arts_design": 1,
+        "real_estate_assets": 0
+      },
+      "rationale": "Dùng năng lực/cá tính riêng để chế quyền uy; hợp lãnh đạo bằng thực lực và các nghề cần biểu đạt, phản biện, năng lực riêng."
+    },
+    "tai_che_an": {
+      "label": "Tài chế Ấn",
+      "domains": {
+        "economics_finance": 2,
+        "management_business": 2,
+        "technology_engineering": 0,
+        "science_research": -1,
+        "health_medicine": 0,
+        "law_policy_social": 0,
+        "media_language": 0,
+        "education_consulting": -1,
+        "arts_design": 0,
+        "real_estate_assets": 2
+      },
+      "rationale": "Thiên về thực nghiệp, tiền bạc và nguồn lực; ưu tiên thương mại, tài chính và quản lý tài sản."
+    },
+    "quan_sat_che_ty_kiep": {
+      "label": "Quan Sát chế Tỷ Kiếp",
+      "domains": {
+        "economics_finance": 1,
+        "management_business": 1,
+        "technology_engineering": 0,
+        "science_research": 0,
+        "health_medicine": 0,
+        "law_policy_social": 2,
+        "media_language": -1,
+        "education_consulting": 1,
+        "arts_design": -1,
+        "real_estate_assets": 1
+      },
+      "rationale": "Thiên về kỷ luật, chức vụ, tổ chức và quản người bằng quy củ; ưu tiên hệ thống và vai trò quản lý."
+    },
+    "an_che_thuc_thuong": {
+      "label": "Ấn chế Thực Thương",
+      "domains": {
+        "economics_finance": 0,
+        "management_business": -1,
+        "technology_engineering": 1,
+        "science_research": 2,
+        "health_medicine": 1,
+        "law_policy_social": 1,
+        "media_language": 0,
+        "education_consulting": 2,
+        "arts_design": 1,
+        "real_estate_assets": -1
+      },
+      "rationale": "Thiên học vấn, chuyên môn, học hàm và lĩnh vực cần nền tảng tri thức sâu."
+    },
+    "ty_kiep_che_tai": {
+      "label": "Tỷ Kiếp chế Tài",
+      "domains": {
+        "economics_finance": 1,
+        "management_business": 2,
+        "technology_engineering": 1,
+        "science_research": 0,
+        "health_medicine": 0,
+        "law_policy_social": 0,
+        "media_language": 1,
+        "education_consulting": 0,
+        "arts_design": 1,
+        "real_estate_assets": 1
+      },
+      "rationale": "Thiên cạnh tranh, chia phần, hợp tác và tự chủ; phù hợp kinh doanh cùng cộng sự hơn là giữ tiền một mình."
+    },
+    "thuc_than_sinh_tai": {
+      "label": "Thực Thần sinh Tài",
+      "domains": {
+        "economics_finance": 1,
+        "management_business": 2,
+        "technology_engineering": 1,
+        "science_research": 1,
+        "health_medicine": 1,
+        "law_policy_social": 0,
+        "media_language": 2,
+        "education_consulting": 1,
+        "arts_design": 2,
+        "real_estate_assets": 1
+      },
+      "rationale": "Tạo tiền qua tài năng/kỹ năng; hợp chuyên môn ứng dụng, sản phẩm, dịch vụ và tự doanh dựa kỹ năng."
+    },
+    "thuong_quan_sinh_tai": {
+      "label": "Thương Quan sinh Tài",
+      "domains": {
+        "economics_finance": 1,
+        "management_business": 2,
+        "technology_engineering": 2,
+        "science_research": 1,
+        "health_medicine": 0,
+        "law_policy_social": 0,
+        "media_language": 2,
+        "education_consulting": 0,
+        "arts_design": 2,
+        "real_estate_assets": 1
+      },
+      "rationale": "Sáng tạo/đột phá tạo ra tiền; ưu tiên sản phẩm mới, công nghệ, truyền thông, startup và kinh doanh."
+    },
+    "hop_dung": {
+      "label": "Hợp Dụng",
+      "domains": {
+        "economics_finance": 1,
+        "management_business": 1,
+        "technology_engineering": 0,
+        "science_research": 0,
+        "health_medicine": 0,
+        "law_policy_social": 1,
+        "media_language": 2,
+        "education_consulting": 1,
+        "arts_design": 0,
+        "real_estate_assets": 1
+      },
+      "rationale": "Tiến thân/kiếm tiền gián tiếp qua quan hệ, kết nối, môi giới và phối hợp."
+    },
+    "che_mo_kho": {
+      "label": "Chế Mộ Khố",
+      "domains": {
+        "economics_finance": 2,
+        "management_business": 1,
+        "technology_engineering": 0,
+        "science_research": 0,
+        "health_medicine": 0,
+        "law_policy_social": 0,
+        "media_language": -1,
+        "education_consulting": 0,
+        "arts_design": 0,
+        "real_estate_assets": 2
+      },
+      "rationale": "Thiên kiểm soát kho Tài, khai/bế khố đúng vận; ưu tiên tích lũy và quản lý tài sản."
+    },
+    "hoa_quan_sat_sinh_an": {
+      "label": "Hóa Quan/Sát sinh Ấn",
+      "domains": {
+        "economics_finance": 0,
+        "management_business": 1,
+        "technology_engineering": 0,
+        "science_research": 1,
+        "health_medicine": 1,
+        "law_policy_social": 2,
+        "media_language": 0,
+        "education_consulting": 2,
+        "arts_design": 0,
+        "real_estate_assets": -1
+      },
+      "rationale": "Quyền lực chuyển thành danh/học vị; hợp hệ thống, chuyên môn và quản lý bằng tri thức."
+    }
+  },
+  "domain_catalog": {
+    "economics_finance": {
+      "label": "Kinh tế – Tài chính",
+      "majors": [
+        {
+          "name": "Tài chính",
+          "weight": 2
+        },
+        {
+          "name": "Ngân hàng",
+          "weight": 2
+        },
+        {
+          "name": "Kế toán",
+          "weight": 1
+        },
+        {
+          "name": "Kiểm toán",
+          "weight": 1
+        },
+        {
+          "name": "Kinh tế",
+          "weight": 1
+        },
+        {
+          "name": "Đầu tư",
+          "weight": 2
+        },
+        {
+          "name": "Bảo hiểm",
+          "weight": 1
+        },
+        {
+          "name": "Fintech",
+          "weight": 2
+        }
+      ]
+    },
+    "management_business": {
+      "label": "Quản trị – Kinh doanh",
+      "majors": [
+        {
+          "name": "Quản trị kinh doanh",
+          "weight": 2
+        },
+        {
+          "name": "Marketing",
+          "weight": 1
+        },
+        {
+          "name": "Thương mại",
+          "weight": 2
+        },
+        {
+          "name": "Logistics",
+          "weight": 2
+        },
+        {
+          "name": "Kinh doanh quốc tế",
+          "weight": 2
+        },
+        {
+          "name": "Quản trị nhân lực",
+          "weight": 1
+        },
+        {
+          "name": "Quản trị vận hành",
+          "weight": 2
+        }
+      ]
+    },
+    "technology_engineering": {
+      "label": "Công nghệ – Kỹ thuật",
+      "majors": [
+        {
+          "name": "Công nghệ thông tin",
+          "weight": 2
+        },
+        {
+          "name": "Khoa học máy tính",
+          "weight": 2
+        },
+        {
+          "name": "AI",
+          "weight": 2
+        },
+        {
+          "name": "Khoa học dữ liệu",
+          "weight": 2
+        },
+        {
+          "name": "Kỹ thuật phần mềm",
+          "weight": 2
+        },
+        {
+          "name": "Tự động hóa",
+          "weight": 1
+        },
+        {
+          "name": "Điện – điện tử",
+          "weight": 1
+        },
+        {
+          "name": "Cơ khí",
+          "weight": 1
+        }
+      ]
+    },
+    "science_research": {
+      "label": "Khoa học – Nghiên cứu",
+      "majors": [
+        {
+          "name": "Toán",
+          "weight": 2
+        },
+        {
+          "name": "Vật lý",
+          "weight": 2
+        },
+        {
+          "name": "Hóa học",
+          "weight": 2
+        },
+        {
+          "name": "Sinh học",
+          "weight": 2
+        },
+        {
+          "name": "Khoa học môi trường",
+          "weight": 1
+        },
+        {
+          "name": "Nghiên cứu ứng dụng",
+          "weight": 2
+        }
+      ]
+    },
+    "health_medicine": {
+      "label": "Y – Dược – Sức khỏe",
+      "majors": [
+        {
+          "name": "Y khoa",
+          "weight": 2
+        },
+        {
+          "name": "Dược",
+          "weight": 1
+        },
+        {
+          "name": "Điều dưỡng",
+          "weight": 1
+        },
+        {
+          "name": "Xét nghiệm",
+          "weight": 2
+        },
+        {
+          "name": "Răng – Hàm – Mặt",
+          "weight": 1
+        },
+        {
+          "name": "Công nghệ y sinh",
+          "weight": 2
+        }
+      ]
+    },
+    "law_policy_social": {
+      "label": "Luật – Chính sách – Xã hội",
+      "majors": [
+        {
+          "name": "Luật",
+          "weight": 2
+        },
+        {
+          "name": "Luật kinh tế",
+          "weight": 2
+        },
+        {
+          "name": "Chính sách công",
+          "weight": 1
+        },
+        {
+          "name": "Quan hệ quốc tế",
+          "weight": 2
+        },
+        {
+          "name": "Hành chính",
+          "weight": 1
+        }
+      ]
+    },
+    "media_language": {
+      "label": "Truyền thông – Ngôn ngữ",
+      "majors": [
+        {
+          "name": "Truyền thông",
+          "weight": 2
+        },
+        {
+          "name": "Báo chí",
+          "weight": 1
+        },
+        {
+          "name": "Quan hệ công chúng",
+          "weight": 2
+        },
+        {
+          "name": "Ngôn ngữ",
+          "weight": 1
+        },
+        {
+          "name": "Marketing",
+          "weight": 2
+        },
+        {
+          "name": "Nội dung số",
+          "weight": 2
+        }
+      ]
+    },
+    "education_consulting": {
+      "label": "Giáo dục – Tư vấn",
+      "majors": [
+        {
+          "name": "Sư phạm",
+          "weight": 2
+        },
+        {
+          "name": "Tâm lý",
+          "weight": 2
+        },
+        {
+          "name": "Giáo dục",
+          "weight": 2
+        },
+        {
+          "name": "Tư vấn",
+          "weight": 2
+        },
+        {
+          "name": "Đào tạo",
+          "weight": 1
+        }
+      ]
+    },
+    "arts_design": {
+      "label": "Nghệ thuật – Thiết kế",
+      "majors": [
+        {
+          "name": "Thiết kế đồ họa",
+          "weight": 2
+        },
+        {
+          "name": "Kiến trúc",
+          "weight": 2
+        },
+        {
+          "name": "Nội thất",
+          "weight": 2
+        },
+        {
+          "name": "Mỹ thuật",
+          "weight": 2
+        },
+        {
+          "name": "Âm nhạc",
+          "weight": 2
+        },
+        {
+          "name": "Điện ảnh",
+          "weight": 2
+        }
+      ]
+    },
+    "real_estate_assets": {
+      "label": "Bất động sản – Tài sản",
+      "majors": [
+        {
+          "name": "Bất động sản",
+          "weight": 2
+        },
+        {
+          "name": "Quản lý tài sản",
+          "weight": 2
+        },
+        {
+          "name": "Đầu tư",
+          "weight": 2
+        },
+        {
+          "name": "Phát triển dự án",
+          "weight": 2
+        },
+        {
+          "name": "Quản lý bất động sản",
+          "weight": 2
+        }
+      ]
+    }
+  },
+  "combination_rules": {
+    "method": "archetype_base_plus_mechanism_adjustment",
+    "archetype_weight": 1.0,
+    "mechanism_weight": 1.0,
+    "do_not_sum_blindly": true,
+    "conflict_behavior": "neutralize_and_flag",
+    "rule": "Nếu Archetype và Mechanism cùng hướng thì tăng độ tin cậy; nếu ngược hướng thì giữ trung gian và gắn cờ PHÂN_KỲ thay vì ép một kết luận.",
+    "normalization": "Keep domain score on -2..+2 draft scale; do not convert to 0..100 before calibration.",
+    "source_layers": [
+      "archetype",
+      "mechanism"
+    ],
+    "pending_layers": [
+      "bat_tu_dung_than",
+      "tu_vi_nam_phai"
+    ]
+  },
+  "calibration": {
+    "status": "REQUIRED",
+    "note": "Toàn bộ mapping domain và career_vector trong file này là mô hình Thiên Anh bản nháp, cần Công hiệu chỉnh trên các lá số thực trước khi khóa production.",
+    "recommended_test_set": ">= 20 lá số có nghề nghiệp thực tế đã biết",
+    "required": true,
+    "changes_v1_1": [
+      "career_vector chỉ được giữ trong career_mapping.json; domain_mapping.json không chứa career_vector.",
+      "mechanism key chuẩn: hoa_quan_sat_sinh_an.",
+      "Thêm 6 cách phụ Tam Hợp để domain mapping nhất quán với career_mapping.",
+      "Majors có weight tương đối 1..2 để xếp hạng nội bộ; cần calibrate bằng dữ liệu thực chiến.",
+      "Có luật dedup ngành trùng và không double-count.",
+      "Có luật 3+3+3 nhưng không ép điền đủ nếu dữ liệu không đủ.",
+      "Dụng thần layer chưa bật; cần xác minh nguồn trước khi đưa vào production."
+    ]
+  },
+  "output_rules": {
+    "type": "THIEN_ANH_MODEL",
+    "buckets": {
+      "priority": {
+        "count": 3,
+        "rule": "Top 3 domains after base+mechanism aggregation, subject to minimum signal threshold."
+      },
+      "suitable": {
+        "count": 3,
+        "rule": "Next 3 distinct domains above neutral threshold; exclude domains already in priority."
+      },
+      "possible": {
+        "count": 3,
+        "rule": "Next 3 distinct domains with non-negative or weak-positive signal; only fill when evidence exists."
+      }
+    },
+    "recommended_initial_thresholds": {
+      "strong": 2,
+      "positive": 1,
+      "neutral": 0,
+      "negative": -1,
+      "avoid": -2
+    },
+    "tie_breaker_order": [
+      "source_agreement",
+      "archetype_signal",
+      "mechanism_signal",
+      "majority_domain_evidence"
+    ],
+    "do_not_force_full_3_3_3": true,
+    "note": "3+3+3 là giới hạn hiển thị, không phải nghĩa vụ phải điền đủ nếu dữ liệu không đủ."
+  },
+  "deduplication_rules": {
+    "type": "THIEN_ANH_MODEL",
+    "canonical_major_aliases": {
+      "Đầu tư": [
+        "economics_finance",
+        "real_estate_assets"
+      ],
+      "Marketing": [
+        "management_business",
+        "media_language"
+      ]
+    },
+    "rule": "Khi cùng một ngành xuất hiện ở nhiều domain, gộp thành một major duy nhất; giữ nguồn domain gốc và cộng hưởng ở cấp domain chỉ một lần, không double-count major.",
+    "display_rule": "Hiển thị major dưới domain có tín hiệu cao hơn; nếu ngang nhau, hiển thị domain chính theo thứ tự ưu tiên cấu hình."
+  },
+  "bat_tu_dung_than_layer": {
+    "enabled": false,
+    "source_type": "PENDING_SOURCE_VERIFICATION",
+    "purpose": "Tầng định hướng lĩnh vực từ Dụng/Hỷ thần, chỉ bật sau khi có bảng ánh xạ đã được anh duyệt hoặc nguồn skill hiện hành.",
+    "status": "PENDING",
+    "rule": "Không tự suy diễn hoặc hard-code Dụng thần → ngành trong production ở v1.1.",
+    "expected_input": "dung_than, hy_than, ky_than, element_balance",
+    "expected_output": "domain_nudge",
+    "note": "Có thể bổ sung như lớp thứ ba vào domain score sau khi xác nhận nguồn; không trộn vào archetype/mechanism ở phiên bản hiện tại."
+  }
+}

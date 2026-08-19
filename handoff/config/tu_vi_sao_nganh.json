@@ -1,0 +1,35 @@
+{
+  "_meta": {
+    "name": "tu_vi_sao_nganh",
+    "version": "0.1-draft",
+    "source_type": "THIEN_ANH_MODEL",
+    "status": "DRAFT_FOR_EXPERT_APPROVAL",
+    "note": "Bảng CHÍNH TINH (tại Mệnh / Quan Lộc) -> 10 nhóm ngành, dùng làm lớp nudge cho module nghề theo Tử Vi. Mô hình Thiên Anh, cần Công duyệt. Tương ứng sao-nghề là kiến thức phổ biến trong nghề, KHÔNG trích nguyên 1 cuốn cổ pháp.",
+    "scale": { "high": 2, "medium": 1, "neutral": 0, "avoid": -1 },
+    "apply_rule": "domain_nudge = bang[sao ở Quan Lộc]×1.0 + bang[sao ở Mệnh]×0.7 . Nếu cung có 2 chính tinh (song tinh) -> lấy trung bình. Nếu Vô Chính Diệu -> mượn sao cung đối (Di) × 0.7. Cộng vào điểm domain từ archetype (domain_mapping)."
+  },
+
+  "chinh_tinh_to_domain": {
+    "tu_vi":      { "label":"Tử Vi",      "domains":{ "economics_finance":1,"management_business":2,"technology_engineering":0,"science_research":0,"health_medicine":0,"law_policy_social":1,"media_language":0,"education_consulting":0,"arts_design":0,"real_estate_assets":1 }, "vi_du":"quản trị cấp cao, tổ chức, hành chính lãnh đạo" },
+    "thien_co":   { "label":"Thiên Cơ",   "domains":{ "economics_finance":0,"management_business":0,"technology_engineering":2,"science_research":1,"health_medicine":0,"law_policy_social":0,"media_language":1,"education_consulting":1,"arts_design":0,"real_estate_assets":0 }, "vi_du":"tham mưu, kỹ thuật, phân tích, tư vấn" },
+    "thai_duong": { "label":"Thái Dương", "domains":{ "economics_finance":0,"management_business":1,"technology_engineering":0,"science_research":0,"health_medicine":0,"law_policy_social":2,"media_language":1,"education_consulting":1,"arts_design":0,"real_estate_assets":0 }, "vi_du":"chính trị, công quyền, lãnh đạo công khai, giáo dục" },
+    "vu_khuc":    { "label":"Vũ Khúc",    "domains":{ "economics_finance":2,"management_business":1,"technology_engineering":1,"science_research":0,"health_medicine":0,"law_policy_social":1,"media_language":0,"education_consulting":0,"arts_design":0,"real_estate_assets":1 }, "vi_du":"tài chính, quân/công an, cơ khí kim loại" },
+    "thien_dong": { "label":"Thiên Đồng", "domains":{ "economics_finance":0,"management_business":0,"technology_engineering":0,"science_research":0,"health_medicine":1,"law_policy_social":0,"media_language":1,"education_consulting":1,"arts_design":1,"real_estate_assets":0 }, "vi_du":"dịch vụ, phúc lợi, chăm sóc, sáng tạo nhẹ" },
+    "liem_trinh": { "label":"Liêm Trinh", "domains":{ "economics_finance":0,"management_business":1,"technology_engineering":1,"science_research":0,"health_medicine":0,"law_policy_social":2,"media_language":0,"education_consulting":0,"arts_design":0,"real_estate_assets":0 }, "vi_du":"hành chính, tư pháp, kỹ thuật, kỷ luật" },
+    "thien_phu":  { "label":"Thiên Phủ",  "domains":{ "economics_finance":2,"management_business":1,"technology_engineering":0,"science_research":0,"health_medicine":0,"law_policy_social":0,"media_language":0,"education_consulting":0,"arts_design":0,"real_estate_assets":2 }, "vi_du":"kho tài, tài chính, quản lý tài sản, bất động sản" },
+    "thai_am":    { "label":"Thái Âm",    "domains":{ "economics_finance":1,"management_business":0,"technology_engineering":0,"science_research":0,"health_medicine":0,"law_policy_social":0,"media_language":1,"education_consulting":1,"arts_design":1,"real_estate_assets":2 }, "vi_du":"điền trạch, tài chính, văn hóa/nghệ thuật, giáo dục" },
+    "tham_lang":  { "label":"Tham Lang",  "domains":{ "economics_finance":0,"management_business":1,"technology_engineering":1,"science_research":0,"health_medicine":0,"law_policy_social":0,"media_language":2,"education_consulting":0,"arts_design":1,"real_estate_assets":0 }, "vi_du":"giao tế, PR, kinh doanh, đa tài, xã giao" },
+    "cu_mon":     { "label":"Cự Môn",     "domains":{ "economics_finance":0,"management_business":0,"technology_engineering":0,"science_research":0,"health_medicine":1,"law_policy_social":2,"media_language":2,"education_consulting":1,"arts_design":0,"real_estate_assets":0 }, "vi_du":"pháp luật, hùng biện, truyền thông, y (khẩu)" },
+    "thien_tuong":{ "label":"Thiên Tướng","domains":{ "economics_finance":1,"management_business":2,"technology_engineering":0,"science_research":0,"health_medicine":0,"law_policy_social":1,"media_language":0,"education_consulting":0,"arts_design":0,"real_estate_assets":0 }, "vi_du":"phò tá, quản lý, trung gian, ấn tín" },
+    "thien_luong":{ "label":"Thiên Lương","domains":{ "economics_finance":0,"management_business":0,"technology_engineering":0,"science_research":1,"health_medicine":2,"law_policy_social":1,"media_language":0,"education_consulting":2,"arts_design":0,"real_estate_assets":0 }, "vi_du":"y dược, giáo dục, giám sát/thanh tra, thanh cao" },
+    "that_sat":   { "label":"Thất Sát",   "domains":{ "economics_finance":0,"management_business":2,"technology_engineering":1,"science_research":0,"health_medicine":0,"law_policy_social":1,"media_language":0,"education_consulting":0,"arts_design":0,"real_estate_assets":1 }, "vi_du":"khai phá, quân/công an, kỹ thuật nặng, khởi sự" },
+    "pha_quan":   { "label":"Phá Quân",   "domains":{ "economics_finance":0,"management_business":2,"technology_engineering":1,"science_research":0,"health_medicine":0,"law_policy_social":0,"media_language":1,"education_consulting":0,"arts_design":1,"real_estate_assets":0 }, "vi_du":"tiên phong, khởi nghiệp, biến động, vận tải" }
+  },
+
+  "trung_tinh_bo_sung": {
+    "_note": "Cộng thêm khi có ở Mệnh/Quan Lộc, ×0.5.",
+    "van_xuong_van_khuc": { "label":"Văn Xương/Văn Khúc", "domains":{ "media_language":1,"education_consulting":1,"arts_design":2,"science_research":1 }, "vi_du":"văn chương, nghệ thuật, học thuật, sinh ngữ" }
+  },
+
+  "warning": "Cung Quan Lộc là cung nghề chính -> sao ở đó nặng hơn sao ở Mệnh. Luôn xét Đắc/Hãm: sao Hãm giảm nudge. Vô Chính Diệu thì mượn cung Di."
+}

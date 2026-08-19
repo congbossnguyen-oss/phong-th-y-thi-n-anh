@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bố cục — Kết hợp Bát Tự × Tử Vi</title>
+<style>
+  :root{
+    --bg:#F5F6F8; --card:#FFFFFF; --ink:#1F2937; --muted:#6B7280; --line:#E5E7EB;
+    --bt:#2E5AAC; --tv:#7C3AED; --good:#2E9E6B; --warn:#E0A400; --soft:#EEF1F7;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font-family:Arial,'Segoe UI',sans-serif;line-height:1.5}
+  .wrap{max-width:980px;margin:0 auto;padding:20px}
+  .note{background:#FFF7E6;border:1px solid #F2D98A;color:#7a5a00;font-size:12px;padding:8px 12px;border-radius:8px;margin-bottom:16px}
+  header.top{background:linear-gradient(135deg,var(--bt),var(--tv));color:#fff;border-radius:14px;padding:18px 22px;margin-bottom:16px}
+  header.top h1{margin:0;font-size:20px}
+  header.top p{margin:4px 0 0;opacity:.92;font-size:13px}
+  .grid{display:grid;gap:14px}
+  .g2{grid-template-columns:1.1fr .9fr}
+  .g3{grid-template-columns:1fr 1fr 1fr}
+  @media(max-width:780px){.g2,.g3{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+  .card h2{margin:0 0 10px;font-size:14px;color:#374151;text-transform:uppercase;letter-spacing:.02em}
+  /* Đồng thuận */
+  .agree{display:flex;gap:18px;align-items:center}
+  .ring{--v:84;--c:#2E9E6B;width:132px;height:132px;border-radius:50%;flex:none;
+    background:conic-gradient(var(--c) calc(var(--v)*1%),#E9ECF2 0);display:grid;place-items:center;position:relative}
+  .ring::after{content:"";position:absolute;inset:12px;background:#fff;border-radius:50%}
+  .ring .in{position:relative;text-align:center;z-index:1}
+  .ring .in b{font-size:30px;color:#1f2937} .ring .in span{font-size:11px;color:var(--muted)}
+  .tierbadge{display:inline-block;background:#E6F6EE;color:#1c7a4d;border:1px solid #B7E3C9;
+    padding:3px 10px;border-radius:999px;font-size:12px;font-weight:bold}
+  .bd{margin-top:8px}
+  .bd .r{display:flex;align-items:center;gap:8px;font-size:12px;margin-bottom:5px}
+  .bd .r .lab{width:96px;color:var(--muted)} .bd .r .track{flex:1;height:8px;background:#EDEFF4;border-radius:5px;overflow:hidden}
+  .bd .r .fill{height:100%;background:#2E9E6B}
+  .bd .r .n{width:34px;text-align:right;font-weight:bold}
+  .chips{display:flex;flex-wrap:wrap;gap:8px}
+  .chip{background:var(--soft);border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:12px}
+  .chip.bt b{color:var(--bt)} .chip.tv b{color:var(--tv)}
+  .leg{display:flex;gap:14px;font-size:12px;color:var(--muted);margin-top:4px}
+  .leg i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+  /* kết luận */
+  .concl div.row{display:flex;gap:10px;padding:8px 0;border-bottom:1px dashed var(--line);font-size:13px}
+  .concl div.row:last-child{border-bottom:none}
+  .concl .k{width:120px;color:var(--muted);flex:none}
+  .concl .v{color:#1f2937}
+  .big{font-size:15px;font-weight:bold;color:#1f2937}
+  .dom{display:flex;align-items:center;gap:8px;padding:6px 9px;border-radius:9px;margin-bottom:6px;font-size:13px;background:#EAF7F0}
+  .dom .rank{font-weight:bold;width:16px;color:var(--muted)}
+  .tl .row{display:flex;height:22px;border-radius:5px;overflow:hidden;margin-bottom:4px}
+  .tl .seg{display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff}
+  .tl .lab{font-size:11px;color:var(--muted);width:52px}
+  .tl .zone{background:repeating-linear-gradient(45deg,#FDE9A9,#FDE9A9 6px,#FBDF86 6px,#FBDF86 12px)}
+  .axis{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-left:52px}
+  .src{font-size:11px;color:var(--muted);margin-top:8px}
+  .tag{display:inline-block;font-size:10px;padding:1px 6px;border-radius:6px;border:1px solid var(--line);color:var(--muted);margin-left:4px}
+  .warnbox{background:#FFF3F3;border:1px solid #F3C0C0;color:#9b2c2c;font-size:12px;padding:8px 12px;border-radius:9px;margin-top:10px}
+  footer{font-size:12px;color:var(--muted);text-align:center;margin:18px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="note">⚠ MOCKUP — dữ liệu MẪU. Minh họa cách GỘP kết quả Bát Tự × Tử Vi thành một hướng, với chỉ số đồng thuận.</div>
+
+  <header class="top">
+    <h1>🧭 Bản đồ Nghề nghiệp — Kết hợp Bát Tự × Tử Vi</h1>
+    <p>Nam · 14/03/1996 · 09:20 · (dữ liệu mẫu)</p>
+  </header>
+
+  <!-- HÀNG 1: Đồng thuận + Radar chồng -->
+  <div class="grid g2" style="margin-bottom:14px">
+
+    <!-- Chỉ số đồng thuận -->
+    <div class="card">
+      <h2>Mức đồng thuận hai hệ <span class="tag">THIEN_ANH_MODEL</span></h2>
+      <div class="agree">
+        <div class="ring"><div class="in"><b>84%</b><span>ĐỒNG THUẬN</span></div></div>
+        <div style="flex:1">
+          <div class="tierbadge">● Độ tin cậy: CAO</div>
+          <div style="font-size:13px;margin-top:8px;color:#374151">Hai hệ độc lập cùng chỉ về <b>Quan lộc / Quản lý</b>.</div>
+          <div class="bd">
+            <div class="r"><span class="lab">Trùng 5 trục</span><span class="track"><span class="fill" style="width:88%"></span></span><span class="n">88</span></div>
+            <div class="r"><span class="lab">Trùng hướng Q↔K</span><span class="track"><span class="fill" style="width:82%"></span></span><span class="n">82</span></div>
+            <div class="r"><span class="lab">Trùng ngành</span><span class="track"><span class="fill" style="width:80%"></span></span><span class="n">80</span></div>
+          </div>
+        </div>
+      </div>
+      <div class="warnbox">Đây là mức HAI HỆ CÙNG CHỈ MỘT HƯỚNG, không phải xác suất "đúng nghề". Con số đang ở trạng thái <b>bản nháp — chưa calibrate trên lá số thật</b>; chỉ khóa % sau khi test ≥20 ca.</div>
+    </div>
+
+    <!-- Radar chồng 2 hệ + hợp nhất -->
+    <div class="card">
+      <h2>5 trục — 2 hệ chồng nhau</h2>
+      <svg viewBox="0 0 260 220" width="100%" height="200">
+        <g transform="translate(130,108)">
+          <polygon points="0,-90 85,-28 53,73 -53,73 -85,-28" fill="none" stroke="#E5E7EB"/>
+          <polygon points="0,-60 57,-19 35,49 -35,49 -57,-19" fill="none" stroke="#EEF1F7"/>
+          <!-- Bát Tự -->
+          <polygon points="0,-54 70,-23 45,62 -29,40 -60,-20" fill="none" stroke="#2E5AAC" stroke-width="1.6" stroke-dasharray="4 3"/>
+          <!-- Tử Vi -->
+          <polygon points="0,-50 72,-24 47,64 -32,44 -66,-22" fill="none" stroke="#7C3AED" stroke-width="1.6" stroke-dasharray="4 3"/>
+          <!-- Hợp nhất -->
+          <polygon points="0,-52 71,-24 46,64 -31,42 -63,-21" fill="rgba(46,158,107,.18)" stroke="#2E9E6B" stroke-width="2.4"/>
+          <text x="0" y="-98" text-anchor="middle" font-size="11" fill="#374151">Chuyên môn</text>
+          <text x="95" y="-26" text-anchor="start" font-size="11" fill="#374151">Quan lộc</text>
+          <text x="60" y="90" text-anchor="middle" font-size="11" fill="#374151">Quản lý</text>
+          <text x="-60" y="90" text-anchor="middle" font-size="11" fill="#374151">Kinh doanh</text>
+          <text x="-95" y="-26" text-anchor="end" font-size="11" fill="#374151">Đầu tư</text>
+        </g>
+      </svg>
+      <div class="leg">
+        <span><i style="background:#2E5AAC"></i>Bát Tự</span>
+        <span><i style="background:#7C3AED"></i>Tử Vi</span>
+        <span><i style="background:#2E9E6B"></i>Hợp nhất</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- HÀNG 2: KẾT LUẬN CHI TIẾT (giàu thông tin) -->
+  <div class="card" style="margin-bottom:14px">
+    <h2>Kết luận định hướng — chi tiết</h2>
+    <div class="concl">
+      <div class="row"><span class="k">Hướng chính</span><span class="v big">Đi trong tổ chức → tích lũy vị trí → lên Quản lý / Điều hành</span></div>
+      <div class="row"><span class="k">Độ tin cậy</span><span class="v"><b style="color:#1c7a4d">CAO (84%)</b> — cả Bát Tự lẫn Tử Vi cùng nghiêng Quan lộc/Quản lý.</span></div>
+      <div class="row"><span class="k">Thế mạnh lõi</span><span class="v">Quản lý (87) · Quan lộc (84) · Đầu tư/Tích sản (74) — 2 hệ cùng xác nhận.</span></div>
+      <div class="row"><span class="k">Điểm cần lưu</span><span class="v">Kinh doanh tự chủ ở mức trung (58) — làm được nhưng không phải thế mạnh; nên đi tổ chức trước.</span></div>
+      <div class="row"><span class="k">Ngành hợp nhất</span><span class="v">① Kinh tế – Tài chính ② Quản trị – Kinh doanh ③ Bất động sản – Tài sản (giao của 2 hệ).</span></div>
+      <div class="row"><span class="k">Giai đoạn vàng</span><span class="v"><b>28–33 tuổi</b> — vùng cả 2 hệ vận cùng bật chủ đề sự nghiệp (xem timeline dưới).</span></div>
+      <div class="row"><span class="k">Khuyến nghị</span><span class="v">Đại học nhóm Tài chính/Quản trị → vào tổ chức lớn tích lũy chuyên môn 22–28 → nhắm vị trí quản lý 28–35 → cân nhắc đầu tư/tích sản về sau.</span></div>
+      <div class="row"><span class="k">Nguồn</span><span class="v"><span class="tag">SOURCE</span> luận Bát Tự + Tử Vi · <span class="tag">THIEN_ANH_MODEL</span> quy đổi & đồng thuận · <span class="tag">SUPPORTING_INFERENCE</span> khuyến nghị.</span></div>
+    </div>
+  </div>
+
+  <!-- HÀNG 3: Ngành hợp nhất + 2 timeline có vùng đồng thuận -->
+  <div class="grid g2" style="margin-bottom:14px">
+    <div class="card">
+      <h2>Ngành ưu tiên (giao 2 hệ)</h2>
+      <div class="dom"><span class="rank">1</span> Kinh tế – Tài chính <span style="margin-left:auto;font-size:11px;color:var(--muted)">BT ✓ · TV ✓</span></div>
+      <div class="dom"><span class="rank">2</span> Quản trị – Kinh doanh <span style="margin-left:auto;font-size:11px;color:var(--muted)">BT ✓ · TV ✓</span></div>
+      <div class="dom"><span class="rank">3</span> Bất động sản – Tài sản <span style="margin-left:auto;font-size:11px;color:var(--muted)">BT ✓ · TV ✓</span></div>
+      <div class="dom" style="background:#FCECF6"><span class="rank">4</span> Luật – Chính sách <span style="margin-left:auto;font-size:11px;color:var(--muted)">chỉ TV</span></div>
+      <div class="src">Ngành cả 2 hệ cùng đề xuất xếp trên; ngành chỉ 1 hệ có xếp dưới + ghi rõ nguồn.</div>
+    </div>
+
+    <div class="card">
+      <h2>Hai timeline vận + vùng đồng thuận</h2>
+      <div class="tl">
+        <div style="display:flex;align-items:center"><span class="lab">Bát Tự</span>
+          <div class="row" style="flex:1">
+            <div class="seg" style="flex:2;background:#9CA3AF">học</div>
+            <div class="seg" style="flex:2;background:#2E9E6B">chuyên môn</div>
+            <div class="seg zone" style="flex:2;color:#7a5a00">tài vận</div>
+            <div class="seg" style="flex:2;background:#7C3AED">kinh doanh</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center"><span class="lab">Tử Vi</span>
+          <div class="row" style="flex:1">
+            <div class="seg" style="flex:2;background:#9CA3AF">học</div>
+            <div class="seg" style="flex:1.4;background:#2E9E6B">chuyên môn</div>
+            <div class="seg zone" style="flex:2.6;color:#7a5a00">sự nghiệp</div>
+            <div class="seg" style="flex:2;background:#2E5AAC">quản lý</div>
+          </div>
+        </div>
+        <div class="axis"><span>18</span><span>28</span><span>38</span><span>48</span></div>
+      </div>
+      <div class="src"><span style="background:#FBDF86;padding:0 4px">Vùng gạch vàng</span> = 28–33: cả 2 hệ cùng bật chủ đề sự nghiệp → giai đoạn vàng. Hai timeline vẫn tính RIÊNG, không gộp.</div>
+    </div>
+  </div>
+
+  <footer>Định hướng theo cấu trúc lá số — KHÔNG phải định mệnh. % là mức đồng thuận 2 hệ, chưa calibrate. Mô hình Thiên Anh Quân Sư.</footer>
+
+</div>
+</body>
+</html>
