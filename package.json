@@ -26,6 +26,7 @@
     "@pdf-lib/fontkit": "^1.1.1",
     "@sanity/client": "^7.26.0",
     "@tailwindcss/vite": "^4.3.3",
+    "@thien-anh/calendar-core": "*",
     "@thien-anh/trachnhat-engine": "*",
     "astro": "^7.1.6",
     "drizzle-orm": "^0.45.2",

@@ -1,0 +1,430 @@
+{
+ "cung_mon_sao_thuan": [
+  [
+   1,
+   "HƯU",
+   "T.Bồng"
+  ],
+  [
+   2,
+   "TỬ",
+   "T.Nhuế"
+  ],
+  [
+   3,
+   "THƯƠNG",
+   "T.Xung"
+  ],
+  [
+   4,
+   "ĐỖ",
+   "T.Phò"
+  ],
+  [
+   5,
+   "TỬ",
+   "T.Nhuế"
+  ],
+  [
+   6,
+   "KHAI",
+   "T.Tâm"
+  ],
+  [
+   7,
+   "KINH",
+   "T.Trụ"
+  ],
+  [
+   8,
+   "SINH",
+   "T.Nhậm"
+  ],
+  [
+   9,
+   "CẢNH",
+   "T.Anh"
+  ]
+ ],
+ "cuu_tinh_chuyen": [
+  [
+   "T.Nhậm",
+   "T.Xung"
+  ],
+  [
+   "T.Xung",
+   "T.Phò"
+  ],
+  [
+   "T.Phò",
+   "T.Anh"
+  ],
+  [
+   "T.Anh",
+   "T.Nhuế"
+  ],
+  [
+   "T.Nhuế",
+   "T.Trụ"
+  ],
+  [
+   "T.Trụ",
+   "T.Tâm"
+  ],
+  [
+   "T.Tâm",
+   "T.Bồng"
+  ],
+  [
+   "T.Bồng",
+   "T.Nhậm"
+  ]
+ ],
+ "bat_mon_duong": [
+  [
+   "HƯU",
+   "SINH",
+   "THƯƠNG",
+   "ĐỖ",
+   "CẢNH",
+   "TỬ",
+   "KINH",
+   "KHAI"
+  ],
+  [
+   "SINH",
+   "THƯƠNG",
+   "ĐỖ",
+   "CẢNH",
+   "TỬ",
+   "KINH",
+   "KHAI",
+   "HƯU"
+  ],
+  [
+   "THƯƠNG",
+   "ĐỖ",
+   "CẢNH",
+   "TỬ",
+   "KINH",
+   "KHAI",
+   "HƯU",
+   "SINH"
+  ],
+  [
+   "ĐỖ",
+   "CẢNH",
+   "TỬ",
+   "KINH",
+   "KHAI",
+   "HƯU",
+   "SINH",
+   "THƯƠNG"
+  ],
+  [
+   "CẢNH",
+   "TỬ",
+   "KINH",
+   "KHAI",
+   "HƯU",
+   "SINH",
+   "THƯƠNG",
+   "ĐỖ"
+  ],
+  [
+   "TỬ",
+   "KINH",
+   "KHAI",
+   "HƯU",
+   "SINH",
+   "THƯƠNG",
+   "ĐỖ",
+   "CẢNH"
+  ],
+  [
+   "KINH",
+   "KHAI",
+   "HƯU",
+   "SINH",
+   "THƯƠNG",
+   "ĐỖ",
+   "CẢNH",
+   "TỬ"
+  ],
+  [
+   "KHAI",
+   "HƯU",
+   "SINH",
+   "THƯƠNG",
+   "ĐỖ",
+   "CẢNH",
+   "TỬ",
+   "KINH"
+  ]
+ ],
+ "diaban_luc_nghi": [
+  [
+   "Mậu",
+   "Kỷ",
+   "Canh",
+   "Tân",
+   "Nhâm",
+   "Quý",
+   "Đinh",
+   "Bính",
+   "Ất"
+  ],
+  [
+   "Kỷ",
+   "Canh",
+   "Tân",
+   "Nhâm",
+   "Quý",
+   "Đinh",
+   "Bính",
+   "Ất",
+   "Mậu"
+  ],
+  [
+   "Canh",
+   "Tân",
+   "Nhâm",
+   "Quý",
+   "Đinh",
+   "Bính",
+   "Ất",
+   "Mậu",
+   "Kỷ"
+  ],
+  [
+   "Tân",
+   "Nhâm",
+   "Quý",
+   "Đinh",
+   "Bính",
+   "Ất",
+   "Mậu",
+   "Kỷ",
+   "Canh"
+  ],
+  [
+   "Nhâm",
+   "Quý",
+   "Đinh",
+   "Bính",
+   "Ất",
+   "Mậu",
+   "Kỷ",
+   "Canh",
+   "Tân"
+  ],
+  [
+   "Quý",
+   "Đinh",
+   "Bính",
+   "Ất",
+   "Mậu",
+   "Kỷ",
+   "Canh",
+   "Tân",
+   "Nhâm"
+  ],
+  [
+   "Đinh",
+   "Bính",
+   "Ất",
+   "Mậu",
+   "Kỷ",
+   "Canh",
+   "Tân",
+   "Nhâm",
+   "Quý"
+  ],
+  [
+   "Bính",
+   "Ất",
+   "Mậu",
+   "Kỷ",
+   "Canh",
+   "Tân",
+   "Nhâm",
+   "Quý",
+   "Đinh"
+  ],
+  [
+   "Ất",
+   "Mậu",
+   "Kỷ",
+   "Canh",
+   "Tân",
+   "Nhâm",
+   "Quý",
+   "Đinh",
+   "Bính"
+  ]
+ ],
+ "bat_than": [
+  [
+   "T.Phù",
+   "Đ.Xà",
+   "T.Phù",
+   "Đ.Xà"
+  ],
+  [
+   "Đ.Xà",
+   "T.Âm",
+   "Đ.Xà",
+   "T.Âm"
+  ],
+  [
+   "T.Âm",
+   "L.Hợp",
+   "T.Âm",
+   "L.Hợp"
+  ],
+  [
+   "L.Hợp",
+   "C.Trận",
+   "L.Hợp",
+   "B.Hổ"
+  ],
+  [
+   "C.Trận",
+   "C.Tước",
+   "B.Hổ",
+   "H.Vũ"
+  ],
+  [
+   "C.Tước",
+   "C.Địa",
+   "H.Vũ",
+   "C.Địa"
+  ],
+  [
+   "C.Địa",
+   "C.Thiên",
+   "C.Địa",
+   "C.Thiên"
+  ],
+  [
+   "C.Thiên",
+   "T.Phù",
+   "C.Thiên",
+   "T.Phù"
+  ]
+ ],
+ "thien_ban_chuoi_tham_chieu": [
+  [
+   "K26",
+   "H26"
+  ],
+  [
+   "H26",
+   "H21"
+  ],
+  [
+   "H21",
+   "H16"
+  ],
+  [
+   "H16",
+   "K16"
+  ],
+  [
+   "K16",
+   "N16"
+  ],
+  [
+   "N16",
+   "N21"
+  ],
+  [
+   "N21",
+   "N26"
+  ],
+  [
+   "N26",
+   "K26"
+  ]
+ ],
+ "tra_Y63": [
+  {
+   "Y63": 0,
+   "can": "Mậu",
+   "so": 1
+  },
+  {
+   "Y63": 2,
+   "can": "Quý",
+   "so": 6
+  },
+  {
+   "Y63": 4,
+   "can": "Nhâm",
+   "so": 5
+  },
+  {
+   "Y63": 6,
+   "can": "Tân",
+   "so": 4
+  },
+  {
+   "Y63": 8,
+   "can": "Canh",
+   "so": 3
+  },
+  {
+   "Y63": 10,
+   "can": "Kỷ",
+   "so": 2
+  }
+ ],
+ "dia_ban_cong_thuc": {
+  "H16": {
+   "neo_cuc": 4,
+   "duong_tu": "H21",
+   "am_tu": "K21"
+  },
+  "K16": {
+   "neo_cuc": 9,
+   "duong_tu": "H26",
+   "am_tu": "K26"
+  },
+  "N16": {
+   "neo_cuc": 2,
+   "duong_tu": "K26",
+   "am_tu": "H21"
+  },
+  "H21": {
+   "neo_cuc": 3,
+   "duong_tu": "N16",
+   "am_tu": "H16"
+  },
+  "K21": {
+   "neo_cuc": 5,
+   "duong_tu": "H16",
+   "am_tu": "N26"
+  },
+  "N21": {
+   "neo_cuc": 7,
+   "duong_tu": "N26",
+   "am_tu": "H26"
+  },
+  "H26": {
+   "neo_cuc": 8,
+   "duong_tu": "N21",
+   "am_tu": "K16"
+  },
+  "K26": {
+   "neo_cuc": 1,
+   "duong_tu": "K16",
+   "am_tu": "N16"
+  },
+  "N26": {
+   "neo_cuc": 6,
+   "duong_tu": "K21",
+   "am_tu": "N21"
+  },
+  "_ghi_chu": "moi o = (cuc == neo_cuc) ? 'Mau' : tra_LucNghi(amDuong=='-' ? am_tu : duong_tu)"
+ }
+}
