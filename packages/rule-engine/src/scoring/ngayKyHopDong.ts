@@ -33,6 +33,11 @@ import {
 } from "./canChiRelationScoring.js";
 import { tinhTrachCatDayBase, type TrachCatDayBaseInput, type TrachCatDayBaseRules, type TrachCatDayBaseResult } from "./trachCatDayBase.js";
 import type { NguoiTuoi } from "./tuoiHopLamAn.js";
+import { xetChanLocQuyNhan, type KetQuaChanCatTinh } from "../trach-nhat/chanLocQuyNhan.js";
+
+// Điểm cộng ưu tiên sao cát cá nhân theo CAN năm sinh: Chân Lộc > Chân Dương Quý > Chân Âm Quý.
+// (Tam Hợp/Lục Hợp đã tính trong `nguoiKy` compatibility, không cộng lại.)
+const DIEM_CONG_CHAN = { chanLoc: 2, chanDuongQuy: 1.5, chanAmQuy: 1.2 } as const;
 
 type Can = Data.Can;
 type Chi = Data.Chi;
@@ -183,6 +188,8 @@ export interface KyHopDongResult {
   cooperation: TrachCatDayBaseResult;
   financial: TrachCatDayBaseResult;
   nguoiKy: KyHopDongPersonalResult | null;
+  /** Chân Lộc / Chân Dương Quý / Chân Âm Quý theo Can năm sinh — null nếu không nhập tuổi. */
+  catCaNhan: KetQuaChanCatTinh | null;
 }
 
 export function calculateKyHopDongScore(
@@ -222,6 +229,18 @@ export function calculateKyHopDongScore(
       financial.diem * T.financial;
   }
 
+  // Cộng điểm Chân Lộc/Dương Quý/Âm Quý theo Can năm sinh — TRƯỚC trần đại kỵ.
+  const catCaNhan = nguoiKy ? xetChanLocQuyNhan(dayCan, dayChi, nguoiKy.can) : null;
+  if (catCaNhan) {
+    diem += catCaNhan.chanLoc
+      ? DIEM_CONG_CHAN.chanLoc
+      : catCaNhan.chanDuongQuy
+        ? DIEM_CONG_CHAN.chanDuongQuy
+        : catCaNhan.chanAmQuy
+          ? DIEM_CONG_CHAN.chanAmQuy
+          : 0;
+  }
+
   if (base.phamDaiKy) {
     diem = Math.min(diem, KY_HOP_DONG_SCORING_RULES.base.ngayDaiKy.diemTranNeuPham);
   }
@@ -229,7 +248,7 @@ export function calculateKyHopDongScore(
   diem = round1(clamp10(diem));
   const hang = getKyHopDongRating(diem);
 
-  return { diem, hang, nhan: NHAN_THEO_HANG[hang], base, contract, document, transaction, cooperation, financial, nguoiKy: nguoiKyResult };
+  return { diem, hang, nhan: NHAN_THEO_HANG[hang], base, contract, document, transaction, cooperation, financial, nguoiKy: nguoiKyResult, catCaNhan };
 }
 
 export function formatKyHopDongResult(ngayStr: string, result: KyHopDongResult): string {

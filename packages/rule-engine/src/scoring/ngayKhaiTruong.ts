@@ -27,6 +27,12 @@ import {
 } from "./canChiRelationScoring.js";
 import { tinhTrachCatDayBase, type TrachCatDayBaseInput, type TrachCatDayBaseRules, type TrachCatDayBaseResult } from "./trachCatDayBase.js";
 import type { NguoiTuoi } from "./tuoiHopLamAn.js";
+import { xetChanLocQuyNhan, type KetQuaChanCatTinh } from "../trach-nhat/chanLocQuyNhan.js";
+
+// Điểm cộng ưu tiên cho sao cát cá nhân theo CAN năm sinh (một ngày chỉ trúng tối đa 1 loại chân,
+// vì mỗi loại là 1 trụ Giáp Tý riêng). Thứ tự ưu tiên: Chân Lộc > Chân Dương Quý > Chân Âm Quý.
+// Tam Hợp/Lục Hợp đã được tính trong `tuoiChu` nên không cộng lại ở đây (tránh trùng).
+const DIEM_CONG_CHAN = { chanLoc: 2, chanDuongQuy: 1.5, chanAmQuy: 1.2 } as const;
 
 type Can = Data.Can;
 type Chi = Data.Chi;
@@ -146,6 +152,8 @@ export interface KhaiTruongResult {
   taiLoc: TrachCatDayBaseResult;
   khaiMo: TrachCatDayBaseResult;
   tuoiChu: KhaiTruongPersonalResult | null;
+  /** Chân Lộc / Chân Dương Quý / Chân Âm Quý theo Can năm sinh — null nếu không nhập tuổi chủ. */
+  catCaNhan: KetQuaChanCatTinh | null;
 }
 
 export function calculateKhaiTruongScore(
@@ -169,6 +177,19 @@ export function calculateKhaiTruongScore(
     diem = base.diem * T.base + taiLoc.diem * T.taiLoc + khaiMo.diem * T.khaiMo;
   }
 
+  // Cộng điểm sao cát cá nhân theo Can năm sinh (Chân Lộc/Dương Quý/Âm Quý) — cộng TRƯỚC trần đại
+  // kỵ để ngày phạm đại kỵ theo cách khác vẫn bị chặn (yêu cầu "phải tương thích các cách tính khác").
+  const catCaNhan = chu ? xetChanLocQuyNhan(dayCan, dayChi, chu.can) : null;
+  if (catCaNhan) {
+    diem += catCaNhan.chanLoc
+      ? DIEM_CONG_CHAN.chanLoc
+      : catCaNhan.chanDuongQuy
+        ? DIEM_CONG_CHAN.chanDuongQuy
+        : catCaNhan.chanAmQuy
+          ? DIEM_CONG_CHAN.chanAmQuy
+          : 0;
+  }
+
   if (base.phamDaiKy) {
     diem = Math.min(diem, KHAI_TRUONG_SCORING_RULES.base.ngayDaiKy.diemTranNeuPham);
   }
@@ -176,7 +197,7 @@ export function calculateKhaiTruongScore(
   diem = round1(clamp10(diem));
   const hang = getKhaiTruongRating(diem);
 
-  return { diem, hang, nhan: NHAN_THEO_HANG[hang], base, taiLoc, khaiMo, tuoiChu };
+  return { diem, hang, nhan: NHAN_THEO_HANG[hang], base, taiLoc, khaiMo, tuoiChu, catCaNhan };
 }
 
 export function formatKhaiTruongResult(ngayStr: string, result: KhaiTruongResult): string {

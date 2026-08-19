@@ -3,7 +3,7 @@
  * xếp hạng giảm dần. Chế độ theo tuổi chủ khi có `namSinhChu`.
  */
 import type { Data } from "@thien-anh/calendar-core";
-import { Scoring, TrachNhat } from "@thien-anh/rule-engine";
+import { Scoring } from "@thien-anh/rule-engine";
 import { tinhNgayInfo } from "./ngayInfo.js";
 import { tinhTuTru } from "./tuTru.js";
 
@@ -20,8 +20,7 @@ export interface NgayKhaiTruongRangeInput {
 export interface NgayKhaiTruongNgay extends Scoring.KhaiTruongResult {
   solarDate: { year: number; month: number; day: number };
   lunarDate: { year: number; month: number; day: number; isLeapMonth: boolean };
-  /** Sao cát cá nhân theo CAN năm sinh chủ (chỉ có khi nhập năm sinh): Chân Lộc / Chân Dương Quý / Chân Âm Quý. */
-  catCaNhan?: { chanLoc: boolean; chanDuongQuy: boolean; chanAmQuy: boolean };
+  // catCaNhan (Chân Lộc/Dương Quý/Âm Quý) kế thừa từ Scoring.KhaiTruongResult — do tầng chấm điểm tính.
 }
 
 export interface NgayKhaiTruongRangeResult {
@@ -53,12 +52,8 @@ function tinhMotNgay(year: number, month: number, day: number, timeZone: string,
     chu,
   );
 
-  // Chân Lộc / Chân Dương Quý / Chân Âm Quý theo CAN năm sinh chủ (khớp cả Can+Chi ngày).
-  const catCaNhan = chu
-    ? TrachNhat.xetChanLocQuyNhan(tuTru.tuTru.ngay.can as Data.Can, tuTru.tuTru.ngay.chi as Data.Chi, chu.can)
-    : undefined;
-
-  return { solarDate: { year, month, day }, lunarDate: tuTru.lunarDate, ...ketQua, ...(catCaNhan ? { catCaNhan } : {}) };
+  // catCaNhan (Chân Lộc/Dương Quý/Âm Quý) + điểm cộng đã do Scoring.calculateKhaiTruongScore tính.
+  return { solarDate: { year, month, day }, lunarDate: tuTru.lunarDate, ...ketQua };
 }
 
 export function calculateNgayKhaiTruongRange(input: NgayKhaiTruongRangeInput): NgayKhaiTruongRangeResult {
