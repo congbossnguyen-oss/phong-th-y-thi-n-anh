@@ -106,10 +106,17 @@ export interface ManhPhaiLuanGiai {
   source: "luan-giai-bat-tu-manh-phai";
 }
 
-/** Đánh giá 1 Đại Vận theo Dụng/Hỷ/Kỵ — phần LUẬN, gắn với `BatTuFacts.daiVan[i]` theo index. */
+/**
+ * Đánh giá 1 Đại Vận theo Dụng/Hỷ/Kỵ — phần LUẬN, gắn với `BatTuFacts.daiVan[i]` theo index.
+ * `can_chi`/`ngu_hanh` KHÔNG phải luận giải — chép nguyên từ `facts.daiVan[i]` (can+chi, canNguHanh),
+ * đưa vào đây để đúng schema `docs/module-nghe-bat-tu.md` mục 2 (mọi trường module Nghề cần đọc
+ * phải có ngay trong từng phần tử `dai_van`, không phải dò lại `facts` theo index).
+ */
 export interface DaiVanLuanGiai {
   tuTuoi: number;
   denTuoi: number;
+  can_chi: string;
+  ngu_hanh: NguHanh;
   dungHy: "dung" | "hy" | "trung" | "ky" | Insufficient;
   chuDe: string | Insufficient;
   mucThuan: "cao" | "trung_binh" | "thap" | Insufficient;

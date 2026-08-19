@@ -85,7 +85,7 @@ export interface LlmBatTuOutput {
   manh_phai: Omit<ManhPhaiLuanGiai, "source" | "hieu_suat"> & {
     hieu_suat: { co_che: ManhPhaiLuanGiai["hieu_suat"]["co_che"]; muc: ManhPhaiLuanGiai["hieu_suat"]["muc"] };
   };
-  dai_van: Omit<DaiVanLuanGiai, "tuTuoi" | "denTuoi">[];
+  dai_van: Omit<DaiVanLuanGiai, "tuTuoi" | "denTuoi" | "can_chi" | "ngu_hanh">[];
   warnings: string[];
   model: string;
 }

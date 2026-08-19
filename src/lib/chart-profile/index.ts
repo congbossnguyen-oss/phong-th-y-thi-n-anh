@@ -75,6 +75,8 @@ export async function getBatTuProfile(input: CastBatTuInput): Promise<BatTuProfi
     dai_van: facts.daiVan.map((dv) => ({
       tuTuoi: dv.tuTuoi,
       denTuoi: dv.denTuoi,
+      can_chi: `${dv.can} ${dv.chi}`,
+      ngu_hanh: dv.canNguHanh,
       dungHy: "insufficient_data",
       chuDe: "insufficient_data",
       mucThuan: "insufficient_data",
@@ -128,6 +130,8 @@ export async function getBatTuProfile(input: CastBatTuInput): Promise<BatTuProfi
     dai_van: facts.daiVan.map((dv, i) => ({
       tuTuoi: dv.tuTuoi,
       denTuoi: dv.denTuoi,
+      can_chi: `${dv.can} ${dv.chi}`,
+      ngu_hanh: dv.canNguHanh,
       dungHy: (output.dai_van[i]?.dungHy ?? "insufficient_data") as DaiVanLuanGiai["dungHy"],
       chuDe: output.dai_van[i]?.chuDe ?? "insufficient_data",
       mucThuan: (output.dai_van[i]?.mucThuan ?? "insufficient_data") as DaiVanLuanGiai["mucThuan"],
