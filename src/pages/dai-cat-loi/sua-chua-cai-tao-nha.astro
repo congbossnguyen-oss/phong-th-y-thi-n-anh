@@ -175,8 +175,20 @@ export const prerender = true;
     nhan: string;
     dayScore: DayScoreFull;
     hourScore: HourScoreFull;
+    catCaNhan?: { tang: string | null; nhan: string } | null;
   }
   interface RangeResult { renovationLevel: string; siteSafety: SiteSafety; ownerYear: OwnerYear; xepHang: ToHop[] }
+
+  const MAU_TANG: Record<string, string> = {
+    "chan-loc": "bg-amber-100 text-amber-700", "chan-duong-quy": "bg-violet-100 text-violet-700",
+    "chan-am-quy": "bg-indigo-100 text-indigo-700", "loc": "bg-amber-50 text-amber-600 ring-1 ring-amber-200",
+    "tam-hop": "bg-emerald-100 text-emerald-700", "luc-hop": "bg-teal-100 text-teal-700",
+  };
+  const ICON_TANG: Record<string, string> = { "chan-loc": "💰", "chan-duong-quy": "🌤️", "chan-am-quy": "🌙", "loc": "🪙", "tam-hop": "☯", "luc-hop": "☯" };
+  function badgeCat(c: { tang: string | null; nhan: string } | null | undefined): string {
+    if (!c || !c.tang) return "";
+    return ` <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-bold ${MAU_TANG[c.tang] ?? "bg-slate-100 text-slate-600"}">${ICON_TANG[c.tang] ?? ""} ${c.nhan}</span>`;
+  }
   interface MotNgayResult { xepHang: ToHop[] }
 
   function renderDeltaYeuTo(list: YeuTo[]): string {
@@ -257,7 +269,7 @@ export const prerender = true;
             `<div class="rounded-xl border border-slate-200 bg-slate-50">
               <button type="button" class="sc-gio-vi-sao w-full p-2.5 text-left" data-idx="${i}">
                 <div class="flex items-center justify-between">
-                  <p class="text-sm font-semibold text-slate-900">${HUY_CHUONG[i] ?? `${i + 1}.`} ${g.khungGio} (giờ ${g.chiGio})</p>
+                  <p class="text-sm font-semibold text-slate-900">${HUY_CHUONG[i] ?? `${i + 1}.`} ${g.khungGio} (giờ ${g.chiGio})${badgeCat(g.catCaNhan)}</p>
                   <span class="text-sm">${nhanDotHtml(g.nhan)} — ${g.finalDiem}/10</span>
                 </div>
                 <p class="mt-1 text-xs text-amber-600">Vì sao? (bấm để xem chi tiết)</p>

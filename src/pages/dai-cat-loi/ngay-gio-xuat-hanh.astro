@@ -127,8 +127,20 @@ export const prerender = true;
     nhan: string;
     dayScore: DayScoreFull;
     hourScore: HourScoreFull;
+    catCaNhan?: { tang: string | null; nhan: string } | null;
   }
   interface RangeResult { xepHang: ToHop[] }
+
+  const MAU_TANG: Record<string, string> = {
+    "chan-loc": "bg-amber-100 text-amber-700", "chan-duong-quy": "bg-violet-100 text-violet-700",
+    "chan-am-quy": "bg-indigo-100 text-indigo-700", "loc": "bg-amber-50 text-amber-600 ring-1 ring-amber-200",
+    "tam-hop": "bg-emerald-100 text-emerald-700", "luc-hop": "bg-teal-100 text-teal-700",
+  };
+  const ICON_TANG: Record<string, string> = { "chan-loc": "💰", "chan-duong-quy": "🌤️", "chan-am-quy": "🌙", "loc": "🪙", "tam-hop": "☯", "luc-hop": "☯" };
+  function badgeCat(c: { tang: string | null; nhan: string } | null | undefined): string {
+    if (!c || !c.tang) return "";
+    return ` <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-bold ${MAU_TANG[c.tang] ?? "bg-slate-100 text-slate-600"}">${ICON_TANG[c.tang] ?? ""} ${c.nhan}</span>`;
+  }
   interface MotNgayResult { xepHang: ToHop[] }
 
   // Render danh sách yếu tố kiểu DELTA (base/mucDich của trachCatDayBase.ts — mỗi mục là số cộng/trừ
@@ -295,7 +307,7 @@ export const prerender = true;
           const ngayStr = `${pad2(t.solarDate.day)}/${pad2(t.solarDate.month)}/${t.solarDate.year}`;
           return `<div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
             <div class="flex items-center justify-between">
-              <p class="font-display text-base font-bold text-slate-900">${huyChuong} ${ngayStr}</p>
+              <p class="font-display text-base font-bold text-slate-900">${huyChuong} ${ngayStr}${badgeCat(t.catCaNhan)}</p>
               <span class="text-sm font-semibold">${nhanDotHtml(t.nhan)} — ${t.finalDiem}/10</span>
             </div>
             <p class="mt-1.5 text-xs text-slate-500">Giờ tốt nhất: ${t.khungGio} (giờ ${t.chiGio}) · Ngày: ${nhanDotHtml(t.dayScore.nhan)} (${t.dayScore.diem}/10) · Giờ: ${nhanDotHtml(t.hourScore.nhan)} (${t.hourScore.diem}/10)</p>

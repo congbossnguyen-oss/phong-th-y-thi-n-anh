@@ -17,7 +17,7 @@
  * tự đoán hướng người dùng đi").
  */
 import type { Data } from "@thien-anh/calendar-core";
-import { Scoring } from "@thien-anh/rule-engine";
+import { Scoring, TrachNhat } from "@thien-anh/rule-engine";
 import { tinhNgayInfo } from "./ngayInfo.js";
 import { tinhTuTru } from "./tuTru.js";
 import { tinhGio12 } from "./gioBang.js";
@@ -68,6 +68,8 @@ export interface XuatHanhCaNhanToHop {
   finalDiem: number;
   hang: Scoring.XuatHanhCaNhanHang;
   nhan: string;
+  /** Tiêu chí cát tinh cá nhân theo tuổi (mức ngày) — để dễ lọc ngày. */
+  catCaNhan: TrachNhat.CatTinhCaNhan;
 }
 
 function tinhMotNgay(
@@ -115,6 +117,9 @@ function tinhMotNgay(
 
   const directionBonus = huongResult ? round1(clamp(((huongResult.diem - 5) / 5) * DIRECTION_BONUS_MAX, -DIRECTION_BONUS_MAX, DIRECTION_BONUS_MAX)) : 0;
 
+  // Cát tinh cá nhân mức NGÀY (chung cho 12 giờ) — chỉ đánh dấu để lọc.
+  const catCaNhan = TrachNhat.tinhCatTinhCaNhan(tuTru.tuTru.ngay.can as Data.Can, tuTru.tuTru.ngay.chi as Chi, nguoi.can, nguoi.chi);
+
   return gio12.map((g, chiIndex) => {
     const hourScore = Scoring.calculateHourScore({
       dayCan: tuTru.tuTru.ngay.can as Data.Can,
@@ -143,6 +148,7 @@ function tinhMotNgay(
       finalDiem,
       hang,
       nhan: Scoring.xuatHanhCaNhanNhan(finalDiem),
+      catCaNhan,
     };
   });
 }
