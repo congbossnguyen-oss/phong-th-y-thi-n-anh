@@ -1,2 +1,13 @@
 export { lapLaBan } from "./engine";
-export type { AmDuong, CanChiPillar, CungInfo, LapLaBanInput, LapLaBanResult, TuTru } from "./types";
+export type {
+  AmDuong,
+  CanChiPillar,
+  CheDo,
+  CheDoHoTro,
+  CungInfo,
+  LapLaBanInput,
+  LapLaBanInput1080,
+  LapLaBanInputLich,
+  LapLaBanResult,
+  TuTru,
+} from "./types";
