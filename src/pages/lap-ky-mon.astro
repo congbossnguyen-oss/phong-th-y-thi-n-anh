@@ -113,6 +113,42 @@ export const prerender = true;
           <p class="mt-2 text-xs text-(--color-ink-500)">
             Luận cách cục chi tiết (theo phương pháp/9 sao) — chưa làm, để bổ sung ở giai đoạn sau.
           </p>
+
+          <!-- Lưu Ý (chú giải ký hiệu) — y như app -->
+          <p class="mt-5 mb-2 text-sm font-semibold text-(--color-cinnabar-400)">＋ Lưu Ý</p>
+          <div class="km-luuy">
+            <div class="km-luuy-row">
+              <span class="km-luuy-item"><span class="km-key km-key-kv">KV</span>: Không Vong</span>
+              <span class="km-luuy-item">🐴 : Mã</span>
+              <span class="km-luuy-item">✝ : Mộ</span>
+            </div>
+            <div class="km-luuy-row">
+              <span class="km-luuy-item">↗ : Môn bách</span>
+              <span class="km-luuy-item">↙ : Cung bức</span>
+            </div>
+            <div class="km-luuy-row">
+              <span class="km-luuy-item">↩ : Cung sinh môn</span>
+              <span class="km-luuy-item">↪ : Môn sinh cung</span>
+            </div>
+            <div class="km-luuy-row">
+              <span class="km-luuy-item"><span class="km-key km-key-red">H</span>: Giờ</span>
+              <span class="km-luuy-item"><span class="km-key km-key-red">D</span>: Ngày</span>
+              <span class="km-luuy-item"><span class="km-key km-key-red">M</span>: Tháng</span>
+              <span class="km-luuy-item"><span class="km-key km-key-red">Y</span>: Năm</span>
+            </div>
+            <div class="km-luuy-row">
+              <span class="km-luuy-red">V: Đế Vượng</span>
+              <span class="km-luuy-red">T: Tướng</span>
+            </div>
+            <div class="km-luuy-row">
+              <span>H: Hưu</span><span>T: Tù</span><span>P: Phế</span>
+            </div>
+          </div>
+          <p class="mt-3 text-xs text-(--color-ink-500)">
+            Các ký hiệu Mộ · mũi tên (Môn bách/Cung bức/Cung sinh môn/Môn sinh cung) · H/D/M/Y ·
+            Vượng suy (V/T · H/T/P) trên từng cung <strong>chưa vẽ</strong> — đang chờ Công xác nhận
+            quy tắc để tính đúng, không đoán.
+          </p>
         </div>
 
         <!-- Sub-tab Mệnh / Tam Thắng / Lịch — chỉ hiện ở chế độ Mệnh -->
@@ -309,59 +345,88 @@ export const prerender = true;
     font-weight: 700;
     opacity: 0.85;
   }
+  /* Thân cung: bố cục 3 cột như app — hàng trên [thiên can | sao | thần], giữa [số địa bàn],
+     hàng dưới [địa can | môn]. Nhãn KV/Mã/Trực Phù/Trực Sử nằm cạnh trái ô số. */
   .km-cung-inner {
     flex: 1;
     margin: 0 3px 3px;
     background: #fffdf8;
     border-radius: 3px;
-    padding: 0.4rem 0.35rem 0.35rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
+    padding: 0.28rem 0.32rem 0.26rem;
+    display: grid;
+    grid-template-rows: auto 1fr auto;
     color: #2a1512;
   }
-  .km-cung-thien-can { font-size: 0.72rem; color: #6b5a4a; }
-  .km-cung-sao {
+  .km-cung-r1,
+  .km-cung-r2 {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: start;
+    column-gap: 2px;
+  }
+  .cc-can { font-size: 0.7rem; font-weight: 600; color: #3a2620; text-align: left; }
+  .cc-sao {
     font-family: var(--font-display);
     font-weight: 700;
-    font-size: 1.05rem;
+    font-size: 1rem;
     color: #1f120e;
-    line-height: 1.15;
+    text-align: center;
+    line-height: 1;
   }
-  .km-cung-dia {
-    margin-top: 0.3rem;
-    padding-top: 0.28rem;
-    width: 100%;
+  .cc-than { font-size: 0.62rem; color: #b8322a; text-align: right; line-height: 1.05; }
+  .km-cung-mid { position: relative; display: flex; align-items: center; justify-content: center; }
+  .cc-so { font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; color: #1f120e; }
+  .km-cung-marks {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
     display: flex;
-    align-items: baseline;
-    justify-content: center;
-    gap: 0.3rem;
-    border-top: 1px dashed #e3d6bf;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
   }
-  .km-cung-mon { font-weight: 700; font-size: 0.9rem; color: #b8322a; }
-  .km-cung-dia-can { font-size: 0.72rem; color: #6b5a4a; }
-  .km-cung-than { font-size: 0.67rem; color: #7a6a5a; margin-top: 0.12rem; }
-  .km-cung-badges {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.2rem;
-    margin-top: auto;
-    padding-top: 0.3rem;
+  .km-cung-r2 { align-items: end; }
+  .cc-diacan { font-size: 0.7rem; font-weight: 600; color: #3a2620; text-align: left; }
+  .cc-mon {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: #b8322a;
+    text-align: center;
   }
-  .km-cung-trung-note { font-size: 0.6rem; font-style: italic; color: #9a8a78; margin-top: 0.25rem; }
+  .km-cung-trung-note {
+    grid-column: 1 / -1;
+    font-size: 0.56rem;
+    font-style: italic;
+    color: #9a8a78;
+    text-align: center;
+    line-height: 1.1;
+  }
   .km-badge {
     border-radius: var(--radius-pill);
-    padding: 0.06rem 0.42rem;
-    font-size: 0.6rem;
+    padding: 0.04rem 0.34rem;
+    font-size: 0.56rem;
     font-weight: 700;
-    line-height: 1.4;
+    line-height: 1.35;
   }
   .km-badge-kv { background: #6b5b4b; color: #fff; }
   .km-badge-ma { background: #e0a422; color: #3a2600; }
   .km-badge-tp { background: #c0261e; color: #fff; }
   .km-badge-ts { background: #e07b34; color: #fff; }
+
+  /* Mục Lưu Ý (chú giải ký hiệu) — dưới Bảng Chi Tiết, phong cách app. */
+  .km-luuy { font-size: 0.84rem; color: #3a2620; }
+  .km-luuy-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 1.1rem; margin-bottom: 0.55rem; }
+  .km-luuy-item { display: inline-flex; align-items: center; gap: 0.3rem; }
+  .km-key {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 1.3rem; height: 1.3rem; padding: 0 0.25rem;
+    border-radius: 5px; font-size: 0.72rem; font-weight: 800; line-height: 1;
+  }
+  .km-key-kv { border-radius: 999px; background: #6b5b4b; color: #fff; }
+  .km-key-red { background: #f28b82; color: #fff; }
+  .km-luuy-red { color: #c0261e; font-weight: 700; }
 
   /* ---- Bảng dạng app (Tam Thắng, Cách Cục, Lịch): header đỏ, thân nền hồng nhạt ---- */
   .km-app-table {
@@ -392,14 +457,9 @@ export const prerender = true;
     text-decoration: underline;
   }
   .km-app-table .km-cc-key {
-    background: #fdeeed;
     font-weight: 700;
-    color: #7a2a25;
-    text-align: left;
-    white-space: nowrap;
-    width: 6.5rem;
+    color: #4a2a25;
   }
-  .km-app-table .km-cc-val { text-align: left; }
   .km-table-frame {
     border-radius: 10px;
     overflow: hidden;
@@ -519,6 +579,18 @@ export const prerender = true;
     "C.Trận": "Câu Trận", "C.Tước": "Chu Tước", "B.Hổ": "Bạch Hổ", "H.Vũ": "Huyền Vũ",
     "C.Địa": "Cửu Địa", "C.Thiên": "Cửu Thiên",
   };
+  // Tên sao viết TẮT (bỏ chữ "Thiên") cho ô cung nhỏ — giống app hiển thị "Tâm", "Bồng"...
+  const SAO_NGAN: Record<string, string> = {
+    "T.Bồng": "Bồng", "T.Nhuế": "Nhuế", "T.Xung": "Xung", "T.Phò": "Phụ",
+    "T.Tâm": "Tâm", "T.Trụ": "Trụ", "T.Nhậm": "Nhậm", "T.Anh": "Anh",
+  };
+  // Số ĐỊA BÀN mỗi cung = Lường Thiên Xích: khởi số CỤC ở Trung cung (Lạc Thư 5) rồi phi THUẬN
+  // qua các cung (5→6→7→8→9→1→2→3→4), tăng dần 1. Đã đối chiếu khớp 9/9 ô với ảnh app (cục 1:
+  // Trung=1, Càn=2, Đoài=3, Cấn=4, Ly=5, Khảm=6, Khôn=7, Chấn=8, Tốn=9).
+  function soDiaBan(soCung: number, cuc: number): number {
+    const flyIndex = (soCung + 4) % 9; // vị trí trên đường phi thuận, Trung(5)=0
+    return ((cuc - 1 + flyIndex) % 9) + 1;
+  }
   // Ngũ hành theo cung Lạc Thư — tô nền dải hướng mỗi cung (bộ màu theo app Kỳ Môn Pro:
   // Mộc xanh lá, Hỏa đỏ, Thổ vàng, Kim xám, Thủy xanh dương).
   const NGU_HANH_CUNG: Record<number, string> = {
@@ -702,38 +774,46 @@ export const prerender = true;
       if (soCung === laBan.trucSuCung) badges.push('<span class="km-badge km-badge-ts">Trực Sử</span>');
       const trungNote =
         soCung === 5
-          ? '<p class="km-cung-trung-note">Nhãn đặc biệt (Phản Ngâm...) chưa tính</p>'
+          ? '<p class="km-cung-trung-note">Trung cung — nhãn đặc biệt (Phản Ngâm...) chưa tính</p>'
           : "";
+      const marks = `<div class="km-cung-marks">${badges.join("")}</div>`;
       return `
         <div class="km-cung" style="--nh:${NGU_HANH_CUNG[soCung]}">
           <div class="km-cung-head">
             <span class="km-cung-huong">${c.huong}</span>
-            <span class="km-cung-so">${soCung}</span>
           </div>
           <div class="km-cung-inner">
-            <span class="km-cung-thien-can">${c.thienBanCan}</span>
-            <p class="km-cung-sao">${tenDayDu(TEN_SAO, c.saoThienBan)}</p>
-            <p class="km-cung-than">${tenDayDu(TEN_THAN, c.than)}</p>
-            <div class="km-cung-dia">
-              <span class="km-cung-mon">${tenDayDu(TEN_MON, c.mon)}</span>
-              <span class="km-cung-dia-can">${c.diaBanCan}</span>
+            <div class="km-cung-r1">
+              <span class="cc-can">${c.thienBanCan}</span>
+              <span class="cc-sao">${tenDayDu(SAO_NGAN, c.saoThienBan)}</span>
+              <span class="cc-than">${tenDayDu(TEN_THAN, c.than)}</span>
             </div>
-            <div class="km-cung-badges">${badges.join("")}</div>
+            <div class="km-cung-mid">
+              ${marks}
+              <span class="cc-so">${soDiaBan(soCung, laBan.cuc)}</span>
+            </div>
+            <div class="km-cung-r2">
+              <span class="cc-diacan">${c.diaBanCan}</span>
+              <span class="cc-mon">${tenDayDu(TEN_MON, c.mon)}</span>
+              <span></span>
+            </div>
             ${trungNote}
           </div>
         </div>`;
     }).join("");
 
-    // Bảng Cách Cục
+    // Bảng Chi Tiết — đúng các dòng như app. "Phương Pháp: Trí Nhuận" và "Cửu Tinh: Chuyển Bàn"
+    // là hằng số của phương pháp engine đang dùng (định cục theo lịch tra sẵn + bày sao xoay bàn).
     const rows: [string, string][] = [
-      ["Cục", `${laBan.amDuong === "-" ? "Âm" : "Dương"} ${laBan.cuc}`],
-      ["Phù đầu", laBan.phuDau],
-      ["Trực Sử", `${tenDayDu(TEN_MON, laBan.trucSu)} môn (cung ${laBan.trucSuCung})`],
-      ["Trực Phù", `${tenDayDu(TEN_SAO, laBan.trucPhu)} (cung ${laBan.trucPhuCung})`],
-      ["9 sao", laBan.cungList.map((c) => `${c.huong}: ${tenDayDu(TEN_SAO, c.saoThienBan)}`).join(" · ")],
+      ["Bảng cách cục", `${laBan.amDuong === "-" ? "Âm" : "Dương"} ${laBan.cuc}`],
+      ["Phù Đầu", laBan.phuDau],
+      ["Trực Sử", tenDayDu(TEN_MON, laBan.trucSu)],
+      ["Trực Phù", tenDayDu(SAO_NGAN, laBan.trucPhu)],
+      ["Phương Pháp", "Trí Nhuận"],
+      ["Cửu Tinh", "Chuyển Bàn"],
     ];
     document.getElementById("km-cach-cuc-body")!.innerHTML = rows
-      .map(([k, v]) => `<tr><th class="km-cc-key">${k}</th><td class="km-cc-val">${v}</td></tr>`)
+      .map(([k, v]) => `<tr><td class="km-cc-key">${k}</td><td>${v}</td></tr>`)
       .join("");
 
     // Tam Thắng — bảng header đỏ (Loại / Tên / Cung) như app.
