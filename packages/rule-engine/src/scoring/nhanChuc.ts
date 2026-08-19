@@ -24,6 +24,9 @@ import {
 // Tái dùng LyDoLoai/YeuToDiem/ThapThan từ module VIP chị em thay vì khai lại (tránh trùng tên khi
 // re-export gộp ở scoring/index.ts, và giữ đúng một định nghĩa duy nhất).
 import { tinhThapThan, type ThapThan, type LyDoLoai, type YeuToDiem } from "./kyHopDongCaoCap.js";
+// Bảng 12 Trực + nên/kỵ theo mục đích (chủ dự án bổ sung 2026-08-18). Dùng đánh giá Trực CHUẨN cho
+// việc nhận chức + câu mô tả sẵn cho khách, thay lớp Kiết/Hung "tạm thời" trước đây.
+import { danhGiaTrucTheoMucDich, type MucDo } from "../trach-nhat/trucDanhGiaTongQuat.js";
 
 type Can = Data.Can;
 type Chi = Data.Chi;
@@ -192,8 +195,8 @@ export interface NhanChucRules {
   /** Trọng số khi KHÔNG có tuổi — phần "tuoiVaMenh"/"thapThan" phân bổ lại. Tổng = 1. */
   trongSoKhongTuoi: { nen: number; chuyenBiet: number; hoangHacDao: number };
   nhiThapBatTuNhanChucDiem: Record<NhiThapBatTuNhanChucDanhGia, number>;
-  trucKietTamThoi: number;
-  trucHungTamThoi: number;
+  /** Điểm Trực theo mức độ phù hợp việc nhận chức (bảng nên/kỵ theo mục đích của chủ dự án). */
+  trucTheoMucDo: Record<MucDo, number>;
   trucTrungTinh: number;
   /** Thập Thần Quan/Sát (mục 20 — "suy luận mở rộng", không phải Bát Tự đầy đủ). */
   thapThanDiem: Record<ThapThan, number>;
@@ -227,8 +230,7 @@ export const NHAN_CHUC_SCORING_RULES: NhanChucRules = {
   trongSoCoTuoi: { nen: 0.3, chuyenBiet: 0.25, thapThan: 0.15, hoangHacDao: 0.1, tuoiVaMenh: 0.2 },
   trongSoKhongTuoi: { nen: 0.45, chuyenBiet: 0.35, hoangHacDao: 0.2 },
   nhiThapBatTuNhanChucDiem: { tot: 10, ngoai_le_tot: 8, xau: 1 },
-  trucKietTamThoi: 8,
-  trucHungTamThoi: 3,
+  trucTheoMucDo: { "dai-cat": 10, hop: 8, "binh-thuong": 5.5, ky: 3 },
   trucTrungTinh: 5.5,
   // Chính Quan = quyền lực chính danh (đúng bản chất "nhận chức"). Chính Ấn = văn bằng/quyết định
   // bổ nhiệm — cũng rất hợp nhưng KHÔNG nằm trong "Quan/Quỷ" mà đặc tả mục 20 cho phép dùng, nên
@@ -256,7 +258,6 @@ export const NHAN_CHUC_SCORING_RULES: NhanChucRules = {
 // ---------------------------------------------------------------------------------------
 
 export const THIEU_DU_LIEU_NHAN_CHUC: readonly string[] = [
-  "truc_rules_nhan_chuc", // TRUC_RULES.NHAN_CHUC — chưa có bảng Trực chuyên biệt, đang dùng lớp Kiết/Hung tạm thời.
   "gio_quy_nhan_dang_thien_mon", // thiếu phân biệt Dương/Âm Quý + Nguyệt Tướng theo tiết khí.
   "cuu_suu",
   "diet_mot",
@@ -385,14 +386,11 @@ export function tinhDiemChuyenBietNhanChuc(
 ): { diem: number; yeuTo: YeuToDiem[] } {
   const yeuTo: YeuToDiem[] = [];
 
-  let diemTruc = rules.trucTrungTinh;
-  if (TRUC_NHAN_CHUC_KIET_TAM_THOI.includes(day.trucName)) diemTruc = rules.trucKietTamThoi;
-  else if (TRUC_NHAN_CHUC_HUNG_TAM_THOI.includes(day.trucName)) diemTruc = rules.trucHungTamThoi;
-  yeuTo.push({
-    ten: `Trực ${day.trucName}`,
-    diem: diemTruc,
-    ghiChu: "Lớp Kiết/Hung tạm thời (TRUC_RULES.NHAN_CHUC chưa có bảng riêng — xem thieuDuLieu).",
-  });
+  // Điểm + nhận xét Trực lấy từ bảng nên/kỵ theo mục đích "nhan-chuc" (dữ liệu chuẩn của chủ dự án).
+  // `moTa` là câu đã viết sẵn cho khách đọc, không phải mã kỹ thuật.
+  const trucMd = danhGiaTrucTheoMucDich(day.trucName, "nhan-chuc");
+  const diemTruc = trucMd ? rules.trucTheoMucDo[trucMd.mucDo] : rules.trucTrungTinh;
+  yeuTo.push({ ten: `Trực ${day.trucName}`, diem: diemTruc, ...(trucMd ? { ghiChu: trucMd.moTa } : {}) });
 
   return { diem: round1(clamp10(diemTruc)), yeuTo };
 }
@@ -408,16 +406,13 @@ export function tinh28TuNhanChuc(
     const diem = rules.nhiThapBatTuNhanChucDiem[rieng.danhGia];
     return {
       diem,
-      yeuTo: { ten: `Sao ${tenSao} (28 Tú, đánh giá riêng cho Nhận Chức)`, diem, ghiChu: rieng.ghiChu },
+      yeuTo: { ten: `Sao ${tenSao} (Nhị Thập Bát Tú)`, diem, ghiChu: rieng.ghiChu },
     };
   }
   const diem = catHungTongQuat === "cát" ? 6.5 : 4;
   return {
     diem,
-    yeuTo: {
-      ten: `Sao ${tenSao} (28 Tú, đánh giá tổng quát — trọng số thấp hơn 5 sao đã xác nhận riêng)`,
-      diem,
-    },
+    yeuTo: { ten: `Sao ${tenSao} (Nhị Thập Bát Tú — ${catHungTongQuat})`, diem },
   };
 }
 
@@ -434,10 +429,10 @@ export function tinhDiemThapThanNhanChuc(
   const diem = rules.thapThanDiem[thapThan];
   const ghiChu =
     thapThan === "Chính Quan"
-      ? "Quyền lực chính danh — đúng bản chất việc nhận chức (suy luận mở rộng từ Thập Thần, không phải Bát Tự đầy đủ)."
+      ? "Quyền lực chính danh — rất hợp việc nhận chức."
       : thapThan === "Thất Sát"
-        ? "Quyền uy mạnh nhưng đi kèm áp lực/cạnh tranh (suy luận mở rộng, không phải Bát Tự đầy đủ)."
-        : "Trung tính với mục tiêu nhận chức (suy luận mở rộng, không phải Bát Tự đầy đủ).";
+        ? "Quyền uy mạnh, đi kèm áp lực và cạnh tranh."
+        : "Trung tính với mục tiêu nhận chức.";
   return {
     diem,
     thapThan,
@@ -532,7 +527,7 @@ export function calculateNhanChucScore(
   const yeuTo: YeuToDiem[] = [
     ...chuyenBietTruc.yeuTo,
     chuyenBiet28Tu.yeuTo,
-    { ten: `Ngày ${day.hoangDaoHacDao}`, diem: hoangHacDiem, ghiChu: "Hoàng Đạo KHÔNG phải điều kiện đủ — chỉ là một thành phần (mục 15, 35)." },
+    { ten: `Ngày ${day.hoangDaoHacDao}`, diem: hoangHacDiem },
   ];
 
   let thapThan: ThapThan | null = null;

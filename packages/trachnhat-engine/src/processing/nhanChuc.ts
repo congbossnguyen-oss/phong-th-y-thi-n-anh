@@ -122,16 +122,17 @@ function chonGioNhanChuc(
   const gioCaNgay = TrachNhat.getHoangDaoHacDaoGioCaNgay(dayChiIndex);
   const chiNguoiIndex = chiNamSinh ? CHI_THU_TU.indexOf(chiNamSinh) : -1;
 
+  // Mặc định CHỈ giờ hành chính (7h–19h): nhận chức/nhậm chức là việc công sở, không ai làm ban
+  // đêm — chủ dự án chốt 2026-08-18. Nếu khách tự chọn khung giờ riêng thì tôn trọng khung đó.
+  const kg = khungGio ?? { start: 7, end: 19 };
+
   // Khung giờ đồng hồ của từng Chi giờ: Tý 23–1, Sửu 1–3, ... Giờ Chi i phủ [2i-1, 2i+1) (Tý đặc
   // biệt phủ 23–1). Coi là "trong khung" nếu có giao với [start, end).
   const trongKhung = (hourChiIndex: number): boolean => {
-    if (!khungGio) return true;
     const gioBatDau = hourChiIndex === 0 ? 23 : 2 * hourChiIndex - 1;
     const gioKetThuc = hourChiIndex === 0 ? 25 : 2 * hourChiIndex + 1; // Tý kết thúc 1h hôm sau (=25)
-    const s = khungGio.start;
-    const e = khungGio.end;
     // Chuẩn hóa Tý về dải 23..25 để so; các giờ khác nằm trong 1..23.
-    return gioBatDau < e && gioKetThuc > s;
+    return gioBatDau < kg.end && gioKetThuc > kg.start;
   };
 
   const ds: GioNhanChucDeXuat[] = gioCaNgay.map((g, hourChiIndex) => {
