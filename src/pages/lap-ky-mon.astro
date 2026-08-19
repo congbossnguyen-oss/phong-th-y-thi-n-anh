@@ -450,6 +450,14 @@ export const prerender = true;
   .km-badge-ma { background: transparent; padding: 0; font-size: 0.9rem; line-height: 1; }
   .km-badge-tp { background: #c0261e; color: #fff; }
   .km-badge-ts { background: #e07b34; color: #fff; }
+  /* H/D/M/Y — ô đỏ chữ trắng nhỏ như app (Giờ/Ngày/Tháng/Năm) */
+  .km-hdmy {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 0.95rem; height: 0.95rem; border-radius: 3px;
+    background: #f5726a; color: #fff; font-size: 0.56rem; font-weight: 800; line-height: 1;
+  }
+  /* KV ở đầu cung — badge trên dải màu, cho phép hướng co lại */
+  .km-cung-head .km-badge-kv { flex: none; }
 
   /* Mục Lưu Ý (chú giải ký hiệu) — dưới Bảng Chi Tiết, phong cách app. */
   .km-luuy { font-size: 0.92rem; color: #2a1512; }
@@ -825,19 +833,33 @@ export const prerender = true;
     // Lưới 9 cung
     const cungMap = new Map(laBan.cungList.map((c) => [c.soCung, c]));
     const luoiEl = document.getElementById("km-luoi-9-cung")!;
+    // H/D/M/Y = cung có THIÊN BÀN CAN trùng can của trụ Giờ/Ngày/Tháng/Năm (đã đối chiếu khớp
+    // 4/4 với ảnh app). Chế độ 1080 không có tứ trụ nên bỏ qua.
+    const truLetters: [string, string | undefined][] = [
+      ["H", laBan.tuTru.gio?.can],
+      ["D", laBan.tuTru.ngay?.can],
+      ["M", laBan.tuTru.thang?.can],
+      ["Y", laBan.tuTru.nam?.can],
+    ];
     luoiEl.innerHTML = LUOI_THU_TU.map((soCung) => {
       const c = cungMap.get(soCung);
       if (!c) return "";
-      const badges: string[] = [];
-      if (c.KV) badges.push('<span class="km-badge km-badge-kv">KV</span>');
-      if (c.Ma) badges.push('<span class="km-badge km-badge-ma" title="Mã">🐴</span>');
-      if (soCung === laBan.trucPhuCung) badges.push('<span class="km-badge km-badge-tp">Trực Phù</span>');
-      if (soCung === laBan.trucSuCung) badges.push('<span class="km-badge km-badge-ts">Trực Sử</span>');
-      const marks = `<div class="km-cung-marks">${badges.join("")}</div>`;
+      // KV đưa lên đầu cung (cạnh hướng) như app.
+      const kvHead = c.KV ? '<span class="km-badge km-badge-kv">KV</span>' : "";
+      // Nhãn giữa (cạnh số): Mã / Trực Phù / Trực Sử + H/D/M/Y.
+      const marksList: string[] = [];
+      if (c.Ma) marksList.push('<span class="km-badge km-badge-ma" title="Mã">🐴</span>');
+      if (soCung === laBan.trucPhuCung) marksList.push('<span class="km-badge km-badge-tp">Trực Phù</span>');
+      if (soCung === laBan.trucSuCung) marksList.push('<span class="km-badge km-badge-ts">Trực Sử</span>');
+      for (const [letter, can] of truLetters) {
+        if (can && can === c.thienBanCan) marksList.push(`<span class="km-hdmy" title="${letter}">${letter}</span>`);
+      }
+      const marks = `<div class="km-cung-marks">${marksList.join("")}</div>`;
       return `
         <div class="km-cung" style="--nh:${NGU_HANH_CUNG[soCung]}">
           <div class="km-cung-head">
             <span class="km-cung-huong">${c.huong}</span>
+            ${kvHead}
           </div>
           <div class="km-cung-inner">
             <div class="km-cung-r1">
