@@ -40,6 +40,8 @@ export interface RateLimitOptions {
   max: number;
   /** Độ dài cửa sổ, mili-giây. */
   windowMs: number;
+  /** Thông báo tuỳ chỉnh khi vượt hạn mức (vd hạn mức theo ngày). Mặc định: thông báo "thao tác quá nhanh". */
+  message?: string;
 }
 
 /**
@@ -68,7 +70,7 @@ export function checkRateLimit(
   if (bucket.count >= opts.max) {
     const retryAfter = Math.ceil((bucket.resetAt - now) / 1000);
     return new Response(
-      JSON.stringify({ ok: false, error: "Bạn thao tác quá nhanh. Vui lòng thử lại sau ít phút." }),
+      JSON.stringify({ ok: false, error: opts.message ?? "Bạn thao tác quá nhanh. Vui lòng thử lại sau ít phút." }),
       { status: 429, headers: { "Content-Type": "application/json", "Retry-After": String(retryAfter) } },
     );
   }

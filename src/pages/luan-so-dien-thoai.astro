@@ -1064,8 +1064,20 @@ const namNay = new Date().getFullYear();
     );
   }
 
+  // CTA remarketing xen giữa kết quả (kết quả dài — "thỉnh thoảng 1 dòng" để khách dễ bấm đăng ký tư vấn).
+  function veCtaDong(i: number): string {
+    const ds = [
+      "🎯 Muốn chọn hẳn một dãy số <strong>hợp mệnh</strong>? Đặt lịch tư vấn với chuyên gia →",
+      "📞 Cần luận sâu cả <strong>Bát Tự – Dụng Thần</strong> để chọn số chuẩn nhất? Đăng ký ngay →",
+    ];
+    return `<a href="/lien-he" class="my-4 flex items-center justify-between gap-3 rounded-(--radius-card) border-2 border-(--color-gold-400) bg-(--color-gold-400)/10 px-4 py-3 text-sm font-bold text-(--color-ink-900) transition hover:bg-(--color-gold-400)/20">
+      <span>${ds[i] ?? ds[0]}</span>
+      <span class="shrink-0 text-lg text-(--color-gold-400)">›</span>
+    </a>`;
+  }
+
   function veKetQua(kq: any): string {
-    return [
+    const khoi = [
       khoiDiem(kq),
       khung("Sơ đồ dải năng lượng", veSoDo(kq)),
       khoiKhoiDienKet(kq),
@@ -1080,7 +1092,15 @@ const namNay = new Date().getFullYear();
       khoiCanhBao(kq),
       khoiBaiLuan(kq),
       khoiTongKet(kq),
-    ].join("");
+    ];
+    // Chèn CTA sau khối thứ 5 và thứ 10 — thỉnh thoảng một dòng, không dày đặc gây khó chịu.
+    const out: string[] = [];
+    khoi.forEach((s, i) => {
+      out.push(s);
+      if (i === 4) out.push(veCtaDong(0));
+      if (i === 9) out.push(veCtaDong(1));
+    });
+    return out.join("");
   }
 
   form.addEventListener("submit", async (e) => {

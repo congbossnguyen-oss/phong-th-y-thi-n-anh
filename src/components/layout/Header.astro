@@ -134,6 +134,9 @@ const navWithChildren = mainNav.map((item) => {
                 {item.children.map((child) => (
                   <a href={child.href} class="rounded-(--radius-control) px-3 py-2 text-sm text-(--color-ink-600) hover:bg-(--color-ivory-200)">
                     {child.label}
+                    {child.href === "/luan-so-dien-thoai" && (
+                      <span class="ml-1.5 inline-block rounded bg-red-500 px-1.5 py-0.5 align-middle text-[10px] font-bold uppercase leading-none text-white">Hot</span>
+                    )}
                   </a>
                 ))}
               </div>
@@ -190,6 +193,9 @@ const navWithChildren = mainNav.map((item) => {
                       ]}
                     >
                       {child.label}
+                      {child.href === "/luan-so-dien-thoai" && (
+                        <span class="ml-1.5 inline-block rounded bg-red-500 px-1.5 py-0.5 align-middle text-[10px] font-bold uppercase leading-none text-white">Hot</span>
+                      )}
                     </a>
                   </li>
                 ))}
