@@ -68,7 +68,7 @@ Nguyên tắc engine chung: thiếu dữ liệu → điền `insufficient_data` 
 
 ## 3. MODULE NGHỀ — logic tính (thuần code, đọc 3 config)
 
-Ba file config module đọc: `career_mapping.json`, `domain_mapping_v1.2.json`, `bat_tu_nganh_ngu_hanh.json`.
+Ba file config module đọc: `career_mapping.json`, `domain_mapping.json`, `bat_tu_nganh_ngu_hanh.json`.
 
 **Bước 1 — Career Vector (5 trục).**
 ```
@@ -117,7 +117,7 @@ Quy tắc UX: 80% đồ hình, 20% chữ; mỗi khối 1 hình chính + vài ch�
 | File | Vai trò | Trạng thái |
 |---|---|---|
 | `career_mapping.json` (v2.1) | career_vector theo cơ chế Manh Phái + axis + hệ số hiệu suất | nháp, chờ calibrate |
-| `domain_mapping_v1.2.json` | điểm ngành theo cơ chế + luật 3+3+3 + dedup | nháp |
+| `domain_mapping.json` | điểm ngành theo cơ chế + luật 3+3+3 + dedup | nháp |
 | `bat_tu_nganh_ngu_hanh.json` | **MỚI** — Dụng/Hỷ thần (ngũ hành) → ngành | nháp, cần Công duyệt |
 
 `/knowledge` chỉ cần 2 skill cho v1: `luan-giai-bat-tu` + `luan-giai-bat-tu-manh-phai` (bỏ 2 skill Tử Vi cho nhẹ).
@@ -136,7 +136,7 @@ KIẾN TRÚC 2 PHẦN (bắt buộc tách):
    GỌI LLM nạp /knowledge/luan-giai-bat-tu và /knowledge/luan-giai-bat-tu-manh-phai ->
    trả về HỒ SƠ LÁ SỐ theo schema ở /docs/module-nghe-bat-tu.md mục 2. Cache theo hash lá số.
 2) MODULE NGHỀ: KHÔNG luận huyền học. Chỉ đọc hồ sơ lá số + 3 file config trong /config
-   (career_mapping.json, domain_mapping_v1.2.json, bat_tu_nganh_ngu_hanh.json) rồi tính
+   (career_mapping.json, domain_mapping.json, bat_tu_nganh_ngu_hanh.json) rồi tính
    theo mục 3 của tài liệu, và vẽ giao diện theo bố cục mục 4 (tham chiếu mockup
    /docs/bo-cuc-module-nghe.html).
 
@@ -161,7 +161,7 @@ xong mới xây MODULE NGHỀ; cuối cùng mới tới giao diện. Dừng sau 
 
 - `/docs/module-nghe-bat-tu.md` ← chính tài liệu này
 - `/docs/bo-cuc-module-nghe.html` ← mockup bố cục
-- `/config/career_mapping.json`, `/config/domain_mapping_v1.2.json`, `/config/bat_tu_nganh_ngu_hanh.json`
+- `/config/career_mapping.json`, `/config/domain_mapping.json`, `/config/bat_tu_nganh_ngu_hanh.json`
 - `/knowledge/luan-giai-bat-tu/`, `/knowledge/luan-giai-bat-tu-manh-phai/`
 - `/scripts/validate_mapping.py`
 

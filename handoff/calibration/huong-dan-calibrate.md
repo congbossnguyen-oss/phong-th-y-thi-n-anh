@@ -1,6 +1,6 @@
 # HƯỚNG DẪN CALIBRATE TRỌNG SỐ (≥20 lá số thật)
 
-Mục tiêu: biến các trọng số *bản nháp* trong `career_mapping.json` và `domain_mapping_v1.2.json` thành trọng số *đã kiểm chứng*, dựa trên lá số thật có nghề nghiệp đã biết. Đây là việc của Công (chuyên gia) + dữ liệu, không phải việc Claude Code tự làm.
+Mục tiêu: biến các trọng số *bản nháp* trong `career_mapping.json` và `domain_mapping.json` thành trọng số *đã kiểm chứng*, dựa trên lá số thật có nghề nghiệp đã biết. Đây là việc của Công (chuyên gia) + dữ liệu, không phải việc Claude Code tự làm.
 
 ## Quy trình 6 bước
 

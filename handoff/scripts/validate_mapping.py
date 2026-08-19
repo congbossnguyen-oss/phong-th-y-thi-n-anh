@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Kiểm tra 2 file có KHỚP TUYỆT ĐỐI chưa, trước khi giao Claude Code.
-Chạy:  python3 validate_mapping.py career_mapping.json domain_mapping_v1.1.json
+Chạy:  python3 validate_mapping.py career_mapping.json domain_mapping.json
 Exit code 0 = pass, 1 = còn lỗi.
 """
 import json, sys
@@ -13,7 +13,7 @@ def load(p):
 
 def main():
     if len(sys.argv) != 3:
-        print("Dùng: python3 validate_mapping.py career_mapping.json domain_mapping_v1.1.json"); sys.exit(1)
+        print("Dùng: python3 validate_mapping.py career_mapping.json domain_mapping.json"); sys.exit(1)
     cm, dm = load(sys.argv[1]), load(sys.argv[2])
     errs, warns = [], []
 

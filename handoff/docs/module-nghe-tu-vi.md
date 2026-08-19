@@ -62,7 +62,7 @@ Nguyên tắc: theo đúng skill Tử Vi Nam Phái — KHÔNG dùng Bát Tự, K
 
 ## 3. MODULE NGHỀ TỬ VI — logic tính (thuần code, đọc 3 config)
 
-Config: `career_mapping.json`, `domain_mapping_v1.2.json`, `tu_vi_sao_nganh.json` (MỚI).
+Config: `career_mapping.json`, `domain_mapping.json`, `tu_vi_sao_nganh.json` (MỚI).
 
 **Bước 1 — Career Vector (5 trục).**
 ```
@@ -128,7 +128,7 @@ phần luận GỌI LLM nạp /knowledge/luan-giai-tu-vi-nam-phai (và
 trường phái Tứ Hóa khác.
 
 Xây MODULE NGHỀ THEO TỬ VI: KHÔNG luận huyền học, chỉ đọc tu_vi_profile + 3 config
-(/config/career_mapping.json, domain_mapping_v1.2.json, tu_vi_sao_nganh.json), tính theo
+(/config/career_mapping.json, domain_mapping.json, tu_vi_sao_nganh.json), tính theo
 mục 3, và vẽ theo layout ĐÃ CÓ của module Bát Tự (chỉ đổi nguồn dữ liệu theo mục 4).
 
 RÀNG BUỘC:
@@ -149,7 +149,7 @@ CÁCH LÀM: bổ sung tu_vi_profile vào engine chung trước, cho tôi review;
 
 - `/docs/module-nghe-tu-vi.md` ← tài liệu này
 - `/config/tu_vi_sao_nganh.json` ← MỚI (chính tinh → ngành)
-- Dùng lại: `career_mapping.json`, `domain_mapping_v1.2.json`, layout `bo-cuc-module-nghe.html`
+- Dùng lại: `career_mapping.json`, `domain_mapping.json`, layout `bo-cuc-module-nghe.html`
 - `/knowledge/luan-giai-tu-vi-nam-phai/`, `/knowledge/luan-giai-tu-vi-tam-hop-phai/`
 
 ## 8. VIỆC CÔNG CẦN DUYỆT
