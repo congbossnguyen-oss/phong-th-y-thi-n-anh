@@ -9,8 +9,11 @@ import {
   sendCourseOrderConfirmedEmail,
   sendBaoCaoGoogleSheetEmail,
   sendHoSoTangLeEmail,
+  sendNghePdfEmail,
 } from "../email/send";
 import { taoHoSoTangLe, type DauVaoHoSo } from "../dai-cat-loi/tao-ho-so-tang-le";
+import { taoHoSoNghe, type NgheInput } from "../nghe-nghiep/tao-ho-so-nghe";
+import { generateNghePdf } from "../dai-cat-loi/nghe-nghiep-pdf";
 import { apDungMaKhiThanhToan } from "../payments/promo";
 import { ghiDonThuPhiLenSheet, TEN_CONG_CU_HIEN_THI } from "../google-sheets-don-thu-phi";
 
@@ -300,6 +303,25 @@ export async function markOrderPaidAndFulfill(orderId: string) {
         }
       } catch (err) {
         console.error(`[ho-so-tang-le] Lỗi dựng/gửi hồ sơ cho đơn ${order.orderCode}:`, err);
+      }
+    }
+
+    // Định Hướng Nghề Nghiệp: dựng PDF (gọi AI luận Bát Tự nếu có key — cache theo hash lá số) rồi
+    // gửi kèm email khách. Bọc try/catch riêng: dựng PDF/gọi AI nặng, hỏng khâu này thì đơn vẫn
+    // được ghi nhận đã thanh toán, khách còn xem/tải lại được từ trang kết quả bằng mã đơn.
+    if (order.toolSlug === "dinh-huong-nghe-nghiep" && order.customerEmail && order.toolInputSnapshot) {
+      try {
+        const input = JSON.parse(order.toolInputSnapshot) as NgheInput;
+        const ketQua = await taoHoSoNghe(input);
+        const pdf = await generateNghePdf(ketQua);
+        await sendNghePdfEmail({
+          to: order.customerEmail,
+          orderCode: order.orderCode,
+          customerName: order.customerName,
+          pdfBytes: pdf,
+        });
+      } catch (err) {
+        console.error(`[dinh-huong-nghe] Lỗi dựng/gửi PDF cho đơn ${order.orderCode}:`, err);
       }
     }
   }

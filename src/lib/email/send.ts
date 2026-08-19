@@ -7,6 +7,7 @@ import {
   consultationRequestEmail,
   baoCaoGoogleSheetEmail,
   hoSoTangLeEmail,
+  nghePdfEmail,
 } from "./templates";
 
 // Gửi email không được phép làm sập luồng nghiệp vụ chính (vd webhook thanh toán phải trả 200
@@ -118,5 +119,18 @@ export async function sendHoSoTangLeEmail(params: {
   const { subject, html } = hoSoTangLeEmail(params);
   await safeSend(params.to, subject, html, [
     { filename: `ho-so-tang-le-${params.orderCode}.pdf`, content: Buffer.from(params.pdfBytes) },
+  ]);
+}
+
+/** Gửi PDF Định hướng nghề nghiệp kèm email (module Định Hướng Nghề Nghiệp). Dùng safeSend — lỗi chỉ log. */
+export async function sendNghePdfEmail(params: {
+  to: string;
+  orderCode: string;
+  customerName: string;
+  pdfBytes: Uint8Array;
+}) {
+  const { subject, html } = nghePdfEmail(params);
+  await safeSend(params.to, subject, html, [
+    { filename: `dinh-huong-nghe-nghiep-${params.orderCode}.pdf`, content: Buffer.from(params.pdfBytes) },
   ]);
 }

@@ -125,7 +125,9 @@ export async function callBatTuLlm(
       body: JSON.stringify({
         model,
         max_tokens: MAX_TOKENS,
-        system: systemPrompt,
+        // Prompt caching: khối tri thức (system) GIỐNG NHAU mọi khách → cache 1 lần, các lần sau
+        // đọc lại ~0.1x giá. Chỉ phần "facts" của từng khách nằm ở userPrompt (sau breakpoint) mới tính giá đầy đủ.
+        system: [{ type: "text", text: systemPrompt, cache_control: { type: "ephemeral" } }],
         messages: [{ role: "user", content: userPrompt }],
         tools: [{ name: TOOL_NAME, description: "Trả về kết quả luận giải Bát Tự đúng cấu trúc.", input_schema: buildInputSchema(soDaiVan) }],
         tool_choice: { type: "tool", name: TOOL_NAME },

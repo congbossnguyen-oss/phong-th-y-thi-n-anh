@@ -251,3 +251,33 @@ export function hoSoTangLeEmail(params: {
     }),
   };
 }
+
+export function nghePdfEmail(params: {
+  orderCode: string;
+  customerName: string;
+}): { subject: string; html: string } {
+  const bodyHtml = `
+    <p>Kính gửi ${escapeHtml(params.customerName)},</p>
+    <p>
+      Bản Định hướng nghề nghiệp (kết hợp hai hệ Bát Tự × Tử Vi) được đính kèm dưới dạng PDF trong email này,
+      gồm: hồ sơ lá số, 5 trục năng lực, nhóm ngành nên theo, các giai đoạn vận, và mức đồng thuận giữa hai hệ
+      kèm gợi ý lộ trình.
+    </p>
+    <table role="presentation" width="100%" style="margin-top:16px;border-top:1px solid #e8dfcd;padding-top:12px;">
+      ${infoRow("Mã đơn hàng", params.orderCode)}
+    </table>
+    <p style="margin-top:20px;">
+      Đây là định hướng theo mô hình phân tích cấu trúc lá số — mang tính tham khảo, nên kết hợp với năng lực,
+      sở thích và điều kiện thực tế. Cần trao đổi thêm, xin liên hệ hotline ${siteConfig.hotline}.
+    </p>
+  `;
+
+  return {
+    subject: `Định hướng nghề nghiệp (Bát Tự × Tử Vi) — đơn ${params.orderCode}`,
+    html: layout({
+      previewText: "Bản định hướng nghề nghiệp của bạn được đính kèm trong email này.",
+      title: "Định hướng nghề nghiệp — Bát Tự × Tử Vi",
+      bodyHtml,
+    }),
+  };
+}
