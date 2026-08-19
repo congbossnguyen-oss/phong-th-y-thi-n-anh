@@ -3,6 +3,8 @@ export * from "./truc.js";
 export * from "./trucDanhGiaTongQuat.js";
 // Chân Lộc / Chân Dương Quý / Chân Âm Quý theo Can năm sinh (khớp cả Can+Chi ngày).
 export * from "./chanLocQuyNhan.js";
+// Cát tinh cá nhân gộp (Chân Lộc/Quý Nhân/Lộc/Tam Hợp/Lục Hợp) + thang ưu tiên — engine dùng chung.
+export * from "./catTinhCaNhan.js";
 export * from "./thangCanChi.js";
 export * from "./lucXung.js";
 export * from "./nhiThapBatTu.js";

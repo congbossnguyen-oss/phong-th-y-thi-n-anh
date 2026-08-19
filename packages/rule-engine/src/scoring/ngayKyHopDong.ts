@@ -33,11 +33,7 @@ import {
 } from "./canChiRelationScoring.js";
 import { tinhTrachCatDayBase, type TrachCatDayBaseInput, type TrachCatDayBaseRules, type TrachCatDayBaseResult } from "./trachCatDayBase.js";
 import type { NguoiTuoi } from "./tuoiHopLamAn.js";
-import { xetChanLocQuyNhan, type KetQuaChanCatTinh } from "../trach-nhat/chanLocQuyNhan.js";
-
-// Ưu tiên: Chân Lộc > Chân Dương Quý > Chân Âm Quý > Lộc (địa chi, "tạm được").
-// Tam Hợp/Lục Hợp đã tính trong `nguoiKy` compatibility. Chỉ cộng 1 mức cao nhất khớp.
-const DIEM_CONG_CHAN = { chanLoc: 2.5, chanDuongQuy: 1.5, chanAmQuy: 1.2, loc: 0.8 } as const;
+import { tinhCatTinhCaNhan, type CatTinhCaNhan } from "../trach-nhat/catTinhCaNhan.js";
 
 type Can = Data.Can;
 type Chi = Data.Chi;
@@ -188,8 +184,8 @@ export interface KyHopDongResult {
   cooperation: TrachCatDayBaseResult;
   financial: TrachCatDayBaseResult;
   nguoiKy: KyHopDongPersonalResult | null;
-  /** Chân Lộc / Chân Dương Quý / Chân Âm Quý theo Can năm sinh — null nếu không nhập tuổi. */
-  catCaNhan: KetQuaChanCatTinh | null;
+  /** Cát tinh cá nhân (Chân Lộc/Quý Nhân/Lộc/Tam-Lục Hợp) theo tuổi người ký — null nếu không nhập tuổi. */
+  catCaNhan: CatTinhCaNhan | null;
 }
 
 export function calculateKyHopDongScore(
@@ -229,19 +225,10 @@ export function calculateKyHopDongScore(
       financial.diem * T.financial;
   }
 
-  // Cộng điểm Chân Lộc/Dương Quý/Âm Quý theo Can năm sinh — TRƯỚC trần đại kỵ.
-  const catCaNhan = nguoiKy ? xetChanLocQuyNhan(dayCan, dayChi, nguoiKy.can) : null;
-  if (catCaNhan) {
-    diem += catCaNhan.chanLoc
-      ? DIEM_CONG_CHAN.chanLoc
-      : catCaNhan.chanDuongQuy
-        ? DIEM_CONG_CHAN.chanDuongQuy
-        : catCaNhan.chanAmQuy
-          ? DIEM_CONG_CHAN.chanAmQuy
-          : catCaNhan.loc
-            ? DIEM_CONG_CHAN.loc
-            : 0;
-  }
+  // Cát tinh cá nhân (engine dùng chung) — chỉ cộng phần Chân Lộc/Quý Nhân/Lộc (Tam/Lục Hợp đã tính
+  // trong `nguoiKy`). Cộng TRƯỚC trần đại kỵ.
+  const catCaNhan = nguoiKy ? tinhCatTinhCaNhan(dayCan, dayChi, nguoiKy.can, nguoiKy.chi) : null;
+  if (catCaNhan) diem += catCaNhan.diemCongChanLoc;
 
   if (base.phamDaiKy) {
     diem = Math.min(diem, KY_HOP_DONG_SCORING_RULES.base.ngayDaiKy.diemTranNeuPham);

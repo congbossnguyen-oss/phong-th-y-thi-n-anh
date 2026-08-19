@@ -27,13 +27,7 @@ import {
 } from "./canChiRelationScoring.js";
 import { tinhTrachCatDayBase, type TrachCatDayBaseInput, type TrachCatDayBaseRules, type TrachCatDayBaseResult } from "./trachCatDayBase.js";
 import type { NguoiTuoi } from "./tuoiHopLamAn.js";
-import { xetChanLocQuyNhan, type KetQuaChanCatTinh } from "../trach-nhat/chanLocQuyNhan.js";
-
-// Điểm cộng ưu tiên sao cát cá nhân theo CAN năm sinh. Chân Lộc thường là ngày tốt nhất của cá
-// nhân → cộng cao nhất. Không có Chân Lộc thì Lộc theo địa chi ("tạm được") cộng nhẹ.
-// Ưu tiên: Chân Lộc > Chân Dương Quý > Chân Âm Quý > Lộc (địa chi). Tam Hợp/Lục Hợp đã tính trong
-// `tuoiChu`. Chỉ cộng 1 mức cao nhất khớp (chanLoc bao hàm loc nên không cộng trùng).
-const DIEM_CONG_CHAN = { chanLoc: 2.5, chanDuongQuy: 1.5, chanAmQuy: 1.2, loc: 0.8 } as const;
+import { tinhCatTinhCaNhan, type CatTinhCaNhan } from "../trach-nhat/catTinhCaNhan.js";
 
 type Can = Data.Can;
 type Chi = Data.Chi;
@@ -153,8 +147,8 @@ export interface KhaiTruongResult {
   taiLoc: TrachCatDayBaseResult;
   khaiMo: TrachCatDayBaseResult;
   tuoiChu: KhaiTruongPersonalResult | null;
-  /** Chân Lộc / Chân Dương Quý / Chân Âm Quý theo Can năm sinh — null nếu không nhập tuổi chủ. */
-  catCaNhan: KetQuaChanCatTinh | null;
+  /** Cát tinh cá nhân (Chân Lộc/Quý Nhân/Lộc/Tam-Lục Hợp) theo tuổi chủ — null nếu không nhập tuổi. */
+  catCaNhan: CatTinhCaNhan | null;
 }
 
 export function calculateKhaiTruongScore(
@@ -178,20 +172,11 @@ export function calculateKhaiTruongScore(
     diem = base.diem * T.base + taiLoc.diem * T.taiLoc + khaiMo.diem * T.khaiMo;
   }
 
-  // Cộng điểm sao cát cá nhân theo Can năm sinh (Chân Lộc/Dương Quý/Âm Quý) — cộng TRƯỚC trần đại
-  // kỵ để ngày phạm đại kỵ theo cách khác vẫn bị chặn (yêu cầu "phải tương thích các cách tính khác").
-  const catCaNhan = chu ? xetChanLocQuyNhan(dayCan, dayChi, chu.can) : null;
-  if (catCaNhan) {
-    diem += catCaNhan.chanLoc
-      ? DIEM_CONG_CHAN.chanLoc
-      : catCaNhan.chanDuongQuy
-        ? DIEM_CONG_CHAN.chanDuongQuy
-        : catCaNhan.chanAmQuy
-          ? DIEM_CONG_CHAN.chanAmQuy
-          : catCaNhan.loc
-            ? DIEM_CONG_CHAN.loc
-            : 0;
-  }
+  // Cộng điểm cát tinh cá nhân theo tuổi (engine dùng chung). Khai Trương đã chấm Tam/Lục Hợp trong
+  // `tuoiChu` nên chỉ cộng phần Chân Lộc/Quý Nhân/Lộc (`diemCongChanLoc`) — tránh cộng trùng. Cộng
+  // TRƯỚC trần đại kỵ để ngày phạm nặng theo cách khác vẫn bị chặn.
+  const catCaNhan = chu ? tinhCatTinhCaNhan(dayCan, dayChi, chu.can, chu.chi) : null;
+  if (catCaNhan) diem += catCaNhan.diemCongChanLoc;
 
   if (base.phamDaiKy) {
     diem = Math.min(diem, KHAI_TRUONG_SCORING_RULES.base.ngayDaiKy.diemTranNeuPham);
