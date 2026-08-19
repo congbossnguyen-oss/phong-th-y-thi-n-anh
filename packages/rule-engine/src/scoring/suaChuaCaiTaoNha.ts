@@ -45,6 +45,7 @@ import {
 import { tinhTrachCatDayBase, type TrachCatDayBaseInput, type TrachCatDayBaseRules, type TrachCatDayBaseResult } from "./trachCatDayBase.js";
 import type { NguoiTuoi } from "./tuoiHopLamAn.js";
 import { getChi } from "./tuoiHopLamAn.js";
+import { tinhCatTinhCaNhan } from "../trach-nhat/catTinhCaNhan.js";
 import { tinhHoangOcKimLauTamTai, type HoangOcKimLauTamTaiResult } from "../hoang-oc-kim-lau/tongHop.js";
 import { getPhuongViRuiRoTheoNam, CUNG_BAT_TRACH_NGU_HANH, type CungBatTrach } from "../cung-menh-bat-trach/index.js";
 import { Data } from "@thien-anh/calendar-core";
@@ -354,6 +355,8 @@ export function calculateSuaChuaDayScore(
 
   const T = SUA_CHUA_DAY_SCORING_RULES.trongSo;
   let diem = base.diem * T.base + mucDich.diem * T.mucDich + canNhan.diem * T.canNhan;
+  // Sao cát cá nhân (Chân Lộc/Quý Nhân/Lộc) — cộng TRƯỚC trần đại kỵ; Tam/Lục Hợp đã có trong canNhan.
+  diem += tinhCatTinhCaNhan(dayCan, dayChi, nguoi.can, nguoi.chi).diemCongChanLoc;
 
   if (base.phamDaiKy) {
     diem = Math.min(diem, SUA_CHUA_DAY_SCORING_RULES.base.ngayDaiKy.diemTranNeuPham);

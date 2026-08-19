@@ -24,6 +24,7 @@ import {
 } from "./canChiRelationScoring.js";
 import { tinhTrachCatDayBase, type TrachCatDayBaseInput, type TrachCatDayBaseRules, type TrachCatDayBaseResult } from "./trachCatDayBase.js";
 import type { NguoiTuoi } from "./tuoiHopLamAn.js";
+import { tinhCatTinhCaNhan } from "../trach-nhat/catTinhCaNhan.js";
 
 type Can = Data.Can;
 type Chi = Data.Chi;
@@ -148,6 +149,9 @@ export function calculatePersonalDayScore(
   const mucDich = calculatePurposeScore(dayInput, purpose);
 
   let diem = nenTrachCat.diem * R.nenTrachCat + caNhan.diem * R.caNhan + mucDich.diem * R.mucDich;
+  // Sao cát cá nhân (Chân Lộc/Quý Nhân/Lộc) — cộng TRƯỚC trần đại kỵ. Tam/Lục Hợp đã có trong
+  // `caNhan` nên chỉ lấy diemCongChanLoc (tránh cộng trùng).
+  diem += tinhCatTinhCaNhan(dayCan, dayChi, nguoi.can, nguoi.chi).diemCongChanLoc;
   if (nenTrachCat.phamDaiKy) {
     diem = Math.min(diem, NGAY_DAI_CAT_SCORING_RULES.nenTrachCat.ngayDaiKy.diemTranNeuPham);
   }

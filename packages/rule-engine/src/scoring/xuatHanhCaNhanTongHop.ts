@@ -32,6 +32,7 @@ import {
 } from "./canChiRelationScoring.js";
 import { tinhTrachCatDayBase, type TrachCatDayBaseInput, type TrachCatDayBaseRules, type TrachCatDayBaseResult } from "./trachCatDayBase.js";
 import type { NguoiTuoi } from "./tuoiHopLamAn.js";
+import { tinhCatTinhCaNhan } from "../trach-nhat/catTinhCaNhan.js";
 import type { GioPurpose } from "./gioTotTrongNgay.js";
 import { Data } from "@thien-anh/calendar-core";
 
@@ -268,6 +269,8 @@ export function calculateXuatHanhCaNhanDayScore(
 
   const T = XUAT_HANH_CA_NHAN_DAY_SCORING_RULES.trongSo;
   let diem = base.diem * T.base + mucDich.diem * T.mucDich + canNhan.diem * T.canNhan;
+  // Sao cát cá nhân (Chân Lộc/Quý Nhân/Lộc) — cộng TRƯỚC trần đại kỵ; Tam/Lục Hợp đã có trong canNhan.
+  diem += tinhCatTinhCaNhan(dayCan, dayChi, nguoi.can, nguoi.chi).diemCongChanLoc;
 
   if (base.phamDaiKy) {
     diem = Math.min(diem, XUAT_HANH_CA_NHAN_DAY_SCORING_RULES.base.ngayDaiKy.diemTranNeuPham);

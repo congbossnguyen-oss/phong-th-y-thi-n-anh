@@ -29,6 +29,7 @@ import {
 } from "./canChiRelationScoring.js";
 import { tinhTrachCatDayBase, type TrachCatDayBaseInput, type TrachCatDayBaseRules, type TrachCatDayBaseResult } from "./trachCatDayBase.js";
 import type { NguoiTuoi } from "./tuoiHopLamAn.js";
+import { tinhCatTinhCaNhan } from "../trach-nhat/catTinhCaNhan.js";
 
 type Can = Data.Can;
 type Chi = Data.Chi;
@@ -143,9 +144,10 @@ export function calculateSafetyLuckScore(input: TrachCatDayBaseInput): TrachCatD
   return tinhTrachCatDayBase(input, VAN_MAY_SCORING_RULES.phuTro.binhAn);
 }
 
-export function calculateVanMayScore(trachCatDiem: number, personalDiem: number, phamDaiKy: boolean): number {
+export function calculateVanMayScore(trachCatDiem: number, personalDiem: number, phamDaiKy: boolean, bonusCaNhan = 0): number {
   const R = VAN_MAY_SCORING_RULES;
-  let diem = trachCatDiem * R.trongSo.trachCat + personalDiem * R.trongSo.caNhan;
+  // `bonusCaNhan`: điểm sao cát cá nhân (Chân Lộc/Quý Nhân/Lộc) — cộng TRƯỚC trần đại kỵ.
+  let diem = trachCatDiem * R.trongSo.trachCat + personalDiem * R.trongSo.caNhan + bonusCaNhan;
   if (phamDaiKy) {
     diem = Math.min(diem, R.daiKy.diemTranNeuPham);
   }
@@ -171,7 +173,8 @@ export interface VanMayResult {
 export function calculateVanMay(nguoi: NguoiTuoi, dayCan: Can, dayChi: Chi, dayNguHanhMenh: NguHanh, dayInput: TrachCatDayBaseInput): VanMayResult {
   const trachCat = calculateTrachCatDayScore(dayInput);
   const caNhan = calculatePersonalDayCompatibility(nguoi, dayCan, dayChi, dayNguHanhMenh);
-  const diem = calculateVanMayScore(trachCat.diem, caNhan.diem, trachCat.phamDaiKy);
+  const bonusCaNhan = tinhCatTinhCaNhan(dayCan, dayChi, nguoi.can, nguoi.chi).diemCongChanLoc;
+  const diem = calculateVanMayScore(trachCat.diem, caNhan.diem, trachCat.phamDaiKy, bonusCaNhan);
   const hang = getVanMayRating(diem);
 
   return {

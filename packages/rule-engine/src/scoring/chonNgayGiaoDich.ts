@@ -29,6 +29,7 @@ import {
 } from "./canChiRelationScoring.js";
 import { tinhTrachCatDayBase, type TrachCatDayBaseInput, type TrachCatDayBaseRules, type TrachCatDayBaseResult } from "./trachCatDayBase.js";
 import type { NguoiTuoi } from "./tuoiHopLamAn.js";
+import { tinhCatTinhCaNhan } from "../trach-nhat/catTinhCaNhan.js";
 
 type Can = Data.Can;
 type Chi = Data.Chi;
@@ -202,6 +203,9 @@ export function calculateTransactionAssetScore(
     const T = TRANSACTION_ASSET_SCORING_RULES.trongSoKhongChu;
     diem = base.diem * T.base + mucDich.diem * T.mucDich;
   }
+
+  // Sao cát cá nhân theo tuổi chủ (Chân Lộc/Quý Nhân/Lộc) — chỉ khi có chủ, cộng TRƯỚC trần đại kỵ.
+  if (chu) diem += tinhCatTinhCaNhan(dayCan, dayChi, chu.can, chu.chi).diemCongChanLoc;
 
   if (base.phamDaiKy) {
     diem = Math.min(diem, TRANSACTION_ASSET_SCORING_RULES.base.ngayDaiKy.diemTranNeuPham);
