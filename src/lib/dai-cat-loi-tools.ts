@@ -142,14 +142,10 @@ export type PaidTool = {
 };
 
 export const paidTools: PaidTool[] = [
-  {
-    href: "/dai-cat-loi/dinh-huong-nghe-nghiep",
-    icon: "🎯",
-    title: "Định Hướng Nghề Nghiệp (Bát Tự × Tử Vi)",
-    desc: "Kết hợp hai hệ Bát Tự và Tử Vi để định hướng nghề: 5 trục năng lực, nhóm ngành nên theo, xu hướng Quan Lộc ↔ Kinh Doanh, các giai đoạn vận và mức đồng thuận giữa hai hệ. Kết quả kèm PDF gửi về email.",
-    priceLabel: "499.000đ / lượt",
-    best: true,
-  },
+  // ⏸️ TẠM ẨN khỏi menu khách: "Định Hướng Nghề Nghiệp" — AI luận chạy tốt nhưng cơ chế Manh Phái
+  // (nền của 5 trục nghề) nhiều lá số AI trả "không đủ căn cứ" nên phần nghề trống. Đang cải thiện
+  // (fallback theo Thập Thần + Dụng/Hỷ Thần). Trang vẫn chạy ở /dai-cat-loi/dinh-huong-nghe-nghiep
+  // để test. Mở lại khi output đầy đủ ổn định.
   {
     href: "/dai-cat-loi/gio-liem-ha-huyet",
     icon: "🕯️",
