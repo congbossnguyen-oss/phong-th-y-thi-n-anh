@@ -139,12 +139,21 @@ export const prerender = true;
             <div class="km-luuy-row">
               <span><strong>H</strong>: Hưu</span><span><strong>T</strong>: Tù</span><span><strong>P</strong>: Phế</span>
             </div>
+            <div class="km-luuy-row">
+              <span class="km-luuy-item"><span class="km-sym">🗡️</span> Dương nhẫn</span>
+              <span class="km-luuy-item"><span class="km-sym">📕</span> Kiến Thức</span>
+              <span class="km-luuy-item"><span class="km-sym">👥</span> Học Đường</span>
+            </div>
+            <div class="km-luuy-row">
+              <span class="km-luuy-item"><span class="km-sym">👨‍💼</span> Dương Quý Nhân</span>
+              <span class="km-luuy-item"><span class="km-sym">👩</span> Âm Quý Nhân</span>
+            </div>
           </div>
         </div>
 
         <!-- Sub-tab Mệnh / Tam Thắng / Lịch — chỉ hiện ở chế độ Mệnh -->
         <div id="km-subtabs-wrap" class="mt-8 hidden">
-          <div class="flex flex-wrap gap-2 border-b border-(--color-ivory-300)">
+          <div class="flex flex-wrap gap-2">
             <button type="button" data-subtab="menh" class="km-subtab-btn" aria-selected="true">Mệnh</button>
             <button type="button" data-subtab="tam-thang" class="km-subtab-btn" aria-selected="false">Tam Thắng</button>
             <button type="button" data-subtab="lich" class="km-subtab-btn" aria-selected="false">Lịch</button>
@@ -215,6 +224,27 @@ export const prerender = true;
      script phía dưới tạo bằng innerHTML lúc chạy — các phần tử đó không có thuộc tính
      data-astro-cid-* nên CSS "scoped" mặc định của Astro sẽ KHÔNG áp dụng, khiến toàn bộ
      khung/màu/viền các ô đó biến mất (chỉ còn chữ trần). */
+  /* Vùng kết quả (lá số) = "tờ giấy sáng" như app: định nghĩa lại token màu cục bộ để mọi
+     phần bên trong (tứ trụ, meta, nút, chú giải) đổi sang tông sáng, bất kể site đang theme tối. */
+  #km-ket-qua {
+    --color-ink-950: #1f120e;
+    --color-ink-900: #2a1c14;
+    --color-ink-800: #33241a;
+    --color-ink-700: #4a3728;
+    --color-ink-600: #6b5544;
+    --color-ink-500: #8a7663;
+    --color-ink-400: #a6907a;
+    --color-ivory-50: #ffffff;
+    --color-ivory-100: #fbf5ea;
+    --color-ivory-200: #f4ead8;
+    --color-ivory-300: #e6d9c2;
+    background: #fbf6ee;
+    border: 1px solid #e6d9c2;
+    border-radius: 12px;
+    padding: 1rem 0.9rem 1.2rem;
+    color: #2a1512;
+  }
+
   .km-mode-btn,
   .km-view-btn,
   .km-subtab-btn {
@@ -222,26 +252,38 @@ export const prerender = true;
     padding: 0.5rem 1.1rem;
     font-size: 0.85rem;
     font-weight: 600;
+    transition: all 0.15s ease;
+  }
+  /* Nút chọn chế độ (ngoài vùng kết quả) — giữ tông site. */
+  .km-mode-btn {
     color: var(--color-ink-700);
     background: var(--color-ivory-100);
     border: 1px solid var(--color-ivory-300);
-    transition: all 0.15s ease;
   }
-  .km-mode-btn[aria-selected="true"],
-  .km-view-btn[aria-selected="true"] {
+  .km-mode-btn[aria-selected="true"] {
     background: var(--color-gold-400);
     color: var(--color-on-accent);
     border-color: var(--color-gold-400);
   }
+  /* Nút Bảng Kỳ Môn / Bảng Cách Cục — kiểu đỏ như app. */
+  .km-view-btn {
+    color: #c0261e;
+    background: #fff;
+    border: 1px solid #c0261e;
+  }
+  .km-view-btn[aria-selected="true"] {
+    background: #c0261e;
+    color: #fff;
+  }
+  /* Sub-tab Mệnh / Tam Thắng / Lịch — kiểu đỏ như app. */
   .km-subtab-btn {
-    border-radius: var(--radius-control) var(--radius-control) 0 0;
-    border-bottom: none;
-    background: transparent;
+    color: #c0261e;
+    background: #fff;
+    border: 1px solid #c0261e;
   }
   .km-subtab-btn[aria-selected="true"] {
-    background: var(--color-ivory-100);
-    color: var(--color-gold-300);
-    border-color: var(--color-ivory-300);
+    background: #c0261e;
+    color: #fff;
   }
 
   .km-select {
@@ -405,7 +447,7 @@ export const prerender = true;
     line-height: 1.35;
   }
   .km-badge-kv { background: #6b5b4b; color: #fff; }
-  .km-badge-ma { background: #e0a422; color: #3a2600; }
+  .km-badge-ma { background: transparent; padding: 0; font-size: 0.9rem; line-height: 1; }
   .km-badge-tp { background: #c0261e; color: #fff; }
   .km-badge-ts { background: #e07b34; color: #fff; }
 
@@ -788,7 +830,7 @@ export const prerender = true;
       if (!c) return "";
       const badges: string[] = [];
       if (c.KV) badges.push('<span class="km-badge km-badge-kv">KV</span>');
-      if (c.Ma) badges.push('<span class="km-badge km-badge-ma">Mã</span>');
+      if (c.Ma) badges.push('<span class="km-badge km-badge-ma" title="Mã">🐴</span>');
       if (soCung === laBan.trucPhuCung) badges.push('<span class="km-badge km-badge-tp">Trực Phù</span>');
       if (soCung === laBan.trucSuCung) badges.push('<span class="km-badge km-badge-ts">Trực Sử</span>');
       const marks = `<div class="km-cung-marks">${badges.join("")}</div>`;
