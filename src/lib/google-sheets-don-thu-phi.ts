@@ -12,6 +12,7 @@ export const TEN_CONG_CU_HIEN_THI: Record<string, string> = {
   "gio-liem-ha-huyet": "Giờ Liệm – Hạ Huyệt",
   "xem-ngay-cao-cap": "Xem Ngày Cao Cấp (Động Thổ / Nhập Trạch)",
   "ngay-ky-hop-dong-cao-cap": "Ngày Giờ Ký Kết Hợp Đồng",
+  "ngay-cuoi-hoi": "Xem Ngày Cưới Hỏi Trọn Gói",
   "nhan-chuc": "Chọn Ngày Giờ Nhận Chức",
   "dat-ten-cho-con": "Đặt Tên Cho Con (Việt Danh Học)",
 };
