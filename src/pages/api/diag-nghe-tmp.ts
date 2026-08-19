@@ -1,27 +1,30 @@
 import type { APIRoute } from "astro";
-import { getBatTuProfile, isAiConfigured } from "../../lib/chart-profile";
+import { castBatTuFacts } from "../../lib/chart-profile/cast-bat-tu";
+import { buildBatTuSystemPrompt, buildBatTuUserPrompt } from "../../lib/chart-profile/prompt";
+import { callBatTuLlm, isAiConfigured } from "../../lib/chart-profile/llm";
 
 export const prerender = false;
 
-// ⚠️ TẠM THỜI — chẩn đoán vì sao AI luận trả "insufficient". Xóa ngay sau khi tìm ra lỗi.
-// KHÔNG in ra giá trị key (chỉ true/false). Muốn chạy thử gọi AI thật: thêm ?run=1.
+// ⚠️ TẠM THỜI — chẩn đoán shape dữ liệu AI trả về. Xóa ngay sau khi sửa xong.
 export const GET: APIRoute = async ({ url }) => {
-  const hasImportMeta = Boolean((import.meta as { env?: Record<string, unknown> }).env?.ANTHROPIC_API_KEY);
-  const hasProcessEnv = Boolean(process.env?.ANTHROPIC_API_KEY);
-  const configured = isAiConfigured();
-
-  const out: Record<string, unknown> = { hasImportMeta, hasProcessEnv, configured };
-
+  const out: Record<string, unknown> = {
+    hasProcessEnv: Boolean(process.env?.ANTHROPIC_API_KEY),
+    configured: isAiConfigured(),
+  };
   if (url.searchParams.get("run") === "1") {
     try {
-      const p = await getBatTuProfile({ day: 14, month: 3, year: 1996, hour: 9, minute: 20, gender: "Nam" });
-      out.aiOk = p.ai_luan_giai_thanh_cong;
-      out.warnings = p.warnings;
-      out.dungThan = p.bat_tu.dung_than;
+      const { facts } = castBatTuFacts({ day: 14, month: 3, year: 1996, hour: 9, minute: 20, gender: "Nam" });
+      const sys = buildBatTuSystemPrompt();
+      const usr = buildBatTuUserPrompt(facts);
+      const res = (await callBatTuLlm(sys, usr, facts.daiVan.length)) as Record<string, unknown>;
+      out.ok = res.ok;
+      out.rawKeys = res.rawKeys;
+      out.raw = res.raw;
+      out.reason = res.reason;
+      out.detail = res.detail;
     } catch (e) {
-      out.error = e instanceof Error ? e.message : String(e);
+      out.error = e instanceof Error ? `${e.message}\n${e.stack}` : String(e);
     }
   }
-
   return new Response(JSON.stringify(out, null, 2), { headers: { "Content-Type": "application/json" } });
 };

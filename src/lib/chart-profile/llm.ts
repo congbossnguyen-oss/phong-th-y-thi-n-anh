@@ -184,7 +184,7 @@ export async function callBatTuLlm(
 
     const warnings = Array.isArray(input.warnings) ? input.warnings.map(String) : [];
 
-    return { ok: true, output: { bat_tu, manh_phai, dai_van, warnings, model } };
+    return { ok: true, output: { bat_tu, manh_phai, dai_van, warnings, model }, rawKeys: Object.keys(input), raw: input };
   } catch (err) {
     return {
       ok: false,
