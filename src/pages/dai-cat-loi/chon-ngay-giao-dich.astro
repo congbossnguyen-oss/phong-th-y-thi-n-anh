@@ -93,6 +93,18 @@ export const prerender = true;
     base: DayScore;
     mucDich: DayScore;
     chu: OwnerResult | null;
+    catCaNhan?: { tang: string | null; nhan: string } | null;
+  }
+
+  const MAU_TANG: Record<string, string> = {
+    "chan-loc": "bg-amber-100 text-amber-700", "chan-duong-quy": "bg-violet-100 text-violet-700",
+    "chan-am-quy": "bg-indigo-100 text-indigo-700", "loc": "bg-amber-50 text-amber-600 ring-1 ring-amber-200",
+    "tam-hop": "bg-emerald-100 text-emerald-700", "luc-hop": "bg-teal-100 text-teal-700",
+  };
+  const ICON_TANG: Record<string, string> = { "chan-loc": "💰", "chan-duong-quy": "🌤️", "chan-am-quy": "🌙", "loc": "🪙", "tam-hop": "☯", "luc-hop": "☯" };
+  function badgeCat(c: { tang: string | null; nhan: string } | null | undefined): string {
+    if (!c || !c.tang) return "";
+    return `<span class="mt-1 inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-bold ${MAU_TANG[c.tang] ?? "bg-slate-100 text-slate-600"}">${ICON_TANG[c.tang] ?? ""} ${c.nhan}</span>`;
   }
   interface TransactionRangeResult { assetType: string; purpose: string; ngayXepHang: TransactionDay[] }
   interface GioKetQua { chiGio: string; canGio: string; khungGio: string; diem: number; nhan: string }
@@ -153,6 +165,7 @@ export const prerender = true;
               <p class="font-display text-base font-bold text-slate-900">${huyChuong} ${ngayStr}</p>
               <span class="text-sm font-semibold">${nhanDotHtml(d.nhan)} — ${d.diem}/10</span>
             </div>
+            ${badgeCat(d.catCaNhan)}
             <p class="mt-1 text-xs text-slate-500">Bấm để xem giờ tốt trong ngày này</p>
           </button>`;
         })

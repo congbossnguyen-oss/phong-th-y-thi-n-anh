@@ -4,7 +4,7 @@
  * xếp hạng giảm dần. Chế độ theo tuổi chủ khi có `namSinhChu`.
  */
 import type { Data } from "@thien-anh/calendar-core";
-import { Scoring } from "@thien-anh/rule-engine";
+import { Scoring, TrachNhat } from "@thien-anh/rule-engine";
 import { tinhNgayInfo } from "./ngayInfo.js";
 import { tinhTuTru } from "./tuTru.js";
 
@@ -26,6 +26,8 @@ export interface ChonNgayGiaoDichRangeInput {
 export interface ChonNgayGiaoDichNgay extends Scoring.TransactionAssetResult {
   solarDate: { year: number; month: number; day: number };
   lunarDate: { year: number; month: number; day: number; isLeapMonth: boolean };
+  /** Tiêu chí cát tinh cá nhân theo tuổi chủ (nếu có nhập năm sinh) — để dễ lọc ngày. */
+  catCaNhan?: TrachNhat.CatTinhCaNhan | null;
 }
 
 export interface ChonNgayGiaoDichRangeResult {
@@ -69,7 +71,11 @@ function tinhMotNgay(
     chu,
   );
 
-  return { solarDate: { year, month, day }, lunarDate: tuTru.lunarDate, ...ketQua };
+  const catCaNhan = chu
+    ? TrachNhat.tinhCatTinhCaNhan(tuTru.tuTru.ngay.can as Data.Can, tuTru.tuTru.ngay.chi as Data.Chi, chu.can, chu.chi)
+    : null;
+
+  return { solarDate: { year, month, day }, lunarDate: tuTru.lunarDate, ...ketQua, catCaNhan };
 }
 
 export function calculateChonNgayGiaoDichRange(input: ChonNgayGiaoDichRangeInput): ChonNgayGiaoDichRangeResult {
