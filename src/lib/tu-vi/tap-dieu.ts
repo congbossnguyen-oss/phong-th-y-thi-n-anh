@@ -153,15 +153,24 @@ export const LUU_HA_BY_CAN: Record<string, number> = {
 };
 
 // ============================================================================================
-// Phá Toái — theo nhóm Tứ Chính/Tứ Sinh/Tứ Mộ (Thiên Lương): "vị trí đóng rất hạn chế là ba chỗ Tỵ Dậu
-// Sửu" — ứng với 3 nhóm tuổi Vũ Phá(Tý Ngọ Mão Dậu)→Dậu, Liêm Phá(Dần Thân Tỵ Hợi)→Tỵ, Tử Phá(Thìn Tuất
-// Sửu Mùi)→Sửu. Cross-check khớp ví dụ độc lập ở bài 12: "Sinh năm Tuất, an Phá Toái ở cung Sửu" (Tuất
-// thuộc nhóm Thìn Tuất Sửu Mùi → Sửu, đúng).
+// Phá Toái — theo nhóm Tứ Chính/Tứ Sinh/Tứ Mộ. Bảng CHUẨN do Công cung cấp trực tiếp (2026-08):
+//   Tý Ngọ Mão Dậu (Tứ Chính) → Tỵ(5) ; Dần Thân Tỵ Hợi (Tứ Sinh) → Dậu(9) ; Thìn Tuất Sửu Mùi (Tứ Mộ) → Sửu(1).
+// ⚠️ SỬA LỖI (2026-08): bản trước HOÁN ĐỔI nhầm Tứ Chính↔Tứ Sinh (Tý→Dậu, Dần→Tỵ) — nguồn code cũ chép
+// ngược. Nay khóa theo bảng chuẩn của Công. Ví dụ Giáp Tý → Phá Toái tại Tỵ (Tài Bạch).
 // ============================================================================================
 export const PHA_TOAI_BY_CHI: Record<string, number> = {
-  "Tý": 9, "Ngọ": 9, "Mão": 9, "Dậu": 9, // Dậu
-  "Dần": 5, "Thân": 5, "Tỵ": 5, "Hợi": 5, // Tỵ
-  "Thìn": 1, "Tuất": 1, "Sửu": 1, "Mùi": 1, // Sửu
+  "Tý": 5, "Ngọ": 5, "Mão": 5, "Dậu": 5, // Tứ Chính → Tỵ
+  "Dần": 9, "Thân": 9, "Tỵ": 9, "Hợi": 9, // Tứ Sinh → Dậu
+  "Thìn": 1, "Tuất": 1, "Sửu": 1, "Mùi": 1, // Tứ Mộ → Sửu
+};
+
+// ============================================================================================
+// Thiên Trù — theo Thiên Can năm sinh. Bảng CHUẨN do Công cung cấp trực tiếp (2026-08).
+// Trước đây engine CHƯA có sao này (audit 2026-08). Ví dụ Giáp → Tỵ (Tài Bạch).
+// ============================================================================================
+export const THIEN_TRU_BY_CAN: Record<string, number> = {
+  "Giáp": 5, "Ất": 6, "Bính": 0, "Đinh": 5, "Mậu": 6, // Tỵ, Ngọ, Tý, Tỵ, Ngọ
+  "Kỷ": 8, "Canh": 2, "Tân": 6, "Nhâm": 9, "Quý": 10, // Thân, Dần, Ngọ, Dậu, Tuất
 };
 
 // ============================================================================================
@@ -291,7 +300,8 @@ export function getTapDieu(chart: TuViChart): TapDieuPlacement[] {
   if (gioChiIndex < 0) {
     throw new Error("RULE_NOT_DEFINED: getTapDieu — gioChiName không hợp lệ: " + chart.gioChiName);
   }
-  if (THIEN_QUAN_BY_CAN[chart.yearCanName] === undefined || THIEN_PHUC_BY_CAN[chart.yearCanName] === undefined) {
+  if (THIEN_QUAN_BY_CAN[chart.yearCanName] === undefined || THIEN_PHUC_BY_CAN[chart.yearCanName] === undefined
+    || THIEN_TRU_BY_CAN[chart.yearCanName] === undefined) {
     throw new Error("RULE_NOT_DEFINED: getTapDieu — yearCanName không hợp lệ: " + chart.yearCanName);
   }
   const vanXuongChiIndex = findPhuTinhChiIndex(chart, "Văn Xương");
@@ -312,6 +322,7 @@ export function getTapDieu(chart: TuViChart): TapDieuPlacement[] {
     { chiIndex: QUA_TU_BY_CHI[chart.yearChiName], name: "Quả Tú" },
     { chiIndex: LUU_HA_BY_CAN[chart.yearCanName], name: "Lưu Hà" },
     { chiIndex: PHA_TOAI_BY_CHI[chart.yearChiName], name: "Phá Toái" },
+    { chiIndex: THIEN_TRU_BY_CAN[chart.yearCanName], name: "Thiên Trù" },
     { chiIndex: thienKhongIndex(yearChiIndex), name: "Thiên Không" },
     { chiIndex: thienGiaiIndex(chart.lunarMonth), name: "Thiên Giải" },
     { chiIndex: diaGiaiIndex(chart.lunarMonth), name: "Địa Giải" },

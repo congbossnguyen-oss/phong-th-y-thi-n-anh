@@ -83,6 +83,9 @@ export const CAT_HUNG_BY_SAO: Record<string, CatHung> = {
   "Thiếu Dương": "Cát", "Thiếu Âm": "Cát", "Long Đức": "Cát", "Phúc Đức": "Cát", "Trực Phù": "Cát",
   "Thái Tuế": "Hung", "Tang Môn": "Hung", "Quan Phù": "Hung", "Tử Phù": "Hung", "Tuế Phá": "Hung",
   "Bạch Hổ": "Hung", "Điếu Khách": "Hung",
+  // Bổ sung audit 2026-08: Thiên Trù (phúc/lộc ăn uống) = Cát. Lưu Tứ Hóa: Lộc/Quyền/Khoa cát, Kỵ hung.
+  "Thiên Trù": "Cát",
+  "L.Hóa Lộc": "Cát", "L.Hóa Quyền": "Cát", "L.Hóa Khoa": "Cát", "L.Hóa Kỵ": "Hung",
 };
 
 // Yêu cầu Công: Thủy trước đây dùng #1c1c1c (gần đen) — gần như không phân biệt được với màu chữ thường

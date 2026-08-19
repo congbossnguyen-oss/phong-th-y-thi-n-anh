@@ -117,7 +117,7 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
   import { getBacSiRing } from "../lib/tu-vi/bac-si";
   import { getTieuHanPalace, getTuoiTieuHan } from "../lib/tu-vi/tieu-han";
   import { getNguyetHan } from "../lib/tu-vi/nguyet-han";
-  import { getLuuNienCore, getLuuNienExtended } from "../lib/tu-vi/luu-nien";
+  import { getLuuNienCore, getLuuNienExtended, applyLuuTuHoa } from "../lib/tu-vi/luu-nien";
   import { colorOfSao, isCat, ELEMENT_COLOR } from "../lib/tu-vi/hien-thi-sao";
   import { tinhBatTu, tinhLuuNien, THAP_THAN_ABBR, CAN_NGU_HANH, CHI_NGU_HANH, type BatTuChart, type PillarInfo } from "../lib/bat-tu";
 
@@ -570,6 +570,8 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
       const viewYear = tinhLuuNien(chart.input.viewingYear, chart.input.viewingYear, 1)[0];
       for (const s of getLuuNienCore(viewYear.can, viewYear.chiIndex)) luuNienByChi[s.chiIndex].push(s.name);
       for (const s of getLuuNienExtended(viewYear.chiIndex)) luuNienByChi[s.chiIndex].push(s.name);
+      // Lưu Tứ Hóa (L.Hóa Lộc/Quyền/Khoa/Kỵ) — theo Can năm xem, đặt tại cung NATAL chứa sao gốc.
+      for (const s of applyLuuTuHoa(chart, chart.input.viewingYear)) luuNienByChi[s.chiIndex].push(s.name);
     }
 
     // Yêu cầu Công: cung đang ở đúng Đại Vận hiện tại (theo tuổi/Năm xem) — chỉ có khi đã nhập Năm xem.

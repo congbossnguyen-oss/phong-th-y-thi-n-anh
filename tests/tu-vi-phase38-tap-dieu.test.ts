@@ -131,9 +131,11 @@ describe("Phase 42 — Lưu Hà: GM-verified đủ 10/10 Can (kiểm trực ti�
 });
 
 describe("Phase 38 — Phá Toái: đủ 12 Chi, đúng nhóm Tứ Chính/Tứ Sinh/Tứ Mộ", () => {
+  // SỬA (audit 2026-08) theo bảng chuẩn Công: Tứ Chính(Tý Ngọ Mão Dậu)→Tỵ(5), Tứ Sinh(Dần Thân Tỵ
+  // Hợi)→Dậu(9), Tứ Mộ(Thìn Tuất Sửu Mùi)→Sửu(1). Bản cũ khóa nhầm giá trị hoán đổi Chính↔Sinh.
   const EXPECTED: [string, number][] = [
-    ["Tý", 9], ["Ngọ", 9], ["Mão", 9], ["Dậu", 9],
-    ["Dần", 5], ["Thân", 5], ["Tỵ", 5], ["Hợi", 5],
+    ["Tý", 5], ["Ngọ", 5], ["Mão", 5], ["Dậu", 5],
+    ["Dần", 9], ["Thân", 9], ["Tỵ", 9], ["Hợi", 9],
     ["Thìn", 1], ["Tuất", 1], ["Sửu", 1], ["Mùi", 1],
   ];
   for (const [chi, expected] of EXPECTED) {
@@ -276,10 +278,11 @@ describe("Phase 38 — getTapDieu(): hàm tổng hợp trên lá số thực t�
     { day: 15, month: 6, year: 1974, hour: 12, gender: "Nam" },
   ];
   for (const input of INPUTS) {
-    it(`${JSON.stringify(input)}: đủ 43 sao (11 + 10 batch 2 + 11 Tướng Tinh + Thiên Quan/Thiên Phúc/Thai Phụ/Phong Cáo + Ân Quang/Thiên Quý/Tam Thai/Bát Tọa + Đẩu Quân + Âm Sát + Lưu Hà), không NaN/undefined, không trùng "Đào Hoa"`, () => {
+    it(`${JSON.stringify(input)}: đủ 44 sao (43 cũ + Thiên Trù, audit 2026-08), không NaN/undefined, không trùng "Đào Hoa"`, () => {
       const chart = tinhTuVi(input);
       const result = getTapDieu(chart);
-      expect(result).toHaveLength(43);
+      expect(result).toHaveLength(44);
+      expect(result.some((s) => s.name === "Thiên Trù")).toBe(true);
       expect(result.every((s) => s.name !== "Đào Hoa")).toBe(true);
       const names = result.map((s) => s.name);
       expect(new Set(names).size).toBe(names.length); // không trùng tên sao nào

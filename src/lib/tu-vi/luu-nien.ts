@@ -21,9 +21,10 @@
 // GM-verified qua 10 lá số thật) đã có sẵn trong tap-dieu.ts, không đụng vào ở đây.
 // Lưu Văn Xương/Văn Khúc: theo đúng ghi chú Công — KHÔNG an.
 
-import { mod12, tamHopGroup, LOC_TON_TABLE, THIEN_MA_START, THAI_TUE_STAGES, DAO_HOA_START, hongLoanIndex } from "./rules";
+import { mod12, tamHopGroup, LOC_TON_TABLE, THIEN_MA_START, THAI_TUE_STAGES, DAO_HOA_START, hongLoanIndex, TU_HOA_TABLE } from "./rules";
 import { thienKhocIndex, thienHuIndex, CO_THAN_BY_CHI, QUA_TU_BY_CHI } from "./tap-dieu";
-import { CHI } from "../menh-nap-am";
+import { CAN, CHI } from "../menh-nap-am";
+import type { TuViChart } from "./engine";
 
 export interface LuuNienPlacement {
   chiIndex: number;
@@ -56,4 +57,64 @@ export function getLuuNienExtended(viewYearChiIndex: number): LuuNienPlacement[]
     { chiIndex: CO_THAN_BY_CHI[viewYearChiName], name: "Cô Thần" },
     { chiIndex: QUA_TU_BY_CHI[viewYearChiName], name: "Quả Tú" },
   ];
+}
+
+// ============================================================================================
+// LƯU TỨ HÓA (L.Hóa Lộc / L.Hóa Quyền / L.Hóa Khoa / L.Hóa Kỵ) — độc lập với Tứ Hóa NGUYÊN CỤC.
+//
+// Cơ chế (Công cung cấp 2026-08): dùng Thiên Can của NĂM LƯU NIÊN (không phải năm sinh) → tra sao được
+// Hóa → tìm sao đó trên NATAL chart → đặt L.Hóa tại chính cung natal chứa sao gốc. KHÔNG đổi vị trí sao
+// gốc, KHÔNG ghi đè Tứ Hóa nguyên cục (2 record riêng, có thể cùng cung).
+//
+// ⚠️ Dùng chung `TU_HOA_TABLE` (rules.ts) — đã đối chiếu khớp 100% bảng Lưu Tứ Hóa Công đưa, nên KHÔNG
+// tạo bảng thứ hai (tránh trộn 2 hệ phái).
+// ============================================================================================
+
+function mod10(n: number): number { return ((n % 10) + 10) % 10; }
+
+/** Thiên Can của một năm dương lịch theo lịch Can Chi (năm 4 = Giáp Tý). 2026 → Bính. */
+export function canOfYear(year: number): string {
+  return CAN[mod10(year - 4)];
+}
+
+export interface LuuTuHoa {
+  can: string;
+  hoaLoc: string;
+  hoaQuyen: string;
+  hoaKhoa: string;
+  hoaKy: string;
+}
+
+/** Tra 4 sao Lưu Tứ Hóa theo Can của năm lưu niên (KHÔNG phụ thuộc lá số). */
+export function getLuuTuHoa(year: number): LuuTuHoa {
+  const can = canOfYear(year);
+  const t = TU_HOA_TABLE[can];
+  if (!t) throw new Error("RULE_NOT_DEFINED: getLuuTuHoa — Can năm lưu niên không hợp lệ: " + can);
+  return { can, hoaLoc: t.loc, hoaQuyen: t.quyen, hoaKhoa: t.khoa, hoaKy: t.ky };
+}
+
+/** Tìm chiIndex của MỘT sao trên NATAL chart (chính tinh hoặc phụ tinh). null nếu không có mặt. */
+export function findNatalStarChiIndex(chart: TuViChart, starName: string): number | null {
+  for (const c of chart.cungs) {
+    if (c.chinhTinh.some((s) => s.name === starName) || c.phuTinh.some((s) => s.name === starName)) return c.chiIndex;
+  }
+  return null;
+}
+
+/**
+ * Đặt 4 Lưu Tứ Hóa vào đúng cung NATAL chứa sao gốc tương ứng. Trả `LuuNienPlacement[]` (đọc-only,
+ * KHÔNG mutate `chart`). Sao gốc không có mặt trên lá số thì bỏ qua (không ném lỗi).
+ */
+export function applyLuuTuHoa(chart: TuViChart, year: number): LuuNienPlacement[] {
+  const th = getLuuTuHoa(year);
+  const out: LuuNienPlacement[] = [];
+  const push = (starName: string, luuName: string) => {
+    const idx = findNatalStarChiIndex(chart, starName);
+    if (idx !== null) out.push({ chiIndex: idx, name: luuName });
+  };
+  push(th.hoaLoc, "L.Hóa Lộc");
+  push(th.hoaQuyen, "L.Hóa Quyền");
+  push(th.hoaKhoa, "L.Hóa Khoa");
+  push(th.hoaKy, "L.Hóa Kỵ");
+  return out;
 }
