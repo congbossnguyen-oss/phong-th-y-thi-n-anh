@@ -100,11 +100,17 @@ export const prerender = true;
         <div id="km-luoi-9-cung" class="km-grid-9 mt-4"></div>
 
         <!-- Bảng Cách Cục -->
-        <div id="km-bang-cach-cuc" class="mt-4 hidden overflow-x-auto rounded-(--radius-card) border border-(--color-ivory-300)">
-          <table class="w-full min-w-[420px] border-collapse text-sm">
-            <tbody id="km-cach-cuc-body"></tbody>
-          </table>
-          <p class="border-t border-(--color-ivory-300) p-3 text-xs text-(--color-ink-500)">
+        <div id="km-bang-cach-cuc" class="mt-4 hidden">
+          <p class="mb-2 text-sm font-semibold text-(--color-cinnabar-400)">＋ Bảng Chi Tiết</p>
+          <div class="km-table-frame overflow-x-auto">
+            <table class="km-app-table">
+              <thead>
+                <tr><th>Loại</th><th>Mô Tả</th></tr>
+              </thead>
+              <tbody id="km-cach-cuc-body"></tbody>
+            </table>
+          </div>
+          <p class="mt-2 text-xs text-(--color-ink-500)">
             Luận cách cục chi tiết (theo phương pháp/9 sao) — chưa làm, để bổ sung ở giai đoạn sau.
           </p>
         </div>
@@ -125,7 +131,15 @@ export const prerender = true;
           </div>
 
           <div id="km-subtab-tam-thang" class="km-subtab-panel mt-4 hidden">
-            <div id="km-tam-thang-body" class="grid gap-2 sm:grid-cols-3"></div>
+            <p class="mb-2 flex items-center gap-1.5 text-base font-semibold text-(--color-cinnabar-400)">☯ Tam Thắng</p>
+            <div class="km-table-frame overflow-x-auto">
+              <table class="km-app-table">
+                <thead>
+                  <tr><th>Loại</th><th>Tên</th><th>Cung</th></tr>
+                </thead>
+                <tbody id="km-tam-thang-body"></tbody>
+              </table>
+            </div>
           </div>
 
           <div id="km-subtab-lich" class="km-subtab-panel mt-4 hidden">
@@ -143,21 +157,19 @@ export const prerender = true;
               <p id="km-lich-title" class="font-display text-lg font-semibold text-(--color-ink-950)"></p>
               <button type="button" id="km-lich-next" aria-label="Tháng sau" class="km-adjust-btn">Tháng sau ›</button>
             </div>
-            <div class="mt-3 overflow-x-auto rounded-(--radius-card) border border-(--color-ivory-300)">
-              <table class="w-full min-w-[560px] border-collapse text-center text-sm">
-                <thead>
-                  <tr class="border-b border-(--color-ivory-300) text-xs uppercase tracking-wide text-(--color-ink-500)">
-                    <th class="px-2 py-2">Ngày</th>
-                    <th class="px-2 py-2">Can-Chi</th>
-                    <th class="px-2 py-2">Trụ tháng</th>
-                    <th class="px-2 py-2">Kiến Trừ</th>
-                    <th class="px-2 py-2">Tú</th>
-                    <th class="px-2 py-2">Thắng cách</th>
-                  </tr>
-                </thead>
-                <tbody id="km-lich-body"></tbody>
-              </table>
+            <div class="mt-3 overflow-x-auto">
+              <div class="km-table-frame" style="min-width:560px">
+                <table class="km-cal">
+                  <thead>
+                    <tr>
+                      <th class="cn">C.Nhật</th><th>Thứ 2</th><th>Thứ 3</th><th>Thứ 4</th><th>Thứ 5</th><th>Thứ 6</th><th>Thứ 7</th>
+                    </tr>
+                  </thead>
+                  <tbody id="km-lich-body"></tbody>
+                </table>
+              </div>
             </div>
+            <p class="mt-2 text-xs text-(--color-ink-500)">Ô có khung đỏ = ngày có thắng cách (v1v2/v3). Mỗi ô: can-chi ngày · Kiến Trừ / Nhị Thập Bát Tú.</p>
           </div>
         </div>
       </div>
@@ -170,7 +182,11 @@ export const prerender = true;
   </Container>
 </BaseLayout>
 
-<style>
+<style is:global>
+  /* is:global bắt buộc: lưới 9 cung / Tam Thắng / bảng Cách Cục / bảng Lịch đều được
+     script phía dưới tạo bằng innerHTML lúc chạy — các phần tử đó không có thuộc tính
+     data-astro-cid-* nên CSS "scoped" mặc định của Astro sẽ KHÔNG áp dụng, khiến toàn bộ
+     khung/màu/viền các ô đó biến mất (chỉ còn chữ trần). */
   .km-mode-btn,
   .km-view-btn,
   .km-subtab-btn {
@@ -249,104 +265,187 @@ export const prerender = true;
     line-height: 1.2;
   }
 
+  /* ---- Lưới 9 cung theo phong cách app Kỳ Môn Pro: mỗi cung tô nền NGŨ HÀNH, nhãn hướng
+        ở dải trên, nội dung trên nền trắng. Bảng dùng màu cố định (không theo theme site) —
+        giống cách xem-ngay-tot-xau.astro render card kết quả nền trắng trên nền tối. ---- */
   .km-grid-9 {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 0.5rem;
+    gap: 3px;
+    background: #d9c9a4;
+    padding: 3px;
+    border-radius: 10px;
+    overflow: hidden;
   }
-
   .km-cung {
+    --nh: #9b9b9b;
     position: relative;
-    border-radius: var(--radius-card);
-    border: 1px solid var(--color-ivory-300);
-    background: var(--color-ivory-100);
-    padding: 0.55rem 0.6rem 0.5rem;
-    min-height: 118px;
-    border-left-width: 4px;
+    background: var(--nh);
+    display: flex;
+    flex-direction: column;
+    min-height: 132px;
   }
-  .km-cung-so {
-    position: absolute;
-    top: 0.4rem;
-    left: 0.55rem;
-    font-size: 0.65rem;
-    color: var(--color-ink-500);
+  .km-cung-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.25rem;
+    padding: 0.2rem 0.4rem;
+    color: #fff;
   }
   .km-cung-huong {
-    text-align: center;
-    font-size: 0.68rem;
+    font-size: 0.63rem;
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    color: var(--color-ink-500);
+    letter-spacing: 0.01em;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    min-width: 0;
   }
-  .km-cung-thien {
-    margin-top: 0.35rem;
+  .km-cung-so {
+    flex: none;
+    font-size: 0.62rem;
+    font-weight: 700;
+    opacity: 0.85;
+  }
+  .km-cung-inner {
+    flex: 1;
+    margin: 0 3px 3px;
+    background: #fffdf8;
+    border-radius: 3px;
+    padding: 0.4rem 0.35rem 0.35rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
     text-align: center;
+    color: #2a1512;
   }
-  .km-cung-thien-can {
-    font-size: 0.72rem;
-    color: var(--color-ink-500);
-  }
+  .km-cung-thien-can { font-size: 0.72rem; color: #6b5a4a; }
   .km-cung-sao {
     font-family: var(--font-display);
     font-weight: 700;
-    font-size: 1.02rem;
-    color: var(--color-ink-950);
+    font-size: 1.05rem;
+    color: #1f120e;
+    line-height: 1.15;
   }
   .km-cung-dia {
     margin-top: 0.3rem;
+    padding-top: 0.28rem;
+    width: 100%;
     display: flex;
     align-items: baseline;
     justify-content: center;
     gap: 0.3rem;
-    border-top: 1px dashed var(--color-ivory-300);
-    padding-top: 0.3rem;
+    border-top: 1px dashed #e3d6bf;
   }
-  .km-cung-mon {
-    font-weight: 700;
-    font-size: 0.85rem;
-    color: var(--color-cinnabar-400);
-  }
-  .km-cung-dia-can {
-    font-size: 0.72rem;
-    color: var(--color-ink-600);
-  }
-  .km-cung-than {
-    text-align: center;
-    font-size: 0.68rem;
-    color: var(--color-ink-500);
-    margin-top: 0.15rem;
-  }
+  .km-cung-mon { font-weight: 700; font-size: 0.9rem; color: #b8322a; }
+  .km-cung-dia-can { font-size: 0.72rem; color: #6b5a4a; }
+  .km-cung-than { font-size: 0.67rem; color: #7a6a5a; margin-top: 0.12rem; }
   .km-cung-badges {
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
     gap: 0.2rem;
-    margin-top: 0.3rem;
+    margin-top: auto;
+    padding-top: 0.3rem;
   }
+  .km-cung-trung-note { font-size: 0.6rem; font-style: italic; color: #9a8a78; margin-top: 0.25rem; }
   .km-badge {
     border-radius: var(--radius-pill);
-    padding: 0.05rem 0.4rem;
+    padding: 0.06rem 0.42rem;
     font-size: 0.6rem;
     font-weight: 700;
+    line-height: 1.4;
   }
-  .km-badge-kv { background: rgba(100, 116, 139, 0.2); color: var(--color-ink-600); }
-  .km-badge-ma { background: var(--color-gold-400)/20; background: color-mix(in srgb, var(--color-gold-400) 25%, transparent); color: var(--color-gold-300); }
-  .km-badge-tp { background: var(--color-cinnabar-500); color: var(--color-on-accent); }
-  .km-badge-ts { background: var(--color-cinnabar-500)/70; background: color-mix(in srgb, var(--color-cinnabar-500) 70%, transparent); color: var(--color-on-accent); }
+  .km-badge-kv { background: #6b5b4b; color: #fff; }
+  .km-badge-ma { background: #e0a422; color: #3a2600; }
+  .km-badge-tp { background: #c0261e; color: #fff; }
+  .km-badge-ts { background: #e07b34; color: #fff; }
 
-  .km-tt-card {
-    border-radius: var(--radius-card);
-    border: 1px solid var(--color-ivory-300);
-    background: var(--color-ivory-100);
-    padding: 0.75rem 0.9rem;
-    text-align: center;
+  /* ---- Bảng dạng app (Tam Thắng, Cách Cục, Lịch): header đỏ, thân nền hồng nhạt ---- */
+  .km-app-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fffdf8;
+    color: #2a1512;
+    font-size: 0.86rem;
   }
-  .km-tt-loai {
-    font-family: var(--font-display);
+  .km-app-table thead th {
+    background: #c0261e;
+    color: #fff;
     font-weight: 700;
-    font-size: 1.25rem;
-    color: var(--color-cinnabar-400);
+    padding: 0.6rem 0.5rem;
+    text-align: center;
+    border: 1px solid #d97b74;
+  }
+  .km-app-table tbody td,
+  .km-app-table tbody th {
+    padding: 0.55rem 0.5rem;
+    text-align: center;
+    border: 1px solid #f0d3d0;
+  }
+  .km-app-table tbody tr:nth-child(even) { background: #fdeeed; }
+  .km-app-table .km-tt-loai {
+    font-weight: 800;
+    color: #b8322a;
+    text-decoration: underline;
+  }
+  .km-app-table .km-cc-key {
+    background: #fdeeed;
+    font-weight: 700;
+    color: #7a2a25;
+    text-align: left;
+    white-space: nowrap;
+    width: 6.5rem;
+  }
+  .km-app-table .km-cc-val { text-align: left; }
+  .km-table-frame {
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid #e6cfcc;
+  }
+
+  /* ---- Lịch tháng dạng lưới 7 cột (C.Nhật … Thứ 7) ---- */
+  .km-cal {
+    width: 100%;
+    border-collapse: collapse;
+    background: #fffdf8;
+    color: #2a1512;
+    table-layout: fixed;
+  }
+  .km-cal thead th {
+    background: #c0261e;
+    color: #fff;
+    font-weight: 700;
+    font-size: 0.78rem;
+    padding: 0.5rem 0.2rem;
+    border: 1px solid #d97b74;
+  }
+  .km-cal thead th.cn { color: #ffe08a; }
+  .km-cal td {
+    border: 1px solid #f0d3d0;
+    vertical-align: top;
+    height: 74px;
+    padding: 0.2rem 0.15rem;
+    font-size: 0.64rem;
+    line-height: 1.25;
+  }
+  .km-cal td.trong { background: #faf5ee; }
+  .km-cal .cal-ngay { font-weight: 800; font-size: 0.82rem; color: #1f120e; }
+  .km-cal .cal-cn .cal-ngay { color: #c0261e; }
+  .km-cal .cal-canchi { font-weight: 600; color: #3a2620; }
+  .km-cal .cal-kien { color: #b8322a; font-weight: 700; }
+  .km-cal .cal-tu { color: #6b5a4a; }
+  .km-cal .cal-thang-cach {
+    display: inline-block;
+    margin-top: 0.12rem;
+    border: 1px solid #c0261e;
+    border-radius: 3px;
+    padding: 0 0.25rem;
+    color: #b8322a;
+    font-weight: 700;
+    font-size: 0.6rem;
   }
 </style>
 
@@ -420,11 +519,11 @@ export const prerender = true;
     "C.Trận": "Câu Trận", "C.Tước": "Chu Tước", "B.Hổ": "Bạch Hổ", "H.Vũ": "Huyền Vũ",
     "C.Địa": "Cửu Địa", "C.Thiên": "Cửu Thiên",
   };
-  // Ngũ hành theo cung Lạc Thư — dùng tô viền trái mỗi ô (đồng bộ màu ngũ hành đã dùng ở
-  // src/pages/xem-ngay-tot-xau.astro để nhất quán trên site).
+  // Ngũ hành theo cung Lạc Thư — tô nền dải hướng mỗi cung (bộ màu theo app Kỳ Môn Pro:
+  // Mộc xanh lá, Hỏa đỏ, Thổ vàng, Kim xám, Thủy xanh dương).
   const NGU_HANH_CUNG: Record<number, string> = {
-    1: "#2563eb", 2: "#8b5a2b", 3: "#16a34a", 4: "#16a34a", 5: "#8b5a2b",
-    6: "#64748b", 7: "#64748b", 8: "#8b5a2b", 9: "#dc2626",
+    1: "#2b7fc3", 2: "#e0a41f", 3: "#17974a", 4: "#17974a", 5: "#e0a41f",
+    6: "#9b9b9b", 7: "#9b9b9b", 8: "#e0a41f", 9: "#e0362a",
   };
   // Thứ tự hiển thị lưới 3x3: Tốn-Ly-Khôn / Chấn-Trung-Đoài / Cấn-Khảm-Càn (đúng bố cục app).
   const LUOI_THU_TU = [4, 9, 2, 3, 5, 7, 8, 1, 6];
@@ -603,23 +702,25 @@ export const prerender = true;
       if (soCung === laBan.trucSuCung) badges.push('<span class="km-badge km-badge-ts">Trực Sử</span>');
       const trungNote =
         soCung === 5
-          ? '<p class="mt-1 text-center text-[10px] italic text-(--color-ink-500)">Nhãn đặc biệt (Phản Ngâm...) chưa tính</p>'
+          ? '<p class="km-cung-trung-note">Nhãn đặc biệt (Phản Ngâm...) chưa tính</p>'
           : "";
       return `
-        <div class="km-cung" style="border-left-color:${NGU_HANH_CUNG[soCung]}">
-          <span class="km-cung-so">${soCung}</span>
-          <p class="km-cung-huong">${c.huong}</p>
-          <div class="km-cung-thien">
+        <div class="km-cung" style="--nh:${NGU_HANH_CUNG[soCung]}">
+          <div class="km-cung-head">
+            <span class="km-cung-huong">${c.huong}</span>
+            <span class="km-cung-so">${soCung}</span>
+          </div>
+          <div class="km-cung-inner">
             <span class="km-cung-thien-can">${c.thienBanCan}</span>
             <p class="km-cung-sao">${tenDayDu(TEN_SAO, c.saoThienBan)}</p>
+            <p class="km-cung-than">${tenDayDu(TEN_THAN, c.than)}</p>
+            <div class="km-cung-dia">
+              <span class="km-cung-mon">${tenDayDu(TEN_MON, c.mon)}</span>
+              <span class="km-cung-dia-can">${c.diaBanCan}</span>
+            </div>
+            <div class="km-cung-badges">${badges.join("")}</div>
+            ${trungNote}
           </div>
-          <div class="km-cung-dia">
-            <span class="km-cung-mon">${tenDayDu(TEN_MON, c.mon)}</span>
-            <span class="km-cung-dia-can">${c.diaBanCan}</span>
-          </div>
-          <p class="km-cung-than">${tenDayDu(TEN_THAN, c.than)}</p>
-          <div class="km-cung-badges">${badges.join("")}</div>
-          ${trungNote}
         </div>`;
     }).join("");
 
@@ -632,23 +733,18 @@ export const prerender = true;
       ["9 sao", laBan.cungList.map((c) => `${c.huong}: ${tenDayDu(TEN_SAO, c.saoThienBan)}`).join(" · ")],
     ];
     document.getElementById("km-cach-cuc-body")!.innerHTML = rows
-      .map(
-        ([k, v]) =>
-          `<tr class="border-b border-(--color-ivory-300)"><th class="w-32 whitespace-nowrap px-3 py-2 text-left text-(--color-ink-500)">${k}</th><td class="px-3 py-2 text-(--color-ink-900)">${v}</td></tr>`,
-      )
+      .map(([k, v]) => `<tr><th class="km-cc-key">${k}</th><td class="km-cc-val">${v}</td></tr>`)
       .join("");
 
-    // Tam Thắng
-    document.getElementById("km-tam-thang-body")!.innerHTML = tamThang
-      .map(
-        (h) => `
-        <div class="km-tt-card">
-          <p class="km-tt-loai">${h.loai}</p>
-          <p class="text-sm font-semibold text-(--color-ink-800)">${h.ten}</p>
-          <p class="text-xs text-(--color-ink-500)">${h.huong}</p>
-        </div>`,
-      )
-      .join("");
+    // Tam Thắng — bảng header đỏ (Loại / Tên / Cung) như app.
+    document.getElementById("km-tam-thang-body")!.innerHTML = tamThang.length
+      ? tamThang
+          .map(
+            (h) =>
+              `<tr><td class="km-tt-loai">${h.loai}</td><td>${h.ten}</td><td>${h.huong}</td></tr>`,
+          )
+          .join("")
+      : '<tr><td colspan="3" style="padding:0.75rem;color:#7a6a5a">Không có thắng cách nào trên lá bàn này.</td></tr>';
   }
 
   // ---------- Toggle Bảng Kỳ Môn / Bảng Cách Cục ----------
@@ -678,31 +774,49 @@ export const prerender = true;
   async function taiLichThang(nam: number, thang: number) {
     lichNam = nam;
     lichThang = thang;
-    document.getElementById("km-lich-title")!.textContent = `Tháng ${THANG_LABEL[thang]} - ${nam}`;
+    document.getElementById("km-lich-title")!.textContent = `Tháng ${String(thang).padStart(2, "0")} năm ${nam}`;
     const body = document.getElementById("km-lich-body")!;
-    body.innerHTML = '<tr><td colspan="6" class="py-4 text-(--color-ink-500)">Đang tải...</td></tr>';
+    body.innerHTML = '<tr><td colspan="7" style="padding:1rem;text-align:center;color:#7a6a5a">Đang tải...</td></tr>';
     try {
       const r = await fetch(`/api/kymon-lich?nam=${nam}&thang=${thang}`);
       const data: { ngayList?: NgayLichKyMon[]; error?: string } = await r.json();
       if (data.error || !data.ngayList) {
-        body.innerHTML = `<tr><td colspan="6" class="py-4 text-(--color-danger-500)">${data.error ?? "Lỗi tải lịch."}</td></tr>`;
+        body.innerHTML = `<tr><td colspan="7" style="padding:1rem;text-align:center;color:#c0261e">${data.error ?? "Lỗi tải lịch."}</td></tr>`;
         return;
       }
-      body.innerHTML = data.ngayList
-        .map(
-          (n) => `
-          <tr class="border-b border-(--color-ivory-300) ${n.nhanThangCach ? "bg-(--color-gold-400)/10" : ""}">
-            <td class="px-2 py-1.5 font-bold">${String(n.ngayDuong).padStart(2, "0")}</td>
-            <td class="px-2 py-1.5">${n.can} ${n.chi}</td>
-            <td class="px-2 py-1.5 text-(--color-ink-500)">${n.thangCan} ${n.thangChi}</td>
-            <td class="px-2 py-1.5">${n.kienTru}</td>
-            <td class="px-2 py-1.5">${n.tu}</td>
-            <td class="px-2 py-1.5">${n.nhanThangCach ? `<span class="km-badge km-badge-tp">${n.nhanThangCach.toUpperCase()}</span>` : "—"}</td>
-          </tr>`,
-        )
-        .join("");
+      // Lưới 7 cột: cột 0 = Chủ Nhật. Chèn ô trống trước ngày 1 cho khớp thứ trong tuần.
+      const byNgay = new Map(data.ngayList.map((n) => [n.ngayDuong, n]));
+      const soNgay = data.ngayList.length;
+      const thu1 = new Date(nam, thang - 1, 1).getDay(); // 0=CN..6=T7
+      const oCell = (n: NgayLichKyMon | null): string => {
+        if (!n) return '<td class="trong"></td>';
+        const cn = new Date(nam, thang - 1, n.ngayDuong).getDay() === 0 ? "cal-cn" : "";
+        const nhan = n.nhanThangCach
+          ? `<div><span class="cal-thang-cach">${n.nhanThangCach}</span></div>`
+          : "";
+        return `<td class="${cn}">
+          <div class="cal-ngay">${String(n.ngayDuong).padStart(2, "0")}</div>
+          <div class="cal-canchi">${n.can}${n.chi}</div>
+          <div><span class="cal-kien">${n.kienTru}</span><span class="cal-tu">/${n.tu}</span></div>
+          ${nhan}
+        </td>`;
+      };
+      let html = "";
+      let day = 1;
+      for (let week = 0; day <= soNgay || week === 0; week++) {
+        let row = "<tr>";
+        for (let col = 0; col < 7; col++) {
+          if (week === 0 && col < thu1) row += oCell(null);
+          else if (day > soNgay) row += oCell(null);
+          else row += oCell(byNgay.get(day++) ?? null);
+        }
+        row += "</tr>";
+        html += row;
+        if (day > soNgay) break;
+      }
+      body.innerHTML = html;
     } catch {
-      body.innerHTML = '<tr><td colspan="6" class="py-4 text-(--color-danger-500)">Không tải được lịch tháng.</td></tr>';
+      body.innerHTML = '<tr><td colspan="7" style="padding:1rem;text-align:center;color:#c0261e">Không tải được lịch tháng.</td></tr>';
     }
   }
 
