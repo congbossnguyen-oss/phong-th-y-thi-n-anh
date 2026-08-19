@@ -1,6 +1,6 @@
-# Kỳ Môn Độn Giáp — engine lõi (Prompt 1 + Prompt 2)
+# Kỳ Môn Độn Giáp — engine lõi (Prompt 1 + Prompt 2 + Prompt 3)
 
-Trạng thái: **chế độ Giờ ĐÃ CHỐT** (Prompt 1). **3 chế độ Giờ/Mệnh/1080 ĐÃ CHỐT** (Prompt 2), dùng chung 1 engine lõi đúng như SPEC yêu cầu. **Ngày/Tháng/Năm TẠM NGƯNG có chủ đích** (quyết định của Công, không phải lỗi/thiếu sót) — xem mục "Prompt 2" bên dưới. Chưa có giao diện, chưa có Tam Thắng/Lịch (Prompt 3).
+Trạng thái: **chế độ Giờ ĐÃ CHỐT** (Prompt 1). **3 chế độ Giờ/Mệnh/1080 ĐÃ CHỐT** (Prompt 2), dùng chung 1 engine lõi đúng như SPEC yêu cầu. **Ngày/Tháng/Năm TẠM NGƯNG có chủ đích** (quyết định của Công, không phải lỗi/thiếu sót) — xem mục "Prompt 2" bên dưới. **Tab Tam Thắng + Tab Lịch ĐÃ DỰNG XONG** (Prompt 3) — xem mục "Prompt 3" bên dưới, có 2 hằng số CHƯA XÁC NHẬN (mốc 28 Tú) cần Công đối chiếu app. Chưa có giao diện (Prompt 4).
 
 Chạy test: `npx vitest run src/lib/kymon/`
 
@@ -67,9 +67,33 @@ Tứ trụ (Năm/Tháng/Ngày/Giờ can-chi) dùng `@thien-anh/calendar-core` (p
 
 **UI (Prompt 4, chưa làm):** menu chọn chế độ chỉ nên hiện 3 nút Giờ / Mệnh / 1080. KHÔNG hiện nút Ngày/Tháng/Năm dạng disabled — bỏ hẳn khỏi menu cho gọn, trừ khi sau này mở lại.
 
-## Còn lại cho Prompt 3 (chưa làm)
+## Prompt 3 — Tab Tam Thắng + Tab Lịch
 
-- Tab Tam Thắng, Tab Lịch (mục 6C, 6D SPEC).
-- Nhãn 12 cung Mệnh + vòng tuổi đại vận (Công đã nói tạm chưa làm — đúng như Prompt 2 yêu cầu, để placeholder).
+### Tab Tam Thắng (`tamThang.ts`, mục 6C)
+
+`quetTamThang(result)` quét lại lá bàn đã lập (không cần dữ liệu mới) — tìm cung của V1=Sinh Môn, V2=Cửu Thiên (bát thần), V3=Thiên Ất (=Trực Phù, luôn = `trucPhuCung`), gộp dòng nếu ≥2 thắng cùng cung.
+
+**Đối chiếu SPEC mục 6C** (lá 17:43 19/08/2026, chế độ Mệnh): SPEC ghi ví dụ "V3 Thiên Ất = Đông Bắc; V2 Cửu Thiên = Tây; V1 Sinh = Tây; V1V2 = Tây". Engine ra: **V1V2 Sinh Môn Cửu Thiên = Tây ✓ khớp đúng**; **V3 Thiên Ất = Tây Nam** (không phải Đông Bắc). 3/4 chi tiết khớp — phần lệch (V3) đúng bằng đúng phần Trực Phù đã được Công sửa lại ở Giờ mode (từ "Đông Bắc" cũ sang "Khôn/Tây Nam" đúng, xem mục Prompt 1) — nên ví dụ 6C nhiều khả năng là dữ liệu CŨ chưa cập nhật theo bản Giờ đã soát lại, không phải lỗi engine. Test đã viết theo giá trị engine (đã xác nhận qua toàn bộ quá trình Prompt 1).
+
+### Tab Lịch (`lich.ts`, mục 6D)
+
+Mỗi ngày trong tháng gồm: số ngày dương, can-chi ngày (từ km_data.json), trụ tháng (theo tiết khí — dùng `@thien-anh/calendar-core`, đổi giữa các ngày nếu tiết rơi giữa tháng dương lịch), 12 Kiến Trừ, 28 Tú, và nhãn thắng cách nếu có ≥2 thắng trùng cung (chạy `lapLaBan` chế độ Ngày cho từng ngày rồi `quetTamThang`) — **có cache theo tháng** để không phải chạy lại engine khi gọi lại cùng tháng.
+
+**⚠️ 2 điểm CHƯA XÁC NHẬN, có chú thích rõ trong code (không đoán bừa rồi giấu):**
+1. **Mốc neo 28 Tú** (`TU_ANCHOR_STT`/`TU_ANCHOR_INDEX` trong `lich.ts`): tạm gán ngày 1901-01-01 = tú "Giác" — lựa chọn TÙY Ý vì không có cách suy ra mốc đúng từ dữ liệu hiện có. Công đối chiếu app rồi cho 1 mốc thật (vd "ngày X = tú Y") để chỉnh 2 hằng số này.
+2. **Nhãn thắng cách (v1v2/v3) mỗi ngày**: dùng chế độ Ngày nội bộ (`_layLaBanTheoLichNoiBo`, hàm CHƯA public) — mà công thức lập cục Nhật gia Kỳ Môn cho chế độ Ngày **đang tạm ngưng, chưa xác nhận** (xem mục Prompt 2). Nhãn này vì vậy **cũng chưa xác nhận theo cùng lý do** — hữu ích hơn để trống nên vẫn tính, nhưng đừng coi là kết quả chốt.
+
+**Không làm** (mục 6D còn nhắc nhưng SPEC tự nhận "cần đối chiếu thêm"/ký hiệu chưa rõ): nhãn `m3k/y3k/xM/xY` — chưa đủ rõ nghĩa để tính mà không đoán, để dành khi Công làm rõ ký hiệu.
+
+**12 Kiến Trừ và can-chi ngày KHÔNG phụ thuộc 2 điểm trên** — dùng trực tiếp km_data.json + `@thien-anh/calendar-core`, tin cậy như phần Giờ/Mệnh đã chốt.
+
+**Phát hiện phụ (đáng lưu ý, không chặn gì):** cột `tietkhi` trong km_data.json ghi Lập Thu 2026 vào ngày **03/08**, nhưng tính chính xác theo kinh độ mặt trời (qua `@thien-anh/calendar-core`, đã verify khớp mọi lá mẫu tứ trụ) thì Lập Thu 2026 thật sự rơi vào **07/08 (giờ VN)** — lệch 4 ngày. Tab Lịch đang dùng calendar-core (đáng tin hơn, đã kiểm chứng nhiều lần) để xác định trụ tháng cho 12 Kiến Trừ, không dùng cột `tietkhi` của km_data.json cho việc này — nên không bị ảnh hưởng, nhưng nếu chỗ khác trong hệ thống có dùng cột `tietkhi` để xác định ranh giới tiết, nên biết trước là nó không chính xác tới ngày.
+
+Chạy test: `npx vitest run src/lib/kymon/tamThang.test.ts src/lib/kymon/lich.test.ts` (21/21 test toàn bộ thư mục pass).
+
+## Còn lại (chưa làm)
+
+- Nhãn 12 cung Mệnh + vòng tuổi đại vận (Công đã nói tạm chưa làm — để placeholder).
 - Nhãn KV theo THÁNG (mới có theo GIỜ), Mã/Mộ mới là best-effort chưa đối chiếu.
 - Thiên Bàn Can ở các cung khác ngoài cung Trực Phù mới suy theo quy tắc "đi theo Sao", chỉ đối chiếu được 1-2 điểm/lá.
+- Giao diện (Prompt 4).

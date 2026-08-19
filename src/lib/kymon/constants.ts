@@ -90,6 +90,20 @@ export const HUONG_BY_CUNG: Record<number, string> = {
   9: "Ly (Nam)",
 };
 
+/** Tên hướng dạng ngắn (không kèm tên bát quái) theo số cung — dùng cho Tab Tam Thắng (mục 6C
+ * SPEC ghi hướng dạng "Tây", "Đông Bắc", không kèm "Đoài"/"Cấn"). */
+export const HUONG_DON_GIAN: Record<number, string> = {
+  1: "Bắc",
+  2: "Tây Nam",
+  3: "Đông",
+  4: "Đông Nam",
+  5: "Trung cung",
+  6: "Tây Bắc",
+  7: "Tây",
+  8: "Đông Bắc",
+  9: "Nam",
+};
+
 /** Địa chi cố định gắn với mỗi cung (bát quái phối 12 chi, 4 cung góc giữ 2 chi). */
 export const CHI_CUNG: Record<number, string[]> = {
   1: ["Tý"],

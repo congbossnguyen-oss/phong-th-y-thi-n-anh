@@ -231,7 +231,7 @@ function layLaBanTuThoiThan(ts: ThamSoLoi): LapLaBanResult {
  * đã quyết định KHÔNG đoán/nội suy, chờ thêm dữ liệu mẫu. Hàm này giữ nguyên logic (đúng phần
  * chọn trụ theo tiết khí) để dùng lại sau, không xóa — chỉ không export/gọi cho Ngày/Tháng/Năm.
  */
-function _layLaBanTheoLichNoiBo(input: LapLaBanInputLich, cheDo: CheDo): LapLaBanResult {
+export function _layLaBanTheoLichNoiBo(input: LapLaBanInputLich, cheDo: CheDo): LapLaBanResult {
   const { nam, thang, ngay, gio, phut } = input;
 
   const dateKey = `${nam}-${String(thang).padStart(2, "0")}-${String(ngay).padStart(2, "0")}`;
