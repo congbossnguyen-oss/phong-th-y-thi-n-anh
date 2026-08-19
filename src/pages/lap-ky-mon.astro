@@ -1,0 +1,734 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/ui/PageHero.astro";
+import Container from "../components/ui/Container.astro";
+import Button from "../components/ui/Button.astro";
+
+export const prerender = true;
+---
+
+<BaseLayout
+  title="Lập Kỳ Môn Độn Giáp"
+  description="Lập lá bàn Kỳ Môn Độn Giáp 9 cung theo giờ hiện tại, giờ sinh (Mệnh) hoặc nhập tay hoa giáp (1080) — kèm Tam Thắng và lịch tháng Kỳ Môn."
+>
+  <PageHero
+    eyebrow="Công cụ"
+    title="Lập Kỳ Môn Độn Giáp"
+    description="Chọn chế độ Giờ (thời điểm hiện tại), Mệnh (giờ sinh) hoặc 1080 (nhập tay cục + hoa giáp) để lập lá bàn 9 cung."
+    breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Lập Kỳ Môn Độn Giáp" }]}
+  />
+
+  <Container class="py-12">
+    <div class="mx-auto max-w-4xl">
+      <!-- Chọn chế độ -->
+      <div class="flex flex-wrap gap-2" role="tablist" aria-label="Chế độ lập bàn">
+        <button type="button" data-mode="gio" class="km-mode-btn" aria-selected="true">Giờ</button>
+        <button type="button" data-mode="menh" class="km-mode-btn" aria-selected="false">Mệnh</button>
+        <button type="button" data-mode="1080" class="km-mode-btn" aria-selected="false">1080</button>
+      </div>
+      <p id="km-mode-note" class="mt-2 text-xs text-(--color-ink-500)"></p>
+
+      <!-- Form nhập theo lịch (Giờ / Mệnh) -->
+      <form id="km-form-lich" class="mt-4 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-5">
+        <p id="km-form-lich-label" class="text-sm font-medium text-(--color-ink-800)">Thời điểm</p>
+        <div class="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-5">
+          <select id="km-ngay" aria-label="Ngày" class="km-select"></select>
+          <select id="km-thang" aria-label="Tháng" class="km-select"></select>
+          <select id="km-nam" aria-label="Năm" class="km-select"></select>
+          <select id="km-gio" aria-label="Giờ" class="km-select"></select>
+          <select id="km-phut" aria-label="Phút" class="km-select"></select>
+        </div>
+        <div class="mt-3 flex flex-wrap items-center gap-1.5">
+          <span class="mr-1 text-xs text-(--color-ink-500)">Chỉnh nhanh:</span>
+          <button type="button" data-adjust="H:-1" class="km-adjust-btn">−H</button>
+          <button type="button" data-adjust="D:-1" class="km-adjust-btn">−D</button>
+          <button type="button" data-adjust="M:-1" class="km-adjust-btn">−M</button>
+          <button type="button" data-adjust="Y:-1" class="km-adjust-btn">−Y</button>
+          <button type="button" data-adjust="Y:1" class="km-adjust-btn">+Y</button>
+          <button type="button" data-adjust="M:1" class="km-adjust-btn">+M</button>
+          <button type="button" data-adjust="D:1" class="km-adjust-btn">+D</button>
+          <button type="button" data-adjust="H:1" class="km-adjust-btn">+H</button>
+          <Button type="submit" size="md" class="ml-auto">Lập bàn</Button>
+        </div>
+      </form>
+
+      <!-- Form nhập tay (1080) -->
+      <form id="km-form-1080" class="mt-4 hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-5">
+        <p class="text-sm font-medium text-(--color-ink-800)">Nhập tay Cục · Âm Dương · Hoa Giáp</p>
+        <div class="mt-2 grid grid-cols-1 gap-2 sm:grid-cols-3">
+          <select id="km-so-cuc" aria-label="Số Cục" class="km-select"></select>
+          <select id="km-am-duong" aria-label="Âm/Dương" class="km-select">
+            <option value="-">Âm Độn</option>
+            <option value="+">Dương Độn</option>
+          </select>
+          <select id="km-hoa-giap" aria-label="Hoa Giáp" class="km-select"></select>
+        </div>
+        <Button type="submit" size="md" class="mt-3">Lập bàn</Button>
+      </form>
+
+      <div id="km-loi" class="mt-4 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm text-(--color-danger-500)"></div>
+
+      <!-- Kết quả -->
+      <div id="km-ket-qua" class="mt-8 hidden">
+        <!-- Tứ trụ -->
+        <div id="km-tu-tru-wrap">
+          <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-300)">Tứ trụ</p>
+          <div class="mt-2 grid grid-cols-4 gap-2 text-center">
+            <div class="km-tru-cell"><p class="km-tru-label">Giờ</p><p id="km-tt-gio" class="km-tru-canchi"></p></div>
+            <div class="km-tru-cell"><p class="km-tru-label">Ngày</p><p id="km-tt-ngay" class="km-tru-canchi"></p></div>
+            <div class="km-tru-cell"><p class="km-tru-label">Tháng</p><p id="km-tt-thang" class="km-tru-canchi"></p></div>
+            <div class="km-tru-cell"><p class="km-tru-label">Năm</p><p id="km-tt-nam" class="km-tru-canchi"></p></div>
+          </div>
+        </div>
+        <p id="km-hoa-giap-line" class="hidden font-display text-lg font-semibold text-(--color-ink-950)"></p>
+
+        <!-- Cục / Phù đầu tóm tắt -->
+        <div class="mt-4 flex flex-wrap gap-x-5 gap-y-1 text-sm text-(--color-ink-700)">
+          <span>Cục: <strong id="km-cuc" class="text-(--color-ink-950)"></strong></span>
+          <span>Phù đầu: <strong id="km-phu-dau" class="text-(--color-ink-950)"></strong></span>
+          <span>Trực Sử: <strong id="km-truc-su" class="text-(--color-ink-950)"></strong></span>
+          <span>Trực Phù: <strong id="km-truc-phu" class="text-(--color-ink-950)"></strong></span>
+        </div>
+
+        <!-- Toggle Bảng Kỳ Môn / Bảng Cách Cục -->
+        <div class="mt-5 flex gap-2">
+          <button type="button" data-view="ban" class="km-view-btn" aria-selected="true">Bảng Kỳ Môn</button>
+          <button type="button" data-view="cach-cuc" class="km-view-btn" aria-selected="false">Bảng Cách Cục</button>
+        </div>
+
+        <!-- Lưới 9 cung -->
+        <div id="km-luoi-9-cung" class="km-grid-9 mt-4"></div>
+
+        <!-- Bảng Cách Cục -->
+        <div id="km-bang-cach-cuc" class="mt-4 hidden overflow-x-auto rounded-(--radius-card) border border-(--color-ivory-300)">
+          <table class="w-full min-w-[420px] border-collapse text-sm">
+            <tbody id="km-cach-cuc-body"></tbody>
+          </table>
+          <p class="border-t border-(--color-ivory-300) p-3 text-xs text-(--color-ink-500)">
+            Luận cách cục chi tiết (theo phương pháp/9 sao) — chưa làm, để bổ sung ở giai đoạn sau.
+          </p>
+        </div>
+
+        <!-- Sub-tab Mệnh / Tam Thắng / Lịch — chỉ hiện ở chế độ Mệnh -->
+        <div id="km-subtabs-wrap" class="mt-8 hidden">
+          <div class="flex flex-wrap gap-2 border-b border-(--color-ivory-300)">
+            <button type="button" data-subtab="menh" class="km-subtab-btn" aria-selected="true">Mệnh</button>
+            <button type="button" data-subtab="tam-thang" class="km-subtab-btn" aria-selected="false">Tam Thắng</button>
+            <button type="button" data-subtab="lich" class="km-subtab-btn" aria-selected="false">Lịch</button>
+          </div>
+
+          <div id="km-subtab-menh" class="km-subtab-panel mt-4">
+            <p class="text-sm text-(--color-ink-600)">
+              Nhãn 12 cung Mệnh (Tài Bạch, Quan Lộc, Mệnh Cung...) và vòng tuổi đại vận (15→120) — chưa làm,
+              đang chờ xác nhận quy luật khởi cung/chiều đi (xem README engine). Tạm để trống.
+            </p>
+          </div>
+
+          <div id="km-subtab-tam-thang" class="km-subtab-panel mt-4 hidden">
+            <div id="km-tam-thang-body" class="grid gap-2 sm:grid-cols-3"></div>
+          </div>
+
+          <div id="km-subtab-lich" class="km-subtab-panel mt-4 hidden">
+            <div class="space-y-2">
+              <p class="rounded-(--radius-control) border border-(--color-gold-400)/50 bg-(--color-gold-400)/10 px-3 py-2 text-xs text-(--color-ink-700)">
+                ⚠️ Mốc neo 28 Tú hiện là <strong>giá trị tạm</strong> (chưa đối chiếu app Kỳ Môn Pro) — có thể lệch.
+              </p>
+              <p class="rounded-(--radius-control) border border-(--color-gold-400)/50 bg-(--color-gold-400)/10 px-3 py-2 text-xs text-(--color-ink-700)">
+                ⚠️ Nhãn thắng cách (v1v2/v3) mỗi ngày dùng chế độ Ngày — công thức lập cục Nhật gia Kỳ Môn cho
+                chế độ Ngày <strong>đang tạm ngưng</strong> (chưa đủ dữ liệu xác nhận), nên nhãn này cũng chưa chắc chắn.
+              </p>
+            </div>
+            <div class="mt-4 flex items-center justify-between">
+              <button type="button" id="km-lich-prev" aria-label="Tháng trước" class="km-adjust-btn">‹ Tháng trước</button>
+              <p id="km-lich-title" class="font-display text-lg font-semibold text-(--color-ink-950)"></p>
+              <button type="button" id="km-lich-next" aria-label="Tháng sau" class="km-adjust-btn">Tháng sau ›</button>
+            </div>
+            <div class="mt-3 overflow-x-auto rounded-(--radius-card) border border-(--color-ivory-300)">
+              <table class="w-full min-w-[560px] border-collapse text-center text-sm">
+                <thead>
+                  <tr class="border-b border-(--color-ivory-300) text-xs uppercase tracking-wide text-(--color-ink-500)">
+                    <th class="px-2 py-2">Ngày</th>
+                    <th class="px-2 py-2">Can-Chi</th>
+                    <th class="px-2 py-2">Trụ tháng</th>
+                    <th class="px-2 py-2">Kiến Trừ</th>
+                    <th class="px-2 py-2">Tú</th>
+                    <th class="px-2 py-2">Thắng cách</th>
+                  </tr>
+                </thead>
+                <tbody id="km-lich-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <p class="mt-8 text-xs text-(--color-ink-500)">
+        Ngày/Tháng/Năm tạm ngưng — 3 hệ lập cục riêng (Nhật gia/Nguyệt gia/Niên gia Kỳ Môn) chưa đủ dữ liệu mẫu
+        để xác định công thức, tránh đoán bừa. Dữ liệu tham khảo, không thay thế tư vấn trực tiếp.
+      </p>
+    </div>
+  </Container>
+</BaseLayout>
+
+<style>
+  .km-mode-btn,
+  .km-view-btn,
+  .km-subtab-btn {
+    border-radius: var(--radius-control);
+    padding: 0.5rem 1.1rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-ink-700);
+    background: var(--color-ivory-100);
+    border: 1px solid var(--color-ivory-300);
+    transition: all 0.15s ease;
+  }
+  .km-mode-btn[aria-selected="true"],
+  .km-view-btn[aria-selected="true"] {
+    background: var(--color-gold-400);
+    color: var(--color-on-accent);
+    border-color: var(--color-gold-400);
+  }
+  .km-subtab-btn {
+    border-radius: var(--radius-control) var(--radius-control) 0 0;
+    border-bottom: none;
+    background: transparent;
+  }
+  .km-subtab-btn[aria-selected="true"] {
+    background: var(--color-ivory-100);
+    color: var(--color-gold-300);
+    border-color: var(--color-ivory-300);
+  }
+
+  .km-select {
+    width: 100%;
+    border-radius: var(--radius-control);
+    border: 1px solid var(--color-ivory-300);
+    background: var(--color-ivory-50);
+    color: var(--color-ink-800);
+    padding: 0.55rem 0.6rem;
+    font-size: 0.85rem;
+  }
+  .km-select:focus {
+    outline: 2px solid color-mix(in srgb, var(--color-gold-400) 40%, transparent);
+    border-color: var(--color-gold-400);
+  }
+
+  .km-adjust-btn {
+    border-radius: var(--radius-control);
+    border: 1px solid var(--color-ivory-300);
+    background: var(--color-ivory-50);
+    color: var(--color-ink-700);
+    padding: 0.35rem 0.65rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  .km-adjust-btn:hover {
+    border-color: var(--color-gold-400);
+    color: var(--color-gold-300);
+  }
+
+  .km-tru-cell {
+    border-radius: var(--radius-control);
+    border: 1px solid var(--color-ivory-300);
+    background: var(--color-ivory-100);
+    padding: 0.5rem 0.25rem;
+  }
+  .km-tru-label {
+    font-size: 0.68rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--color-ink-500);
+  }
+  .km-tru-canchi {
+    margin-top: 0.15rem;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: var(--color-ink-950);
+    line-height: 1.2;
+  }
+
+  .km-grid-9 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+  }
+
+  .km-cung {
+    position: relative;
+    border-radius: var(--radius-card);
+    border: 1px solid var(--color-ivory-300);
+    background: var(--color-ivory-100);
+    padding: 0.55rem 0.6rem 0.5rem;
+    min-height: 118px;
+    border-left-width: 4px;
+  }
+  .km-cung-so {
+    position: absolute;
+    top: 0.4rem;
+    left: 0.55rem;
+    font-size: 0.65rem;
+    color: var(--color-ink-500);
+  }
+  .km-cung-huong {
+    text-align: center;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--color-ink-500);
+  }
+  .km-cung-thien {
+    margin-top: 0.35rem;
+    text-align: center;
+  }
+  .km-cung-thien-can {
+    font-size: 0.72rem;
+    color: var(--color-ink-500);
+  }
+  .km-cung-sao {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.02rem;
+    color: var(--color-ink-950);
+  }
+  .km-cung-dia {
+    margin-top: 0.3rem;
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    gap: 0.3rem;
+    border-top: 1px dashed var(--color-ivory-300);
+    padding-top: 0.3rem;
+  }
+  .km-cung-mon {
+    font-weight: 700;
+    font-size: 0.85rem;
+    color: var(--color-cinnabar-400);
+  }
+  .km-cung-dia-can {
+    font-size: 0.72rem;
+    color: var(--color-ink-600);
+  }
+  .km-cung-than {
+    text-align: center;
+    font-size: 0.68rem;
+    color: var(--color-ink-500);
+    margin-top: 0.15rem;
+  }
+  .km-cung-badges {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.2rem;
+    margin-top: 0.3rem;
+  }
+  .km-badge {
+    border-radius: var(--radius-pill);
+    padding: 0.05rem 0.4rem;
+    font-size: 0.6rem;
+    font-weight: 700;
+  }
+  .km-badge-kv { background: rgba(100, 116, 139, 0.2); color: var(--color-ink-600); }
+  .km-badge-ma { background: var(--color-gold-400)/20; background: color-mix(in srgb, var(--color-gold-400) 25%, transparent); color: var(--color-gold-300); }
+  .km-badge-tp { background: var(--color-cinnabar-500); color: var(--color-on-accent); }
+  .km-badge-ts { background: var(--color-cinnabar-500)/70; background: color-mix(in srgb, var(--color-cinnabar-500) 70%, transparent); color: var(--color-on-accent); }
+
+  .km-tt-card {
+    border-radius: var(--radius-card);
+    border: 1px solid var(--color-ivory-300);
+    background: var(--color-ivory-100);
+    padding: 0.75rem 0.9rem;
+    text-align: center;
+  }
+  .km-tt-loai {
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 1.25rem;
+    color: var(--color-cinnabar-400);
+  }
+</style>
+
+<script>
+  interface CungInfo {
+    soCung: number;
+    huong: string;
+    saoThienBan: string;
+    mon: string;
+    than: string;
+    thienBanCan: string;
+    diaBanCan: string;
+    diaChi: string[];
+    KV: boolean;
+    Ma: boolean;
+  }
+
+  interface CanChiPillar {
+    can: string;
+    chi: string;
+  }
+
+  interface LapLaBanResult {
+    cheDo: string;
+    tuTru: { gio?: CanChiPillar; ngay?: CanChiPillar; thang?: CanChiPillar; nam?: CanChiPillar };
+    cuc: number;
+    amDuong: "+" | "-";
+    phuDau: string;
+    trucPhu: string;
+    trucPhuCung: number;
+    trucSu: string;
+    trucSuCung: number;
+    cungList: CungInfo[];
+  }
+
+  interface HangTamThang {
+    loai: string;
+    ten: string;
+    huong: string;
+    soCung: number;
+  }
+
+  interface LapLaBanApiResponse {
+    laBan?: LapLaBanResult;
+    tamThang?: HangTamThang[];
+    error?: string;
+  }
+
+  interface NgayLichKyMon {
+    ngayDuong: number;
+    can: string;
+    chi: string;
+    thangCan: string;
+    thangChi: string;
+    kienTru: string;
+    tu: string;
+    nhanThangCach?: string;
+  }
+
+  // Tên môn/sao/thần ĐẦY ĐỦ (dữ liệu km_core_tables.json dùng viết tắt như "T.Tâm", "C.Thiên" —
+  // đổi sang tên đầy đủ cho dễ đọc trên giao diện).
+  const TEN_MON: Record<string, string> = {
+    HƯU: "Hưu", TỬ: "Tử", THƯƠNG: "Thương", ĐỖ: "Đỗ", CẢNH: "Cảnh", SINH: "Sinh", KINH: "Kinh", KHAI: "Khai",
+  };
+  const TEN_SAO: Record<string, string> = {
+    "T.Bồng": "Thiên Bồng", "T.Nhuế": "Thiên Nhuế", "T.Xung": "Thiên Xung", "T.Phò": "Thiên Phụ",
+    "T.Tâm": "Thiên Tâm", "T.Trụ": "Thiên Trụ", "T.Nhậm": "Thiên Nhậm", "T.Anh": "Thiên Anh",
+  };
+  const TEN_THAN: Record<string, string> = {
+    "T.Phù": "Trực Phù", "Đ.Xà": "Đằng Xà", "T.Âm": "Thái Âm", "L.Hợp": "Lục Hợp",
+    "C.Trận": "Câu Trận", "C.Tước": "Chu Tước", "B.Hổ": "Bạch Hổ", "H.Vũ": "Huyền Vũ",
+    "C.Địa": "Cửu Địa", "C.Thiên": "Cửu Thiên",
+  };
+  // Ngũ hành theo cung Lạc Thư — dùng tô viền trái mỗi ô (đồng bộ màu ngũ hành đã dùng ở
+  // src/pages/xem-ngay-tot-xau.astro để nhất quán trên site).
+  const NGU_HANH_CUNG: Record<number, string> = {
+    1: "#2563eb", 2: "#8b5a2b", 3: "#16a34a", 4: "#16a34a", 5: "#8b5a2b",
+    6: "#64748b", 7: "#64748b", 8: "#8b5a2b", 9: "#dc2626",
+  };
+  // Thứ tự hiển thị lưới 3x3: Tốn-Ly-Khôn / Chấn-Trung-Đoài / Cấn-Khảm-Càn (đúng bố cục app).
+  const LUOI_THU_TU = [4, 9, 2, 3, 5, 7, 8, 1, 6];
+
+  function tenDayDu(map: Record<string, string>, key: string): string {
+    return map[key] ?? key;
+  }
+
+  // ---------- Chọn chế độ ----------
+  const modeBtns = document.querySelectorAll<HTMLButtonElement>(".km-mode-btn");
+  const formLich = document.getElementById("km-form-lich") as HTMLFormElement;
+  const formLabelEl = document.getElementById("km-form-lich-label")!;
+  const form1080 = document.getElementById("km-form-1080") as HTMLFormElement;
+  const modeNoteEl = document.getElementById("km-mode-note")!;
+  let cheDoHienTai: "gio" | "menh" | "1080" = "gio";
+
+  const MODE_NOTE: Record<string, string> = {
+    gio: "Lập bàn theo thời điểm nhập (mặc định giờ hiện tại).",
+    menh: "Lập bàn theo giờ SINH — bàn 9 cung tính y hệt chế độ Giờ, chỉ khác ý nghĩa thời điểm nhập.",
+    "1080": "Nhập tay số Cục, Âm/Dương và 1 trong 60 Hoa Giáp — bỏ qua tra lịch, dùng cho bốc thẻ hoa giáp.",
+  };
+
+  function chonCheDo(cheDo: "gio" | "menh" | "1080") {
+    cheDoHienTai = cheDo;
+    modeBtns.forEach((b) => b.setAttribute("aria-selected", String(b.dataset.mode === cheDo)));
+    formLich.classList.toggle("hidden", cheDo === "1080");
+    form1080.classList.toggle("hidden", cheDo !== "1080");
+    formLabelEl.textContent = cheDo === "menh" ? "Ngày giờ SINH" : "Thời điểm hiện tại";
+    modeNoteEl.textContent = MODE_NOTE[cheDo];
+    document.getElementById("km-subtabs-wrap")!.classList.toggle("hidden", cheDo !== "menh");
+  }
+
+  modeBtns.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      chonCheDo(btn.dataset.mode as "gio" | "menh" | "1080");
+      if (cheDoHienTai === "1080") layBan1080();
+      else layBanLich();
+    });
+  });
+
+  // ---------- Điền các ô chọn ngày giờ ----------
+  function populateSelect(el: HTMLSelectElement, options: [number | string, string][]) {
+    el.innerHTML = options.map(([v, l]) => `<option value="${v}">${l}</option>`).join("");
+  }
+  const ngaySel = document.getElementById("km-ngay") as HTMLSelectElement;
+  const thangSel = document.getElementById("km-thang") as HTMLSelectElement;
+  const namSel = document.getElementById("km-nam") as HTMLSelectElement;
+  const gioSel = document.getElementById("km-gio") as HTMLSelectElement;
+  const phutSel = document.getElementById("km-phut") as HTMLSelectElement;
+
+  populateSelect(ngaySel, Array.from({ length: 31 }, (_, i) => [i + 1, String(i + 1).padStart(2, "0")]));
+  populateSelect(thangSel, Array.from({ length: 12 }, (_, i) => [i + 1, `Tháng ${i + 1}`]));
+  const nowYear = new Date().getFullYear();
+  populateSelect(namSel, Array.from({ length: 21 }, (_, i) => nowYear - 10 + i).map((y) => [y, String(y)]));
+  populateSelect(gioSel, Array.from({ length: 24 }, (_, i) => [i, `${String(i).padStart(2, "0")}h`]));
+  populateSelect(phutSel, Array.from({ length: 60 }, (_, i) => [i, String(i).padStart(2, "0")]));
+
+  function datVaoForm(d: Date) {
+    ngaySel.value = String(d.getDate());
+    thangSel.value = String(d.getMonth() + 1);
+    namSel.value = String(d.getFullYear());
+    gioSel.value = String(d.getHours());
+    phutSel.value = String(d.getMinutes());
+  }
+  function docTuForm(): Date {
+    return new Date(
+      Number(namSel.value),
+      Number(thangSel.value) - 1,
+      Number(ngaySel.value),
+      Number(gioSel.value),
+      Number(phutSel.value),
+    );
+  }
+
+  document.querySelectorAll<HTMLButtonElement>("[data-adjust]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const [don, soRaw] = (btn.dataset.adjust ?? "").split(":");
+      const so = Number(soRaw);
+      const d = docTuForm();
+      if (don === "H") d.setHours(d.getHours() + so);
+      if (don === "D") d.setDate(d.getDate() + so);
+      if (don === "M") d.setMonth(d.getMonth() + so);
+      if (don === "Y") d.setFullYear(d.getFullYear() + so);
+      datVaoForm(d);
+      layBanLich();
+    });
+  });
+
+  // ---------- Chọn cục / hoa giáp (1080) ----------
+  const soCucSel = document.getElementById("km-so-cuc") as HTMLSelectElement;
+  populateSelect(soCucSel, Array.from({ length: 9 }, (_, i) => [i + 1, `Cục ${i + 1}`]));
+  const amDuongSel = document.getElementById("km-am-duong") as HTMLSelectElement;
+  const hoaGiapSel = document.getElementById("km-hoa-giap") as HTMLSelectElement;
+  const CAN_60 = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"];
+  const CHI_60 = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"];
+  const HOA_GIAP_60: string[] = Array.from({ length: 60 }, (_, i) => `${CAN_60[i % 10]} ${CHI_60[i % 12]}`);
+  populateSelect(hoaGiapSel, HOA_GIAP_60.map((t) => [t, t]));
+
+  // ---------- Gọi API + render ----------
+  const loiEl = document.getElementById("km-loi")!;
+  const ketQuaEl = document.getElementById("km-ket-qua")!;
+
+  async function layBanLich() {
+    const d = docTuForm();
+    const qs = `cheDo=${cheDoHienTai}&nam=${d.getFullYear()}&thang=${d.getMonth() + 1}&ngay=${d.getDate()}&gio=${d.getHours()}&phut=${d.getMinutes()}`;
+    await goiVaVe(qs, false);
+  }
+  async function layBan1080() {
+    const qs = `cheDo=1080&soCuc=${soCucSel.value}&amDuong=${encodeURIComponent(amDuongSel.value)}&hoaGiap=${encodeURIComponent(hoaGiapSel.value)}`;
+    await goiVaVe(qs, true);
+  }
+
+  // Chống race condition: đổi chế độ/chỉnh nhanh liên tiếp có thể bắn nhiều request cùng lúc,
+  // phản hồi có thể về KHÔNG theo đúng thứ tự gửi đi (đặc biệt khi đổi chế độ rồi sửa input
+  // ngay lập tức). Chỉ áp dụng kết quả của request MỚI NHẤT đã gửi, bỏ qua phản hồi cũ về muộn.
+  let yeuCauMoiNhat = 0;
+
+  async function goiVaVe(qs: string, la1080: boolean) {
+    const idYeuCau = ++yeuCauMoiNhat;
+    loiEl.classList.add("hidden");
+    let res: LapLaBanApiResponse;
+    try {
+      const r = await fetch(`/api/kymon-lap-la-ban?${qs}`);
+      res = await r.json();
+    } catch {
+      if (idYeuCau !== yeuCauMoiNhat) return;
+      loiEl.textContent = "Không thể kết nối tới máy chủ, thử lại sau.";
+      loiEl.classList.remove("hidden");
+      ketQuaEl.classList.add("hidden");
+      return;
+    }
+    if (idYeuCau !== yeuCauMoiNhat) return; // có request mới hơn đã gửi đi, bỏ qua kết quả cũ này
+    if (res.error || !res.laBan) {
+      loiEl.textContent = res.error ?? "Không lập được lá bàn.";
+      loiEl.classList.remove("hidden");
+      ketQuaEl.classList.add("hidden");
+      return;
+    }
+    renderLaBan(res.laBan, res.tamThang ?? [], la1080);
+    ketQuaEl.classList.remove("hidden");
+  }
+
+  function canChiText(p?: CanChiPillar): string {
+    return p ? `${p.can}\n${p.chi}` : "—";
+  }
+
+  function renderLaBan(laBan: LapLaBanResult, tamThang: HangTamThang[], la1080: boolean) {
+    document.getElementById("km-tu-tru-wrap")!.classList.toggle("hidden", la1080);
+    const hoaGiapLine = document.getElementById("km-hoa-giap-line")!;
+    if (la1080) {
+      hoaGiapLine.textContent = `Hoa giáp: ${hoaGiapSel.value} · Cục ${laBan.cuc} ${laBan.amDuong === "-" ? "Âm" : "Dương"}`;
+      hoaGiapLine.classList.remove("hidden");
+    } else {
+      hoaGiapLine.classList.add("hidden");
+      document.getElementById("km-tt-gio")!.innerHTML = canChiText(laBan.tuTru.gio).replace("\n", "<br>");
+      document.getElementById("km-tt-ngay")!.innerHTML = canChiText(laBan.tuTru.ngay).replace("\n", "<br>");
+      document.getElementById("km-tt-thang")!.innerHTML = canChiText(laBan.tuTru.thang).replace("\n", "<br>");
+      document.getElementById("km-tt-nam")!.innerHTML = canChiText(laBan.tuTru.nam).replace("\n", "<br>");
+    }
+
+    document.getElementById("km-cuc")!.textContent = `${laBan.amDuong === "-" ? "Âm" : "Dương"} ${laBan.cuc}`;
+    document.getElementById("km-phu-dau")!.textContent = laBan.phuDau;
+    document.getElementById("km-truc-su")!.textContent = `${tenDayDu(TEN_MON, laBan.trucSu)} môn`;
+    document.getElementById("km-truc-phu")!.textContent = tenDayDu(TEN_SAO, laBan.trucPhu);
+
+    // Lưới 9 cung
+    const cungMap = new Map(laBan.cungList.map((c) => [c.soCung, c]));
+    const luoiEl = document.getElementById("km-luoi-9-cung")!;
+    luoiEl.innerHTML = LUOI_THU_TU.map((soCung) => {
+      const c = cungMap.get(soCung);
+      if (!c) return "";
+      const badges: string[] = [];
+      if (c.KV) badges.push('<span class="km-badge km-badge-kv">KV</span>');
+      if (c.Ma) badges.push('<span class="km-badge km-badge-ma">Mã</span>');
+      if (soCung === laBan.trucPhuCung) badges.push('<span class="km-badge km-badge-tp">Trực Phù</span>');
+      if (soCung === laBan.trucSuCung) badges.push('<span class="km-badge km-badge-ts">Trực Sử</span>');
+      const trungNote =
+        soCung === 5
+          ? '<p class="mt-1 text-center text-[10px] italic text-(--color-ink-500)">Nhãn đặc biệt (Phản Ngâm...) chưa tính</p>'
+          : "";
+      return `
+        <div class="km-cung" style="border-left-color:${NGU_HANH_CUNG[soCung]}">
+          <span class="km-cung-so">${soCung}</span>
+          <p class="km-cung-huong">${c.huong}</p>
+          <div class="km-cung-thien">
+            <span class="km-cung-thien-can">${c.thienBanCan}</span>
+            <p class="km-cung-sao">${tenDayDu(TEN_SAO, c.saoThienBan)}</p>
+          </div>
+          <div class="km-cung-dia">
+            <span class="km-cung-mon">${tenDayDu(TEN_MON, c.mon)}</span>
+            <span class="km-cung-dia-can">${c.diaBanCan}</span>
+          </div>
+          <p class="km-cung-than">${tenDayDu(TEN_THAN, c.than)}</p>
+          <div class="km-cung-badges">${badges.join("")}</div>
+          ${trungNote}
+        </div>`;
+    }).join("");
+
+    // Bảng Cách Cục
+    const rows: [string, string][] = [
+      ["Cục", `${laBan.amDuong === "-" ? "Âm" : "Dương"} ${laBan.cuc}`],
+      ["Phù đầu", laBan.phuDau],
+      ["Trực Sử", `${tenDayDu(TEN_MON, laBan.trucSu)} môn (cung ${laBan.trucSuCung})`],
+      ["Trực Phù", `${tenDayDu(TEN_SAO, laBan.trucPhu)} (cung ${laBan.trucPhuCung})`],
+      ["9 sao", laBan.cungList.map((c) => `${c.huong}: ${tenDayDu(TEN_SAO, c.saoThienBan)}`).join(" · ")],
+    ];
+    document.getElementById("km-cach-cuc-body")!.innerHTML = rows
+      .map(
+        ([k, v]) =>
+          `<tr class="border-b border-(--color-ivory-300)"><th class="w-32 whitespace-nowrap px-3 py-2 text-left text-(--color-ink-500)">${k}</th><td class="px-3 py-2 text-(--color-ink-900)">${v}</td></tr>`,
+      )
+      .join("");
+
+    // Tam Thắng
+    document.getElementById("km-tam-thang-body")!.innerHTML = tamThang
+      .map(
+        (h) => `
+        <div class="km-tt-card">
+          <p class="km-tt-loai">${h.loai}</p>
+          <p class="text-sm font-semibold text-(--color-ink-800)">${h.ten}</p>
+          <p class="text-xs text-(--color-ink-500)">${h.huong}</p>
+        </div>`,
+      )
+      .join("");
+  }
+
+  // ---------- Toggle Bảng Kỳ Môn / Bảng Cách Cục ----------
+  document.querySelectorAll<HTMLButtonElement>(".km-view-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll<HTMLButtonElement>(".km-view-btn").forEach((b) => b.setAttribute("aria-selected", String(b === btn)));
+      document.getElementById("km-luoi-9-cung")!.classList.toggle("hidden", btn.dataset.view !== "ban");
+      document.getElementById("km-bang-cach-cuc")!.classList.toggle("hidden", btn.dataset.view !== "cach-cuc");
+    });
+  });
+
+  // ---------- Sub-tabs (Mệnh) ----------
+  document.querySelectorAll<HTMLButtonElement>(".km-subtab-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll<HTMLButtonElement>(".km-subtab-btn").forEach((b) => b.setAttribute("aria-selected", String(b === btn)));
+      document.querySelectorAll<HTMLElement>(".km-subtab-panel").forEach((p) => p.classList.add("hidden"));
+      document.getElementById(`km-subtab-${btn.dataset.subtab}`)!.classList.remove("hidden");
+      if (btn.dataset.subtab === "lich") taiLichThang(lichNam, lichThang);
+    });
+  });
+
+  // ---------- Tab Lịch ----------
+  const THANG_LABEL = ["", "Một", "Hai", "Ba", "Tư", "Năm", "Sáu", "Bảy", "Tám", "Chín", "Mười", "Mười Một", "Mười Hai"];
+  let lichNam = new Date().getFullYear();
+  let lichThang = new Date().getMonth() + 1;
+
+  async function taiLichThang(nam: number, thang: number) {
+    lichNam = nam;
+    lichThang = thang;
+    document.getElementById("km-lich-title")!.textContent = `Tháng ${THANG_LABEL[thang]} - ${nam}`;
+    const body = document.getElementById("km-lich-body")!;
+    body.innerHTML = '<tr><td colspan="6" class="py-4 text-(--color-ink-500)">Đang tải...</td></tr>';
+    try {
+      const r = await fetch(`/api/kymon-lich?nam=${nam}&thang=${thang}`);
+      const data: { ngayList?: NgayLichKyMon[]; error?: string } = await r.json();
+      if (data.error || !data.ngayList) {
+        body.innerHTML = `<tr><td colspan="6" class="py-4 text-(--color-danger-500)">${data.error ?? "Lỗi tải lịch."}</td></tr>`;
+        return;
+      }
+      body.innerHTML = data.ngayList
+        .map(
+          (n) => `
+          <tr class="border-b border-(--color-ivory-300) ${n.nhanThangCach ? "bg-(--color-gold-400)/10" : ""}">
+            <td class="px-2 py-1.5 font-bold">${String(n.ngayDuong).padStart(2, "0")}</td>
+            <td class="px-2 py-1.5">${n.can} ${n.chi}</td>
+            <td class="px-2 py-1.5 text-(--color-ink-500)">${n.thangCan} ${n.thangChi}</td>
+            <td class="px-2 py-1.5">${n.kienTru}</td>
+            <td class="px-2 py-1.5">${n.tu}</td>
+            <td class="px-2 py-1.5">${n.nhanThangCach ? `<span class="km-badge km-badge-tp">${n.nhanThangCach.toUpperCase()}</span>` : "—"}</td>
+          </tr>`,
+        )
+        .join("");
+    } catch {
+      body.innerHTML = '<tr><td colspan="6" class="py-4 text-(--color-danger-500)">Không tải được lịch tháng.</td></tr>';
+    }
+  }
+
+  document.getElementById("km-lich-prev")!.addEventListener("click", () => {
+    const m = lichThang === 1 ? 12 : lichThang - 1;
+    const y = lichThang === 1 ? lichNam - 1 : lichNam;
+    taiLichThang(y, m);
+  });
+  document.getElementById("km-lich-next")!.addEventListener("click", () => {
+    const m = lichThang === 12 ? 1 : lichThang + 1;
+    const y = lichThang === 12 ? lichNam + 1 : lichNam;
+    taiLichThang(y, m);
+  });
+
+  // ---------- Submit form ----------
+  formLich.addEventListener("submit", (e) => {
+    e.preventDefault();
+    layBanLich();
+  });
+  form1080.addEventListener("submit", (e) => {
+    e.preventDefault();
+    layBan1080();
+  });
+
+  // ---------- Khởi động: mặc định giờ hiện tại, chế độ Giờ ----------
+  datVaoForm(new Date());
+  chonCheDo("gio");
+  layBanLich();
+</script>

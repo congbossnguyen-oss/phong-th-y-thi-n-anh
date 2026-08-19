@@ -1,6 +1,6 @@
-# Kỳ Môn Độn Giáp — engine lõi (Prompt 1 + Prompt 2 + Prompt 3)
+# Kỳ Môn Độn Giáp — engine + giao diện (Prompt 1 → Prompt 4)
 
-Trạng thái: **chế độ Giờ ĐÃ CHỐT** (Prompt 1). **3 chế độ Giờ/Mệnh/1080 ĐÃ CHỐT** (Prompt 2), dùng chung 1 engine lõi đúng như SPEC yêu cầu. **Ngày/Tháng/Năm TẠM NGƯNG có chủ đích** (quyết định của Công, không phải lỗi/thiếu sót) — xem mục "Prompt 2" bên dưới. **Tab Tam Thắng + Tab Lịch ĐÃ DỰNG XONG** (Prompt 3) — xem mục "Prompt 3" bên dưới, có 2 hằng số CHƯA XÁC NHẬN (mốc 28 Tú) cần Công đối chiếu app. Chưa có giao diện (Prompt 4).
+Trạng thái: **chế độ Giờ ĐÃ CHỐT** (Prompt 1). **3 chế độ Giờ/Mệnh/1080 ĐÃ CHỐT** (Prompt 2), dùng chung 1 engine lõi đúng như SPEC yêu cầu. **Ngày/Tháng/Năm TẠM NGƯNG có chủ đích** (quyết định của Công, không phải lỗi/thiếu sót) — xem mục "Prompt 2" bên dưới. **Tab Tam Thắng + Tab Lịch ĐÃ DỰNG XONG** (Prompt 3), có 2 hằng số CHƯA XÁC NHẬN (mốc 28 Tú, nhãn v1v2/v3). **Giao diện ĐÃ DỰNG XONG** (Prompt 4) tại `/lap-ky-mon` — xem mục "Prompt 4" bên dưới.
 
 Chạy test: `npx vitest run src/lib/kymon/`
 
@@ -91,9 +91,29 @@ Mỗi ngày trong tháng gồm: số ngày dương, can-chi ngày (từ km_data.
 
 Chạy test: `npx vitest run src/lib/kymon/tamThang.test.ts src/lib/kymon/lich.test.ts` (21/21 test toàn bộ thư mục pass).
 
+## Prompt 4 — Giao diện (`/lap-ky-mon`)
+
+**Kiến trúc:** theo đúng khuyến nghị SPEC mục 8 — km_data.json (~7MB) chỉ nạp ở SERVER (2 API route Astro, `prerender = false`), client chỉ nhận về đúng 1 lá bàn/1 tháng lịch (vài KB JSON). Trang chính (`lap-ky-mon.astro`) tĩnh, không client-side framework (đúng convention hiện có của site — vanilla TS trong `<script>`, xem `gieo-que-kinh-dich.astro`/`xem-ngay-tot-xau.astro`), gọi API qua `fetch()`.
+
+- `src/pages/api/kymon-lap-la-ban.ts` — nhận `cheDo` (gio/menh/1080) + tham số tương ứng, trả `{ laBan, tamThang }`. Chặn `ngay/thang/nam` với lỗi 400 rõ ràng (khớp `lapLaBan()` đã tạm ngưng 3 chế độ này).
+- `src/pages/api/kymon-lich.ts` — nhận `nam, thang`, trả `{ ngayList }` (bọc `layLichThang()`).
+- `src/pages/lap-ky-mon.astro` — UI đầy đủ theo SPEC mục 7:
+  1. Thanh chọn chế độ — **chỉ 3 nút Giờ/Mệnh/1080** (đúng quyết định Prompt 2, không hiện Ngày/Tháng/Năm).
+  2. Nút chỉnh nhanh −H/−D/−M/−Y/+Y/+M/+D/+H (chế độ Giờ/Mệnh).
+  3. Bảng tứ trụ 4 cột, can trên chi dưới (ẩn ở chế độ 1080, thay bằng dòng "Hoa giáp · Cục").
+  4. Lưới 9 cung đúng bố cục Tốn-Ly-Khôn / Chấn-TrungCung-Đoài / Cấn-Khảm-Càn, mỗi ô: thiên can + sao (trên), môn + địa bàn can (dưới), số cung, nhãn KV/Mã/Trực Phù/Trực Sử, viền trái tô theo ngũ hành cung. Trung cung có ghi chú "nhãn đặc biệt chưa tính".
+  5. Chế độ Mệnh có 3 tab con Mệnh (placeholder, đúng Prompt 2 — chờ xác nhận quy luật) / Tam Thắng / Lịch.
+  6. Toggle "Bảng Kỳ Môn" ↔ "Bảng Cách Cục" (cục, phù đầu, trực sử, trực phù, 9 sao — luận cách cục chi tiết để placeholder).
+  7. Ẩn hết bảng tra trung gian; responsive (kiểm tra qua preview ở mobile 375px — không phát sinh tràn ngang ngoài lỗi tràn có sẵn của site tại Header/PageHero, không liên quan trang này).
+  8. **Cảnh báo 2 điểm chưa xác nhận ngay trong tab Lịch** (mốc 28 Tú; nhãn v1v2/v3 phụ thuộc chế độ Ngày tạm ngưng) — theo yêu cầu bổ sung của Công.
+
+**Đã kiểm tra qua preview** (không chỉ đọc code): chế độ Giờ tại 17:43 19/08/2026 ra đúng Cục Âm 1, Trực Sử Sinh môn, Trực Phù Thiên Nhậm; chế độ 1080 với cục 7 Âm + hoa giáp Ất Hợi ra đúng y hệt lá mẫu chính (Cục Âm 7, Trực Sử Khai môn, Trực Phù Thiên Tâm); Tam Thắng tab ra đúng V1V2=Tây, V3=Tây Nam; tab Lịch tải đúng 31 ngày kèm 2 banner cảnh báo; nút chỉnh nhanh (+D) đổi ngày và tính lại đúng; toggle Bảng Kỳ Môn/Cách Cục hoạt động đúng.
+
+**1 bug tìm thấy khi test và đã sửa:** đổi chế độ rồi sửa input ngay lập tức có thể bắn 2 request gần như đồng thời, phản hồi có thể về không đúng thứ tự gửi đi (race condition) khiến bàn hiện sai. Đã thêm cờ đếm request, chỉ áp dụng phản hồi của request mới nhất.
+
 ## Còn lại (chưa làm)
 
 - Nhãn 12 cung Mệnh + vòng tuổi đại vận (Công đã nói tạm chưa làm — để placeholder).
 - Nhãn KV theo THÁNG (mới có theo GIỜ), Mã/Mộ mới là best-effort chưa đối chiếu.
 - Thiên Bàn Can ở các cung khác ngoài cung Trực Phù mới suy theo quy tắc "đi theo Sao", chỉ đối chiếu được 1-2 điểm/lá.
-- Giao diện (Prompt 4).
+- Luận cách cục chi tiết (Bảng Cách Cục hiện chỉ có dữ kiện thô, chưa có phần luận).
