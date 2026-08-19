@@ -4,7 +4,7 @@
  * suy Ngũ hành bản mệnh như `tuoiHopLamAn.ts`, để so sánh đồng nhất với Mệnh cá nhân).
  */
 import type { Data } from "@thien-anh/calendar-core";
-import { Scoring } from "@thien-anh/rule-engine";
+import { Scoring, TrachNhat } from "@thien-anh/rule-engine";
 import { tinhNgayInfo } from "./ngayInfo.js";
 import { tinhTuTru } from "./tuTru.js";
 
@@ -19,6 +19,8 @@ export interface VanMayTrongNgayInput {
 export interface VanMayTrongNgayResult extends Scoring.VanMayResult {
   solarDate: { year: number; month: number; day: number };
   lunarDate: { year: number; month: number; day: number; isLeapMonth: boolean };
+  /** Tiêu chí cát tinh cá nhân (Chân Lộc/Quý Nhân/Lộc/Tam-Lục Hợp) để dễ lọc ngày. */
+  catCaNhan: TrachNhat.CatTinhCaNhan;
 }
 
 function tinhMotNgay(year: number, month: number, day: number, timeZone: string, namSinh: number): VanMayTrongNgayResult {
@@ -47,7 +49,14 @@ function tinhMotNgay(year: number, month: number, day: number, timeZone: string,
     dayInput,
   );
 
-  return { solarDate: { year, month, day }, lunarDate: tuTru.lunarDate, ...ketQua };
+  const catCaNhan = TrachNhat.tinhCatTinhCaNhan(
+    tuTru.tuTru.ngay.can as Data.Can,
+    tuTru.tuTru.ngay.chi as Data.Chi,
+    nguoi.can,
+    nguoi.chi,
+  );
+
+  return { solarDate: { year, month, day }, lunarDate: tuTru.lunarDate, ...ketQua, catCaNhan };
 }
 
 export function calculateVanMayTrongNgay(input: VanMayTrongNgayInput): VanMayTrongNgayResult {

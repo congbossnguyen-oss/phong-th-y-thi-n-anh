@@ -102,6 +102,25 @@ export const prerender = true;
     trachCat: { diem: number; yeuTo: YeuTo[] };
     caNhan: { diem: number; can: { moTa: string }; chi: { moTa: string }; nguHanh: { moTa: string } };
     phuTro: { taiLoc: number; congViec: number; giaoTe: number; tinhCam: number; binhAn: number };
+    catCaNhan?: { tang: string | null; nhan: string } | null;
+  }
+
+  const MAU_TANG: Record<string, string> = {
+    "chan-loc": "bg-amber-100 text-amber-700",
+    "chan-duong-quy": "bg-violet-100 text-violet-700",
+    "chan-am-quy": "bg-indigo-100 text-indigo-700",
+    "loc": "bg-amber-50 text-amber-600 ring-1 ring-amber-200",
+    "tam-hop": "bg-emerald-100 text-emerald-700",
+    "luc-hop": "bg-teal-100 text-teal-700",
+  };
+  const ICON_TANG: Record<string, string> = {
+    "chan-loc": "💰", "chan-duong-quy": "🌤️", "chan-am-quy": "🌙", "loc": "🪙", "tam-hop": "☯", "luc-hop": "☯",
+  };
+  /** Badge tiêu chí cát tinh cá nhân theo tuổi — dễ nhận biết ngày hợp. */
+  function badgeCat(c: { tang: string | null; nhan: string } | null | undefined): string {
+    if (!c || !c.tang) return "";
+    const mau = MAU_TANG[c.tang] ?? "bg-slate-100 text-slate-600";
+    return ` <span class="ml-1 inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-bold ${mau}">${ICON_TANG[c.tang] ?? ""} ${c.nhan}</span>`;
   }
 
   const namSinhInput = document.getElementById("van-may-nam-sinh") as HTMLInputElement;
@@ -147,7 +166,7 @@ export const prerender = true;
 
     const ngayStr = `${String(result.solarDate.day).padStart(2, "0")}/${String(result.solarDate.month).padStart(2, "0")}/${result.solarDate.year}`;
     document.getElementById("van-may-ngay-str")!.textContent = ngayStr;
-    document.getElementById("van-may-nhan")!.innerHTML = nhanDotHtml(result.nhan);
+    document.getElementById("van-may-nhan")!.innerHTML = nhanDotHtml(result.nhan) + badgeCat(result.catCaNhan);
     document.getElementById("van-may-diem")!.textContent = `${result.diem}/10 điểm`;
     document.getElementById("van-may-tai-loc")!.textContent = String(result.phuTro.taiLoc);
     document.getElementById("van-may-cong-viec")!.textContent = String(result.phuTro.congViec);
