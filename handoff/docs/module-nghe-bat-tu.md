@@ -30,14 +30,52 @@ Phạm vi v1: **chỉ Bát Tự** (Tử Bình `luan-giai-bat-tu` + Manh Phái `l
 
 ## 2. ENGINE CHUNG — đầu ra "Hồ sơ lá số Bát Tự"
 
-Engine chung chạy HYBRID: phần lập Tứ Trụ dùng **engine sẵn có**; phần luận (vượng suy, dụng thần, cách cục, tố công) **gọi LLM nạp /knowledge**. Trả về đúng schema sau (đây là "hợp đồng" mọi module bám vào):
+Engine chung chạy HYBRID: phần lập Tứ Trụ dùng **engine sẵn có**; phần luận (vượng suy, dụng thần, cách cục, tố công) **gọi LLM nạp /knowledge**. Trả về đúng schema sau — **BẢN CHỐT, khớp 100% tên trường thật đang chạy trong `src/lib/chart-profile/`** (đối chiếu trực tiếp với output thật của `getBatTuProfile()`, không phải bản nháp lúc thiết kế). Đây là "hợp đồng" mọi module bám vào:
 
 ```json
 {
-  "meta": { "gioi_tinh": "Nam", "duong_lich": "1996-03-14T09:20", "cache_key": "<hash>" },
-  "tu_tru": { "nam":"Bính Tý", "thang":"Tân Mão", "ngay":"Giáp Thìn", "gio":"Kỷ Tỵ" },
+  "meta": { "gioi_tinh": "Nam", "duong_lich": "1996-03-14T09:20", "cache_key": "48347aa5147a2676" },
+  "tu_tru": { "nam": "Bính Tý", "thang": "Tân Mão", "ngay": "Canh Tuất", "gio": "Tân Tỵ" },
+
+  // "facts" — SỰ THẬT thuần code từ engine lập lá số sẵn có (bat-tu.ts), KHÔNG do LLM tạo ra.
+  // Module Nghề không bắt buộc phải đọc khối này (đã có tóm tắt ở "bat_tu"/"dai_van" bên dưới),
+  // nhưng nó LUÔN có mặt trong hồ sơ — ví dụ cần Tàng Can/Thần Sát chi tiết thì đọc ở đây.
+  "facts": {
+    "gioiTinh": "Nam",
+    "duongLich": "1996-03-14T09:20",
+    "tuTru": {
+      "nam":   { "can":"Bính","chi":"Tý",  "napAm":"Giản Hạ Thủy", "napAmNguHanh":"thuy",
+                 "tangCan":[{"can":"Quý","thapThan":"Thương Quan"}], "thapThan":"Thất Sát", "truongSinh":"Tử" },
+      "thang": { "can":"Tân", "chi":"Mão", "napAm":"Tùng Bách Mộc", "napAmNguHanh":"moc",
+                 "tangCan":[{"can":"Ất","thapThan":"Chính Tài"}], "thapThan":"Kiếp Tài", "truongSinh":"Thai" },
+      "ngay":  { "can":"Canh","chi":"Tuất","napAm":"Thoa Xuyến Kim","napAmNguHanh":"kim",
+                 "tangCan":[{"can":"Mậu","thapThan":"Thiên Ấn"},{"can":"Tân","thapThan":"Kiếp Tài"},{"can":"Đinh","thapThan":"Chính Quan"}],
+                 "thapThan":"Nhật Chủ", "truongSinh":"Suy" },
+      "gio":   { "can":"Tân", "chi":"Tỵ", "napAm":"Bạch Lạp Kim", "napAmNguHanh":"kim",
+                 "tangCan":[{"can":"Bính","thapThan":"Thất Sát"},{"can":"Mậu","thapThan":"Thiên Ấn"},{"can":"Canh","thapThan":"Nhật Chủ"}],
+                 "thapThan":"Kiếp Tài", "truongSinh":"Trường Sinh" }
+    },
+    "nhatChu": { "can":"Canh", "nguHanh":"kim", "amDuong":"Dương" },
+    "daiVanThuanNghich": "thuận",
+    "daiVan": [
+      { "can":"Nhâm","chi":"Thìn","canNguHanh":"thuy","tuTuoi":8, "denTuoi":17 }
+      // ... đủ 10 giai đoạn — cùng 4 trường can/chi/canNguHanh/tuTuoi/denTuoi, xem "dai_van" bên dưới
+      // để có bản đã map sẵn can_chi/ngu_hanh dạng module Nghề dùng trực tiếp.
+    ],
+    "menhCung": { "can":"Đinh", "chi":"Dậu" },
+    "thaiNguyen": { "can":"Nhâm", "chi":"Ngọ" },
+    "nienKhong": "Thân - Dậu",
+    "nhatKhong": "Dần - Mão",
+    "thanSat": { "nam":["Tai Sát","Cách Góc"], "thang":["Thái Cực (năm)","Hồng Loan","Câu Sát","Đào Hoa"],
+                 "ngay":["Hoa Cái","Kim Dư","Khôi Cương","Quả Tú","Điếu Khách","Huyết Nhẫn"], "gio":["Kiếp Sát (năm)","Vong Thần"] },
+    "canhBaoKyThuat": []
+  },
+
+  // "bat_tu"/"manh_phai" — phần LUẬN do LLM điền (đọc /knowledge). Khi CHƯA cấu hình
+  // ANTHROPIC_API_KEY, mọi trường dưới đây trả "insufficient_data" (không bịa) — ví dụ có giá trị
+  // đây là MINH HOẠ hình dạng khi AI đã luận thành công, không phải giá trị thật đang chạy.
   "bat_tu": {
-    "nhat_chu": "Giáp", "ngu_hanh_nhat_chu": "moc",
+    "nhat_chu": "Canh", "ngu_hanh_nhat_chu": "kim",
     "vuong_suy": "vuong",
     "dung_than": "thuy", "hy_than": "kim", "ky_than": "tho",
     "cach_cuc": ["thuc_thuong_sinh_tai"],
@@ -52,13 +90,23 @@ Engine chung chạy HYBRID: phần lập Tứ Trụ dùng **engine sẵn có**; 
     "hieu_suat": { "co_che": "xung", "muc": "trung_binh", "he_so": 0.7 },
     "source": "luan-giai-bat-tu-manh-phai"
   },
+
+  // "dai_van" — bản đã map sẵn cho module Nghề đọc trực tiếp: can_chi/ngu_hanh chép nguyên từ
+  // facts.daiVan[i] (KHÔNG phải luận giải); dungHy/chuDe/mucThuan do LLM điền (insufficient_data
+  // nếu chưa có AI). ⚠️ Tên trường ĐÚNG NHƯ CHẠY THẬT: tuTuoi/denTuoi/dungHy/chuDe/mucThuan là
+  // camelCase (không phải tu_tuoi/den_tuoi/dung_hy/chu_de/muc_thuan như bản nháp trước đây) —
+  // chỉ can_chi/ngu_hanh giữ snake_case.
   "dai_van": [
-    { "tu_tuoi":8,  "den_tuoi":18, "can_chi":"Nhâm Thìn", "ngu_hanh":"thuy",
-      "dung_hy": "dung", "chu_de": "hoc_tap", "muc_thuan":"cao" },
-    { "tu_tuoi":28, "den_tuoi":38, "can_chi":"Giáp Ngọ",  "ngu_hanh":"hoa",
-      "dung_hy": "trung", "chu_de": "tai_van", "muc_thuan":"cao" }
+    { "tuTuoi":8,  "denTuoi":17, "can_chi":"Nhâm Thìn", "ngu_hanh":"thuy",
+      "dungHy": "dung", "chuDe": "hoc_tap", "mucThuan":"cao" },
+    { "tuTuoi":28, "denTuoi":37, "can_chi":"Giáp Ngọ",  "ngu_hanh":"moc",
+      "dungHy": "trung", "chuDe": "tai_van", "mucThuan":"cao" }
   ],
-  "warnings": []   // ví dụ: giờ sinh gần ranh giới tiết khí -> cảnh báo
+
+  "warnings": [],                  // ví dụ: giờ sinh gần ranh giới tiết khí, hoặc chưa cấu hình AI
+  "ai_luan_giai_thanh_cong": true, // false = mới có "facts" (thuần code); mọi trường luận giải = insufficient_data
+  "model": "claude-sonnet-5",      // chỉ có khi ai_luan_giai_thanh_cong = true
+  "generatedAt": "2026-08-19T12:54:14.863Z"
 }
 ```
 
@@ -91,7 +139,7 @@ domain_score[d] = domain_mapping.mechanisms[ cau_truc ].domains[d]
 ```
 Rồi áp `output_rules` (3 ưu tiên + 3 phù hợp + 3 có thể, không ép đủ) + `deduplication_rules`.
 
-**Bước 4 — Career Path + Timeline.** Lấy thẳng `profile.dai_van` (1 timeline Bát Tự), gắn chủ đề mỗi vận (học/chuyên môn/tài vận/kinh doanh/tích sản) theo `chu_de` + `muc_thuan`.
+**Bước 4 — Career Path + Timeline.** Lấy thẳng `profile.dai_van` (1 timeline Bát Tự), gắn chủ đề mỗi vận (học/chuyên môn/tài vận/kinh doanh/tích sản) theo `chuDe` + `mucThuan`.
 
 **Bước 5 — Visual.** Radar (5 trục), Gauge (axis), thẻ ngành (3+3+3), timeline đại vण, sơ đồ path. Mọi kết luận gắn source tag (SOURCE / THIEN_ANH_MODEL / SUPPORTING_INFERENCE).
 
