@@ -161,7 +161,17 @@ const inProgressCourses = totalCourses - completedCourses;
 
 <script>
   document.getElementById("logout-btn")?.addEventListener("click", async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
+    // PHẢI gửi Content-Type: application/json — POST trần (không content-type) bị Astro checkOrigin
+    // chặn 403 TRƯỚC khi huỷ session, khiến "đăng xuất" chỉ redirect mà vẫn còn đăng nhập.
+    try {
+      await fetch("/api/auth/logout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "{}",
+      });
+    } catch {
+      // Kể cả lỗi mạng vẫn điều hướng về trang học viên để bắt đăng nhập lại.
+    }
     window.location.href = "/hoc-vien";
   });
 </script>
