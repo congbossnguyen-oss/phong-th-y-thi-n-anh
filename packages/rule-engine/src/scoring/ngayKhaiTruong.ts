@@ -29,10 +29,11 @@ import { tinhTrachCatDayBase, type TrachCatDayBaseInput, type TrachCatDayBaseRul
 import type { NguoiTuoi } from "./tuoiHopLamAn.js";
 import { xetChanLocQuyNhan, type KetQuaChanCatTinh } from "../trach-nhat/chanLocQuyNhan.js";
 
-// Điểm cộng ưu tiên cho sao cát cá nhân theo CAN năm sinh (một ngày chỉ trúng tối đa 1 loại chân,
-// vì mỗi loại là 1 trụ Giáp Tý riêng). Thứ tự ưu tiên: Chân Lộc > Chân Dương Quý > Chân Âm Quý.
-// Tam Hợp/Lục Hợp đã được tính trong `tuoiChu` nên không cộng lại ở đây (tránh trùng).
-const DIEM_CONG_CHAN = { chanLoc: 2, chanDuongQuy: 1.5, chanAmQuy: 1.2 } as const;
+// Điểm cộng ưu tiên sao cát cá nhân theo CAN năm sinh. Chân Lộc thường là ngày tốt nhất của cá
+// nhân → cộng cao nhất. Không có Chân Lộc thì Lộc theo địa chi ("tạm được") cộng nhẹ.
+// Ưu tiên: Chân Lộc > Chân Dương Quý > Chân Âm Quý > Lộc (địa chi). Tam Hợp/Lục Hợp đã tính trong
+// `tuoiChu`. Chỉ cộng 1 mức cao nhất khớp (chanLoc bao hàm loc nên không cộng trùng).
+const DIEM_CONG_CHAN = { chanLoc: 2.5, chanDuongQuy: 1.5, chanAmQuy: 1.2, loc: 0.8 } as const;
 
 type Can = Data.Can;
 type Chi = Data.Chi;
@@ -187,7 +188,9 @@ export function calculateKhaiTruongScore(
         ? DIEM_CONG_CHAN.chanDuongQuy
         : catCaNhan.chanAmQuy
           ? DIEM_CONG_CHAN.chanAmQuy
-          : 0;
+          : catCaNhan.loc
+            ? DIEM_CONG_CHAN.loc
+            : 0;
   }
 
   if (base.phamDaiKy) {

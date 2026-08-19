@@ -46,14 +46,21 @@ export function getChanLocQuyNhan(canNam: Can): ChanCatTinh {
 }
 
 export interface KetQuaChanCatTinh {
+  /** Khớp CẢ Can+Chi trụ Chân Lộc — tốt nhất. */
   chanLoc: boolean;
   chanDuongQuy: boolean;
   chanAmQuy: boolean;
+  /**
+   * Lộc theo ĐỊA CHI (Lộc Tồn) — chỉ cần Chi ngày trùng Chi Lộc, không cần đúng Can. "Tạm được"
+   * khi không có Chân Lộc. `chanLoc` là tập con của `loc` (Chân Lộc thì đương nhiên đúng chi Lộc).
+   */
+  loc: boolean;
 }
 
 /**
- * Xét một NGÀY (Can+Chi ngày) có phải Chân Lộc / Chân Dương Quý / Chân Âm Quý của người sinh
- * năm Can `canNam` hay không. Khớp đủ CẢ Can lẫn Chi mới tính.
+ * Xét một NGÀY (Can+Chi ngày) theo Can năm sinh `canNam`:
+ * - `chanLoc`/`chanDuongQuy`/`chanAmQuy`: khớp đủ CẢ Can lẫn Chi của trụ tương ứng.
+ * - `loc`: chỉ cần Chi ngày trùng Chi của trụ Chân Lộc (chi Lộc Tồn) — mức "tạm được".
  */
 export function xetChanLocQuyNhan(dayCan: Can, dayChi: Chi, canNam: Can): KetQuaChanCatTinh {
   const t = CHAN_LOC_QUY_NHAN[canNam];
@@ -62,5 +69,6 @@ export function xetChanLocQuyNhan(dayCan: Can, dayChi: Chi, canNam: Can): KetQua
     chanLoc: khop(t.chanLoc),
     chanDuongQuy: khop(t.chanDuongQuy),
     chanAmQuy: khop(t.chanAmQuy),
+    loc: dayChi === t.chanLoc.chi,
   };
 }

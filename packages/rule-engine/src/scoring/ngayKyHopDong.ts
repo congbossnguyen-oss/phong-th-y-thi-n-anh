@@ -35,9 +35,9 @@ import { tinhTrachCatDayBase, type TrachCatDayBaseInput, type TrachCatDayBaseRul
 import type { NguoiTuoi } from "./tuoiHopLamAn.js";
 import { xetChanLocQuyNhan, type KetQuaChanCatTinh } from "../trach-nhat/chanLocQuyNhan.js";
 
-// Điểm cộng ưu tiên sao cát cá nhân theo CAN năm sinh: Chân Lộc > Chân Dương Quý > Chân Âm Quý.
-// (Tam Hợp/Lục Hợp đã tính trong `nguoiKy` compatibility, không cộng lại.)
-const DIEM_CONG_CHAN = { chanLoc: 2, chanDuongQuy: 1.5, chanAmQuy: 1.2 } as const;
+// Ưu tiên: Chân Lộc > Chân Dương Quý > Chân Âm Quý > Lộc (địa chi, "tạm được").
+// Tam Hợp/Lục Hợp đã tính trong `nguoiKy` compatibility. Chỉ cộng 1 mức cao nhất khớp.
+const DIEM_CONG_CHAN = { chanLoc: 2.5, chanDuongQuy: 1.5, chanAmQuy: 1.2, loc: 0.8 } as const;
 
 type Can = Data.Can;
 type Chi = Data.Chi;
@@ -238,7 +238,9 @@ export function calculateKyHopDongScore(
         ? DIEM_CONG_CHAN.chanDuongQuy
         : catCaNhan.chanAmQuy
           ? DIEM_CONG_CHAN.chanAmQuy
-          : 0;
+          : catCaNhan.loc
+            ? DIEM_CONG_CHAN.loc
+            : 0;
   }
 
   if (base.phamDaiKy) {
