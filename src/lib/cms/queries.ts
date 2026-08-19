@@ -117,3 +117,79 @@ export function formatDuration(seconds: number | null): string {
   const s = seconds % 60;
   return `${m}:${String(s).padStart(2, "0")}`;
 }
+
+// ───────────────────────── Blog / Kiến thức (blogPost) ─────────────────────────
+// Bài viết đọc động từ Sanity (trang /kien-thuc để prerender=false). Bài mẫu tĩnh cũ
+// trong placeholder-data.ts vẫn được các trang gộp thêm để không mất nội dung hiện có.
+
+export interface CmsBlogPost {
+  slug: string;
+  title: string;
+  seoTitle: string | null;
+  excerpt: string;
+  category: string;      // nhãn hiển thị (vd "Nhà ở")
+  categorySlug: string;  // giá trị dùng trong URL (vd "nha-o")
+  image: string | null;  // URL ảnh bìa trên Sanity CDN
+  imageAlt: string | null;
+  publishedAt: string | null;
+  tags: string[];
+  body: unknown[] | null; // Portable Text
+  relatedLinks: { label: string; href: string }[];
+  faq: { question: string; answer: string }[];
+}
+
+const BLOG_CATEGORY_LABELS: Record<string, string> = {
+  "kien-thuc-ung-dung": "Kiến thức ứng dụng",
+  "nha-o": "Nhà ở",
+  "van-phong-kinh-doanh": "Văn phòng / Kinh doanh",
+  "vat-pham": "Vật phẩm phong thủy",
+};
+
+const blogProjection = `{
+  "slug": slug.current,
+  title,
+  seoTitle,
+  "excerpt": coalesce(excerpt, ""),
+  category,
+  "image": coverImage.asset->url,
+  "imageAlt": coalesce(coverImage.alt, coverImageAlt),
+  publishedAt,
+  "tags": coalesce(tags, []),
+  body,
+  "relatedLinks": coalesce(internalLinks[]{label, href}, []),
+  "faq": coalesce(faq[]{question, answer}, [])
+}`;
+
+function mapBlogPost(doc: any): CmsBlogPost {
+  const value: string = doc?.category ?? "kien-thuc-ung-dung";
+  return {
+    slug: doc.slug,
+    title: doc.title,
+    seoTitle: doc.seoTitle ?? null,
+    excerpt: doc.excerpt ?? "",
+    category: BLOG_CATEGORY_LABELS[value] ?? "Kiến thức",
+    categorySlug: value,
+    image: doc.image ?? null,
+    imageAlt: doc.imageAlt ?? null,
+    publishedAt: doc.publishedAt ?? null,
+    tags: doc.tags ?? [],
+    body: doc.body ?? null,
+    relatedLinks: (doc.relatedLinks ?? []).filter((l: any) => l && l.href),
+    faq: (doc.faq ?? []).filter((f: any) => f && f.question),
+  };
+}
+
+export async function getBlogPosts(): Promise<CmsBlogPost[]> {
+  const docs = await sanityClient.fetch(
+    `*[_type == "blogPost" && !(_id in path("drafts.**")) && defined(slug.current)] | order(publishedAt desc) ${blogProjection}`,
+  );
+  return (docs ?? []).map(mapBlogPost);
+}
+
+export async function getBlogPostBySlug(slug: string): Promise<CmsBlogPost | null> {
+  const doc = await sanityClient.fetch(
+    `*[_type == "blogPost" && !(_id in path("drafts.**")) && slug.current == $slug][0] ${blogProjection}`,
+    { slug },
+  );
+  return doc ? mapBlogPost(doc) : null;
+}

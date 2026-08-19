@@ -2,9 +2,18 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
-import { posts } from "../../lib/placeholder-data";
+import { posts as placeholderPosts } from "../../lib/placeholder-data";
+import { getBlogPosts } from "../../lib/cms/queries";
 
-export const prerender = true;
+// SSR: bài mới đăng trong Sanity hiện ngay trong danh sách.
+export const prerender = false;
+
+// Gộp bài từ Sanity với bài mẫu tĩnh cũ (Sanity ưu tiên nếu trùng slug), mới nhất lên đầu.
+const cmsPosts = await getBlogPosts();
+const cmsSlugs = new Set(cmsPosts.map((p) => p.slug));
+const posts = [...cmsPosts, ...placeholderPosts.filter((p: any) => !cmsSlugs.has(p.slug))].sort((a: any, b: any) =>
+  String(b.publishedAt ?? "").localeCompare(String(a.publishedAt ?? "")),
+);
 ---
 
 <BaseLayout title="Kiến thức phong thủy" description="Chia sẻ kiến thức phong thủy ứng dụng từ Thiên Anh.">

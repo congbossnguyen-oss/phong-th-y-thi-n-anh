@@ -2,42 +2,87 @@
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import PageHero from "../../../components/ui/PageHero.astro";
 import Container from "../../../components/ui/Container.astro";
-import { posts } from "../../../lib/placeholder-data";
+import { posts as placeholderPosts } from "../../../lib/placeholder-data";
+import { getBlogPostBySlug } from "../../../lib/cms/queries";
+import { portableTextToHtml } from "../../../lib/cms/portable-text";
 
-export const prerender = true;
+// SSR: bài đăng/duyệt trong Sanity hiện lên web ngay, không cần build lại.
+export const prerender = false;
 
-export async function getStaticPaths() {
-  return posts.map((post) => ({
-    params: { category: post.categorySlug, slug: post.slug },
-    props: { post },
-  }));
+const { category, slug } = Astro.params;
+
+// Ưu tiên bài từ Sanity; chưa có thì fallback về bài mẫu tĩnh (giữ nội dung cũ).
+const cmsPost = await getBlogPostBySlug(slug!);
+let post: any = null;
+let bodyHtml: string | null = null;
+
+if (cmsPost) {
+  // Chuẩn hóa URL: nếu danh mục trên URL không khớp danh mục thật -> 301 để tránh trùng lặp SEO.
+  if (cmsPost.categorySlug && category !== cmsPost.categorySlug) {
+    return Astro.redirect(`/kien-thuc/${cmsPost.categorySlug}/${slug}`, 301);
+  }
+  bodyHtml = portableTextToHtml(cmsPost.body as any);
+  post = {
+    title: cmsPost.title,
+    seoTitle: cmsPost.seoTitle,
+    excerpt: cmsPost.excerpt,
+    category: cmsPost.category,
+    categorySlug: cmsPost.categorySlug,
+    image: cmsPost.image,
+    imageAlt: cmsPost.imageAlt,
+    publishedAt: cmsPost.publishedAt,
+    content: null,
+    relatedLinks: cmsPost.relatedLinks,
+    faq: cmsPost.faq,
+  };
+} else {
+  const found = placeholderPosts.find((p: any) => p.categorySlug === category && p.slug === slug);
+  if (found) post = found;
 }
 
-const { post } = Astro.props;
+if (!post) return new Response(null, { status: 404 });
 
 const siteUrl = (Astro.site ?? new URL("http://localhost:4321")).toString().replace(/\/$/, "");
-const articleUrl = `${siteUrl}/kien-thuc/${post.categorySlug}/${post.slug}`;
+const articleUrl = `${siteUrl}/kien-thuc/${post.categorySlug}/${slug}`;
+// Ảnh bìa SVG (tự tạo) hiển thị tốt trên trang, nhưng nhiều mạng xã hội không quét SVG cho thẻ chia sẻ —
+// với ảnh SVG để OG rơi về ảnh thương hiệu mặc định; ảnh raster (jpg/png) vẫn dùng làm OG bình thường.
+const isSvgCover = post.image ? String(post.image).toLowerCase().endsWith(".svg") : false;
+const ogShareImage = post.image && !isSvgCover ? post.image : undefined;
+const ogImageAbs = ogShareImage ? (String(ogShareImage).startsWith("http") ? ogShareImage : `${siteUrl}${ogShareImage}`) : undefined;
+
 const articleSchema = post.publishedAt
   ? {
       "@context": "https://schema.org",
       "@type": "Article",
       headline: post.title,
       description: post.excerpt,
-      image: post.image ? `${siteUrl}${post.image}` : undefined,
+      image: ogImageAbs,
       datePublished: post.publishedAt,
-      author: {
-        "@type": "Person",
-        name: "Zhi Gong",
-        url: `${siteUrl}/gioi-thieu/chuyen-gia-zhi-gong`,
-      },
+      author: { "@type": "Person", name: "Zhi Gong", url: `${siteUrl}/gioi-thieu/chuyen-gia-zhi-gong` },
       publisher: { "@type": "Organization", name: "Phong Thủy Thiên Anh" },
       mainEntityOfPage: articleUrl,
     }
   : null;
+
+// Breadcrumb JSON-LD do component PageHero tự phát (từ prop breadcrumbs) — không khai báo lại ở đây.
+
+const faqSchema =
+  post.faq && post.faq.length
+    ? {
+        "@context": "https://schema.org",
+        "@type": "FAQPage",
+        mainEntity: post.faq.map((f: any) => ({
+          "@type": "Question",
+          name: f.question,
+          acceptedAnswer: { "@type": "Answer", text: f.answer },
+        })),
+      }
+    : null;
 ---
 
-<BaseLayout title={post.title} description={post.excerpt}>
+<BaseLayout title={post.seoTitle || post.title} description={post.excerpt} ogImage={ogShareImage}>
   {articleSchema && <script type="application/ld+json" set:html={JSON.stringify(articleSchema)} />}
+  {faqSchema && <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />}
   <PageHero
     eyebrow={post.category}
     title={post.title}
@@ -48,12 +93,14 @@ const articleSchema = post.publishedAt
     <article class="mx-auto max-w-3xl">
       {post.image && (
         <div class="mb-8 aspect-video overflow-hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-200)">
-          <img src={post.image} alt={post.title} class="h-full w-full object-cover" />
+          <img src={post.image} alt={post.imageAlt || post.title} class="h-full w-full object-cover" />
         </div>
       )}
 
-      {post.content ? (
-        post.content.map((block) => {
+      {bodyHtml ? (
+        <div set:html={bodyHtml} />
+      ) : post.content ? (
+        post.content.map((block: any) => {
           if (typeof block === "string") {
             return <p class="mt-4 text-base leading-relaxed text-(--color-ink-700) first:mt-0">{block}</p>;
           }
@@ -62,7 +109,7 @@ const articleSchema = post.publishedAt
           }
           return (
             <ul class="mt-4 space-y-2">
-              {block.list.map((item) => (
+              {block.list.map((item: string) => (
                 <li class="flex items-start gap-2 text-base leading-relaxed text-(--color-ink-700)">
                   <span class="mt-1.5 size-1.5 shrink-0 rounded-full bg-(--color-gold-300)"></span>
                   {item}
@@ -72,20 +119,14 @@ const articleSchema = post.publishedAt
           );
         })
       ) : (
-        <>
-          <p class="text-base leading-relaxed text-(--color-ink-700)">{post.excerpt}</p>
-          <p class="mt-4 text-sm leading-relaxed text-(--color-ink-600)">
-            Nội dung đầy đủ của bài viết sẽ được biên tập và đăng tải qua Sanity CMS (định dạng Portable Text)
-            khi kết nối CMS thật ở Giai đoạn 2.
-          </p>
-        </>
+        <p class="text-base leading-relaxed text-(--color-ink-700)">{post.excerpt}</p>
       )}
 
-      {post.relatedLinks && (
+      {post.relatedLinks && post.relatedLinks.length > 0 && (
         <div class="mt-10 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-5">
           <p class="text-xs font-semibold uppercase tracking-wide text-(--color-gold-500)">Khám phá thêm</p>
           <ul class="mt-3 space-y-2">
-            {post.relatedLinks.map((link) => (
+            {post.relatedLinks.map((link: any) => (
               <li>
                 <a href={link.href} class="text-sm font-medium text-(--color-gold-300) hover:underline">
                   {link.label} →

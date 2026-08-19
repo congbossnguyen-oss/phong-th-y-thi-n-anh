@@ -43,7 +43,35 @@ async function getCourseSitemapUrls() {
   }
 }
 
+// Bài viết blog: trang chi tiết đọc động từ Sanity (prerender=false) nên @astrojs/sitemap không tự
+// phát hiện — bổ sung thủ công cả bài Sanity (Content API) lẫn bài mẫu tĩnh cũ (placeholder-data).
+async function getBlogSitemapUrls() {
+  const urls = [];
+  try {
+    const projectId = process.env.SANITY_PROJECT_ID;
+    const dataset = process.env.SANITY_DATASET || 'production';
+    if (projectId) {
+      const query = encodeURIComponent('*[_type == "blogPost" && defined(slug.current)]{"slug": slug.current, category}');
+      const res = await fetch(`https://${projectId}.api.sanity.io/v2024-01-01/data/query/${dataset}?query=${query}`);
+      if (res.ok) {
+        const { result } = await res.json();
+        for (const p of result ?? []) {
+          if (p?.slug) urls.push(`https://phongthuythienanh.com/kien-thuc/${p.category || 'kien-thuc-ung-dung'}/${p.slug}`);
+        }
+      }
+    }
+  } catch {}
+  try {
+    const { posts } = await import('./src/lib/placeholder-data.ts');
+    for (const p of posts ?? []) {
+      if (p?.slug && p?.categorySlug) urls.push(`https://phongthuythienanh.com/kien-thuc/${p.categorySlug}/${p.slug}`);
+    }
+  } catch {}
+  return [...new Set(urls)];
+}
+
 const courseSitemapUrls = await getCourseSitemapUrls();
+const blogSitemapUrls = await getBlogSitemapUrls();
 
 // https://astro.build/config
 export default defineConfig({
