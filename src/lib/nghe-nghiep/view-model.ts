@@ -21,7 +21,15 @@ export const NH: Record<string, { mau: string; label: string }> = {
   insufficient_data: { mau: "#6B7280", label: "—" },
 };
 
-const NGU_HANH_LABEL: Record<string, string> = { kim: "Kim", moc: "Mộc", thuy: "Thủy", hoa: "Hỏa", tho: "Thổ", insufficient_data: "?" };
+const NGU_HANH_LABEL: Record<string, string> = { kim: "Kim", moc: "Mộc", thuy: "Thủy", hoa: "Hỏa", tho: "Thổ", insufficient_data: "—" };
+
+/** Không bao giờ để lọt token kỹ thuật ("insufficient_data", tên field/file) ra giao diện khách. */
+const sach = (s: string): string =>
+  s
+    .replace(/insufficient_data/g, "đang cập nhật")
+    .replace(/\((?:bat_tu|manh_phai|career_mapping|domain_mapping|bat_tu_nganh_ngu_hanh)[^)]*\)/g, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
 const VUONG_SUY_LABEL: Record<string, string> = {
   cuc_cuong: "Cực cường", cuong_vuong: "Cường vượng", vuong: "Vượng", trung_hoa: "Trung hòa",
   suy: "Suy", nhuoc: "Nhược", cuc_nhuoc: "Cực nhược", insufficient_data: "Chưa xác định",
@@ -95,13 +103,13 @@ export function buildBatTuVM(profile: BatTuProfile): { vm: DashboardVM; result: 
     ],
     vector: result.careerVector.vector as Record<string, number> | null,
     vectorInsufficient: result.careerVector.insufficient,
-    vectorDetail: result.careerVector.detail,
+    vectorDetail: sach(result.careerVector.detail),
     axis: result.axis.axis,
     axisInsufficient: result.axis.insufficient,
     axisKetLuan: axisKetLuan(result.axis.axis),
-    axisDetail: result.axis.detail,
+    axisDetail: sach(result.axis.detail),
     domainInsufficient: result.domainScore.insufficient,
-    domainDetail: result.domainScore.detail,
+    domainDetail: sach(result.domainScore.detail),
     priority: toItems(result.domainScore.priority),
     suitable: toItems(result.domainScore.suitable),
     possible: toItems(result.domainScore.possible),
@@ -115,10 +123,10 @@ export function buildBatTuVM(profile: BatTuProfile): { vm: DashboardVM; result: 
     timelineLegend: "ngu_hanh_can",
     path: result.careerPath.map((dv) => ({ label: dv.chuDeNhan, tuTuoi: dv.tuTuoi, denTuoi: dv.denTuoi })),
     why: [
-      { label: "Tố công (Manh Phái)", value: profile.manh_phai.to_cong },
-      { label: "Cơ chế Manh Phái", value: `${coCheLabel} — ${result.careerVector.detail}` },
-      { label: "Công thức điểm ngành", value: result.domainScore.detail },
-    ],
+      { label: "Tố công (Manh Phái)", value: sach(profile.manh_phai.to_cong) },
+      { label: "Cơ chế Manh Phái", value: sach(`${coCheLabel} — ${result.careerVector.detail}`) },
+      { label: "Công thức điểm ngành", value: sach(result.domainScore.detail) },
+    ].filter((w) => w.value && w.value !== "đang cập nhật"),
   };
   return { vm, result };
 }
@@ -144,13 +152,13 @@ export function buildTuViVM(profile: TuViProfile): { vm: DashboardVM; result: Mo
     ],
     vector: result.careerVector.vector,
     vectorInsufficient: result.careerVector.insufficient,
-    vectorDetail: result.careerVector.detail,
+    vectorDetail: sach(result.careerVector.detail),
     axis: result.axis.axis,
     axisInsufficient: result.axis.insufficient,
     axisKetLuan: axisKetLuan(result.axis.axis),
-    axisDetail: result.axis.detail,
+    axisDetail: sach(result.axis.detail),
     domainInsufficient: result.domainScore.insufficient,
-    domainDetail: "Điểm ngành từ archetype + chính tinh cung Quan Lộc/Mệnh.",
+    domainDetail: "Điểm ngành từ mệnh cách + chính tinh cung Quan Lộc/Mệnh.",
     priority: toItems(result.domainScore.priority),
     suitable: toItems(result.domainScore.suitable),
     possible: toItems(result.domainScore.possible),
@@ -164,10 +172,10 @@ export function buildTuViVM(profile: TuViProfile): { vm: DashboardVM; result: Mo
     timelineLegend: "ngu_hanh_chi",
     path: result.careerPath.map((dh) => ({ label: dh.chuDeNhan, tuTuoi: dh.tuTuoi, denTuoi: dh.denTuoi })),
     why: [
-      { label: "Mệnh cách (archetype)", value: `${archeLabel}${profile.menh_cach.phu.length ? " + phụ cách" : ""} — ${result.careerVector.detail}` },
+      { label: "Mệnh cách", value: sach(`${archeLabel}${profile.menh_cach.phu.length ? " + phụ cách" : ""} — ${result.careerVector.detail}`) },
       { label: "Chính tinh cung nghề", value: `Quan Lộc: ${profile.facts.sao_theo_cung.quan_loc.map((s) => s.ten_hien_thi).join(", ") || "Vô Chính Diệu"} · Mệnh: ${profile.facts.sao_theo_cung.menh.map((s) => s.ten_hien_thi).join(", ") || "Vô Chính Diệu"}` },
-      { label: "Công thức điểm ngành", value: result.domainScore.detail },
-    ],
+      { label: "Công thức điểm ngành", value: sach(result.domainScore.detail) },
+    ].filter((w) => w.value && w.value !== "đang cập nhật"),
   };
   return { vm, result };
 }

@@ -169,8 +169,8 @@ export function tinhDiemNganh(
 
   // Dụng/Hỷ Thần LÀ BẮT BUỘC (nền ngũ hành → ngành). Cơ chế Manh Phái là TÙY: có thì cộng thêm,
   // không có thì tính từ Dụng/Hỷ Thần (nguồn dự phòng), KHÔNG để trống toàn bộ ngành.
-  if (dungThan === "insufficient_data") return { ...empty, detail: "Chưa xác định Dụng Thần (bat_tu.dung_than)." };
-  if (hyThan === "insufficient_data") return { ...empty, detail: "Chưa xác định Hỷ Thần (bat_tu.hy_than)." };
+  if (dungThan === "insufficient_data") return { ...empty, detail: "Đang cập nhật phần luận ngành (chờ xác định Dụng Thần)." };
+  if (hyThan === "insufficient_data") return { ...empty, detail: "Đang cập nhật phần luận ngành (chờ xác định Hỷ Thần)." };
 
   const mech = cauTruc !== "insufficient_data" ? domain.mechanisms[cauTruc] : null;
   const dungThanEntry = batTuNganh.nguu_hanh_to_domain[dungThan];
@@ -269,9 +269,9 @@ export function tinhCareerPath(profile: BatTuProfile): CareerPathEntry[] {
     canChi: dv.can_chi,
     nguHanh: dv.ngu_hanh,
     dungHy: dv.dungHy,
-    dungHyNhan: DUNG_HY_NHAN[dv.dungHy] ?? "Chưa xác định (insufficient_data)",
+    dungHyNhan: DUNG_HY_NHAN[dv.dungHy] ?? "Đang cập nhật",
     chuDe: dv.chuDe,
-    chuDeNhan: CHU_DE_NHAN[dv.chuDe] ?? (dv.chuDe === "insufficient_data" ? "Chưa xác định (insufficient_data)" : dv.chuDe),
+    chuDeNhan: CHU_DE_NHAN[dv.chuDe] ?? (dv.chuDe === "insufficient_data" ? "Đang cập nhật" : dv.chuDe),
     mucThuan: dv.mucThuan,
   }));
 }
