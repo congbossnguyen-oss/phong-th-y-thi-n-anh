@@ -14,6 +14,12 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
   const limited = checkRateLimit({ request, clientAddress }, { key: "checkout-dinh-huong-nghe", max: 10, windowMs: 60_000 });
   if (limited) return limited;
 
+  // GIAI ĐOẠN THỬ NGHIỆM NỘI BỘ (Công yêu cầu 20/8/2026): chỉ tài khoản quản trị được tạo đơn.
+  // Chặn ở server chứ không chỉ ẩn form — phòng ai đó gọi thẳng API. Khi mở bán: xóa khối này.
+  if (locals.user?.isAdmin !== true) {
+    return jsonResponse({ ok: false, error: "Dịch vụ đang trong giai đoạn thử nghiệm nội bộ, chưa mở bán." }, 403);
+  }
+
   const body = await request.json().catch(() => null);
   const doc = docInput(body);
   if (!doc.ok) return jsonResponse({ ok: false, error: doc.error }, 400);
