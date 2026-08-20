@@ -62,12 +62,16 @@ function veTimeline(b: But, f: Fonts, vm: DashboardVM): void {
   }
 }
 
-export async function generateNghePdf(kq: NgheKetQua): Promise<Uint8Array> {
+export async function generateNghePdf(kq: NgheKetQua, customerName: string): Promise<Uint8Array> {
   const { doc, f, b } = await taoTaiLieuPdf();
   await veDauTrang(doc, b, f, {
     tieuDe: "Định hướng nghề nghiệp",
     phuDe: "Kết hợp hai hệ Bát Tự × Tử Vi",
   });
+
+  // In tên khách hàng ngay đầu phiếu — không có thì mở nhiều file PDF không biết của ai.
+  b.dongGiua(`Kính gửi: ${customerName}`, { size: 12, font: f.dam });
+  b.xuong(4);
 
   // --- Hồ sơ lá số ---
   b.muc("Hồ sơ lá số Bát Tự");

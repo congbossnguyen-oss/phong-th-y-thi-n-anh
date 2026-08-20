@@ -313,7 +313,7 @@ export async function markOrderPaidAndFulfill(orderId: string) {
       try {
         const input = JSON.parse(order.toolInputSnapshot) as NgheInput;
         const ketQua = await taoHoSoNghe(input);
-        const pdf = await generateNghePdf(ketQua);
+        const pdf = await generateNghePdf(ketQua, order.customerName);
         await sendNghePdfEmail({
           to: order.customerEmail,
           orderCode: order.orderCode,
