@@ -97,7 +97,9 @@ export const prerender = true;
         </div>
 
         <!-- Lưới 9 cung -->
-        <div id="km-luoi-9-cung" class="km-grid-9 mt-4"></div>
+        <div class="mt-4 overflow-x-auto">
+          <div id="km-luoi-9-cung" class="km-grid-9"></div>
+        </div>
 
         <!-- Bảng Cách Cục -->
         <div id="km-bang-cach-cuc" class="mt-4 hidden">
@@ -345,6 +347,7 @@ export const prerender = true;
     background: #b6a480;
     border-radius: 8px;
     overflow: hidden;
+    min-width: 460px; /* giữ ô đủ rộng cho viền dày; màn hẹp thì cuộn ngang */
   }
   /* Mỗi cung chỉ tô màu ngũ hành ở cạnh HƯỚNG RA NGOÀI lưới (padding dày ở cạnh ngoài, mảnh ở
      cạnh giáp cung khác) → màu chỉ tạo thành VÒNG NGOÀI, không có dải màu dày giữa các cung. */
@@ -353,7 +356,7 @@ export const prerender = true;
     position: relative;
     background: var(--nh);
     box-sizing: border-box;
-    min-height: 150px;
+    min-height: 200px;
     display: flex;
   }
   .km-cung-inner-wrap { flex: 1; position: relative; }
@@ -369,10 +372,10 @@ export const prerender = true;
     text-overflow: ellipsis;
     z-index: 1;
   }
-  .km-lbl-t { top: 0; left: 16px; right: 16px; height: 14px; line-height: 14px; text-align: center; }
-  .km-lbl-b { bottom: 0; left: 16px; right: 16px; height: 14px; line-height: 14px; text-align: center; }
-  .km-lbl-l { left: 0; top: 14px; bottom: 14px; width: 14px; writing-mode: vertical-rl; transform: rotate(180deg); text-align: center; }
-  .km-lbl-r { right: 0; top: 14px; bottom: 14px; width: 14px; writing-mode: vertical-rl; text-align: center; }
+  .km-lbl-t { top: 0; left: 4px; right: 4px; height: 38px; line-height: 38px; text-align: center; }
+  .km-lbl-b { bottom: 0; left: 4px; right: 4px; height: 38px; line-height: 38px; text-align: center; }
+  .km-lbl-l { left: 0; top: 4px; bottom: 4px; width: 38px; writing-mode: vertical-rl; transform: rotate(180deg); text-align: center; }
+  .km-lbl-r { right: 0; top: 4px; bottom: 4px; width: 38px; writing-mode: vertical-rl; text-align: center; }
   .km-cung > .km-badge-kv {
     position: absolute;
     top: 1px;
@@ -413,29 +416,37 @@ export const prerender = true;
     line-height: 1;
   }
   .cc-than { font-size: 0.62rem; color: #b8322a; text-align: right; line-height: 1.05; }
-  .km-cung-mid { position: relative; display: flex; align-items: center; justify-content: center; }
-  .cc-so { font-family: var(--font-display); font-weight: 700; font-size: 1.5rem; color: #1f120e; }
+  /* Băng giữa: nhãn Mã/TP/TS/HDMY ở góc trên-trái; MŨI TÊN + SỐ CUNG ở góc dưới-phải
+     (số nằm dưới-phải, mũi tên ngay trên môn — như app). */
+  .km-cung-mid { position: relative; }
   .km-cung-marks {
     position: absolute;
     left: 0;
-    top: 50%;
-    transform: translateY(-50%);
+    top: 0;
     display: flex;
     flex-direction: column;
     align-items: flex-start;
     gap: 2px;
   }
-  .km-cung-r2 { align-items: end; }
+  .km-cung-botright {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    align-items: flex-end;
+    gap: 3px;
+  }
+  .km-mt { font-size: 1.05rem; color: #4a4a4a; line-height: 1; }
+  .cc-so { font-family: var(--font-display); font-weight: 700; font-size: 1.6rem; color: #1f120e; line-height: 0.9; }
+  .km-cung-r2 { grid-template-columns: 1fr 1fr; align-items: end; }
   .cc-diacan { font-size: 0.7rem; font-weight: 600; color: #3a2620; text-align: left; }
   .cc-mon {
     font-family: var(--font-display);
     font-weight: 700;
-    font-size: 0.88rem;
+    font-size: 0.9rem;
     color: #b8322a;
     text-align: center;
   }
-  .cc-mt { text-align: right; }
-  .km-mt { font-size: 0.95rem; color: #4a4a4a; line-height: 1; }
   .km-cung-trung-note {
     grid-column: 1 / -1;
     font-size: 0.56rem;
@@ -648,16 +659,17 @@ export const prerender = true;
   // ngoài, 0 ở cạnh giáp cung khác → màu tạo thành vòng ngoài, giữa chỉ có 4 đường kẻ (gap).
   // pad theo thứ tự [top, right, bottom, left]; dir/chi = cạnh đặt nhãn hướng / địa chi.
   type FrameCfg = { pad: [number, number, number, number]; dir: "t" | "b" | "l" | "r" | null; chi: "t" | "b" | "l" | "r" | null };
+  const W = 38; // độ dày viền màu ngoài (gấp ~3 so với bản trước)
   const FRAME: Record<number, FrameCfg> = {
-    4: { pad: [14, 0, 0, 14], dir: "t", chi: "l" }, // Tốn (ĐN)
-    9: { pad: [14, 0, 0, 0], dir: "t", chi: "t" }, // Ly (N)
-    2: { pad: [14, 14, 0, 0], dir: "t", chi: "r" }, // Khôn (TN)
-    3: { pad: [0, 0, 0, 14], dir: "l", chi: "l" }, // Chấn (Đ)
+    4: { pad: [W, 0, 0, W], dir: "t", chi: "l" }, // Tốn (ĐN)
+    9: { pad: [W, 0, 0, 0], dir: "t", chi: "t" }, // Ly (N)
+    2: { pad: [W, W, 0, 0], dir: "t", chi: "r" }, // Khôn (TN)
+    3: { pad: [0, 0, 0, W], dir: "l", chi: "l" }, // Chấn (Đ)
     5: { pad: [0, 0, 0, 0], dir: null, chi: null }, // Trung
-    7: { pad: [0, 14, 0, 0], dir: "r", chi: "r" }, // Đoài (T)
-    8: { pad: [0, 0, 14, 14], dir: "b", chi: "l" }, // Cấn (ĐB)
-    1: { pad: [0, 0, 14, 0], dir: "b", chi: "b" }, // Khảm (B)
-    6: { pad: [0, 14, 14, 0], dir: "b", chi: "r" }, // Càn (TB)
+    7: { pad: [0, W, 0, 0], dir: "r", chi: "r" }, // Đoài (T)
+    8: { pad: [0, 0, W, W], dir: "b", chi: "l" }, // Cấn (ĐB)
+    1: { pad: [0, 0, W, 0], dir: "b", chi: "b" }, // Khảm (B)
+    6: { pad: [0, W, W, 0], dir: "b", chi: "r" }, // Càn (TB)
   };
   const DIR_LABEL: Record<number, string> = {
     4: "ĐN Tốn", 9: "Nam Ly", 2: "TN Khôn", 3: "Đông Chấn", 5: "Trung cung",
@@ -906,12 +918,14 @@ export const prerender = true;
               </div>
               <div class="km-cung-mid">
                 ${marks}
-                <span class="cc-so">${soDiaBan(soCung, laBan.cuc)}</span>
+                <div class="km-cung-botright">
+                  ${muiTenMonCung(c.mon, soCung)}
+                  <span class="cc-so">${soDiaBan(soCung, laBan.cuc)}</span>
+                </div>
               </div>
               <div class="km-cung-r2">
                 <span class="cc-diacan">${c.diaBanCan}</span>
                 <span class="cc-mon">${tenDayDu(TEN_MON, c.mon)}</span>
-                <span class="cc-mt">${muiTenMonCung(c.mon, soCung)}</span>
               </div>
             </div>
           </div>
