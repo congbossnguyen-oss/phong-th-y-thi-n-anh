@@ -113,30 +113,39 @@ export async function callBatTuLlm(
   }
   const model = import.meta.env?.ANTHROPIC_MODEL || DEFAULT_MODEL;
 
-  let res: Response;
-  try {
-    res = await fetch(ANTHROPIC_API_URL, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": apiKey,
-        "anthropic-version": ANTHROPIC_VERSION,
-      },
-      body: JSON.stringify({
-        model,
-        max_tokens: MAX_TOKENS,
-        // Prompt caching: khối tri thức (system) GIỐNG NHAU mọi khách → cache 1 lần, các lần sau
-        // đọc lại ~0.1x giá. Chỉ phần "facts" của từng khách nằm ở userPrompt (sau breakpoint) mới tính giá đầy đủ.
-        system: [{ type: "text", text: systemPrompt, cache_control: { type: "ephemeral" } }],
-        messages: [{ role: "user", content: userPrompt }],
-        tools: [{ name: TOOL_NAME, description: "Trả về kết quả luận giải Bát Tự đúng cấu trúc.", input_schema: buildInputSchema(soDaiVan) }],
-        tool_choice: { type: "tool", name: TOOL_NAME },
-      }),
-    });
-  } catch (err) {
-    return { ok: false, reason: "loi_goi_api", detail: err instanceof Error ? err.message : "Lỗi mạng khi gọi Anthropic API." };
+  const reqBody = JSON.stringify({
+    model,
+    max_tokens: MAX_TOKENS,
+    // Prompt caching: khối tri thức (system) GIỐNG NHAU mọi khách → cache 1 lần, các lần sau đọc lại
+    // ~0.1x giá. Chỉ phần "facts" của từng khách nằm ở userPrompt (sau breakpoint) mới tính giá đầy đủ.
+    system: [{ type: "text", text: systemPrompt, cache_control: { type: "ephemeral" } }],
+    messages: [{ role: "user", content: userPrompt }],
+    tools: [{ name: TOOL_NAME, description: "Trả về kết quả luận giải Bát Tự đúng cấu trúc.", input_schema: buildInputSchema(soDaiVan) }],
+    tool_choice: { type: "tool", name: TOOL_NAME },
+  });
+
+  // Retry lỗi TẠM (mạng, 429 quá tải, 5xx, 529 overloaded) tối đa 3 lần — tránh 1 blip làm hỏng
+  // luận. Lỗi khác (400/401...) không retry vì retry cũng vô ích.
+  const RETRYABLE = new Set([429, 500, 502, 503, 504, 529]);
+  let res: Response | null = null;
+  let lastErr = "";
+  for (let attempt = 1; attempt <= 3; attempt++) {
+    try {
+      res = await fetch(ANTHROPIC_API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": ANTHROPIC_VERSION },
+        body: reqBody,
+      });
+    } catch (err) {
+      lastErr = err instanceof Error ? err.message : "Lỗi mạng khi gọi Anthropic API.";
+      res = null;
+    }
+    if (res && res.ok) break;
+    if (res && !RETRYABLE.has(res.status)) break;
+    if (attempt < 3) await new Promise((r) => setTimeout(r, 800 * attempt));
   }
 
+  if (!res) return { ok: false, reason: "loi_goi_api", detail: lastErr || "Lỗi mạng khi gọi Anthropic API." };
   if (!res.ok) {
     const body = await res.text().catch(() => "");
     return { ok: false, reason: "loi_goi_api", detail: `Anthropic API trả HTTP ${res.status}: ${body.slice(0, 500)}` };
@@ -152,12 +161,9 @@ export async function callBatTuLlm(
 
   const input = toolUse.input as Record<string, unknown>;
 
-  // Thiếu field CỐT LÕI (model thỉnh thoảng bỏ sót) → coi như phản hồi lỗi tạm để index.ts KHÔNG
-  // cache hồ sơ rỗng; lần xem sau sẽ tự gọi lại AI thay vì kẹt "Chưa xác định" vĩnh viễn.
-  if (input.vuong_suy == null || input.dung_than == null || input.hy_than == null || input.manh_phai == null) {
-    return { ok: false, reason: "phan_hoi_khong_hop_le", detail: "Model thiếu trường bắt buộc (vuong_suy/dung_than/hy_than/manh_phai)." };
-  }
-  // Null-safe: field vắng → "insufficient_data" thay vì chuỗi "undefined".
+  // Null-safe: field model bỏ sót → "insufficient_data" (KHÔNG thành chuỗi "undefined"). Không từ
+  // chối cả phản hồi khi thiếu 1 field — vẫn dùng phần model trả được (vd Dụng Thần + Thập Thần),
+  // để module nghề còn tính fallback thay vì mất trắng.
   const s = (v: unknown) => (v == null ? "insufficient_data" : String(v));
   try {
     const bat_tu = {

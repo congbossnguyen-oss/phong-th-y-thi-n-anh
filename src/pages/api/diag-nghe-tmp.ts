@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import { taoHoSoNghe } from "../../lib/nghe-nghiep/tao-ho-so-nghe";
+import { getBatTuProfile } from "../../lib/chart-profile";
 
 export const prerender = false;
 
@@ -7,10 +8,14 @@ export const prerender = false;
 export const GET: APIRoute = async ({ url }) => {
   if (url.searchParams.get("run") !== "1") return new Response('{"hint":"?run=1"}', { headers: { "Content-Type": "application/json" } });
   try {
+    const prof = await getBatTuProfile({ day: 14, month: 3, year: 1996, hour: 9, minute: 20, gender: "Nam" });
     const kq = await taoHoSoNghe({ day: 14, month: 3, year: 1996, hour: 9, minute: 20, gender: "Nam" });
     const bt = kq.batTuVM;
     const out = {
       batTuAiOk: kq.batTuAiOk,
+      profDungThan: prof.bat_tu.dung_than,
+      profThapThan: prof.bat_tu.thap_than_noi_bat,
+      profWarnings: prof.warnings.slice(0, 2),
       vectorInsufficient: bt.vectorInsufficient,
       vector: bt.vector,
       vectorDetail: bt.vectorDetail,

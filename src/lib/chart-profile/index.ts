@@ -141,6 +141,8 @@ export async function getBatTuProfile(input: CastBatTuInput): Promise<BatTuProfi
     model: output.model,
   };
 
-  setCachedProfile(cacheKey, profile);
+  // Chỉ cache khi luận CÓ giá trị lõi (Dụng Thần). Nếu model trả rỗng bất thường thì KHÔNG cache
+  // để lần xem sau tự gọi lại AI, tránh kẹt "Chưa xác định" vĩnh viễn cho lá số đó.
+  if (profile.bat_tu.dung_than !== "insufficient_data") setCachedProfile(cacheKey, profile);
   return profile;
 }
