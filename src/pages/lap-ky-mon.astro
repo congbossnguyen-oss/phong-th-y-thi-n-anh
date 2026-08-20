@@ -497,6 +497,7 @@ export const prerender = true;
   .km-badge-ts { background: #e07b34; color: #fff; }
   .km-badge-mo { background: transparent; padding: 0; font-size: 0.85rem; line-height: 1; color: #7a5a3a; }
   .km-badge-hinh { background: #6b5b4b; color: #fff; }
+  .km-badge-dn { background: #8a4a4a; color: #fff; }
   /* H/D/M/Y — ô đỏ chữ trắng nhỏ như app (Giờ/Ngày/Tháng/Năm) */
   .km-hdmy {
     display: inline-flex; align-items: center; justify-content: center;
@@ -947,6 +948,7 @@ export const prerender = true;
       if (nhapMo(c.thienBanCan, soCung)) marksList.push('<span class="km-badge km-badge-mo" title="Nhập Mộ">✝</span>');
       const hinh = kichHinh(c.thienBanCan, soCung);
       if (hinh) marksList.push(`<span class="km-badge km-badge-hinh" title="Kích Hình: ${hinh}">Hình</span>`);
+      if (duongNhan(c.thienBanCan, c.diaChi ?? [])) marksList.push('<span class="km-badge km-badge-dn" title="Dương Nhận">Nhận</span>');
       const marks = `<div class="km-cung-marks">${marksList.join("")}</div>`;
       // H/D/M/Y: cột riêng, canh GIỮA theo chiều dọc, ghim sát cạnh trái ô trắng.
       const hdmyList: string[] = [];
@@ -1045,6 +1047,17 @@ export const prerender = true;
     TỬ: "Điền Trạch", CẢNH: "Địa Vị", ĐỖ: "Kiến Thức", KINH: "Sức Khoẻ",
   };
   const NHAN_THEO_SAO: Record<string, string> = { "T.Phò": "Học Hành", "T.Nhuế": "Tật Ách" };
+  // Vợ/Chồng — cung có THIÊN BÀN CAN = Ất (Vợ) / Canh (Chồng). Nguồn: km-menh.md (skill Luận Kỳ
+  // Môn Độn Giáp, nhánh phụ 2 "Ứng Dụng Mệnh Kỳ Môn") — bảng người thân theo vị trí trên bàn.
+  const NHAN_THEO_CAN: Record<string, string> = { "Ất": "Vợ", "Canh": "Chồng" };
+  // Dương Nhận (Dương Nhẫn): cung mà can đóng tại đó trùng với ĐỊA CHI Dương Nhận của chính can
+  // ấy. Nguồn: đối chiếu ví dụ thực chiến trong tài liệu skill (ky-mon-khai-ngo-luu-van-nguyen.md:
+  // "Canh Dương Nhận tại Dậu", "Bính Dương Nhận tại Ngọ") — khớp đúng bảng Dương Nhận cổ truyền.
+  const DUONG_NHAN_CHI: Record<string, string> = {
+    "Giáp": "Mão", "Ất": "Thìn", "Bính": "Ngọ", "Mậu": "Ngọ", "Đinh": "Mùi", "Kỷ": "Mùi",
+    "Canh": "Dậu", "Tân": "Tuất", "Nhâm": "Tý", "Quý": "Sửu",
+  };
+  const duongNhan = (can: string, diaChi: string[]): boolean => diaChi.includes(DUONG_NHAN_CHI[can] ?? "");
 
   function renderMenh(laBan: LapLaBanResult) {
     const canNgaySinh = laBan.tuTru.ngay?.can ?? "";
@@ -1070,6 +1083,8 @@ export const prerender = true;
         if (c === menhCung) nhan.push("Mệnh Cung");
         if (NHAN_THEO_MON[c.mon]) nhan.push(NHAN_THEO_MON[c.mon]!);
         if (NHAN_THEO_SAO[c.saoThienBan]) nhan.push(NHAN_THEO_SAO[c.saoThienBan]!);
+        if (NHAN_THEO_CAN[c.thienBanCan]) nhan.push(NHAN_THEO_CAN[c.thienBanCan]!);
+        if (duongNhan(c.thienBanCan, c.diaChi ?? [])) nhan.push("Dương Nhận");
         return `<tr><td>${c.huong}</td><td style="text-align:left">${nhan.join(" · ") || "—"}</td></tr>`;
       })
       .join("");
