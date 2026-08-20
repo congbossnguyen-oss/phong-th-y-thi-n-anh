@@ -18,9 +18,18 @@ import {
   type CareerMappingConfig,
   type DomainMappingConfig,
   type BatTuNganhNguHanhConfig,
+  type ThapThanNgheConfig,
 } from "./config";
 
 const round2 = (n: number): number => Math.round(n * 100) / 100;
+
+/** Nguồn dữ liệu của một bước: Manh Phái (chính) hay dự phòng Thập Thần. */
+export type NguonNghe = "manh_phai" | "thap_than" | "none";
+
+/** Chuẩn hoá tên Thập Thần (tiếng Việt) → khoá, bỏ tên không nhận diện. */
+function normThapThan(names: string[], aliases: Record<string, string>): string[] {
+  return names.map((n) => aliases[n.trim()]).filter((k): k is string => Boolean(k));
+}
 
 // ---------------------------------------------------------------------------------------------
 // Bước 1 — Career Vector (5 trục)
@@ -37,38 +46,48 @@ export interface CareerVector5Truc {
 export interface CareerVectorResult {
   insufficient: boolean;
   vector: CareerVector5Truc | null;
+  nguon: NguonNghe;
   detail: string;
 }
 
 const TRUC_5 = ["specialist", "authority", "management", "business", "investment"] as const;
 
-export function tinhCareerVector(profile: BatTuProfile, career: CareerMappingConfig): CareerVectorResult {
+export function tinhCareerVector(profile: BatTuProfile, career: CareerMappingConfig, thapThan: ThapThanNgheConfig): CareerVectorResult {
   const cauTruc = profile.manh_phai.cau_truc;
   const heSo = profile.manh_phai.hieu_suat.he_so;
 
-  if (cauTruc === "insufficient_data") {
-    return { insufficient: true, vector: null, detail: "Chưa xác định cơ chế Manh Phái (manh_phai.cau_truc) — cần AI luận giải trước." };
-  }
-  if (heSo === null || heSo === undefined) {
-    return { insufficient: true, vector: null, detail: "Chưa có hệ số hiệu suất Tố Công (manh_phai.hieu_suat.he_so)." };
-  }
-  const mech = career.manh_phai_mechanism[cauTruc];
-  if (!mech) {
-    return { insufficient: true, vector: null, detail: `Cơ chế "${cauTruc}" không tồn tại trong career_mapping.json.manh_phai_mechanism.` };
-  }
-
-  const vector = {} as CareerVector5Truc;
-  for (const truc of TRUC_5) {
-    // Trục vắng mặt trong mech.vector coi là 0 (đặc tả: "vector chỉ chứa các trục có mặt"),
-    // KHÔNG tự điền giá trị khác 0 cho trục cơ chế không nhắc tới.
-    const base = mech.vector[truc] ?? 0;
-    vector[truc] = round2(base * heSo);
+  // Ưu tiên MANH PHÁI khi đủ dữ liệu.
+  if (cauTruc !== "insufficient_data" && heSo != null) {
+    const mech = career.manh_phai_mechanism[cauTruc];
+    if (mech) {
+      const vector = {} as CareerVector5Truc;
+      // Trục vắng trong mech.vector coi là 0 — KHÔNG tự điền.
+      for (const truc of TRUC_5) vector[truc] = round2((mech.vector[truc] ?? 0) * heSo);
+      return {
+        insufficient: false,
+        vector,
+        nguon: "manh_phai",
+        detail: `Từ cơ chế Manh Phái "${mech.label}" (${cauTruc}) × hệ số hiệu suất ${heSo} (${profile.manh_phai.hieu_suat.co_che}/${profile.manh_phai.hieu_suat.muc}).`,
+      };
+    }
   }
 
+  // DỰ PHÒNG: suy 5 trục từ Thập Thần nổi bật (cách luận nghề kinh điển, không bịa).
+  const keys = normThapThan(profile.bat_tu.thap_than_noi_bat, thapThan.thap_than_aliases);
+  if (keys.length === 0) {
+    return { insufficient: true, vector: null, nguon: "none", detail: "Chưa xác định cơ chế Manh Phái và không có Thập Thần nổi bật để suy dự phòng." };
+  }
+  const vector: CareerVector5Truc = { specialist: 0, authority: 0, management: 0, business: 0, investment: 0 };
+  for (const k of keys) {
+    const w = thapThan.thap_than_to_truc[k];
+    if (!w) continue;
+    for (const truc of TRUC_5) vector[truc] = round2(vector[truc] + (w[truc] ?? 0));
+  }
   return {
     insufficient: false,
     vector,
-    detail: `Từ cơ chế "${mech.label}" (${cauTruc}) × hệ số hiệu suất ${heSo} (${profile.manh_phai.hieu_suat.co_che}/${profile.manh_phai.hieu_suat.muc}).`,
+    nguon: "thap_than",
+    detail: `Dự phòng theo Thập Thần nổi bật (${profile.bat_tu.thap_than_noi_bat.join(", ")}) vì cơ chế Manh Phái chưa đủ căn cứ.`,
   };
 }
 
@@ -80,22 +99,35 @@ export interface AxisResult {
   insufficient: boolean;
   /** -100 (thiên Quan Lộc) .. 0 .. +100 (thiên Kinh Doanh). */
   axis: number | null;
+  nguon: NguonNghe;
   detail: string;
 }
 
-export function tinhTrucQuanLocKinhDoanh(profile: BatTuProfile, career: CareerMappingConfig): AxisResult {
+export function tinhTrucQuanLocKinhDoanh(profile: BatTuProfile, career: CareerMappingConfig, thapThan: ThapThanNgheConfig): AxisResult {
   const cpc = profile.manh_phai.chinh_phan_cuc;
-  if (cpc === "insufficient_data") {
-    return { insufficient: true, axis: null, detail: "Chưa xác định Chính Cục/Phản Cục (manh_phai.chinh_phan_cuc)." };
+  if (cpc !== "insufficient_data") {
+    const base = cpc === "chinh_cuc" ? career.authority_business_axis.chinh_cuc_pull : career.authority_business_axis.phan_cuc_pull;
+    return {
+      insufficient: false,
+      axis: base,
+      nguon: "manh_phai",
+      detail: `Trục theo ${cpc === "chinh_cuc" ? "Chính Cục" : "Phản Cục"} (Manh Phái) = ${base}.`,
+    };
   }
-  const base = cpc === "chinh_cuc" ? career.authority_business_axis.chinh_cuc_pull : career.authority_business_axis.phan_cuc_pull;
+
+  // DỰ PHÒNG: trung bình "lực kéo" của các Thập Thần nổi bật (Quan/Ấn kéo về Quan Lộc; Tài/Thực
+  // Thương/Tỷ Kiếp kéo về Kinh Doanh).
+  const keys = normThapThan(profile.bat_tu.thap_than_noi_bat, thapThan.thap_than_aliases);
+  const pulls = keys.map((k) => thapThan.thap_than_axis_pull[k]).filter((v): v is number => typeof v === "number");
+  if (pulls.length === 0) {
+    return { insufficient: true, axis: null, nguon: "none", detail: "Chưa xác định Chính/Phản Cục và không suy được hướng từ Thập Thần." };
+  }
+  const axis = Math.max(-100, Math.min(100, Math.round(pulls.reduce((s, v) => s + v, 0) / pulls.length)));
   return {
     insufficient: false,
-    axis: base,
-    detail:
-      `Trục cơ bản theo ${cpc === "chinh_cuc" ? "Chính Cục" : "Phản Cục"} = ${base}. ` +
-      `career_mapping.json.authority_business_axis.note ghi nguồn "nudge theo cơ chế" là archetype + cung Quan Lộc/Tài ` +
-      `Bạch/Thiên Di của TỬ VI — chưa có trong hồ sơ Bát Tự v1 nên CHƯA áp dụng (không tự bịa độ lớn nudge).`,
+    axis,
+    nguon: "thap_than",
+    detail: `Dự phòng theo Thập Thần (${keys.join(", ")}) — trung bình lực kéo = ${axis}.`,
   };
 }
 
@@ -117,6 +149,7 @@ export interface DomainBucketItem {
 
 export interface DomainScoreResult {
   insufficient: boolean;
+  nguon: NguonNghe;
   detail: string;
   scores: Record<DomainKey, number> | null;
   priority: DomainBucketItem[];
@@ -132,22 +165,23 @@ export function tinhDiemNganh(
   const cauTruc = profile.manh_phai.cau_truc;
   const dungThan = profile.bat_tu.dung_than;
   const hyThan = profile.bat_tu.hy_than;
-  const empty = { insufficient: true as const, scores: null, priority: [], suitable: [], possible: [] };
+  const empty = { insufficient: true as const, nguon: "none" as const, scores: null, priority: [], suitable: [], possible: [] };
 
-  if (cauTruc === "insufficient_data") return { ...empty, detail: "Chưa xác định cơ chế Manh Phái (manh_phai.cau_truc)." };
+  // Dụng/Hỷ Thần LÀ BẮT BUỘC (nền ngũ hành → ngành). Cơ chế Manh Phái là TÙY: có thì cộng thêm,
+  // không có thì tính từ Dụng/Hỷ Thần (nguồn dự phòng), KHÔNG để trống toàn bộ ngành.
   if (dungThan === "insufficient_data") return { ...empty, detail: "Chưa xác định Dụng Thần (bat_tu.dung_than)." };
   if (hyThan === "insufficient_data") return { ...empty, detail: "Chưa xác định Hỷ Thần (bat_tu.hy_than)." };
 
-  const mech = domain.mechanisms[cauTruc];
+  const mech = cauTruc !== "insufficient_data" ? domain.mechanisms[cauTruc] : null;
   const dungThanEntry = batTuNganh.nguu_hanh_to_domain[dungThan];
   const hyThanEntry = batTuNganh.nguu_hanh_to_domain[hyThan];
-  if (!mech) return { ...empty, detail: `Cơ chế "${cauTruc}" không có trong domain_mapping.json.mechanisms.` };
   if (!dungThanEntry) return { ...empty, detail: `Dụng Thần "${dungThan}" không có trong bat_tu_nganh_ngu_hanh.json.` };
   if (!hyThanEntry) return { ...empty, detail: `Hỷ Thần "${hyThan}" không có trong bat_tu_nganh_ngu_hanh.json.` };
 
+  const nguon: NguonNghe = mech ? "manh_phai" : "thap_than";
   const scores = {} as Record<DomainKey, number>;
   for (const d of DOMAIN_KEYS) {
-    scores[d] = round2((mech.domains[d] ?? 0) + (dungThanEntry.domains[d] ?? 0) * 1.0 + (hyThanEntry.domains[d] ?? 0) * 0.5);
+    scores[d] = round2((mech?.domains[d] ?? 0) + (dungThanEntry.domains[d] ?? 0) * 1.0 + (hyThanEntry.domains[d] ?? 0) * 0.5);
   }
 
   const th = domain.output_rules.recommended_initial_thresholds;
@@ -186,7 +220,10 @@ export function tinhDiemNganh(
 
   return {
     insufficient: false,
-    detail: `domain_score[d] = mechanisms["${cauTruc}"].domains[d] + nguu_hanh["${dungThan}"].domains[d]×1.0 + nguu_hanh["${hyThan}"].domains[d]×0.5`,
+    nguon,
+    detail: mech
+      ? `domain_score[d] = mechanisms["${cauTruc}"].domains[d] + nguu_hanh["${dungThan}"]×1.0 + nguu_hanh["${hyThan}"]×0.5`
+      : `Dự phòng (cơ chế Manh Phái chưa xác định): domain_score[d] = nguu_hanh["${dungThan}"]×1.0 + nguu_hanh["${hyThan}"]×0.5`,
     scores,
     priority: buildBucket(priorityRaw),
     suitable: buildBucket(suitableRaw),
@@ -252,10 +289,10 @@ export interface ModuleNgheBatTuResult {
 }
 
 export function tinhModuleNgheBatTu(profile: BatTuProfile): ModuleNgheBatTuResult {
-  const { career, domain, batTuNganh } = loadCareerConfig();
+  const { career, domain, batTuNganh, thapThanNghe } = loadCareerConfig();
 
-  const careerVector = tinhCareerVector(profile, career);
-  const axis = tinhTrucQuanLocKinhDoanh(profile, career);
+  const careerVector = tinhCareerVector(profile, career, thapThanNghe);
+  const axis = tinhTrucQuanLocKinhDoanh(profile, career, thapThanNghe);
   const domainScore = tinhDiemNganh(profile, domain, batTuNganh);
   const careerPath = tinhCareerPath(profile);
 

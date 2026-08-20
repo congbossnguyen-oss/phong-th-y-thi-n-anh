@@ -1,0 +1,43 @@
+{
+  "_meta": {
+    "muc_dich": "Phương án DỰ PHÒNG cho module nghề khi cơ chế Manh Phái (manh_phai.cau_truc) trả insufficient_data. Suy 5 trục nghề + trục Quan Lộc↔Kinh Doanh từ THẬP THẦN NỔI BẬT — cách luận nghề kinh điển của Bát Tự, KHÔNG bịa.",
+    "trang_thai": "THIEN_ANH_MODEL — BẢN NHÁP, chưa calibrate trên >=20 lá số thật. Trọng số có thể chỉnh.",
+    "ghi_chu": "Chỉ dùng khi Manh Phái không xác định. Nếu Manh Phái rõ thì luôn ưu tiên Manh Phái."
+  },
+  "thap_than_aliases": {
+    "Tỷ Kiên": "ty_kien", "Tỉ Kiên": "ty_kien", "Tỷ Kiến": "ty_kien",
+    "Kiếp Tài": "kiep_tai",
+    "Thực Thần": "thuc_than",
+    "Thương Quan": "thuong_quan",
+    "Chính Tài": "chinh_tai",
+    "Thiên Tài": "thien_tai", "Thảng Tài": "thien_tai",
+    "Chính Quan": "chinh_quan",
+    "Thất Sát": "that_sat", "Thiên Quan": "that_sat",
+    "Chính Ấn": "chinh_an",
+    "Thiên Ấn": "thien_an", "Kiêu Thần": "thien_an", "Kiêu": "thien_an"
+  },
+  "thap_than_to_truc": {
+    "ty_kien":     { "business": 2, "investment": 1 },
+    "kiep_tai":    { "business": 2, "investment": 1 },
+    "thuc_than":   { "specialist": 2, "management": 1 },
+    "thuong_quan": { "specialist": 2, "business": 1 },
+    "chinh_tai":   { "business": 2, "investment": 2 },
+    "thien_tai":   { "investment": 2, "business": 1 },
+    "chinh_quan":  { "management": 2, "authority": 1 },
+    "that_sat":    { "authority": 2, "management": 1 },
+    "chinh_an":    { "specialist": 2, "management": 1 },
+    "thien_an":    { "specialist": 2, "investment": 1 }
+  },
+  "thap_than_axis_pull": {
+    "chinh_quan": -40,
+    "that_sat": -25,
+    "chinh_an": -30,
+    "thien_an": -10,
+    "thuc_than": 10,
+    "thuong_quan": 25,
+    "chinh_tai": 30,
+    "thien_tai": 40,
+    "ty_kien": 20,
+    "kiep_tai": 30
+  }
+}

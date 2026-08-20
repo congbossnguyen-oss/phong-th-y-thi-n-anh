@@ -57,10 +57,18 @@ export interface BatTuNganhNguHanhConfig {
   nguu_hanh_to_domain: Record<string, NguHanhDomainEntry>;
 }
 
+/** Bảng DỰ PHÒNG Thập Thần → nghề (dùng khi Manh Phái insufficient). THIEN_ANH_MODEL — bản nháp. */
+export interface ThapThanNgheConfig {
+  thap_than_aliases: Record<string, string>;
+  thap_than_to_truc: Record<string, Partial<Record<"specialist" | "authority" | "management" | "business" | "investment", number>>>;
+  thap_than_axis_pull: Record<string, number>;
+}
+
 let cached: {
   career: CareerMappingConfig;
   domain: DomainMappingConfig;
   batTuNganh: BatTuNganhNguHanhConfig;
+  thapThanNghe: ThapThanNgheConfig;
 } | null = null;
 
 function readJson<T>(fileName: string): T {
@@ -69,12 +77,13 @@ function readJson<T>(fileName: string): T {
 }
 
 /** Nạp + cache 3 file config trong bộ nhớ tiến trình — nội dung không đổi giữa các request. */
-export function loadCareerConfig(): { career: CareerMappingConfig; domain: DomainMappingConfig; batTuNganh: BatTuNganhNguHanhConfig } {
+export function loadCareerConfig(): { career: CareerMappingConfig; domain: DomainMappingConfig; batTuNganh: BatTuNganhNguHanhConfig; thapThanNghe: ThapThanNgheConfig } {
   if (cached) return cached;
   cached = {
     career: readJson<CareerMappingConfig>("career_mapping.json"),
     domain: readJson<DomainMappingConfig>("domain_mapping.json"),
     batTuNganh: readJson<BatTuNganhNguHanhConfig>("bat_tu_nganh_ngu_hanh.json"),
+    thapThanNghe: readJson<ThapThanNgheConfig>("thap_than_nghe.json"),
   };
   return cached;
 }
