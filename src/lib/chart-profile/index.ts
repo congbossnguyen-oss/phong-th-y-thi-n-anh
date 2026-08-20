@@ -13,6 +13,7 @@ import { castBatTuFacts, type CastBatTuInput } from "./cast-bat-tu";
 import { buildBatTuSystemPrompt, buildBatTuUserPrompt } from "./prompt";
 import { callBatTuLlm, isAiConfigured } from "./llm";
 import { hashLaSo, getCachedProfile, setCachedProfile } from "./cache";
+import { chayEngineBatTu, type EngineBatTu } from "./bat-tu-engine-adapter";
 import type { BatTuProfile, BatTuLuanGiai, ManhPhaiLuanGiai, DaiVanLuanGiai } from "./types";
 
 export type { BatTuProfile, BatTuFacts, BatTuLuanGiai, ManhPhaiLuanGiai, DaiVanLuanGiai, Gender, SourceTag } from "./types";
@@ -54,6 +55,24 @@ export async function getBatTuProfile(input: CastBatTuInput): Promise<BatTuProfi
   const cached = getCachedProfile(cacheKey);
   if (cached) return cached;
 
+  // ENGINE dứt khoát (không cần AI): vượng suy + Dụng/Hỷ/Kỵ Thần + Thập Thần nổi bật. Lấp phần
+  // trước đây phụ thuộc AI (hay "insufficient"). AI chỉ còn lo Manh Phái + cách cục + Đại Vận.
+  let engine: EngineBatTu | null = null;
+  try {
+    engine = chayEngineBatTu(facts);
+  } catch (err) {
+    console.error("[bat-tu-engine] Lỗi tính vượng suy/dụng thần:", err);
+  }
+  const batTuEngineFields = engine
+    ? {
+        vuong_suy: engine.vuong_suy as BatTuLuanGiai["vuong_suy"],
+        dung_than: engine.dung_than as BatTuLuanGiai["dung_than"],
+        hy_than: engine.hy_than as BatTuLuanGiai["hy_than"],
+        ky_than: engine.ky_than as BatTuLuanGiai["ky_than"],
+        thap_than_noi_bat: engine.thap_than_noi_bat,
+      }
+    : {};
+
   const generatedAt = new Date().toISOString();
   const tu_tru = {
     nam: `${facts.tuTru.nam.can} ${facts.tuTru.nam.chi}`,
@@ -70,6 +89,7 @@ export async function getBatTuProfile(input: CastBatTuInput): Promise<BatTuProfi
       ...INSUFFICIENT_BAT_TU,
       nhat_chu: facts.nhatChu.can,
       ngu_hanh_nhat_chu: facts.nhatChu.nguHanh,
+      ...batTuEngineFields,
     },
     manh_phai: INSUFFICIENT_MANH_PHAI,
     dai_van: facts.daiVan.map((dv) => ({
@@ -88,8 +108,8 @@ export async function getBatTuProfile(input: CastBatTuInput): Promise<BatTuProfi
 
   if (!isAiConfigured()) {
     baseProfile.warnings.push(
-      "Chưa cấu hình ANTHROPIC_API_KEY — mới trả được Tứ Trụ/Đại Vận (thuần code từ engine sẵn có), " +
-        "chưa luận giải được vượng suy/dụng thần/cách cục/Manh Phái.",
+      "Chưa cấu hình ANTHROPIC_API_KEY — vượng suy/Dụng Thần/Thập Thần đã tính bằng engine (thuần code); " +
+        "riêng cơ chế Manh Phái + cách cục cần AI nên tạm để trống.",
     );
     return baseProfile;
   }
@@ -111,12 +131,13 @@ export async function getBatTuProfile(input: CastBatTuInput): Promise<BatTuProfi
     bat_tu: {
       nhat_chu: facts.nhatChu.can,
       ngu_hanh_nhat_chu: facts.nhatChu.nguHanh,
-      vuong_suy: output.bat_tu.vuong_suy as BatTuLuanGiai["vuong_suy"],
-      dung_than: output.bat_tu.dung_than as BatTuLuanGiai["dung_than"],
-      hy_than: output.bat_tu.hy_than as BatTuLuanGiai["hy_than"],
-      ky_than: output.bat_tu.ky_than as BatTuLuanGiai["ky_than"],
+      // Vượng suy + Dụng/Hỷ/Kỵ Thần: ưu tiên ENGINE (dứt khoát); chỉ dùng AI khi engine lỗi.
+      vuong_suy: (engine?.vuong_suy ?? output.bat_tu.vuong_suy) as BatTuLuanGiai["vuong_suy"],
+      dung_than: (engine?.dung_than ?? output.bat_tu.dung_than) as BatTuLuanGiai["dung_than"],
+      hy_than: (engine?.hy_than ?? output.bat_tu.hy_than) as BatTuLuanGiai["hy_than"],
+      ky_than: (engine?.ky_than ?? output.bat_tu.ky_than) as BatTuLuanGiai["ky_than"],
       cach_cuc: output.bat_tu.cach_cuc,
-      thap_than_noi_bat: output.bat_tu.thap_than_noi_bat,
+      thap_than_noi_bat: engine?.thap_than_noi_bat.length ? engine.thap_than_noi_bat : output.bat_tu.thap_than_noi_bat,
       source: "luan-giai-bat-tu",
     },
     manh_phai: {

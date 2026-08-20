@@ -1,0 +1,112 @@
+{
+  "_meta": {
+    "purpose": "Dữ liệu nền tra cứu cho bat-tu-engine (tầng vượng suy + dụng thần). CHỈ dùng để bù các trường mà module lập lá số hiện có KHÔNG trả sẵn. Trước khi dùng bảng này, Claude Code phải kiểm tra module lập lá số đã có sẵn tàng can / thập thần / ngũ hành chưa — nếu có thì đọc từ đó, KHÔNG hardcode lại để tránh lệch nguồn.",
+    "nguon_logic": "skill luan-giai-bat-tu: references/vuong-suy.md, references/dung-than.md, references/lap-tu-tru.md, references/mo-kho.md"
+  },
+
+  "nguHanh_thienCan": {
+    "Giáp": {"hanh": "Mộc", "amDuong": "Dương"},
+    "Ất":   {"hanh": "Mộc", "amDuong": "Âm"},
+    "Bính": {"hanh": "Hỏa", "amDuong": "Dương"},
+    "Đinh": {"hanh": "Hỏa", "amDuong": "Âm"},
+    "Mậu":  {"hanh": "Thổ", "amDuong": "Dương"},
+    "Kỷ":   {"hanh": "Thổ", "amDuong": "Âm"},
+    "Canh": {"hanh": "Kim", "amDuong": "Dương"},
+    "Tân":  {"hanh": "Kim", "amDuong": "Âm"},
+    "Nhâm": {"hanh": "Thủy", "amDuong": "Dương"},
+    "Quý":  {"hanh": "Thủy", "amDuong": "Âm"}
+  },
+
+  "nguHanh_diaChi": {
+    "Tý":   {"hanh": "Thủy", "amDuong": "Dương"},
+    "Sửu":  {"hanh": "Thổ", "amDuong": "Âm"},
+    "Dần":  {"hanh": "Mộc", "amDuong": "Dương"},
+    "Mão":  {"hanh": "Mộc", "amDuong": "Âm"},
+    "Thìn": {"hanh": "Thổ", "amDuong": "Dương"},
+    "Tị":   {"hanh": "Hỏa", "amDuong": "Âm"},
+    "Ngọ":  {"hanh": "Hỏa", "amDuong": "Dương"},
+    "Mùi":  {"hanh": "Thổ", "amDuong": "Âm"},
+    "Thân": {"hanh": "Kim", "amDuong": "Dương"},
+    "Dậu":  {"hanh": "Kim", "amDuong": "Âm"},
+    "Tuất": {"hanh": "Thổ", "amDuong": "Dương"},
+    "Hợi":  {"hanh": "Thủy", "amDuong": "Âm"}
+  },
+
+  "_tangCan_note": "Tàng can mỗi Địa Chi theo thứ tự [Bản khí, Trung khí, Dư khí]. Bản khí = khí chính (lực mạnh nhất), dùng để xác định 'căn' của Thiên can. Nếu module lập lá số đã trả 'Tàng ẩn' (như trong ảnh mẫu) thì DÙNG của module, bảng này chỉ để đối chiếu.",
+  "tangCan": {
+    "Tý":   ["Quý"],
+    "Sửu":  ["Kỷ", "Quý", "Tân"],
+    "Dần":  ["Giáp", "Bính", "Mậu"],
+    "Mão":  ["Ất"],
+    "Thìn": ["Mậu", "Ất", "Quý"],
+    "Tị":   ["Bính", "Mậu", "Canh"],
+    "Ngọ":  ["Đinh", "Kỷ"],
+    "Mùi":  ["Kỷ", "Đinh", "Ất"],
+    "Thân": ["Canh", "Nhâm", "Mậu"],
+    "Dậu":  ["Tân"],
+    "Tuất": ["Mậu", "Tân", "Đinh"],
+    "Hợi":  ["Nhâm", "Giáp"]
+  },
+
+  "sinh_khac": {
+    "_note": "Quan hệ ngũ hành cơ bản. sinh: A sinh B. khac: A khắc B.",
+    "sinh": {"Mộc": "Hỏa", "Hỏa": "Thổ", "Thổ": "Kim", "Kim": "Thủy", "Thủy": "Mộc"},
+    "khac": {"Mộc": "Thổ", "Thổ": "Thủy", "Thủy": "Hỏa", "Hỏa": "Kim", "Kim": "Mộc"}
+  },
+
+  "_thapThan_note": "Thập Thần suy ra từ quan hệ (ngũ hành + âm dương) giữa can khác và Nhật Can. Nếu module lập lá số đã trả Chủ tinh/Phó tinh (như ảnh mẫu) thì DÙNG của module. Quy tắc dưới đây chỉ để đối chiếu/bù khi thiếu.",
+  "thapThan_rule": {
+    "cùng hành, cùng âm dương": "Tỷ Kiên",
+    "cùng hành, khác âm dương": "Kiếp Tài",
+    "Nhật Can sinh ra nó, cùng âm dương": "Thực Thần",
+    "Nhật Can sinh ra nó, khác âm dương": "Thương Quan",
+    "Nhật Can khắc nó, cùng âm dương": "Thiên Tài",
+    "Nhật Can khắc nó, khác âm dương": "Chính Tài",
+    "nó khắc Nhật Can, cùng âm dương": "Thất Sát",
+    "nó khắc Nhật Can, khác âm dương": "Chính Quan",
+    "nó sinh Nhật Can, cùng âm dương": "Thiên Ấn",
+    "nó sinh Nhật Can, khác âm dương": "Chính Ấn"
+  },
+
+  "_truongSinh_note": "Vòng Trường Sinh 12 trạng thái theo Nhật Can, tra tại Địa Chi. Dùng cho: (1) xét ĐẮC LỆNH tại Chi tháng, (2) xét mạnh yếu của can tại các chi. Bảng ghi Địa Chi khởi Trường Sinh của từng Can; 12 trạng thái đi theo chiều: Can Dương đi THUẬN, Can Âm đi NGHỊCH qua 12 chi.",
+  "truongSinh_khoi": {
+    "Giáp": "Hợi", "Bính": "Dần", "Mậu": "Dần", "Canh": "Tị", "Nhâm": "Thân",
+    "Ất": "Ngọ", "Đinh": "Dậu", "Kỷ": "Dậu", "Tân": "Tý", "Quý": "Mão"
+  },
+  "truongSinh_12trangThai": [
+    "Trường Sinh", "Mộc Dục", "Quan Đới", "Lâm Quan", "Đế Vượng", "Suy",
+    "Bệnh", "Tử", "Mộ", "Tuyệt", "Thai", "Dưỡng"
+  ],
+  "truongSinh_dacLenh_states": ["Trường Sinh", "Mộc Dục", "Quan Đới", "Lâm Quan", "Đế Vượng"],
+
+  "_moKho_note": "Mộ Khố (Tứ Mộ) của từng hành. Can Dương gặp Mộ khố của hành mình MỚI tính là có gốc (có căn); Can Âm gặp mộ khố coi như vô khí. Xem references/mo-kho.md.",
+  "moKho": {
+    "Mộc": "Mùi", "Hỏa": "Tuất", "Kim": "Sửu", "Thủy": "Thìn", "Thổ": "Thìn"
+  },
+
+  "thienCan_hopHoa": {
+    "_note": "Ngũ hợp Thiên Can → hành hóa ra. CHỈ hóa thành công khi đủ điều kiện (có hành dẫn hóa ở nguyệt lệnh, không bị tranh hợp...) — engine chỉ ĐÁNH DẤU khả năng hợp hóa để cảnh báo, không tự khẳng định đã hóa. Xem references/quan-he-can-chi.md.",
+    "Giáp-Kỷ": "Thổ", "Ất-Canh": "Kim", "Bính-Tân": "Thủy", "Đinh-Nhâm": "Mộc", "Mậu-Quý": "Hỏa"
+  },
+
+  "diaChi_tamHop": {
+    "_note": "Tam Hợp Cục (3 chi hợp thành 1 hành cục). Đủ 3 chi = cục mạnh; 2 chi (bán hợp) = cục yếu hơn.",
+    "Thân-Tý-Thìn": "Thủy",
+    "Hợi-Mão-Mùi": "Mộc",
+    "Dần-Ngọ-Tuất": "Hỏa",
+    "Tị-Dậu-Sửu": "Kim"
+  },
+
+  "diaChi_tamHoi": {
+    "_note": "Tam Hội Phương (3 chi cùng phương hội thành 1 hành, lực mạnh hơn tam hợp).",
+    "Dần-Mão-Thìn": "Mộc",
+    "Tị-Ngọ-Mùi": "Hỏa",
+    "Thân-Dậu-Tuất": "Kim",
+    "Hợi-Tý-Sửu": "Thủy"
+  },
+
+  "diaChi_lucXung": {
+    "_note": "Lục Xung — dùng để kiểm tra chi có bị xung mất gốc không (đắc địa danh nghĩa vô nghĩa nếu chi bị xung).",
+    "cap": [["Tý","Ngọ"],["Sửu","Mùi"],["Dần","Thân"],["Mão","Dậu"],["Thìn","Tuất"],["Tị","Hợi"]]
+  }
+}
