@@ -351,27 +351,30 @@ export const prerender = true;
     --nh: #9b9b9b;
     position: relative;
     background: var(--nh);
+    padding: 3px; /* khung màu ngũ hành đều 4 cạnh */
+    min-height: 138px;
     display: flex;
-    flex-direction: column;
-    min-height: 132px;
   }
-  .km-cung-head {
+  /* Dòng hướng + KV nằm TRONG ô trắng (đầu ô) để khung màu 4 cạnh đều nhau. */
+  .km-cung-topline {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 0.25rem;
-    padding: 0.2rem 0.4rem;
-    color: #fff;
+    border-bottom: 1px solid #efe6d4;
+    padding-bottom: 0.12rem;
+    margin-bottom: 0.1rem;
   }
   .km-cung-huong {
-    font-size: 0.63rem;
-    font-weight: 700;
+    font-size: 0.6rem;
+    font-weight: 800;
     letter-spacing: 0.01em;
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.25);
+    color: var(--nh);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     min-width: 0;
+    filter: brightness(0.75);
   }
   .km-cung-so {
     flex: none;
@@ -383,12 +386,11 @@ export const prerender = true;
      hàng dưới [địa can | môn]. Nhãn KV/Mã/Trực Phù/Trực Sử nằm cạnh trái ô số. */
   .km-cung-inner {
     flex: 1;
-    margin: 0 3px 3px;
     background: #fffdf8;
     border-radius: 3px;
-    padding: 0.28rem 0.32rem 0.26rem;
+    padding: 0.28rem 0.34rem;
     display: grid;
-    grid-template-rows: auto 1fr auto;
+    grid-template-rows: auto auto 1fr auto;
     color: #2a1512;
   }
   .km-cung-r1,
@@ -857,11 +859,11 @@ export const prerender = true;
       const marks = `<div class="km-cung-marks">${marksList.join("")}</div>`;
       return `
         <div class="km-cung" style="--nh:${NGU_HANH_CUNG[soCung]}">
-          <div class="km-cung-head">
-            <span class="km-cung-huong">${c.huong}</span>
-            ${kvHead}
-          </div>
           <div class="km-cung-inner">
+            <div class="km-cung-topline">
+              <span class="km-cung-huong">${c.huong}</span>
+              ${kvHead}
+            </div>
             <div class="km-cung-r1">
               <span class="cc-can">${c.thienBanCan}</span>
               <span class="cc-sao">${tenDayDu(SAO_NGAN, c.saoThienBan)}</span>
