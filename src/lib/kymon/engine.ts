@@ -118,12 +118,18 @@ function layLaBanTuThoiThan(ts: ThamSoLoi): LapLaBanResult {
     );
   }
 
-  const x65Raw = isDuong ? modWrap(cuc + soCanThoiThan_B - 1, 9) : modWrap(1 + cuc - soCanThoiThan_B, 9);
+  // Trực Phù lạc cung (X65) = cung mà CAN THỜI THẦN đóng trên ĐỊA BÀN. Đây là quy tắc gốc của
+  // Excel (đối chiếu bàn phục ngâm 08:46 08/09/2021 giờ Mậu) và khớp cả 2 lá mẫu cũ — thay cho
+  // công thức MOD xấp xỉ (SPEC mục 5) vốn sai ở bàn đặc biệt (vd giờ Mậu → phải phục ngâm).
+  // Can Giáp không có mặt trên Địa Bàn (ẩn dưới phù đầu) → dùng cung Phù đầu.
+  let cungCanThoiThan = -1;
+  for (const [cungSo, can] of diaBanCanByCung) if (can === canThoiThan) cungCanThoiThan = cungSo;
+  const x65Raw = cungCanThoiThan !== -1 ? cungCanThoiThan : cungPhuDau;
   const x64 = isDuong ? modWrap(cuc + tra - 1, 9) : modWrap(1 + cuc - tra, 9);
   const x66Raw = modWrap(soCanThoiThan_B + x64 - 1, 9);
 
-  // Bước đặc lệ cuối (SPEC 5B, verify qua LibreOffice): nếu X65/X66 = 5 (Trung cung), đổi
-  // thành 2 (Khôn) — Trung cung mượn thuộc tính Khôn, không tự có Trực Phù/Trực Sử riêng.
+  // Bước đặc lệ cuối: nếu X65/X66 = 5 (Trung cung), đổi thành 2 (Khôn) — Trung cung mượn thuộc
+  // tính Khôn, không tự có Trực Phù/Trực Sử riêng.
   const x65 = x65Raw === 5 ? 2 : x65Raw;
   const x66 = x66Raw === 5 ? 2 : x66Raw;
 
