@@ -1,0 +1,50 @@
+import type { APIRoute } from "astro";
+import { calculateNgayKhaiTruongCaoCap } from "@thien-anh/trachnhat-engine";
+import { taoDonCongCu } from "../../../../lib/payments/checkout-cong-cu";
+import { docInput, jsonResponse, TOOL_SLUG } from "./_chung";
+import { checkRateLimit } from "../../../../lib/rate-limit";
+
+export const prerender = false;
+
+// Tạo đơn Ngày Khai Trương Cao Cấp (499.000đ). KHÔNG bắt đăng nhập — orderCode làm "vé".
+export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
+  const limited = checkRateLimit({ request, clientAddress }, { key: "checkout-khai-truong-cc", max: 10, windowMs: 60_000 });
+  if (limited) return limited;
+
+  const body = await request.json().catch(() => null);
+  const doc = docInput(body);
+  if (!doc.ok) return jsonResponse({ ok: false, error: doc.error }, 400);
+
+  const b = (body ?? {}) as Record<string, unknown>;
+  const customerName = locals.user?.name ?? (typeof b.customerName === "string" ? b.customerName.trim() : "");
+  const customerEmail =
+    locals.user?.email ??
+    (typeof b.customerEmail === "string" && b.customerEmail.trim() ? b.customerEmail.trim() : null);
+  const customerPhone = typeof b.customerPhone === "string" ? b.customerPhone.trim() : "";
+  if (!customerName || !customerPhone) {
+    return jsonResponse({ ok: false, error: "Vui lòng nhập đầy đủ họ tên và số điện thoại liên hệ." }, 400);
+  }
+
+  // "Tính thử" trước khi tạo đơn — không thu tiền cho input không chạy được.
+  try {
+    calculateNgayKhaiTruongCaoCap(doc.input);
+  } catch (err) {
+    return jsonResponse({ ok: false, error: err instanceof Error ? err.message : "Dữ liệu không hợp lệ." }, 400);
+  }
+
+  try {
+    const kq = await taoDonCongCu({
+      toolSlug: TOOL_SLUG,
+      laQuanTri: locals.user?.isAdmin === true,
+      toolInput: doc.input,
+      userId: locals.user?.id ?? null,
+      customerName,
+      customerPhone,
+      customerEmail,
+      maKhuyenMai: typeof b.maKhuyenMai === "string" ? b.maKhuyenMai : "",
+    });
+    return jsonResponse(kq, kq.ok ? 200 : 400);
+  } catch (err) {
+    return jsonResponse({ ok: false, error: err instanceof Error ? err.message : "Không tạo được đơn hàng." }, 400);
+  }
+};

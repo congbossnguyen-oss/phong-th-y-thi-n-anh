@@ -15,6 +15,7 @@ export const TEN_CONG_CU_HIEN_THI: Record<string, string> = {
   "ngay-cuoi-hoi": "Xem Ngày Cưới Hỏi Trọn Gói",
   "nhan-chuc": "Chọn Ngày Giờ Nhận Chức",
   "dat-ten-cho-con": "Đặt Tên Cho Con (Việt Danh Học)",
+  "ngay-khai-truong-cao-cap": "Ngày Khai Trương Cao Cấp (Bát Tự mệnh chủ)",
   "dinh-huong-nghe-nghiep": "Định Hướng Nghề Nghiệp (Bát Tự × Tử Vi)",
 };
 

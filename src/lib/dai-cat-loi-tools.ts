@@ -194,4 +194,11 @@ export const paidTools: PaidTool[] = [
     desc: "Tìm ngày & giờ tốt để nhận chức, nhậm chức, bổ nhiệm — lọc hung sát trước (Kim Thần, Sát Chủ, Thọ Tử, Lục Xung tuổi), ưu tiên công danh theo 28 Tú, Thập Nhị Trực và lớp Thập Thần Chính Quan.",
     priceLabel: "499.000đ / lượt",
   },
+  {
+    href: "/dai-cat-loi/ngay-khai-truong-cao-cap",
+    icon: "🏪",
+    title: "Chọn Ngày Khai Trương Cao Cấp (Bát Tự Mệnh Chủ)",
+    desc: "Bản nâng cấp của Khai Trương thường: giữ nguyên điểm nền rồi chồng thêm lớp Bát Tự mệnh chủ — Thập Thần hợp cầu tài (Thê Tài/Thực Thương), xét cả Tứ Trụ (Nhật Chi, Tam Hình/Lục Hại) và Dụng Thần theo vượng suy (khi có giờ sinh).",
+    priceLabel: "499.000đ / lượt",
+  },
 ];

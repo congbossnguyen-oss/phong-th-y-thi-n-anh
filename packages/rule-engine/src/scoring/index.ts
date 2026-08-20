@@ -9,6 +9,7 @@ export * from "./ngayKhaiTruong.js";
 export * from "./ngayKyHopDong.js";
 // Bản cao cấp (dịch vụ thu phí) — tách hoàn toàn khỏi bản miễn phí ở trên, xem chú thích đầu file.
 export * from "./kyHopDongCaoCap.js";
+export * from "./ngayKhaiTruongCaoCap.js";
 export * from "./ngayDaiCatCaNhan.js";
 export * from "./chonNgayGiaoDich.js";
 export * from "./ngayLeViengMo.js";

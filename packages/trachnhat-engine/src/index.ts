@@ -68,6 +68,8 @@ export type { VanMayTrongNgayInput, VanMayTrongNgayResult, VanMayRangeInput, Van
 export { calculateVanMayTrongNgay, calculateVanMayRange };
 export type { NgayKhaiTruongRangeInput, NgayKhaiTruongRangeResult, NgayKhaiTruongNgay } from "./processing/ngayKhaiTruong.js";
 export { calculateNgayKhaiTruongRange };
+export type { NgayKhaiTruongCaoCapInput, NgayKhaiTruongCaoCapResult, NgayKhaiTruongCaoCapNgay } from "./processing/ngayKhaiTruongCaoCap.js";
+export { calculateNgayKhaiTruongCaoCap } from "./processing/ngayKhaiTruongCaoCap.js";
 export type { NgayKyHopDongRangeInput, NgayKyHopDongRangeResult, NgayKyHopDongNgay } from "./processing/ngayKyHopDong.js";
 // Bản cao cấp (dịch vụ thu phí) — engine riêng, không dùng chung công thức với bản miễn phí ở trên.
 export {
