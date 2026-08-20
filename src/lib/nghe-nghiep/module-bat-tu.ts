@@ -22,6 +22,7 @@ import {
 } from "./config";
 
 const round2 = (n: number): number => Math.round(n * 100) / 100;
+const NGU_HANH_VI: Record<string, string> = { kim: "Kim", moc: "Mộc", thuy: "Thủy", hoa: "Hỏa", tho: "Thổ" };
 
 /** Nguồn dữ liệu của một bước: Manh Phái (chính) hay dự phòng Thập Thần. */
 export type NguonNghe = "manh_phai" | "thap_than" | "none";
@@ -67,7 +68,7 @@ export function tinhCareerVector(profile: BatTuProfile, career: CareerMappingCon
         insufficient: false,
         vector,
         nguon: "manh_phai",
-        detail: `Từ cơ chế Manh Phái "${mech.label}" (${cauTruc}) × hệ số hiệu suất ${heSo} (${profile.manh_phai.hieu_suat.co_che}/${profile.manh_phai.hieu_suat.muc}).`,
+        detail: `Từ cơ chế Manh Phái "${mech.label}", với hiệu suất Tố Công ở mức ${profile.manh_phai.hieu_suat.muc === "cao" ? "cao" : profile.manh_phai.hieu_suat.muc === "trung_binh" ? "trung bình" : profile.manh_phai.hieu_suat.muc === "thap" ? "thấp" : "chưa xác định"}.`,
       };
     }
   }
@@ -175,8 +176,8 @@ export function tinhDiemNganh(
   const mech = cauTruc !== "insufficient_data" ? domain.mechanisms[cauTruc] : null;
   const dungThanEntry = batTuNganh.nguu_hanh_to_domain[dungThan];
   const hyThanEntry = batTuNganh.nguu_hanh_to_domain[hyThan];
-  if (!dungThanEntry) return { ...empty, detail: `Dụng Thần "${dungThan}" không có trong bat_tu_nganh_ngu_hanh.json.` };
-  if (!hyThanEntry) return { ...empty, detail: `Hỷ Thần "${hyThan}" không có trong bat_tu_nganh_ngu_hanh.json.` };
+  if (!dungThanEntry) return { ...empty, detail: `Chưa tra được dữ liệu ngành cho Dụng Thần "${NGU_HANH_VI[dungThan] ?? dungThan}".` };
+  if (!hyThanEntry) return { ...empty, detail: `Chưa tra được dữ liệu ngành cho Hỷ Thần "${NGU_HANH_VI[hyThan] ?? hyThan}".` };
 
   const nguon: NguonNghe = mech ? "manh_phai" : "thap_than";
   const scores = {} as Record<DomainKey, number>;
@@ -222,8 +223,8 @@ export function tinhDiemNganh(
     insufficient: false,
     nguon,
     detail: mech
-      ? `domain_score[d] = mechanisms["${cauTruc}"].domains[d] + nguu_hanh["${dungThan}"]×1.0 + nguu_hanh["${hyThan}"]×0.5`
-      : `Dự phòng (cơ chế Manh Phái chưa xác định): domain_score[d] = nguu_hanh["${dungThan}"]×1.0 + nguu_hanh["${hyThan}"]×0.5`,
+      ? `Điểm ngành tính từ cơ chế Manh Phái "${mech.label}", cộng thêm ảnh hưởng của Dụng Thần ${NGU_HANH_VI[dungThan] ?? dungThan} và Hỷ Thần ${NGU_HANH_VI[hyThan] ?? hyThan}.`
+      : `Cơ chế Manh Phái chưa đủ căn cứ — điểm ngành tính dự phòng từ Dụng Thần ${NGU_HANH_VI[dungThan] ?? dungThan} và Hỷ Thần ${NGU_HANH_VI[hyThan] ?? hyThan}.`,
     scores,
     priority: buildBucket(priorityRaw),
     suitable: buildBucket(suitableRaw),
@@ -297,7 +298,7 @@ export function tinhModuleNgheBatTu(profile: BatTuProfile): ModuleNgheBatTuResul
   const careerPath = tinhCareerPath(profile);
 
   const warnings = [...profile.warnings];
-  if (careerVector.insufficient) warnings.push(`Career Vector: ${careerVector.detail}`);
+  if (careerVector.insufficient) warnings.push(`5 trục năng lực: ${careerVector.detail}`);
   if (axis.insufficient) warnings.push(`Trục Quan Lộc↔Kinh Doanh: ${axis.detail}`);
   if (domainScore.insufficient) warnings.push(`Điểm ngành: ${domainScore.detail}`);
 

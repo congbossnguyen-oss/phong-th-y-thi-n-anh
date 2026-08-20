@@ -112,11 +112,18 @@ export async function getTuViProfile(input: CastTuViInput): Promise<TuViProfile>
       thien_di: o.danh_gia_cung.thien_di as TuViProfile["danh_gia_cung"]["thien_di"],
       phuc_duc: o.danh_gia_cung.phuc_duc as TuViProfile["danh_gia_cung"]["phuc_duc"],
     },
-    dai_han: facts.daiHan.map((dh, i) => ({
-      ...dh,
-      chuDe: o.dai_han[i]?.chuDe ?? "insufficient_data",
-      mucThuan: (o.dai_han[i]?.mucThuan ?? "insufficient_data") as TuViProfile["dai_han"][number]["mucThuan"],
-    })),
+    // AI để trống 1 Đại Hạn nào đó → suy dự phòng theo mốc tuổi (giống nền sơ bộ), không để timeline
+    // hiện "đang cập nhật" tràn lan.
+    dai_han: facts.daiHan.map((dh, i) => {
+      const oChuDe = o.dai_han[i]?.chuDe;
+      const oMucThuan = o.dai_han[i]?.mucThuan;
+      const chuDeDuPhong = dh.tuTuoi < 22 ? "hoc_tap" : dh.tuTuoi < 52 ? "su_nghiep" : dh.tuTuoi < 62 ? "tai_van" : "suc_khoe";
+      return {
+        ...dh,
+        chuDe: oChuDe && oChuDe !== "insufficient_data" ? oChuDe : chuDeDuPhong,
+        mucThuan: (oMucThuan && oMucThuan !== "insufficient_data" ? oMucThuan : "trung_binh") as TuViProfile["dai_han"][number]["mucThuan"],
+      };
+    }),
     warnings: o.warnings,
     ai_luan_giai_thanh_cong: true,
     model: o.model,

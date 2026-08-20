@@ -13,7 +13,7 @@ import { castBatTuFacts, type CastBatTuInput } from "./cast-bat-tu";
 import { buildBatTuSystemPrompt, buildBatTuUserPrompt } from "./prompt";
 import { callBatTuLlm, isAiConfigured } from "./llm";
 import { hashLaSo, getCachedProfile, setCachedProfile } from "./cache";
-import { chayEngineBatTu, type EngineBatTu } from "./bat-tu-engine-adapter";
+import { chayEngineBatTu, suyDaiVanDuPhong, type EngineBatTu } from "./bat-tu-engine-adapter";
 import type { BatTuProfile, BatTuLuanGiai, ManhPhaiLuanGiai, DaiVanLuanGiai } from "./types";
 
 export type { BatTuProfile, BatTuFacts, BatTuLuanGiai, ManhPhaiLuanGiai, DaiVanLuanGiai, Gender, SourceTag } from "./types";
@@ -92,15 +92,20 @@ export async function getBatTuProfile(input: CastBatTuInput): Promise<BatTuProfi
       ...batTuEngineFields,
     },
     manh_phai: INSUFFICIENT_MANH_PHAI,
-    dai_van: facts.daiVan.map((dv) => ({
-      tuTuoi: dv.tuTuoi,
-      denTuoi: dv.denTuoi,
-      can_chi: `${dv.can} ${dv.chi}`,
-      ngu_hanh: dv.canNguHanh,
-      dungHy: "insufficient_data",
-      chuDe: "insufficient_data",
-      mucThuan: "insufficient_data",
-    })),
+    dai_van: facts.daiVan.map((dv) => {
+      // Có engine (Dụng/Hỷ/Kỵ/Cừu dứt khoát) → suy luôn dungHy/chuDe/mucThuan mỗi Đại Vận, không
+      // chờ AI — timeline không bao giờ trống toàn bộ, kể cả khi chưa cấu hình AI.
+      const dp = engine ? suyDaiVanDuPhong(dv.canNguHanh, engine.dung_than, engine.hy_than, engine.ky_than, engine.cuu_than, dv.tuTuoi) : null;
+      return {
+        tuTuoi: dv.tuTuoi,
+        denTuoi: dv.denTuoi,
+        can_chi: `${dv.can} ${dv.chi}`,
+        ngu_hanh: dv.canNguHanh,
+        dungHy: dp?.dungHy ?? "insufficient_data",
+        chuDe: dp?.chuDe ?? "insufficient_data",
+        mucThuan: dp?.mucThuan ?? "insufficient_data",
+      };
+    }),
     warnings: [...facts.canhBaoKyThuat],
     ai_luan_giai_thanh_cong: false,
     generatedAt,
@@ -148,15 +153,23 @@ export async function getBatTuProfile(input: CastBatTuInput): Promise<BatTuProfi
       hieu_suat: { ...output.manh_phai.hieu_suat, he_so: heSo },
       source: "luan-giai-bat-tu-manh-phai",
     },
-    dai_van: facts.daiVan.map((dv, i) => ({
-      tuTuoi: dv.tuTuoi,
-      denTuoi: dv.denTuoi,
-      can_chi: `${dv.can} ${dv.chi}`,
-      ngu_hanh: dv.canNguHanh,
-      dungHy: (output.dai_van[i]?.dungHy ?? "insufficient_data") as DaiVanLuanGiai["dungHy"],
-      chuDe: output.dai_van[i]?.chuDe ?? "insufficient_data",
-      mucThuan: (output.dai_van[i]?.mucThuan ?? "insufficient_data") as DaiVanLuanGiai["mucThuan"],
-    })),
+    dai_van: facts.daiVan.map((dv, i) => {
+      const o = output.dai_van[i];
+      // AI để trống 1 Đại Vận nào đó → suy dự phòng bằng công thức (Ngũ Hành vận so với Dụng/Hỷ/Kỵ/Cừu
+      // đã có), timeline không bao giờ hiện "đang cập nhật" tràn lan.
+      const dp = (!o || o.dungHy === "insufficient_data" || o.chuDe === "insufficient_data" || o.mucThuan === "insufficient_data") && engine
+        ? suyDaiVanDuPhong(dv.canNguHanh, engine.dung_than, engine.hy_than, engine.ky_than, engine.cuu_than, dv.tuTuoi)
+        : null;
+      return {
+        tuTuoi: dv.tuTuoi,
+        denTuoi: dv.denTuoi,
+        can_chi: `${dv.can} ${dv.chi}`,
+        ngu_hanh: dv.canNguHanh,
+        dungHy: (o?.dungHy !== "insufficient_data" && o?.dungHy ? o.dungHy : dp?.dungHy ?? "insufficient_data") as DaiVanLuanGiai["dungHy"],
+        chuDe: (o?.chuDe !== "insufficient_data" && o?.chuDe ? o.chuDe : dp?.chuDe ?? "insufficient_data"),
+        mucThuan: (o?.mucThuan !== "insufficient_data" && o?.mucThuan ? o.mucThuan : dp?.mucThuan ?? "insufficient_data") as DaiVanLuanGiai["mucThuan"],
+      };
+    }),
     warnings: [...facts.canhBaoKyThuat, ...output.warnings],
     ai_luan_giai_thanh_cong: true,
     model: output.model,

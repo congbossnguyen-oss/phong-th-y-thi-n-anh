@@ -23,11 +23,16 @@ export const NH: Record<string, { mau: string; label: string }> = {
 
 const NGU_HANH_LABEL: Record<string, string> = { kim: "Kim", moc: "Mộc", thuy: "Thủy", hoa: "Hỏa", tho: "Thổ", insufficient_data: "—" };
 
-/** Không bao giờ để lọt token kỹ thuật ("insufficient_data", tên field/file) ra giao diện khách. */
+/** Không bao giờ để lọt token kỹ thuật ("insufficient_data", tên field/file, mã snake_case) ra giao
+ *  diện khách — chặn cả trường hợp AI lỡ trích dẫn tên tài liệu nguồn trong lời luận tự do. */
 const sach = (s: string): string =>
   s
     .replace(/insufficient_data/g, "đang cập nhật")
     .replace(/\((?:bat_tu|manh_phai|career_mapping|domain_mapping|bat_tu_nganh_ngu_hanh)[^)]*\)/g, "")
+    .replace(/[\w-]+\.(md|json|py|ts)\b/gi, "") // tên file tài liệu/mã nguồn AI lỡ trích dẫn
+    .replace(/\(\s*[a-z][a-z0-9]*(?:_[a-z0-9]+)+(?:\s*,\s*[a-z][a-z0-9]*(?:_[a-z0-9]+)+)*\s*\)/g, "") // (snake_case, snake_case...)
+    .replace(/\s+([.,;:])/g, "$1")
+    .replace(/\(\s*\)/g, "")
     .replace(/\s{2,}/g, " ")
     .trim();
 const VUONG_SUY_LABEL: Record<string, string> = {
@@ -41,6 +46,14 @@ const CHI_NGU_HANH: Record<string, string> = {
   "Tý": "thuy", "Sửu": "tho", "Dần": "moc", "Mão": "moc", "Thìn": "tho", "Tỵ": "hoa",
   "Ngọ": "hoa", "Mùi": "tho", "Thân": "kim", "Dậu": "kim", "Tuất": "tho", "Hợi": "thuy",
 };
+// Can → Ngũ Hành (để tô bảng Tứ Trụ + tính % phân bố Ngũ Hành).
+const CAN_NGU_HANH: Record<string, string> = {
+  "Giáp": "moc", "Ất": "moc", "Bính": "hoa", "Đinh": "hoa", "Mậu": "tho",
+  "Kỷ": "tho", "Canh": "kim", "Tân": "kim", "Nhâm": "thuy", "Quý": "thuy",
+};
+
+export interface TruPillarVM { nhan: string; can: string; chi: string; canMau: string; chiMau: string }
+export interface NguHanhPhanBoVM { hanh: string; label: string; mau: string; phanTram: number }
 
 const DUNG_HY_PILL: Record<string, { bg: string; label: string }> = {
   dung: { bg: "#166534", label: "Dụng" }, hy: { bg: "#22A75A", label: "Hỷ" },
@@ -74,6 +87,51 @@ export interface DashboardVM {
   timelineLegend: "ngu_hanh_can" | "ngu_hanh_chi";
   path: { label: string; tuTuoi: number; denTuoi: number }[];
   why: { label: string; value: string }[];
+  /** Chỉ có ở hệ Bát Tự — bảng Tứ Trụ (Năm/Tháng/Ngày/Giờ) + % phân bố Ngũ Hành trên 8 chữ Can Chi. */
+  ngaySinhDuongLich?: string;
+  tuTru?: TruPillarVM[];
+  nguHanhPhanBo?: NguHanhPhanBoVM[];
+}
+
+/** "1996-03-14T09:20" → "14/03/1996 09:20". */
+function formatNgaySinh(iso: string): string {
+  const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/);
+  if (!m) return iso;
+  const [, y, mo, d, h, mi] = m;
+  return `${d}/${mo}/${y} ${h}:${mi}`;
+}
+
+/** % phân bố Ngũ Hành trên 8 chữ Can Chi của Tứ Trụ — đếm đơn giản, mỗi chữ 1 phiếu. */
+function tinhNguHanhPhanBo(tuTru: BatTuProfile["facts"]["tuTru"]): NguHanhPhanBoVM[] {
+  const dem: Record<string, number> = { kim: 0, moc: 0, thuy: 0, hoa: 0, tho: 0 };
+  for (const tru of [tuTru.nam, tuTru.thang, tuTru.ngay, tuTru.gio]) {
+    const hCan = CAN_NGU_HANH[tru.can];
+    const hChi = CHI_NGU_HANH[tru.chi];
+    if (hCan) dem[hCan]!++;
+    if (hChi) dem[hChi]!++;
+  }
+  const tong = Object.values(dem).reduce((s, n) => s + n, 0) || 1;
+  const hanhs: (keyof typeof dem)[] = ["kim", "moc", "thuy", "hoa", "tho"];
+  const raw = hanhs.map((h) => ({ h, pct: Math.round((dem[h]! / tong) * 100) }));
+  // Bù lệch làm tròn để tổng luôn = 100 — cộng/trừ phần chênh vào hành có số lượng lớn nhất.
+  const lech = 100 - raw.reduce((s, r) => s + r.pct, 0);
+  if (lech !== 0) {
+    const idxMax = raw.reduce((best, r, i) => (dem[r.h]! > dem[raw[best]!.h]! ? i : best), 0);
+    raw[idxMax]!.pct += lech;
+  }
+  return raw.map((r) => ({ hanh: r.h, label: NGU_HANH_LABEL[r.h], mau: NH[r.h].mau, phanTram: r.pct }));
+}
+
+function tinhTuTruVM(tuTru: BatTuProfile["facts"]["tuTru"]): TruPillarVM[] {
+  const nhan = [
+    { nhan: "Năm", p: tuTru.nam }, { nhan: "Tháng", p: tuTru.thang },
+    { nhan: "Ngày", p: tuTru.ngay }, { nhan: "Giờ", p: tuTru.gio },
+  ];
+  return nhan.map(({ nhan, p }) => ({
+    nhan, can: p.can, chi: p.chi,
+    canMau: NH[CAN_NGU_HANH[p.can] ?? "insufficient_data"]?.mau ?? NH.insufficient_data.mau,
+    chiMau: NH[CHI_NGU_HANH[p.chi] ?? "insufficient_data"]?.mau ?? NH.insufficient_data.mau,
+  }));
 }
 
 function axisKetLuan(axis: number | null): string {
@@ -127,6 +185,9 @@ export function buildBatTuVM(profile: BatTuProfile): { vm: DashboardVM; result: 
       { label: "Cơ chế Manh Phái", value: sach(`${coCheLabel} — ${result.careerVector.detail}`) },
       { label: "Công thức điểm ngành", value: sach(result.domainScore.detail) },
     ].filter((w) => w.value && w.value !== "đang cập nhật"),
+    ngaySinhDuongLich: formatNgaySinh(profile.meta.duong_lich),
+    tuTru: tinhTuTruVM(profile.facts.tuTru),
+    nguHanhPhanBo: tinhNguHanhPhanBo(profile.facts.tuTru),
   };
   return { vm, result };
 }

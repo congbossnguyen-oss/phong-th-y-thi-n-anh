@@ -23,6 +23,7 @@ export type Truc = (typeof TRUC_5)[number];
 
 // Hệ số đắc/hãm cho ĐỘ SÁNG bộ sao cách (menh_cach.do_sang) — tham số nháp.
 const DO_SANG_FACTOR: Record<string, number> = { mieu_vuong: 1.0, binh: 0.85, ham: 0.6 };
+const DO_SANG_VI: Record<string, string> = { mieu_vuong: "Miếu/Vượng", binh: "Bình hòa", ham: "Hãm" };
 // Hệ số đắc/hãm cho TỪNG chính tinh khi cộng nudge theo tu_vi_sao_nganh — tham số nháp.
 const DAC_HAM_FACTOR: Record<string, number> = { mieu: 1.0, vuong: 1.0, dac: 0.9, binh: 0.75, ham: 0.5 };
 
@@ -36,10 +37,10 @@ export function tinhCareerVectorTuVi(profile: TuViProfile): TuViCareerVectorResu
   const { careerTV } = loadTuViConfig();
   const mc = profile.menh_cach;
   if (mc.chinh === "insufficient_data") {
-    return { insufficient: true, vector: null, detail: "Chưa xác định archetype mệnh cách (menh_cach.chinh) — cần AI luận cách cục." };
+    return { insufficient: true, vector: null, detail: "Chưa xác định được mệnh cách — cần luận thêm cách cục." };
   }
   const arche = careerTV.tam_hop_archetype[mc.chinh];
-  if (!arche) return { insufficient: true, vector: null, detail: `Archetype "${mc.chinh}" không có trong career_mapping.json.tam_hop_archetype.` };
+  if (!arche) return { insufficient: true, vector: null, detail: "Chưa tra được dữ liệu ngành cho mệnh cách này." };
 
   const doSang = mc.do_sang === "insufficient_data" ? 1.0 : (DO_SANG_FACTOR[mc.do_sang] ?? 1.0);
   const tuanTriet = profile.facts.tuanTrietCung.length > 0 ? 0.8 : 1.0;
@@ -53,7 +54,7 @@ export function tinhCareerVectorTuVi(profile: TuViProfile): TuViCareerVectorResu
   return {
     insufficient: false,
     vector,
-    detail: `Archetype “${arche.label}”${mc.phu.length ? ` + phụ cách (${mc.phu.length})` : ""} × độ sáng ${mc.do_sang}${tuanTriet < 1 ? " × Tuần/Triệt 0.8" : ""}.`,
+    detail: `Từ mệnh cách "${arche.label}"${mc.phu.length ? ` kèm ${mc.phu.length} phụ cách` : ""}${mc.do_sang !== "insufficient_data" ? `, độ sáng ${DO_SANG_VI[mc.do_sang] ?? mc.do_sang}` : ""}${tuanTriet < 1 ? ", có Tuần/Triệt nên giảm nhẹ" : ""}.`,
   };
 }
 
@@ -63,13 +64,15 @@ export interface TuViAxisResult {
   detail: string;
 }
 
-// Nudge archetype cho trục: organizer/specialist kéo về Quan Lộc (âm), pioneer kéo Kinh Doanh (dương).
+// Độ nghiêng theo mệnh cách: tổ chức/chuyên môn kéo về Quan Lộc (âm), tiên phong kéo Kinh Doanh (dương).
 const ARCHE_AXIS_NUDGE: Record<string, number> = { organizer: -30, specialist: -20, pioneer: 30 };
+const ARCHE_KEY_VI: Record<string, string> = { organizer: "thiên tổ chức", specialist: "thiên chuyên môn", pioneer: "thiên tiên phong/kinh doanh" };
+const CAT_HUNG_VI: Record<string, string> = { cat: "cát", binh: "bình hòa", hung: "hung" };
 
 export function tinhTrucTuVi(profile: TuViProfile): TuViAxisResult {
   const { careerTV } = loadTuViConfig();
   const mc = profile.menh_cach;
-  if (mc.chinh === "insufficient_data") return { insufficient: true, axis: null, detail: "Chưa xác định archetype mệnh cách." };
+  if (mc.chinh === "insufficient_data") return { insufficient: true, axis: null, detail: "Chưa xác định được mệnh cách." };
   const archeKey = careerTV.tam_hop_archetype[mc.chinh]?.archetype_key;
   let axis = archeKey ? (ARCHE_AXIS_NUDGE[archeKey] ?? 0) : 0;
 
@@ -79,10 +82,10 @@ export function tinhTrucTuVi(profile: TuViProfile): TuViAxisResult {
     const diem = (c: string) => (c === "cat" ? 1 : c === "hung" ? -1 : 0);
     const chenh = diem(dg.tai_bach) - diem(dg.quan_loc); // Tài mạnh hơn Quan → kéo Kinh Doanh (dương)
     axis += chenh * 20;
-    ghiChuDg = `Quan Lộc ${dg.quan_loc} vs Tài Bạch ${dg.tai_bach}`;
+    ghiChuDg = `Quan Lộc ${CAT_HUNG_VI[dg.quan_loc] ?? dg.quan_loc}, Tài Bạch ${CAT_HUNG_VI[dg.tai_bach] ?? dg.tai_bach}`;
   }
   axis = Math.max(-100, Math.min(100, axis));
-  return { insufficient: false, axis, detail: `Nudge archetype (${archeKey ?? "?"}) + so cát/hung cung (${ghiChuDg}).` };
+  return { insufficient: false, axis, detail: `Mệnh cách ${archeKey ? ARCHE_KEY_VI[archeKey] ?? archeKey : "chưa rõ hướng"}, kết hợp đánh giá cung (${ghiChuDg}).` };
 }
 
 export interface TuViDomainItem {
@@ -141,13 +144,13 @@ export function tinhDiemNganhTuVi(profile: TuViProfile): TuViDomainResult {
       if (pc) for (const d of DOMAIN_KEYS) scores[d] += pc.domains[d] ?? 0;
     }
   } else {
-    warnings.push("Chưa có archetype mệnh cách (cần AI) — điểm ngành mới tính từ lớp chính tinh Quan Lộc/Mệnh, chưa cộng lớp archetype.");
+    warnings.push("Chưa xác định được mệnh cách nền — điểm ngành mới tính từ chính tinh Quan Lộc/Mệnh, chưa cộng thêm phần mệnh cách.");
   }
   for (const d of DOMAIN_KEYS) scores[d] = round2(scores[d]);
 
   // Nếu KHÔNG có sao nào ở cả Quan Lộc/Mệnh/Di và cũng không có archetype → thực sự không đủ dữ liệu.
   const coTinHieu = coArchetype || profile.facts.sao_theo_cung.quan_loc.length > 0 || profile.facts.sao_theo_cung.menh.length > 0;
-  if (!coTinHieu) return { ...empty, detail: "Không đủ tín hiệu (không có chính tinh Quan Lộc/Mệnh và chưa có archetype)." };
+  if (!coTinHieu) return { ...empty, detail: "Chưa đủ dữ liệu để gợi ý ngành (không có chính tinh Quan Lộc/Mệnh và chưa xác định mệnh cách)." };
 
   const th = domain.output_rules.recommended_initial_thresholds;
   const sortedAll = [...DOMAIN_KEYS].map((d) => ({ domain: d, score: scores[d] })).sort((a, b) => b.score - a.score);
@@ -177,7 +180,7 @@ export function tinhDiemNganhTuVi(profile: TuViProfile): TuViDomainResult {
 
   return {
     insufficient: false,
-    detail: `Điểm ngành Tử Vi = [archetype base${coArchetype ? "" : " (chưa có)"}] + chính tinh Quan Lộc ×1.0 + chính tinh Mệnh ×0.7 (điều chỉnh theo Đắc/Hãm).`,
+    detail: `Điểm ngành tính từ chính tinh cung Quan Lộc và Mệnh (có điều chỉnh theo Đắc/Hãm)${coArchetype ? ", cộng thêm phần mệnh cách nền" : " — mệnh cách nền chưa xác định nên chưa cộng thêm"}.`,
     scores,
     priority: buildBucket(priorityRaw),
     suitable: buildBucket(suitableRaw),
@@ -218,7 +221,7 @@ export function tinhModuleNgheTuVi(profile: TuViProfile): ModuleNgheTuViResult {
   const careerPath = tinhCareerPathTuVi(profile);
 
   const warnings = [...profile.warnings, ...domainScore.warnings];
-  if (careerVector.insufficient) warnings.push(`Career Vector (Tử Vi): ${careerVector.detail}`);
+  if (careerVector.insufficient) warnings.push(`5 trục năng lực (Tử Vi): ${careerVector.detail}`);
   if (axis.insufficient) warnings.push(`Trục Quan Lộc↔Kinh Doanh (Tử Vi): ${axis.detail}`);
 
   return { careerVector, axis, domainScore, careerPath, warnings };

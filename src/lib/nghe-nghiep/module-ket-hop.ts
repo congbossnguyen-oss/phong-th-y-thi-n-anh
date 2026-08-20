@@ -80,7 +80,7 @@ export function tinhKetHop(batTu: ModuleNgheBatTuResult, tuVi: ModuleNgheTuViRes
 
   if (thieuVec || thieuAxis || thieuNganh) {
     const ly: string[] = [];
-    if (thieuVec) ly.push("thiếu Career Vector 1 trong 2 hệ");
+    if (thieuVec) ly.push("thiếu 5 trục năng lực ở 1 trong 2 hệ");
     if (thieuAxis) ly.push("thiếu trục Quan Lộc↔Kinh Doanh");
     if (thieuNganh) ly.push("thiếu điểm ngành");
     return {
@@ -96,7 +96,7 @@ export function tinhKetHop(batTu: ModuleNgheBatTuResult, tuVi: ModuleNgheTuViRes
   const a = TRUC_5.map((t) => btVec![t as keyof CareerVector5Truc]);
   const b = TRUC_5.map((t) => tvVec![t]);
   const trung5Truc = Math.round(cosineSimilarity(a, b) * 100);
-  chiTiet.push(`Trùng 5 trục (cosine) = ${trung5Truc}%`);
+  chiTiet.push(`Trùng 5 trục năng lực = ${trung5Truc}%`);
 
   // b) Trùng hướng Quan Lộc ↔ Kinh Doanh
   const sameSide = Math.sign(btAxis!) === Math.sign(tvAxis!) || btAxis === 0 || tvAxis === 0 ? 100 : 0;
@@ -111,7 +111,7 @@ export function tinhKetHop(batTu: ModuleNgheBatTuResult, tuVi: ModuleNgheTuViRes
   const giao = tvTop.filter((d) => setBt.has(d));
   const hop = new Set([...btTop, ...tvTop]);
   const trungNganh = hop.size === 0 ? 0 : Math.round((giao.length / hop.size) * 100);
-  chiTiet.push(`Trùng ngành (Jaccard Top-6) = ${giao.length}/${hop.size} = ${trungNganh}%`);
+  chiTiet.push(`Trùng ngành (trong Top-6 mỗi hệ) = ${giao.length}/${hop.size} ngành chung = ${trungNganh}%`);
 
   const agreement = Math.round(
     AGREEMENT_WEIGHTS.truc * trung5Truc + AGREEMENT_WEIGHTS.huong * trungHuong + AGREEMENT_WEIGHTS.nganh * trungNganh,

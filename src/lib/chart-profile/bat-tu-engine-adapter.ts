@@ -40,6 +40,26 @@ function thapThanNoiBat(facts: BatTuFacts): string[] {
   return [...dem.entries()].sort((a, b) => b[1] - a[1]).slice(0, 4).map(([k]) => k);
 }
 
+/**
+ * Dự phòng cho 1 Đại Vận khi AI để trống dungHy/chuDe/mucThuan — tính DỨT KHOÁT bằng công thức, y hệt
+ * tinh thần bat-tu-engine: so Ngũ Hành của Đại Vận với Dụng/Hỷ/Kỵ/Cừu Thần đã có (không cần AI), và
+ * suy chủ đề theo mốc tuổi đời phổ biến. Không để trống toàn bộ timeline khi AI im lặng.
+ */
+export function suyDaiVanDuPhong(
+  canNguHanhVan: "kim" | "moc" | "thuy" | "hoa" | "tho",
+  dungThan: string, hyThan: string, kyThan: string, cuuThan: string,
+  tuTuoi: number,
+): { dungHy: "dung" | "hy" | "trung" | "ky"; chuDe: string; mucThuan: "cao" | "trung_binh" | "thap" } {
+  const dungHy: "dung" | "hy" | "trung" | "ky" =
+    canNguHanhVan === dungThan ? "dung"
+    : canNguHanhVan === hyThan ? "hy"
+    : canNguHanhVan === kyThan || canNguHanhVan === cuuThan ? "ky"
+    : "trung";
+  const mucThuan = dungHy === "dung" ? "cao" as const : dungHy === "ky" ? "thap" as const : "trung_binh" as const;
+  const chuDe = tuTuoi < 22 ? "hoc_tap" : tuTuoi < 52 ? "su_nghiep" : tuTuoi < 62 ? "tai_van" : "suc_khoe";
+  return { dungHy, chuDe, mucThuan };
+}
+
 export function chayEngineBatTu(facts: BatTuFacts): EngineBatTu {
   const tt: TuTruInput = {
     nam: { can: facts.tuTru.nam.can, chi: facts.tuTru.nam.chi },
