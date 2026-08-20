@@ -119,6 +119,7 @@ export const prerender = true;
               <span class="km-luuy-item"><span class="km-key km-key-kv">KV</span> Không Vong</span>
               <span class="km-luuy-item"><span class="km-sym">🐴</span> Mã</span>
               <span class="km-luuy-item"><span class="km-sym km-sym-mo">✝</span> Mộ</span>
+              <span class="km-luuy-item"><span class="km-key km-key-hinh">Hình</span> Kích Hình</span>
             </div>
             <div class="km-luuy-row">
               <span class="km-luuy-item"><span class="km-arr">↗</span> Môn bách</span>
@@ -466,14 +467,14 @@ export const prerender = true;
   .km-badge-ma { background: transparent; padding: 0; font-size: 0.9rem; line-height: 1; }
   .km-badge-tp { background: #c0261e; color: #fff; }
   .km-badge-ts { background: #e07b34; color: #fff; }
+  .km-badge-mo { background: transparent; padding: 0; font-size: 0.85rem; line-height: 1; color: #7a5a3a; }
+  .km-badge-hinh { background: #6b5b4b; color: #fff; }
   /* H/D/M/Y — ô đỏ chữ trắng nhỏ như app (Giờ/Ngày/Tháng/Năm) */
   .km-hdmy {
     display: inline-flex; align-items: center; justify-content: center;
     width: 0.95rem; height: 0.95rem; border-radius: 3px;
     background: #f5726a; color: #fff; font-size: 0.56rem; font-weight: 800; line-height: 1;
   }
-  /* KV ở đầu cung — badge trên dải màu, cho phép hướng co lại */
-  .km-cung-head .km-badge-kv { flex: none; }
 
   /* Mục Lưu Ý (chú giải ký hiệu) — dưới Bảng Chi Tiết, phong cách app. */
   .km-luuy { font-size: 0.92rem; color: #2a1512; }
@@ -486,6 +487,7 @@ export const prerender = true;
   }
   .km-key-kv { border-radius: 999px; background: #6b4a3a; color: #fff; }
   .km-key-red { background: #f5726a; color: #fff; box-shadow: 0 1px 2px rgba(0,0,0,.12); }
+  .km-key-hinh { background: #6b5b4b; color: #fff; font-size: 0.72rem; padding: 0 0.4rem; }
   .km-sym { font-size: 1.2rem; line-height: 1; }
   .km-sym-mo { color: #7a5a3a; font-weight: 700; }
   .km-arr { font-size: 1.35rem; font-weight: 700; color: #4a4a4a; line-height: 1; }
@@ -675,6 +677,23 @@ export const prerender = true;
     4: "ĐN Tốn", 9: "Nam Ly", 2: "TN Khôn", 3: "Đông Chấn", 5: "Trung cung",
     7: "Tây Đoài", 8: "ĐB Cấn", 1: "Bắc Khảm", 6: "TB Càn",
   };
+
+  // NHẬP MỘ (Kỳ Môn — KHÔNG phải tứ mộ khố Bát Tự): can đóng tại đúng cung dưới đây thì nhập mộ.
+  // Nguồn: bảng gốc Công cung cấp. Áp cho cả THIÊN BÀN can lẫn ĐỊA BÀN can (can nào "đóng" ở cung đó).
+  const NHAP_MO: Record<string, number> = {
+    "Giáp": 2, "Quý": 2, // Khôn
+    "Ất": 6, "Bính": 6, "Mậu": 6, // Càn
+    "Đinh": 8, "Kỷ": 8, "Canh": 8, // Cấn
+    "Tân": 4, "Nhâm": 4, // Tốn
+  };
+  const nhapMo = (can: string, soCung: number): boolean => NHAP_MO[can] === soCung;
+
+  // KÍCH HÌNH: can đóng tại cung → loại hình (nguồn gốc Công cung cấp, 6 dòng).
+  const KICH_HINH: Record<string, string> = {
+    "Kỷ|2": "Mùi-Tuất", "Mậu|3": "Tý-Mão", "Nhâm|4": "Thìn tự hình",
+    "Quý|8": "Dần tự hình", "Canh|8": "Dần-Thân", "Tân|9": "Ngọ tự hình",
+  };
+  const kichHinh = (can: string, soCung: number): string | undefined => KICH_HINH[`${can}|${soCung}`];
 
   // Ngũ hành của 8 Môn và 9 Cung — dùng suy mũi tên quan hệ Môn↔Cung (kiến thức nền cố định).
   const MON_NGU_HANH: Record<string, string> = {
@@ -883,11 +902,18 @@ export const prerender = true;
       if (!c) return "";
       // KV đưa lên đầu cung (cạnh hướng) như app.
       const kvHead = c.KV ? '<span class="km-badge km-badge-kv">KV</span>' : "";
-      // Nhãn giữa (cạnh số): Mã / Trực Phù / Trực Sử + H/D/M/Y.
+      // Nhãn giữa (cạnh số): Mã / Trực Phù / Trực Sử / Mộ / Hình + H/D/M/Y.
+      // Nhập Mộ, Kích Hình xét theo THIÊN BÀN CAN (can "đóng" tại cung — cùng quy ước với cách
+      // mô tả Trực Phù "đóng ở cung"). Giáp không bao giờ xuất hiện làm thienBanCan (luôn ẩn dưới
+      // Phù Đầu — xem engine.ts) nên nhánh "Giáp" của bảng Nhập Mộ sẽ không khớp trực tiếp, đúng
+      // theo quy ước hiện có của engine.
       const marksList: string[] = [];
       if (c.Ma) marksList.push('<span class="km-badge km-badge-ma" title="Mã">🐴</span>');
       if (soCung === laBan.trucPhuCung) marksList.push('<span class="km-badge km-badge-tp">Trực Phù</span>');
       if (soCung === laBan.trucSuCung) marksList.push('<span class="km-badge km-badge-ts">Trực Sử</span>');
+      if (nhapMo(c.thienBanCan, soCung)) marksList.push('<span class="km-badge km-badge-mo" title="Nhập Mộ">✝</span>');
+      const hinh = kichHinh(c.thienBanCan, soCung);
+      if (hinh) marksList.push(`<span class="km-badge km-badge-hinh" title="Kích Hình: ${hinh}">Hình</span>`);
       for (const [letter, can] of truLetters) {
         if (can && can === c.thienBanCan) marksList.push(`<span class="km-hdmy" title="${letter}">${letter}</span>`);
       }
