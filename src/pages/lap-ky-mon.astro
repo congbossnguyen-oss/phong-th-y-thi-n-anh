@@ -70,14 +70,33 @@ export const prerender = true;
 
       <!-- Kết quả -->
       <div id="km-ket-qua" class="mt-8 hidden">
-        <!-- Tứ trụ -->
+        <!-- Tứ trụ — bảng header đỏ, 2 hàng Can/Chi nền hồng (như app) -->
         <div id="km-tu-tru-wrap">
-          <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-300)">Tứ trụ</p>
-          <div class="mt-2 grid grid-cols-4 gap-2 text-center">
-            <div class="km-tru-cell"><p class="km-tru-label">Giờ</p><p id="km-tt-gio" class="km-tru-canchi"></p></div>
-            <div class="km-tru-cell"><p class="km-tru-label">Ngày</p><p id="km-tt-ngay" class="km-tru-canchi"></p></div>
-            <div class="km-tru-cell"><p class="km-tru-label">Tháng</p><p id="km-tt-thang" class="km-tru-canchi"></p></div>
-            <div class="km-tru-cell"><p class="km-tru-label">Năm</p><p id="km-tt-nam" class="km-tru-canchi"></p></div>
+          <div class="km-table-frame overflow-x-auto">
+            <table class="km-app-table km-tru-table">
+              <thead>
+                <tr>
+                  <th>Giờ <span id="km-tt-h-echo"></span></th>
+                  <th>Ngày <span id="km-tt-d-echo"></span></th>
+                  <th>Tháng <span id="km-tt-m-echo"></span></th>
+                  <th>Năm <span id="km-tt-y-echo"></span></th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td id="km-tt-gio-can"></td>
+                  <td id="km-tt-ngay-can"></td>
+                  <td id="km-tt-thang-can"></td>
+                  <td id="km-tt-nam-can"></td>
+                </tr>
+                <tr>
+                  <td id="km-tt-gio-chi"></td>
+                  <td id="km-tt-ngay-chi"></td>
+                  <td id="km-tt-thang-chi"></td>
+                  <td id="km-tt-nam-chi"></td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
         <p id="km-hoa-giap-line" class="hidden font-display text-lg font-semibold text-(--color-ink-950)"></p>
@@ -317,25 +336,17 @@ export const prerender = true;
     color: var(--color-gold-300);
   }
 
-  .km-tru-cell {
-    border-radius: var(--radius-control);
-    border: 1px solid var(--color-ivory-300);
-    background: var(--color-ivory-100);
-    padding: 0.5rem 0.25rem;
-  }
-  .km-tru-label {
-    font-size: 0.68rem;
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    color: var(--color-ink-500);
-  }
-  .km-tru-canchi {
-    margin-top: 0.15rem;
+  /* Bảng Tứ Trụ: header đỏ echo giờ/ngày/tháng/năm đã chọn; 2 hàng Can/Chi CÙNG nền hồng nhạt
+     (không xen kẽ trắng/hồng như .km-app-table mặc định), chữ to rõ. */
+  .km-tru-table thead th { font-size: 0.92rem; }
+  .km-tru-table thead th span { font-weight: 400; opacity: 0.9; }
+  .km-tru-table tbody tr,
+  .km-tru-table tbody tr:nth-child(even) { background: #fdeeed; }
+  .km-tru-table tbody td {
     font-family: var(--font-display);
     font-weight: 700;
-    font-size: 1.05rem;
-    color: var(--color-ink-950);
-    line-height: 1.2;
+    font-size: 1.35rem;
+    color: var(--color-ink-950, #1f120e);
   }
 
   /* ---- Lưới 9 cung theo phong cách app Kỳ Môn Pro: mỗi cung tô nền NGŨ HÀNH, nhãn hướng
@@ -377,6 +388,8 @@ export const prerender = true;
   .km-lbl-b { bottom: 0; left: 4px; right: 4px; height: 38px; line-height: 38px; text-align: center; }
   .km-lbl-l { left: 0; top: 4px; bottom: 4px; width: 38px; writing-mode: vertical-rl; transform: rotate(180deg); text-align: center; }
   .km-lbl-r { right: 0; top: 4px; bottom: 4px; width: 38px; writing-mode: vertical-rl; text-align: center; }
+  /* Mã (🐴) — gắn trên viền màu ngoài, cạnh nhãn địa chi (không còn trong ô trắng). */
+  .km-lbl-ma { display: inline-block; margin-left: 0.2em; font-size: 0.8rem; text-orientation: upright; }
   .km-cung > .km-badge-kv {
     position: absolute;
     top: 1px;
@@ -407,18 +420,19 @@ export const prerender = true;
     align-items: start;
     column-gap: 2px;
   }
-  .cc-can { font-size: 0.7rem; font-weight: 600; color: #3a2620; text-align: left; }
+  .cc-can { font-size: 0.72rem; font-weight: 700; color: #3a2620; text-align: left; }
+  /* Cửu Tinh (sao): chữ đậm rõ — dùng font sans thay vì serif để đọc "đậm" hơn ở cỡ nhỏ. */
   .cc-sao {
-    font-family: var(--font-display);
-    font-weight: 700;
+    font-family: var(--font-sans);
+    font-weight: 800;
     font-size: 1rem;
     color: #1f120e;
     text-align: center;
     line-height: 1;
   }
   .cc-than { font-size: 0.62rem; color: #b8322a; text-align: right; line-height: 1.05; }
-  /* Băng giữa: nhãn Mã/TP/TS/HDMY ở góc trên-trái; MŨI TÊN + SỐ CUNG ở góc dưới-phải
-     (số nằm dưới-phải, mũi tên ngay trên môn — như app). */
+  /* Băng giữa: nhãn TP/TS/Mộ/Hình ở góc trên-trái; H/D/M/Y ở GIỮA sát cạnh trái;
+     MŨI TÊN + SỐ CUNG ở góc dưới-phải (số nằm dưới-phải, mũi tên ngay trên môn — như app). */
   .km-cung-mid { position: relative; }
   .km-cung-marks {
     position: absolute;
@@ -428,6 +442,16 @@ export const prerender = true;
     flex-direction: column;
     align-items: flex-start;
     gap: 2px;
+  }
+  .km-cung-hdmy-col {
+    position: absolute;
+    left: 1px;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    z-index: 1;
   }
   .km-cung-botright {
     position: absolute;
@@ -439,12 +463,14 @@ export const prerender = true;
   }
   .km-mt { font-size: 1.05rem; color: #4a4a4a; line-height: 1; }
   .cc-so { font-family: var(--font-display); font-weight: 700; font-size: 1.6rem; color: #1f120e; line-height: 0.9; }
-  .km-cung-r2 { grid-template-columns: 1fr 1fr; align-items: end; }
-  .cc-diacan { font-size: 0.7rem; font-weight: 600; color: #3a2620; text-align: left; }
+  /* Hàng dưới: địa can ghim trái, MÔN căn giữa theo TOÀN BỘ chiều rộng ô, sát đáy — như app. */
+  .km-cung-r2 { position: relative; display: block; min-height: 1.1rem; }
+  .cc-diacan { position: absolute; left: 0; bottom: 0; font-size: 0.72rem; font-weight: 700; color: #3a2620; }
   .cc-mon {
-    font-family: var(--font-display);
-    font-weight: 700;
-    font-size: 0.9rem;
+    display: block;
+    font-family: var(--font-sans);
+    font-weight: 800;
+    font-size: 0.94rem;
     color: #b8322a;
     text-align: center;
   }
@@ -863,10 +889,6 @@ export const prerender = true;
     ketQuaEl.classList.remove("hidden");
   }
 
-  function canChiText(p?: CanChiPillar): string {
-    return p ? `${p.can}\n${p.chi}` : "—";
-  }
-
   function renderLaBan(laBan: LapLaBanResult, tamThang: HangTamThang[], la1080: boolean) {
     document.getElementById("km-tu-tru-wrap")!.classList.toggle("hidden", la1080);
     const hoaGiapLine = document.getElementById("km-hoa-giap-line")!;
@@ -875,10 +897,19 @@ export const prerender = true;
       hoaGiapLine.classList.remove("hidden");
     } else {
       hoaGiapLine.classList.add("hidden");
-      document.getElementById("km-tt-gio")!.innerHTML = canChiText(laBan.tuTru.gio).replace("\n", "<br>");
-      document.getElementById("km-tt-ngay")!.innerHTML = canChiText(laBan.tuTru.ngay).replace("\n", "<br>");
-      document.getElementById("km-tt-thang")!.innerHTML = canChiText(laBan.tuTru.thang).replace("\n", "<br>");
-      document.getElementById("km-tt-nam")!.innerHTML = canChiText(laBan.tuTru.nam).replace("\n", "<br>");
+      // Header bảng tứ trụ: echo đúng thời điểm đã chọn (giống app: "Giờ 22:43 · Ngày 20 · ...").
+      document.getElementById("km-tt-h-echo")!.textContent = `${gioSel.value}:${phutSel.value.padStart(2, "0")}`;
+      document.getElementById("km-tt-d-echo")!.textContent = ngaySel.value;
+      document.getElementById("km-tt-m-echo")!.textContent = thangSel.value.padStart(2, "0");
+      document.getElementById("km-tt-y-echo")!.textContent = namSel.value;
+      const fill = (pillar: string, p?: CanChiPillar) => {
+        document.getElementById(`km-tt-${pillar}-can`)!.textContent = p?.can ?? "—";
+        document.getElementById(`km-tt-${pillar}-chi`)!.textContent = p?.chi ?? "—";
+      };
+      fill("gio", laBan.tuTru.gio);
+      fill("ngay", laBan.tuTru.ngay);
+      fill("thang", laBan.tuTru.thang);
+      fill("nam", laBan.tuTru.nam);
     }
 
     document.getElementById("km-cuc")!.textContent = `${laBan.amDuong === "-" ? "Âm" : "Dương"} ${laBan.cuc}`;
@@ -900,59 +931,79 @@ export const prerender = true;
     luoiEl.innerHTML = LUOI_THU_TU.map((soCung) => {
       const c = cungMap.get(soCung);
       if (!c) return "";
+      const trungCung = soCung === 5;
       // KV đưa lên đầu cung (cạnh hướng) như app.
       const kvHead = c.KV ? '<span class="km-badge km-badge-kv">KV</span>' : "";
-      // Nhãn giữa (cạnh số): Mã / Trực Phù / Trực Sử / Mộ / Hình + H/D/M/Y.
+      // Nhãn giữa (cạnh số): Trực Phù / Trực Sử / Mộ / Hình. Mã chuyển ra viền ngoài (xem dưới).
       // Nhập Mộ, Kích Hình xét theo THIÊN BÀN CAN (can "đóng" tại cung — cùng quy ước với cách
       // mô tả Trực Phù "đóng ở cung"). Giáp không bao giờ xuất hiện làm thienBanCan (luôn ẩn dưới
       // Phù Đầu — xem engine.ts) nên nhánh "Giáp" của bảng Nhập Mộ sẽ không khớp trực tiếp, đúng
       // theo quy ước hiện có của engine.
       const marksList: string[] = [];
-      if (c.Ma) marksList.push('<span class="km-badge km-badge-ma" title="Mã">🐴</span>');
       if (soCung === laBan.trucPhuCung) marksList.push('<span class="km-badge km-badge-tp">Trực Phù</span>');
       if (soCung === laBan.trucSuCung) marksList.push('<span class="km-badge km-badge-ts">Trực Sử</span>');
       if (nhapMo(c.thienBanCan, soCung)) marksList.push('<span class="km-badge km-badge-mo" title="Nhập Mộ">✝</span>');
       const hinh = kichHinh(c.thienBanCan, soCung);
       if (hinh) marksList.push(`<span class="km-badge km-badge-hinh" title="Kích Hình: ${hinh}">Hình</span>`);
-      for (const [letter, can] of truLetters) {
-        if (can && can === c.thienBanCan) marksList.push(`<span class="km-hdmy" title="${letter}">${letter}</span>`);
-      }
       const marks = `<div class="km-cung-marks">${marksList.join("")}</div>`;
+      // H/D/M/Y: cột riêng, canh GIỮA theo chiều dọc, ghim sát cạnh trái ô trắng.
+      const hdmyList: string[] = [];
+      for (const [letter, can] of truLetters) {
+        if (can && can === c.thienBanCan) hdmyList.push(`<span class="km-hdmy" title="${letter}">${letter}</span>`);
+      }
+      const hdmyCol = hdmyList.length ? `<div class="km-cung-hdmy-col">${hdmyList.join("")}</div>` : "";
       // Khung màu chỉ cạnh ngoài + nhãn hướng/địa chi trên dải màu ngoài.
       const f = FRAME[soCung];
       const padStyle = `padding:${f.pad[0]}px ${f.pad[1]}px ${f.pad[2]}px ${f.pad[3]}px`;
       const chiStr = (c.diaChi ?? []).join(" ");
+      // Mã (🐴): đặt trên VIỀN NGOÀI (dải màu), gắn liền cạnh nhãn địa chi — không còn trong ô trắng.
+      const maIcon = c.Ma ? '<span class="km-lbl-ma" title="Mã">🐴</span>' : "";
       let labels = "";
       if (f.dir) {
         if (f.dir === f.chi) {
-          labels = `<span class="km-lbl km-lbl-${f.dir}">${DIR_LABEL[soCung]}${chiStr ? " " + chiStr : ""}</span>`;
+          labels = `<span class="km-lbl km-lbl-${f.dir}">${DIR_LABEL[soCung]}${chiStr ? " " + chiStr : ""}${maIcon}</span>`;
         } else {
           labels = `<span class="km-lbl km-lbl-${f.dir}">${DIR_LABEL[soCung]}</span>`;
-          if (chiStr && f.chi) labels += `<span class="km-lbl km-lbl-${f.chi}">${chiStr}</span>`;
+          if (chiStr && f.chi) labels += `<span class="km-lbl km-lbl-${f.chi}">${chiStr}${maIcon}</span>`;
+          else if (maIcon) labels += `<span class="km-lbl km-lbl-${f.dir}" style="top:auto;bottom:0">${maIcon}</span>`;
         }
+      } else if (maIcon) {
+        // Trung cung không có viền màu — badge Mã tạm giữ trong ô trắng.
+        marksList.push('<span class="km-badge km-badge-ma" title="Mã">🐴</span>');
       }
+      // Trung cung mượn Trực Phù/Trực Sử của Khôn để TÍNH TOÁN (xem engine.ts), nhưng KHÔNG có
+      // sao/thần/môn/thiên-bàn-can riêng để HIỂN THỊ — quy ước app: ô Trung chỉ hiện can của
+      // chính nó (thiên = địa, không "mượn" hiển thị Khôn) và bỏ trống sao/thần/môn.
+      const hienThiCan = trungCung ? c.diaBanCan : c.thienBanCan;
+      const r1 = trungCung
+        ? `<div class="km-cung-r1"><span class="cc-can">${hienThiCan}</span></div>`
+        : `<div class="km-cung-r1">
+             <span class="cc-can">${c.thienBanCan}</span>
+             <span class="cc-sao">${tenDayDu(SAO_NGAN, c.saoThienBan)}</span>
+             <span class="cc-than">${tenDayDu(TEN_THAN, c.than)}</span>
+           </div>`;
+      const botright = trungCung
+        ? `<div class="km-cung-botright"><span class="cc-so">${soDiaBan(soCung, laBan.cuc)}</span></div>`
+        : `<div class="km-cung-botright">${muiTenMonCung(c.mon, soCung)}<span class="cc-so">${soDiaBan(soCung, laBan.cuc)}</span></div>`;
+      const r2 = trungCung
+        ? `<div class="km-cung-r2"><span class="cc-diacan">${c.diaBanCan}</span></div>`
+        : `<div class="km-cung-r2">
+             <span class="cc-diacan">${c.diaBanCan}</span>
+             <span class="cc-mon">${tenDayDu(TEN_MON, c.mon)}</span>
+           </div>`;
       return `
         <div class="km-cung" style="--nh:${NGU_HANH_CUNG[soCung]}; ${padStyle}">
           ${kvHead}
           ${labels}
           <div class="km-cung-inner-wrap">
             <div class="km-cung-inner">
-              <div class="km-cung-r1">
-                <span class="cc-can">${c.thienBanCan}</span>
-                <span class="cc-sao">${tenDayDu(SAO_NGAN, c.saoThienBan)}</span>
-                <span class="cc-than">${tenDayDu(TEN_THAN, c.than)}</span>
-              </div>
+              ${r1}
               <div class="km-cung-mid">
                 ${marks}
-                <div class="km-cung-botright">
-                  ${muiTenMonCung(c.mon, soCung)}
-                  <span class="cc-so">${soDiaBan(soCung, laBan.cuc)}</span>
-                </div>
+                ${hdmyCol}
+                ${botright}
               </div>
-              <div class="km-cung-r2">
-                <span class="cc-diacan">${c.diaBanCan}</span>
-                <span class="cc-mon">${tenDayDu(TEN_MON, c.mon)}</span>
-              </div>
+              ${r2}
             </div>
           </div>
         </div>`;
