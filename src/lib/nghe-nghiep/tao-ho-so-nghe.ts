@@ -11,7 +11,7 @@
  *  - Tử Vi: `getTuViProfileLive` (facts thật + luận NỀN SƠ BỘ; Đợt 2 thay bằng AI gọn trích tài liệu).
  */
 import { getBatTuProfile } from "../chart-profile";
-import { getTuViProfileLive } from "./tu-vi-profile-live";
+import { getTuViProfile } from "../chart-profile/tu-vi";
 import { buildBatTuVM, buildTuViVM, type DashboardVM } from "./view-model";
 import { tinhKetHop, type KetHopResult } from "./module-ket-hop";
 import type { Gender } from "../chart-profile/types";
@@ -36,8 +36,8 @@ export interface NgheKetQua {
 }
 
 export async function taoHoSoNghe(input: NgheInput): Promise<NgheKetQua> {
-  const batTuProfile = await getBatTuProfile(input);
-  const tuViProfile = getTuViProfileLive(input);
+  // Chạy song song 2 hệ (mỗi hệ 1 lần gọi AI) để giảm độ trễ.
+  const [batTuProfile, tuViProfile] = await Promise.all([getBatTuProfile(input), getTuViProfile(input)]);
 
   const { vm: batTuVM, result: batTuResult } = buildBatTuVM(batTuProfile);
   const { vm: tuViVM, result: tuViResult } = buildTuViVM(tuViProfile);
