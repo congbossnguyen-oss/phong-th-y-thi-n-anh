@@ -341,49 +341,38 @@ export const prerender = true;
   .km-grid-9 {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    gap: 3px;
-    background: #d9c9a4;
-    padding: 3px;
-    border-radius: 10px;
+    gap: 2px; /* 4 đường kẻ mảnh ngăn 9 ô */
+    background: #b6a480;
+    border-radius: 8px;
     overflow: hidden;
   }
+  /* Mỗi cung chỉ tô màu ngũ hành ở cạnh HƯỚNG RA NGOÀI lưới (padding dày ở cạnh ngoài, mảnh ở
+     cạnh giáp cung khác) → màu chỉ tạo thành VÒNG NGOÀI, không có dải màu dày giữa các cung. */
   .km-cung {
     --nh: #9b9b9b;
     position: relative;
     background: var(--nh);
-    min-height: 158px;
+    box-sizing: border-box;
+    min-height: 150px;
+    display: flex;
   }
-  /* Ô trắng nằm giữa, khung màu ngũ hành DÀY và ĐỀU 15px cả 4 cạnh (như app). */
-  .km-cung-inner-wrap { position: absolute; inset: 15px; }
-  /* Hướng ở dải màu TRÊN, địa chi ở dải màu DƯỚI — chữ trắng trên nền ngũ hành. */
-  .km-cung-huong {
+  .km-cung-inner-wrap { flex: 1; position: relative; }
+  /* Nhãn hướng + địa chi trên dải màu ngoài. */
+  .km-lbl {
     position: absolute;
-    top: 1px;
-    left: 16px;
-    right: 16px;
-    text-align: center;
     color: #fff;
-    font-size: 0.6rem;
+    font-size: 0.58rem;
     font-weight: 700;
-    letter-spacing: 0.01em;
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    z-index: 1;
   }
-  .km-cung-diachi {
-    position: absolute;
-    bottom: 0;
-    left: 16px;
-    right: 16px;
-    height: 15px;
-    line-height: 15px;
-    text-align: center;
-    color: #fff;
-    font-size: 0.6rem;
-    font-weight: 700;
-    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
-  }
+  .km-lbl-t { top: 0; left: 16px; right: 16px; height: 14px; line-height: 14px; text-align: center; }
+  .km-lbl-b { bottom: 0; left: 16px; right: 16px; height: 14px; line-height: 14px; text-align: center; }
+  .km-lbl-l { left: 0; top: 14px; bottom: 14px; width: 14px; writing-mode: vertical-rl; transform: rotate(180deg); text-align: center; }
+  .km-lbl-r { right: 0; top: 14px; bottom: 14px; width: 14px; writing-mode: vertical-rl; text-align: center; }
   .km-cung > .km-badge-kv {
     position: absolute;
     top: 1px;
@@ -402,8 +391,7 @@ export const prerender = true;
     position: absolute;
     inset: 0;
     background: #fffdf8;
-    border-radius: 3px;
-    padding: 0.28rem 0.34rem;
+    padding: 0.26rem 0.3rem;
     display: grid;
     grid-template-rows: auto 1fr auto;
     color: #2a1512;
@@ -656,6 +644,26 @@ export const prerender = true;
     return ((cuc - 1 + flyIndex) % 9) + 1;
   }
 
+  // Khung màu ngũ hành chỉ ở CẠNH NGOÀI lưới. Mỗi cung: padding dày (14px) ở cạnh hướng ra
+  // ngoài, 0 ở cạnh giáp cung khác → màu tạo thành vòng ngoài, giữa chỉ có 4 đường kẻ (gap).
+  // pad theo thứ tự [top, right, bottom, left]; dir/chi = cạnh đặt nhãn hướng / địa chi.
+  type FrameCfg = { pad: [number, number, number, number]; dir: "t" | "b" | "l" | "r" | null; chi: "t" | "b" | "l" | "r" | null };
+  const FRAME: Record<number, FrameCfg> = {
+    4: { pad: [14, 0, 0, 14], dir: "t", chi: "l" }, // Tốn (ĐN)
+    9: { pad: [14, 0, 0, 0], dir: "t", chi: "t" }, // Ly (N)
+    2: { pad: [14, 14, 0, 0], dir: "t", chi: "r" }, // Khôn (TN)
+    3: { pad: [0, 0, 0, 14], dir: "l", chi: "l" }, // Chấn (Đ)
+    5: { pad: [0, 0, 0, 0], dir: null, chi: null }, // Trung
+    7: { pad: [0, 14, 0, 0], dir: "r", chi: "r" }, // Đoài (T)
+    8: { pad: [0, 0, 14, 14], dir: "b", chi: "l" }, // Cấn (ĐB)
+    1: { pad: [0, 0, 14, 0], dir: "b", chi: "b" }, // Khảm (B)
+    6: { pad: [0, 14, 14, 0], dir: "b", chi: "r" }, // Càn (TB)
+  };
+  const DIR_LABEL: Record<number, string> = {
+    4: "ĐN Tốn", 9: "Nam Ly", 2: "TN Khôn", 3: "Đông Chấn", 5: "Trung cung",
+    7: "Tây Đoài", 8: "ĐB Cấn", 1: "Bắc Khảm", 6: "TB Càn",
+  };
+
   // Ngũ hành của 8 Môn và 9 Cung — dùng suy mũi tên quan hệ Môn↔Cung (kiến thức nền cố định).
   const MON_NGU_HANH: Record<string, string> = {
     HƯU: "Thủy", SINH: "Thổ", THƯƠNG: "Mộc", ĐỖ: "Mộc", CẢNH: "Hỏa", TỬ: "Thổ", KINH: "Kim", KHAI: "Kim",
@@ -872,10 +880,23 @@ export const prerender = true;
         if (can && can === c.thienBanCan) marksList.push(`<span class="km-hdmy" title="${letter}">${letter}</span>`);
       }
       const marks = `<div class="km-cung-marks">${marksList.join("")}</div>`;
+      // Khung màu chỉ cạnh ngoài + nhãn hướng/địa chi trên dải màu ngoài.
+      const f = FRAME[soCung];
+      const padStyle = `padding:${f.pad[0]}px ${f.pad[1]}px ${f.pad[2]}px ${f.pad[3]}px`;
+      const chiStr = (c.diaChi ?? []).join(" ");
+      let labels = "";
+      if (f.dir) {
+        if (f.dir === f.chi) {
+          labels = `<span class="km-lbl km-lbl-${f.dir}">${DIR_LABEL[soCung]}${chiStr ? " " + chiStr : ""}</span>`;
+        } else {
+          labels = `<span class="km-lbl km-lbl-${f.dir}">${DIR_LABEL[soCung]}</span>`;
+          if (chiStr && f.chi) labels += `<span class="km-lbl km-lbl-${f.chi}">${chiStr}</span>`;
+        }
+      }
       return `
-        <div class="km-cung" style="--nh:${NGU_HANH_CUNG[soCung]}">
-          <span class="km-cung-huong">${c.huong}</span>
+        <div class="km-cung" style="--nh:${NGU_HANH_CUNG[soCung]}; ${padStyle}">
           ${kvHead}
+          ${labels}
           <div class="km-cung-inner-wrap">
             <div class="km-cung-inner">
               <div class="km-cung-r1">
@@ -894,7 +915,6 @@ export const prerender = true;
               </div>
             </div>
           </div>
-          <span class="km-cung-diachi">${(c.diaChi ?? []).join(" ")}</span>
         </div>`;
     }).join("");
 
