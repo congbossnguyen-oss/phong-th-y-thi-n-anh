@@ -351,30 +351,44 @@ export const prerender = true;
     --nh: #9b9b9b;
     position: relative;
     background: var(--nh);
-    padding: 3px; /* khung màu ngũ hành đều 4 cạnh */
-    min-height: 138px;
-    display: flex;
+    min-height: 158px;
   }
-  /* Dòng hướng + KV nằm TRONG ô trắng (đầu ô) để khung màu 4 cạnh đều nhau. */
-  .km-cung-topline {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.25rem;
-    border-bottom: 1px solid #efe6d4;
-    padding-bottom: 0.12rem;
-    margin-bottom: 0.1rem;
-  }
+  /* Ô trắng nằm giữa, khung màu ngũ hành DÀY và ĐỀU 15px cả 4 cạnh (như app). */
+  .km-cung-inner-wrap { position: absolute; inset: 15px; }
+  /* Hướng ở dải màu TRÊN, địa chi ở dải màu DƯỚI — chữ trắng trên nền ngũ hành. */
   .km-cung-huong {
+    position: absolute;
+    top: 1px;
+    left: 16px;
+    right: 16px;
+    text-align: center;
+    color: #fff;
     font-size: 0.6rem;
-    font-weight: 800;
+    font-weight: 700;
     letter-spacing: 0.01em;
-    color: var(--nh);
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    min-width: 0;
-    filter: brightness(0.75);
+  }
+  .km-cung-diachi {
+    position: absolute;
+    bottom: 0;
+    left: 16px;
+    right: 16px;
+    height: 15px;
+    line-height: 15px;
+    text-align: center;
+    color: #fff;
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+  }
+  .km-cung > .km-badge-kv {
+    position: absolute;
+    top: 1px;
+    left: 2px;
+    z-index: 2;
   }
   .km-cung-so {
     flex: none;
@@ -385,12 +399,13 @@ export const prerender = true;
   /* Thân cung: bố cục 3 cột như app — hàng trên [thiên can | sao | thần], giữa [số địa bàn],
      hàng dưới [địa can | môn]. Nhãn KV/Mã/Trực Phù/Trực Sử nằm cạnh trái ô số. */
   .km-cung-inner {
-    flex: 1;
+    position: absolute;
+    inset: 0;
     background: #fffdf8;
     border-radius: 3px;
     padding: 0.28rem 0.34rem;
     display: grid;
-    grid-template-rows: auto auto 1fr auto;
+    grid-template-rows: auto 1fr auto;
     color: #2a1512;
   }
   .km-cung-r1,
@@ -859,26 +874,27 @@ export const prerender = true;
       const marks = `<div class="km-cung-marks">${marksList.join("")}</div>`;
       return `
         <div class="km-cung" style="--nh:${NGU_HANH_CUNG[soCung]}">
-          <div class="km-cung-inner">
-            <div class="km-cung-topline">
-              <span class="km-cung-huong">${c.huong}</span>
-              ${kvHead}
-            </div>
-            <div class="km-cung-r1">
-              <span class="cc-can">${c.thienBanCan}</span>
-              <span class="cc-sao">${tenDayDu(SAO_NGAN, c.saoThienBan)}</span>
-              <span class="cc-than">${tenDayDu(TEN_THAN, c.than)}</span>
-            </div>
-            <div class="km-cung-mid">
-              ${marks}
-              <span class="cc-so">${soDiaBan(soCung, laBan.cuc)}</span>
-            </div>
-            <div class="km-cung-r2">
-              <span class="cc-diacan">${c.diaBanCan}</span>
-              <span class="cc-mon">${tenDayDu(TEN_MON, c.mon)}</span>
-              <span class="cc-mt">${muiTenMonCung(c.mon, soCung)}</span>
+          <span class="km-cung-huong">${c.huong}</span>
+          ${kvHead}
+          <div class="km-cung-inner-wrap">
+            <div class="km-cung-inner">
+              <div class="km-cung-r1">
+                <span class="cc-can">${c.thienBanCan}</span>
+                <span class="cc-sao">${tenDayDu(SAO_NGAN, c.saoThienBan)}</span>
+                <span class="cc-than">${tenDayDu(TEN_THAN, c.than)}</span>
+              </div>
+              <div class="km-cung-mid">
+                ${marks}
+                <span class="cc-so">${soDiaBan(soCung, laBan.cuc)}</span>
+              </div>
+              <div class="km-cung-r2">
+                <span class="cc-diacan">${c.diaBanCan}</span>
+                <span class="cc-mon">${tenDayDu(TEN_MON, c.mon)}</span>
+                <span class="cc-mt">${muiTenMonCung(c.mon, soCung)}</span>
+              </div>
             </div>
           </div>
+          <span class="km-cung-diachi">${(c.diaChi ?? []).join(" ")}</span>
         </div>`;
     }).join("");
 
