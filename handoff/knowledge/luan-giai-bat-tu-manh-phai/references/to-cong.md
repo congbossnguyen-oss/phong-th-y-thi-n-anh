@@ -8,7 +8,7 @@ Nguồn: "Manh Phái Sơ Cấp" Buổi 30, Chương 6, mục 3+5. Đọc `the-du
 
 **Tố Công thể hiện điều gì**: mong muốn của mệnh chủ về Tiền Bạc và Công Danh cụ thể — nhưng mong muốn đó THÀNH hay BẠI còn phải xét thêm nhiều yếu tố khác (Đại Vận có thuận hay không, hiệu suất tố công cao hay thấp — xem `cau-truc-to-cong.md`).
 
-**Ví dụ tương ứng nghề nghiệp**: lao động phổ thông dùng sức khỏe (Tỷ Kiếp) kiếm tiền; kinh doanh/kỹ thuật dùng sự nhạy bén (Thực Thương) kiếm tiền; lao động trí óc dùng kiến thức/học vấn (Ấn tinh) kiếm tiền. Một người có thể có NHIỀU tố công cùng lúc (ví dụ chủ doanh nghiệp cần cả học vấn lẫn tư duy nhạy bén) — biết được các tố công trong mệnh giúp đánh giá năng lực thực tế, rất hữu ích khi tư vấn nghề nghiệp/quản lý nhân sự.
+**Ví dụ tương ứng nghề nghiệp**: lao động phổ thông dùng sức khỏe (Tỷ Kiếp) kiếm tiền; kinh doanh/kỹ thuật dùng sự nhạy bén (Thực Thương) kiếm tiền; lao động trí óc dùng kiến thức/học vấn (Ấn tinh) kiếm tiền. Một người có thể có NHIỀU tố công cùng lúc (ví dụ chủ doanh nghiệp cần cả học vấn lẫn tư duy nhạy bén) — biết được các tố công trong mệnh giúp đánh giá năng lực thực tế, rất hữu ích khi tư vấn nghề nghiệp/quản lý nhân sự. Xem thêm `dinh-huong-nghe-nghiep.md` để áp dụng cụ thể vào tư vấn nghề.
 
 ## 2. Cách tìm Tố Công — quy trình 2 bước
 

@@ -8,6 +8,7 @@
  */
 import type { BatTuFacts } from "./types";
 import { loadBatTuKnowledge } from "./knowledge";
+import { tinhToanManhPhai } from "./manh-phai-calculator";
 
 const OUTPUT_SCHEMA_INSTRUCTIONS = `
 Trả lời DUY NHẤT một khối JSON hợp lệ (không kèm chữ nào khác ngoài JSON, không dùng markdown code fence),
@@ -62,12 +63,23 @@ export function buildBatTuSystemPrompt(): string {
 }
 
 export function buildBatTuUserPrompt(facts: BatTuFacts): string {
+  const manhPhaiCalc = tinhToanManhPhai({
+    nam: facts.tuTru.nam, thang: facts.tuTru.thang, ngay: facts.tuTru.ngay, gio: facts.tuTru.gio,
+  });
   return [
     "DỮ LIỆU ĐẦU VÀO (Tứ Trụ + Đại Vận đã lập sẵn bằng công thức xác định — coi là SỰ THẬT bất biến,",
     "không được tính lại hay nghi ngờ, chỉ dùng để LUẬN):",
     "",
     "```json",
     JSON.stringify(facts, null, 2),
+    "```",
+    "",
+    "BẰNG CHỨNG TÍNH SẴN CHO PHẦN MANH PHÁI (khách quan, công thức hóa từ engine.py của skill — dùng",
+    "để chọn Tố Công + cấu trúc + Chính/Phản Cục CHẮC CHẮN hơn là tự suy từ Tứ Trụ thô. Vẫn PHẢI tự",
+    "phán đoán các bước diễn giải theo đúng tài liệu, không suy diễn ngoài — xem ghiChuAI):",
+    "",
+    "```json",
+    JSON.stringify(manhPhaiCalc, null, 2),
     "```",
     "",
     OUTPUT_SCHEMA_INSTRUCTIONS,
