@@ -447,7 +447,19 @@ export const prerender = true;
   }
   /* min-width:0 bắt buộc trong grid 1fr — nếu không, tên thần dài (Huyền Vũ, Cửu Thiên...) ở
      cung góc (inner box hẹp hơn do padding 2 cạnh) sẽ đẩy tràn ô thay vì co/ellipsis. */
-  .cc-than { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.62rem; color: #b8322a; text-align: right; line-height: 1.05; }
+  /* Bát Thần: đậm + cỡ chữ ngang Cửu Tinh/Bát Môn (trước đây 0.62rem không đậm — nhỏ hơn hẳn). */
+  .cc-than {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: var(--font-sans);
+    font-weight: 800;
+    font-size: 0.94rem;
+    color: #b8322a;
+    text-align: right;
+    line-height: 1.05;
+  }
   /* Băng giữa: nhãn TP/TS/Mộ/Hình ở góc trên-trái; H/D/M/Y ở GIỮA sát cạnh trái;
      MŨI TÊN + SỐ CUNG ở góc dưới-phải (số nằm dưới-phải, mũi tên ngay trên môn — như app). */
   .km-cung-mid { position: relative; }
