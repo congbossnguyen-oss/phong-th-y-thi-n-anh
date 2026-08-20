@@ -6,16 +6,16 @@ import { paidTools } from "../../lib/dai-cat-loi-tools";
 
 export const prerender = true;
 
-// Ảnh bìa riêng cho từng dịch vụ VIP (Công để trong public/). Thiếu thì rơi về nền chung /nen 2.png.
-// encodeURI xử lý tên file có dấu cách khi nhúng vào url(); giữ map ở đây để không đụng dai-cat-loi-tools.ts.
+// Ảnh bìa riêng cho từng dịch vụ VIP — đã nén WebP (resize 1000px, ~140-180KB thay vì ~2.5MB PNG).
+// Giữ map ở đây để không đụng dai-cat-loi-tools.ts.
 const ANH_BIA_VIP: Record<string, string> = {
-  "/dai-cat-loi/gio-liem-ha-huyet": "/ngay h liem.png",
-  "/dai-cat-loi/xem-ngay-cao-cap": "/xem ngay dong tho nhap trach.png",
-  "/dai-cat-loi/ngay-ky-hop-dong-cao-cap": "/ngay ky ket hop dong cao cap.png",
-  "/dai-cat-loi/ngay-cuoi-hoi": "/ngay gio cuoi hoi.png",
-  "/dai-cat-loi/dat-ten-cho-con": "/dat ten cho con.png",
-  "/dai-cat-loi/nhan-chuc": "/ngay gio nhan chuc cao cap.png",
-  "/dai-cat-loi/ngay-khai-truong-cao-cap": "/chon ngay khai truong cao cap.png",
+  "/dai-cat-loi/gio-liem-ha-huyet": "/images/vip/gio-liem-ha-huyet.webp",
+  "/dai-cat-loi/xem-ngay-cao-cap": "/images/vip/xem-ngay-cao-cap.webp",
+  "/dai-cat-loi/ngay-ky-hop-dong-cao-cap": "/images/vip/ngay-ky-hop-dong-cao-cap.webp",
+  "/dai-cat-loi/ngay-cuoi-hoi": "/images/vip/ngay-cuoi-hoi.webp",
+  "/dai-cat-loi/dat-ten-cho-con": "/images/vip/dat-ten-cho-con.webp",
+  "/dai-cat-loi/nhan-chuc": "/images/vip/nhan-chuc.webp",
+  "/dai-cat-loi/ngay-khai-truong-cao-cap": "/images/vip/ngay-khai-truong-cao-cap.webp",
 };
 ---
 
