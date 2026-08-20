@@ -127,7 +127,7 @@ export function tinhTrucQuanLocKinhDoanh(profile: BatTuProfile, career: CareerMa
     insufficient: false,
     axis,
     nguon: "thap_than",
-    detail: `Dự phòng theo Thập Thần (${keys.join(", ")}) — trung bình lực kéo = ${axis}.`,
+    detail: `Dự phòng theo Thập Thần nổi bật (${profile.bat_tu.thap_than_noi_bat.join(", ")}) vì cơ chế Manh Phái chưa đủ căn cứ.`,
   };
 }
 
