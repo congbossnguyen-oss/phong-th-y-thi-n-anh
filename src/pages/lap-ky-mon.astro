@@ -420,7 +420,7 @@ export const prerender = true;
     align-items: start;
     column-gap: 2px;
   }
-  .cc-can { font-size: 0.72rem; font-weight: 700; color: #3a2620; text-align: left; }
+  .cc-can { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.72rem; font-weight: 700; color: #3a2620; text-align: left; }
   /* Cửu Tinh (sao): chữ đậm rõ — dùng font sans thay vì serif để đọc "đậm" hơn ở cỡ nhỏ. */
   .cc-sao {
     font-family: var(--font-sans);
@@ -430,7 +430,9 @@ export const prerender = true;
     text-align: center;
     line-height: 1;
   }
-  .cc-than { font-size: 0.62rem; color: #b8322a; text-align: right; line-height: 1.05; }
+  /* min-width:0 bắt buộc trong grid 1fr — nếu không, tên thần dài (Huyền Vũ, Cửu Thiên...) ở
+     cung góc (inner box hẹp hơn do padding 2 cạnh) sẽ đẩy tràn ô thay vì co/ellipsis. */
+  .cc-than { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.62rem; color: #b8322a; text-align: right; line-height: 1.05; }
   /* Băng giữa: nhãn TP/TS/Mộ/Hình ở góc trên-trái; H/D/M/Y ở GIỮA sát cạnh trái;
      MŨI TÊN + SỐ CUNG ở góc dưới-phải (số nằm dưới-phải, mũi tên ngay trên môn — như app). */
   .km-cung-mid { position: relative; }
