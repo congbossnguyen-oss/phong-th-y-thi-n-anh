@@ -8,6 +8,7 @@ import {
   baoCaoGoogleSheetEmail,
   hoSoTangLeEmail,
   nghePdfEmail,
+  trachNhatSinhNoPdfEmail,
 } from "./templates";
 
 // Gửi email không được phép làm sập luồng nghiệp vụ chính (vd webhook thanh toán phải trả 200
@@ -132,5 +133,18 @@ export async function sendNghePdfEmail(params: {
   const { subject, html } = nghePdfEmail(params);
   await safeSend(params.to, subject, html, [
     { filename: `dinh-huong-nghe-nghiep-${params.orderCode}.pdf`, content: Buffer.from(params.pdfBytes) },
+  ]);
+}
+
+/** Gửi PDF Trạch Nhật Sinh Nở kèm email (module Trạch Nhật Sinh Nở). Dùng safeSend — lỗi chỉ log. */
+export async function sendTrachNhatSinhNoPdfEmail(params: {
+  to: string;
+  orderCode: string;
+  customerName: string;
+  pdfBytes: Uint8Array;
+}) {
+  const { subject, html } = trachNhatSinhNoPdfEmail(params);
+  await safeSend(params.to, subject, html, [
+    { filename: `trach-nhat-sinh-no-${params.orderCode}.pdf`, content: Buffer.from(params.pdfBytes) },
   ]);
 }

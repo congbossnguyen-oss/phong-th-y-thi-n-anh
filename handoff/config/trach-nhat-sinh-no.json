@@ -1,0 +1,63 @@
+{
+  "_meta": {
+    "nguon": "SKILL-trach-nhat-sinh-no.md + references/00-06.md (anh Công gửi 20/8/2026)",
+    "y_nghia_ky_hieu": "⚠️ = quy ước làm việc của skill gốc, CHƯA có căn cứ trực tiếp từ tài liệu cổ điển — bản thân tài liệu nguồn đã đánh dấu rõ, không phải Claude tự suy diễn thêm."
+  },
+  "chin_tieu_chi": [
+    "Xét vượng suy nhật chủ",
+    "Tứ trụ gốc đủ cả 5 hành là tốt nhất",
+    "Nhật can bắt buộc có căn",
+    "Phải kết hợp xét Đại Vận — vận có phù trợ được lá số không",
+    "Phương vị tốt cho điều hậu",
+    "Trụ ngày không xung trụ giờ và trụ tháng",
+    "Nhật chủ phải có gốc vững (không chỉ là có căn)",
+    "Phải có Ấn trong nhà (Ấn tinh có mặt ngay trong nguyên cục)",
+    "Ngũ hành lưu thông — sinh nhập hoặc khắc xuất tùy vượng suy, lấy nhật chủ làm trong"
+  ],
+  "hard_filters": {
+    "L6_loai_gio_ty": true,
+    "_note_L6": "Giờ Tý (23–01h) loại mặc định — mốc đổi ngày nhạy cảm, bệnh viện gần như không mổ khung này. Có thể tắt qua config nếu gia đình có lý do."
+  },
+  "L8_tong_cach_nghi_ngo": {
+    "_warn": "⚠️ Ngưỡng chưa đối chiếu án lệ — xem 00-quy-uoc-va-cho-trong.md §3.2",
+    "mot_hanh_chiem_toi_thieu_phan_tram": 60,
+    "trong_so_chinh_khi": 1.0,
+    "trong_so_du_trung_khi": 0.4
+  },
+  "chat_luong_goc": {
+    "_warn": "⚠️ Ngưỡng em (skill gốc) đề xuất — xem 00 §4 câu 6",
+    "nguong_toi_thieu_lop": "C",
+    "nguong_toi_thieu_diem_thong_can": 2
+  },
+  "an_tinh": {
+    "_warn": "⚠️ Liều lượng em (skill gốc) đề xuất — xem 00 §4 câu 2 (Ấn thừa vs Ấn thiếu chưa có câu trả lời dứt khoát từ anh Công, tạm coi mức phạt tương đương)",
+    "nguong_qua_thua_so_phan": 3
+  },
+  "ngu_hanh_luu_thong": {
+    "_warn": "⚠️ Cách hiểu tiêu chí 9 — xem 00 §4 câu 1: lưu thông là tiêu chí chính; sinh nhập/khắc xuất CHỌN MỘT theo vượng suy (thân nhược→sinh nhập tốt; thân vượng→khắc xuất tốt), không đòi cả hai cùng lúc."
+  },
+  "dai_van_trong_so": {
+    "_warn": "⚠️ Trọng số 05-dai-van-dai-han.md §3 đề xuất, chưa đối chiếu án lệ — xem 00 §4 câu 5",
+    "0_den_khoi_van": "thap",
+    "van_1_2_khoang_5_25_tuoi": "cao",
+    "van_3_4_khoang_25_45_tuoi": "cao_nhat",
+    "van_5_tro_len_45_tuoi": "trung_binh"
+  },
+  "tu_vi_veto": {
+    "so_sat_tinh_toi_thieu_de_loai": 3,
+    "sat_tinh_ten": ["Kình Dương", "Đà La", "Hỏa Tinh", "Linh Tinh", "Địa Không", "Địa Kiếp"]
+  },
+  "phan_xu": {
+    "_note": "⚠️ 06-phan-xu-ban-giao.md §1 — quy ước, chưa phải chân lý, xem 00 §4 câu 3",
+    "bat_tu_xep_hang_ngay": true,
+    "tu_vi_chon_gio_trong_ngay": true,
+    "khong_cong_diem_cheo": true,
+    "phu_quyet_thang_xep_hang": true
+  },
+  "chua_tich_hop_giai_doan_1": [
+    "Thần sát (Thiên Ất Quý Nhân, Thiên/Nguyệt Đức, Văn Xương, Dương Nhận, Kiếp Sát, Cô Thần Quả Tú) — xem 00 §4 câu 4",
+    "Lục Hại, Lục Phá — tài liệu nguồn không cho bảng tra chính xác, không tự bịa",
+    "Đối chiếu Bát Tự cha mẹ (family compatibility) — Giai đoạn 3",
+    "Tam Phương Tứ Chính Tử Vi chi tiết, Bát Pháp Tử Vi — chờ anh Công gửi thêm quy trình 8 bước (00 §5)"
+  ]
+}

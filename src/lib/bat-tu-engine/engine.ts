@@ -16,35 +16,37 @@ export interface TuTruInput {
   gioiTinh: "Nam" | "Nữ";
 }
 
-const CHI_ORDER = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tị", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"];
+export const CHI_ORDER = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tị", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"];
 // Chuẩn hóa vài cách viết khác nhau về đúng khóa base-data.
 const CHI_ALIAS: Record<string, string> = { "Tỵ": "Tị", "Ty": "Tý", "Sưu": "Sửu" };
-const chiChuan = (c: string): string => CHI_ALIAS[c.trim()] ?? c.trim();
+export const chiChuan = (c: string): string => CHI_ALIAS[c.trim()] ?? c.trim();
 
 const TC = base.nguHanh_thienCan as Record<string, { hanh: Hanh; amDuong: "Dương" | "Âm" }>;
 const DC = base.nguHanh_diaChi as Record<string, { hanh: Hanh; amDuong: "Dương" | "Âm" }>;
-const TANG = base.tangCan as Record<string, string[]>;
+export const TANG = base.tangCan as Record<string, string[]>;
 const SINH = base.sinh_khac.sinh as Record<Hanh, Hanh>;
 const KHAC = base.sinh_khac.khac as Record<Hanh, Hanh>;
 const TS_KHOI = base.truongSinh_khoi as Record<string, string>;
 const TS_STATES = base.truongSinh_12trangThai as string[];
 const TS_DAC_LENH = base.truongSinh_dacLenh_states as string[];
-const MO_KHO = base.moKho as Record<Hanh, string>;
-const HOP_HOA = base.thienCan_hopHoa as Record<string, string>;
-const TAM_HOP = base.diaChi_tamHop as Record<string, string>;
-const TAM_HOI = base.diaChi_tamHoi as Record<string, string>;
+export const MO_KHO = base.moKho as Record<Hanh, string>;
+export const HOP_HOA = base.thienCan_hopHoa as Record<string, string>;
+export const TAM_HOP = base.diaChi_tamHop as Record<string, string>;
+export const TAM_HOI = base.diaChi_tamHoi as Record<string, string>;
 const LUC_XUNG = base.diaChi_lucXung.cap as string[][];
 
-const hanhCan = (can: string): Hanh => TC[can]?.hanh;
+export const hanhCan = (can: string): Hanh => TC[can]?.hanh;
 const amCan = (can: string): "Dương" | "Âm" => TC[can]?.amDuong;
-const hanhChi = (chi: string): Hanh => DC[chiChuan(chi)]?.hanh;
+export const hanhChi = (chi: string): Hanh => DC[chiChuan(chi)]?.hanh;
 /** Hành A SINH cho hành nào (SINH[A]); hành nào SINH cho X (đảo). */
-const hanhSinhCho = (x: Hanh): Hanh => (Object.keys(SINH) as Hanh[]).find((h) => SINH[h] === x)!;
-const hanhKhacX = (x: Hanh): Hanh => (Object.keys(KHAC) as Hanh[]).find((h) => KHAC[h] === x)!;
+export const hanhSinhCho = (x: Hanh): Hanh => (Object.keys(SINH) as Hanh[]).find((h) => SINH[h] === x)!;
+export const hanhKhacX = (x: Hanh): Hanh => (Object.keys(KHAC) as Hanh[]).find((h) => KHAC[h] === x)!;
+export const SINH_MAP: Record<Hanh, Hanh> = SINH;
+export const KHAC_MAP: Record<Hanh, Hanh> = KHAC;
 
 /** Quan hệ 1 hành khác so với Nhật Chủ → "phe" phục vụ vượng suy. */
-type Phe = "ty_kiep" | "an" | "thuc_thuong" | "tai" | "quan_sat";
-function pheCua(hanhKhac: Hanh, nhatChu: Hanh): Phe {
+export type Phe = "ty_kiep" | "an" | "thuc_thuong" | "tai" | "quan_sat";
+export function pheCua(hanhKhac: Hanh, nhatChu: Hanh): Phe {
   if (hanhKhac === nhatChu) return "ty_kiep";
   if (SINH[hanhKhac] === nhatChu) return "an"; // hành khác sinh nhật chủ
   if (SINH[nhatChu] === hanhKhac) return "thuc_thuong"; // nhật chủ sinh ra
@@ -53,7 +55,7 @@ function pheCua(hanhKhac: Hanh, nhatChu: Hanh): Phe {
 }
 
 /** Trạng thái vòng Trường Sinh của Nhật Chủ tại 1 Chi. Can Dương đi thuận, Can Âm đi nghịch. */
-function trangThaiTruongSinh(nhatChuCan: string, chi: string): string {
+export function trangThaiTruongSinh(nhatChuCan: string, chi: string): string {
   const khoi = TS_KHOI[nhatChuCan];
   const khoiIdx = CHI_ORDER.indexOf(chiChuan(khoi));
   const idx = CHI_ORDER.indexOf(chiChuan(chi));
@@ -62,7 +64,7 @@ function trangThaiTruongSinh(nhatChuCan: string, chi: string): string {
   return TS_STATES[steps];
 }
 
-function coLucXung(chi: string, cacChi: string[]): boolean {
+export function coLucXung(chi: string, cacChi: string[]): boolean {
   const c = chiChuan(chi);
   return cacChi.some((o) => {
     const oc = chiChuan(o);

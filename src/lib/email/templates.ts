@@ -281,3 +281,35 @@ export function nghePdfEmail(params: {
     }),
   };
 }
+
+export function trachNhatSinhNoPdfEmail(params: {
+  orderCode: string;
+  customerName: string;
+}): { subject: string; html: string } {
+  const bodyHtml = `
+    <p>Kính gửi ${escapeHtml(params.customerName)},</p>
+    <p>
+      Bản Trạch Nhật Sinh Nở (chọn ngày giờ sinh cho bé, kết hợp Bát Tự × Tử Vi) được đính kèm dưới dạng PDF
+      trong email này, gồm: phương án ưu tiên, tối đa 2 phương án dự phòng, giải thích vì sao chọn, và các
+      khuyết điểm cần lưu ý của từng phương án.
+    </p>
+    <table role="presentation" width="100%" style="margin-top:16px;border-top:1px solid #e8dfcd;padding-top:12px;">
+      ${infoRow("Mã đơn hàng", params.orderCode)}
+    </table>
+    <p style="margin-top:20px;">
+      <strong>Lưu ý quan trọng:</strong> chỉ định y khoa của bác sĩ luôn là quyết định cuối cùng — kết quả chỉ
+      được chọn trong khung thời gian y tế cho phép. Ngày giờ sinh là một biến trong nhiều biến của cuộc đời;
+      giáo dục và môi trường nuôi dưỡng quan trọng không kém. Cần trao đổi thêm, xin liên hệ hotline
+      ${siteConfig.hotline}.
+    </p>
+  `;
+
+  return {
+    subject: `Trạch Nhật Sinh Nở — đơn ${params.orderCode}`,
+    html: layout({
+      previewText: "Bản trạch nhật sinh nở của bạn được đính kèm trong email này.",
+      title: "Trạch Nhật Sinh Nở — Chọn Ngày Giờ Sinh Cho Bé",
+      bodyHtml,
+    }),
+  };
+}

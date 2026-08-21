@@ -17,6 +17,7 @@ export const TEN_CONG_CU_HIEN_THI: Record<string, string> = {
   "dat-ten-cho-con": "Đặt Tên Cho Con (Việt Danh Học)",
   "ngay-khai-truong-cao-cap": "Ngày Khai Trương Cao Cấp (Bát Tự mệnh chủ)",
   "dinh-huong-nghe-nghiep": "Định Hướng Nghề Nghiệp (Bát Tự × Tử Vi)",
+  "trach-nhat-sinh-no": "Trạch Nhật Sinh Nở (Chọn Ngày Giờ Sinh Cho Bé)",
 };
 
 export interface DonThuPhiChoSheet {

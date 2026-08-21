@@ -10,10 +10,13 @@ import {
   sendBaoCaoGoogleSheetEmail,
   sendHoSoTangLeEmail,
   sendNghePdfEmail,
+  sendTrachNhatSinhNoPdfEmail,
 } from "../email/send";
 import { taoHoSoTangLe, type DauVaoHoSo } from "../dai-cat-loi/tao-ho-so-tang-le";
 import { taoHoSoNghe, type NgheInput } from "../nghe-nghiep/tao-ho-so-nghe";
 import { generateNghePdf } from "../dai-cat-loi/nghe-nghiep-pdf";
+import { phanTichTrachNhatSinhNo, type BirthSelectionInput } from "../trach-nhat-sinh-no";
+import { generateTrachNhatSinhNoPdf } from "../dai-cat-loi/trach-nhat-sinh-no-pdf";
 import { apDungMaKhiThanhToan } from "../payments/promo";
 import { ghiDonThuPhiLenSheet, TEN_CONG_CU_HIEN_THI } from "../google-sheets-don-thu-phi";
 
@@ -322,6 +325,25 @@ export async function markOrderPaidAndFulfill(orderId: string) {
         });
       } catch (err) {
         console.error(`[dinh-huong-nghe] Lỗi dựng/gửi PDF cho đơn ${order.orderCode}:`, err);
+      }
+    }
+
+    // Trạch Nhật Sinh Nở: thuần công thức (không AI) — dựng PDF rồi gửi kèm email khách. Bọc
+    // try/catch riêng cùng lý do các module khác: hỏng khâu này đơn vẫn ghi nhận đã thanh toán,
+    // khách còn xem/tải lại từ trang kết quả bằng mã đơn.
+    if (order.toolSlug === "trach-nhat-sinh-no" && order.customerEmail && order.toolInputSnapshot) {
+      try {
+        const input = JSON.parse(order.toolInputSnapshot) as BirthSelectionInput;
+        const ketQua = phanTichTrachNhatSinhNo(input);
+        const pdf = await generateTrachNhatSinhNoPdf(ketQua, order.customerName);
+        await sendTrachNhatSinhNoPdfEmail({
+          to: order.customerEmail,
+          orderCode: order.orderCode,
+          customerName: order.customerName,
+          pdfBytes: pdf,
+        });
+      } catch (err) {
+        console.error(`[trach-nhat-sinh-no] Lỗi dựng/gửi PDF cho đơn ${order.orderCode}:`, err);
       }
     }
   }

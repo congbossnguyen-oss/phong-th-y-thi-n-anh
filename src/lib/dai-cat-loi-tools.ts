@@ -195,4 +195,13 @@ export const paidTools: PaidTool[] = [
     desc: "Bản nâng cấp của Khai Trương thường: giữ nguyên điểm nền rồi chồng thêm lớp Bát Tự mệnh chủ — Thập Thần hợp cầu tài (Thê Tài/Thực Thương), xét cả Tứ Trụ (Nhật Chi, Tam Hình/Lục Hại) và Dụng Thần theo vượng suy (khi có giờ sinh).",
     priceLabel: "499.000đ / lượt",
   },
+  {
+    href: "/dai-cat-loi/trach-nhat-sinh-no",
+    icon: "👶",
+    title: "Trạch Nhật Sinh Nở — Chọn Ngày Giờ Sinh Cho Bé",
+    desc: "Lập toàn bộ ứng viên trong khung bác sĩ cho phép, kết hợp Bát Tự (xếp hạng ngày: vượng suy, gốc, Ấn tinh, ngũ hành lưu thông, Đại Vận) và Tử Vi (chọn giờ: Mệnh/Thân/Cục, Tuần–Triệt, sát tinh) — trả phương án chính + 2 dự phòng, luôn nêu rõ khuyết điểm.",
+    priceLabel: "499.000đ / lượt",
+    // ⏸️ THỬ NGHIỆM NỘI BỘ (mới xây, chưa kiểm chứng nhiều ca thật + quyết định giờ sinh mổ có rủi
+    // ro cao) — trang tự hiện "đang thử nghiệm" cho khách, chỉ admin dùng được. Mở khi anh Công duyệt.
+  },
 ];
