@@ -289,7 +289,7 @@ export function trachNhatSinhNoPdfEmail(params: {
   const bodyHtml = `
     <p>Kính gửi ${escapeHtml(params.customerName)},</p>
     <p>
-      Bản Trạch Nhật Sinh Nở (chọn ngày giờ sinh cho bé, kết hợp Bát Tự × Tử Vi) được đính kèm dưới dạng PDF
+      Bản Chọn Ngày Giờ Sinh Cho Bé (trạch nhật sinh nở, kết hợp Bát Tự × Tử Vi) được đính kèm dưới dạng PDF
       trong email này, gồm: phương án ưu tiên, tối đa 2 phương án dự phòng, giải thích vì sao chọn, và các
       khuyết điểm cần lưu ý của từng phương án.
     </p>
@@ -305,10 +305,10 @@ export function trachNhatSinhNoPdfEmail(params: {
   `;
 
   return {
-    subject: `Trạch Nhật Sinh Nở — đơn ${params.orderCode}`,
+    subject: `Chọn Ngày Giờ Sinh Cho Bé — đơn ${params.orderCode}`,
     html: layout({
-      previewText: "Bản trạch nhật sinh nở của bạn được đính kèm trong email này.",
-      title: "Trạch Nhật Sinh Nở — Chọn Ngày Giờ Sinh Cho Bé",
+      previewText: "Bản chọn ngày giờ sinh cho bé được đính kèm trong email này.",
+      title: "Chọn Ngày Giờ Sinh Cho Bé",
       bodyHtml,
     }),
   };

@@ -57,7 +57,7 @@ function vePhuongAn(b: But, f: Fonts, tieuDe: string, card: CandidateSummaryCard
 export async function generateTrachNhatSinhNoPdf(kq: PhanTichTrachNhatKetQua, customerName: string): Promise<Uint8Array> {
   const { doc, f, b } = await taoTaiLieuPdf();
   await veDauTrang(doc, b, f, {
-    tieuDe: "Trạch nhật sinh nở",
+    tieuDe: "Chọn ngày giờ sinh cho bé",
     phuDe: "Chọn ngày giờ sinh cho bé — kết hợp Bát Tự × Tử Vi",
   });
 

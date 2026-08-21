@@ -198,7 +198,7 @@ export const paidTools: PaidTool[] = [
   {
     href: "/dai-cat-loi/trach-nhat-sinh-no",
     icon: "👶",
-    title: "Trạch Nhật Sinh Nở — Chọn Ngày Giờ Sinh Cho Bé",
+    title: "Chọn Ngày Giờ Sinh Cho Bé",
     desc: "Lập toàn bộ ứng viên trong khung bác sĩ cho phép, kết hợp Bát Tự (xếp hạng ngày: vượng suy, gốc, Ấn tinh, ngũ hành lưu thông, Đại Vận) và Tử Vi (chọn giờ: Mệnh/Thân/Cục, Tuần–Triệt, sát tinh) — trả phương án chính + 2 dự phòng, luôn nêu rõ khuyết điểm.",
     priceLabel: "499.000đ / lượt",
     // ⏸️ THỬ NGHIỆM NỘI BỘ (mới xây, chưa kiểm chứng nhiều ca thật + quyết định giờ sinh mổ có rủi
