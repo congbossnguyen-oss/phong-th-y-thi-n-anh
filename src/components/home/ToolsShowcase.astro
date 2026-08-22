@@ -12,37 +12,38 @@ import Container from "../ui/Container.astro";
 import Icon from "../ui/Icon.astro";
 import { TOTAL_TOOL_COUNT } from "../../lib/dai-cat-loi-tools";
 
-type IconName = "star" | "book-open" | "moon" | "clock" | "award" | "map-pin";
+type IconName = "star" | "book-open" | "moon" | "clock" | "award" | "map-pin" | "phone";
 
-// 6 công cụ đầu tàu đưa lên trang chủ. Các công cụ còn lại gom trong "Đại Cát Lợi" + trang tra cứu riêng.
+// 7 công cụ đầu tàu đưa lên trang chủ. Các công cụ còn lại gom trong "Đại Cát Lợi" + trang tra cứu riêng.
 // Mỗi thẻ dùng 1 ảnh banner do Công cung cấp (đặt sẵn trong public/, đã đổi tên bỏ khoảng trắng) làm NỀN
 // TOÀN THẺ kiểu poster — ảnh tự thân đã có tên công cụ trong thiết kế nên thẻ chỉ còn icon + nút "Dùng
 // thử ngay" đè lên qua lớp gradient tối dần từ dưới lên (xem markup bên dưới), không lặp lại chữ tiêu
 // đề/mô tả. `title` vẫn giữ để làm alt ảnh + aria-label cho khả năng tiếp cận (screen reader).
-// Lưu ý: 6 ảnh này không cùng 1 bộ nhận diện (3 phong cách/logo khác nhau) — đã xác nhận với Công dùng
-// nguyên như vậy, không chờ làm lại đồng bộ.
-// Ảnh dùng WebP thay cho PNG gốc: bộ 6 ảnh này nặng ~9,9 MB ở dạng PNG (riêng 3 ảnh poster hơn
-// 2,3 MB mỗi ảnh), tải trên 3G/4G rất chậm và tốn dung lượng của khách. Bản WebP cùng kích thước
-// tổng cộng ~851 KB, giảm ~92% mà mắt thường không phân biệt được. File PNG gốc vẫn giữ trong
-// public/ để cần thì xuất lại.
+// Lưu ý: các ảnh này không cùng 1 bộ nhận diện (nhiều phong cách/logo khác nhau) — đã xác nhận với Công
+// dùng nguyên như vậy, không chờ làm lại đồng bộ.
+// Ảnh dùng WebP thay cho PNG gốc — giảm ~65-92% dung lượng mà mắt thường không phân biệt được, tải
+// nhanh hơn nhiều trên 3G/4G. File PNG gốc vẫn giữ trong public/ để cần thì xuất lại.
+//
+// Công 22/8/2026: đổi 3 thẻ (Lập lá số Tử Vi → Xem ngày cao cấp, Lập lá số Bát Tự → Luận số điện
+// thoại, Lập quẻ Kinh Dịch → Dịch vụ VIP) + thêm thẻ Định Hướng Nghề Nghiệp.
 const CORE_TOOLS: { href: string; icon: IconName; image: string; title: string }[] = [
   {
-    href: "/lap-la-so-tu-vi",
-    icon: "star",
+    href: "/dai-cat-loi/xem-ngay-cao-cap",
+    icon: "clock",
     image: "/lap-la-so-tu-vi.webp",
-    title: "Lập lá số Tử Vi",
+    title: "Xem Ngày Cao Cấp",
   },
   {
-    href: "/lap-la-so-bat-tu",
-    icon: "book-open",
+    href: "/luan-so-dien-thoai",
+    icon: "phone",
     image: "/lap-la-so-bat-tu.webp",
-    title: "Lập lá số Bát Tự",
+    title: "Luận Số Điện Thoại",
   },
   {
-    href: "/gieo-que-kinh-dich",
-    icon: "moon",
-    image: "/lap-que-kinh-dich.webp",
-    title: "Lập quẻ Kinh Dịch",
+    href: "/dai-cat-loi/dich-vu-thu-phi",
+    icon: "star",
+    image: "/dich-vu-vip.webp",
+    title: "Dịch Vụ VIP",
   },
   {
     href: "/xem-ngay-tot-xau",
@@ -61,6 +62,12 @@ const CORE_TOOLS: { href: string; icon: IconName; image: string; title: string }
     icon: "map-pin",
     image: "/ngay-gio-xuat-hanh-ca-nhan.webp",
     title: "Ngày Giờ Xuất Hành Cá Nhân",
+  },
+  {
+    href: "/dai-cat-loi/dinh-huong-nghe-nghiep",
+    icon: "book-open",
+    image: "/dinh-huong-nghe-nghiep.webp",
+    title: "Định Hướng Nghề Nghiệp",
   },
 ];
 
@@ -88,16 +95,16 @@ const totalTools = TOTAL_TOOL_COUNT;
       </p>
     </div>
 
-    {/* Lưới 2 cột cố định ở MỌI kích thước màn hình (giống hệt bố cục "Công trình" — FeaturedPortfolio.astro)
-    thay vì 1→2→3 cột theo yêu cầu Công "cho nhỏ lại như phần công trình". Thẻ cũng thu nhỏ theo (icon/chữ
-    nhỏ hơn, bớt padding) để khớp mật độ dày hơn của lưới 2 cột. */}
-    <div class="mt-10 grid grid-cols-2 gap-4">
+    {/* Công 22/8/2026: trả lại lưới 1→2→3 cột theo breakpoint (bản gốc trước khi bị co về 2 cột cố
+    định) — trên mobile mỗi thẻ chiếm trọn hàng ngang, cao theo tỉ lệ 16:9 nên to hẳn cả 2 chiều so
+    với bản 2-cột-cố-định trước đó. Icon/chữ CTA cũng trả về cỡ gốc cho khớp thẻ to hơn. */}
+    <div class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
       {
         CORE_TOOLS.map((tool) => (
           <a
             href={tool.href}
             aria-label={tool.title}
-            class="group relative flex aspect-video flex-col justify-end overflow-hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ink-950) p-3 transition hover:-translate-y-0.5 hover:border-(--color-gold-400)/60"
+            class="group relative flex aspect-video flex-col justify-end overflow-hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ink-950) p-4 transition hover:-translate-y-0.5 hover:border-(--color-gold-400)/60"
           >
             {/* Ảnh minh hoạ riêng của từng công cụ (Công cung cấp) làm nền toàn thẻ kiểu poster — tự thân
             đã có tên công cụ trong thiết kế, nên bỏ chữ tiêu đề/mô tả lặp lại của site, chỉ giữ CTA. */}
@@ -110,12 +117,12 @@ const totalTools = TOTAL_TOOL_COUNT;
             {/* Lớp phủ tối dần từ dưới lên để chữ luôn đọc được, bất kể nội dung ảnh phía dưới là gì. */}
             <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-black/10" />
 
-            <span class="relative z-10 flex size-8 items-center justify-center self-start rounded-full border border-(--color-gold-500)/40 bg-(--color-ink-950)/40 text-(--color-gold-300) backdrop-blur-sm transition group-hover:border-(--color-gold-400)">
-              <Icon name={tool.icon} class="size-3.5" />
+            <span class="relative z-10 flex size-11 items-center justify-center self-start rounded-full border border-(--color-gold-500)/40 bg-(--color-ink-950)/40 text-(--color-gold-300) backdrop-blur-sm transition group-hover:border-(--color-gold-400)">
+              <Icon name={tool.icon} class="size-5" />
             </span>
-            <span class="relative z-10 mt-auto inline-flex items-center gap-1 text-xs font-medium text-(--color-gold-300)">
+            <span class="relative z-10 mt-auto inline-flex items-center gap-1.5 text-sm font-medium text-(--color-gold-300)">
               Dùng thử ngay
-              <Icon name="arrow-right" class="size-3 transition group-hover:translate-x-0.5" />
+              <Icon name="arrow-right" class="size-3.5 transition group-hover:translate-x-0.5" />
             </span>
           </a>
         ))
