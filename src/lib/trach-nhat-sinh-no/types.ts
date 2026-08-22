@@ -165,6 +165,37 @@ export interface LuanCung {
   nhanXet: string;
 }
 
+/**
+ * Luận trọn BỘ TAM PHƯƠNG TỨ CHÍNH của một cung (bản cung + đối cung + 2 cung tam hợp) — anh Công
+ * chốt 22/8/2026: "xét mệnh và thân thì phải xét đối cung và trong cung tam hợp tốt hay xấu".
+ * Trong Tử Vi không luận cung đơn lẻ: một cung yếu vẫn khá nếu được tam phương cứu, và ngược lại.
+ */
+export interface LuanBoTamPhuong {
+  /** "Mệnh" hoặc "Thân (cư Tài Bạch)" */
+  tenBo: string;
+  banCung: LuanCung;
+  doiCung: LuanCung;
+  /** Đúng 2 cung tam hợp (±4 vị trí Chi). */
+  tamHop: LuanCung[];
+  /** Điểm cả bộ -10..10 (bản cung nặng nhất, rồi đối cung, rồi tam hợp). */
+  diemBo: number;
+  danhGia: "cat" | "binh" | "hung";
+  soCatTinh: number;
+  soSatTinh: number;
+  soHoaCat: number;
+  soHoaKy: number;
+  nhanXet: string;
+}
+
+/** So Mệnh với Thân — Mệnh chủ tiền vận, Thân chủ hậu vận (cách luận truyền thống). */
+export interface SoSanhMenhThan {
+  thanCuMenh: boolean;
+  diemMenh: number;
+  diemThan: number;
+  ketLuan: "dong_cung" | "menh_troi_hon" | "than_troi_hon" | "can_bang";
+  nhanXet: string;
+}
+
 export interface TuViAnalysis {
   cungMenh: string;
   cungThan: string;
@@ -174,6 +205,12 @@ export interface TuViAnalysis {
   chinhTinhMenh: { ten: string; trangThai: string }[];
   /** Bước 4 — quy-trinh-chon-gio-sinh-mo-tu-vi.md */
   tamPhuongTuChinh: TamPhuongTuChinhResult;
+  /** Bước 1 — luận trọn bộ tam phương tứ chính của cung MỆNH. */
+  boMenh: LuanBoTamPhuong;
+  /** Bước 2 — luận trọn bộ tam phương tứ chính của cung THÂN. */
+  boThan: LuanBoTamPhuong;
+  /** Bước 3 — Mệnh trội hơn hay Thân trội hơn. */
+  soSanhMenhThan: SoSanhMenhThan;
   /** Bước 5 — Mệnh cường Thân cường là tổ hợp tốt nhất. */
   cuongNhuocMenh: MucCuongNhuoc;
   cuongNhuocThan: MucCuongNhuoc;

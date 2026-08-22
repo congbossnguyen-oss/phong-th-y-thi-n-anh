@@ -76,7 +76,7 @@ export function tinhCareerVector(profile: BatTuProfile, career: CareerMappingCon
   // DỰ PHÒNG: suy 5 trục từ Thập Thần nổi bật (cách luận nghề kinh điển, không bịa).
   const keys = normThapThan(profile.bat_tu.thap_than_noi_bat, thapThan.thap_than_aliases);
   if (keys.length === 0) {
-    return { insufficient: true, vector: null, nguon: "none", detail: "Chưa xác định cơ chế Manh Phái và không có Thập Thần nổi bật để suy dự phòng." };
+    return { insufficient: true, vector: null, nguon: "none", detail: "Không đủ dữ liệu để xác định 5 trục nghề nghiệp từ Bát Tự." };
   }
   const vector: CareerVector5Truc = { specialist: 0, authority: 0, management: 0, business: 0, investment: 0 };
   for (const k of keys) {
@@ -121,7 +121,7 @@ export function tinhTrucQuanLocKinhDoanh(profile: BatTuProfile, career: CareerMa
   const keys = normThapThan(profile.bat_tu.thap_than_noi_bat, thapThan.thap_than_aliases);
   const pulls = keys.map((k) => thapThan.thap_than_axis_pull[k]).filter((v): v is number => typeof v === "number");
   if (pulls.length === 0) {
-    return { insufficient: true, axis: null, nguon: "none", detail: "Chưa xác định Chính/Phản Cục và không suy được hướng từ Thập Thần." };
+    return { insufficient: true, axis: null, nguon: "none", detail: "Không đủ dữ liệu để xác định hướng làm chủ / làm thuê từ Bát Tự." };
   }
   const axis = Math.max(-100, Math.min(100, Math.round(pulls.reduce((s, v) => s + v, 0) / pulls.length)));
   return {
@@ -224,7 +224,7 @@ export function tinhDiemNganh(
     nguon,
     detail: mech
       ? `Điểm ngành tính từ cơ chế Manh Phái "${mech.label}", cộng thêm ảnh hưởng của Dụng Thần ${NGU_HANH_VI[dungThan] ?? dungThan} và Hỷ Thần ${NGU_HANH_VI[hyThan] ?? hyThan}.`
-      : `Cơ chế Manh Phái chưa đủ căn cứ — điểm ngành tính dự phòng từ Dụng Thần ${NGU_HANH_VI[dungThan] ?? dungThan} và Hỷ Thần ${NGU_HANH_VI[hyThan] ?? hyThan}.`,
+      : `Điểm ngành tính từ Dụng Thần ${NGU_HANH_VI[dungThan] ?? dungThan} và Hỷ Thần ${NGU_HANH_VI[hyThan] ?? hyThan}.`,
     scores,
     priority: buildBucket(priorityRaw),
     suitable: buildBucket(suitableRaw),

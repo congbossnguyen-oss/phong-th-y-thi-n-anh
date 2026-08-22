@@ -143,6 +143,16 @@ function axisKetLuan(axis: number | null): string {
 const toItems = (arr: { label: string; score: number; majors: { name: string }[] }[]): DomainItemVM[] =>
   arr.map((x) => ({ label: x.label, score: x.score, majors: x.majors.map((m) => ({ name: m.name })) }));
 
+/**
+ * Anh Công chốt 22/8/2026: "chưa đủ căn cứ thì cho vào làm gì em, không có thông tin thì nên bỏ
+ * qua" — thẻ nào không có dữ liệu thật thì BỎ HẲN khỏi giao diện, không in "Chưa xác định" cho
+ * khách đọc. Chỉ áp cho phần TRÌNH BÀY; bên trong engine vẫn giữ nguyên "insufficient_data" để
+ * không đánh mất thông tin khi tính toán và ghi log.
+ */
+const GIA_TRI_RONG = new Set(["Chưa xác định", "insufficient_data", "?", "—", "-", ""]);
+const boThePhieuRong = <T extends { value: string }>(cs: T[]): T[] =>
+  cs.filter((c) => !GIA_TRI_RONG.has((c.value ?? "").trim()));
+
 export function buildBatTuVM(profile: BatTuProfile): { vm: DashboardVM; result: ModuleNgheBatTuResult } {
   const result = tinhModuleNgheBatTu(profile);
   const { career } = loadCareerConfig();
@@ -151,14 +161,14 @@ export function buildBatTuVM(profile: BatTuProfile): { vm: DashboardVM; result: 
 
   const vm: DashboardVM = {
     he: "bat_tu",
-    chips: [
+    chips: boThePhieuRong([
       { label: "Nhật Chủ", value: `${profile.bat_tu.nhat_chu} (${NGU_HANH_LABEL[profile.bat_tu.ngu_hanh_nhat_chu]})`, mau: NH[profile.bat_tu.ngu_hanh_nhat_chu]?.mau },
       { label: "Vượng suy", value: VUONG_SUY_LABEL[profile.bat_tu.vuong_suy] ?? "?" },
       { label: "Dụng Thần", value: NGU_HANH_LABEL[profile.bat_tu.dung_than] ?? "?", mau: NH[profile.bat_tu.dung_than]?.mau, solid: true },
       { label: "Hỷ Thần", value: NGU_HANH_LABEL[profile.bat_tu.hy_than] ?? "?", mau: NH[profile.bat_tu.hy_than]?.mau, solid: true },
       { label: "Cơ chế", value: coCheLabel },
       { label: "Cục", value: CHINH_PHAN_LABEL[profile.manh_phai.chinh_phan_cuc] ?? "?" },
-    ],
+    ]),
     vector: result.careerVector.vector as Record<string, number> | null,
     vectorInsufficient: result.careerVector.insufficient,
     vectorDetail: sach(result.careerVector.detail),
@@ -182,7 +192,8 @@ export function buildBatTuVM(profile: BatTuProfile): { vm: DashboardVM; result: 
     path: result.careerPath.map((dv) => ({ label: dv.chuDeNhan, tuTuoi: dv.tuTuoi, denTuoi: dv.denTuoi })),
     why: [
       { label: "Tố công (Manh Phái)", value: sach(profile.manh_phai.to_cong) },
-      { label: "Cơ chế Manh Phái", value: sach(`${coCheLabel} — ${result.careerVector.detail}`) },
+      // Không có cơ chế Manh Phái thì bỏ hẳn dòng này, không in "Chưa xác định — dự phòng…".
+      { label: "Cơ chế Manh Phái", value: coChe === "insufficient_data" ? "" : sach(`${coCheLabel} — ${result.careerVector.detail}`) },
       { label: "Công thức điểm ngành", value: sach(result.domainScore.detail) },
     ].filter((w) => w.value && w.value !== "đang cập nhật"),
     ngaySinhDuongLich: formatNgaySinh(profile.meta.duong_lich),
@@ -204,13 +215,13 @@ export function buildTuViVM(profile: TuViProfile): { vm: DashboardVM; result: Mo
 
   const vm: DashboardVM = {
     he: "tu_vi",
-    chips: [
+    chips: boThePhieuRong([
       { label: "Mệnh", value: profile.menh_than_cuc.menh_cung, mau: NH[CHI_NGU_HANH[profile.menh_than_cuc.menh_cung] ?? "insufficient_data"]?.mau },
       { label: "Thân", value: profile.menh_than_cuc.than_cung },
       { label: "Cục", value: profile.menh_than_cuc.cuc },
       { label: "Mệnh cách", value: archeLabel },
       { label: "Cát cung", value: catCung },
-    ],
+    ]),
     vector: result.careerVector.vector,
     vectorInsufficient: result.careerVector.insufficient,
     vectorDetail: sach(result.careerVector.detail),

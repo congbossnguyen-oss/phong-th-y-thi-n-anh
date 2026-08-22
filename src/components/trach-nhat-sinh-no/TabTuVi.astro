@@ -9,6 +9,7 @@
  */
 import type { BirthCandidate } from "../../lib/trach-nhat-sinh-no/types";
 import LaSoTuVi from "./LaSoTuVi.astro";
+import BoTamPhuong from "./BoTamPhuong.astro";
 import BieuDoSongVan from "./BieuDoSongVan.astro";
 import { tomTatDaiHanTuVi, tomTatLaSoTuVi } from "../../lib/trach-nhat-sinh-no/tom-tat";
 
@@ -71,10 +72,53 @@ const diemsDaiHan = (tv?.daiHan ?? []).map((h) => ({
       </div>
     </div>
 
-    {/* 2. LUẬN TỪNG CUNG */}
+    {/* 2. LUẬN BỘ MỆNH — bản cung + đối cung + tam hợp */}
+    <BoTamPhuong bo={tv.boMenh} cungs={tv.cungs} mauChinh="#B8860B" />
+
+    {/* 3. LUẬN BỘ THÂN */}
+    {tv.soSanhMenhThan.thanCuMenh ? (
+      <div class="rounded-2xl border-2 border-(--color-gold-400)/50 bg-white p-5 shadow-lg">
+        <p class="font-display text-base font-extrabold uppercase tracking-wide text-slate-900">Bộ Thân</p>
+        <p class="mt-1 text-sm font-semibold leading-relaxed text-slate-700">Thân cư Mệnh — hai bộ trùng nhau, không phải xét riêng.</p>
+      </div>
+    ) : (
+      <BoTamPhuong bo={tv.boThan} cungs={tv.cungs} mauChinh="#1D5FB0" />
+    )}
+
+    {/* 4. SO MỆNH VỚI THÂN */}
+    <div class="overflow-hidden rounded-2xl border-2 border-(--color-gold-400)/50 bg-white shadow-lg">
+      <div class="bg-gradient-to-r from-[#3a2c17] to-[#241a10] px-5 py-3">
+        <h3 class="font-display text-base font-extrabold uppercase tracking-wide text-(--color-gold-300)">Mệnh trội hơn hay Thân trội hơn?</h3>
+        <p class="mt-0.5 text-[11px] font-semibold italic text-white/70">Mệnh chủ tiền vận (nửa đầu đời) · Thân chủ hậu vận (từ trung niên trở đi).</p>
+      </div>
+      <div class="p-4 sm:p-5">
+        <div class="space-y-2.5">
+          {[
+            { ten: "Bộ Mệnh", diem: tv.soSanhMenhThan.diemMenh, mau: "#B8860B", phu: "tiền vận" },
+            { ten: `Bộ Thân${tv.soSanhMenhThan.thanCuMenh ? " (đồng cung)" : ""}`, diem: tv.soSanhMenhThan.diemThan, mau: "#1D5FB0", phu: "hậu vận" },
+          ].map((x) => (
+            <div class="flex items-center gap-2">
+              <p class="w-[104px] shrink-0 text-[11px] font-extrabold text-slate-700">{x.ten}<br /><span class="font-semibold text-slate-400">{x.phu}</span></p>
+              <div class="relative h-6 flex-1 overflow-hidden rounded bg-slate-100">
+                <div class="absolute inset-y-0 left-1/2 w-px bg-slate-300"></div>
+                <div
+                  class="absolute inset-y-0 rounded"
+                  style={`background:${x.mau};${x.diem >= 0 ? `left:50%;width:${Math.min(50, (x.diem / 10) * 50)}%` : `right:50%;width:${Math.min(50, (Math.abs(x.diem) / 10) * 50)}%`}`}
+                ></div>
+              </div>
+              <p class="w-10 shrink-0 text-right text-sm font-black" style={`color:${x.mau}`}>{x.diem}</p>
+            </div>
+          ))}
+          <p class="text-center text-[10px] font-semibold text-slate-400">Vạch giữa = mức trung bình. Sang phải là thuận, sang trái là nghịch (thang −10…+10).</p>
+        </div>
+        <p class="mt-4 rounded-xl bg-(--color-ivory-100) p-3 text-[12.5px] font-semibold leading-relaxed text-slate-800">{tv.soSanhMenhThan.nhanXet}</p>
+      </div>
+    </div>
+
+    {/* 5. LUẬN TỪNG CUNG */}
     <div class="overflow-hidden rounded-2xl border-2 border-(--color-gold-400)/50 bg-white shadow-lg">
       <div class="bg-gradient-to-r from-[#1D5FB0] to-[#173F73] px-5 py-3">
-        <h3 class="font-display text-base font-extrabold uppercase tracking-wide text-white">Luận từng cung</h3>
+        <h3 class="font-display text-base font-extrabold uppercase tracking-wide text-white">Luận từng cung còn lại</h3>
       </div>
       <div class="grid gap-2.5 p-4 sm:grid-cols-2 sm:p-5">
         {tv.luanCacCung.map((l) => {
@@ -93,7 +137,7 @@ const diemsDaiHan = (tv?.daiHan ?? []).map((h) => ({
       </div>
     </div>
 
-    {/* 3. BIỂU ĐỒ SÓNG VẬN TRÌNH */}
+    {/* 6. BIỂU ĐỒ SÓNG VẬN TRÌNH — bước cuối theo thứ tự Mệnh → Thân → Đại Vận */}
     {diemsDaiHan.length > 0 && (
       <div class="overflow-hidden rounded-2xl border-2 border-(--color-gold-400)/50 bg-white shadow-lg">
         <div class="bg-gradient-to-r from-[#1D5FB0] to-[#173F73] px-5 py-3">
@@ -113,7 +157,7 @@ const diemsDaiHan = (tv?.daiHan ?? []).map((h) => ({
       </div>
     )}
 
-    {/* 4. KẾT LUẬN */}
+    {/* 7. KẾT LUẬN */}
     {tv.ketLuan.length > 0 && (
       <div class="overflow-hidden rounded-2xl border-2 border-(--color-gold-400)/60 bg-gradient-to-br from-[#241a10] to-[#3a2c17] shadow-xl">
         <div class="px-5 py-3">

@@ -73,6 +73,123 @@ export function coLucXung(chi: string, cacChi: string[]): boolean {
 }
 
 // ---------------------------------------------------------------------------------------------
+// NGŨ HỢP THIÊN CAN — CỬA DUY NHẤT cho toàn dự án.
+//
+// Trước 22/8/2026 mỗi nơi tự kiểm tra một kiểu: engine.ts có cổng tháng + tranh hợp, còn
+// structural-bat-tu.ts chỉ kiểm tra "hai Can cùng có mặt trong tứ trụ" rồi trừ hạng luôn — anh Công
+// phát hiện lá 25/8/2026 bị báo "Bính-Tân khả năng hóa Thủy" trong khi lá đó có 2 Bính (tranh hợp,
+// không hợp được) và sinh tháng Thân (Kim, không vượng cho Thủy). Nay mọi nơi phải gọi hàm này.
+//
+// Quy tắc lấy nguyên từ tài liệu sẵn có, KHÔNG tự suy diễn:
+//   - `luan-giai-bat-tu/references/quan-he-can-chi.md` mục 3
+//   - `luan-giai-bat-tu-manh-phai/references/hop-hoa-mo-rong.md` mục 2 & 3 (Manh Phái Buổi 30)
+//
+// ĐIỀU KIỆN "CÓ THỂ HỢP":
+//   1. Hai Can phải LIỀN KỀ TRỤ. Cách trụ (có Can khác chen giữa) thì không hợp.
+//      (Ngoại lệ "Can ở giữa làm cầu nối" — vd Giáp–Bính–Kỷ — tài liệu chỉ nêu đúng 1 ví dụ, chưa
+//      cho quy tắc tổng quát, nên CHƯA cài: thà bỏ sót còn hơn bắt nhầm.)
+//   2. Không Tranh Hợp (2 Can Dương giành 1 Can Âm) và không Đố Hợp (2 Can Âm giành 1 Can Dương).
+//      Cả hai đều quy về: một trong hai Can của cặp xuất hiện ≥2 lần trong tứ trụ → KHÔNG hợp.
+// ĐIỀU KIỆN "HÓA" (sau khi đã hợp được):
+//   3. NHẬT CHỦ tham gia hợp → CHỈ LUẬN HỢP, KHÔNG LUẬN HÓA (hop-hoa-mo-rong.md mục 3, in đậm).
+//   4. Tháng sinh phải vượng cho hóa thần.
+// CHƯA CÀI (chờ anh Công chốt ngưỡng định lượng): "lực sinh/trợ hóa thần đủ mạnh nhưng không thái
+// quá", và hóa thần thứ 2 của mỗi cặp (phu tòng thê hóa / thê tòng phu hóa).
+
+/** Tháng lệnh có vượng cho hành hóa khí không. Thổ có thêm Tị theo `hop-hoa-mo-rong.md` mục 3. */
+export function thangVuongChoHanh(chiThangRaw: string, h: Hanh): boolean {
+  const chiThang = chiChuan(chiThangRaw);
+  const MUA: Record<Hanh, string[]> = {
+    Mộc: ["Dần", "Mão", "Thìn"], Hỏa: ["Tị", "Ngọ", "Mùi"],
+    Kim: ["Thân", "Dậu", "Tuất"], Thủy: ["Hợi", "Tý", "Sửu"],
+    Thổ: ["Thìn", "Tuất", "Sửu", "Mùi", "Tị"],
+  };
+  return (MUA[h] ?? []).includes(chiThang);
+}
+
+export interface KetQuaHopHoa {
+  cap: string; // "Bính-Tân"
+  canA: string;
+  canB: string;
+  /** Chỉ số trụ 0=Năm, 1=Tháng, 2=Ngày, 3=Giờ. */
+  viTriA: number;
+  viTriB: number;
+  hoaHanh: Hanh;
+  /** Hợp được không (liền kề + không tranh/đố hợp). */
+  hop: boolean;
+  /** Hóa thật không (đã hợp + Nhật Chủ không tham gia + tháng vượng cho hóa thần). */
+  hoa: boolean;
+  /** Tranh Hợp hoặc Đố Hợp — dùng để giảm lực phe đang bận tranh nhau. */
+  tranhHop: boolean;
+  lyDo: string;
+}
+
+/** Quét toàn bộ ngũ hợp Thiên Can của một tứ trụ. Trả về CẢ cặp không hợp/không hóa kèm lý do. */
+export function xetHopHoaThienCan(tt: Pick<TuTruInput, "nam" | "thang" | "ngay" | "gio">): KetQuaHopHoa[] {
+  const cans = [tt.nam.can, tt.thang.can, tt.ngay.can, tt.gio.can];
+  const TEN_TRU = ["Năm", "Tháng", "Ngày", "Giờ"];
+  const ketQua: KetQuaHopHoa[] = [];
+
+  for (const [cap, hoaHanhRaw] of Object.entries(HOP_HOA)) {
+    const [a, b] = cap.split("-");
+    const hoaHanh = hoaHanhRaw as Hanh;
+    const soA = cans.filter((c) => c === a).length;
+    const soB = cans.filter((c) => c === b).length;
+    if (soA === 0 || soB === 0) continue;
+
+    // Điều kiện 2 — Tranh Hợp / Đố Hợp: một Can của cặp xuất hiện ≥2 lần → hợp không trọn, vô hiệu.
+    if (soA >= 2 || soB >= 2) {
+      const canNhieu = soA >= 2 ? a! : b!;
+      ketQua.push({
+        cap, canA: a!, canB: b!, viTriA: cans.indexOf(a!), viTriB: cans.indexOf(b!), hoaHanh,
+        hop: false, hoa: false, tranhHop: true,
+        lyDo: `Có ${Math.max(soA, soB)} can ${canNhieu} cùng giành hợp ${cap} → ${amCan(canNhieu) === "Dương" ? "Tranh Hợp" : "Đố Hợp"}: hợp không trọn, KHÔNG hợp.`,
+      });
+      continue;
+    }
+
+    // Điều kiện 1 — phải liền kề trụ.
+    const iA = cans.indexOf(a!);
+    const iB = cans.indexOf(b!);
+    if (Math.abs(iA - iB) !== 1) {
+      ketQua.push({
+        cap, canA: a!, canB: b!, viTriA: iA, viTriB: iB, hoaHanh,
+        hop: false, hoa: false, tranhHop: false,
+        lyDo: `${a} ở trụ ${TEN_TRU[iA]} và ${b} ở trụ ${TEN_TRU[iB]} KHÔNG liền kề (có can khác chen giữa) → không hợp.`,
+      });
+      continue;
+    }
+
+    // Điều kiện 3 — Nhật Chủ tham gia thì chỉ hợp, không hóa.
+    if (iA === 2 || iB === 2) {
+      ketQua.push({
+        cap, canA: a!, canB: b!, viTriA: iA, viTriB: iB, hoaHanh,
+        hop: true, hoa: false, tranhHop: false,
+        lyDo: `Nhật Chủ ${tt.ngay.can} tham gia hợp ${cap} → chỉ luận HỢP, KHÔNG luận HÓA (Nhật Chủ là chủ thể, không tự biến thành hành khác).`,
+      });
+      continue;
+    }
+
+    // Điều kiện 4 — tháng phải vượng cho hóa thần.
+    if (!thangVuongChoHanh(tt.thang.chi, hoaHanh)) {
+      ketQua.push({
+        cap, canA: a!, canB: b!, viTriA: iA, viTriB: iB, hoaHanh,
+        hop: true, hoa: false, tranhHop: false,
+        lyDo: `Hợp ${cap} thành nhưng tháng ${tt.thang.chi} không vượng cho ${hoaHanh} → hợp mà KHÔNG hóa.`,
+      });
+      continue;
+    }
+
+    ketQua.push({
+      cap, canA: a!, canB: b!, viTriA: iA, viTriB: iB, hoaHanh,
+      hop: true, hoa: true, tranhHop: false,
+      lyDo: `Hợp ${cap} liền kề (trụ ${TEN_TRU[iA]}–${TEN_TRU[iB]}), không tranh hợp, tháng ${tt.thang.chi} vượng cho ${hoaHanh} → HÓA ${hoaHanh}.`,
+    });
+  }
+  return ketQua;
+}
+
+// ---------------------------------------------------------------------------------------------
 export type CapDo = "Cực cường" | "Cường vượng" | "Vượng" | "Trung hòa" | "Suy" | "Nhược" | "Cực nhược";
 
 export interface VuongSuyResult {
@@ -151,42 +268,28 @@ export function tinhVuongSuy(tt: TuTruInput): VuongSuyResult {
   //       tranh nhau thay vì dồn sức khắc Nhật Chủ).
   let canhBaoHopHoa = false;
   let tranhHopGiamLucDiDang = false;
-  const allCans = [tt.nam.can, tt.thang.can, tt.ngay.can, tt.gio.can];
-  /** Tháng lệnh có vượng cho hành hóa khí không (mộc-xuân, hỏa-hạ, kim-thu, thủy-đông, thổ-tứ quý). */
-  const thangVuongChoHanh = (h: Hanh): boolean => {
-    const chiThang = chiChuan(tt.thang.chi);
-    const MUA: Record<Hanh, string[]> = {
-      Mộc: ["Dần", "Mão", "Thìn"], Hỏa: ["Tị", "Ngọ", "Mùi"],
-      Kim: ["Thân", "Dậu", "Tuất"], Thủy: ["Hợi", "Tý", "Sửu"],
-      Thổ: ["Thìn", "Tuất", "Sửu", "Mùi"],
-    };
-    return (MUA[h] ?? []).includes(chiThang);
-  };
-  for (const [cap, hoaHanh] of Object.entries(HOP_HOA)) {
-    const [a, b] = cap.split("-");
-    if (!allCans.includes(a!) || !allCans.includes(b!)) continue;
-    const phe = pheCua(hoaHanh as Hanh, hanhNC);
-    if (phe !== "quan_sat" && phe !== "thuc_thuong" && phe !== "tai") continue;
+  for (const kq of xetHopHoaThienCan(tt)) {
+    const phe = pheCua(kq.hoaHanh, hanhNC);
+    const laDiDang = phe === "quan_sat" || phe === "thuc_thuong" || phe === "tai";
 
-    // Tranh hợp: một trong hai Can xuất hiện ≥2 lần trong tứ trụ.
-    const soA = allCans.filter((c) => c === a).length;
-    const soB = allCans.filter((c) => c === b).length;
-    const laTranhHop = soA >= 2 || soB >= 2;
-    const thangDatDieuKien = thangVuongChoHanh(hoaHanh as Hanh);
-
-    if (laTranhHop) {
-      const canNhieu = soA >= 2 ? a : b;
-      const pheCanNhieu = pheCua(hanhCan(canNhieu!), hanhNC);
-      dg.push(`Có ${soA >= 2 ? soA : soB} ${canNhieu} cùng giành hợp ${cap} → TRANH HỢP: hợp không trọn, KHÔNG hóa ${hoaHanh} (không hạ bậc).`);
+    if (kq.tranhHop) {
+      dg.push(kq.lyDo);
+      // Phe đi tranh hợp bận giành nhau nên áp lực lên Nhật Chủ giảm so với nhìn bề mặt.
+      const canNhieu = [tt.nam.can, tt.thang.can, tt.ngay.can, tt.gio.can].filter((c) => c === kq.canA).length >= 2 ? kq.canA : kq.canB;
+      const pheCanNhieu = pheCua(hanhCan(canNhieu), hanhNC);
       if (pheCanNhieu === "quan_sat" || pheCanNhieu === "thuc_thuong" || pheCanNhieu === "tai") {
         tranhHopGiamLucDiDang = true;
         dg.push(`Đồng thời ${canNhieu} bận tranh hợp nên áp lực lên Nhật Chủ giảm so với nhìn bề mặt.`);
       }
-    } else if (!thangDatDieuKien) {
-      dg.push(`Có cặp hợp ${cap} nhưng tháng ${tt.thang.chi} không vượng cho ${hoaHanh} → KHÔNG hóa (không hạ bậc).`);
-    } else {
+      continue;
+    }
+    // Chỉ hạ bậc khi hóa THẬT và hóa thần thuộc dị đảng (khắc/tiết/hao Nhật Chủ).
+    if (!laDiDang) continue;
+    if (kq.hoa) {
       canhBaoHopHoa = true;
-      dg.push(`Có cặp hợp ${cap} hóa ${hoaHanh} (tháng ${tt.thang.chi} vượng cho ${hoaHanh}, không tranh hợp) — ${phe === "quan_sat" ? "khắc" : phe === "thuc_thuong" ? "tiết" : "hao"} Nhật Chủ → hạ bậc.`);
+      dg.push(`${kq.lyDo} Hóa thần ${phe === "quan_sat" ? "khắc" : phe === "thuc_thuong" ? "tiết" : "hao"} Nhật Chủ → hạ bậc.`);
+    } else {
+      dg.push(`${kq.lyDo} (không hạ bậc)`);
     }
   }
   for (const [bo, hoaHanh] of [...Object.entries(TAM_HOP), ...Object.entries(TAM_HOI)]) {

@@ -1,0 +1,102 @@
+---
+/**
+ * ĐỒ HÌNH + LUẬN TRỌN BỘ TAM PHƯƠNG TỨ CHÍNH của một cung (Mệnh hoặc Thân) — anh Công chốt
+ * 22/8/2026: "xét mệnh và thân thì phải xét đối cung và trong cung tam hợp tốt hay xấu".
+ *
+ * Đồ hình: 12 vị trí Địa Chi trên vòng tròn, nối tam giác tam hợp + đường đối chiếu, tô màu 4 cung
+ * trong bộ theo đánh giá cát/bình/hung. Nhìn là thấy ngay bộ này được đỡ hay bị kéo.
+ */
+import type { LuanBoTamPhuong, CungTuViVM } from "../../lib/trach-nhat-sinh-no/types";
+
+interface Props { bo: LuanBoTamPhuong; cungs: CungTuViVM[]; mauChinh: string }
+const { bo, cungs, mauChinh } = Astro.props;
+
+const DG = {
+  cat: { nen: "#F0FDF4", vien: "#16A34A", chu: "#166534", nhan: "Cát" },
+  binh: { nen: "#F8FAFC", vien: "#94A3B8", chu: "#475569", nhan: "Bình" },
+  hung: { nen: "#FEF2F2", vien: "#DC2626", chu: "#B91C1C", nhan: "Cần lưu ý" },
+} as const;
+
+const vaiTro = [
+  { luan: bo.banCung, nhan: "Bản cung", giaiThich: "chính cung, nặng nhất" },
+  { luan: bo.doiCung, nhan: "Đối cung", giaiThich: "chiếu thẳng sang, nặng thứ nhì" },
+  { luan: bo.tamHop[0]!, nhan: "Tam hợp", giaiThich: "hợp chiếu, đỡ hoặc kéo" },
+  { luan: bo.tamHop[1]!, nhan: "Tam hợp", giaiThich: "hợp chiếu, đỡ hoặc kéo" },
+];
+
+// --- Đồ hình vòng 12 chi ---------------------------------------------------------------------
+const CX = 116, CY = 116, R = 84;
+const idxCua = (chiName: string) => cungs.findIndex((c) => c.chiName === chiName);
+const toaDo = (k: number) => {
+  const t = ((k * 30 - 90) * Math.PI) / 180;
+  return { x: CX + R * Math.cos(t), y: CY + R * Math.sin(t) };
+};
+const iBan = idxCua(bo.banCung.chiName);
+const iDoi = idxCua(bo.doiCung.chiName);
+const iTam = bo.tamHop.map((l) => idxCua(l.chiName));
+const trongBo = new Map<number, { dg: keyof typeof DG; ten: string }>();
+if (iBan >= 0) trongBo.set(iBan, { dg: bo.banCung.danhGia, ten: bo.banCung.cungName });
+if (iDoi >= 0) trongBo.set(iDoi, { dg: bo.doiCung.danhGia, ten: bo.doiCung.cungName });
+iTam.forEach((k, n) => { if (k >= 0) trongBo.set(k, { dg: bo.tamHop[n]!.danhGia, ten: bo.tamHop[n]!.cungName }); });
+
+const diemTamGiac = [iBan, ...iTam].filter((k) => k >= 0).map((k) => { const p = toaDo(k); return `${p.x.toFixed(1)},${p.y.toFixed(1)}`; }).join(" ");
+const pBan = iBan >= 0 ? toaDo(iBan) : null;
+const pDoi = iDoi >= 0 ? toaDo(iDoi) : null;
+
+const stBo = DG[bo.danhGia];
+---
+
+<div class="overflow-hidden rounded-2xl border-2 bg-white shadow-lg" style={`border-color:${mauChinh}55`}>
+  <div class="px-5 py-3" style={`background:${mauChinh}`}>
+    <h3 class="font-display text-base font-extrabold uppercase tracking-wide text-white">Bộ {bo.tenBo}</h3>
+    <p class="mt-0.5 text-[11px] font-semibold italic text-white/85">
+      Điểm cả bộ {bo.diemBo}/10 — {stBo.nhan}. {bo.soCatTinh} cát tinh / {bo.soSatTinh} sát tinh trên cả 4 cung.
+    </p>
+  </div>
+
+  <div class="flex flex-col gap-4 p-4 sm:p-5 lg:flex-row">
+    {/* Đồ hình vòng 12 chi */}
+    <svg viewBox="0 0 232 232" class="mx-auto w-[200px] shrink-0 lg:w-[224px]" role="img" aria-label={`Đồ hình tam phương tứ chính của bộ ${bo.tenBo}`}>
+      <circle cx={CX} cy={CY} r={R} fill="none" stroke="#E2E8F0" stroke-width="1" stroke-dasharray="3 3" />
+      {diemTamGiac && <polygon points={diemTamGiac} fill={`${mauChinh}14`} stroke={mauChinh} stroke-width="1.6" />}
+      {pBan && pDoi && <line x1={pBan.x} y1={pBan.y} x2={pDoi.x} y2={pDoi.y} stroke={mauChinh} stroke-width="1.6" stroke-dasharray="5 3" />}
+      {cungs.map((c, k) => {
+        const p = toaDo(k);
+        const trong = trongBo.get(k);
+        const st = trong ? DG[trong.dg] : null;
+        return (
+          <g>
+            <circle cx={p.x} cy={p.y} r={trong ? 17 : 8} fill={st ? st.nen : "#F1F5F9"} stroke={st ? st.vien : "#CBD5E1"} stroke-width={trong ? 2.5 : 1} />
+            <text x={p.x} y={trong ? p.y - 2 : p.y + 3} text-anchor="middle" font-size={trong ? "10" : "8"} font-weight="800" fill={st ? st.chu : "#94A3B8"}>{c.chiName}</text>
+            {trong && <text x={p.x} y={p.y + 9} text-anchor="middle" font-size="6.5" font-weight="700" fill={st!.chu}>{trong.ten}</text>}
+          </g>
+        );
+      })}
+      <text x={CX} y={CY - 4} text-anchor="middle" font-size="9" font-weight="700" fill="#94A3B8">Điểm bộ</text>
+      <text x={CX} y={CY + 12} text-anchor="middle" font-size="17" font-weight="900" fill={stBo.chu}>{bo.diemBo}</text>
+    </svg>
+
+    {/* 4 thẻ cung trong bộ */}
+    <div class="grid flex-1 gap-2 sm:grid-cols-2">
+      {vaiTro.map(({ luan, nhan, giaiThich }) => {
+        const st = DG[luan.danhGia];
+        return (
+          <div class="rounded-xl border-2 p-2.5" style={`background:${st.nen};border-color:${st.vien}66`}>
+            <div class="flex items-baseline justify-between gap-1">
+              <span class="rounded px-1.5 py-0.5 text-[9px] font-extrabold uppercase tracking-wide text-white" style={`background:${mauChinh}`}>{nhan}</span>
+              <span class="text-[9px] font-bold" style={`color:${st.chu}`}>{st.nhan} · {luan.diem}</span>
+            </div>
+            <p class="mt-1 text-[12px] font-black text-slate-900">{luan.cungName} <span class="text-[10px] font-bold text-slate-500">({luan.chiName})</span></p>
+            <p class="text-[10.5px] font-bold" style={`color:${st.chu}`}>{luan.chinhTinh}</p>
+            <p class="mt-0.5 text-[9.5px] font-semibold italic text-slate-500">{giaiThich}</p>
+            <p class="mt-1 text-[10.5px] font-semibold leading-relaxed text-slate-700">{luan.nhanXet}</p>
+          </div>
+        );
+      })}
+    </div>
+  </div>
+
+  <p class="border-t px-5 py-3 text-[12px] font-semibold leading-relaxed" style={`border-color:${mauChinh}22;background:${stBo.nen};color:${stBo.chu}`}>
+    {bo.nhanXet}
+  </p>
+</div>

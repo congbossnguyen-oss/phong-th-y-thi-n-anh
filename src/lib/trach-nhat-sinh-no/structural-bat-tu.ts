@@ -6,7 +6,7 @@
  */
 import type { BatTuChart } from "../bat-tu";
 import {
-  phanTichBatTu, hanhCan, hanhChi, hanhSinhCho, coLucXung, TANG, HOP_HOA, TAM_HOP, TAM_HOI,
+  phanTichBatTu, hanhCan, hanhChi, hanhSinhCho, coLucXung, TANG, TAM_HOP, TAM_HOI, xetHopHoaThienCan,
   KHAC_MAP, SINH_MAP, chiChuan, type Hanh, type TuTruInput,
 } from "../bat-tu-engine/engine";
 import { loadTrachNhatConfig } from "./config";
@@ -65,20 +65,29 @@ function chamChatLuongGoc(chart: BatTuChart): GocResult {
     }
   }
   if (!biHopHoaMat) {
-    // (b) Can cùng trụ với chi gốc bị ngũ hợp.
-    const truCuaGoc = [chart.year, chart.month, chart.day, chart.hour].find((t) => chiChuan(t.chi) === chiGocChuan);
-    const canCuaGoc = truCuaGoc?.can;
-    if (canCuaGoc) {
-      const cans = [chart.year.can, chart.month.can, chart.day.can, chart.hour.can];
-      for (const [cap, hoaHanh] of Object.entries(HOP_HOA)) {
-        const [a, b] = cap.split("-");
-        const coCapNay = cans.includes(a!) && cans.includes(b!);
-        const canGocThamGia = canCuaGoc === a || canCuaGoc === b;
-        if (coCapNay && canGocThamGia && hoaHanh !== nhatChuHanh) {
-          biHopHoaMat = true;
-          lyDoHopHoa = `Can ${canCuaGoc} cùng trụ với chi gốc bị hợp ${cap} (khả năng hóa ${hoaHanh})`;
-          break;
-        }
+    // (b) Can CÙNG TRỤ với chi gốc bị ngũ hợp HÓA sang hành khác.
+    //
+    // ⚠️ Sửa 22/8/2026 (anh Công phát hiện trên lá 25/8/2026): trước đây chỗ này tự kiểm tra kiểu
+    // thô — chỉ cần hai Can của cặp cùng có mặt trong tứ trụ là trừ hạng luôn, không xét liền kề,
+    // không xét tranh hợp, không xét tháng, không xét Nhật Chủ. Lá 25/8/2026 có 2 Bính (Tranh Hợp
+    // → không hợp được) và sinh tháng Thân (Kim, không vượng cho Thủy) mà vẫn bị báo "Bính-Tân khả
+    // năng hóa Thủy → hạ 1 bậc". Nay gọi chung `xetHopHoaThienCan()` và CHỈ trừ khi hóa THẬT.
+    const cansTheoTru = [chart.year.can, chart.month.can, chart.day.can, chart.hour.can];
+    const truCuaGocIdx = [chart.year, chart.month, chart.day, chart.hour].findIndex((t) => chiChuan(t.chi) === chiGocChuan);
+    if (truCuaGocIdx >= 0) {
+      const canCuaGoc = cansTheoTru[truCuaGocIdx]!;
+      const tt = {
+        nam: { can: chart.year.can, chi: chart.year.chi }, thang: { can: chart.month.can, chi: chart.month.chi },
+        ngay: { can: chart.day.can, chi: chart.day.chi }, gio: { can: chart.hour.can, chi: chart.hour.chi },
+      };
+      for (const kq of xetHopHoaThienCan(tt)) {
+        if (!kq.hoa) continue; // hợp mà không hóa thì bản chất Can giữ nguyên → gốc không mất
+        if (kq.hoaHanh === nhatChuHanh) continue;
+        const canGocThamGia = (kq.viTriA === truCuaGocIdx && kq.canA === canCuaGoc) || (kq.viTriB === truCuaGocIdx && kq.canB === canCuaGoc);
+        if (!canGocThamGia) continue;
+        biHopHoaMat = true;
+        lyDoHopHoa = `Can ${canCuaGoc} cùng trụ với chi gốc hợp ${kq.cap} và HÓA ${kq.hoaHanh} (${kq.lyDo})`;
+        break;
       }
     }
   }

@@ -5,7 +5,7 @@
  */
 import { tinhTuVi, type TuViChart, type CungKetQua } from "../tu-vi/engine";
 import { loadTrachNhatConfig } from "./config";
-import type { TuViAnalysis, TuViVetoResult, TuViDaiHanBandItem, RedFlag, CungTuViVM, LuanCung } from "./types";
+import type { TuViAnalysis, TuViVetoResult, TuViDaiHanBandItem, RedFlag, CungTuViVM, LuanCung, LuanBoTamPhuong, SoSanhMenhThan } from "./types";
 import type { Gender } from "../bat-tu";
 
 const cuongNhuocLabel = (m: "cuong" | "trung_binh" | "nhuoc"): string =>
@@ -129,6 +129,98 @@ function chamCuongNhuoc(cung: CungKetQua | undefined): "cuong" | "trung_binh" | 
   return dac ? "cuong" : "trung_binh";
 }
 
+/**
+ * BƯỚC 1-2 — Luận TRỌN BỘ tam phương tứ chính của một cung (anh Công chốt 22/8/2026: "xét mệnh và
+ * thân thì chúng ta phải xét đối cung và trong cung tam hợp tốt hay xấu").
+ *
+ * Vị trí chuẩn Tử Vi tính theo chỉ số Chi (không lệ thuộc tên cung): đối cung = +6, tam hợp = ±4.
+ * Trọng số: bản cung 1,0 — đối cung 0,7 (chiếu trực diện, nặng thứ nhì) — mỗi cung tam hợp 0,5.
+ * Chia cho tổng trọng số để điểm bộ vẫn nằm trong thang -10..10 như điểm từng cung.
+ */
+function luanBoTamPhuong(chart: TuViChart, chiIndex: number, tenBo: string, satTinhTen: Set<string>): LuanBoTamPhuong {
+  const lay = (offset: number) => chart.cungs[(chiIndex + offset + 12) % 12]!;
+  const banCungRaw = lay(0);
+  const doiCungRaw = lay(6);
+  const tamHopRaw = [lay(4), lay(8)];
+
+  const banCung = luanMotCung(banCungRaw, satTinhTen);
+  const doiCung = luanMotCung(doiCungRaw, satTinhTen);
+  const tamHop = tamHopRaw.map((c) => luanMotCung(c, satTinhTen));
+
+  const TRONG_SO_BAN = 1, TRONG_SO_DOI = 0.7, TRONG_SO_TAM_HOP = 0.5;
+  const tongTrongSo = TRONG_SO_BAN + TRONG_SO_DOI + TRONG_SO_TAM_HOP * 2;
+  const diemBo = Math.round(
+    ((banCung.diem * TRONG_SO_BAN + doiCung.diem * TRONG_SO_DOI + tamHop.reduce((s, l) => s + l.diem * TRONG_SO_TAM_HOP, 0)) / tongTrongSo) * 10,
+  ) / 10;
+
+  let soCatTinh = 0, soSatTinh = 0, soHoaCat = 0, soHoaKy = 0;
+  for (const c of [banCungRaw, doiCungRaw, ...tamHopRaw]) {
+    soCatTinh += c.phuTinh.filter((x) => TRUNG_TINH_CAT.includes(x.name)).length;
+    soSatTinh += c.phuTinh.filter((x) => satTinhTen.has(x.name)).length;
+    soHoaCat += [...c.chinhTinh, ...c.phuTinh].filter((x) => x.tuHoa === "Lộc" || x.tuHoa === "Quyền" || x.tuHoa === "Khoa").length;
+    soHoaKy += [...c.chinhTinh, ...c.phuTinh].filter((x) => x.tuHoa === "Kỵ").length;
+  }
+
+  const danhGia: LuanBoTamPhuong["danhGia"] = diemBo >= 1.5 ? "cat" : diemBo <= -1.5 ? "hung" : "binh";
+
+  // Viết nhận xét: nêu rõ bản cung ra sao, đối cung cứu hay phá, tam hợp đỡ hay kéo.
+  const veBan = banCung.danhGia === "cat" ? "bản thân cung đã tốt" : banCung.danhGia === "hung" ? "bản thân cung yếu" : "bản thân cung ở mức trung bình";
+  const veDoi = doiCung.danhGia === "cat"
+    ? `đối cung ${doiCungRaw.cungName} tốt nên chiếu sang cứu thêm`
+    : doiCung.danhGia === "hung"
+      ? `đối cung ${doiCungRaw.cungName} xấu nên chiếu sang kéo xuống`
+      : `đối cung ${doiCungRaw.cungName} bình thường, không cứu cũng không phá`;
+  const soTamHopCat = tamHop.filter((l) => l.danhGia === "cat").length;
+  const soTamHopHung = tamHop.filter((l) => l.danhGia === "hung").length;
+  const veTamHop = soTamHopCat === 2 ? "cả hai cung tam hợp đều tốt, bộ được đỡ vững"
+    : soTamHopHung === 2 ? "cả hai cung tam hợp đều yếu, bộ bị kéo xuống"
+      : soTamHopCat === 1 && soTamHopHung === 1 ? "hai cung tam hợp một tốt một yếu, bù trừ nhau"
+        : soTamHopCat === 1 ? "một cung tam hợp tốt đỡ cho bộ"
+          : soTamHopHung === 1 ? "một cung tam hợp yếu làm bộ hụt đi" : "hai cung tam hợp ở mức bình thường";
+
+  const chot = danhGia === "cat"
+    ? "Tổng thể cả bộ THUẬN — đây là mặt mạnh của lá số."
+    : danhGia === "hung"
+      ? "Tổng thể cả bộ YẾU — đây là mảng gia đình cần nâng đỡ sớm."
+      : "Tổng thể cả bộ ở mức TRUNG BÌNH — phần lớn còn do nuôi dạy quyết định.";
+
+  const nhanXet = `Xét cả bộ ${tenBo} (${banCungRaw.cungName} + đối cung ${doiCungRaw.cungName} + tam hợp ${tamHopRaw.map((c) => c.cungName).join(", ")}): ${veBan}, ${veDoi}, ${veTamHop}. Cả bộ có ${soCatTinh} cát tinh, ${soSatTinh} sát tinh${soHoaCat ? `, ${soHoaCat} Hóa cát` : ""}${soHoaKy ? `, ${soHoaKy} Hóa Kỵ` : ""}. ${chot}`;
+
+  return { tenBo, banCung, doiCung, tamHop, diemBo, danhGia, soCatTinh, soSatTinh, soHoaCat, soHoaKy, nhanXet };
+}
+
+/**
+ * BƯỚC 3 — Mệnh trội hơn hay Thân trội hơn. Cách luận truyền thống: Mệnh chủ TIỀN VẬN (khoảng nửa
+ * đầu đời), Thân chủ HẬU VẬN (từ trung niên trở đi). Chênh dưới 1 điểm coi là cân bằng.
+ */
+function soSanhBoMenhThan(boMenh: LuanBoTamPhuong, boThan: LuanBoTamPhuong, thanCuMenh: boolean): SoSanhMenhThan {
+  const diemMenh = boMenh.diemBo;
+  const diemThan = boThan.diemBo;
+  if (thanCuMenh) {
+    return {
+      thanCuMenh: true, diemMenh, diemThan, ketLuan: "dong_cung",
+      nhanXet: "Thân cư Mệnh — Mệnh Thân đồng cung. Tiền vận và hậu vận cùng chung một nền tảng: đời sống nhất quán, ít khúc quanh đảo chiều, nhưng cũng có nghĩa là điểm mạnh và điểm yếu của cung Mệnh sẽ theo bé gần như suốt đời chứ không có giai đoạn nào tự đổi khác.",
+    };
+  }
+  const chenh = Math.round((diemMenh - diemThan) * 10) / 10;
+  if (Math.abs(chenh) < 1) {
+    return {
+      thanCuMenh: false, diemMenh, diemThan, ketLuan: "can_bang",
+      nhanXet: `Bộ Mệnh (${diemMenh}) và bộ Thân (${diemThan}) tương đương nhau. Nửa đầu đời và nửa sau khá đều tay, không có giai đoạn nào bật lên hay tụt hẳn so với giai đoạn kia — cuộc đời đi ngang, ổn định.`,
+    };
+  }
+  if (chenh > 0) {
+    return {
+      thanCuMenh: false, diemMenh, diemThan, ketLuan: "menh_troi_hon",
+      nhanXet: `Bộ Mệnh (${diemMenh}) MẠNH HƠN bộ Thân (${diemThan}), chênh ${chenh} điểm. Mệnh chủ tiền vận nên bé có nền tảng đầu đời thuận lợi — dễ được nâng đỡ, đường học hành và khởi đầu suôn sẻ; nhưng Thân chủ hậu vận lại yếu hơn, càng lớn càng phải tự xoay xở. Gia đình nên hướng bé tích lũy nghề nghiệp và quan hệ ngay từ lúc còn thuận, đừng để dồn hết vào giai đoạn sau.`,
+    };
+  }
+  return {
+    thanCuMenh: false, diemMenh, diemThan, ketLuan: "than_troi_hon",
+    nhanXet: `Bộ Thân (${diemThan}) MẠNH HƠN bộ Mệnh (${diemMenh}), chênh ${Math.abs(chenh)} điểm. Đây là dạng "hậu vận phát": đầu đời có thể chật vật hơn bạn bè, nhưng càng về sau càng vững, thành quả đến muộn mà chắc. Gia đình cần kiên nhẫn ở giai đoạn đầu, không nên so sánh bé với bạn cùng lứa quá sớm.`,
+  };
+}
+
 export function chamLopTuVi(input: { day: number; month: number; year: number; hourRepr: number; gender: Gender }): {
   chart: TuViChart;
   analysis: TuViAnalysis;
@@ -181,6 +273,12 @@ export function chamLopTuVi(input: { day: number; month: number; year: number; h
 
   const tamPhuongTuChinh = chamTamPhuongTuChinh(chart, satTinhTen);
 
+  // BƯỚC 1-3 (thứ tự anh Công chốt 22/8/2026): xét trọn bộ MỆNH → trọn bộ THÂN → so hai bộ.
+  const thanCuMenh = chart.thanChiIndex === chart.menhChiIndex;
+  const boMenh = luanBoTamPhuong(chart, chart.menhChiIndex, "Mệnh", satTinhTen);
+  const boThan = luanBoTamPhuong(chart, chart.thanChiIndex, `Thân (cư ${thanCu})`, satTinhTen);
+  const soSanhMenhThan = soSanhBoMenhThan(boMenh, boThan, thanCuMenh);
+
   // 12 cung đầy đủ cho lá số trực quan.
   const cungsVM: CungTuViVM[] = chart.cungs.map((c) => ({
     chiIndex: c.chiIndex, chiName: c.chiName, canName: c.canName, cungName: c.cungName,
@@ -200,20 +298,29 @@ export function chamLopTuVi(input: { day: number; month: number; year: number; h
 
   // Kết luận tổng — viết cho phụ huynh, nêu cả mặt được lẫn mặt phải chấp nhận.
   const ketLuan: string[] = [];
-  const menhLuan = luanCacCung.find((l) => l.cungName === "Mệnh");
-  if (menhLuan) {
-    ketLuan.push(`Cung Mệnh tại ${menh.chiName} có ${menhLuan.chinhTinh}${cuongNhuocLabel(chamCuongNhuoc(menh))} — ${menhLuan.danhGia === "cat" ? "nền tảng tính cách thuận lợi" : menhLuan.danhGia === "hung" ? "tính cách có mặt cần uốn nắn từ nhỏ" : "tính cách ở mức trung bình, phần lớn do giáo dục định hình"}.`);
+  // Thứ tự anh Công chốt: MỆNH (kèm đối cung + tam hợp) → THÂN (kèm đối cung + tam hợp) →
+  // so Mệnh với Thân → rồi mới tới Đại Vận.
+  ketLuan.push(`1. Cung Mệnh tại ${menh.chiName} có ${boMenh.banCung.chinhTinh}${cuongNhuocLabel(chamCuongNhuoc(menh))}. ${boMenh.nhanXet}`);
+  if (thanCuMenh) {
+    ketLuan.push(`2. Thân cư Mệnh — không phải xét riêng bộ Thân, hai bộ trùng nhau.`);
+  } else {
+    ketLuan.push(`2. Cung Thân đóng tại ${than?.chiName ?? "—"}, tức cung ${thanCu} — trọng tâm cuộc đời nghiêng về ${VAI_TRO_CUNG[thanCu] ?? "mảng này"}. ${boThan.nhanXet}`);
   }
-  const cungCat = luanCacCung.filter((l) => l.danhGia === "cat");
-  const cungHung = luanCacCung.filter((l) => l.danhGia === "hung");
-  if (cungCat.length > 0) ketLuan.push(`Mặt thuận: ${cungCat.map((l) => l.cungName).join(", ")} — đây là các mảng bé có sẵn lợi thế.`);
-  if (cungHung.length > 0) ketLuan.push(`Mặt cần lưu tâm: ${cungHung.map((l) => l.cungName).join(", ")} — không phải "xấu cố định", nhưng là chỗ gia đình nên đầu tư nâng đỡ sớm.`);
-  else ketLuan.push("Không cung nào rơi vào mức xấu rõ rệt — lá số tương đối đều.");
-  ketLuan.push(`Thân cư ${THAN_CU_LABEL[thanCu] ?? thanCu} — trọng tâm cuộc đời nghiêng về ${VAI_TRO_CUNG[thanCu] ?? "mảng này"}.`);
+  ketLuan.push(`3. So Mệnh với Thân: ${soSanhMenhThan.nhanXet}`);
+
   const hanTot = daiHan.filter((h) => h.diem >= 1);
   const hanXau = daiHan.filter((h) => h.diem <= -2);
-  if (hanTot.length) ketLuan.push(`Vận trình: giai đoạn thuận rơi vào ${hanTot.map((h) => `${h.tuTuoi}–${h.denTuoi}t`).join(", ")}.`);
-  if (hanXau.length) ketLuan.push(`Giai đoạn cần cẩn trọng: ${hanXau.map((h) => `${h.tuTuoi}–${h.denTuoi}t`).join(", ")} — nên chuẩn bị trước, không nên khởi sự lớn vào đúng các mốc này.`);
+  const veHanTot = hanTot.length ? `giai đoạn thuận rơi vào ${hanTot.map((h) => `${h.tuTuoi}–${h.denTuoi}t`).join(", ")}` : "không giai đoạn nào nổi bật thuận";
+  const veHanXau = hanXau.length ? `; giai đoạn cần cẩn trọng: ${hanXau.map((h) => `${h.tuTuoi}–${h.denTuoi}t`).join(", ")} — nên chuẩn bị trước, không khởi sự lớn vào đúng các mốc này` : "; không giai đoạn nào rơi vào mức xấu rõ rệt";
+  ketLuan.push(`4. Đại Vận: ${veHanTot}${veHanXau}.`);
+
+  const cungCat = luanCacCung.filter((l) => l.danhGia === "cat");
+  const cungHung = luanCacCung.filter((l) => l.danhGia === "hung");
+  const veCat = cungCat.length ? `mặt thuận là ${cungCat.map((l) => l.cungName).join(", ")}` : "không cung nào nổi trội hẳn";
+  const veHung = cungHung.length
+    ? `; mảng cần nâng đỡ sớm: ${cungHung.map((l) => l.cungName).join(", ")} — không phải "xấu cố định", nhưng là chỗ gia đình nên đầu tư trước`
+    : "; không cung nào rơi vào mức xấu rõ rệt, lá số tương đối đều";
+  ketLuan.push(`5. Các cung còn lại: ${veCat}${veHung}.`);
 
   const analysis: TuViAnalysis = {
     cungMenh: menh.chiName,
@@ -223,6 +330,9 @@ export function chamLopTuVi(input: { day: number; month: number; year: number; h
     tuoiKhoiHan: chart.cucSo,
     chinhTinhMenh: menh.chinhTinh.map((s) => ({ ten: s.name, trangThai: s.trangThai })),
     tamPhuongTuChinh,
+    boMenh,
+    boThan,
+    soSanhMenhThan,
     cuongNhuocMenh: chamCuongNhuoc(menh),
     cuongNhuocThan: chamCuongNhuoc(than),
     veto,
