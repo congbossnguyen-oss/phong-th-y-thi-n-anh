@@ -38,14 +38,40 @@ export function diemCauTrucBatTu(a: BaziAnalysis): number {
   return Math.round(d * 100) / 100;
 }
 
-/** Điểm chọn GIỜ theo Tử Vi trong 1 ngày đã chốt (không so giữa các ngày khác nhau). */
+/**
+ * Điểm chọn GIỜ theo Tử Vi trong 1 ngày đã chốt (không so giữa các ngày khác nhau).
+ * Trọng số theo `quy-trinh-chon-gio-sinh-mo-tu-vi.md`: Bước 6 (Đại Vận đầu đời) là "quan trọng nhất
+ * về lâu dài" nên hệ số cao nhất; Bước 4 (Tam Phương Tứ Chính) xét đủ 4 cung chứ không chỉ Mệnh.
+ */
 export function diemChonGioTuVi(a: TuViAnalysis): number {
   let d = 0;
-  d -= a.veto.soSatTinhHoiMenh; // càng ít sát tinh càng tốt (đã loại nếu >=3, còn lại 0-2 vẫn trừ nhẹ)
+
+  // Bước 3+7 — sát tinh hội Mệnh (đã loại nếu ≥3; còn 0-2 vẫn trừ nhẹ).
+  d -= a.veto.soSatTinhHoiMenh;
+
+  // Bước 4 — Tam Phương Tứ Chính (Mệnh + Di + Tài + Quan): cát tinh cộng, sát tinh trừ, Tứ Hóa nặng hơn.
+  d += a.tamPhuongTuChinh.soCatTinh * 0.8;
+  d -= a.tamPhuongTuChinh.soSatTinh * 0.8;
+  d += a.tamPhuongTuChinh.soHoaCat * 1.2;
+  d -= a.tamPhuongTuChinh.soHoaKy * 1.2;
+
+  // Bước 5 — chính tinh thủ Mệnh miếu/vượng/đắc/hãm + Mệnh cường Thân cường (tổ hợp tốt nhất).
   d += a.chinhTinhMenh.some((s) => s.trangThai === "Miếu" || s.trangThai === "Vượng") ? 2 : a.chinhTinhMenh.some((s) => s.trangThai === "Đắc") ? 1 : a.chinhTinhMenh.some((s) => s.trangThai === "Hãm") ? -1 : 0;
-  d += a.than_cu === "Mệnh" || a.than_cu === "Quan Lộc" || a.than_cu === "Phúc Đức" ? 1 : a.than_cu === "Phu Thê" ? -1 : 0;
-  d -= a.daiHan.filter((h) => h.bietTuanTriet).length; // Đại Hạn sớm dính Tuần/Triệt: trừ nhẹ
-  d -= a.daiHan.reduce((s, h) => s + h.soSatTinhTuTap, 0) * 0.5;
+  if (a.cuongNhuocMenh === "cuong" && a.cuongNhuocThan === "cuong") d += 2;
+  else if (a.cuongNhuocMenh === "nhuoc" && a.cuongNhuocThan === "nhuoc") d -= 1.5;
+
+  // Bước 5 — Thân cư: ưu tiên Quan/Tài/Phúc/Mệnh, tránh Thiên Di (sớm xa gia đình) và Phu Thê.
+  d += ["Mệnh", "Quan Lộc", "Phúc Đức", "Tài Bạch"].includes(a.than_cu) ? 1
+    : a.than_cu === "Thiên Di" ? -0.5
+    : a.than_cu === "Phu Thê" ? -1 : 0;
+
+  // Bước 6 — Đại Vận đầu đời (2 hạn đầu ~0-30 tuổi) TRỌNG SỐ CAO NHẤT; các hạn sau nhẹ hơn.
+  a.daiHan.forEach((h, i) => {
+    const heSo = i < 2 ? 2 : 0.5;
+    if (h.bietTuanTriet) d -= 1.5 * heSo;
+    d -= h.soSatTinhTuTap * 0.5 * heSo;
+  });
+
   return Math.round(d * 100) / 100;
 }
 

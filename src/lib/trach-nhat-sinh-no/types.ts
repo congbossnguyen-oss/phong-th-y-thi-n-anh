@@ -113,6 +113,17 @@ export interface TuViDaiHanBandItem {
   bietTuanTriet: boolean;
 }
 
+/** Bước 4 — Tam Phương Tứ Chính (Mệnh + Di + Tài + Quan), đếm trên CẢ 4 cung. */
+export interface TamPhuongTuChinhResult {
+  soCatTinh: number;
+  soSatTinh: number;
+  soHoaCat: number; // Hóa Lộc/Quyền/Khoa
+  soHoaKy: number;
+  chiTiet: string[];
+}
+
+export type MucCuongNhuoc = "cuong" | "trung_binh" | "nhuoc";
+
 export interface TuViAnalysis {
   cungMenh: string;
   cungThan: string;
@@ -120,6 +131,11 @@ export interface TuViAnalysis {
   cuc: string;
   tuoiKhoiHan: number;
   chinhTinhMenh: { ten: string; trangThai: string }[];
+  /** Bước 4 — quy-trinh-chon-gio-sinh-mo-tu-vi.md */
+  tamPhuongTuChinh: TamPhuongTuChinhResult;
+  /** Bước 5 — Mệnh cường Thân cường là tổ hợp tốt nhất. */
+  cuongNhuocMenh: MucCuongNhuoc;
+  cuongNhuocThan: MucCuongNhuoc;
   veto: TuViVetoResult;
   daiHan: TuViDaiHanBandItem[];
 }
