@@ -1,0 +1,97 @@
+/* QUÂN SƯ THIÊN ANH — style dùng chung cho khu vực /quan-su.
+   Sub-brand riêng (Modern Mystical / Oriental / Premium) — xem UI_DESIGN_SYSTEM.md.
+   Bản khung: tối giản, đủ dùng; chưa phải giao diện cuối cùng. */
+
+.qs {
+  --qs-midnight: #0b1120;
+  --qs-navy: #111a2e;
+  --qs-navy-2: #16233c;
+  --qs-purple: #6b4e9e;
+  --qs-gold: #c9a15a;
+  --qs-ivory: #f4efe6;
+  --qs-muted: #9aa6bd;
+  --qs-good: #7fb8a0;
+  --qs-bad: #c47a6a;
+
+  background: var(--qs-midnight);
+  color: var(--qs-ivory);
+  min-height: 70vh;
+  padding: 2rem 1rem 4rem;
+  font-family: "Be Vietnam Pro", "Inter", system-ui, sans-serif;
+}
+.qs-wrap { max-width: 760px; margin: 0 auto; }
+.qs-eyebrow { color: var(--qs-gold); letter-spacing: 0.14em; text-transform: uppercase; font-size: 0.72rem; }
+.qs-h1 { font-family: "Noto Serif", Georgia, serif; font-size: clamp(1.5rem, 4vw, 2.1rem); margin: 0.3rem 0 1.2rem; }
+.qs-sub { color: var(--qs-muted); margin: 0 0 1.6rem; }
+.qs-back { color: var(--qs-muted); text-decoration: none; font-size: 0.85rem; }
+.qs-back:hover { color: var(--qs-gold); }
+
+.qs-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.8rem; }
+@media (min-width: 720px) { .qs-grid { grid-template-columns: repeat(3, 1fr); } }
+
+.qs-card {
+  display: block; text-decoration: none; color: inherit;
+  background: var(--qs-navy); border: 1px solid rgba(201, 161, 90, 0.18);
+  border-radius: 14px; padding: 1rem; transition: border-color 0.2s, transform 0.2s;
+}
+.qs-card:hover { border-color: var(--qs-gold); transform: translateY(-2px); }
+.qs-card .ic { font-size: 1.6rem; }
+.qs-card .ti { font-weight: 600; margin: 0.4rem 0 0.15rem; }
+.qs-card .de { color: var(--qs-muted); font-size: 0.82rem; }
+.qs-card .ct { color: var(--qs-gold); font-size: 0.72rem; margin-top: 0.5rem; }
+
+.qs-list { display: flex; flex-direction: column; gap: 0.6rem; }
+.qs-q { background: var(--qs-navy); border: 1px solid rgba(201, 161, 90, 0.14); border-radius: 12px; padding: 0.9rem 1rem; }
+.qs-q .ti { font-weight: 600; }
+.qs-q .de { color: var(--qs-muted); font-size: 0.82rem; margin-top: 0.2rem; }
+
+.qs-notice { background: rgba(196, 122, 106, 0.12); border: 1px solid rgba(196, 122, 106, 0.4); color: #e7b6ab; border-radius: 10px; padding: 0.7rem 0.9rem; font-size: 0.85rem; margin-bottom: 1.2rem; }
+
+.qs-field { margin-bottom: 1rem; }
+.qs-field label { display: block; font-size: 0.85rem; margin-bottom: 0.35rem; color: var(--qs-ivory); }
+.qs-field .help { color: var(--qs-muted); font-size: 0.76rem; margin-top: 0.25rem; }
+.qs-input, .qs-textarea {
+  width: 100%; box-sizing: border-box; background: var(--qs-navy-2); color: var(--qs-ivory);
+  border: 1px solid rgba(201, 161, 90, 0.2); border-radius: 10px; padding: 0.6rem 0.7rem; font: inherit;
+}
+.qs-row { display: flex; gap: 0.5rem; }
+.qs-row > * { flex: 1; }
+
+.qs-btn {
+  background: linear-gradient(180deg, var(--qs-gold), #b08d47); color: #201607; border: none;
+  border-radius: 10px; padding: 0.75rem 1.2rem; font: inherit; font-weight: 700; cursor: pointer;
+}
+.qs-btn:disabled { opacity: 0.5; cursor: default; }
+.qs-btn-ghost { background: transparent; color: var(--qs-ivory); border: 1px solid rgba(201, 161, 90, 0.35); }
+
+.qs-hexrow { display: flex; flex-direction: column-reverse; gap: 0.4rem; margin: 1rem 0; }
+.qs-hex { display: flex; align-items: center; gap: 0.6rem; opacity: 0; transform: translateY(6px); transition: opacity 0.4s, transform 0.4s; }
+.qs-hex.show { opacity: 1; transform: none; }
+.qs-hex .lines { display: flex; gap: 6px; }
+.qs-hex .seg { width: 34px; height: 8px; background: var(--qs-ivory); border-radius: 2px; }
+.qs-hex .seg.off { background: transparent; }
+.qs-hex .dong { color: var(--qs-gold); font-size: 0.75rem; }
+
+.qs-result { margin-top: 1.5rem; }
+.qs-verdict {
+  background: var(--qs-navy); border: 1px solid var(--qs-gold);
+  border-radius: 14px; padding: 1.2rem 1.3rem; box-shadow: 0 0 44px rgba(201, 161, 90, 0.12);
+}
+.qs-verdict h2 { font-family: "Noto Serif", Georgia, serif; color: var(--qs-gold); margin: 0 0 0.8rem; font-size: 1.1rem; letter-spacing: 0.04em; }
+.qs-verdict p { line-height: 1.7; margin: 0 0 0.8rem; white-space: pre-line; }
+.qs-verdict .ket { border-top: 1px solid rgba(201, 161, 90, 0.2); padding-top: 0.8rem; }
+.qs-luuy { color: var(--qs-muted); font-size: 0.82rem; margin-top: 0.6rem; }
+.qs-demo { color: var(--qs-purple); font-size: 0.78rem; margin-top: 0.6rem; }
+
+.qs-luck { background: var(--qs-navy); border: 1px solid rgba(201, 161, 90, 0.14); border-radius: 12px; padding: 1rem 1.1rem; margin-top: 1rem; }
+.qs-luck h3 { margin: 0 0 0.8rem; font-size: 0.95rem; }
+.qs-dim { margin-bottom: 0.6rem; }
+.qs-dim .lab { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.25rem; }
+.qs-dim .track { height: 9px; background: var(--qs-navy-2); border-radius: 5px; overflow: hidden; }
+.qs-dim .fill { height: 100%; background: linear-gradient(90deg, var(--qs-purple), var(--qs-gold)); }
+.qs-dim.warn .fill { background: linear-gradient(90deg, #7a5a53, var(--qs-bad)); }
+
+.qs-detail { margin-top: 1rem; }
+.qs-detail summary { cursor: pointer; color: var(--qs-gold); font-size: 0.9rem; }
+.qs-detail .body { color: var(--qs-muted); font-size: 0.85rem; margin-top: 0.7rem; line-height: 1.6; }
+.qs-hidden { display: none; }

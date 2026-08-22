@@ -1,0 +1,199 @@
+---
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import "../../../styles/quan-su.css";
+import { getQuestion, getCategory } from "../../../lib/quan-su";
+
+export const prerender = false;
+
+const { id } = Astro.params;
+const question = id ? getQuestion(id) : undefined;
+if (!question) {
+  return Astro.redirect("/quan-su");
+}
+const cat = getCategory(question.category);
+const isLucHao = question.divination_method === "luc-hao";
+const canVanTrinh = question.recommended_engines.includes("bat-tu") || question.recommended_engines.includes("tu-vi");
+// Ô nhập cần render dạng form (bỏ 'gieo-que' vì đó là bước gieo quẻ riêng).
+const formInputs = [...question.required_inputs, ...question.optional_inputs].filter((i) => i.type !== "gieo-que");
+---
+
+<BaseLayout title={`${question.title} — Quân Sư Thiên Anh`} description={question.subtitle}>
+  <section class="qs">
+    <div class="qs-wrap">
+      <a class="qs-back" href={`/quan-su/${question.category}`}>← {cat?.title ?? "Quay lại"}</a>
+
+      <p class="qs-eyebrow" style="margin-top:1rem;">Bước 1 · Câu hỏi</p>
+      <h1 class="qs-h1">{question.title}</h1>
+      <p class="qs-sub">{question.subtitle}</p>
+      {cat?.notice && <div class="qs-notice">{cat.notice}</div>}
+
+      {!isLucHao ? (
+        <div class="qs-notice" style="background:rgba(107,78,158,0.12);border-color:rgba(107,78,158,0.4);color:#c3b3e0;">
+          Nhóm này dùng công cụ <strong>Chọn ngày giờ</strong> (không gieo quẻ). Phần này sẽ nối với bộ Đại Cát Lợi sẵn có ở giai đoạn sau.
+        </div>
+      ) : (
+        <>
+          <p class="qs-eyebrow">Bước 2 · Thông tin</p>
+          <form id="qs-form">
+            {formInputs.map((inp) => (
+              <div class="qs-field">
+                <label for={`f-${inp.key}`}>{inp.label}{inp.required ? "" : " (không bắt buộc)"}</label>
+                {inp.type === "text" || inp.type === "phuong-an-list" ? (
+                  <textarea class="qs-textarea" id={`f-${inp.key}`} data-key={inp.key} rows={inp.type === "phuong-an-list" ? 3 : 2}></textarea>
+                ) : (
+                  <input class="qs-input" id={`f-${inp.key}`} data-key={inp.key} type={inp.type === "date" ? "date" : inp.type === "time" ? "time" : "text"} />
+                )}
+                {inp.helpText && <div class="help">{inp.helpText}</div>}
+              </div>
+            ))}
+            {canVanTrinh && (
+              <div class="qs-field">
+                <label for="f-gender">Giới tính</label>
+                <select class="qs-input" id="f-gender" data-key="gender">
+                  <option value="Nam">Nam</option>
+                  <option value="Nữ">Nữ</option>
+                </select>
+                <div class="help">Dùng để xem thời vận (đại vận, lưu niên) của bạn.</div>
+              </div>
+            )}
+          </form>
+
+          <p class="qs-eyebrow">Bước 3 · An quẻ</p>
+          <p class="qs-sub">Tĩnh tâm nghĩ về điều bạn đang phân vân, rồi gieo quẻ.</p>
+          <div class="qs-hexrow" id="qs-hexrow"></div>
+          <div class="qs-row" style="max-width:420px;">
+            <button class="qs-btn" id="qs-gieo" type="button">Gieo quẻ</button>
+            <button class="qs-btn qs-btn-ghost" id="qs-lai" type="button" style="display:none;">Gieo lại</button>
+          </div>
+
+          <div class="qs-result qs-hidden" id="qs-result"></div>
+
+          <script type="application/json" id="qs-question" set:html={JSON.stringify(question)}></script>
+          <script>
+            const qEl = document.getElementById("qs-question");
+            const question = JSON.parse(qEl?.textContent || "{}");
+            const hexrow = document.getElementById("qs-hexrow");
+            const gieoBtn = document.getElementById("qs-gieo");
+            const laiBtn = document.getElementById("qs-lai");
+            const resultEl = document.getElementById("qs-result");
+
+            // 1 lần gieo 3 đồng xu: sấp=2, ngửa=3 → tổng 6..9. 6/8=Âm, 7/9=Dương; 6/9=động.
+            function tossOne() {
+              let s = 0;
+              for (let i = 0; i < 3; i++) s += Math.random() < 0.5 ? 2 : 3;
+              return s;
+            }
+            function renderHao(container, value, dong, idx, delay) {
+              const yang = value === 7 || value === 9;
+              const row = document.createElement("div");
+              row.className = "qs-hex";
+              const lines = document.createElement("div");
+              lines.className = "lines";
+              if (yang) {
+                const seg = document.createElement("span"); seg.className = "seg"; seg.style.width = "74px"; lines.appendChild(seg);
+              } else {
+                for (let k = 0; k < 2; k++) { const seg = document.createElement("span"); seg.className = "seg"; lines.appendChild(seg); }
+              }
+              row.appendChild(lines);
+              const tag = document.createElement("span");
+              tag.textContent = `Hào ${idx + 1}` + (dong ? " · động" : "");
+              if (dong) tag.className = "dong";
+              else { tag.style.color = "var(--qs-muted)"; tag.style.fontSize = "0.75rem"; }
+              row.appendChild(tag);
+              container.appendChild(row);
+              setTimeout(() => row.classList.add("show"), delay);
+            }
+
+            async function submit(tosses) {
+              const ngaySinh = collectNgaySinh();
+              const moTaEl = document.querySelector('[data-key="mo_ta_tinh_huong"]');
+              try {
+                resultEl.classList.remove("qs-hidden");
+                resultEl.innerHTML = '<p class="qs-sub">Quân Sư đang luận…</p>';
+                const res = await fetch("/api/quan-su/luan", {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: JSON.stringify({ question_id: question.question_id, tosses, ngaySinh, moTa: moTaEl ? moTaEl.value : undefined }),
+                });
+                const data = await res.json();
+                if (!res.ok) { resultEl.innerHTML = `<div class="qs-notice">${data.error || "Có lỗi xảy ra."}</div>`; return; }
+                renderResult(data);
+              } catch (e) {
+                resultEl.innerHTML = '<div class="qs-notice">Không kết nối được máy chủ, vui lòng thử lại.</div>';
+              }
+            }
+
+            function collectNgaySinh() {
+              const ns = document.querySelector('[data-key="ngay_sinh"]');
+              if (!ns || !ns.value) return undefined;
+              const [y, m, d] = ns.value.split("-").map(Number);
+              const genderEl = document.querySelector('[data-key="gender"]');
+              const gioEl = document.querySelector('[data-key="gio_sinh"]');
+              let hour = undefined;
+              if (gioEl && gioEl.value) hour = Number(gioEl.value.split(":")[0]);
+              return { day: d, month: m, year: y, gender: genderEl ? genderEl.value : "Nam", hour };
+            }
+
+            function bar(dim) {
+              const pct = Math.round((dim.score / 10) * 100);
+              const warn = dim.higherIsBetter ? "" : " warn";
+              const note = dim.higherIsBetter ? "" : ' <span style="color:var(--qs-muted);font-size:0.72rem;">(càng cao càng thận trọng)</span>';
+              return `<div class="qs-dim${warn}"><div class="lab"><span>${dim.label}${note}</span><span>${dim.score}/10</span></div><div class="track"><div class="fill" style="width:${pct}%"></div></div></div>`;
+            }
+
+            function renderResult(data) {
+              const kq = data.ketQuaQuanSu;
+              const luck = data.chiTiet.vanTrinh;
+              let luckHtml = "";
+              if (luck) {
+                luckHtml = `<div class="qs-luck"><h3>Vận trình hiện tại</h3>${luck.dimensions.map(bar).join("")}</div>`;
+              }
+              const luuY = (kq.ket_luan.luu_y || []).map((s) => `<div class="qs-luuy">• ${s}</div>`).join("");
+              const que = data.chiTiet.que;
+              resultEl.innerHTML = `
+                <div class="qs-verdict">
+                  <h2>KẾT QUẢ QUÂN SƯ</h2>
+                  <p>${kq.mo_bai}</p>
+                  <p>${kq.than_bai}</p>
+                  <div class="ket">
+                    <p><strong>${kq.ket_luan.cau_tra_loi}</strong></p>
+                    <p>${kq.ket_luan.khuyen_nghi_hanh_dong}</p>
+                    ${luuY}
+                  </div>
+                  ${data.isDemo ? '<div class="qs-demo">⚙ Bản demo của khung — phần luận giải Kinh Dịch đầy đủ sẽ được kích hoạt sau.</div>' : ""}
+                </div>
+                ${luckHtml}
+                <details class="qs-detail">
+                  <summary>Xem luận giải chi tiết</summary>
+                  <div class="body">
+                    Quẻ chủ: <strong>${que.chinh}</strong>${que.bien ? ` → biến: <strong>${que.bien}</strong>` : ""}<br>
+                    Hào động: ${que.dongPositions.length ? que.dongPositions.join(", ") : "không"}<br>
+                    ${que.canChiText}<br>
+                    Tuần Không: ${que.tuanKhong}
+                  </div>
+                </details>`;
+              resultEl.scrollIntoView({ behavior: "smooth", block: "start" });
+            }
+
+            gieoBtn?.addEventListener("click", () => {
+              // kiểm tra ngày sinh nếu bắt buộc
+              const ns = document.querySelector('[data-key="ngay_sinh"]');
+              const nsRequired = question.required_inputs.some((i) => i.key === "ngay_sinh");
+              if (nsRequired && (!ns || !ns.value)) { alert("Vui lòng nhập ngày sinh để xem được thời vận."); return; }
+
+              hexrow.innerHTML = "";
+              resultEl.classList.add("qs-hidden");
+              const tosses = [];
+              for (let i = 0; i < 6; i++) tosses.push(tossOne());
+              tosses.forEach((v, i) => renderHao(hexrow, v, v === 6 || v === 9, i, i * 260));
+              gieoBtn.disabled = true;
+              laiBtn.style.display = "";
+              setTimeout(() => submit(tosses), 6 * 260 + 300);
+            });
+            laiBtn?.addEventListener("click", () => { gieoBtn.disabled = false; hexrow.innerHTML = ""; resultEl.classList.add("qs-hidden"); });
+          </script>
+        </>
+      )}
+    </div>
+  </section>
+</BaseLayout>

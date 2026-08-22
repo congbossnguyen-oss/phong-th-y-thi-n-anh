@@ -1,0 +1,30 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import "../../styles/quan-su.css";
+import { APP_OPENING_PROMPT, getCategoriesWithCounts } from "../../lib/quan-su";
+
+export const prerender = false;
+
+const categories = getCategoriesWithCounts();
+---
+
+<BaseLayout title="Quân Sư Thiên Anh" description="Hỏi Quân Sư — cố vấn quyết định dựa trên Kinh Dịch.">
+  <section class="qs">
+    <div class="qs-wrap">
+      <p class="qs-eyebrow">Quân Sư Thiên Anh</p>
+      <h1 class="qs-h1">{APP_OPENING_PROMPT}</h1>
+      <p class="qs-sub">Chọn một vấn đề bạn đang phân vân — Quân Sư sẽ cùng bạn nhìn cho rõ.</p>
+
+      <div class="qs-grid">
+        {categories.map((c) => (
+          <a class="qs-card" href={`/quan-su/${c.id}`}>
+            <div class="ic">{c.icon}</div>
+            <div class="ti">{c.title}</div>
+            <div class="de">{c.subtitle}</div>
+            <div class="ct">{c.questionCount} câu hỏi</div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+</BaseLayout>

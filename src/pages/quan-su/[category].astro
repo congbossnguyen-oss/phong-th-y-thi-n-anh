@@ -1,0 +1,36 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import "../../styles/quan-su.css";
+import { getCategoryWithQuestions } from "../../lib/quan-su";
+
+export const prerender = false;
+
+const { category } = Astro.params;
+const data = category ? getCategoryWithQuestions(category as never) : undefined;
+
+if (!data) {
+  return Astro.redirect("/quan-su");
+}
+const { category: cat, questions } = data;
+---
+
+<BaseLayout title={`${cat.title} — Quân Sư Thiên Anh`} description={cat.subtitle}>
+  <section class="qs">
+    <div class="qs-wrap">
+      <a class="qs-back" href="/quan-su">← Chọn nhóm khác</a>
+      <p class="qs-eyebrow" style="margin-top:1rem;">{cat.icon} {cat.title}</p>
+      <h1 class="qs-h1">Bạn muốn hỏi điều gì?</h1>
+
+      {cat.notice && <div class="qs-notice">{cat.notice}</div>}
+
+      <div class="qs-list">
+        {questions.map((q) => (
+          <a class="qs-q" href={`/quan-su/hoi/${q.question_id}`} style="text-decoration:none;color:inherit;display:block;">
+            <div class="ti">{q.title}</div>
+            <div class="de">{q.subtitle}</div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+</BaseLayout>
