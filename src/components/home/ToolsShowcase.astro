@@ -12,32 +12,44 @@ import Container from "../ui/Container.astro";
 import Icon from "../ui/Icon.astro";
 import { TOTAL_TOOL_COUNT } from "../../lib/dai-cat-loi-tools";
 
-type IconName = "star" | "book-open" | "moon" | "clock" | "award" | "map-pin" | "phone";
+type IconName = "star" | "book-open" | "moon" | "clock" | "award" | "map-pin" | "phone" | "user";
 
-// 7 công cụ đầu tàu đưa lên trang chủ. Các công cụ còn lại gom trong "Đại Cát Lợi" + trang tra cứu riêng.
-// Mỗi thẻ dùng 1 ảnh banner do Công cung cấp (đặt sẵn trong public/, đã đổi tên bỏ khoảng trắng) làm NỀN
-// TOÀN THẺ kiểu poster — ảnh tự thân đã có tên công cụ trong thiết kế nên thẻ chỉ còn icon + nút "Dùng
-// thử ngay" đè lên qua lớp gradient tối dần từ dưới lên (xem markup bên dưới), không lặp lại chữ tiêu
-// đề/mô tả. `title` vẫn giữ để làm alt ảnh + aria-label cho khả năng tiếp cận (screen reader).
-// Lưu ý: các ảnh này không cùng 1 bộ nhận diện (nhiều phong cách/logo khác nhau) — đã xác nhận với Công
-// dùng nguyên như vậy, không chờ làm lại đồng bộ.
+// 9 công cụ đầu tàu đưa lên trang chủ. Các công cụ còn lại gom trong "Đại Cát Lợi" + trang tra cứu riêng.
+//
+// Thẻ có `image`: ảnh banner do Công cung cấp (đặt sẵn trong public/) làm NỀN TOÀN THẺ kiểu poster —
+// ảnh tự thân đã có tên công cụ trong thiết kế nên thẻ chỉ còn icon + nút "Dùng thử ngay" đè lên qua
+// lớp gradient tối dần, không lặp lại chữ tiêu đề. `title` vẫn giữ để làm alt ảnh + aria-label.
+// Thẻ KHÔNG có `image`: nền gradient thương hiệu (vàng-nâu) + CHỮ TIÊU ĐỀ hiện rõ trên thẻ, vì không
+// có ảnh nào tự mang sẵn tên công cụ để thay thế — dùng cho công cụ mới chưa có banner riêng.
+//
+// ⚠️ Công 22/8/2026 phát hiện: lúc đổi "Lập lá số Tử Vi"→"Xem ngày cao cấp" và "Lập lá số Bát Tự"→
+// "Luận số điện thoại", 2 thẻ này VẪN DÙNG ẢNH CŨ (banner Tử Vi/Bát Tự) vì chưa có ảnh riêng — khách
+// thấy tiêu đề đổi nhưng hình poster vẫn của công cụ cũ, sai lệch. Đã bỏ ảnh sai, chuyển sang thẻ chữ
+// cho tới khi có ảnh đúng. Cùng lúc thêm 2 công cụ mới: Xem Ngày Cưới Hỏi, Đặt Tên Cho Con — cũng
+// chưa có ảnh riêng nên dùng thẻ chữ.
+//
 // Ảnh dùng WebP thay cho PNG gốc — giảm ~65-92% dung lượng mà mắt thường không phân biệt được, tải
 // nhanh hơn nhiều trên 3G/4G. File PNG gốc vẫn giữ trong public/ để cần thì xuất lại.
-//
-// Công 22/8/2026: đổi 3 thẻ (Lập lá số Tử Vi → Xem ngày cao cấp, Lập lá số Bát Tự → Luận số điện
-// thoại, Lập quẻ Kinh Dịch → Dịch vụ VIP) + thêm thẻ Định Hướng Nghề Nghiệp.
-const CORE_TOOLS: { href: string; icon: IconName; image: string; title: string }[] = [
+const CORE_TOOLS: { href: string; icon: IconName; image?: string; title: string }[] = [
   {
     href: "/dai-cat-loi/xem-ngay-cao-cap",
     icon: "clock",
-    image: "/lap-la-so-tu-vi.webp",
     title: "Xem Ngày Cao Cấp",
   },
   {
     href: "/luan-so-dien-thoai",
     icon: "phone",
-    image: "/lap-la-so-bat-tu.webp",
     title: "Luận Số Điện Thoại",
+  },
+  {
+    href: "/dai-cat-loi/ngay-cuoi-hoi",
+    icon: "moon",
+    title: "Xem Ngày Cưới Hỏi",
+  },
+  {
+    href: "/dai-cat-loi/dat-ten-cho-con",
+    icon: "user",
+    title: "Đặt Tên Cho Con",
   },
   {
     href: "/dai-cat-loi/dich-vu-thu-phi",
@@ -104,23 +116,40 @@ const totalTools = TOTAL_TOOL_COUNT;
           <a
             href={tool.href}
             aria-label={tool.title}
-            class="group relative flex aspect-video flex-col justify-end overflow-hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ink-950) p-4 transition hover:-translate-y-0.5 hover:border-(--color-gold-400)/60"
+            class:list={[
+              "group relative flex aspect-video flex-col justify-end overflow-hidden rounded-(--radius-card) border p-4 transition hover:-translate-y-0.5 hover:border-(--color-gold-400)/60",
+              tool.image
+                ? "border-(--color-ivory-300) bg-(--color-ink-950)"
+                : "border-(--color-gold-500)/30 bg-gradient-to-br from-[#241a10] to-[#3a2c17]",
+            ]}
           >
-            {/* Ảnh minh hoạ riêng của từng công cụ (Công cung cấp) làm nền toàn thẻ kiểu poster — tự thân
-            đã có tên công cụ trong thiết kế, nên bỏ chữ tiêu đề/mô tả lặp lại của site, chỉ giữ CTA. */}
-            <img
-              src={tool.image}
-              alt={tool.title}
-              loading="lazy"
-              class="absolute inset-0 size-full object-cover transition duration-500 group-hover:scale-105"
-            />
-            {/* Lớp phủ tối dần từ dưới lên để chữ luôn đọc được, bất kể nội dung ảnh phía dưới là gì. */}
-            <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-black/10" />
+            {tool.image && (
+              <>
+                {/* Ảnh minh hoạ riêng của từng công cụ (Công cung cấp) làm nền toàn thẻ kiểu poster —
+                tự thân đã có tên công cụ trong thiết kế, nên bỏ chữ tiêu đề/mô tả lặp lại của site,
+                chỉ giữ CTA. */}
+                <img
+                  src={tool.image}
+                  alt={tool.title}
+                  loading="lazy"
+                  class="absolute inset-0 size-full object-cover transition duration-500 group-hover:scale-105"
+                />
+                {/* Lớp phủ tối dần từ dưới lên để chữ luôn đọc được, bất kể nội dung ảnh phía dưới là gì. */}
+                <div class="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/90 via-black/55 to-black/10" />
+              </>
+            )}
 
             <span class="relative z-10 flex size-11 items-center justify-center self-start rounded-full border border-(--color-gold-500)/40 bg-(--color-ink-950)/40 text-(--color-gold-300) backdrop-blur-sm transition group-hover:border-(--color-gold-400)">
               <Icon name={tool.icon} class="size-5" />
             </span>
-            <span class="relative z-10 mt-auto inline-flex items-center gap-1.5 text-sm font-medium text-(--color-gold-300)">
+
+            {/* Thẻ chưa có ảnh riêng: hiện luôn tên công cụ (ảnh poster tự mang tên nên các thẻ có
+            ảnh không cần dòng này). */}
+            {!tool.image && (
+              <span class="relative z-10 mt-3 font-display text-base font-semibold leading-tight text-white">{tool.title}</span>
+            )}
+
+            <span class="relative z-10 mt-auto inline-flex items-center gap-1.5 pt-2 text-sm font-medium text-(--color-gold-300)">
               Dùng thử ngay
               <Icon name="arrow-right" class="size-3.5 transition group-hover:translate-x-0.5" />
             </span>
