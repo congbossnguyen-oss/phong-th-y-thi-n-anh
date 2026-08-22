@@ -1,0 +1,80 @@
+---
+/**
+ * KHỐI "AI LUẬN" CHO KHÁCH ĐỌC — phần văn xuôi do AI viết, đặt ngay đầu kết quả.
+ * Anh Công 22/8/2026: "nạp tiền cho AI mà chưa thấy gì hay ho" — vì trước đây AI chỉ trả nhãn phân
+ * loại cho code dùng, không viết chữ nào cho khách. Mục nào AI để trống thì ẩn hẳn.
+ */
+import type { LuanVanNghe } from "../../lib/nghe-nghiep/llm-luan-van";
+
+interface Props { luan: LuanVanNghe | null; he: "bat_tu" | "tu_vi" }
+const { luan, he } = Astro.props;
+const nhanHe = he === "bat_tu" ? "Bát Tự" : "Tử Vi";
+---
+
+{luan && (
+  <div class="mb-5 overflow-hidden rounded-2xl border-2 border-(--color-gold-400)/60 bg-white shadow-lg">
+    <div class="bg-gradient-to-r from-[#241a10] to-[#3a2c17] px-5 py-3">
+      <h3 class="font-display text-base font-extrabold uppercase tracking-wide text-(--color-gold-300)">
+        Luận giải chi tiết — {nhanHe}
+      </h3>
+      <p class="mt-0.5 text-[11px] font-semibold italic text-white/70">
+        Phần diễn giải bằng lời, viết dựa trên đúng các con số đã tính ở dưới.
+      </p>
+    </div>
+
+    <div class="space-y-4 p-5">
+      {luan.chanDung && (
+        <p class="text-[14px] font-semibold leading-relaxed text-slate-800">{luan.chanDung}</p>
+      )}
+
+      {(luan.theManh.length > 0 || luan.canLuuY.length > 0) && (
+        <div class="grid gap-3 sm:grid-cols-2">
+          {luan.theManh.length > 0 && (
+            <div class="rounded-xl border-2 border-emerald-200 bg-emerald-50 p-3.5">
+              <p class="text-xs font-extrabold uppercase tracking-wide text-emerald-800">Thế mạnh</p>
+              <ul class="mt-1.5 space-y-1.5">
+                {luan.theManh.map((t) => (<li class="text-[12.5px] font-semibold leading-relaxed text-emerald-900">✓ {t}</li>))}
+              </ul>
+            </div>
+          )}
+          {luan.canLuuY.length > 0 && (
+            <div class="rounded-xl border-2 border-amber-200 bg-amber-50 p-3.5">
+              <p class="text-xs font-extrabold uppercase tracking-wide text-amber-800">Cần lưu ý</p>
+              <ul class="mt-1.5 space-y-1.5">
+                {luan.canLuuY.map((t) => (<li class="text-[12.5px] font-semibold leading-relaxed text-amber-900">△ {t}</li>))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+
+      {luan.moiTruongHop && (
+        <div class="rounded-xl border-l-4 border-(--color-gold-400) bg-slate-50 p-3.5">
+          <p class="text-xs font-extrabold uppercase tracking-wide text-slate-500">Môi trường làm việc hợp</p>
+          <p class="mt-1 text-[13px] font-semibold leading-relaxed text-slate-800">{luan.moiTruongHop}</p>
+        </div>
+      )}
+
+      {luan.viSaoNganhNay && (
+        <div class="rounded-xl border-l-4 border-[#1D5FB0] bg-slate-50 p-3.5">
+          <p class="text-xs font-extrabold uppercase tracking-wide text-slate-500">Vì sao nhóm ngành này hợp</p>
+          <p class="mt-1 text-[13px] font-semibold leading-relaxed text-slate-800">{luan.viSaoNganhNay}</p>
+        </div>
+      )}
+
+      {luan.loTrinh.length > 0 && (
+        <div>
+          <p class="text-xs font-extrabold uppercase tracking-wide text-slate-500">Lộ trình theo từng giai đoạn</p>
+          <div class="mt-2 space-y-2">
+            {luan.loTrinh.map((g) => (
+              <div class="flex gap-3 rounded-xl border border-slate-200 bg-white p-3">
+                <span class="shrink-0 rounded-lg bg-(--color-gold-400) px-2.5 py-1 text-[11px] font-extrabold text-(--color-on-accent)">{g.giaiDoan}</span>
+                <p class="text-[12.5px] font-semibold leading-relaxed text-slate-800">{g.loiKhuyen}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  </div>
+)}

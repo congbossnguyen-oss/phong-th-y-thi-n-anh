@@ -23,7 +23,11 @@ export interface NgheInput {
   hour: number;
   minute?: number;
   gender: Gender;
+  /** Họ tên khách — chỉ dùng để xưng hô trong phần AI luận, không tham gia tính toán. */
+  hoTen?: string;
 }
+
+import { luanVanNghe, type LuanVanNghe } from "./llm-luan-van";
 
 export interface NgheKetQua {
   input: NgheInput;
@@ -32,6 +36,9 @@ export interface NgheKetQua {
   ketHop: KetHopResult;
   /** true khi Bát Tự đã luận được bằng AI (có key). Dùng để trang/PDF biết mức hoàn thiện. */
   batTuAiOk: boolean;
+  /** Văn xuôi AI viết cho khách đọc (null khi chưa có khoá AI hoặc AI trả rỗng). */
+  luanVanBatTu: LuanVanNghe | null;
+  luanVanTuVi: LuanVanNghe | null;
   generatedAt: string;
 }
 
@@ -43,12 +50,21 @@ export async function taoHoSoNghe(input: NgheInput): Promise<NgheKetQua> {
   const { vm: tuViVM, result: tuViResult } = buildTuViVM(tuViProfile);
   const ketHop = tinhKetHop(batTuResult, tuViResult);
 
+  // Tầng AI thứ hai: DIỄN GIẢI các con số đã chốt thành lời cho khách đọc. Chạy sau vì cần biết
+  // nhóm ngành/điểm số cuối cùng. Prompt nhỏ (vài KB) nên rẻ hơn tầng phân loại khoảng 10 lần.
+  const [luanVanBatTu, luanVanTuVi] = await Promise.all([
+    luanVanNghe(batTuVM, input.hoTen).catch(() => null),
+    luanVanNghe(tuViVM, input.hoTen).catch(() => null),
+  ]);
+
   return {
     input,
     batTuVM,
     tuViVM,
     ketHop,
     batTuAiOk: batTuProfile.ai_luan_giai_thanh_cong,
+    luanVanBatTu,
+    luanVanTuVi,
     generatedAt: new Date().toISOString(),
   };
 }

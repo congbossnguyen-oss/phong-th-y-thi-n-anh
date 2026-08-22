@@ -10,6 +10,7 @@ import Button from "../../components/ui/Button.astro";
 import DateSelect from "../../components/ui/DateSelect.astro";
 import MaKhuyenMai from "../../components/ui/MaKhuyenMai.astro";
 import NgheDashboard from "../../components/nghe/NgheDashboard.astro";
+import LuanVanNghe from "../../components/nghe/LuanVanNghe.astro";
 import { GIA_CONG_CU, dinhDangTien } from "../../lib/payments/gia-cong-cu";
 import { getOrderByCode } from "../../lib/db/orders";
 import { taoHoSoNghe, type NgheKetQua, type NgheInput } from "../../lib/nghe-nghiep/tao-ho-so-nghe";
@@ -29,7 +30,9 @@ if (orderCode) {
   order = await getOrderByCode(orderCode);
   if (order && order.orderType === "tool" && order.toolSlug === TOOL_SLUG && order.status === "confirmed" && order.toolInputSnapshot) {
     try {
-      ketQua = await taoHoSoNghe(JSON.parse(order.toolInputSnapshot) as NgheInput);
+      // Ghép họ tên từ đơn để phần AI luận xưng hô đúng người (tên không tham gia tính toán).
+      const snapshot = JSON.parse(order.toolInputSnapshot) as NgheInput;
+      ketQua = await taoHoSoNghe({ ...snapshot, hoTen: snapshot.hoTen ?? order.customerName ?? undefined });
     } catch {
       ketQua = null;
     }
@@ -94,8 +97,8 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
               <label for="tab-ket-hop" class="lb flex-1 cursor-pointer rounded-full px-4 py-2.5 text-center text-sm font-extrabold text-(--color-ink-700)">🔗 Kết hợp</label>
             </div>
 
-            <section class="pane pane-bat-tu"><NgheDashboard vm={ketQua.batTuVM} /></section>
-            <section class="pane pane-tu-vi"><NgheDashboard vm={ketQua.tuViVM} /></section>
+            <section class="pane pane-bat-tu"><LuanVanNghe luan={ketQua.luanVanBatTu} he="bat_tu" /><NgheDashboard vm={ketQua.batTuVM} /></section>
+            <section class="pane pane-tu-vi"><LuanVanNghe luan={ketQua.luanVanTuVi} he="tu_vi" /><NgheDashboard vm={ketQua.tuViVM} /></section>
             <section class="pane pane-ket-hop">
               <div class="overflow-hidden rounded-2xl border-2 border-(--color-gold-400)/60 bg-white shadow-lg">
                 <div class="bg-gradient-to-r from-(--color-gold-400) to-(--color-gold-500) px-5 py-3">
