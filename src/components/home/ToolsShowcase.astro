@@ -24,9 +24,10 @@ type IconName = "star" | "book-open" | "moon" | "clock" | "award" | "map-pin" | 
 //
 // ⚠️ Công 22/8/2026 phát hiện: lúc đổi "Lập lá số Tử Vi"→"Xem ngày cao cấp" và "Lập lá số Bát Tự"→
 // "Luận số điện thoại", 2 thẻ này VẪN DÙNG ẢNH CŨ (banner Tử Vi/Bát Tự) vì chưa có ảnh riêng — khách
-// thấy tiêu đề đổi nhưng hình poster vẫn của công cụ cũ, sai lệch. Đã bỏ ảnh sai, chuyển sang thẻ chữ
-// cho tới khi có ảnh đúng. Cùng lúc thêm 2 công cụ mới: Xem Ngày Cưới Hỏi, Đặt Tên Cho Con — cũng
-// chưa có ảnh riêng nên dùng thẻ chữ.
+// thấy tiêu đề đổi nhưng hình poster vẫn của công cụ cũ, sai lệch. Đã bỏ ảnh sai, chuyển sang thẻ chữ.
+// Cùng lúc thêm 2 công cụ mới: Xem Ngày Cưới Hỏi, Đặt Tên Cho Con — cũng chưa có ảnh riêng nên dùng
+// thẻ chữ. Công gửi tiếp ảnh "Luận Số Điện Thoại" ngay sau đó → đã có ảnh, chuyển lại thẻ poster.
+// Còn "Xem Ngày Cao Cấp", "Xem Ngày Cưới Hỏi", "Đặt Tên Cho Con" vẫn đang chờ ảnh riêng.
 //
 // Ảnh dùng WebP thay cho PNG gốc — giảm ~65-92% dung lượng mà mắt thường không phân biệt được, tải
 // nhanh hơn nhiều trên 3G/4G. File PNG gốc vẫn giữ trong public/ để cần thì xuất lại.
@@ -39,6 +40,7 @@ const CORE_TOOLS: { href: string; icon: IconName; image?: string; title: string 
   {
     href: "/luan-so-dien-thoai",
     icon: "phone",
+    image: "/luan-so-dien-thoai.webp",
     title: "Luận Số Điện Thoại",
   },
   {
