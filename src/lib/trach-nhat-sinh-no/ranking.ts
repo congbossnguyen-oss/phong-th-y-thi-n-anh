@@ -28,6 +28,8 @@ export function diemCauTrucBatTu(a: BaziAnalysis): number {
   let d = VUONG_SUY_DIEM[a.vuongSuy] ?? 0;
   d += GOC_DIEM[a.goc.lop ?? "D"] ?? 0;
   d += AN_DIEM[a.anTinh.muc];
+  // Ấn hóa Quan Sát — tài liệu §3 xếp "✅✅ Tốt nhất, cấu trúc đáng săn nhất khi chọn ngày sinh".
+  if (a.anTinh.hoaDuocQuanSat) d += 2;
   d += a.luuThong.matXichDut.length === 0 && a.luuThong.matXichNghen.length === 0 ? 2 : a.luuThong.matXichDut.length > 0 && a.luuThong.matXichNghen.length > 0 ? 0 : 1;
   d -= a.tuHinhTuTruHinh.length; // tự hình/tam hình: trừ nhẹ mỗi cái phát hiện
   for (const van of a.daiVan) {

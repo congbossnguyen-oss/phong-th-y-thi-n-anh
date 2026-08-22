@@ -6,8 +6,8 @@
  */
 import type { BatTuChart } from "../bat-tu";
 import {
-  phanTichBatTu, hanhCan, hanhChi, hanhSinhCho, coLucXung, TANG, HOP_HOA, chiChuan,
-  type Hanh, type TuTruInput,
+  phanTichBatTu, hanhCan, hanhChi, hanhSinhCho, coLucXung, TANG, HOP_HOA, TAM_HOP, TAM_HOI,
+  KHAC_MAP, SINH_MAP, chiChuan, type Hanh, type TuTruInput,
 } from "../bat-tu-engine/engine";
 import { loadTrachNhatConfig } from "./config";
 import type { BaziAnalysis, GocResult, AnTinhResult, NguHanhLuuThongResult } from "./types";
@@ -45,21 +45,55 @@ function chamChatLuongGoc(chart: BatTuChart): GocResult {
   const tot = ungVien[0]!;
 
   const biXung = coLucXung(tot.chi, cacChi.filter((c) => c !== tot.chi));
-  // Hợp hóa mất: nếu chi gốc tham gia 1 cặp Lục Hợp/ngũ hợp mà hành hóa khác hành nhật chủ — xấp xỉ bằng
-  // kiểm tra Thiên Can hợp hóa trên CAN cùng trụ với chi gốc (đủ dữ kiện đơn giản cho Giai đoạn 1).
+
+  // Phép trừ 2 — GỐC BỊ HỢP HÓA MẤT (tài liệu ghi "hay sót nhất"). Chỉ tính khi CHÍNH chi gốc tham
+  // gia một tổ hợp có thể hóa sang hành KHÁC hành Nhật Chủ:
+  //   (a) Chi gốc nằm trong cục Tam Hợp/Tam Hội TRỌN 3 chi → khí bản chi bị cuốn theo hành cục.
+  //   (b) Thiên Can CÙNG TRỤ với chi gốc bị ngũ hợp hóa sang hành khác (trước đây quét cả cục,
+  //       không cần liên quan gì tới chi gốc → báo nhầm rất nhiều).
   let biHopHoaMat = false;
-  for (const [cap, hoaHanh] of Object.entries(HOP_HOA)) {
-    const [a, b] = cap.split("-");
-    const cans = [chart.year.can, chart.month.can, chart.day.can, chart.hour.can];
-    if (cans.includes(a!) && cans.includes(b!) && hoaHanh !== nhatChuHanh) { biHopHoaMat = true; break; }
+  let lyDoHopHoa = "";
+  const chiGocChuan = chiChuan(tot.chi);
+  for (const [bo, hoaHanh] of [...Object.entries(TAM_HOP), ...Object.entries(TAM_HOI)]) {
+    const chisBo = bo.split("-").map(chiChuan);
+    if (!chisBo.includes(chiGocChuan)) continue;
+    const duTronCuc = chisBo.every((c) => cacChi.map(chiChuan).includes(c));
+    if (duTronCuc && hoaHanh !== nhatChuHanh) {
+      biHopHoaMat = true;
+      lyDoHopHoa = `Chi gốc ${tot.chi} nằm trong cục ${bo} trọn 3 chi (hóa ${hoaHanh}, khác hành Nhật Chủ ${nhatChuHanh})`;
+      break;
+    }
   }
-  const duoiHanhKhac = hanhChi(tot.chi) !== nhatChuHanh && HANH_CHUOI.indexOf(hanhChi(tot.chi)) === (HANH_CHUOI.indexOf(nhatChuHanh) + 2) % 5; // xấp xỉ: chi tọa dưới hành khắc nhật chủ hoặc bị nhật chủ khắc — xem dienGiai
+  if (!biHopHoaMat) {
+    // (b) Can cùng trụ với chi gốc bị ngũ hợp.
+    const truCuaGoc = [chart.year, chart.month, chart.day, chart.hour].find((t) => chiChuan(t.chi) === chiGocChuan);
+    const canCuaGoc = truCuaGoc?.can;
+    if (canCuaGoc) {
+      const cans = [chart.year.can, chart.month.can, chart.day.can, chart.hour.can];
+      for (const [cap, hoaHanh] of Object.entries(HOP_HOA)) {
+        const [a, b] = cap.split("-");
+        const coCapNay = cans.includes(a!) && cans.includes(b!);
+        const canGocThamGia = canCuaGoc === a || canCuaGoc === b;
+        if (coCapNay && canGocThamGia && hoaHanh !== nhatChuHanh) {
+          biHopHoaMat = true;
+          lyDoHopHoa = `Can ${canCuaGoc} cùng trụ với chi gốc bị hợp ${cap} (khả năng hóa ${hoaHanh})`;
+          break;
+        }
+      }
+    }
+  }
+
+  // Phép trừ 3 — GỐC NGỒI DƯỚI HÀNH KHẮC TRỰC TIẾP (vd Canh tọa Ngọ: Hỏa khắc Kim; Đinh tọa Hợi:
+  // Thủy khắc Hỏa). Đúng định nghĩa: hành CHÍNH của chi gốc KHẮC hành Nhật Chủ — tra thẳng bảng
+  // KHAC_MAP thay vì đếm bước trong vòng ngũ hành (công thức cũ tính nhầm chiều).
+  const hanhChiGoc = hanhChi(tot.chi);
+  const duoiHanhKhac = KHAC_MAP[hanhChiGoc] === nhatChuHanh;
 
   let lop: GocResult["lop"] = tot.nguon === "nhat_chi" && tot.laChinhKhi ? "A"
     : tot.nguon === "nguyet_chi" && tot.laChinhKhi ? "B"
     : tot.laChinhKhi ? "C" : "D";
   if (biXung) { dg.push(`Gốc tại ${tot.chi} bị xung → coi như mất.`); lop = null; }
-  if (biHopHoaMat) { dg.push("Có Thiên Can hợp hóa sang hành khác Nhật Chủ — nghi gốc bị hợp hóa mất, cần đối chiếu thêm."); }
+  if (biHopHoaMat) { dg.push(`${lyDoHopHoa} → nghi gốc bị hợp hóa mất, hạ 1 bậc.`); lop = lop === "A" ? "B" : lop === "B" ? "C" : lop === "C" ? "D" : lop; }
   if (duoiHanhKhac && lop) { dg.push(`Gốc tại ${tot.chi} ngồi dưới hành khắc trực diện — còn nhưng bị đè, hạ 1 bậc.`); lop = lop === "A" ? "B" : lop === "B" ? "C" : "D"; }
 
   const diemThongCan = ungVien.reduce((s, u) => s + u.diem, 0);
@@ -81,8 +115,18 @@ function chamAnTinh(chart: BatTuChart, vuongSuyCapDo: string, cfg: ReturnType<ty
   const anCoCan = [chart.year, chart.month, chart.day, chart.hour].some((tru) => hanhCan(tru.tangCan[0]?.can ?? "") === anHanh);
   if (hanhChi(chart.month.chi) === anHanh || hanhChi(chart.day.chi) === anHanh) coCanNguyetNhat = true;
 
-  const hanQuanSat = ["Mộc", "Hỏa", "Thổ", "Kim", "Thủy"].find((h) => h !== nhatChuHanh) as Hanh; // đặt chỗ, xem dienGiai
-  void hanQuanSat;
+  // ẤN HÓA QUAN SÁT (Sát → Ấn → Thân) — tài liệu §3 gọi là "cấu trúc đáng săn nhất khi chọn ngày
+  // sinh": biến áp lực thành nguồn nuôi. Điều kiện: (1) trong cục CÓ Quan Sát (hành khắc Nhật Chủ),
+  // (2) Ấn có căn để đủ sức hóa, (3) Quan Sát sinh được cho Ấn — luôn đúng theo vòng ngũ hành, vì
+  // hành khắc Nhật Chủ chính là hành mà Ấn được sinh ra từ đó... nên chỉ cần kiểm (1) và (2).
+  const hanhQuanSat = HANH_CHUOI.find((h) => KHAC_MAP[h] === nhatChuHanh);
+  const quanSatCoMat = !!hanhQuanSat && [chart.year, chart.month, chart.day, chart.hour].some((tru) =>
+    hanhCan(tru.can) === hanhQuanSat || tru.tangCan.some((t) => hanhCan(t.can) === hanhQuanSat),
+  );
+  const anCoCanTruoc = [chart.year, chart.month, chart.day, chart.hour].some((tru) => hanhCan(tru.tangCan[0]?.can ?? "") === anHanh);
+  // Quan Sát sinh Ấn: SINH_MAP[hanhQuanSat] phải bằng anHanh (kiểm tường minh, không suy đoán).
+  const quanSatSinhDuocAn = !!hanhQuanSat && SINH_MAP[hanhQuanSat] === anHanh;
+  const hoaDuocQuanSat = quanSatCoMat && anCoCanTruoc && quanSatSinhDuocAn;
 
   const nhuocHoacTrungHoa = ["Nhược", "Suy", "Trung hòa", "Nhược "].includes(vuongSuyCapDo) || vuongSuyCapDo.includes("Trung hòa") || vuongSuyCapDo.includes("Nhược") || vuongSuyCapDo.includes("Suy");
   const daVuong = vuongSuyCapDo.includes("Vượng") || vuongSuyCapDo.includes("Cường");
@@ -106,7 +150,11 @@ function chamAnTinh(chart: BatTuChart, vuongSuyCapDo: string, cfg: ReturnType<ty
     dienGiai = `Ấn (${anHanh}) có mặt và có căn, liều lượng đủ dùng.`;
   }
 
-  return { muc, soPhan, coCan: anCoCan, hoaDuocQuanSat: false, dienGiai };
+  if (hoaDuocQuanSat) {
+    dienGiai += ` ✦ Có cấu trúc Ấn hóa Quan Sát (${hanhQuanSat} → ${anHanh} → ${nhatChuHanh}) — biến áp lực thành nguồn nuôi, cấu trúc đáng săn nhất khi chọn ngày sinh.`;
+  }
+
+  return { muc, soPhan, coCan: anCoCan, hoaDuocQuanSat, dienGiai };
 }
 
 /** §5 — Ngũ hành lưu thông: dò chuỗi Mộc→Hỏa→Thổ→Kim→Thủy→Mộc, tìm mắt xích đứt/nghẽn. */
