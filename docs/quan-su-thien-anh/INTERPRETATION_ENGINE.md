@@ -4,12 +4,21 @@ Tầng biến 1 quẻ đã lập (cấu trúc) thành **KẾT QUẢ QUÂN SƯ** 
 
 > ⚠️ **LLM không tự tính quẻ.** LLM chỉ đọc `QuanSuInterpretationPayload` (quẻ do engine tính, xem `ICHING_OUTPUT_SCHEMA.md`) + bộ quy tắc luận + tài liệu tham chiếu. Mọi con số đến từ engine.
 
+## 0. Hai lớp phân biệt rõ (nguyên tắc cốt lõi)
+
+| Lớp | Engine | Trả lời | Vai trò |
+|---|---|---|---|
+| **Sự việc** | Kinh Dịch (Lục Hào, `luc-hao.ts`) | "SỰ VIỆC này thế nào?" | CHÍNH — luận từng câu hỏi |
+| **Vận thế** | Bát Tự/Tử Vi (`current-luck.ts`) | "NGƯỜI này đang ở vận thế nào?" | PHÔNG NỀN — không luận sự việc |
+
+Advisory Engine đọc CẢ HAI nhưng không trộn vai: quẻ luận việc, vận trình chỉ tô nền. Khi lệch nhau → "đọc theo tầng" (Phần C của template), không ép 1 kết luận.
+
 ## 1. Đầu vào (payload có cấu trúc)
 
 `QuanSuInterpretationPayload` (từ `src/lib/quan-su/divination.ts`):
 - `question`: id, nhóm, tiêu đề, `output_type`, `safety_level`, **`dung_than_hint`** (Dụng Thần gợi ý theo nhóm — Lớp 3 rule-based).
-- `cast`: `FullCastResult` nguyên văn engine (quẻ chủ/biến/hỗ, 6 hào đầy đủ, Can Chi, Tuần Không, vượng suy, quan hệ Nhật/Nguyệt...).
-- `van_trinh`: sơ đồ vận trình Bát Tự/Tử Vi (nếu có) — timeline đại vận/lưu niên gắn nhãn tốt/xấu.
+- `cast`: `FullCastResult` nguyên văn engine (quẻ chủ/biến/hỗ, 6 hào đầy đủ, Can Chi, Tuần Không, vượng suy, quan hệ Nhật/Nguyệt...). → LỚP SỰ VIỆC.
+- `van_trinh`: `LuckContext | null` — Vận Trình Hiện Tại (đại vận/lưu niên hiện tại, Dụng Thần, **4 thanh chỉ số** Sự nghiệp/Tài chính/Cơ hội/Biến động, timeline, lớp Tử Vi phụ). Xem `LUCK_CONTEXT_SCHEMA.md`. → LỚP VẬN THẾ. ⚠️ `coNhap: true` — điểm số là bản nháp, LLM nên trình bày như "tham khảo", không quả quyết.
 - `meta`: thời điểm gieo, phương pháp.
 
 ## 2. Tài liệu tham chiếu LLM nạp (theo nhóm, không nhồi hết)
@@ -25,7 +34,7 @@ Theo `LUAN_QUE_LUC_HAO_SPEC.md` §8 (retrieval theo domain) — chỉ nạp ph�
 2. **Luận cát hung** theo 10 bước (spec §5): vượng/suy Dụng Thần, Không Vong thật/giả, Nguyên Thần, Kỵ Thần, Nhật/Nguyệt, động tĩnh, hợp/xung cục → tổng hợp. Chỉ dùng dữ liệu engine cung cấp; yếu tố engine chưa tính (Tam Hợp cục, Tam Hình, Nhập Mộ — xem `ICHING_OUTPUT_SCHEMA.md` §5) thì nói rõ "chưa xét", KHÔNG tự bịa.
 3. **Nguyên nhân cốt lõi** (thủ tượng, spec §7.1): diễn giải hào/Lục Thú thành sự việc đời thực.
 4. **Ứng Kỳ** (spec §6): nếu câu hỏi cần "khi nào".
-5. **Phối với sơ đồ vận trình** (Phần C của template): nếu có `van_trinh` — quẻ là tiếng nói chính cho SỰ VIỆC, vận trình là phông nền. Khi lệch nhau → "đọc theo tầng", không ép 1 kết luận (theo mẫu module "Định Hướng Nghề Nghiệp").
+5. **Phối với vận trình** (Phần C của template): nếu có `van_trinh` — quẻ là tiếng nói chính cho SỰ VIỆC, vận trình (đại vận/lưu niên + 4 thanh) là phông nền "người đang ở vận thế nào". Khi lệch nhau → "đọc theo tầng", không ép 1 kết luận (theo mẫu module "Định Hướng Nghề Nghiệp"). Vì `van_trinh.coNhap=true`, dùng 4 thanh như gợi ý định tính, không đọc con số như tuyệt đối.
 6. **Kết luận + hóa giải/hành động** (spec §7.2 + guardrail): chỉ hóa giải khi thật sự có vấn đề; luôn giữ giọng "tham khảo".
 
 ## 4. Đầu ra — 2 lớp

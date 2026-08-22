@@ -18,6 +18,7 @@ import {
   type FullCastResult,
   type LucThan,
 } from "../luc-hao";
+import type { LuckContext } from "./current-luck";
 import type { CategoryId, QuestionDefinition } from "./types";
 
 // ---------------------------------------------------------------------------------------------
@@ -118,13 +119,8 @@ export function castLucHaoRandom(input: CastInput = castInputNow(), rng: () => n
 }
 
 // ---------------------------------------------------------------------------------------------
-// Sơ đồ vận trình (Bát Tự/Tử Vi) — do adapter điền ở phase sau; ở đây chỉ định nghĩa hình dạng slot.
-// Khớp VanTrinhTimeline trong ENGINE_INTEGRATION.md §3.
-
-export interface VanTrinhTimeline {
-  giaiDoan: { tuoiBatDau: number; tuoiKetThuc: number; nhan: string; danhGia: "tot" | "binh_thuong" | "xau" }[];
-  luuNienHienTai: { nam: number; nhan: string; danhGia: "tot" | "binh_thuong" | "xau" };
-}
+// Vận trình (Bát Tự/Tử Vi) do engine current-luck.ts trích (Phase 4). Ở đây chỉ dùng làm slot trong
+// payload — engine thật nằm ở current-luck.ts (tinhVanTrinhHienTai).
 
 // ---------------------------------------------------------------------------------------------
 // Payload có cấu trúc để Interpretation Engine (LLM) ĐỌC. Deterministic: chỉ gom dữ liệu đã tính,
@@ -141,8 +137,8 @@ export interface QuanSuInterpretationPayload {
   };
   /** Nguyên văn kết quả engine lập quẻ — KHÔNG sửa đổi. Đây là nguồn sự thật, LLM không tự tính lại. */
   cast: FullCastResult;
-  /** Sơ đồ vận trình Bát Tự/Tử Vi (nếu câu hỏi có dùng) — do adapter điền; null nếu chưa có / không dùng. */
-  van_trinh: VanTrinhTimeline | null;
+  /** Vận trình hiện tại (Bát Tự/Tử Vi) — do current-luck.ts trích; null nếu câu hỏi không dùng / chưa có ngày sinh. */
+  van_trinh: LuckContext | null;
   meta: {
     castAtISO: string;
     method: "luc-hao-tosses" | "luc-hao-random";
@@ -155,7 +151,7 @@ export interface QuanSuInterpretationPayload {
 export function buildInterpretationPayload(
   question: QuestionDefinition,
   cast: FullCastResult,
-  opts: { vanTrinh?: VanTrinhTimeline | null; method: QuanSuInterpretationPayload["meta"]["method"]; castAt?: Date } = {
+  opts: { vanTrinh?: LuckContext | null; method: QuanSuInterpretationPayload["meta"]["method"]; castAt?: Date } = {
     method: "luc-hao-tosses",
   },
 ): QuanSuInterpretationPayload {

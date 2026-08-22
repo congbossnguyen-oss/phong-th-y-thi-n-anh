@@ -29,8 +29,14 @@ export {
   dungThanHintFor,
   type DungThanHint,
   type QuanSuInterpretationPayload,
-  type VanTrinhTimeline,
 } from "./divination";
+export {
+  tinhVanTrinhHienTai,
+  type DanhGia,
+  type LuckContext,
+  type LuckDimension,
+  type LuckInput,
+} from "./current-luck";
 
 const questionById = new Map(questions.map((q) => [q.question_id, q]));
 

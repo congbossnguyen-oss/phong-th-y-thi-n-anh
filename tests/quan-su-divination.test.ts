@@ -11,6 +11,7 @@ import {
   castLucHaoRandom,
   dungThanHintFor,
 } from "../src/lib/quan-su/divination";
+import { tinhVanTrinhHienTai } from "../src/lib/quan-su/current-luck";
 import { getQuestion, getQuestionsByCategory } from "../src/lib/quan-su";
 import { categories } from "../src/lib/quan-su/categories";
 
@@ -105,15 +106,13 @@ describe("Divination — payload cho Interpretation Engine", () => {
     expect(payload.meta.castAtISO).toMatch(/^\d{4}-\d{2}-\d{2}T/);
   });
 
-  it("nhận sơ đồ vận trình khi adapter đã điền", () => {
+  it("nhận vận trình hiện tại (LuckContext thật từ current-luck.ts) khi câu hỏi có dùng", () => {
     const q = getQuestion("chuyen-viec")!;
     const cast = castLucHaoRandom(FIXED_INPUT);
-    const vanTrinh = {
-      giaiDoan: [{ tuoiBatDau: 30, tuoiKetThuc: 39, nhan: "Canh Ngọ", danhGia: "tot" as const }],
-      luuNienHienTai: { nam: 2024, nhan: "Giáp Thìn", danhGia: "binh_thuong" as const },
-    };
+    const vanTrinh = tinhVanTrinhHienTai({ day: 20, month: 5, year: 1990, hour: 10, gender: "Nam", nowYear: 2024 });
     const payload = buildInterpretationPayload(q, cast, { method: "luc-hao-random", vanTrinh });
     expect(payload.van_trinh).toBe(vanTrinh);
+    expect(payload.van_trinh?.dimensions).toHaveLength(4);
   });
 
   it("TỪ CHỐI câu chọn-ngày-giờ (không gieo quẻ, phải đi trach-nhat)", () => {
