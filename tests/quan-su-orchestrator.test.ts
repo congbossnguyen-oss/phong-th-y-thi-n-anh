@@ -6,19 +6,23 @@ import type { CoinLineValue } from "../src/lib/luc-hao";
 
 const NGAY_SINH = { day: 20, month: 5, year: 1990, gender: "Nam" as const, hour: 10 };
 const TOSSES: CoinLineValue[] = [9, 7, 8, 6, 7, 8];
+const VERDICTS = ["NEN", "KHONG_NEN", "NEN_CHO", "CO_DIEU_KIEN", "CHUA_DU_DU_LIEU"];
 
 describe("Orchestrator — chạy đầu-cuối", () => {
-  it("câu Kinh Dịch: trả KẾT QUẢ QUÂN SƯ (mở/thân/kết) + chi tiết quẻ + vận trình", () => {
+  it("câu Kinh Dịch: trả BÁO CÁO CỐ VẤN + chi tiết quẻ + vận trình", () => {
     const r = runQuanSu({ question_id: "dau-tu-du-an", tosses: TOSSES, ngaySinh: NGAY_SINH });
     expect(r.question.id).toBe("dau-tu-du-an");
-    expect(r.ketQuaQuanSu.mo_bai.length).toBeGreaterThan(0);
-    expect(r.ketQuaQuanSu.than_bai.length).toBeGreaterThan(0);
-    expect(r.ketQuaQuanSu.ket_luan.cau_tra_loi.length).toBeGreaterThan(0);
-    expect(r.chiTiet.que.chinh.length).toBeGreaterThan(0);
-    expect(r.chiTiet.que.dongPositions).toEqual([1, 4]);
-    expect(r.chiTiet.vanTrinh).not.toBeNull(); // có ngày sinh → có vận trình
-    expect(r.chiTiet.vanTrinh?.dimensions).toHaveLength(4);
-    expect(r.isDemo).toBe(true); // luận giải hiện là bản demo
+    expect(VERDICTS).toContain(r.report.ketLuan);
+    expect(r.report.mucDoThuan).toBeGreaterThanOrEqual(0);
+    expect(r.report.mucDoThuan).toBeLessThanOrEqual(100);
+    expect(r.report.diemThuan).toHaveLength(3);
+    expect(r.report.diemLuuY).toHaveLength(3);
+    expect(r.report.quanSuKhuyen).toHaveLength(3);
+    expect(r.que.chinh.length).toBeGreaterThan(0);
+    expect(r.que.dongPositions).toEqual([1, 4]);
+    expect(r.vanTrinh).not.toBeNull();
+    expect(r.report.vanTrinh).not.toBeNull();
+    expect(r.isDemo).toBe(true);
   });
 
   it("gieo giúp (không truyền tosses) vẫn chạy, tái lập được với cùng RNG", () => {
@@ -27,26 +31,28 @@ describe("Orchestrator — chạy đầu-cuối", () => {
     const a = runQuanSu({ question_id: "chuyen-viec", ngaySinh: NGAY_SINH, rng });
     seed = 7;
     const b = runQuanSu({ question_id: "chuyen-viec", ngaySinh: NGAY_SINH, rng });
-    expect(a.chiTiet.que.chinh).toBe(b.chiTiet.que.chinh);
+    expect(a.que.chinh).toBe(b.que.chinh);
+    expect(a.report.mucDoThuan).toBe(b.report.mucDoThuan);
   });
 
   it("không có ngày sinh → vẫn luận được bằng quẻ, vận trình = null", () => {
     const r = runQuanSu({ question_id: "chuyen-viec", tosses: TOSSES });
-    expect(r.chiTiet.vanTrinh).toBeNull();
-    expect(r.ketQuaQuanSu.mo_bai.length).toBeGreaterThan(0);
+    expect(r.vanTrinh).toBeNull();
+    expect(r.report.vanTrinh).toBeNull();
+    expect(r.report.xuHuong.length).toBeGreaterThan(0);
   });
 
-  it("nhóm nhạy cảm (kiện tụng) → kết luận CÓ cảnh báo pháp lý trong luu_y", () => {
+  it("nhóm nhạy cảm (kiện tụng) → khuyên CÓ nhắc luật sư", () => {
     const r = runQuanSu({ question_id: "co-nen-kien", tosses: TOSSES, ngaySinh: NGAY_SINH });
-    expect(r.ketQuaQuanSu.ket_luan.luu_y.some((s) => s.includes("luật sư"))).toBe(true);
+    expect(r.report.quanSuKhuyen.some((s) => s.includes("luật sư"))).toBe(true);
   });
 
-  it("nhóm sức khỏe → cảnh báo gặp bác sĩ", () => {
+  it("nhóm sức khỏe → khuyên nhắc bác sĩ", () => {
     const r = runQuanSu({ question_id: "dieu-tri", tosses: TOSSES, ngaySinh: NGAY_SINH });
-    expect(r.ketQuaQuanSu.ket_luan.luu_y.some((s) => s.includes("bác sĩ"))).toBe(true);
+    expect(r.report.quanSuKhuyen.some((s) => s.includes("bác sĩ"))).toBe(true);
   });
 
-  it("câu chọn-ngày-giờ → TỪ CHỐI (phải đi trach-nhat, không qua orchestrator Kinh Dịch)", () => {
+  it("câu chọn-ngày-giờ → TỪ CHỐI (phải đi trach-nhat)", () => {
     expect(() => runQuanSu({ question_id: "chon-ngay-khai-truong", tosses: TOSSES })).toThrow();
   });
 

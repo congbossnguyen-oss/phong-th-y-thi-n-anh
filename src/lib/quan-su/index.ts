@@ -38,7 +38,14 @@ export {
   type LuckDimension,
   type LuckInput,
 } from "./current-luck";
-export { interpretDemo, type OutputSchema } from "./interpretation-stub";
+export {
+  buildAdvisoryReport,
+  VERDICT_LABEL,
+  type AdvisoryReport,
+  type ScoreItem,
+  type VanTrinhTomTat,
+  type Verdict,
+} from "./advisory-engine";
 export {
   runQuanSu,
   type NgaySinhInput,

@@ -91,6 +91,26 @@
 .qs-dim .fill { height: 100%; background: linear-gradient(90deg, var(--qs-purple), var(--qs-gold)); }
 .qs-dim.warn .fill { background: linear-gradient(90deg, #7a5a53, var(--qs-bad)); }
 
+.qs-badge { display: inline-block; font-weight: 800; letter-spacing: 0.04em; padding: 0.35rem 0.9rem; border-radius: 999px; font-size: 0.95rem; margin-bottom: 0.8rem; }
+.qs-badge.NEN { background: rgba(127,184,160,0.18); color: #a9e0c9; border: 1px solid #7fb8a0; }
+.qs-badge.CO_DIEU_KIEN { background: rgba(201,161,90,0.18); color: #e6cf9e; border: 1px solid var(--qs-gold); }
+.qs-badge.NEN_CHO { background: rgba(107,78,158,0.2); color: #c9b6ea; border: 1px solid var(--qs-purple); }
+.qs-badge.KHONG_NEN { background: rgba(196,122,106,0.16); color: #e7b6ab; border: 1px solid var(--qs-bad); }
+.qs-badge.CHUA_DU_DU_LIEU { background: rgba(154,166,189,0.14); color: var(--qs-muted); border: 1px solid var(--qs-muted); }
+
+.qs-score { margin: 0.6rem 0 1rem; }
+.qs-score .lab { display: flex; justify-content: space-between; font-size: 0.82rem; margin-bottom: 0.3rem; color: var(--qs-muted); }
+.qs-score .track { height: 11px; background: var(--qs-navy-2); border-radius: 6px; overflow: hidden; }
+.qs-score .fill { height: 100%; background: linear-gradient(90deg, var(--qs-purple), var(--qs-gold)); }
+
+.qs-sect { margin-top: 1.1rem; }
+.qs-sect h4 { color: var(--qs-gold); font-size: 0.8rem; letter-spacing: 0.08em; text-transform: uppercase; margin: 0 0 0.5rem; }
+.qs-points { list-style: none; padding: 0; margin: 0; }
+.qs-points li { padding: 0.35rem 0 0.35rem 1.4rem; position: relative; font-size: 0.9rem; line-height: 1.5; }
+.qs-points.thuan li::before { content: "✦"; color: var(--qs-good); position: absolute; left: 0; }
+.qs-points.luuy li::before { content: "▲"; color: var(--qs-bad); position: absolute; left: 0; font-size: 0.75rem; top: 0.5rem; }
+.qs-points.khuyen li::before { content: "→"; color: var(--qs-gold); position: absolute; left: 0; }
+
 .qs-detail { margin-top: 1rem; }
 .qs-detail summary { cursor: pointer; color: var(--qs-gold); font-size: 0.9rem; }
 .qs-detail .body { color: var(--qs-muted); font-size: 0.85rem; margin-top: 0.7rem; line-height: 1.6; }

@@ -19,8 +19,8 @@ Khung hoàn chỉnh nối mọi mảnh đã xây (Phase 1-4) thành 1 luồng b�
 
 | File | Vai trò |
 |---|---|
-| `src/lib/quan-su/orchestrator.ts` | `runQuanSu()` — điều phối: gieo quẻ → vận trình → luận → kết quả |
-| `src/lib/quan-su/interpretation-stub.ts` | `interpretDemo()` — **bản DEMO** luận giải (đóng gói dữ kiện thành Mở/Thân/Kết, KHÔNG phán đoán thật) |
+| `src/lib/quan-su/orchestrator.ts` | `runQuanSu()` — điều phối: gieo quẻ → vận trình → Advisory Engine → báo cáo |
+| `src/lib/quan-su/advisory-engine.ts` | `buildAdvisoryReport()` — **báo cáo cố vấn 8 phần**: verdict + điểm 0-100 (deterministic) + xu hướng/khuyên (demo prose). Xem `ADVISORY_REPORT_SCHEMA.md` |
 | `src/pages/api/quan-su/luan.ts` | API POST: nhận câu hỏi + gieo + ngày sinh → orchestrator → JSON |
 | `src/pages/quan-su/index.astro` | Màn "Anh đang quan tâm điều gì?" (15 nhóm) |
 | `src/pages/quan-su/[category].astro` | Danh sách câu hỏi 1 nhóm |

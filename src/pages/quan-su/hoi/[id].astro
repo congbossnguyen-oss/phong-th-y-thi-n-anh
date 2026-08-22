@@ -140,36 +140,44 @@ const formInputs = [...question.required_inputs, ...question.optional_inputs].fi
               const note = dim.higherIsBetter ? "" : ' <span style="color:var(--qs-muted);font-size:0.72rem;">(càng cao càng thận trọng)</span>';
               return `<div class="qs-dim${warn}"><div class="lab"><span>${dim.label}${note}</span><span>${dim.score}/10</span></div><div class="track"><div class="fill" style="width:${pct}%"></div></div></div>`;
             }
+            function esc(s) { const d = document.createElement("div"); d.textContent = s == null ? "" : String(s); return d.innerHTML; }
+            function points(cls, arr) { return `<ul class="qs-points ${cls}">${arr.map((s) => `<li>${esc(s)}</li>`).join("")}</ul>`; }
 
             function renderResult(data) {
-              const kq = data.ketQuaQuanSu;
-              const luck = data.chiTiet.vanTrinh;
+              const rep = data.report;
+              const que = data.que;
+              // 6. Vận trình (từ report.vanTrinh.chiBao)
               let luckHtml = "";
-              if (luck) {
-                luckHtml = `<div class="qs-luck"><h3>Vận trình hiện tại</h3>${luck.dimensions.map(bar).join("")}</div>`;
+              if (rep.vanTrinh) {
+                const bars = rep.vanTrinh.chiBao.map(bar).join("");
+                luckHtml = `<div class="qs-luck"><h3>Vận trình hiện tại</h3>
+                  <div style="color:var(--qs-muted);font-size:0.82rem;margin-bottom:0.6rem;">Đại vận ${esc(rep.vanTrinh.daiVan)} · Năm ${esc(rep.vanTrinh.namHienTai)}</div>
+                  ${bars}</div>`;
               }
-              const luuY = (kq.ket_luan.luu_y || []).map((s) => `<div class="qs-luuy">• ${s}</div>`).join("");
-              const que = data.chiTiet.que;
               resultEl.innerHTML = `
                 <div class="qs-verdict">
                   <h2>KẾT QUẢ QUÂN SƯ</h2>
-                  <p>${kq.mo_bai}</p>
-                  <p>${kq.than_bai}</p>
-                  <div class="ket">
-                    <p><strong>${kq.ket_luan.cau_tra_loi}</strong></p>
-                    <p>${kq.ket_luan.khuyen_nghi_hanh_dong}</p>
-                    ${luuY}
+                  <div class="qs-badge ${rep.ketLuan}">${esc(rep.ketLuanLabel)}</div>
+                  <div class="qs-score">
+                    <div class="lab"><span>Mức độ thuận</span><span>${rep.mucDoThuan}/100</span></div>
+                    <div class="track"><div class="fill" style="width:${rep.mucDoThuan}%"></div></div>
                   </div>
-                  ${data.isDemo ? '<div class="qs-demo">⚙ Bản demo của khung — phần luận giải Kinh Dịch đầy đủ sẽ được kích hoạt sau.</div>' : ""}
+                  <p>${esc(rep.xuHuong)}</p>
+                  <div class="qs-sect"><h4>Điểm thuận</h4>${points("thuan", rep.diemThuan)}</div>
+                  <div class="qs-sect"><h4>Điểm cần lưu ý</h4>${points("luuy", rep.diemLuuY)}</div>
+                  <div class="qs-sect"><h4>Quân Sư khuyên</h4>${points("khuyen", rep.quanSuKhuyen)}</div>
+                  ${data.isDemo ? '<div class="qs-demo">⚙ Bản demo: điểm số theo quy tắc đã có; phần diễn giải bằng lời sẽ do Quân Sư (AI) viết lại khi hoàn thiện.</div>' : ""}
                 </div>
                 ${luckHtml}
                 <details class="qs-detail">
                   <summary>Xem luận giải chi tiết</summary>
                   <div class="body">
-                    Quẻ chủ: <strong>${que.chinh}</strong>${que.bien ? ` → biến: <strong>${que.bien}</strong>` : ""}<br>
-                    Hào động: ${que.dongPositions.length ? que.dongPositions.join(", ") : "không"}<br>
-                    ${que.canChiText}<br>
-                    Tuần Không: ${que.tuanKhong}
+                    ${esc(rep.luanGiaiChiTiet)}<br><br>
+                    Quẻ chủ: <strong>${esc(que.chinh)}</strong>${que.bien ? ` → biến: <strong>${esc(que.bien)}</strong>` : ""} · Hào động: ${que.dongPositions.length ? que.dongPositions.join(", ") : "không"}<br>
+                    Bảng chấm điểm:
+                    <ul style="margin:0.4rem 0 0;padding-left:1.1rem;">
+                      ${rep.bangChamDiem.map((i) => `<li>${i.delta > 0 ? "+" : ""}${i.delta} · ${esc(i.factor)} — ${esc(i.reason)}</li>`).join("") || "<li>(không có điều chỉnh)</li>"}
+                    </ul>
                   </div>
                 </details>`;
               resultEl.scrollIntoView({ behavior: "smooth", block: "start" });
