@@ -10,6 +10,7 @@
 import type { BirthCandidate } from "../../lib/trach-nhat-sinh-no/types";
 import LaSoTuVi from "./LaSoTuVi.astro";
 import BieuDoSongVan from "./BieuDoSongVan.astro";
+import { tomTatDaiHanTuVi, tomTatLaSoTuVi } from "../../lib/trach-nhat-sinh-no/tom-tat";
 
 interface Props { candidate: BirthCandidate | null | undefined; ngayDuongLich: string; khungGio: string; tuTru: string }
 const { candidate, ngayDuongLich, khungGio, tuTru } = Astro.props;
@@ -48,6 +49,7 @@ const diemsDaiHan = (tv?.daiHan ?? []).map((h) => ({
         <h3 class="font-display text-base font-extrabold uppercase tracking-wide text-white">⭐ Lá số Tử Vi 12 cung — vai trò: chọn GIỜ trong ngày</h3>
       </div>
       <div class="p-4 sm:p-5">
+        <p class="mb-3 text-[11px] font-semibold italic text-slate-500">{tomTatLaSoTuVi(tv)}</p>
         <LaSoTuVi cungs={tv.cungs} luanCacCung={tv.luanCacCung} cuc={tv.cuc} tuoiKhoiHan={tv.tuoiKhoiHan} ngayDuongLich={ngayDuongLich} khungGio={khungGio} tuTru={tuTru} />
 
         <div class="mt-4 flex flex-wrap items-center gap-2">
@@ -98,7 +100,7 @@ const diemsDaiHan = (tv?.daiHan ?? []).map((h) => ({
           <h3 class="font-display text-base font-extrabold uppercase tracking-wide text-white">Vận trình Đại Hạn Tử Vi</h3>
         </div>
         <div class="p-4 sm:p-5">
-          <BieuDoSongVan tieuDe="Mức thuận nghịch theo từng Đại Hạn" diems={diemsDaiHan} mau="#1D5FB0" />
+          <BieuDoSongVan tieuDe="Mức thuận nghịch theo từng Đại Hạn" tomTat={tomTatDaiHanTuVi(tv.daiHan)} diems={diemsDaiHan} mau="#1D5FB0" />
           <div class="mt-3 space-y-1.5">
             {tv.daiHan.map((h, i) => (
               <p class={`rounded-lg px-3 py-2 text-[11px] font-semibold ${i < 2 ? "bg-amber-50 text-amber-900" : "bg-slate-50 text-slate-700"}`}>

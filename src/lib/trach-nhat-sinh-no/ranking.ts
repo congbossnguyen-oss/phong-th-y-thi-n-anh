@@ -4,7 +4,7 @@
  * đây CHỈ để SẮP XẾP thứ tự — không hiển thị số điểm "huyền bí" cho khách (đúng §38 spec gốc).
  */
 import { loadTrachNhatConfig } from "./config";
-import type { BirthCandidate, BaziAnalysis, TuViAnalysis } from "./types";
+import type { BirthCandidate, BaziAnalysis, TuViAnalysis, DiemPhuongAn } from "./types";
 
 const VUONG_SUY_DIEM: Record<string, number> = {
   "Trung hòa": 3, "Vượng": 2, "Nhược": 2, "Cường vượng": 1, "Suy": 1,
@@ -90,6 +90,35 @@ export function diemChonGioTuVi(a: TuViAnalysis): number {
   if (chuoiMax >= 3) d -= (chuoiMax - 2) * 3;
 
   return Math.round(d * 100) / 100;
+}
+
+// --- Quy đổi sang thang 0-100 để HIỂN THỊ ---------------------------------------------------------
+// Xếp hạng vẫn dùng điểm thô của hai hệ riêng (không cộng chéo — 06-phan-xu-ban-giao.md §1). Phần
+// dưới đây CHỈ để vẽ gauge + thanh so sánh cho phụ huynh dễ đọc, theo mẫu dashboard anh Công gửi
+// 22/8/2026.
+//
+// Biên quy đổi lấy từ phân vị p2–p98 của 318 ứng viên qua được lọc cứng, chạy trên 5 khung tháng
+// (3/2026, 8/2026, 11/2026, 1/2027, 6/2027) × 2 giới tính — để 0 và 100 điểm là hai đầu THỰC TẾ chứ
+// không phải hai đầu lý thuyết (dùng biên lý thuyết thì mọi lá số đều dồn quanh 50 điểm).
+// Đo được: Bát Tự p2=-1,0 · p50=9,6 · p98=20,0 — Tử Vi p2=-19,6 · p50=-4,0 · p98=6,8.
+const THANG_BAT_TU = { min: -1, max: 20 };
+const THANG_TU_VI = { min: -20, max: 7 };
+
+function quyVe50(raw: number, thang: { min: number; max: number }): number {
+  const t = (raw - thang.min) / (thang.max - thang.min);
+  return Math.round(Math.max(0, Math.min(1, t)) * 50 * 10) / 10;
+}
+
+export function mucNhanTuDiem(tong: number): string {
+  return tong >= 80 ? "Rất tốt" : tong >= 60 ? "Tốt" : tong >= 40 ? "Tạm được" : "Nên cân nhắc thêm";
+}
+
+/** Điểm hiển thị 0-100 của một ứng viên (Bát Tự 0-50 + Tử Vi 0-50). */
+export function diemPhuongAn(c: BirthCandidate): DiemPhuongAn {
+  const batTu = c.baziAnalysis ? quyVe50(diemCauTrucBatTu(c.baziAnalysis), THANG_BAT_TU) : 0;
+  const tuVi = c.tuViAnalysis ? quyVe50(diemChonGioTuVi(c.tuViAnalysis), THANG_TU_VI) : 0;
+  const tong = Math.round(batTu + tuVi);
+  return { batTu, tuVi, tong, mucNhan: mucNhanTuDiem(tong) };
 }
 
 export interface NgayXepHang {

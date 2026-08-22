@@ -187,6 +187,29 @@ export interface TuViAnalysis {
   ketLuan: string[];
 }
 
+// --- Bổ sung 22/8/2026 (anh Công gửi 3 mẫu dashboard làm chuẩn giao diện) ------------------------
+
+/** Một bước trong phễu lọc — để vẽ đồ hình "84 ứng viên rụng dần còn 3". */
+export interface BuocPhezuLoc {
+  ten: string;
+  giaiThich: string;
+  conLai: number;
+  loai: number;
+}
+
+/**
+ * Điểm quy về thang 0–100 CHỈ ĐỂ HIỂN THỊ (gauge + thanh trong bảng so sánh). Việc XẾP HẠNG vẫn
+ * dùng điểm thô của hai hệ riêng biệt, không cộng chéo — đây chỉ là phép quy đổi tuyến tính từ điểm
+ * thô sang thang dễ đọc cho phụ huynh.
+ * ⚠️ Biên quy đổi là DRAFT, chờ calibrate trên ≥20 lá số thật.
+ */
+export interface DiemPhuongAn {
+  batTu: number; // 0-50
+  tuVi: number; // 0-50
+  tong: number; // 0-100
+  mucNhan: string; // "Rất tốt" | "Tốt" | "Tạm được" | "Nên cân nhắc thêm"
+}
+
 export interface RedFlag {
   source: "bazi" | "ziwei" | "medical";
   severity: "critical" | "high" | "medium" | "low";
@@ -218,6 +241,8 @@ export interface DecisionFactor {
 
 export interface CandidateSummaryCard {
   candidateId: string;
+  /** Điểm quy đổi 0-100 để hiển thị (gauge, thanh so sánh). */
+  diem: DiemPhuongAn;
   ngayDuongLich: string; // "22/08/2026"
   khungGio: string;
   tuTru: string; // "Bính Ngọ / Bính Thân / Mậu Thìn / Đinh Tỵ"
@@ -238,5 +263,9 @@ export interface FinalBirthRecommendation {
   soUngVienSinhRa: number;
   soUngVienConLaiSauLoc: number;
   medicalConstraintSummary: string;
+  /** Phễu lọc từng bước — dùng vẽ đồ hình "sinh ra bao nhiêu, rụng ở đâu, còn mấy". */
+  phezuLoc: BuocPhezuLoc[];
+  /** Top lý do loại nhiều ứng viên nhất, đã đổi mã L1-L8 sang tiếng Việt. */
+  lyDoLoaiHangDau: { nhan: string; so: number }[];
   disclaimer: { medical: string; metaphysics: string };
 }

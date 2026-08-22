@@ -7,6 +7,7 @@
 import type { BirthCandidate } from "../../lib/trach-nhat-sinh-no/types";
 import DoHinhUngVien from "./DoHinhUngVien.astro";
 import BieuDoSongVan from "./BieuDoSongVan.astro";
+import { diemSongDaiVan, tomTatDaiVanBatTu } from "../../lib/trach-nhat-sinh-no/tom-tat";
 
 interface Props { candidate: BirthCandidate | null | undefined }
 const { candidate } = Astro.props;
@@ -88,10 +89,11 @@ const AN_NHAN: Record<string, string> = {
         <div class="mt-5 rounded-xl border-2 border-slate-200 p-3">
           <BieuDoSongVan
             tieuDe="Vận trình Đại Vận Bát Tự"
+            tomTat={tomTatDaiVanBatTu(bt.daiVan)}
             mau="#1E8A45"
             diems={bt.daiVan.map((v) => ({
               tuTuoi: v.tuTuoi, denTuoi: v.denTuoi,
-              diem: v.band === "rat_thuan" ? 5 : v.band === "thuan" ? 2.5 : v.band === "trung_binh" ? 0 : v.band === "thu_thach" ? -2.5 : -5,
+              diem: diemSongDaiVan(v),
               nhan: v.canChi,
               ghiChu: v.xungNguyetChi ? "xung nguyệt chi" : v.xungNhatChi ? "xung nhật chi" : undefined,
             }))}

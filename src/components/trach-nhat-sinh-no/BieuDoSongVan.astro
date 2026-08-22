@@ -7,8 +7,9 @@
  * quãng nào xuống. Dùng chung cho cả Đại Vận Bát Tự lẫn Đại Hạn Tử Vi.
  */
 interface Diem { tuTuoi: number; denTuoi: number; diem: number; nhan: string; ghiChu?: string }
-interface Props { tieuDe: string; diems: Diem[]; mau?: string }
-const { tieuDe, diems, mau = "#1D5FB0" } = Astro.props;
+/** `tomTat` = câu chốt in nghiêng ngay dưới tiêu đề (ý lấy từ mẫu dashboard anh Công gửi 22/8/2026). */
+interface Props { tieuDe: string; diems: Diem[]; mau?: string; tomTat?: string }
+const { tieuDe, diems, mau = "#1D5FB0", tomTat } = Astro.props;
 
 const W = 720, H = 220, PAD_L = 38, PAD_R = 12, PAD_T = 18, PAD_B = 46;
 const innerW = W - PAD_L - PAD_R;
@@ -34,7 +35,8 @@ const MOC = [
 ---
 
 <div class="overflow-x-auto">
-  <p class="mb-1 text-xs font-extrabold uppercase tracking-wide text-slate-600">{tieuDe}</p>
+  <p class="text-xs font-extrabold uppercase tracking-wide text-slate-600">{tieuDe}</p>
+  {tomTat && <p class="mb-1 mt-0.5 text-[11px] font-semibold italic text-slate-500">{tomTat}</p>}
   <svg viewBox={`0 0 ${W} ${H}`} class="w-full min-w-[560px]" role="img" aria-label={tieuDe}>
     <defs>
       <clipPath id={`clip-tren-${tieuDe.replace(/\s/g, "")}`}>

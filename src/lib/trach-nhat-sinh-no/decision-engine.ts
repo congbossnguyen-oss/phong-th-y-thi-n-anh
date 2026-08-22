@@ -3,8 +3,8 @@
  * hoàn toàn (không LLM ở Giai đoạn 1) — mọi câu chữ dựng sẵn từ dữ liệu đã tính, luôn nêu khuyết
  * điểm, không hứa hẹn kết quả (đúng §51 SKILL gốc).
  */
-import type { BirthCandidate, CandidateSummaryCard, DecisionFactor, FinalBirthRecommendation, SelectionStatus } from "./types";
-import type { NgayXepHang } from "./ranking";
+import type { BirthCandidate, BuocPhezuLoc, CandidateSummaryCard, DecisionFactor, FinalBirthRecommendation, SelectionStatus } from "./types";
+import { diemPhuongAn, type NgayXepHang } from "./ranking";
 
 const BAND_NHAN: Record<string, string> = {
   rat_thuan: "rất thuận", thuan: "thuận", trung_binh: "trung bình", thu_thach: "có thử thách", nghich: "nghịch",
@@ -56,6 +56,7 @@ export function dungTheCard(c: BirthCandidate): CandidateSummaryCard {
 
   return {
     candidateId: c.id,
+    diem: diemPhuongAn(c),
     ngayDuongLich,
     khungGio: c.khungGio,
     tuTru,
@@ -85,13 +86,44 @@ function xayDungFactors(top: NgayXepHang, card: CandidateSummaryCard, hangThuNhi
   return factors;
 }
 
+/**
+ * Đổi mã loại kỹ thuật (L1-L8, ZW_*, GOC_DUOI_NGUONG…) sang câu tiếng Việt cho phụ huynh đọc —
+ * dùng ở bảng "vì sao 84 ứng viên chỉ còn 3".
+ */
+const NHAN_LY_DO_LOAI: Record<string, string> = {
+  MEDICAL_REJECTED: "Ngoài khung giờ bệnh viện cho phép",
+  L1: "Trụ ngày xung trụ tháng",
+  L2: "Trụ ngày xung trụ giờ",
+  L3: "Nhật Can không có gốc trong tứ trụ",
+  L4: "Tứ trụ không đủ 5 hành",
+  L5: "Trụ giờ xung trụ tháng",
+  L6: "Rơi vào giờ Tý (23h–01h)",
+  L7: "Không có Ấn tinh có căn",
+  L8: "Nghi ngờ Tòng Cách",
+  GOC_DUOI_NGUONG: "Gốc Nhật Chủ dưới ngưỡng tối thiểu",
+  ZW_MENH_TUAN_TRIET: "Tử Vi: cung Mệnh bị Tuần/Triệt",
+  ZW_SAT_TINH_HOI_MENH: "Tử Vi: quá nhiều sát tinh hội Mệnh",
+  ZW_TPTC_SAT_KHONG_CUU: "Tử Vi: Tam Phương Tứ Chính nhiều sát tinh, không cát tinh cứu",
+  ZW_CHUOI_TUAN_TRIET_DAI: "Tử Vi: nhiều Đại Hạn liên tiếp trùng Tuần/Triệt",
+};
+
+export function xepHangLyDoLoai(thongKeLoai: Record<string, number>): { nhan: string; so: number }[] {
+  return Object.entries(thongKeLoai)
+    .map(([ma, so]) => ({ nhan: NHAN_LY_DO_LOAI[ma] ?? ma, so }))
+    .sort((a, b) => b.so - a.so)
+    .slice(0, 6);
+}
+
 export function ketLuanCuoiCung(params: {
   xepHangNgay: NgayXepHang[];
   soUngVienSinhRa: number;
   soUngVienConLaiSauLoc: number;
   medicalConstraintSummary: string;
+  phezuLoc: BuocPhezuLoc[];
+  thongKeLoai: Record<string, number>;
 }): FinalBirthRecommendation {
-  const { xepHangNgay, soUngVienSinhRa, soUngVienConLaiSauLoc, medicalConstraintSummary } = params;
+  const { xepHangNgay, soUngVienSinhRa, soUngVienConLaiSauLoc, medicalConstraintSummary, phezuLoc, thongKeLoai } = params;
+  const lyDoLoaiHangDau = xepHangLyDoLoai(thongKeLoai);
   const disclaimer = {
     medical: "Chỉ định y khoa của bác sĩ luôn là quyết định cuối cùng — kết quả dưới đây chỉ được chọn trong khung thời gian y tế cho phép.",
     metaphysics: "Ngày giờ sinh là một biến trong nhiều biến của cuộc đời — giáo dục và môi trường nuôi dưỡng quan trọng không kém. Đây là định hướng theo mô hình phân tích cấu trúc lá số, không phải lời hứa hẹn hay tiên tri chắc chắn.",
@@ -101,7 +133,7 @@ export function ketLuanCuoiCung(params: {
     return {
       alternatives: [], selectionStatus: "no_good_option",
       decisiveFactors: [], unresolvedRisks: ["Không có phương án nào thực sự nổi trội trong khung dự sinh đã cho."],
-      soUngVienSinhRa, soUngVienConLaiSauLoc, medicalConstraintSummary, disclaimer,
+      soUngVienSinhRa, soUngVienConLaiSauLoc, medicalConstraintSummary, phezuLoc, lyDoLoaiHangDau, disclaimer,
     };
   }
 
@@ -121,6 +153,8 @@ export function ketLuanCuoiCung(params: {
     soUngVienSinhRa,
     soUngVienConLaiSauLoc,
     medicalConstraintSummary,
+    phezuLoc,
+    lyDoLoaiHangDau,
     disclaimer,
   };
 }

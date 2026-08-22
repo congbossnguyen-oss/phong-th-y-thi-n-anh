@@ -1,0 +1,81 @@
+---
+/**
+ * BẢNG SO SÁNH CÓ THANH DỮ LIỆU TRONG Ô — ý lấy từ mẫu dashboard xanh đậm anh Công gửi 22/8/2026
+ * (cột Revenue có data bar ngay trong ô). Thay bảng chữ khô cũ: nhìn thanh là so được ngay phương án
+ * nào mạnh ở đâu, không phải đọc số.
+ */
+import type { CandidateSummaryCard } from "../../lib/trach-nhat-sinh-no/types";
+import { tomTatSoSanh } from "../../lib/trach-nhat-sinh-no/tom-tat";
+
+interface Props { primary: CandidateSummaryCard; alternatives: CandidateSummaryCard[] }
+const { primary, alternatives } = Astro.props;
+
+const hang = [
+  { nhan: "★ Phương án chính", card: primary, chinh: true },
+  ...alternatives.map((a, i) => ({ nhan: `Dự phòng ${i + 2}`, card: a, chinh: false })),
+];
+const tomTat = tomTatSoSanh(primary, alternatives);
+
+const MAU_BAT_TU = (chinh: boolean) => (chinh ? "#1E8A45" : "#7CC79B");
+const MAU_TU_VI = (chinh: boolean) => (chinh ? "#1D5FB0" : "#8FB6E0");
+const MAU_TONG = (t: number) => (t >= 80 ? "#166534" : t >= 60 ? "#1E8A45" : t >= 40 ? "#B45309" : "#B91C1C");
+---
+
+<div class="overflow-hidden rounded-2xl border-2 border-(--color-gold-400)/50 bg-white shadow-lg">
+  <div class="bg-gradient-to-r from-(--color-gold-400) to-(--color-gold-500) px-5 py-3">
+    <h3 class="font-display text-base font-extrabold uppercase tracking-wide text-(--color-on-accent)">So sánh các phương án</h3>
+    <p class="mt-0.5 text-[11px] font-semibold italic text-(--color-on-accent)/85">{tomTat}</p>
+  </div>
+
+  <div class="overflow-x-auto">
+    <table class="w-full min-w-[640px] text-left text-xs">
+      <thead>
+        <tr class="bg-slate-50">
+          <th class="px-3 py-2.5 text-[10px] font-extrabold uppercase tracking-wide text-slate-500">Phương án</th>
+          <th class="px-3 py-2.5 text-[10px] font-extrabold uppercase tracking-wide text-slate-500">Cấu trúc Bát Tự</th>
+          <th class="px-3 py-2.5 text-[10px] font-extrabold uppercase tracking-wide text-slate-500">Lá số Tử Vi</th>
+          <th class="px-3 py-2.5 text-[10px] font-extrabold uppercase tracking-wide text-slate-500">Vượng suy · Dụng Thần</th>
+          <th class="px-3 py-2.5 text-[10px] font-extrabold uppercase tracking-wide text-slate-500">Cung Mệnh · Cục</th>
+          <th class="px-3 py-2.5 text-right text-[10px] font-extrabold uppercase tracking-wide text-slate-500">Tổng</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        {hang.map(({ nhan, card, chinh }) => (
+          <tr class={chinh ? "bg-amber-50/70" : ""}>
+            <td class="px-3 py-3">
+              <p class="text-[11px] font-black text-slate-900">{nhan}</p>
+              <p class="mt-0.5 text-[12px] font-extrabold text-slate-800">{card.ngayDuongLich}</p>
+              <p class="text-[10px] font-semibold text-slate-500">{card.khungGio}</p>
+            </td>
+            <td class="px-3 py-3">
+              <div class="relative h-[18px] min-w-[104px] overflow-hidden rounded bg-slate-100">
+                <div class="absolute inset-y-0 left-0 rounded" style={`width:${(card.diem.batTu / 50) * 100}%;background:${MAU_BAT_TU(chinh)}`}></div>
+                <span class="absolute right-1.5 top-0 text-[10px] font-black leading-[18px] text-slate-900">{card.diem.batTu}/50</span>
+              </div>
+            </td>
+            <td class="px-3 py-3">
+              <div class="relative h-[18px] min-w-[104px] overflow-hidden rounded bg-slate-100">
+                <div class="absolute inset-y-0 left-0 rounded" style={`width:${(card.diem.tuVi / 50) * 100}%;background:${MAU_TU_VI(chinh)}`}></div>
+                <span class="absolute right-1.5 top-0 text-[10px] font-black leading-[18px] text-slate-900">{card.diem.tuVi}/50</span>
+              </div>
+            </td>
+            <td class="px-3 py-3 text-[11px] font-bold text-slate-700">
+              {card.vuongSuy}<br /><span class="font-semibold text-slate-500">Dụng {card.dungThan}</span>
+            </td>
+            <td class="px-3 py-3 text-[11px] font-bold text-slate-700">
+              {card.cungMenh}<br /><span class="font-semibold text-slate-500">{card.cuc}</span>
+            </td>
+            <td class="px-3 py-3 text-right">
+              <p class="font-display text-lg font-black leading-none" style={`color:${MAU_TONG(card.diem.tong)}`}>{card.diem.tong}</p>
+              <p class="text-[9.5px] font-bold" style={`color:${MAU_TONG(card.diem.tong)}`}>{card.diem.mucNhan}</p>
+            </td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
+
+  <p class="bg-slate-50 px-3 py-2 text-[10px] font-semibold text-slate-500">
+    Thanh dài hơn = mạnh hơn ở hệ đó. Điểm hiển thị chỉ để so sánh trực quan; thứ hạng thật do Bát Tự (chọn NGÀY) và Tử Vi (chọn GIỜ) quyết định độc lập.
+  </p>
+</div>

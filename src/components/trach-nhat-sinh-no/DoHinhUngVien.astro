@@ -8,6 +8,7 @@
  * Định Hướng Nghề Nghiệp: thẻ nền trắng + token đổi màu = chữ nhạt trên nền trắng.
  */
 import type { BirthCandidate } from "../../lib/trach-nhat-sinh-no/types";
+import { tomTatDaiHanTuVi, tomTatDaiVanBatTu, tomTatNguHanh, tomTatTuTru } from "../../lib/trach-nhat-sinh-no/tom-tat";
 
 interface Props {
   candidate: BirthCandidate | null | undefined;
@@ -64,6 +65,8 @@ if (bt) {
 
 const daiVan = bt?.daiVan ?? [];
 const daiHan = tv?.daiHan ?? [];
+const daiVanTomTatNguon = daiVan;
+const daiHanTomTatNguon = daiHan;
 const oW = gon ? "min-w-[66px]" : "min-w-[76px]";
 
 // --- Biểu đồ tròn (donut) cho phân bố Ngũ Hành: dựng sẵn từng cung tròn phía server ---
@@ -81,11 +84,19 @@ const cungDonut = (nguHanh ?? [])
 /** Hành mạnh nhất / vắng mặt — để ghi chú giữa vòng tròn cho dễ "kiểm soát". */
 const hanhManhNhat = (nguHanh ?? []).reduce((best, p) => (p.phanTram > (best?.phanTram ?? -1) ? p : best), null as null | { hanh: string; mau: string; phanTram: number });
 const hanhVang = (nguHanh ?? []).filter((p) => p.phanTram === 0).map((p) => p.hanh);
+
+// Câu chốt in nghiêng ngay dưới mỗi tiêu đề đồ hình — ý lấy từ 3 mẫu dashboard anh Công gửi
+// 22/8/2026 ("nói thẳng kết luận, người không biết đọc biểu đồ vẫn nắm được").
+const tomTatTuTruStr = bt ? tomTatTuTru(bt) : "";
+const tomTatNguHanhStr = bt && nguHanh ? tomTatNguHanh(nguHanh, bt.dungThan, bt.kyThan) : "";
+const tomTatDaiVanStr = daiVanTomTatNguon.length > 0 ? tomTatDaiVanBatTu(daiVanTomTatNguon) : "";
+const tomTatDaiHanStr = daiHanTomTatNguon.length > 0 ? tomTatDaiHanTuVi(daiHanTomTatNguon) : "";
 ---
 
 {tuTru && (
   <div class="mt-4">
-    <p class="mb-2 text-xs font-extrabold uppercase tracking-wide text-slate-600">Tứ Trụ</p>
+    <p class="text-xs font-extrabold uppercase tracking-wide text-slate-600">Tứ Trụ</p>
+    {tomTatTuTruStr && <p class="mb-2 mt-0.5 text-[11px] font-semibold italic text-slate-500">{tomTatTuTruStr}</p>}
     <div class="grid grid-cols-4 gap-2">
       {tuTru.map((t) => (
         <div class="overflow-hidden rounded-xl border-2 border-slate-200 text-center">
@@ -100,7 +111,8 @@ const hanhVang = (nguHanh ?? []).filter((p) => p.phanTram === 0).map((p) => p.ha
 
 {nguHanh && (
   <div class="mt-4">
-    <p class="mb-2 text-xs font-extrabold uppercase tracking-wide text-slate-600">Phân bố Ngũ Hành</p>
+    <p class="text-xs font-extrabold uppercase tracking-wide text-slate-600">Phân bố Ngũ Hành</p>
+    {tomTatNguHanhStr && <p class="mb-2 mt-0.5 text-[11px] font-semibold italic text-slate-500">{tomTatNguHanhStr}</p>}
     <div class="flex flex-col items-center gap-4 sm:flex-row sm:items-center sm:justify-center sm:gap-6">
       {/* Vòng tròn (donut) — mỗi cung 1 hành, dựng sẵn phía máy chủ bằng stroke-dasharray. */}
       <svg viewBox="0 0 140 140" class={gon ? "w-32 shrink-0" : "w-40 shrink-0"} role="img" aria-label="Biểu đồ tròn phân bố Ngũ Hành">
@@ -144,7 +156,8 @@ const hanhVang = (nguHanh ?? []).filter((p) => p.phanTram === 0).map((p) => p.ha
 
 {daiVan.length > 0 && (
   <div class="mt-5">
-    <p class="mb-2 text-xs font-extrabold uppercase tracking-wide text-slate-600">Đại Vận Bát Tự</p>
+    <p class="text-xs font-extrabold uppercase tracking-wide text-slate-600">Đại Vận Bát Tự</p>
+    {tomTatDaiVanStr && <p class="mb-2 mt-0.5 text-[11px] font-semibold italic text-slate-500">{tomTatDaiVanStr}</p>}
     <div class="flex gap-1 overflow-x-auto pb-1">
       {daiVan.map((v) => (
         <div class={`relative ${oW} flex-1 overflow-hidden rounded-lg pt-2 pb-2.5 text-center`} style={`background:${BAND_MAU[v.band] ?? "#6B7280"}`}>
@@ -160,7 +173,8 @@ const hanhVang = (nguHanh ?? []).filter((p) => p.phanTram === 0).map((p) => p.ha
 
 {daiHan.length > 0 && (
   <div class="mt-4">
-    <p class="mb-2 text-xs font-extrabold uppercase tracking-wide text-slate-600">Đại Hạn Tử Vi</p>
+    <p class="text-xs font-extrabold uppercase tracking-wide text-slate-600">Đại Hạn Tử Vi</p>
+    {tomTatDaiHanStr && <p class="mb-2 mt-0.5 text-[11px] font-semibold italic text-slate-500">{tomTatDaiHanStr}</p>}
     <div class="flex gap-1 overflow-x-auto pb-1">
       {daiHan.map((h) => (
         <div class={`relative ${oW} flex-1 overflow-hidden rounded-lg pt-2 pb-2.5 text-center`} style={`background:${h.soSatTinhTuTap > 0 || h.bietTuanTriet ? "#B45309" : "#1D5FB0"}`}>

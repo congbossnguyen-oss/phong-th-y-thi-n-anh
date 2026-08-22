@@ -11,7 +11,7 @@ import { tinhDaiVanBand } from "./dai-van-band";
 import { chamLopTuVi } from "./tu-vi-layer";
 import { xepHangKhongCongDiemCheo, duoiNguongChatLuongGoc } from "./ranking";
 import { ketLuanCuoiCung } from "./decision-engine";
-import type { BirthSelectionInput, BirthCandidate, FinalBirthRecommendation } from "./types";
+import type { BirthSelectionInput, BirthCandidate, BuocPhezuLoc, FinalBirthRecommendation } from "./types";
 
 export * from "./types";
 
@@ -27,6 +27,8 @@ function ghiThongKe(thongKe: Record<string, number>, ma: string): void {
 
 export function phanTichTrachNhatSinhNo(input: BirthSelectionInput): PhanTichTrachNhatKetQua {
   const thongKeLoai: Record<string, number> = {};
+  let soLoaiLocCung = 0;
+  let soLoaiNguongGoc = 0;
   const tatCaUngVien = sinhTatCaUngVien(input);
   const soUngVienSinhRa = tatCaUngVien.length;
   const soDaLocYTe = tatCaUngVien.filter((c) => !c.medicalEligible).length;
@@ -40,6 +42,7 @@ export function phanTichTrachNhatSinhNo(input: BirthSelectionInput): PhanTichTra
       c.status = "BAZI_REJECTED";
       c.hardFilterRejections = reasons;
       reasons.forEach((r) => ghiThongKe(thongKeLoai, r.code));
+      soLoaiLocCung++;
       continue;
     }
 
@@ -49,6 +52,7 @@ export function phanTichTrachNhatSinhNo(input: BirthSelectionInput): PhanTichTra
       c.status = "BAZI_REJECTED";
       c.hardFilterRejections = [{ code: "L3", title: "Chất lượng gốc dưới ngưỡng", explanation: `Gốc lớp ${baziAnalysis.goc.lop ?? "—"} / ${baziAnalysis.goc.diemThongCan} điểm thông căn — dưới ngưỡng tối thiểu (03-cham-diem-bat-tu.md §2).` }];
       ghiThongKe(thongKeLoai, "GOC_DUOI_NGUONG");
+      soLoaiNguongGoc++;
       continue;
     }
 
@@ -82,11 +86,25 @@ export function phanTichTrachNhatSinhNo(input: BirthSelectionInput): PhanTichTra
       ? `Đã lọc theo khung giờ bệnh viện cho phép mổ (${soDaLocYTe}/${soUngVienSinhRa} ứng viên bị loại vì ngoài khung y tế).`
       : "Sinh thường / chưa rõ hình thức sinh — chưa giả định chọn được giờ chính xác, kết quả chỉ mang tính tham khảo cho việc chọn NGÀY.";
 
+  // Phễu lọc — đếm số còn sống sót sau TỪNG chặng, để vẽ đồ hình "sinh ra bao nhiêu, rụng ở đâu".
+  const quaYTe = tatCaUngVien.filter((c) => c.medicalEligible).length;
+  const quaLocCung = quaYTe - soLoaiLocCung;
+  const quaNguongGoc = quaLocCung - soLoaiNguongGoc;
+  const phezuLoc: BuocPhezuLoc[] = [
+    { ten: "Lập ứng viên", giaiThich: "Mỗi ngày trong khung dự sinh × 12 khung giờ Địa Chi.", conLai: soUngVienSinhRa, loai: 0 },
+    { ten: "Khung giờ y tế", giaiThich: "Chỉ giữ những khung giờ bệnh viện cho phép.", conLai: quaYTe, loai: soUngVienSinhRa - quaYTe },
+    { ten: "Lọc cứng Bát Tự", giaiThich: "Xung khắc trong tứ trụ, thiếu hành, thiếu gốc, thiếu Ấn tinh, nghi Tòng Cách.", conLai: quaLocCung, loai: quaYTe - quaLocCung },
+    { ten: "Ngưỡng gốc Nhật Chủ", giaiThich: "Gốc phải đạt tối thiểu lớp C và đủ điểm thông căn.", conLai: quaNguongGoc, loai: quaLocCung - quaNguongGoc },
+    { ten: "Phủ quyết Tử Vi", giaiThich: "Loại lá số có Mệnh bị Tuần/Triệt, nhiều sát tinh hội Mệnh, chuỗi Đại Hạn xấu.", conLai: finalists.length, loai: quaNguongGoc - finalists.length },
+  ];
+
   const recommendation = ketLuanCuoiCung({
     xepHangNgay,
     soUngVienSinhRa,
     soUngVienConLaiSauLoc: finalists.length,
     medicalConstraintSummary,
+    phezuLoc,
+    thongKeLoai,
   });
 
   return { recommendation, tatCaUngVien, thongKeLoai };
