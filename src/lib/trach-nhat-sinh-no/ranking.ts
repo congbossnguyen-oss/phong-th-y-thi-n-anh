@@ -65,12 +65,22 @@ export function diemChonGioTuVi(a: TuViAnalysis): number {
     : a.than_cu === "Thiên Di" ? -0.5
     : a.than_cu === "Phu Thê" ? -1 : 0;
 
-  // Bước 6 — Đại Vận đầu đời (2 hạn đầu ~0-30 tuổi) TRỌNG SỐ CAO NHẤT; các hạn sau nhẹ hơn.
+  // Bước 6 — Đại Hạn: 2 hạn đầu (~0-30t) trọng số cao nhất; hạn 3-5 (~25-65t, giai đoạn trưởng
+  // thành lập nghiệp) KHÔNG còn coi nhẹ — anh Công phát hiện 22/8/2026: hệ số 0.5 quá nhẹ khiến lá
+  // có 4 hạn liên tiếp Tuần/Triệt vẫn xếp hạng 1.
   a.daiHan.forEach((h, i) => {
-    const heSo = i < 2 ? 2 : 0.5;
+    const heSo = i < 2 ? 2 : i < 5 ? 1.2 : 0.5;
     if (h.bietTuanTriet) d -= 1.5 * heSo;
     d -= h.soSatTinhTuTap * 0.5 * heSo;
   });
+  // Phạt lũy tiến cho CHUỖI Tuần/Triệt liên tiếp — 3 hạn liên tiếp trở lên là "cuộc đời khá vất vả".
+  let chuoi = 0;
+  let chuoiMax = 0;
+  for (const h of a.daiHan) {
+    chuoi = h.bietTuanTriet ? chuoi + 1 : 0;
+    if (chuoi > chuoiMax) chuoiMax = chuoi;
+  }
+  if (chuoiMax >= 3) d -= (chuoiMax - 2) * 3;
 
   return Math.round(d * 100) / 100;
 }

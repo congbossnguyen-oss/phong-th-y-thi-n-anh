@@ -13,6 +13,8 @@ import { GIA_CONG_CU, dinhDangTien } from "../../lib/payments/gia-cong-cu";
 import { getOrderByCode } from "../../lib/db/orders";
 import { phanTichTrachNhatSinhNo, type BirthSelectionInput, type PhanTichTrachNhatKetQua } from "../../lib/trach-nhat-sinh-no";
 import DoHinhUngVien from "../../components/trach-nhat-sinh-no/DoHinhUngVien.astro";
+import TabBatTu from "../../components/trach-nhat-sinh-no/TabBatTu.astro";
+import TabTuVi from "../../components/trach-nhat-sinh-no/TabTuVi.astro";
 import { siteConfig } from "../../lib/site-config";
 
 export const prerender = false;
@@ -93,7 +95,35 @@ const UU_TIEN = [
               <p class="mt-1 text-sm text-slate-600">Trong khung dự sinh đã cho, chưa tìm được lựa chọn đạt đủ tiêu chí. Vui lòng nới rộng khung ngày/khung giờ bệnh viện, hoặc liên hệ trực tiếp để được tư vấn thêm.</p>
             </div>
           ) : (
-            <>
+            <div class="tns-tabs">
+              <input type="radio" name="tns-tab" id="tab-phuong-an" checked />
+              <input type="radio" name="tns-tab" id="tab-bat-tu" />
+              <input type="radio" name="tns-tab" id="tab-tu-vi" />
+
+              <div class="mb-5 flex gap-2 rounded-full bg-(--color-ivory-200) p-1.5">
+                <label for="tab-phuong-an" class="lb flex-1 cursor-pointer rounded-full px-3 py-2.5 text-center text-xs font-extrabold text-(--color-ink-700) sm:text-sm">🎯 Phương án chọn</label>
+                <label for="tab-bat-tu" class="lb flex-1 cursor-pointer rounded-full px-3 py-2.5 text-center text-xs font-extrabold text-(--color-ink-700) sm:text-sm">🌿 Bát Tự</label>
+                <label for="tab-tu-vi" class="lb flex-1 cursor-pointer rounded-full px-3 py-2.5 text-center text-xs font-extrabold text-(--color-ink-700) sm:text-sm">⭐ Tử Vi</label>
+              </div>
+
+              {/* TAB 2 — Chi tiết Bát Tự của phương án ưu tiên */}
+              <section class="pane pane-bat-tu">
+                <p class="mb-3 rounded-xl bg-(--color-ivory-100) p-3 text-center text-xs font-semibold text-(--color-ink-700)">
+                  Lá số Bát Tự của <strong>phương án ưu tiên</strong> ({r.primary.ngayDuongLich} · {r.primary.khungGio}). Bát Tự đảm nhận việc <strong>xếp hạng NGÀY</strong>.
+                </p>
+                <TabBatTu candidate={primaryCandidate} />
+              </section>
+
+              {/* TAB 3 — Chi tiết Tử Vi của phương án ưu tiên */}
+              <section class="pane pane-tu-vi">
+                <p class="mb-3 rounded-xl bg-(--color-ivory-100) p-3 text-center text-xs font-semibold text-(--color-ink-700)">
+                  Lá số Tử Vi của <strong>phương án ưu tiên</strong> ({r.primary.ngayDuongLich} · {r.primary.khungGio}). Tử Vi đảm nhận việc <strong>chọn GIỜ</strong> trong ngày đã chọn — hai hệ độc lập, không cộng điểm chéo.
+                </p>
+                <TabTuVi candidate={primaryCandidate} />
+              </section>
+
+              {/* TAB 1 — Phương án chọn ngày tối ưu */}
+              <section class="pane pane-phuong-an">
               {/* ⭐ Phương án ưu tiên */}
               <div class="overflow-hidden rounded-2xl border-2 border-(--color-gold-400)/60 bg-white shadow-lg">
                 <div class="bg-gradient-to-r from-(--color-gold-400) to-(--color-gold-500) px-5 py-3">
@@ -198,7 +228,8 @@ const UU_TIEN = [
                   </div>
                 </div>
               ))}
-            </>
+              </section>
+            </div>
           )}
 
           <div class="mt-6 rounded-xl border border-(--color-gold-400)/40 bg-(--color-gold-400)/5 p-4 text-center text-sm font-semibold text-(--color-ink-800)">
@@ -340,6 +371,23 @@ const UU_TIEN = [
     </div>
   </Container>
 </BaseLayout>
+
+<style>
+  /* Tab thuần CSS (không cần JS) — cùng khuôn đã dùng ở module Định Hướng Nghề Nghiệp. */
+  .tns-tabs > input { position: absolute; opacity: 0; pointer-events: none; }
+  .pane { display: none; }
+  #tab-phuong-an:checked ~ .pane-phuong-an,
+  #tab-bat-tu:checked ~ .pane-bat-tu,
+  #tab-tu-vi:checked ~ .pane-tu-vi { display: block; }
+  #tab-phuong-an:checked ~ div label[for="tab-phuong-an"],
+  #tab-bat-tu:checked ~ div label[for="tab-bat-tu"],
+  #tab-tu-vi:checked ~ div label[for="tab-tu-vi"] {
+    background: var(--color-gold-400);
+    color: var(--color-on-accent);
+    box-shadow: 0 2px 8px rgba(0,0,0,.12);
+  }
+  .tns-tabs .lb:hover { background: rgba(255,255,255,.6); }
+</style>
 
 <script>
   import { readDateSelects } from "../../lib/date-select";

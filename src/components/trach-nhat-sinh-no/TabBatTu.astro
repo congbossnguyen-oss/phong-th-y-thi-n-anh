@@ -1,0 +1,115 @@
+---
+/**
+ * TAB BÁT TỰ — chi tiết lá số Bát Tự của phương án được chọn: Tứ Trụ, Ngũ Hành, vượng suy, chất
+ * lượng gốc (A/B/C/D + 3 phép trừ), liều lượng Ấn, ngũ hành lưu thông, hình/hại, Đại Vận.
+ * Vai trò trong quy trình: Bát Tự XẾP HẠNG NGÀY (06-phan-xu-ban-giao.md §1).
+ */
+import type { BirthCandidate } from "../../lib/trach-nhat-sinh-no/types";
+import DoHinhUngVien from "./DoHinhUngVien.astro";
+
+interface Props { candidate: BirthCandidate | null | undefined }
+const { candidate } = Astro.props;
+const bt = candidate?.baziAnalysis ?? null;
+
+const GOC_NHAN: Record<string, string> = {
+  A: "A — thông căn chính khí tại nhật chi (vững nhất)",
+  B: "B — thông căn chính khí tại nguyệt chi (rất vững)",
+  C: "C — thông căn tại niên/thời chi (khá, gốc xa)",
+  D: "D — chỉ trung/dư khí (mỏng, dễ bị khắc bay)",
+};
+const AN_NHAN: Record<string, string> = {
+  dep: "✅ Lý tưởng", du: "Đủ dùng", thua: "⚠️ Ấn thành kỵ (thân đã vượng)",
+  thieu: "⚠️ Thiếu chỗ dựa", qua_thua: "❌ Kiêu Ấn đoạt Thực",
+};
+---
+
+{!bt ? (
+  <p class="rounded-xl bg-slate-100 p-4 text-center text-sm font-semibold text-slate-600">Chưa có dữ liệu Bát Tự cho phương án này.</p>
+) : (
+  <div class="overflow-hidden rounded-2xl border-2 border-(--color-gold-400)/50 bg-white shadow-lg">
+    <div class="bg-gradient-to-r from-[#1E8A45] to-[#166534] px-5 py-3">
+      <h3 class="font-display text-base font-extrabold uppercase tracking-wide text-white">🌿 Lá số Bát Tự — vai trò: xếp hạng NGÀY</h3>
+    </div>
+    <div class="p-5">
+      <div class="flex flex-wrap gap-2">
+        <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">Nhật Chủ: {bt.nhatChu.can} ({bt.nhatChu.nguHanh})</span>
+        <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">Vượng suy: {bt.vuongSuy}</span>
+        <span class="rounded-full px-3 py-1 text-xs font-extrabold text-white" style="background:#166534">Dụng Thần: {bt.dungThan}</span>
+        <span class="rounded-full px-3 py-1 text-xs font-extrabold text-white" style="background:#22A75A">Hỷ Thần: {bt.hyThan}</span>
+        <span class="rounded-full px-3 py-1 text-xs font-extrabold text-white" style="background:#CF2A22">Kỵ Thần: {bt.kyThan}</span>
+      </div>
+
+      <DoHinhUngVien candidate={candidate} />
+
+      {/* Chất lượng gốc (tiêu chí 7) */}
+      <div class="mt-5 rounded-xl border-2 border-slate-200 p-4">
+        <p class="text-xs font-extrabold uppercase tracking-wide text-slate-600">Chất lượng gốc (tiêu chí 7)</p>
+        <p class="mt-1 text-sm font-bold text-slate-900">Lớp {bt.goc.lop ?? "—"}{bt.goc.lop ? ` · ${GOC_NHAN[bt.goc.lop]}` : ""}</p>
+        <div class="mt-2 flex flex-wrap gap-2">
+          <span class={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${bt.goc.biXung ? "bg-red-100 text-red-700" : "bg-slate-100 text-slate-500"}`}>{bt.goc.biXung ? "✗ Gốc bị xung" : "✓ Gốc không bị xung"}</span>
+          <span class={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${bt.goc.biHopHoaMat ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-500"}`}>{bt.goc.biHopHoaMat ? "⚠ Nghi bị hợp hóa" : "✓ Không bị hợp hóa"}</span>
+          <span class={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${bt.goc.duoiHanhKhac ? "bg-amber-100 text-amber-700" : "bg-slate-100 text-slate-500"}`}>{bt.goc.duoiHanhKhac ? "⚠ Ngồi dưới hành khắc" : "✓ Không bị đè"}</span>
+        </div>
+        <ul class="mt-2 space-y-0.5">
+          {bt.goc.dienGiai.map((d) => (<li class="text-[11px] font-semibold text-slate-600">• {d}</li>))}
+        </ul>
+      </div>
+
+      {/* Ấn tinh (tiêu chí 8) */}
+      <div class="mt-4 rounded-xl border-2 border-slate-200 p-4">
+        <p class="text-xs font-extrabold uppercase tracking-wide text-slate-600">Ấn tinh — liều lượng (tiêu chí 8)</p>
+        <p class="mt-1 text-sm font-bold text-slate-900">{AN_NHAN[bt.anTinh.muc] ?? bt.anTinh.muc} · {bt.anTinh.soPhan} phần {bt.anTinh.coCan ? "(có căn)" : "(không căn)"}</p>
+        <p class="mt-1 text-[11px] font-semibold text-slate-600">{bt.anTinh.dienGiai}</p>
+        {bt.anTinh.hoaDuocQuanSat && (
+          <p class="mt-2 rounded-lg bg-emerald-50 px-3 py-2 text-[11px] font-extrabold text-emerald-800">✦ Ấn hóa Quan Sát — cấu trúc đáng săn nhất khi chọn ngày sinh (biến áp lực thành nguồn nuôi).</p>
+        )}
+      </div>
+
+      {/* Ngũ hành lưu thông (tiêu chí 9) */}
+      <div class="mt-4 rounded-xl border-2 border-slate-200 p-4">
+        <p class="text-xs font-extrabold uppercase tracking-wide text-slate-600">Ngũ hành lưu thông (tiêu chí 9)</p>
+        <ul class="mt-1 space-y-0.5">
+          {bt.luuThong.dienGiai.map((d) => (<li class="text-[11px] font-semibold text-slate-700">• {d}</li>))}
+        </ul>
+      </div>
+
+      {bt.tuHinhTuTruHinh.length > 0 && (
+        <div class="mt-4 rounded-xl border-2 border-amber-300 bg-amber-50 p-4">
+          <p class="text-xs font-extrabold uppercase tracking-wide text-amber-800">Hình / Tự hình phát hiện</p>
+          <ul class="mt-1 space-y-0.5">
+            {bt.tuHinhTuTruHinh.map((d) => (<li class="text-[11px] font-bold text-amber-900">⚠ {d}</li>))}
+          </ul>
+        </div>
+      )}
+
+      {/* Đại Vận chi tiết */}
+      {bt.daiVan.length > 0 && (
+        <div class="mt-4 overflow-x-auto rounded-xl border-2 border-slate-200">
+          <table class="w-full min-w-[520px] text-left text-xs">
+            <thead class="bg-slate-100">
+              <tr>
+                <th class="px-3 py-2 font-extrabold text-slate-700">Tuổi</th>
+                <th class="px-3 py-2 font-extrabold text-slate-700">Can Chi</th>
+                <th class="px-3 py-2 font-extrabold text-slate-700">Năm</th>
+                <th class="px-3 py-2 font-extrabold text-slate-700">Mức</th>
+                <th class="px-3 py-2 font-extrabold text-slate-700">Ghi chú</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-200">
+              {bt.daiVan.map((v) => (
+                <tr class={v.trongSo === "cao_nhat" ? "bg-amber-50" : ""}>
+                  <td class="px-3 py-2 font-bold text-slate-900">{v.tuTuoi}–{v.denTuoi}{v.trongSo === "cao_nhat" ? " ★" : ""}</td>
+                  <td class="px-3 py-2 font-bold text-slate-900">{v.canChi}</td>
+                  <td class="px-3 py-2 text-slate-600">~{v.namDuongLich}</td>
+                  <td class="px-3 py-2 font-bold text-slate-900">{v.band === "rat_thuan" ? "Rất thuận" : v.band === "thuan" ? "Thuận" : v.band === "trung_binh" ? "Trung bình" : v.band === "thu_thach" ? "Có thử thách" : "Nghịch"}</td>
+                  <td class="px-3 py-2 text-[11px] text-slate-600">{v.xungNguyetChi ? "Xung nguyệt chi. " : ""}{v.xungNhatChi ? "Xung nhật chi." : ""}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <p class="bg-slate-50 px-3 py-1.5 text-[10px] font-semibold text-slate-500">★ = giai đoạn 25–45 tuổi (lập nghiệp, đỉnh sự nghiệp) — trọng số cao nhất khi xếp hạng.</p>
+        </div>
+      )}
+    </div>
+  </div>
+)}

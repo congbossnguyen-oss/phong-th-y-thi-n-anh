@@ -26,7 +26,12 @@ export function dungTheCard(c: BirthCandidate): CandidateSummaryCard {
   if (bt.luuThong.matXichDut.length === 0 && bt.luuThong.matXichNghen.length === 0) diemNoiBat.push("Ngũ hành lưu thông trọn vòng, không đứt không nghẽn.");
   const vanCaoNhatThuan = bt.daiVan.filter((v) => v.trongSo === "cao_nhat").every((v) => v.band === "rat_thuan" || v.band === "thuan");
   if (vanCaoNhatThuan && bt.daiVan.some((v) => v.trongSo === "cao_nhat")) diemNoiBat.push("Đại Vận giai đoạn 25–45 tuổi (lập nghiệp, đỉnh sự nghiệp) thuận dụng thần.");
-  if (!tv.veto.menhBiTuanTriet && tv.veto.soSatTinhHoiMenh === 0) diemNoiBat.push("Tử Vi: Mệnh không Tuần/Triệt, không sát tinh hội — không có cờ đỏ chính.");
+  // Chỉ khen "không có cờ đỏ" khi ĐỦ 3 điều: không Tuần/Triệt, không sát tinh, VÀ chính tinh thủ
+  // Mệnh không hãm địa (anh Công phát hiện 22/8/2026: lá Mệnh Tham Lang hãm vẫn bị khen nhầm).
+  const chinhTinhMenhHam = tv.chinhTinhMenh.length > 0 && tv.chinhTinhMenh.every((s) => s.trangThai === "Hãm");
+  if (!tv.veto.menhBiTuanTriet && tv.veto.soSatTinhHoiMenh === 0 && !chinhTinhMenhHam && tv.chinhTinhMenh.length > 0) {
+    diemNoiBat.push(`Tử Vi: Mệnh có ${tv.chinhTinhMenh.map((s) => `${s.ten} (${s.trangThai})`).join(", ")}, không Tuần/Triệt, không sát tinh hội — không có cờ đỏ chính.`);
+  }
   if (tv.than_cu === "Mệnh" || tv.than_cu === "Quan Lộc" || tv.than_cu === "Phúc Đức") diemNoiBat.push(`Thân cư ${tv.than_cu} — ${tv.than_cu === "Phúc Đức" ? "hưởng phúc ấm" : "tự chủ, sự nghiệp rõ"}.`);
 
   if (bt.goc.lop === "C" || bt.goc.lop === "D") diemCanLuuY.push(`Gốc chỉ lớp ${bt.goc.lop} — gốc xa hoặc mỏng, phát muộn hoặc cần thêm ngoại lực.`);
@@ -38,6 +43,11 @@ export function dungTheCard(c: BirthCandidate): CandidateSummaryCard {
   const vanXungTrongCaoNhat = bt.daiVan.filter((v) => v.trongSo === "cao_nhat" && (v.xungNguyetChi || v.xungNhatChi));
   if (vanXungTrongCaoNhat.length > 0) diemCanLuuY.push(`Đại Vận ${vanXungTrongCaoNhat.map((v) => v.canChi).join(", ")} (giai đoạn 25–45 tuổi) xung nguyên cục — cần lưu ý giai đoạn này.`);
   if (tv.veto.soSatTinhHoiMenh > 0) diemCanLuuY.push(`Có ${tv.veto.soSatTinhHoiMenh} sát tinh hội Mệnh (${tv.veto.satTinhHoiMenh.join(", ")}) — chưa tới ngưỡng loại nhưng nên lưu ý.`);
+  if (chinhTinhMenhHam) diemCanLuuY.push(`Chính tinh thủ Mệnh hãm địa (${tv.chinhTinhMenh.map((s) => s.ten).join(", ")}) — sao chủ mệnh không phát huy hết được.`);
+  const hanTuanTriet = tv.daiHan.filter((h) => h.bietTuanTriet);
+  if (hanTuanTriet.length > 0) {
+    diemCanLuuY.push(`${hanTuanTriet.length}/${tv.daiHan.length} Đại Hạn trùng Tuần/Triệt (${hanTuanTriet.map((h) => `${h.tuTuoi}–${h.denTuoi}t`).join(", ")}) — các giai đoạn này dễ trắc trở hơn.`);
+  }
   if (tv.than_cu === "Thiên Di") diemCanLuuY.push("Thân cư Thiên Di — đời có thể xa nhà/phiêu bạt, do ngoại cảnh định.");
   if (diemCanLuuY.length === 0) diemCanLuuY.push("Chưa phát hiện khuyết điểm lớn trong phạm vi tính toán Giai đoạn 1 — vẫn cần đối chiếu thêm khi có đủ dữ liệu cha mẹ/phương vị.");
 

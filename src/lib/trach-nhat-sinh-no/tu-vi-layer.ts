@@ -158,6 +158,34 @@ export function chamLopTuVi(input: { day: number; month: number; year: number; h
   if (daiHanDauBiTuanTriet.length >= 2) {
     redFlags.push({ source: "ziwei", severity: "high", code: "ZW_DAI_HAN_DAU_TUAN_TRIET", title: "Cả 2 Đại Hạn đầu đời đều trùng Tuần/Triệt", explanation: `Giai đoạn ${daiHanDauBiTuanTriet.map((h) => `${h.tuTuoi}-${h.denTuoi}t`).join(", ")} — bao trùm tuổi thơ và thanh niên, trọng số cao nhất theo quy trình Tử Vi.` });
   }
+  // CHUỖI Tuần/Triệt LIÊN TIẾP ở giai đoạn trưởng thành (~25-65 tuổi) — anh Công phát hiện 22/8/2026:
+  // lá số có 4 hạn liên tiếp dính Tuần/Triệt vẫn được xếp hạng 1 vì mỗi hạn chỉ trừ điểm nhẹ. Ba hạn
+  // liên tiếp trở lên là "cuộc đời khá vất vả" — phải thành cờ đỏ, không chỉ trừ điểm.
+  let chuoiDaiNhat = 0;
+  let chuoiHienTai = 0;
+  let chuoiTu = 0;
+  let chuoiDen = 0;
+  let tamTu = 0;
+  for (const h of daiHan) {
+    if (h.bietTuanTriet) {
+      if (chuoiHienTai === 0) tamTu = h.tuTuoi;
+      chuoiHienTai++;
+      if (chuoiHienTai > chuoiDaiNhat) { chuoiDaiNhat = chuoiHienTai; chuoiTu = tamTu; chuoiDen = h.denTuoi; }
+    } else {
+      chuoiHienTai = 0;
+    }
+  }
+  if (chuoiDaiNhat >= 3) {
+    redFlags.push({ source: "ziwei", severity: "critical", code: "ZW_CHUOI_TUAN_TRIET_DAI", title: `${chuoiDaiNhat} Đại Hạn LIÊN TIẾP trùng Tuần/Triệt (${chuoiTu}–${chuoiDen} tuổi)`, explanation: `Tuần/Triệt kéo dài liên tục suốt ${chuoiDen - chuoiTu + 1} năm ở giai đoạn trưởng thành — cuộc đời nhiều trắc trở, không nên chọn khi còn phương án khác.` });
+  }
+
+  // BƯỚC 3/5 — Chính tinh thủ Mệnh HÃM ĐỊA. Tài liệu 04-lop-tu-vi.md §3: "Chính tinh thủ Mệnh
+  // miếu/vượng/đắc/hãm — hãm địa TRỪ NẶNG". Trước đây chỉ dùng để cộng/trừ điểm chọn giờ, không
+  // hiện thành cờ, nên câu chốt "không có cờ đỏ chính" bỏ sót lá Mệnh Tham Lang hãm.
+  const chinhTinhHam = menh.chinhTinh.filter((s) => s.trangThai === "Hãm").map((s) => s.name);
+  if (chinhTinhHam.length > 0 && chinhTinhHam.length === menh.chinhTinh.length) {
+    redFlags.push({ source: "ziwei", severity: "high", code: "ZW_CHINH_TINH_MENH_HAM", title: `Chính tinh thủ Mệnh hãm địa: ${chinhTinhHam.join(", ")}`, explanation: "Toàn bộ chính tinh tại cung Mệnh đều ở thế hãm — sao chủ mệnh không phát huy được, trừ nặng theo quy trình Tử Vi." });
+  }
 
   return { chart, analysis, redFlags };
 }
