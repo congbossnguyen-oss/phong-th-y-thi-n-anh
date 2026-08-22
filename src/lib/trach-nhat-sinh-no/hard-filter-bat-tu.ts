@@ -5,7 +5,8 @@
  */
 import { tinhBatTu, type BatTuChart, type Gender } from "../bat-tu";
 import {
-  hanhCan, hanhChi, hanhSinhCho, coLucXung, TANG, TAM_HOP, TAM_HOI, type Hanh,
+  hanhCan, hanhChi, hanhSinhCho, coLucXung, pheCua, tinhVuongSuy, TANG, TAM_HOP, TAM_HOI,
+  type Hanh, type TuTruInput,
 } from "../bat-tu-engine/engine";
 import { loadTrachNhatConfig } from "./config";
 import type { BirthCandidate, HardFilterReason } from "./types";
@@ -102,16 +103,39 @@ export function locCungL1L8(input: {
   const tyLeManhNhat = (w[hanhManhNhat] / tongW) * 100;
   if (tyLeManhNhat >= cfg.L8_tong_cach_nghi_ngo.mot_hanh_chiem_toi_thieu_phan_tram) {
     reasons.push({ code: "L8", title: "Nghi ngờ Tòng Cách — 1 hành chiếm ưu thế tuyệt đối", explanation: `Hành ${hanhManhNhat} chiếm ${Math.round(tyLeManhNhat)}% trọng số toàn cục (ngưỡng ${cfg.L8_tong_cach_nghi_ngo.mot_hanh_chiem_toi_thieu_phan_tram}%) — khoanh vùng nghi Tòng, loại theo nguyên tắc thà bỏ sót.` });
-  } else if (!coCan(chart) && hanhChi(chart.month.chi) !== nhatChuHanh) {
-    // Hành khắc (Quan Sát) hoặc hành tiết (Thực Thương) của Nhật Chủ "đắc lệnh" — xấp xỉ bằng Chi
-    // tháng thuộc đúng hành đó (đọc thô, không phân biệt khắc/tiết) — đủ cho mục đích KHOANH VÙNG.
-    reasons.push({ code: "L8", title: "Nghi ngờ Tòng Cách — vô căn mà hành khác đắc lệnh", explanation: "Nhật Chủ vô căn hoàn toàn, đồng thời Chi tháng không thuộc hành Nhật Chủ (xấp xỉ 'đắc lệnh' của hành khắc/tiết) — khoanh vùng nghi Tòng." });
   }
-  // ⚠️ CHƯA TÍCH HỢP (Giai đoạn 1): dấu hiệu 3 của L8 — "Nhật chủ đủ 4 điều kiện vượng VÀ không có
-  // Quan Sát/Thực Thương nào có căn" — cần kết quả Vượng Suy 4-điều-kiện đầy đủ (chấm ở
-  // structural-bat-tu.ts SAU bước lọc cứng này), nên chưa thể kiểm tra tại đây theo đúng thứ tự
-  // vòng lặp. Bỏ sót dấu hiệu này lệch về hướng AN TOÀN hơn theo nguyên tắc "thà bỏ sót còn hơn
-  // chọn nhầm" của tài liệu — không phải lỗi im lặng, ghi rõ ở đây để Giai đoạn 2 bổ sung nếu cần.
+  // Dấu hiệu 2 — Nhật Chủ VÔ CĂN HOÀN TOÀN, đồng thời hành KHẮC (Quan Sát) hoặc hành TIẾT (Thực
+  // Thương) của Nhật Chủ ĐẮC LỆNH (nắm Chi tháng). Phân biệt đúng phe bằng pheCua(), không đọc thô.
+  if (!coCan(chart)) {
+    const hanhNguyetLenh = hanhChi(chart.month.chi);
+    const pheNguyetLenh = pheCua(hanhNguyetLenh, nhatChuHanh);
+    if (pheNguyetLenh === "quan_sat" || pheNguyetLenh === "thuc_thuong") {
+      reasons.push({ code: "L8", title: "Nghi ngờ Tòng Cách — vô căn mà hành khắc/tiết đắc lệnh", explanation: `Nhật Chủ vô căn hoàn toàn, đồng thời Chi tháng ${chart.month.chi} (${hanhNguyetLenh}) thuộc ${pheNguyetLenh === "quan_sat" ? "Quan Sát (khắc)" : "Thực Thương (tiết)"} và đang nắm lệnh — khoanh vùng nghi Tòng.` });
+    }
+  }
+  // Dấu hiệu 3 — Nhật Chủ đủ điều kiện VƯỢNG mà trong cục KHÔNG có Quan Sát lẫn Thực Thương nào có
+  // căn (không gì tiết/khắc bớt). Gọi thẳng tinhVuongSuy() của bat-tu-engine (thuần công thức, rẻ)
+  // thay vì chờ tới bước chấm cấu trúc — để giữ đúng thứ tự "lọc cứng trước" của tài liệu.
+  {
+    const ttL8: TuTruInput = {
+      nam: { can: chart.year.can, chi: chart.year.chi },
+      thang: { can: chart.month.can, chi: chart.month.chi },
+      ngay: { can: chart.day.can, chi: chart.day.chi },
+      gio: { can: chart.hour.can, chi: chart.hour.chi },
+      gioiTinh: input.gender,
+    };
+    const vs = tinhVuongSuy(ttL8);
+    const laVuong = ["Vượng", "Cường vượng", "Cực cường"].includes(vs.capDo);
+    if (laVuong) {
+      const hanhQuanSat = HANH_5.find((h) => pheCua(h, nhatChuHanh) === "quan_sat");
+      const hanhThucThuong = HANH_5.find((h) => pheCua(h, nhatChuHanh) === "thuc_thuong");
+      const quanSatCoCan = !!hanhQuanSat && hanhCoCanBanKhi(hanhQuanSat, chart);
+      const thucThuongCoCan = !!hanhThucThuong && hanhCoCanBanKhi(hanhThucThuong, chart);
+      if (!quanSatCoCan && !thucThuongCoCan) {
+        reasons.push({ code: "L8", title: "Nghi ngờ Tòng Cách — thân vượng mà không có gì tiết/khắc", explanation: `Nhật Chủ ${vs.capDo.toLowerCase()} nhưng trong cục không có Quan Sát (${hanhQuanSat}) lẫn Thực Thương (${hanhThucThuong}) nào có căn — khoanh vùng nghi Tòng Vượng.` });
+      }
+    }
+  }
   // Dấu hiệu 4: tam hợp/tam hội TRỌN 3 chi, hành cục không phải hành nhật chủ.
   const chiTuTru = [chart.year.chi, chart.month.chi, chart.day.chi, chart.hour.chi];
   for (const [bo, hoaHanh] of [...Object.entries(TAM_HOP), ...Object.entries(TAM_HOI)]) {
