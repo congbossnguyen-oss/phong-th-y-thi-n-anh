@@ -80,6 +80,15 @@ export interface DaiVanBandItem {
   dienGiai: string;
 }
 
+/** §4 — Dụng Thần phải CÓ MẶT trong nguyên cục VÀ CÓ CĂN mới dùng được. */
+export interface DungThanChatLuong {
+  coMat: boolean;
+  coCan: boolean;
+  /** true khi Kỵ Thần vừa thấu can vừa nắm lệnh (tài liệu: "trừ nặng"). */
+  kyThanThauCanDacLenh: boolean;
+  dienGiai: string;
+}
+
 export interface BaziAnalysis {
   tuTru: { nam: CanChiSimple; thang: CanChiSimple; ngay: CanChiSimple; gio: CanChiSimple };
   nhatChu: { can: string; nguHanh: NguHanh };
@@ -87,6 +96,7 @@ export interface BaziAnalysis {
   dungThan: NguHanh;
   hyThan: NguHanh;
   kyThan: NguHanh;
+  dungThanChatLuong: DungThanChatLuong;
   goc: GocResult;
   anTinh: AnTinhResult;
   luuThong: NguHanhLuuThongResult;

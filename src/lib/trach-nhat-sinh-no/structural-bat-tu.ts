@@ -126,7 +126,11 @@ function chamAnTinh(chart: BatTuChart, vuongSuyCapDo: string, cfg: ReturnType<ty
   const anCoCanTruoc = [chart.year, chart.month, chart.day, chart.hour].some((tru) => hanhCan(tru.tangCan[0]?.can ?? "") === anHanh);
   // Quan Sát sinh Ấn: SINH_MAP[hanhQuanSat] phải bằng anHanh (kiểm tường minh, không suy đoán).
   const quanSatSinhDuocAn = !!hanhQuanSat && SINH_MAP[hanhQuanSat] === anHanh;
-  const hoaDuocQuanSat = quanSatCoMat && anCoCanTruoc && quanSatSinhDuocAn;
+  // ⚠️ CHỈ tính là ĐIỂM TỐT khi Nhật Chủ KHÔNG vượng (anh Công chốt 22/8/2026): "Ấn chỉ là Dụng
+  // Thần khi Nhật Chủ thực sự cần được sinh thêm. Nếu Nhật Chủ đã dư lực mà vẫn sinh thêm bằng Ấn
+  // thì Ấn chuyển từ Dụng/Hỷ sang KỴ." Thân vượng mà khen "Ấn hóa Quan Sát" là khen ngược.
+  const thanDaVuong = vuongSuyCapDo.includes("Vượng") || vuongSuyCapDo.includes("Cường") || vuongSuyCapDo.includes("cường");
+  const hoaDuocQuanSat = quanSatCoMat && anCoCanTruoc && quanSatSinhDuocAn && !thanDaVuong;
 
   const nhuocHoacTrungHoa = ["Nhược", "Suy", "Trung hòa", "Nhược "].includes(vuongSuyCapDo) || vuongSuyCapDo.includes("Trung hòa") || vuongSuyCapDo.includes("Nhược") || vuongSuyCapDo.includes("Suy");
   const daVuong = vuongSuyCapDo.includes("Vượng") || vuongSuyCapDo.includes("Cường");
@@ -214,6 +218,35 @@ function timTuHinhTamHinh(chart: BatTuChart): string[] {
   return out;
 }
 
+/**
+ * §4 — Chất lượng Dụng Thần: "Dụng thần có mặt trong nguyên cục VÀ có căn. Dụng thần vô căn hoặc
+ * vắng mặt = 'biết cần gì nhưng không có gì' → điểm thấp. Kỵ thần thấu can lại đắc lệnh → trừ nặng."
+ */
+function chamChatLuongDungThan(chart: BatTuChart, dungThan: Hanh, kyThan: Hanh) {
+  let coMat = false;
+  let coCan = false;
+  for (const tru of [chart.year, chart.month, chart.day, chart.hour]) {
+    if (hanhCan(tru.can) === dungThan) coMat = true;
+    tru.tangCan.forEach((t, i) => {
+      if (hanhCan(t.can) === dungThan) {
+        coMat = true;
+        if (i === 0) coCan = true; // bản khí = có căn thật
+      }
+    });
+  }
+  const kyThauCan = [chart.year.can, chart.month.can, chart.hour.can].some((c) => hanhCan(c) === kyThan);
+  const kyDacLenh = hanhChi(chart.month.chi) === kyThan || hanhCan(TANG[chiChuan(chart.month.chi)]?.[0] ?? "") === kyThan;
+  const kyThanThauCanDacLenh = kyThauCan && kyDacLenh;
+
+  const phan: string[] = [];
+  if (!coMat) phan.push(`Dụng Thần ${dungThan} KHÔNG có mặt trong nguyên cục — "biết cần gì nhưng không có gì".`);
+  else if (!coCan) phan.push(`Dụng Thần ${dungThan} có mặt nhưng KHÔNG có căn (chỉ ở khí phụ) — lực mỏng, khó dùng.`);
+  else phan.push(`Dụng Thần ${dungThan} có mặt và có căn trong nguyên cục — dùng được.`);
+  if (kyThanThauCanDacLenh) phan.push(`Kỵ Thần ${kyThan} vừa thấu can vừa nắm lệnh tháng — trừ nặng.`);
+
+  return { coMat, coCan, kyThanThauCanDacLenh, dienGiai: phan.join(" ") };
+}
+
 export function chamCauTrucBatTu(chart: BatTuChart, gioiTinh: "Nam" | "Nữ"): BaziAnalysis {
   const cfg = loadTrachNhatConfig();
   const tt: TuTruInput = {
@@ -232,6 +265,7 @@ export function chamCauTrucBatTu(chart: BatTuChart, gioiTinh: "Nam" | "Nữ"): B
     dungThan: dungThan.dungThan,
     hyThan: dungThan.hyThan,
     kyThan: dungThan.kyThan,
+    dungThanChatLuong: chamChatLuongDungThan(chart, dungThan.dungThan, dungThan.kyThan),
     goc: chamChatLuongGoc(chart),
     anTinh: chamAnTinh(chart, vuongSuy.capDo, cfg),
     luuThong: chamLuuThong(chart),

@@ -142,16 +142,51 @@ export function tinhVuongSuy(tt: TuTruInput): VuongSuyResult {
   if (duocTro) dg.push(`Được trợ: có ${tyCount} Tỷ/Kiếp (cùng hành)${tyManh ? ", thấu can — mạnh" : ""}.`);
 
   // 2.2 Hợp hóa — quét ngũ hợp Thiên Can + tam hợp/hội tạo hành khắc/tiết/hao Nhật Chủ.
+  //
+  // ⚠️ HAI ĐIỀU KIỆN TIÊN QUYẾT ĐỂ "HÓA" (quan-he-can-chi.md mục 3, anh Công chốt 22/8/2026) —
+  // trước đây engine bỏ qua cả hai, cứ thấy đủ cặp là hạ bậc:
+  //   (1) THÁNG SINH phải vượng cho hành hóa khí (vd hóa Thủy cần tháng Hợi/Tý/Sửu).
+  //   (2) KHÔNG bị TRANH HỢP — 2 Can giống nhau cùng giành hợp 1 Can thì "hợp không trọn, lực chia
+  //       đôi hoặc vô hiệu" → KHÔNG hóa. Ngược lại, chính phe đi tranh hợp cũng bị GIẢM lực (bận
+  //       tranh nhau thay vì dồn sức khắc Nhật Chủ).
   let canhBaoHopHoa = false;
+  let tranhHopGiamLucDiDang = false;
   const allCans = [tt.nam.can, tt.thang.can, tt.ngay.can, tt.gio.can];
+  /** Tháng lệnh có vượng cho hành hóa khí không (mộc-xuân, hỏa-hạ, kim-thu, thủy-đông, thổ-tứ quý). */
+  const thangVuongChoHanh = (h: Hanh): boolean => {
+    const chiThang = chiChuan(tt.thang.chi);
+    const MUA: Record<Hanh, string[]> = {
+      Mộc: ["Dần", "Mão", "Thìn"], Hỏa: ["Tị", "Ngọ", "Mùi"],
+      Kim: ["Thân", "Dậu", "Tuất"], Thủy: ["Hợi", "Tý", "Sửu"],
+      Thổ: ["Thìn", "Tuất", "Sửu", "Mùi"],
+    };
+    return (MUA[h] ?? []).includes(chiThang);
+  };
   for (const [cap, hoaHanh] of Object.entries(HOP_HOA)) {
     const [a, b] = cap.split("-");
-    if (allCans.includes(a) && allCans.includes(b)) {
-      const phe = pheCua(hoaHanh as Hanh, hanhNC);
-      if (phe === "quan_sat" || phe === "thuc_thuong" || phe === "tai") {
-        canhBaoHopHoa = true;
-        dg.push(`Có cặp hợp ${cap} (khả năng hóa ${hoaHanh}) — nếu hóa thành sẽ ${phe === "quan_sat" ? "khắc" : phe === "thuc_thuong" ? "tiết" : "hao"} Nhật Chủ → cảnh báo hạ bậc.`);
+    if (!allCans.includes(a!) || !allCans.includes(b!)) continue;
+    const phe = pheCua(hoaHanh as Hanh, hanhNC);
+    if (phe !== "quan_sat" && phe !== "thuc_thuong" && phe !== "tai") continue;
+
+    // Tranh hợp: một trong hai Can xuất hiện ≥2 lần trong tứ trụ.
+    const soA = allCans.filter((c) => c === a).length;
+    const soB = allCans.filter((c) => c === b).length;
+    const laTranhHop = soA >= 2 || soB >= 2;
+    const thangDatDieuKien = thangVuongChoHanh(hoaHanh as Hanh);
+
+    if (laTranhHop) {
+      const canNhieu = soA >= 2 ? a : b;
+      const pheCanNhieu = pheCua(hanhCan(canNhieu!), hanhNC);
+      dg.push(`Có ${soA >= 2 ? soA : soB} ${canNhieu} cùng giành hợp ${cap} → TRANH HỢP: hợp không trọn, KHÔNG hóa ${hoaHanh} (không hạ bậc).`);
+      if (pheCanNhieu === "quan_sat" || pheCanNhieu === "thuc_thuong" || pheCanNhieu === "tai") {
+        tranhHopGiamLucDiDang = true;
+        dg.push(`Đồng thời ${canNhieu} bận tranh hợp nên áp lực lên Nhật Chủ giảm so với nhìn bề mặt.`);
       }
+    } else if (!thangDatDieuKien) {
+      dg.push(`Có cặp hợp ${cap} nhưng tháng ${tt.thang.chi} không vượng cho ${hoaHanh} → KHÔNG hóa (không hạ bậc).`);
+    } else {
+      canhBaoHopHoa = true;
+      dg.push(`Có cặp hợp ${cap} hóa ${hoaHanh} (tháng ${tt.thang.chi} vượng cho ${hoaHanh}, không tranh hợp) — ${phe === "quan_sat" ? "khắc" : phe === "thuc_thuong" ? "tiết" : "hao"} Nhật Chủ → hạ bậc.`);
     }
   }
   for (const [bo, hoaHanh] of [...Object.entries(TAM_HOP), ...Object.entries(TAM_HOI)]) {
@@ -179,9 +214,13 @@ export function tinhVuongSuy(tt: TuTruInput): VuongSuyResult {
   (TANG[chiChuan(tt.thang.chi)] ?? []).forEach((c, i) => themLuc(c, KHI_W_THANG[i] ?? 0.5));
   for (const { chi } of chiXet) (TANG[chiChuan(chi)] ?? []).forEach((c, i) => themLuc(c, KHI_W_KHAC[i] ?? 0.3));
 
+  // Tranh hợp: phe dị đảng đang "bận tranh nhau" nên lực khắc/tiết thực tế giảm ~15% (anh Công chốt
+  // 22/8/2026: "cả 2 Bính đều bận tranh giành hợp với Tân thay vì dồn toàn lực khắc chế Nhật Chủ").
+  if (tranhHopGiamLucDiDang) lucDi *= 0.85;
+
   let tyLe = lucDong / (lucDong + lucDi || 1); // 0..1, phần đồng đảng
-  if (canhBaoHopHoa) tyLe -= 0.08; // hợp hóa làm suy ngầm → hạ tỷ lệ
-  dg.push(`So lực: đồng đảng (Ấn+Tỷ Kiếp) = ${Math.round(lucDong * 10) / 10} vs dị đảng (Thực Thương+Tài+Quan Sát) = ${Math.round(lucDi * 10) / 10} → tỷ lệ thân = ${Math.round(tyLe * 100)}%${canhBaoHopHoa ? " (đã trừ do hợp hóa)" : ""}.`);
+  if (canhBaoHopHoa) tyLe -= 0.08; // hợp hóa THẬT SỰ thành (đã qua 2 điều kiện) → hạ tỷ lệ
+  dg.push(`So lực: đồng đảng (Ấn+Tỷ Kiếp) = ${Math.round(lucDong * 10) / 10} vs dị đảng (Thực Thương+Tài+Quan Sát) = ${Math.round(lucDi * 10) / 10}${tranhHopGiamLucDiDang ? " (đã giảm 15% do tranh hợp)" : ""} → tỷ lệ thân = ${Math.round(tyLe * 100)}%${canhBaoHopHoa ? " (đã trừ do hợp hóa)" : ""}.`);
 
   const capDo: CapDo =
     tyLe >= 0.72 ? "Cực cường" : tyLe >= 0.60 ? "Cường vượng" : tyLe >= 0.52 ? "Vượng"
@@ -268,11 +307,14 @@ export function chonDungThan(tt: TuTruInput, vs: VuongSuyResult): DungThanResult
     return { phuongPhap: "Thuận Thế", dungThan: dung, hyThan: nhatChu, kyThan: hanhKhacX(nhatChu), cuuThan: hanhSinhCho(hanhKhacX(nhatChu)), dieuHauNote, dienGiai: dg };
   }
 
-  // Thông Quan — 2 phe đối đầu ngang sức mạnh (vd Quan Sát vs Ấn, hoặc Tài vs Tỷ Kiếp).
-  // (Kiểm nhẹ: nếu Quan Sát và Ấn cùng mạnh & xấp xỉ → Ấn thông quan hóa Sát.)
+  // Thông Quan (Ấn hóa Sát) — CHỈ áp dụng khi Nhật Chủ KHÔNG vượng.
+  // ⚠️ Anh Công chốt 22/8/2026: cơ chế "Ấn hóa Sát" được thiết kế cho Nhật Chủ YẾU cần được nuôi
+  // (dung-than.md mục 3a: "Nhật can yếu, Quan Sát cường vượng → dùng Ấn tinh"). Nếu thân đã vượng
+  // mà vẫn dùng Ấn thì càng đẩy cục lệch xa cân bằng — Ấn chuyển từ Dụng sang KỴ. Điều kiện `!vuong`
+  // dưới đây là chốt chặn đó (trước đây lá thân Vượng vẫn lọt vào nhánh này khi bị chấm nhầm Trung hòa).
   if (!vuong && !nhuoc && Math.abs(phe.quan_sat - phe.an) <= 1 && phe.quan_sat >= 3 && phe.an >= 3) {
     const dung = hanhSinhCho(nhatChu); // Ấn thông quan (Quan Sát sinh Ấn, Ấn sinh Nhật Chủ)
-    dg.push(`Quan Sát (${phe.quan_sat}) và Ấn (${phe.an}) ngang sức → Thông Quan: Dụng = Ấn (${dung}) hóa Sát sinh Thân.`);
+    dg.push(`Thân ${vs.capDo} (không vượng), Quan Sát (${phe.quan_sat}) và Ấn (${phe.an}) ngang sức → Thông Quan: Dụng = Ấn (${dung}) hóa Sát sinh Thân.`);
     return { phuongPhap: "Thông Quan", dungThan: dung, ...suyHyKyCuu(dung), dieuHauNote, dienGiai: dg };
   }
 
@@ -289,15 +331,29 @@ export function chonDungThan(tt: TuTruInput, vs: VuongSuyResult): DungThanResult
     return { phuongPhap: "Phù Ức", dungThan: dung, ...hkc, dieuHauNote, dienGiai: dg };
   }
   if (vuong) {
-    // Ức: chọn hành YẾU NHẤT trong {Thực Thương, Quan Sát, Tài} để cân bằng.
+    // ỨC — thân vượng cần tiết/khắc/hao bớt.
+    //
+    // ƯU TIÊN THỰC THƯƠNG khi Quan Sát cũng đang vượng (anh Công chốt 22/8/2026): Thực Thương làm
+    // ĐƯỢC 2 VIỆC cùng lúc mà Quan Sát/Tài không làm được — (1) tiết bớt Nhật Chủ đang dư,
+    // (2) khắc chế luôn Quan Sát, giảm áp lực mà KHÔNG phải dựa vào Ấn (Ấn lúc này là Kỵ).
+    // Đây chính là cách cục "Thực Thương chế Sát". Chỉ khi Quan Sát không đáng kể mới quay lại quy
+    // tắc chung "chọn hành yếu nhất trong nhóm tiết-khắc-hao".
     const nhom: Phe[] = ["thuc_thuong", "quan_sat", "tai"];
-    const yeuNhat = nhom.sort((a, b) => phe[a] - phe[b])[0];
-    const dung = hanhCuaPhe(yeuNhat, nhatChu);
-    const ten = yeuNhat === "thuc_thuong" ? "Thực Thương (tiết)" : yeuNhat === "quan_sat" ? "Quan Sát (khắc)" : "Tài (hao)";
-    dg.push(`Thân ${vs.capDo} → Phù Ức (ỨC): dụng hành yếu nhất trong nhóm tiết-khắc-hao = ${ten} = ${dung}.`);
+    const quanSatVuong = phe.quan_sat >= 4;
+    const chon: Phe = quanSatVuong ? "thuc_thuong" : nhom.slice().sort((a, b) => phe[a] - phe[b])[0]!;
+    const dung = hanhCuaPhe(chon, nhatChu);
+    const ten = chon === "thuc_thuong" ? "Thực Thương (tiết)" : chon === "quan_sat" ? "Quan Sát (khắc)" : "Tài (hao)";
+    if (quanSatVuong) {
+      dg.push(`Thân ${vs.capDo} + Quan Sát cũng vượng (${phe.quan_sat}) → ỨC bằng Thực Thương (${dung}): vừa tiết bớt Nhật Chủ dư lực, vừa khắc chế Quan Sát — không dùng Ấn vì Ấn lúc này thành Kỵ.`);
+    } else {
+      dg.push(`Thân ${vs.capDo} → Phù Ức (ỨC): dụng hành yếu nhất trong nhóm tiết-khắc-hao = ${ten} = ${dung}.`);
+    }
     const hkc = suyHyKyCuu(dung);
+    // Thân vượng → Ấn (hành sinh Nhật Chủ) là KỴ, bất kể suy theo công thức sinh-khắc ra hành nào.
+    const anHanh = hanhSinhCho(nhatChu);
+    dg.push(`Lưu ý: thân đã vượng nên Ấn (${anHanh}) là KỴ — thêm Ấn chỉ đẩy cục lệch xa cân bằng hơn.`);
     if (dieuHauNote) dg.push(dieuHauNote);
-    return { phuongPhap: "Phù Ức", dungThan: dung, ...hkc, dieuHauNote, dienGiai: dg };
+    return { phuongPhap: "Phù Ức", dungThan: dung, ...hkc, kyThan: anHanh, dieuHauNote, dienGiai: dg };
   }
 
   // Trung hòa — linh hoạt, chọn hành cân bằng nhất (tiết tú Thực Thương) + ghi phụ thuộc Đại Vận.

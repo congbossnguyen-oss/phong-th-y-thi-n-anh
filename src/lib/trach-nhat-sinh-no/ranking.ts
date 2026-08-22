@@ -29,7 +29,14 @@ export function diemCauTrucBatTu(a: BaziAnalysis): number {
   d += GOC_DIEM[a.goc.lop ?? "D"] ?? 0;
   d += AN_DIEM[a.anTinh.muc];
   // Ấn hóa Quan Sát — tài liệu §3 xếp "✅✅ Tốt nhất, cấu trúc đáng săn nhất khi chọn ngày sinh".
+  // (Đã chặn ở structural-bat-tu: chỉ true khi thân KHÔNG vượng — thân vượng thì Ấn là Kỵ.)
   if (a.anTinh.hoaDuocQuanSat) d += 2;
+  // §4 — Dụng Thần phải có mặt VÀ có căn mới dùng được; vô căn/vắng mặt = "biết cần gì nhưng không
+  // có gì" → điểm thấp. Kỵ Thần thấu can + đắc lệnh → trừ nặng.
+  if (a.dungThanChatLuong.coMat && a.dungThanChatLuong.coCan) d += 2;
+  else if (a.dungThanChatLuong.coMat) d -= 1;
+  else d -= 2.5;
+  if (a.dungThanChatLuong.kyThanThauCanDacLenh) d -= 2;
   d += a.luuThong.matXichDut.length === 0 && a.luuThong.matXichNghen.length === 0 ? 2 : a.luuThong.matXichDut.length > 0 && a.luuThong.matXichNghen.length > 0 ? 0 : 1;
   d -= a.tuHinhTuTruHinh.length; // tự hình/tam hình: trừ nhẹ mỗi cái phát hiện
   for (const van of a.daiVan) {

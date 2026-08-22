@@ -23,6 +23,7 @@ export function dungTheCard(c: BirthCandidate): CandidateSummaryCard {
   if (bt.goc.lop === "A" || bt.goc.lop === "B") diemNoiBat.push(`Gốc lớp ${bt.goc.lop} — Nhật Chủ vững, không chỉ có căn suông.`);
   if (bt.anTinh.muc === "dep") diemNoiBat.push("Ấn tinh đúng liều — có chỗ dựa, không bị bao bọc quá mức.");
   if (bt.anTinh.hoaDuocQuanSat) diemNoiBat.push("Ấn hóa được Quan Sát — cấu trúc đáng săn nhất theo tài liệu.");
+  if (bt.dungThanChatLuong.coMat && bt.dungThanChatLuong.coCan) diemNoiBat.push(`Dụng Thần ${bt.dungThan} có mặt và có căn trong nguyên cục — dùng được ngay, không phải chờ vận.`);
   if (bt.luuThong.matXichDut.length === 0 && bt.luuThong.matXichNghen.length === 0) diemNoiBat.push("Ngũ hành lưu thông trọn vòng, không đứt không nghẽn.");
   const vanCaoNhatThuan = bt.daiVan.filter((v) => v.trongSo === "cao_nhat").every((v) => v.band === "rat_thuan" || v.band === "thuan");
   if (vanCaoNhatThuan && bt.daiVan.some((v) => v.trongSo === "cao_nhat")) diemNoiBat.push("Đại Vận giai đoạn 25–45 tuổi (lập nghiệp, đỉnh sự nghiệp) thuận dụng thần.");
@@ -35,6 +36,8 @@ export function dungTheCard(c: BirthCandidate): CandidateSummaryCard {
   if (tv.than_cu === "Mệnh" || tv.than_cu === "Quan Lộc" || tv.than_cu === "Phúc Đức") diemNoiBat.push(`Thân cư ${tv.than_cu} — ${tv.than_cu === "Phúc Đức" ? "hưởng phúc ấm" : "tự chủ, sự nghiệp rõ"}.`);
 
   if (bt.goc.lop === "C" || bt.goc.lop === "D") diemCanLuuY.push(`Gốc chỉ lớp ${bt.goc.lop} — gốc xa hoặc mỏng, phát muộn hoặc cần thêm ngoại lực.`);
+  if (!bt.dungThanChatLuong.coMat || !bt.dungThanChatLuong.coCan) diemCanLuuY.push(bt.dungThanChatLuong.dienGiai);
+  else if (bt.dungThanChatLuong.kyThanThauCanDacLenh) diemCanLuuY.push(bt.dungThanChatLuong.dienGiai);
   if (bt.anTinh.muc === "thua") diemCanLuuY.push("Ấn hơi thừa (Nhật Chủ đã vượng) — dễ được bao bọc, cần môi trường khuyến khích tự lập.");
   if (bt.anTinh.muc === "du") diemCanLuuY.push("Ấn ở mức đủ dùng, chưa tới mức lý tưởng.");
   if (bt.luuThong.matXichDut.length > 0) diemCanLuuY.push(`Mắt xích Ngũ Hành yếu/đứt: ${bt.luuThong.matXichDut.join(", ")}.`);
