@@ -15,6 +15,11 @@ export async function getStaticPaths() {
 const { product } = Astro.props;
 
 import { formatProductPrice as formatPrice } from "../../lib/product-price";
+
+// Nội dung giới thiệu chi tiết (một số sản phẩm mới có). Cast để tránh lỗi union khi mảng sản phẩm
+// không đồng nhất — cùng cách trang đang xử lý `product.benefits`.
+type KhoiNoiDung = { tieuDe?: string; doanVan?: string[]; gachDau?: string[]; luuY?: string; cta?: string };
+const noiDungChiTiet = (product as { noiDungChiTiet?: KhoiNoiDung[] }).noiDungChiTiet;
 ---
 
 <BaseLayout title={product.name} description={`${product.name} — vật phẩm phong thủy ${product.category} từ Thiên Anh.`}>
@@ -69,6 +74,50 @@ import { formatProductPrice as formatPrice } from "../../lib/product-price";
       <p class="mt-3 text-xs text-(--color-ink-600)">Thanh toán khi nhận hàng (COD) hoặc chuyển khoản — không cần thẻ tín dụng.</p>
     </div>
   </Container>
+
+  {noiDungChiTiet && (
+    <section class="border-t border-(--color-ivory-300) bg-(--color-ivory-50) py-16">
+      <Container class="max-w-3xl">
+        <div class="space-y-9">
+          {noiDungChiTiet.map((khoi) => (
+            <div>
+              {khoi.cta ? (
+                <div class="rounded-(--radius-card) border-2 border-(--color-cinnabar-400) bg-(--color-cinnabar-400)/10 px-6 py-5 text-center">
+                  <p class="font-display text-lg font-bold uppercase tracking-wide text-(--color-cinnabar-500)">{khoi.cta}</p>
+                </div>
+              ) : (
+                <>
+                  {khoi.tieuDe && (
+                    <h2 class="font-display text-xl font-semibold text-(--color-ink-950) sm:text-2xl">{khoi.tieuDe}</h2>
+                  )}
+                  {khoi.doanVan?.map((doan) => (
+                    <p class="mt-3 text-sm leading-relaxed text-(--color-ink-700)">{doan}</p>
+                  ))}
+                  {khoi.gachDau && (
+                    <ul class="mt-4 space-y-2.5">
+                      {khoi.gachDau.map((y) => (
+                        <li class="flex items-start gap-3 text-sm leading-relaxed text-(--color-ink-700)">
+                          <span class="mt-0.5 flex size-6 shrink-0 items-center justify-center rounded-full bg-(--color-gold-300)/12 text-(--color-gold-400)">
+                            <Icon name="check-circle" class="size-4" />
+                          </span>
+                          <span>{y}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {khoi.luuY && (
+                    <p class="mt-4 rounded-(--radius-card) border-l-4 border-(--color-gold-400) bg-(--color-gold-300)/8 px-4 py-3 text-sm italic leading-relaxed text-(--color-ink-800)">
+                      {khoi.luuY}
+                    </p>
+                  )}
+                </>
+              )}
+            </div>
+          ))}
+        </div>
+      </Container>
+    </section>
+  )}
 
   {product.benefits && (
     <section class="bg-(--color-ivory-100) py-16">

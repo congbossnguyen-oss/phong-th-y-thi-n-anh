@@ -334,6 +334,48 @@ export const products = [
     image: "/images/products/guong-bat-quai.jpg",
     description:
       "Vật phẩm được lựa chọn kỹ lưỡng, phù hợp cho mục đích hóa sát - trấn trạch. Hóa giải hướng xấu ngũ quỷ, tuyệt mạng, họa hại lục sát, không vong.",
+    noiDungChiTiet: [
+      {
+        doanVan: [
+          "Với mong muốn đem lại sự cát lành tốt nhất cho nhiều người, và nhận thấy sự chưa đầy đủ của các loại bát quái trên thị trường,",
+          "sau một thời gian dài nghiên cứu tâm huyết và kế thừa, tôi xin giới thiệu đến mọi người đứa con tinh thần — sản phẩm “Bát Quái Ma Phương”.",
+        ],
+      },
+      {
+        tieuDe: "Nếu bạn đang sống trong căn nhà “lệch mệnh”?",
+        doanVan: [
+          "Hướng nhà xấu – Sát khí mạnh – Mệnh trạch không hòa hợp… chính là nguyên nhân khiến tài vận đình trệ, sức khỏe sa sút, gia đạo bất an.",
+        ],
+        gachDau: [
+          "Nhà ở hướng Tuyệt Mệnh, Ngũ Quỷ, Họa Hại, Lục Sát… nhưng không đổi được vì là nhà mua hoặc nhà tổ tiên để lại.",
+          "Là người Đông Tứ Mệnh nhưng lại ở trong nhà Tây Tứ Trạch (hoặc ngược lại) — dẫn đến mệnh trạch tương khắc, ảnh hưởng sức khỏe và tài lộc.",
+          "Nhà rơi vào các thế sát như Bát Sát, Hoàng Tuyền, Không Vong.",
+        ],
+        luuY: "Bạn có thể không để ý, nhưng những yếu tố này đang bào mòn dần vận khí của bạn mỗi ngày.",
+      },
+      {
+        tieuDe: "Vì sao bát quái ngoài thị trường thường không hiệu quả?",
+        gachDau: [
+          "Bạn đã từng đặt bát quái ngoài thị trường, gương cầu lồi, gương lõm… nhưng tình hình không mấy cải thiện.",
+          "Phần lớn sản phẩm ngoài thị trường là bát quái hóa sát “đại trà”, không được cá nhân hóa theo mệnh và trạch của gia chủ.",
+          "Sai vật – Sai cách – Sai thời điểm = Không hiệu quả.",
+          "Dùng sai loại bát quái còn dễ phản tác dụng, khiến sát khí bị kích hoạt ngược.",
+        ],
+      },
+      {
+        tieuDe: "“Bát Quái Ma Phương” — hóa sát phong thủy cá nhân hóa chuyên sâu cho từng gia chủ",
+        gachDau: [
+          "Cá nhân hóa hoàn toàn theo năm sinh, mệnh quái và hướng nhà cụ thể.",
+          "Khai quang – gia trì đầy đủ để kích hoạt năng lượng phong thủy thực sự (năng lượng lên xấp xỉ 200.000 Bovis).",
+          "Chọn ngày giờ an vị tốt nhất để hòa hợp Thiên – Địa – Nhân.",
+          "Kết hợp nhiều yếu tố năng lượng mạnh, tạo thành trường khí bảo hộ – hóa sát – hút tài đắc khí.",
+        ],
+        luuY: "Đây không chỉ là “vật trấn” mà là lá chắn phong thủy sống động, giúp gia chủ chuyển hung thành cát – nghênh tài đón phúc – bảo hộ gia đạo vững bền.",
+      },
+      {
+        cta: "Số lượng giới hạn — chỉ chế tác theo đơn đặt trước.",
+      },
+    ],
   },
   {
     slug: "vong-tay-tram-huong",
