@@ -13,10 +13,9 @@
 // nghiệp `module-ket-hop.ts`). Phần "vận tốt hay xấu" (danhGia) dựa trên Dụng Thần đã được engine
 // bat-tu-engine tính (không bịa). Phần nhấn mạnh dimension theo Thập Thần là heuristic cần calibrate.
 
-import { CAN_NGU_HANH, tinhBatTu, tinhLuuNien, thapThanOf, type BatTuChart } from "../bat-tu";
-import { phanTichBatTu, type Hanh, type TuTruInput } from "../bat-tu-engine/engine";
+import { tinhBatTu, tinhLuuNien, thapThanOf, type BatTuChart } from "../bat-tu";
+import { coLucXung, hanhCan, hanhChi, phanTichBatTu, type Hanh, type TuTruInput } from "../bat-tu-engine/engine";
 import { tinhTuVi } from "../tu-vi/engine";
-import type { NguHanh } from "../menh-nap-am";
 
 export interface LuckInput {
   day: number;
@@ -48,6 +47,7 @@ export interface LuckContext {
     can: string;
     chi: string;
     thapThan: string;
+    band: Band; // 5 dải: rat_thuan/thuan/trung_binh/thu_thach/nghich (xét Can+Chi+xung)
     danhGia: DanhGia;
   };
   luuNienHienTai: {
@@ -55,6 +55,7 @@ export interface LuckContext {
     can: string;
     chi: string;
     thapThan: string;
+    band: Band;
     danhGia: DanhGia;
   };
   dungThan: { dungThan: Hanh; hyThan: Hanh; kyThan: Hanh; cuuThan: Hanh; capDo: string; phuongPhap: string };
@@ -62,7 +63,7 @@ export interface LuckContext {
   dimensions: LuckDimension[]; // 4 thanh cho card "VẬN TRÌNH HIỆN TẠI"
 
   /** Dòng thời gian đại vận (mỗi giai đoạn gắn nhãn) — dùng cho biểu đồ timeline nếu cần. */
-  timeline: { tuoiBatDau: number; tuoiKetThuc: number; nhan: string; danhGia: DanhGia; laHienTai: boolean }[];
+  timeline: { tuoiBatDau: number; tuoiKetThuc: number; nhan: string; band: Band; danhGia: DanhGia; laHienTai: boolean }[];
 
   /** Lớp Tử Vi phụ (chỉ khi có giờ sinh) — cung đại vận hiện tại + sao chính. null nếu không chạy được. */
   tuVi: { daiVanCung: string; chinhTinh: string[]; ghiChu: string } | null;
@@ -84,23 +85,34 @@ const THUC_THUONG = new Set(["Thực Thần", "Thương Quan"]);
 const AN = new Set(["Chính Ấn", "Thiên Ấn"]);
 const KIEP_THUONG = new Set(["Kiếp Tài", "Thương Quan"]); // dễ gây biến động (cạnh tranh/hao/nghịch)
 
-const LUC_XUNG_CHI: [number, number][] = [[0, 6], [1, 7], [2, 8], [3, 9], [4, 10], [5, 11]];
-function chiXung(a: number, b: number): boolean {
-  return LUC_XUNG_CHI.some(([x, y]) => (x === a && y === b) || (x === b && y === a));
-}
-
 const clamp10 = (x: number) => Math.max(0, Math.min(10, Math.round(x)));
 
-/** Độ thuận của 1 hành so với Dụng Thần: +2 Dụng, +1 Hỷ, -2 Kỵ, -1 Cừu, 0 trung. */
-function favOf(element: NguHanh, dt: { dungThan: Hanh; hyThan: Hanh; kyThan: Hanh; cuuThan: Hanh }): number {
-  if (element === dt.dungThan) return 2;
-  if (element === dt.hyThan) return 1;
-  if (element === dt.kyThan) return -2;
-  if (element === dt.cuuThan) return -1;
-  return 0;
+type DungHy = { dungThan: Hanh; hyThan: Hanh; kyThan: Hanh };
+export type Band = "rat_thuan" | "thuan" | "trung_binh" | "thu_thach" | "nghich";
+
+// Chấm 1 trụ Can Chi so với Dụng/Hỷ/Kỵ Thần — XÉT CẢ CAN LẪN CHI (không chỉ Can). Công thức lấy
+// NGUYÊN từ trach-nhat-sinh-no/dai-van-band.ts (đã chạy production, kiểm chứng): Can/Chi = Dụng +2,
+// Hỷ +1, Kỵ -2. Theo đúng convention của dự án là REPLICATE công thức nhỏ này giữa các module (bản
+// gốc cũng replicate lại từ suyDaiVanDuPhong của module nghề nghiệp) để module độc lập nhau.
+function scorePillar(can: string, chi: string, dt: DungHy): number {
+  let d = 0;
+  const hc = hanhCan(can);
+  const hh = hanhChi(chi);
+  if (hc === dt.dungThan) d += 2; else if (hc === dt.hyThan) d += 1; else if (hc === dt.kyThan) d -= 2;
+  if (hh === dt.dungThan) d += 2; else if (hh === dt.hyThan) d += 1; else if (hh === dt.kyThan) d -= 2;
+  return d;
 }
-function danhGiaOf(fav: number): DanhGia {
-  return fav >= 1 ? "tot" : fav <= -1 ? "xau" : "binh_thuong";
+
+// Ngưỡng dải giống hệt dai-van-band.ts.
+function bandOf(score: number): Band {
+  return score >= 3 ? "rat_thuan" : score >= 1 ? "thuan" : score >= -0.5 ? "trung_binh" : score >= -2.5 ? "thu_thach" : "nghich";
+}
+// Quy dải về mức -2..+2 để đưa vào công thức 4 thanh (giữ nguyên thang cũ).
+function bandFav(band: Band): number {
+  return band === "rat_thuan" ? 2 : band === "thuan" ? 1 : band === "trung_binh" ? 0 : band === "thu_thach" ? -1 : -2;
+}
+function danhGiaFromBand(band: Band): DanhGia {
+  return band === "rat_thuan" || band === "thuan" ? "tot" : band === "trung_binh" ? "binh_thuong" : "xau";
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -127,29 +139,37 @@ export function tinhVanTrinhHienTai(input: LuckInput): LuckContext {
     gioiTinh: input.gender,
   };
   const pt = phanTichBatTu(tt);
-  const dt = { dungThan: pt.dungThan.dungThan, hyThan: pt.dungThan.hyThan, kyThan: pt.dungThan.kyThan, cuuThan: pt.dungThan.cuuThan };
+  const dt: DungHy = { dungThan: pt.dungThan.dungThan, hyThan: pt.dungThan.hyThan, kyThan: pt.dungThan.kyThan };
+  const dtFull = { ...dt, cuuThan: pt.dungThan.cuuThan };
 
   // 3) Đại vận hiện tại (giai đoạn chứa tuổi mụ; nếu trẻ hơn giai đoạn đầu → lấy giai đoạn đầu; già hơn → cuối).
   const dv =
     chart.daiVan.find((d) => tuoiMu >= d.startAge && tuoiMu <= d.endAge) ??
     (tuoiMu < chart.daiVan[0].startAge ? chart.daiVan[0] : chart.daiVan[chart.daiVan.length - 1]);
-  const dvElement = CAN_NGU_HANH[dv.canIndex];
-  const favDV = favOf(dvElement, dt);
   const thapThanDV = thapThanOf(dv.canIndex, nhatChuIndex);
+  // Chấm đại vận: Can + Chi so Dụng/Hỷ/Kỵ, cộng trừ xung Nhật/Nguyệt chi (dai-van-band.ts).
+  const xungNhatChi = coLucXung(dv.chi, [chart.day.chi]);
+  const xungNguyetChi = coLucXung(dv.chi, [chart.month.chi]);
+  const scoreDV = scorePillar(dv.can, dv.chi, dt) + (xungNguyetChi ? -2 : 0) + (xungNhatChi ? -1.5 : 0);
+  const bandDV = bandOf(scoreDV);
+  const favDV = bandFav(bandDV);
 
-  // 4) Lưu niên hiện tại (engine có sẵn).
+  // 4) Lưu niên hiện tại (engine có sẵn) — cũng chấm Can + Chi (xung Thái Tuế nhẹ hơn).
   const ln = tinhLuuNien(nowYear, input.year, 1)[0];
-  const lnElement = CAN_NGU_HANH[ln.canIndex];
-  const favLN = favOf(lnElement, dt);
   const thapThanLN = thapThanOf(ln.canIndex, nhatChuIndex);
+  const xungLnNhatChi = coLucXung(ln.chi, [chart.day.chi]);
+  const scoreLN = scorePillar(ln.can, ln.chi, dt) + (xungLnNhatChi ? -1 : 0);
+  const bandLN = bandOf(scoreLN);
+  const favLN = bandFav(bandLN);
 
   // 5) 4 thanh chỉ số (BẢN NHÁP — công thức minh bạch, Thầy hiệu chỉnh).
+  // base dựa trên dải đại vận + lưu niên (đã xét Can+Chi+xung). Cách gán dimension theo Thập Thần
+  // khớp bảng thap_than_nghe.json của module nghề (Quan/Sát→sự nghiệp, Tài→tài chính, Thực/Thương→cơ hội).
   const base = 5 + 1.5 * favDV + 0.75 * favLN;
-  const xungNhatChi = chiXung(dv.chiIndex, chart.day.chiIndex);
   const suNghiep = clamp10(base + (QUAN_SAT.has(thapThanDV) ? 1.5 : AN.has(thapThanDV) ? 0.5 : 0));
   const taiChinh = clamp10(base + (TAI.has(thapThanDV) ? 1.5 : THUC_THUONG.has(thapThanDV) ? 0.5 : 0));
   const coHoi = clamp10(base + (THUC_THUONG.has(thapThanDV) ? 1.5 : thapThanDV === "Chính Ấn" ? 0.5 : 0));
-  const bienDong = clamp10(5 - 1.0 * favDV + (xungNhatChi ? 2 : 0) + (KIEP_THUONG.has(thapThanDV) ? 1.5 : 0));
+  const bienDong = clamp10(5 - 1.0 * favDV + (xungNhatChi || xungNguyetChi ? 2 : 0) + (KIEP_THUONG.has(thapThanDV) ? 1.5 : 0));
 
   const dimensions: LuckDimension[] = [
     { key: "su-nghiep", label: "Sự nghiệp", score: suNghiep, higherIsBetter: true },
@@ -158,14 +178,16 @@ export function tinhVanTrinhHienTai(input: LuckInput): LuckContext {
     { key: "bien-dong", label: "Biến động", score: bienDong, higherIsBetter: false },
   ];
 
-  // 6) Timeline đại vận.
+  // 6) Timeline đại vận — mỗi giai đoạn chấm Can+Chi+xung (như đại vận hiện tại).
   const timeline = chart.daiVan.map((d) => {
-    const fav = favOf(CAN_NGU_HANH[d.canIndex], dt);
+    const sc = scorePillar(d.can, d.chi, dt) + (coLucXung(d.chi, [chart.month.chi]) ? -2 : 0) + (coLucXung(d.chi, [chart.day.chi]) ? -1.5 : 0);
+    const b = bandOf(sc);
     return {
       tuoiBatDau: d.startAge,
       tuoiKetThuc: d.endAge,
       nhan: `${d.can} ${d.chi}`,
-      danhGia: danhGiaOf(fav),
+      band: b,
+      danhGia: danhGiaFromBand(b),
       laHienTai: d.startAge === dv.startAge,
     };
   });
@@ -191,9 +213,9 @@ export function tinhVanTrinhHienTai(input: LuckInput): LuckContext {
 
   // 8) Tín hiệu + tóm tắt (deterministic; LLM có thể viết lại giọng đời thường).
   const signals: string[] = [
-    `Đại vận hiện tại ${dv.can} ${dv.chi} (${thapThanDV}), hành ${dvElement} so với Dụng Thần ${dt.dungThan} → ${danhGiaOf(favDV)}.`,
-    `Lưu niên ${nowYear} ${ln.can} ${ln.chi} (${thapThanLN}), hành ${lnElement} → ${danhGiaOf(favLN)}.`,
-    xungNhatChi ? `Chi đại vận ${dv.chi} XUNG Nhật Chi ${chart.day.chi} → tăng biến động.` : `Chi đại vận không xung Nhật Chi → biến động nền thấp hơn.`,
+    `Đại vận hiện tại ${dv.can} ${dv.chi} (${thapThanDV}) — Can ${hanhCan(dv.can)} · Chi ${hanhChi(dv.chi)} so Dụng ${dt.dungThan}/Hỷ ${dt.hyThan}/Kỵ ${dt.kyThan} → dải "${bandDV}".`,
+    `Lưu niên ${nowYear} ${ln.can} ${ln.chi} (${thapThanLN}) — Can ${hanhCan(ln.can)} · Chi ${hanhChi(ln.chi)} → dải "${bandLN}".`,
+    xungNguyetChi ? `Chi đại vận ${dv.chi} XUNG Nguyệt Chi ${chart.month.chi} (động gốc) → hạ vận + tăng biến động.` : xungNhatChi ? `Chi đại vận ${dv.chi} XUNG Nhật Chi ${chart.day.chi} (động thân) → tăng biến động.` : `Đại vận không xung Nhật/Nguyệt chi → biến động nền thấp hơn.`,
     !gioSinhKnown ? "Không có giờ sinh → vận trình mang tính ước lượng (dùng giờ mặc định 12h)." : "",
   ].filter(Boolean);
 
@@ -201,7 +223,7 @@ export function tinhVanTrinhHienTai(input: LuckInput): LuckContext {
   const manhNhat = [...tichCuc].sort((a, b) => b.score - a.score)[0];
   const yeuNhat = [...tichCuc].sort((a, b) => a.score - b.score)[0];
   const dongDeu = manhNhat.score === yeuNhat.score;
-  const thoiVanChung = danhGiaOf(favDV + favLN >= 1 ? 1 : favDV + favLN <= -1 ? -1 : 0);
+  const thoiVanChung: DanhGia = favDV + favLN >= 1 ? "tot" : favDV + favLN <= -1 ? "xau" : "binh_thuong";
   const tomTat = [
     `Thời vận chung năm nay: ${thoiVanChung === "tot" ? "khá thuận" : thoiVanChung === "xau" ? "còn nhiều trắc trở" : "tạm ổn, chưa bứt phá"}.`,
     dongDeu
@@ -214,9 +236,9 @@ export function tinhVanTrinhHienTai(input: LuckInput): LuckContext {
     nguon: "bat-tu",
     tuoiHienTai: tuoiMu,
     gioSinhKnown,
-    daiVanHienTai: { tuoiBatDau: dv.startAge, tuoiKetThuc: dv.endAge, can: dv.can, chi: dv.chi, thapThan: thapThanDV, danhGia: danhGiaOf(favDV) },
-    luuNienHienTai: { nam: nowYear, can: ln.can, chi: ln.chi, thapThan: thapThanLN, danhGia: danhGiaOf(favLN) },
-    dungThan: { ...dt, capDo: pt.vuongSuy.capDo, phuongPhap: pt.dungThan.phuongPhap },
+    daiVanHienTai: { tuoiBatDau: dv.startAge, tuoiKetThuc: dv.endAge, can: dv.can, chi: dv.chi, thapThan: thapThanDV, band: bandDV, danhGia: danhGiaFromBand(bandDV) },
+    luuNienHienTai: { nam: nowYear, can: ln.can, chi: ln.chi, thapThan: thapThanLN, band: bandLN, danhGia: danhGiaFromBand(bandLN) },
+    dungThan: { ...dtFull, capDo: pt.vuongSuy.capDo, phuongPhap: pt.dungThan.phuongPhap },
     dimensions,
     timeline,
     tuVi,

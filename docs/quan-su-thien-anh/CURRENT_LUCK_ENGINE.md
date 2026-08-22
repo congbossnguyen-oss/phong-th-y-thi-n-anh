@@ -15,6 +15,10 @@ Engine "Vận Trình Hiện Tại" — lớp **CONTEXT bổ trợ** dựa trên 
 | `src/lib/bat-tu-engine/engine.ts` | `phanTichBatTu(tt)` | Vượng Suy + **Dụng/Hỷ/Kỵ/Cừu Thần** (đã kiểm chứng, dùng để đánh giá tốt/xấu) |
 | `src/lib/tu-vi/engine.ts` | `tinhTuVi()` | (lớp phụ) Cung Đại Vận hiện tại + sao chính — chỉ đối chiếu định tính |
 
+**Mượn quy tắc từ 2 module đã kiểm chứng (theo gợi ý của Thầy 2026-08-23):**
+- **Cách chấm đại vận** lấy từ `src/lib/trach-nhat-sinh-no/dai-van-band.ts` (đang chạy production trong công cụ "Chọn Ngày Giờ Sinh Cho Bé"): xét **CẢ CAN LẪN CHI** của đại vận so với Dụng/Hỷ/Kỵ Thần + cộng trừ **xung Nhật/Nguyệt Chi**, rồi quy về **5 dải** (rất thuận/thuận/trung bình/thử thách/nghịch). Đây là bản vá cho lỗ hổng "chỉ xét Can" ở bản Phase 4 đầu.
+- **Cách gán 4 thanh theo Thập Thần** được đối chiếu với `handoff/config/thap_than_nghe.json` (module "Định Hướng Nghề Nghiệp"): Quan/Sát→sự nghiệp (management/authority), Tài→tài chính (business/investment), Thực/Thương→cơ hội (specialist), Kiếp Tài/Thương Quan→biến động. Cách gán của engine này **khớp** với bảng đó.
+
 **File engine mới:** `src/lib/quan-su/current-luck.ts` → hàm `tinhVanTrinhHienTai(input): LuckContext`. Chỉ **gom/trích** dữ liệu từ các engine trên, không tự tính lá số. Có test `tests/quan-su-current-luck.test.ts` (7 test, đã pass).
 
 ## 2. Vì sao Bát Tự là nguồn CHÍNH, Tử Vi chỉ phụ
@@ -47,17 +51,22 @@ Card "VẬN TRÌNH HIỆN TẠI" hiển thị 4 thanh 0–10:
 
 **Công thức (đơn giản, đọc được):**
 ```
-fav(hành) = +2 nếu = Dụng Thần, +1 Hỷ, −2 Kỵ, −1 Cừu, 0 trung
-base = 5 + 1.5·fav(Đại Vận) + 0.75·fav(Lưu Niên)          (kẹp 0–10)
+# Bước 1 — chấm 1 giai đoạn (đại vận / lưu niên), XÉT CẢ CAN LẪN CHI (lấy từ dai-van-band.ts):
+score = [Can: Dụng +2, Hỷ +1, Kỵ −2] + [Chi: Dụng +2, Hỷ +1, Kỵ −2]
+        + (Chi xung Nguyệt Chi ? −2 : 0) + (Chi xung Nhật Chi ? −1.5 : 0)   # lưu niên xung nhẹ hơn (−1)
+band = rất thuận (≥3) / thuận (≥1) / trung bình (≥−0.5) / thử thách (≥−2.5) / nghịch
+fav  = rất thuận +2 · thuận +1 · trung bình 0 · thử thách −1 · nghịch −2
 
+# Bước 2 — 4 thanh:
+base = 5 + 1.5·fav(Đại Vận) + 0.75·fav(Lưu Niên)          (kẹp 0–10)
 Sự nghiệp = base + (Thập Thần Đại Vận ∈ Quan Sát ? +1.5 : ∈ Ấn ? +0.5 : 0)
 Tài chính = base + (∈ Tài ? +1.5 : ∈ Thực Thương ? +0.5 : 0)
 Cơ hội    = base + (∈ Thực Thương ? +1.5 : = Chính Ấn ? +0.5 : 0)
-Biến động = 5 − 1.0·fav(Đại Vận) + (Chi Đại Vận XUNG Nhật Chi ? +2 : 0) + (∈ {Kiếp Tài, Thương Quan} ? +1.5 : 0)
+Biến động = 5 − 1.0·fav(Đại Vận) + (Chi Đại Vận xung Nhật/Nguyệt Chi ? +2 : 0) + (∈ {Kiếp Tài, Thương Quan} ? +1.5 : 0)
 ```
-- Phần "tốt/xấu" (`base` qua Dụng Thần) **dựa trên engine đã kiểm chứng** — đáng tin.
-- Phần "nhấn mạnh dimension theo Thập Thần" là **heuristic** — hợp lý theo nghĩa Thập Thần cổ điển (Quan Sát→sự nghiệp, Tài→tiền, Thực Thương→thể hiện, Kiếp/Thương→biến động) nhưng **CHƯA hiệu chỉnh trên dữ liệu thật**.
-- Toàn bộ `LuckContext` gắn cờ **`coNhap: true`** (bản nháp — giống module nghề nghiệp `module-ket-hop.ts`). **Việc cho Thầy:** đọc công thức trên, chỉnh trọng số / cách nhấn dimension cho khớp kinh nghiệm của Thầy trước khi mở cho khách.
+- **Bước 1 (tốt/xấu) đã có căn cứ vững:** dùng Dụng/Hỷ/Kỵ Thần (engine đã kiểm chứng) + cách chấm Can+Chi+xung **lấy nguyên từ `dai-van-band.ts`** đang chạy production. Đã vá lỗ hổng "chỉ xét Can" — ví dụ đại vận Ất Dậu, Dụng Thần Kim: trước chấm "xấu" (chỉ nhìn Ất=Mộc), giờ chấm "bình thường" (nhìn cả Dậu=Kim=Dụng Thần).
+- **Bước 2 (nhấn mạnh dimension theo Thập Thần):** cách gán khớp `thap_than_nghe.json` của module nghề, nhưng **trọng số (+1.5/+0.5) vẫn là heuristic CHƯA calibrate trên dữ liệu thật**.
+- Toàn bộ `LuckContext` gắn cờ **`coNhap: true`** (bản nháp — chính `thap_than_nghe.json` và `module-ket-hop.ts` cũng tự đánh dấu vậy). **Việc cho Thầy:** chỉnh trọng số Bước 2 (và ngưỡng dải Bước 1 nếu muốn) cho khớp kinh nghiệm, trước khi mở cho khách. Có thể calibrate bằng cách đưa vài người Thầy biết rõ vận → xem 4 thanh → chỉ chỗ lệch → đệ chỉnh.
 
 ## 5. Nguyên tắc "chỉ hiện đồ hình + 3-5 dòng, không hiện toàn bộ lá số"
 

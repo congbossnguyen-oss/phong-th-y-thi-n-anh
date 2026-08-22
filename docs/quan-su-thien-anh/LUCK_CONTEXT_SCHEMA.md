@@ -20,17 +20,17 @@ interface LuckInput {
 | `nguon` | `"bat-tu"` | Nguồn CHÍNH của điểm số (Tử Vi chỉ phụ) |
 | `tuoiHienTai` | `number` | Tuổi mụ = nowYear − nămSinh + 1 |
 | `gioSinhKnown` | `boolean` | Có giờ sinh hay không (ảnh hưởng độ chính xác + lớp Tử Vi) |
-| `daiVanHienTai` | object | Đại Vận đang ở: `{ tuoiBatDau, tuoiKetThuc, can, chi, thapThan, danhGia }` |
-| `luuNienHienTai` | object | Lưu Niên năm nay: `{ nam, can, chi, thapThan, danhGia }` |
+| `daiVanHienTai` | object | Đại Vận đang ở: `{ tuoiBatDau, tuoiKetThuc, can, chi, thapThan, band, danhGia }` |
+| `luuNienHienTai` | object | Lưu Niên năm nay: `{ nam, can, chi, thapThan, band, danhGia }` |
 | `dungThan` | object | `{ dungThan, hyThan, kyThan, cuuThan, capDo, phuongPhap }` (từ `phanTichBatTu`) |
 | `dimensions` | `LuckDimension[]` | **4 thanh** cho card — xem mục 3 |
-| `timeline` | array | 10 giai đoạn đại vận, mỗi cái `{ tuoiBatDau, tuoiKetThuc, nhan, danhGia, laHienTai }` |
+| `timeline` | array | 10 giai đoạn đại vận, mỗi cái `{ tuoiBatDau, tuoiKetThuc, nhan, band, danhGia, laHienTai }` |
 | `tuVi` | object \| null | Lớp phụ: `{ daiVanCung, chinhTinh[], ghiChu }` — null nếu không có giờ sinh / engine lỗi |
 | `signals` | `string[]` | Lý do deterministic (minh bạch) — để LLM viết lại thành lời thường |
 | `tomTat` | `string[]` | 2-4 dòng tóm tắt sẵn (deterministic) — LLM có thể viết lại giọng "quân sư đồng hành" |
 | `coNhap` | `true` | ⚠️ **BẢN NHÁP** — công thức dimension chưa hiệu chỉnh; Thầy cần calibrate |
 
-`danhGia`: `"tot" | "binh_thuong" | "xau"`.
+`danhGia`: `"tot" | "binh_thuong" | "xau"` (rút từ `band`). `band`: `"rat_thuan" | "thuan" | "trung_binh" | "thu_thach" | "nghich"` — 5 dải chi tiết hơn, chấm bằng Can+Chi+xung (xem `CURRENT_LUCK_ENGINE.md` §4).
 
 ## 3. `LuckDimension` — một thanh chỉ số
 
