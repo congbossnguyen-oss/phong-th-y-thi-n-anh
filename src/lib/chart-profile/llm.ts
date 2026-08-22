@@ -10,6 +10,7 @@
  * phụ thuộc cho một lệnh gọi HTTP đơn giản.
  */
 import type { BatTuLuanGiai, ManhPhaiLuanGiai, DaiVanLuanGiai } from "./types";
+import { coAnthropicApiKey, layAnthropicApiKey } from "./api-key";
 
 const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
 const ANTHROPIC_VERSION = "2023-06-01";
@@ -95,7 +96,7 @@ export type LlmCallResult =
   | { ok: false; reason: "khong_co_api_key" | "loi_goi_api" | "phan_hoi_khong_hop_le"; detail: string };
 
 export function isAiConfigured(): boolean {
-  return Boolean(import.meta.env?.ANTHROPIC_API_KEY);
+  return coAnthropicApiKey();
 }
 
 export async function callBatTuLlm(
@@ -103,7 +104,7 @@ export async function callBatTuLlm(
   userPrompt: string,
   soDaiVan: number,
 ): Promise<LlmCallResult> {
-  const apiKey = import.meta.env?.ANTHROPIC_API_KEY;
+  const apiKey = layAnthropicApiKey();
   if (!apiKey) {
     return {
       ok: false,

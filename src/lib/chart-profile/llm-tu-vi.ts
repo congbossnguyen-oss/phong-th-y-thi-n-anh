@@ -2,6 +2,8 @@
  * Gọi Claude luận TỬ VI (Nam Phái) — tầng gọi mạng + ép JSON có cấu trúc (tool-use). Không tự luận.
  * Song song `llm.ts` (Bát Tự): cùng model, cùng retry lỗi tạm, cùng prompt caching khối tri thức.
  */
+import { coAnthropicApiKey, layAnthropicApiKey } from "./api-key";
+
 const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
 const ANTHROPIC_VERSION = "2023-06-01";
 const DEFAULT_MODEL = "claude-sonnet-5";
@@ -72,11 +74,11 @@ export type LlmTuViResult =
   | { ok: false; reason: "khong_co_api_key" | "loi_goi_api" | "phan_hoi_khong_hop_le"; detail: string };
 
 export function isTuViAiConfigured(): boolean {
-  return Boolean(import.meta.env?.ANTHROPIC_API_KEY);
+  return coAnthropicApiKey();
 }
 
 export async function callTuViLlm(systemPrompt: string, userPrompt: string, soDaiHan: number): Promise<LlmTuViResult> {
-  const apiKey = import.meta.env?.ANTHROPIC_API_KEY;
+  const apiKey = layAnthropicApiKey();
   if (!apiKey) return { ok: false, reason: "khong_co_api_key", detail: "Chưa cấu hình ANTHROPIC_API_KEY." };
   const model = import.meta.env?.ANTHROPIC_MODEL || DEFAULT_MODEL;
 
