@@ -121,6 +121,10 @@ export interface TuViDaiHanBandItem {
   cungName: string;
   soSatTinhTuTap: number;
   bietTuanTriet: boolean;
+  /** Điểm mức thuận -10..10 để vẽ biểu đồ sóng vận trình. */
+  diem: number;
+  /** Nhận xét ngắn cho giai đoạn này. */
+  nhanXet: string;
 }
 
 /** Bước 4 — Tam Phương Tứ Chính (Mệnh + Di + Tài + Quan), đếm trên CẢ 4 cung. */
@@ -133,6 +137,33 @@ export interface TamPhuongTuChinhResult {
 }
 
 export type MucCuongNhuoc = "cuong" | "trung_binh" | "nhuoc";
+
+/** Một ô cung trên lá số 12 cung — đủ dữ liệu để vẽ lưới trực quan. */
+export interface CungTuViVM {
+  chiIndex: number;
+  chiName: string;
+  canName: string;
+  cungName: string;
+  isMenh: boolean;
+  isThan: boolean;
+  chinhTinh: { ten: string; trangThai: string }[];
+  catTinh: string[];
+  satTinh: string[];
+  tuHoa: { ten: string; loai: string }[];
+  tuan: boolean;
+  triet: boolean;
+  daiVanTuoi: [number, number];
+}
+
+/** Luận từng cung quan trọng (Mệnh, Tài, Quan, Di, Phu Thê, Phụ Mẫu, Tử Tức, Tật Ách, Phúc Đức). */
+export interface LuanCung {
+  cungName: string;
+  chiName: string;
+  chinhTinh: string; // "Tham Lang (Vượng)" hoặc "Vô Chính Diệu"
+  danhGia: "cat" | "binh" | "hung";
+  diem: number; // -10..10, dùng vẽ biểu đồ
+  nhanXet: string;
+}
 
 export interface TuViAnalysis {
   cungMenh: string;
@@ -148,6 +179,12 @@ export interface TuViAnalysis {
   cuongNhuocThan: MucCuongNhuoc;
   veto: TuViVetoResult;
   daiHan: TuViDaiHanBandItem[];
+  /** 12 cung đầy đủ — để vẽ lá số trực quan. */
+  cungs: CungTuViVM[];
+  /** Luận từng cung quan trọng cho phụ huynh đọc. */
+  luanCacCung: LuanCung[];
+  /** Kết luận tổng phần Tử Vi (3-6 câu). */
+  ketLuan: string[];
 }
 
 export interface RedFlag {

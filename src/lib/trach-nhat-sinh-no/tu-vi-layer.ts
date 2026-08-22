@@ -5,8 +5,11 @@
  */
 import { tinhTuVi, type TuViChart, type CungKetQua } from "../tu-vi/engine";
 import { loadTrachNhatConfig } from "./config";
-import type { TuViAnalysis, TuViVetoResult, TuViDaiHanBandItem, RedFlag } from "./types";
+import type { TuViAnalysis, TuViVetoResult, TuViDaiHanBandItem, RedFlag, CungTuViVM, LuanCung } from "./types";
 import type { Gender } from "../bat-tu";
+
+const cuongNhuocLabel = (m: "cuong" | "trung_binh" | "nhuoc"): string =>
+  m === "cuong" ? ", thế sao mạnh" : m === "nhuoc" ? ", thế sao yếu" : "";
 
 const THAN_CU_LABEL: Record<string, string> = {
   "Mệnh": "Mệnh", "Quan Lộc": "Quan Lộc", "Phúc Đức": "Phúc Đức",
@@ -53,6 +56,63 @@ function chamTamPhuongTuChinh(chart: TuViChart, satTinhTen: Set<string>) {
     }
   }
   return { soCatTinh, soSatTinh, soHoaCat, soHoaKy, chiTiet };
+}
+
+/** Vai trò từng cung với trẻ nhỏ — dùng để viết nhận xét cho phụ huynh đọc. */
+const VAI_TRO_CUNG: Record<string, string> = {
+  "Mệnh": "tính cách gốc, cách bé nhìn đời và tự định vị bản thân",
+  "Tài Bạch": "quan hệ với tiền bạc, khả năng tích lũy khi trưởng thành",
+  "Quan Lộc": "đường học hành, sự nghiệp, vị thế xã hội",
+  "Thiên Di": "môi trường bên ngoài, cơ hội khi ra khỏi nhà, quý nhân phù trợ",
+  "Phu Thê": "đời sống hôn nhân, người bạn đời sau này",
+  "Phụ Mẫu": "duyên với cha mẹ, nền tảng được nuôi dạy",
+  "Tử Tức": "con cái sau này, cũng phản ánh sức sáng tạo",
+  "Tật Ách": "thể trạng, những mặt sức khỏe cần chú ý",
+  "Phúc Đức": "phúc phần thừa hưởng, đời sống tinh thần, sự an yên",
+};
+/** Thứ tự trình bày — Mệnh trước, rồi bộ tam hợp nghề nghiệp, rồi các cung gia đạo. */
+const CUNG_QUAN_TRONG = ["Mệnh", "Tài Bạch", "Quan Lộc", "Thiên Di", "Tật Ách", "Phụ Mẫu", "Phúc Đức", "Phu Thê", "Tử Tức"];
+
+/**
+ * Chấm điểm + viết nhận xét cho MỘT cung. Điểm -10..10 dùng cho biểu đồ; nhận xét viết cho phụ
+ * huynh (không dùng thuật ngữ khô khan, luôn nêu vì sao).
+ */
+function luanMotCung(cung: CungKetQua, satTinhTen: Set<string>): LuanCung {
+  const cat = cung.phuTinh.filter((s) => TRUNG_TINH_CAT.includes(s.name)).map((s) => s.name);
+  const sat = cung.phuTinh.filter((s) => satTinhTen.has(s.name)).map((s) => s.name);
+  const hoaCat = [...cung.chinhTinh, ...cung.phuTinh].filter((s) => s.tuHoa === "Lộc" || s.tuHoa === "Quyền" || s.tuHoa === "Khoa");
+  const hoaKy = [...cung.chinhTinh, ...cung.phuTinh].filter((s) => s.tuHoa === "Kỵ");
+
+  let diem = 0;
+  for (const s of cung.chinhTinh) {
+    diem += s.trangThai === "Miếu" ? 3 : s.trangThai === "Vượng" ? 2.5 : s.trangThai === "Đắc" ? 1.5 : s.trangThai === "Bình" ? 0 : -2.5;
+  }
+  if (cung.chinhTinh.length === 0) diem -= 1; // Vô Chính Diệu — không có sao chủ sự
+  diem += cat.length * 1.5 - sat.length * 1.5 + hoaCat.length * 2 - hoaKy.length * 2;
+  if (cung.tuan || cung.triet) diem -= 2;
+  diem = Math.max(-10, Math.min(10, Math.round(diem * 10) / 10));
+
+  const danhGia: LuanCung["danhGia"] = diem >= 2 ? "cat" : diem <= -2 ? "hung" : "binh";
+  const chinhTinhStr = cung.chinhTinh.length > 0
+    ? cung.chinhTinh.map((s) => `${s.name} (${s.trangThai})`).join(", ")
+    : "Vô Chính Diệu";
+
+  const vaiTro = VAI_TRO_CUNG[cung.cungName] ?? cung.cungName;
+  const manh: string[] = [];
+  const yeu: string[] = [];
+  if (cung.chinhTinh.some((s) => s.trangThai === "Miếu" || s.trangThai === "Vượng")) manh.push("chính tinh đắc thế, phát huy tốt");
+  if (cung.chinhTinh.some((s) => s.trangThai === "Hãm")) yeu.push("chính tinh hãm địa, khó phát huy");
+  if (cung.chinhTinh.length === 0) yeu.push("không có chính tinh chủ sự, dễ chịu ảnh hưởng từ cung đối");
+  if (cat.length) manh.push(`có ${cat.join(", ")} trợ lực`);
+  if (sat.length) yeu.push(`bị ${sat.join(", ")} quấy`);
+  if (hoaCat.length) manh.push(`gặp Hóa ${hoaCat.map((s) => s.tuHoa).join("/")}`);
+  if (hoaKy.length) yeu.push("gặp Hóa Kỵ — dễ vướng mắc, trắc trở");
+  if (cung.tuan || cung.triet) yeu.push(`có ${cung.tuan ? "Tuần" : ""}${cung.tuan && cung.triet ? "/" : ""}${cung.triet ? "Triệt" : ""} án ngữ — việc hay bị chậm, gián đoạn`);
+
+  const dan = danhGia === "cat" ? "Khá thuận" : danhGia === "hung" ? "Cần lưu ý" : "Bình thường";
+  const nhanXet = `${dan} về ${vaiTro}. ${manh.length ? "Điểm mạnh: " + manh.join("; ") + ". " : ""}${yeu.length ? "Điểm yếu: " + yeu.join("; ") + "." : manh.length ? "" : "Không có yếu tố nổi bật theo hướng nào."}`;
+
+  return { cungName: cung.cungName, chiName: cung.chiName, chinhTinh: chinhTinhStr, danhGia, diem, nhanXet };
 }
 
 /**
@@ -108,10 +168,52 @@ export function chamLopTuVi(input: { day: number; month: number; year: number; h
   const cungTheoTuoi = [...chart.cungs].filter((c) => c.daiVanTuoi[0] >= 0).sort((a, b) => a.daiVanTuoi[0] - b.daiVanTuoi[0]).slice(0, 6);
   for (const c of cungTheoTuoi) {
     const soSat = c.phuTinh.filter((s) => satTinhTen.has(s.name)).length;
-    daiHan.push({ tuTuoi: c.daiVanTuoi[0], denTuoi: c.daiVanTuoi[1], cungName: c.cungName, soSatTinhTuTap: soSat, bietTuanTriet: c.tuan || c.triet });
+    const luan = luanMotCung(c, satTinhTen);
+    const giaiDoan = c.daiVanTuoi[0] < 15 ? "tuổi thơ" : c.daiVanTuoi[0] < 25 ? "học hành, định hướng" : c.daiVanTuoi[0] < 45 ? "lập nghiệp" : "ổn định, tích lũy";
+    const mucNhan = luan.diem >= 3 ? "rất thuận" : luan.diem >= 1 ? "thuận" : luan.diem >= -1 ? "bình thường" : luan.diem >= -3 ? "có thử thách" : "nhiều trắc trở";
+    daiHan.push({
+      tuTuoi: c.daiVanTuoi[0], denTuoi: c.daiVanTuoi[1], cungName: c.cungName,
+      soSatTinhTuTap: soSat, bietTuanTriet: c.tuan || c.triet,
+      diem: luan.diem,
+      nhanXet: `Giai đoạn ${giaiDoan} — vận đi vào cung ${c.cungName} (${luan.chinhTinh}): ${mucNhan}.${c.tuan || c.triet ? " Có Tuần/Triệt án ngữ nên việc dễ chậm, hay đứt đoạn giữa chừng." : ""}${soSat > 0 ? ` Có ${soSat} sát tinh tụ, cần giữ sức khỏe và tránh nóng vội.` : ""}`,
+    });
   }
 
   const tamPhuongTuChinh = chamTamPhuongTuChinh(chart, satTinhTen);
+
+  // 12 cung đầy đủ cho lá số trực quan.
+  const cungsVM: CungTuViVM[] = chart.cungs.map((c) => ({
+    chiIndex: c.chiIndex, chiName: c.chiName, canName: c.canName, cungName: c.cungName,
+    isMenh: c.isMenh, isThan: c.isThan,
+    chinhTinh: c.chinhTinh.map((s) => ({ ten: s.name, trangThai: s.trangThai })),
+    catTinh: c.phuTinh.filter((s) => TRUNG_TINH_CAT.includes(s.name)).map((s) => s.name),
+    satTinh: c.phuTinh.filter((s) => satTinhTen.has(s.name)).map((s) => s.name),
+    tuHoa: [...c.chinhTinh, ...c.phuTinh].filter((s) => s.tuHoa).map((s) => ({ ten: s.name, loai: s.tuHoa! })),
+    tuan: c.tuan, triet: c.triet, daiVanTuoi: c.daiVanTuoi,
+  }));
+
+  // Luận từng cung quan trọng.
+  const luanCacCung: LuanCung[] = CUNG_QUAN_TRONG
+    .map((ten) => timCung(chart, ten))
+    .filter((c): c is CungKetQua => !!c)
+    .map((c) => luanMotCung(c, satTinhTen));
+
+  // Kết luận tổng — viết cho phụ huynh, nêu cả mặt được lẫn mặt phải chấp nhận.
+  const ketLuan: string[] = [];
+  const menhLuan = luanCacCung.find((l) => l.cungName === "Mệnh");
+  if (menhLuan) {
+    ketLuan.push(`Cung Mệnh tại ${menh.chiName} có ${menhLuan.chinhTinh}${cuongNhuocLabel(chamCuongNhuoc(menh))} — ${menhLuan.danhGia === "cat" ? "nền tảng tính cách thuận lợi" : menhLuan.danhGia === "hung" ? "tính cách có mặt cần uốn nắn từ nhỏ" : "tính cách ở mức trung bình, phần lớn do giáo dục định hình"}.`);
+  }
+  const cungCat = luanCacCung.filter((l) => l.danhGia === "cat");
+  const cungHung = luanCacCung.filter((l) => l.danhGia === "hung");
+  if (cungCat.length > 0) ketLuan.push(`Mặt thuận: ${cungCat.map((l) => l.cungName).join(", ")} — đây là các mảng bé có sẵn lợi thế.`);
+  if (cungHung.length > 0) ketLuan.push(`Mặt cần lưu tâm: ${cungHung.map((l) => l.cungName).join(", ")} — không phải "xấu cố định", nhưng là chỗ gia đình nên đầu tư nâng đỡ sớm.`);
+  else ketLuan.push("Không cung nào rơi vào mức xấu rõ rệt — lá số tương đối đều.");
+  ketLuan.push(`Thân cư ${THAN_CU_LABEL[thanCu] ?? thanCu} — trọng tâm cuộc đời nghiêng về ${VAI_TRO_CUNG[thanCu] ?? "mảng này"}.`);
+  const hanTot = daiHan.filter((h) => h.diem >= 1);
+  const hanXau = daiHan.filter((h) => h.diem <= -2);
+  if (hanTot.length) ketLuan.push(`Vận trình: giai đoạn thuận rơi vào ${hanTot.map((h) => `${h.tuTuoi}–${h.denTuoi}t`).join(", ")}.`);
+  if (hanXau.length) ketLuan.push(`Giai đoạn cần cẩn trọng: ${hanXau.map((h) => `${h.tuTuoi}–${h.denTuoi}t`).join(", ")} — nên chuẩn bị trước, không nên khởi sự lớn vào đúng các mốc này.`);
 
   const analysis: TuViAnalysis = {
     cungMenh: menh.chiName,
@@ -125,6 +227,9 @@ export function chamLopTuVi(input: { day: number; month: number; year: number; h
     cuongNhuocThan: chamCuongNhuoc(than),
     veto,
     daiHan,
+    cungs: cungsVM,
+    luanCacCung,
+    ketLuan,
   };
 
   // Red flags theo quy tắc phủ quyết §1 04-lop-tu-vi.md + Bước 7 quy-trinh-chon-gio-sinh-mo-tu-vi.md.

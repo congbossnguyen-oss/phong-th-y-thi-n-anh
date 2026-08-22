@@ -1,14 +1,18 @@
 ---
 /**
- * TAB TỬ VI — chi tiết lá số Tử Vi của phương án được chọn, trình bày theo đúng
- * `quy-trinh-chon-gio-sinh-mo-tu-vi.md` (8 bước): Mệnh/Thân/Cục, chính tinh, Tam Phương Tứ Chính,
- * cường/nhược Mệnh–Thân, Tuần–Triệt, sát tinh, Tứ Hóa, Đại Hạn đầu đời.
- * Vai trò trong quy trình: Tử Vi CHỌN GIỜ trong ngày đã chọn.
+ * TAB TỬ VI — trình bày theo `quy-trinh-chon-gio-sinh-mo-tu-vi.md` (8 bước), nay có ĐỒ HÌNH đầy đủ
+ * (anh Công 22/8/2026: "thiếu đồ hình, biểu đồ sóng… nhìn cảm giác rẻ tiền"):
+ *   1. Lá số 12 cung trực quan (LaSoTuVi)
+ *   2. Luận từng cung quan trọng: Mệnh, Tài, Quan, Di, Tật Ách, Phụ Mẫu, Phúc Đức, Phu Thê, Tử Tức
+ *   3. Biểu đồ sóng vận trình Đại Hạn
+ *   4. KẾT LUẬN tổng
  */
 import type { BirthCandidate } from "../../lib/trach-nhat-sinh-no/types";
+import LaSoTuVi from "./LaSoTuVi.astro";
+import BieuDoSongVan from "./BieuDoSongVan.astro";
 
-interface Props { candidate: BirthCandidate | null | undefined }
-const { candidate } = Astro.props;
+interface Props { candidate: BirthCandidate | null | undefined; ngayDuongLich: string; khungGio: string; tuTru: string }
+const { candidate, ngayDuongLich, khungGio, tuTru } = Astro.props;
 const tv = candidate?.tuViAnalysis ?? null;
 
 const CUONG_NHAN: Record<string, string> = { cuong: "Cường", trung_binh: "Trung bình", nhuoc: "Nhược" };
@@ -21,142 +25,102 @@ const THAN_CU_DANH_GIA: Record<string, { nhan: string; mau: string }> = {
   "Thiên Di": { nhan: "⚠️ Xa nhà, do ngoại cảnh", mau: "#D97706" },
   "Phu Thê": { nhan: "⚠️ Lệ thuộc hôn nhân", mau: "#CF2A22" },
 };
+const DG_STYLE: Record<string, { nen: string; vien: string; chu: string; nhan: string }> = {
+  cat: { nen: "#F0FDF4", vien: "#86EFAC", chu: "#166534", nhan: "Cát" },
+  binh: { nen: "#F8FAFC", vien: "#E2E8F0", chu: "#475569", nhan: "Bình" },
+  hung: { nen: "#FEF2F2", vien: "#FCA5A5", chu: "#B91C1C", nhan: "Cần lưu ý" },
+};
+
+const diemsDaiHan = (tv?.daiHan ?? []).map((h) => ({
+  tuTuoi: h.tuTuoi, denTuoi: h.denTuoi, diem: h.diem,
+  nhan: h.cungName,
+  ghiChu: h.bietTuanTriet ? "Tuần/Triệt" : h.soSatTinhTuTap > 0 ? `${h.soSatTinhTuTap} sát tinh` : undefined,
+}));
 ---
 
 {!tv ? (
   <p class="rounded-xl bg-slate-100 p-4 text-center text-sm font-semibold text-slate-600">Chưa có dữ liệu Tử Vi cho phương án này.</p>
 ) : (
-  <div class="overflow-hidden rounded-2xl border-2 border-(--color-gold-400)/50 bg-white shadow-lg">
-    <div class="bg-gradient-to-r from-[#1D5FB0] to-[#173F73] px-5 py-3">
-      <h3 class="font-display text-base font-extrabold uppercase tracking-wide text-white">⭐ Lá số Tử Vi — vai trò: chọn GIỜ trong ngày</h3>
-    </div>
-    <div class="p-5">
-      {/* Bước 2 — Mệnh/Thân/Cục */}
-      <div class="grid grid-cols-2 gap-2 sm:grid-cols-4">
-        <div class="rounded-xl border-2 border-slate-200 p-3 text-center">
-          <p class="text-[10px] font-extrabold uppercase text-slate-500">Cung Mệnh</p>
-          <p class="font-display text-lg font-black text-slate-900">{tv.cungMenh}</p>
-        </div>
-        <div class="rounded-xl border-2 border-slate-200 p-3 text-center">
-          <p class="text-[10px] font-extrabold uppercase text-slate-500">Cung Thân</p>
-          <p class="font-display text-lg font-black text-slate-900">{tv.cungThan}</p>
-        </div>
-        <div class="rounded-xl border-2 border-slate-200 p-3 text-center">
-          <p class="text-[10px] font-extrabold uppercase text-slate-500">Cục</p>
-          <p class="font-display text-sm font-black text-slate-900">{tv.cuc}</p>
-        </div>
-        <div class="rounded-xl border-2 border-slate-200 p-3 text-center">
-          <p class="text-[10px] font-extrabold uppercase text-slate-500">Khởi hạn</p>
-          <p class="font-display text-lg font-black text-slate-900">{tv.tuoiKhoiHan} tuổi</p>
-        </div>
+  <div class="space-y-5">
+    {/* 1. LÁ SỐ 12 CUNG */}
+    <div class="overflow-hidden rounded-2xl border-2 border-(--color-gold-400)/50 bg-white shadow-lg">
+      <div class="bg-gradient-to-r from-[#1D5FB0] to-[#173F73] px-5 py-3">
+        <h3 class="font-display text-base font-extrabold uppercase tracking-wide text-white">⭐ Lá số Tử Vi 12 cung — vai trò: chọn GIỜ trong ngày</h3>
       </div>
+      <div class="p-4 sm:p-5">
+        <LaSoTuVi cungs={tv.cungs} luanCacCung={tv.luanCacCung} cuc={tv.cuc} tuoiKhoiHan={tv.tuoiKhoiHan} ngayDuongLich={ngayDuongLich} khungGio={khungGio} tuTru={tuTru} />
 
-      {/* Bước 5 — Thân cư + cường/nhược Mệnh-Thân */}
-      <div class="mt-4 rounded-xl border-2 border-slate-200 p-4">
-        <p class="text-xs font-extrabold uppercase tracking-wide text-slate-600">Bước 5 — Thân cư & tương quan Mệnh–Thân</p>
-        <div class="mt-2 flex flex-wrap items-center gap-2">
+        <div class="mt-4 flex flex-wrap items-center gap-2">
           <span class="rounded-full px-3 py-1 text-xs font-extrabold text-white" style={`background:${THAN_CU_DANH_GIA[tv.than_cu]?.mau ?? "#6B7280"}`}>
             Thân cư {tv.than_cu} · {THAN_CU_DANH_GIA[tv.than_cu]?.nhan ?? ""}
           </span>
           <span class="rounded-full px-3 py-1 text-xs font-extrabold text-white" style={`background:${CUONG_MAU[tv.cuongNhuocMenh]}`}>Mệnh {CUONG_NHAN[tv.cuongNhuocMenh]}</span>
           <span class="rounded-full px-3 py-1 text-xs font-extrabold text-white" style={`background:${CUONG_MAU[tv.cuongNhuocThan]}`}>Thân {CUONG_NHAN[tv.cuongNhuocThan]}</span>
+          <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">Tam Phương Tứ Chính: {tv.tamPhuongTuChinh.soCatTinh} cát / {tv.tamPhuongTuChinh.soSatTinh} sát</span>
         </div>
         {tv.cuongNhuocMenh === "cuong" && tv.cuongNhuocThan === "cuong" && (
           <p class="mt-2 rounded-lg bg-emerald-50 px-3 py-2 text-[11px] font-extrabold text-emerald-800">✦ Mệnh cường Thân cường — tổ hợp tốt nhất ("xứng ý toại lòng, cuộc đời cát lợi").</p>
         )}
-      </div>
-
-      {/* Chính tinh thủ Mệnh */}
-      <div class="mt-4 rounded-xl border-2 border-slate-200 p-4">
-        <p class="text-xs font-extrabold uppercase tracking-wide text-slate-600">Chính tinh thủ Mệnh</p>
-        {tv.chinhTinhMenh.length === 0 ? (
-          <p class="mt-1 text-sm font-bold text-amber-700">Vô Chính Diệu (không có chính tinh thủ Mệnh)</p>
-        ) : (
-          <div class="mt-2 flex flex-wrap gap-2">
-            {tv.chinhTinhMenh.map((s) => (
-              <span class={`rounded-full px-3 py-1 text-xs font-extrabold ${s.trangThai === "Miếu" || s.trangThai === "Vượng" ? "bg-emerald-100 text-emerald-800" : s.trangThai === "Đắc" ? "bg-sky-100 text-sky-800" : s.trangThai === "Hãm" ? "bg-red-100 text-red-800" : "bg-slate-100 text-slate-700"}`}>
-                {s.ten} ({s.trangThai})
-              </span>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Bước 4 — Tam Phương Tứ Chính */}
-      <div class="mt-4 rounded-xl border-2 border-slate-200 p-4">
-        <p class="text-xs font-extrabold uppercase tracking-wide text-slate-600">Bước 4 — Tam Phương Tứ Chính (Mệnh + Di + Tài + Quan)</p>
-        <div class="mt-2 grid grid-cols-4 gap-2 text-center">
-          <div class="rounded-lg bg-emerald-50 py-2">
-            <p class="font-display text-lg font-black text-emerald-700">{tv.tamPhuongTuChinh.soCatTinh}</p>
-            <p class="text-[10px] font-bold text-emerald-800">Cát tinh</p>
-          </div>
-          <div class="rounded-lg bg-red-50 py-2">
-            <p class="font-display text-lg font-black text-red-700">{tv.tamPhuongTuChinh.soSatTinh}</p>
-            <p class="text-[10px] font-bold text-red-800">Sát tinh</p>
-          </div>
-          <div class="rounded-lg bg-amber-50 py-2">
-            <p class="font-display text-lg font-black text-amber-700">{tv.tamPhuongTuChinh.soHoaCat}</p>
-            <p class="text-[10px] font-bold text-amber-800">Hóa cát</p>
-          </div>
-          <div class="rounded-lg bg-slate-100 py-2">
-            <p class="font-display text-lg font-black text-slate-700">{tv.tamPhuongTuChinh.soHoaKy}</p>
-            <p class="text-[10px] font-bold text-slate-700">Hóa Kỵ</p>
-          </div>
-        </div>
-        {tv.tamPhuongTuChinh.chiTiet.length > 0 && (
-          <ul class="mt-2 space-y-0.5">
-            {tv.tamPhuongTuChinh.chiTiet.map((d) => (<li class="text-[11px] font-semibold text-slate-600">• {d}</li>))}
-          </ul>
-        )}
-      </div>
-
-      {/* Bước 7 — Tuần Triệt + sát tinh + Tứ Hóa */}
-      <div class="mt-4 rounded-xl border-2 border-slate-200 p-4">
-        <p class="text-xs font-extrabold uppercase tracking-wide text-slate-600">Bước 3 &amp; 7 — Tuần/Triệt, sát tinh, Tứ Hóa</p>
-        <div class="mt-2 flex flex-wrap gap-2">
-          <span class={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${tv.veto.menhBiTuanTriet ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"}`}>{tv.veto.menhBiTuanTriet ? "⚠ Mệnh có Tuần/Triệt" : "✓ Mệnh không Tuần/Triệt"}</span>
-          <span class={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${tv.veto.tatAchBiTuanTriet ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"}`}>{tv.veto.tatAchBiTuanTriet ? "⚠ Tật Ách có Tuần/Triệt" : "✓ Tật Ách sạch"}</span>
-          <span class={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${tv.veto.phuMauBiTuanTriet ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"}`}>{tv.veto.phuMauBiTuanTriet ? "⚠ Phụ Mẫu có Tuần/Triệt" : "✓ Phụ Mẫu sạch"}</span>
-          <span class={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${tv.veto.soSatTinhHoiMenh > 0 ? "bg-amber-100 text-amber-800" : "bg-emerald-100 text-emerald-800"}`}>
-            {tv.veto.soSatTinhHoiMenh > 0 ? `⚠ ${tv.veto.soSatTinhHoiMenh} sát tinh hội Mệnh (${tv.veto.satTinhHoiMenh.join(", ")})` : "✓ Không sát tinh hội Mệnh"}
-          </span>
-          {tv.veto.hoaKyThuMenh && <span class="rounded-full bg-red-100 px-2.5 py-0.5 text-[11px] font-bold text-red-800">✗ Hóa Kỵ thủ Mệnh</span>}
-          {tv.veto.hoaKyThuTatAch && <span class="rounded-full bg-red-100 px-2.5 py-0.5 text-[11px] font-bold text-red-800">✗ Hóa Kỵ thủ Tật Ách</span>}
-          {tv.veto.menhVoChinhDieu && <span class="rounded-full bg-slate-100 px-2.5 py-0.5 text-[11px] font-bold text-slate-700">Mệnh Vô Chính Diệu</span>}
-        </div>
         {tv.veto.menhVoChinhDieu && tv.veto.menhBiTuanTriet && (
           <p class="mt-2 rounded-lg bg-sky-50 px-3 py-2 text-[11px] font-semibold text-sky-900">
-            ℹ️ Mệnh Vô Chính Diệu <strong>có</strong> Tuần/Triệt — theo quy trình Tử Vi 8 bước, đây KHÔNG phải lỗi: Tuần/Triệt tại đó lại cần để giữ cách VCD thuần. Cần thầy đối chiếu kỹ trước khi chốt.
+            ℹ️ Mệnh Vô Chính Diệu <strong>có</strong> Tuần/Triệt — theo quy trình Tử Vi 8 bước đây KHÔNG phải lỗi: Tuần/Triệt tại đó lại cần để giữ cách VCD thuần.
           </p>
         )}
       </div>
-
-      {/* Bước 6 — Đại Hạn đầu đời */}
-      {tv.daiHan.length > 0 && (
-        <div class="mt-4 overflow-x-auto rounded-xl border-2 border-slate-200">
-          <table class="w-full min-w-[440px] text-left text-xs">
-            <thead class="bg-slate-100">
-              <tr>
-                <th class="px-3 py-2 font-extrabold text-slate-700">Tuổi</th>
-                <th class="px-3 py-2 font-extrabold text-slate-700">Cung</th>
-                <th class="px-3 py-2 font-extrabold text-slate-700">Sát tinh tụ</th>
-                <th class="px-3 py-2 font-extrabold text-slate-700">Tuần/Triệt</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-200">
-              {tv.daiHan.map((h, i) => (
-                <tr class={i < 2 ? "bg-amber-50" : ""}>
-                  <td class="px-3 py-2 font-bold text-slate-900">{h.tuTuoi}–{h.denTuoi}{i < 2 ? " ★" : ""}</td>
-                  <td class="px-3 py-2 font-bold text-slate-900">{h.cungName}</td>
-                  <td class="px-3 py-2 text-slate-700">{h.soSatTinhTuTap > 0 ? `${h.soSatTinhTuTap} sao` : "—"}</td>
-                  <td class="px-3 py-2 text-slate-700">{h.bietTuanTriet ? "⚠ Có" : "—"}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-          <p class="bg-slate-50 px-3 py-1.5 text-[10px] font-semibold text-slate-500">★ = 2 Đại Hạn đầu đời (~0–30 tuổi) — trọng số CAO NHẤT theo quy trình Tử Vi, vì bé đi qua giai đoạn này trước khi tự chủ.</p>
-        </div>
-      )}
     </div>
+
+    {/* 2. LUẬN TỪNG CUNG */}
+    <div class="overflow-hidden rounded-2xl border-2 border-(--color-gold-400)/50 bg-white shadow-lg">
+      <div class="bg-gradient-to-r from-[#1D5FB0] to-[#173F73] px-5 py-3">
+        <h3 class="font-display text-base font-extrabold uppercase tracking-wide text-white">Luận từng cung</h3>
+      </div>
+      <div class="grid gap-2.5 p-4 sm:grid-cols-2 sm:p-5">
+        {tv.luanCacCung.map((l) => {
+          const st = DG_STYLE[l.danhGia]!;
+          return (
+            <div class="rounded-xl border-2 p-3" style={`background:${st.nen};border-color:${st.vien}`}>
+              <div class="flex items-center justify-between gap-2">
+                <p class="font-display text-sm font-black text-slate-900">{l.cungName} <span class="text-[11px] font-bold text-slate-500">({l.chiName})</span></p>
+                <span class="shrink-0 rounded-full px-2 py-0.5 text-[10px] font-extrabold" style={`background:${st.vien};color:${st.chu}`}>{st.nhan}</span>
+              </div>
+              <p class="mt-0.5 text-[11px] font-bold" style={`color:${st.chu}`}>{l.chinhTinh}</p>
+              <p class="mt-1 text-[11px] font-semibold leading-relaxed text-slate-700">{l.nhanXet}</p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+
+    {/* 3. BIỂU ĐỒ SÓNG VẬN TRÌNH */}
+    {diemsDaiHan.length > 0 && (
+      <div class="overflow-hidden rounded-2xl border-2 border-(--color-gold-400)/50 bg-white shadow-lg">
+        <div class="bg-gradient-to-r from-[#1D5FB0] to-[#173F73] px-5 py-3">
+          <h3 class="font-display text-base font-extrabold uppercase tracking-wide text-white">Vận trình Đại Hạn Tử Vi</h3>
+        </div>
+        <div class="p-4 sm:p-5">
+          <BieuDoSongVan tieuDe="Mức thuận nghịch theo từng Đại Hạn" diems={diemsDaiHan} mau="#1D5FB0" />
+          <div class="mt-3 space-y-1.5">
+            {tv.daiHan.map((h, i) => (
+              <p class={`rounded-lg px-3 py-2 text-[11px] font-semibold ${i < 2 ? "bg-amber-50 text-amber-900" : "bg-slate-50 text-slate-700"}`}>
+                <strong>{h.tuTuoi}–{h.denTuoi} tuổi{i < 2 ? " ★" : ""}:</strong> {h.nhanXet}
+              </p>
+            ))}
+          </div>
+          <p class="mt-2 text-[10px] font-semibold text-slate-500">★ = 2 Đại Hạn đầu đời (~0–30 tuổi) — trọng số cao nhất khi chọn giờ, vì bé đi qua giai đoạn này trước khi tự chủ.</p>
+        </div>
+      </div>
+    )}
+
+    {/* 4. KẾT LUẬN */}
+    {tv.ketLuan.length > 0 && (
+      <div class="overflow-hidden rounded-2xl border-2 border-(--color-gold-400)/60 bg-gradient-to-br from-[#241a10] to-[#3a2c17] shadow-xl">
+        <div class="px-5 py-3">
+          <h3 class="font-display text-base font-extrabold uppercase tracking-wide text-(--color-gold-300)">Kết luận phần Tử Vi</h3>
+        </div>
+        <div class="space-y-2 px-5 pb-5">
+          {tv.ketLuan.map((k) => (<p class="text-sm font-semibold leading-relaxed text-white/90">• {k}</p>))}
+        </div>
+      </div>
+    )}
   </div>
 )}

@@ -119,7 +119,7 @@ const UU_TIEN = [
                 <p class="mb-3 rounded-xl bg-(--color-ivory-100) p-3 text-center text-xs font-semibold text-(--color-ink-700)">
                   Lá số Tử Vi của <strong>phương án ưu tiên</strong> ({r.primary.ngayDuongLich} · {r.primary.khungGio}). Tử Vi đảm nhận việc <strong>chọn GIỜ</strong> trong ngày đã chọn — hai hệ độc lập, không cộng điểm chéo.
                 </p>
-                <TabTuVi candidate={primaryCandidate} />
+                <TabTuVi candidate={primaryCandidate} ngayDuongLich={r.primary.ngayDuongLich} khungGio={r.primary.khungGio} tuTru={r.primary.tuTru} />
               </section>
 
               {/* TAB 1 — Phương án chọn ngày tối ưu */}

@@ -1,0 +1,79 @@
+---
+/**
+ * BIỂU ĐỒ SÓNG VẬN TRÌNH — vẽ mức thuận/nghịch của các giai đoạn theo dòng thời gian (anh Công
+ * 22/8/2026 yêu cầu "biểu đồ sóng cho trực quan"). Dùng SVG thuần, dựng sẵn phía máy chủ, không JS.
+ *
+ * Vùng trên trục 0 tô xanh (thuận), vùng dưới tô đỏ (nghịch) — nhìn là thấy ngay quãng đời nào lên,
+ * quãng nào xuống. Dùng chung cho cả Đại Vận Bát Tự lẫn Đại Hạn Tử Vi.
+ */
+interface Diem { tuTuoi: number; denTuoi: number; diem: number; nhan: string; ghiChu?: string }
+interface Props { tieuDe: string; diems: Diem[]; mau?: string }
+const { tieuDe, diems, mau = "#1D5FB0" } = Astro.props;
+
+const W = 720, H = 220, PAD_L = 38, PAD_R = 12, PAD_T = 18, PAD_B = 46;
+const innerW = W - PAD_L - PAD_R;
+const innerH = H - PAD_T - PAD_B;
+const MAX = 6; // thang -6..6 cho dễ đọc (điểm thực tế đã kẹp -10..10, phần lớn nằm trong ±6)
+const yCua = (d: number) => PAD_T + innerH / 2 - (Math.max(-MAX, Math.min(MAX, d)) / MAX) * (innerH / 2);
+const xCua = (i: number) => PAD_L + (diems.length <= 1 ? innerW / 2 : (i / (diems.length - 1)) * innerW);
+const yGoc = yCua(0);
+
+const diemXY = diems.map((d, i) => ({ ...d, x: xCua(i), y: yCua(d.diem) }));
+const duongPath = diemXY.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
+// Vùng tô: khép kín xuống trục 0.
+const vungPath = diemXY.length > 0
+  ? `${duongPath} L${diemXY[diemXY.length - 1]!.x.toFixed(1)},${yGoc.toFixed(1)} L${diemXY[0]!.x.toFixed(1)},${yGoc.toFixed(1)} Z`
+  : "";
+const MOC = [
+  { v: MAX, nhan: "Rất thuận" },
+  { v: MAX / 2, nhan: "Thuận" },
+  { v: 0, nhan: "Trung bình" },
+  { v: -MAX / 2, nhan: "Thử thách" },
+  { v: -MAX, nhan: "Nghịch" },
+];
+---
+
+<div class="overflow-x-auto">
+  <p class="mb-1 text-xs font-extrabold uppercase tracking-wide text-slate-600">{tieuDe}</p>
+  <svg viewBox={`0 0 ${W} ${H}`} class="w-full min-w-[560px]" role="img" aria-label={tieuDe}>
+    <defs>
+      <clipPath id={`clip-tren-${tieuDe.replace(/\s/g, "")}`}>
+        <rect x={PAD_L} y={PAD_T} width={innerW} height={yGoc - PAD_T} />
+      </clipPath>
+      <clipPath id={`clip-duoi-${tieuDe.replace(/\s/g, "")}`}>
+        <rect x={PAD_L} y={yGoc} width={innerW} height={PAD_T + innerH - yGoc} />
+      </clipPath>
+    </defs>
+
+    {/* Lưới ngang + nhãn mức */}
+    {MOC.map((m) => (
+      <>
+        <line x1={PAD_L} y1={yCua(m.v)} x2={W - PAD_R} y2={yCua(m.v)} stroke={m.v === 0 ? "#94A3B8" : "#E2E8F0"} stroke-width={m.v === 0 ? 1.5 : 1} stroke-dasharray={m.v === 0 ? "" : "3 3"} />
+        <text x={4} y={yCua(m.v) + 3} font-size="9" font-weight="700" fill="#64748B">{m.nhan}</text>
+      </>
+    ))}
+
+    {/* Vùng tô: xanh phía trên trục, đỏ phía dưới */}
+    {vungPath && (
+      <>
+        <path d={vungPath} fill="#16A34A" opacity="0.18" clip-path={`url(#clip-tren-${tieuDe.replace(/\s/g, "")})`} />
+        <path d={vungPath} fill="#DC2626" opacity="0.18" clip-path={`url(#clip-duoi-${tieuDe.replace(/\s/g, "")})`} />
+      </>
+    )}
+
+    {/* Đường sóng */}
+    <path d={duongPath} fill="none" stroke={mau} stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round" />
+
+    {/* Điểm mốc + nhãn */}
+    {diemXY.map((p) => (
+      <>
+        <circle cx={p.x} cy={p.y} r="4.5" fill="#fff" stroke={p.diem >= 1 ? "#16A34A" : p.diem <= -2 ? "#DC2626" : mau} stroke-width="2.5">
+          <title>{p.tuTuoi}–{p.denTuoi} tuổi: {p.nhan}{p.ghiChu ? ` — ${p.ghiChu}` : ""}</title>
+        </circle>
+        <text x={p.x} y={H - PAD_B + 16} text-anchor="middle" font-size="9.5" font-weight="800" fill="#334155">{p.tuTuoi}–{p.denTuoi}t</text>
+        <text x={p.x} y={H - PAD_B + 29} text-anchor="middle" font-size="9" font-weight="700" fill="#64748B">{p.nhan}</text>
+        {p.ghiChu && <text x={p.x} y={H - PAD_B + 41} text-anchor="middle" font-size="8" font-weight="700" fill="#B45309">{p.ghiChu}</text>}
+      </>
+    ))}
+  </svg>
+</div>
