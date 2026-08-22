@@ -676,12 +676,20 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
           <p style="margin:0;grid-column:1 / -1;">Can Chi: <strong style="color:${CARD_COLORS.text};">${cast.canChiText}</strong></p>
           <p style="margin:0;font-size:13px;">Tiết khí: <strong style="color:${CARD_COLORS.text};">${cast.tietKhi}</strong></p>
           <p style="margin:0;font-size:13px;">Tuần Không: <strong style="color:${CARD_COLORS.text};">${cast.tuanKhong}</strong></p>
-          <p style="margin:0;font-size:15px;">Nhật thần: <strong style="color:${CARD_COLORS.text};">${cast.nhatThan}</strong></p>
-          <p style="margin:0;font-size:15px;">Nguyệt lệnh: <strong style="color:${CARD_COLORS.text};">${cast.nguyetLenh}</strong></p>
           ${cast.fanYin.enabled ? `<p style="margin:0;grid-column:1 / -1;font-size:16px;">Phản Ngâm: <strong style="color:${CARD_COLORS.red};">${cast.fanYin.label}</strong></p>` : ""}
           ${cast.fuYin.enabled ? `<p style="margin:0;grid-column:1 / -1;font-size:16px;">Phục Ngâm: <strong style="color:${CARD_COLORS.red};">${cast.fuYin.label}</strong></p>` : ""}
         </div>
-        <div style="position:relative;margin-top:20px;display:grid;grid-template-columns:repeat(${queCols}, 1fr);gap:14px;">${blocks.join("")}</div>
+        <div style="position:relative;margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div style="border:2px solid ${CARD_COLORS.border};border-radius:12px;background:rgba(201,162,86,0.13);padding:9px 16px;">
+            <p style="margin:0;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:${CARD_COLORS.textMuted};">Nhật thần · ngày</p>
+            <p style="margin:3px 0 0;font-size:24px;font-weight:800;color:${CARD_COLORS.gold};">${cast.nhatThan}</p>
+          </div>
+          <div style="border:2px solid ${CARD_COLORS.border};border-radius:12px;background:rgba(201,162,86,0.13);padding:9px 16px;">
+            <p style="margin:0;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:${CARD_COLORS.textMuted};">Nguyệt lệnh · tháng</p>
+            <p style="margin:3px 0 0;font-size:24px;font-weight:800;color:${CARD_COLORS.gold};">${cast.nguyetLenh}</p>
+          </div>
+        </div>
+        <div style="position:relative;margin-top:18px;display:grid;grid-template-columns:repeat(${queCols}, 1fr);gap:14px;">${blocks.join("")}</div>
         <div style="position:relative;margin-top:22px;">${tables}</div>
         <p style="position:relative;margin:12px 0 0;font-size:9px;color:${CARD_COLORS.textMuted};text-align:center;">Lập quẻ Kinh Dịch tại Phong Thủy Thiên Anh — phongthuythienanh.com</p>
       </div>
