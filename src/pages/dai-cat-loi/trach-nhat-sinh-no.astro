@@ -12,56 +12,10 @@ import MaKhuyenMai from "../../components/ui/MaKhuyenMai.astro";
 import { GIA_CONG_CU, dinhDangTien } from "../../lib/payments/gia-cong-cu";
 import { getOrderByCode } from "../../lib/db/orders";
 import { phanTichTrachNhatSinhNo, type BirthSelectionInput, type PhanTichTrachNhatKetQua } from "../../lib/trach-nhat-sinh-no";
-import type { BirthCandidate } from "../../lib/trach-nhat-sinh-no/types";
+import DoHinhUngVien from "../../components/trach-nhat-sinh-no/DoHinhUngVien.astro";
+import { siteConfig } from "../../lib/site-config";
 
 export const prerender = false;
-
-// Màu Ngũ Hành cố định (không đổi theo theme sáng/tối) — đồng bộ bảng màu đã dùng ở module
-// Định Hướng Nghề Nghiệp. Khác ở đây: khóa là tên đầy đủ tiếng Việt ("Kim"/"Mộc"...) vì
-// bat-tu-engine dùng kiểu Hanh này, không phải khóa ascii như chart-profile.
-const NH_MAU: Record<string, string> = { Kim: "#B8860B", Mộc: "#1E8A45", Thủy: "#1D5FB0", Hỏa: "#CF2A22", Thổ: "#96591A" };
-const CAN_NGU_HANH: Record<string, string> = {
-  "Giáp": "Mộc", "Ất": "Mộc", "Bính": "Hỏa", "Đinh": "Hỏa", "Mậu": "Thổ",
-  "Kỷ": "Thổ", "Canh": "Kim", "Tân": "Kim", "Nhâm": "Thủy", "Quý": "Thủy",
-};
-const CHI_NGU_HANH: Record<string, string> = {
-  "Tý": "Thủy", "Sửu": "Thổ", "Dần": "Mộc", "Mão": "Mộc", "Thìn": "Thổ", "Tỵ": "Hỏa", "Tị": "Hỏa",
-  "Ngọ": "Hỏa", "Mùi": "Thổ", "Thân": "Kim", "Dậu": "Kim", "Tuất": "Thổ", "Hợi": "Thủy",
-};
-const BAND_MAU: Record<string, string> = { rat_thuan: "#166534", thuan: "#22A75A", trung_binh: "#B8860B", thu_thach: "#D97706", nghich: "#CF2A22" };
-
-function tinhTuTruVisual(candidate: BirthCandidate) {
-  const bt = candidate.baziAnalysis;
-  if (!bt) return null;
-  const nhan = [
-    { nhan: "Năm", p: bt.tuTru.nam }, { nhan: "Tháng", p: bt.tuTru.thang },
-    { nhan: "Ngày", p: bt.tuTru.ngay }, { nhan: "Giờ", p: bt.tuTru.gio },
-  ];
-  return nhan.map(({ nhan, p }) => ({
-    nhan, can: p.can, chi: p.chi,
-    canMau: NH_MAU[CAN_NGU_HANH[p.can] ?? ""] ?? "#6B7280",
-    chiMau: NH_MAU[CHI_NGU_HANH[p.chi] ?? ""] ?? "#6B7280",
-  }));
-}
-
-function tinhNguHanhPhanBo(candidate: BirthCandidate) {
-  const bt = candidate.baziAnalysis;
-  if (!bt) return null;
-  const dem: Record<string, number> = { Kim: 0, Mộc: 0, Thủy: 0, Hỏa: 0, Thổ: 0 };
-  for (const p of [bt.tuTru.nam, bt.tuTru.thang, bt.tuTru.ngay, bt.tuTru.gio]) {
-    const hCan = CAN_NGU_HANH[p.can]; if (hCan) dem[hCan]!++;
-    const hChi = CHI_NGU_HANH[p.chi]; if (hChi) dem[hChi]!++;
-  }
-  const tong = Object.values(dem).reduce((s, n) => s + n, 0) || 1;
-  const hanhs = ["Kim", "Mộc", "Thủy", "Hỏa", "Thổ"];
-  const raw = hanhs.map((h) => ({ hanh: h, pct: Math.round((dem[h]! / tong) * 100) }));
-  const lech = 100 - raw.reduce((s, r) => s + r.pct, 0);
-  if (lech !== 0) {
-    const idxMax = raw.reduce((best, r, i) => (dem[r.hanh]! > dem[raw[best]!.hanh]! ? i : best), 0);
-    raw[idxMax]!.pct += lech;
-  }
-  return raw.map((r) => ({ hanh: r.hanh, mau: NH_MAU[r.hanh]!, phanTram: r.pct }));
-}
 
 const laQuanTri = Astro.locals.user?.isAdmin === true;
 const TOOL_SLUG = "trach-nhat-sinh-no";
@@ -83,11 +37,9 @@ if (orderCode) {
 }
 
 const r = ketQua?.recommendation ?? null;
-const primaryCandidate = ketQua && r?.primary ? ketQua.tatCaUngVien.find((c) => c.id === r.primary!.candidateId) ?? null : null;
-const tuTruVisual = primaryCandidate ? tinhTuTruVisual(primaryCandidate) : null;
-const nguHanhVisual = primaryCandidate ? tinhNguHanhPhanBo(primaryCandidate) : null;
-const daiVanVisual = primaryCandidate?.baziAnalysis?.daiVan ?? [];
-const daiHanVisual = primaryCandidate?.tuViAnalysis?.daiHan ?? [];
+/** Tra ứng viên đầy đủ từ id trên thẻ tóm tắt — để vẽ đồ hình cho CẢ phương án chính lẫn dự phòng. */
+const timUngVien = (id: string | undefined) => (ketQua && id ? ketQua.tatCaUngVien.find((c) => c.id === id) ?? null : null);
+const primaryCandidate = timUngVien(r?.primary?.candidateId);
 const BAND_NHAN: Record<string, string> = {
   rat_thuan: "Rất thuận", thuan: "Thuận", trung_binh: "Trung bình", thu_thach: "Có thử thách", nghich: "Nghịch",
 };
@@ -156,77 +108,7 @@ const UU_TIEN = [
                     <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">Cục: {r.primary.cuc}</span>
                   </div>
 
-                  {/* Tứ Trụ trực quan */}
-                  {tuTruVisual && (
-                    <div class="mt-4">
-                      <p class="mb-2 text-xs font-extrabold uppercase tracking-wide text-slate-600">Tứ Trụ</p>
-                      <div class="grid grid-cols-4 gap-2">
-                        {tuTruVisual.map((t) => (
-                          <div class="overflow-hidden rounded-xl border-2 border-slate-200 text-center">
-                            <p class="bg-slate-100 py-1 text-[10px] font-extrabold uppercase tracking-wide text-slate-600">{t.nhan}</p>
-                            <p class="py-2 font-display text-xl font-black text-white sm:text-2xl" style={`background:${t.canMau}`}>{t.can}</p>
-                            <p class="py-2 font-display text-xl font-black text-white sm:text-2xl" style={`background:${t.chiMau}`}>{t.chi}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* % Ngũ Hành */}
-                  {nguHanhVisual && (
-                    <div class="mt-4">
-                      <p class="mb-2 text-xs font-extrabold uppercase tracking-wide text-slate-600">Phân bố Ngũ Hành</p>
-                      <div class="flex h-5 w-full overflow-hidden rounded-full shadow-inner">
-                        {nguHanhVisual.filter((p) => p.phanTram > 0).map((p) => (
-                          <div style={`width:${p.phanTram}%;background:${p.mau}`} title={`${p.hanh} ${p.phanTram}%`}></div>
-                        ))}
-                      </div>
-                      <div class="mt-2 grid grid-cols-5 gap-1 text-center">
-                        {nguHanhVisual.map((p) => (
-                          <div>
-                            <span class="mx-auto block h-2.5 w-2.5 rounded-full" style={`background:${p.mau}`}></span>
-                            <p class="mt-0.5 text-[10px] font-bold text-slate-600">{p.hanh} {p.phanTram}%</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Đại Vận Bát Tự — dải màu trực quan */}
-                  {daiVanVisual.length > 0 && (
-                    <div class="mt-5">
-                      <p class="mb-2 text-xs font-extrabold uppercase tracking-wide text-slate-600">Đại Vận Bát Tự</p>
-                      <div class="flex gap-1 overflow-x-auto pb-1">
-                        {daiVanVisual.map((v) => (
-                          <div class="relative min-w-[76px] flex-1 overflow-hidden rounded-lg pt-2 pb-2.5 text-center" style={`background:${BAND_MAU[v.band] ?? "#6B7280"}`}>
-                            <p class="text-[10px] font-extrabold text-white">{v.tuTuoi}–{v.denTuoi}t</p>
-                            <p class="mt-0.5 text-[11px] font-black text-white">{v.canChi}</p>
-                            <p class="mt-0.5 text-[9px] font-bold uppercase tracking-wide text-white/85">{BAND_NHAN[v.band] ?? v.band}</p>
-                            <p class="text-[9px] font-semibold text-white/70">~{v.namDuongLich}</p>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Đại Hạn Tử Vi — dải màu trực quan (timeline RIÊNG, không gộp với Đại Vận) */}
-                  {daiHanVisual.length > 0 && (
-                    <div class="mt-4">
-                      <p class="mb-2 text-xs font-extrabold uppercase tracking-wide text-slate-600">Đại Hạn Tử Vi</p>
-                      <div class="flex gap-1 overflow-x-auto pb-1">
-                        {daiHanVisual.map((h) => (
-                          <div class="relative min-w-[76px] flex-1 overflow-hidden rounded-lg pt-2 pb-2.5 text-center" style={`background:${h.soSatTinhTuTap > 0 || h.bietTuanTriet ? "#B45309" : "#1D5FB0"}`}>
-                            <p class="text-[10px] font-extrabold text-white">{h.tuTuoi}–{h.denTuoi}t</p>
-                            <p class="mt-0.5 text-[11px] font-black text-white">{h.cungName}</p>
-                            {(h.soSatTinhTuTap > 0 || h.bietTuanTriet) && (
-                              <p class="mt-0.5 text-[9px] font-bold uppercase tracking-wide text-white/90">{h.bietTuanTriet ? "Tuần/Triệt" : `${h.soSatTinhTuTap} sát tinh`}</p>
-                            )}
-                          </div>
-                        ))}
-                      </div>
-                      <p class="mt-1.5 text-[10px] font-semibold text-slate-500">Xanh = ổn định · Cam = có Tuần/Triệt hoặc sát tinh tụ, cần lưu ý.</p>
-                    </div>
-                  )}
+                  <DoHinhUngVien candidate={primaryCandidate} />
 
                   <p class="mt-4 text-sm font-bold text-slate-700">Tứ trụ đầy đủ: {r.primary.tuTru}</p>
                   {r.primary.diemNoiBat.length > 0 && (
@@ -304,7 +186,10 @@ const UU_TIEN = [
                       <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">Dụng Thần: {alt.dungThan}</span>
                       <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">Cung Mệnh: {alt.cungMenh}</span>
                     </div>
-                    <div class="mt-3">
+
+                    <DoHinhUngVien candidate={timUngVien(alt.candidateId)} gon />
+
+                    <div class="mt-4">
                       <p class="text-xs font-extrabold uppercase tracking-wide text-(--color-cinnabar-600)">Khuyết điểm cần lưu ý</p>
                       <ul class="mt-1 space-y-1">
                         {alt.diemCanLuuY.map((d) => (<li class="text-sm font-semibold text-(--color-cinnabar-700)">△ {d}</li>))}
@@ -323,6 +208,37 @@ const UU_TIEN = [
           <div class="mt-4 rounded-xl bg-(--color-ivory-100) p-4 text-center text-xs font-semibold italic text-(--color-ink-700)">
             <p>{r.disclaimer.medical}</p>
             <p class="mt-1">{r.disclaimer.metaphysics}</p>
+          </div>
+
+          {/* CTA cuối trang — mời khách trao đổi trực tiếp với chuyên gia sau khi xem kết quả. */}
+          <div class="mt-6 overflow-hidden rounded-2xl border-2 border-(--color-gold-400)/60 bg-gradient-to-br from-[#241a10] to-[#3a2c17] p-6 text-center shadow-xl">
+            <p class="font-display text-xl font-extrabold text-(--color-gold-300)">Cần chuyên gia xem kỹ hơn cho trường hợp của gia đình?</p>
+            <p class="mx-auto mt-2 max-w-2xl text-sm font-semibold text-white/85">
+              Kết quả trên là phần tính toán theo mô hình. Với quyết định quan trọng như ngày giờ sinh của bé,
+              gia đình nên trao đổi trực tiếp để đối chiếu thêm lá số cha mẹ, phương vị, và tình hình y tế thực tế.
+            </p>
+            <div class="mt-5 flex flex-wrap items-center justify-center gap-3">
+              <a
+                href={`tel:${siteConfig.hotline.replace(/\s/g, "")}`}
+                class="inline-flex items-center gap-2 rounded-(--radius-pill) bg-(--color-gold-400) px-6 py-3 text-sm font-extrabold text-(--color-on-accent) shadow-lg transition hover:bg-(--color-gold-300)"
+              >
+                📞 Gọi tư vấn: {siteConfig.hotline}
+              </a>
+              <a
+                href="https://zalo.me/0836768768"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="inline-flex items-center gap-2 rounded-(--radius-pill) border-2 border-(--color-gold-400) px-6 py-3 text-sm font-extrabold text-(--color-gold-300) transition hover:bg-(--color-gold-400)/15"
+              >
+                💬 Nhắn Zalo
+              </a>
+              <a
+                href="/dich-vu"
+                class="inline-flex items-center gap-2 rounded-(--radius-pill) border-2 border-white/30 px-6 py-3 text-sm font-extrabold text-white/90 transition hover:bg-white/10"
+              >
+                Xem các dịch vụ khác →
+              </a>
+            </div>
           </div>
         </>
       ) : (

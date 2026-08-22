@@ -1,0 +1,177 @@
+---
+/**
+ * Đồ hình trực quan cho MỘT ứng viên — dùng chung cho cả phương án chính lẫn các phương án dự
+ * phòng (yêu cầu anh Công 22/8/2026). Gồm: bảng Tứ Trụ tô màu Ngũ Hành, thanh % phân bố Ngũ Hành,
+ * dải Đại Vận Bát Tự, dải Đại Hạn Tử Vi (2 timeline RIÊNG, không gộp — đúng 05-dai-van-dai-han.md).
+ *
+ * Màu Ngũ Hành CỐ ĐỊNH (không dùng token đổi theo theme sáng/tối) — bài học từ lỗi chữ mờ ở module
+ * Định Hướng Nghề Nghiệp: thẻ nền trắng + token đổi màu = chữ nhạt trên nền trắng.
+ */
+import type { BirthCandidate } from "../../lib/trach-nhat-sinh-no/types";
+
+interface Props {
+  candidate: BirthCandidate | null | undefined;
+  /** true = bản gọn cho phương án dự phòng (chữ nhỏ hơn, bỏ nhãn năm dương lịch cho đỡ rối). */
+  gon?: boolean;
+}
+const { candidate, gon = false } = Astro.props;
+
+const NH_MAU: Record<string, string> = { Kim: "#B8860B", Mộc: "#1E8A45", Thủy: "#1D5FB0", Hỏa: "#CF2A22", Thổ: "#96591A" };
+const CAN_NGU_HANH: Record<string, string> = {
+  "Giáp": "Mộc", "Ất": "Mộc", "Bính": "Hỏa", "Đinh": "Hỏa", "Mậu": "Thổ",
+  "Kỷ": "Thổ", "Canh": "Kim", "Tân": "Kim", "Nhâm": "Thủy", "Quý": "Thủy",
+};
+const CHI_NGU_HANH: Record<string, string> = {
+  "Tý": "Thủy", "Sửu": "Thổ", "Dần": "Mộc", "Mão": "Mộc", "Thìn": "Thổ", "Tỵ": "Hỏa", "Tị": "Hỏa",
+  "Ngọ": "Hỏa", "Mùi": "Thổ", "Thân": "Kim", "Dậu": "Kim", "Tuất": "Thổ", "Hợi": "Thủy",
+};
+const BAND_MAU: Record<string, string> = { rat_thuan: "#166534", thuan: "#22A75A", trung_binh: "#B8860B", thu_thach: "#D97706", nghich: "#CF2A22" };
+const BAND_NHAN: Record<string, string> = {
+  rat_thuan: "Rất thuận", thuan: "Thuận", trung_binh: "Trung bình", thu_thach: "Có thử thách", nghich: "Nghịch",
+};
+
+const bt = candidate?.baziAnalysis ?? null;
+const tv = candidate?.tuViAnalysis ?? null;
+
+const tuTru = bt
+  ? [
+      { nhan: "Năm", p: bt.tuTru.nam }, { nhan: "Tháng", p: bt.tuTru.thang },
+      { nhan: "Ngày", p: bt.tuTru.ngay }, { nhan: "Giờ", p: bt.tuTru.gio },
+    ].map(({ nhan, p }) => ({
+      nhan, can: p.can, chi: p.chi,
+      canMau: NH_MAU[CAN_NGU_HANH[p.can] ?? ""] ?? "#6B7280",
+      chiMau: NH_MAU[CHI_NGU_HANH[p.chi] ?? ""] ?? "#6B7280",
+    }))
+  : null;
+
+let nguHanh: { hanh: string; mau: string; phanTram: number }[] | null = null;
+if (bt) {
+  const dem: Record<string, number> = { Kim: 0, Mộc: 0, Thủy: 0, Hỏa: 0, Thổ: 0 };
+  for (const p of [bt.tuTru.nam, bt.tuTru.thang, bt.tuTru.ngay, bt.tuTru.gio]) {
+    const hCan = CAN_NGU_HANH[p.can]; if (hCan) dem[hCan]!++;
+    const hChi = CHI_NGU_HANH[p.chi]; if (hChi) dem[hChi]!++;
+  }
+  const tong = Object.values(dem).reduce((s, n) => s + n, 0) || 1;
+  const hanhs = ["Kim", "Mộc", "Thủy", "Hỏa", "Thổ"];
+  const raw = hanhs.map((h) => ({ hanh: h, pct: Math.round((dem[h]! / tong) * 100) }));
+  const lech = 100 - raw.reduce((s, x) => s + x.pct, 0);
+  if (lech !== 0) {
+    const idxMax = raw.reduce((best, x, i) => (dem[x.hanh]! > dem[raw[best]!.hanh]! ? i : best), 0);
+    raw[idxMax]!.pct += lech;
+  }
+  nguHanh = raw.map((x) => ({ hanh: x.hanh, mau: NH_MAU[x.hanh]!, phanTram: x.pct }));
+}
+
+const daiVan = bt?.daiVan ?? [];
+const daiHan = tv?.daiHan ?? [];
+const oW = gon ? "min-w-[66px]" : "min-w-[76px]";
+
+// --- Biểu đồ tròn (donut) cho phân bố Ngũ Hành: dựng sẵn từng cung tròn phía server ---
+const R_DONUT = 54;
+const CHU_VI = 2 * Math.PI * R_DONUT;
+let offsetChay = 0;
+const cungDonut = (nguHanh ?? [])
+  .filter((p) => p.phanTram > 0)
+  .map((p) => {
+    const doDai = (p.phanTram / 100) * CHU_VI;
+    const seg = { ...p, dashArray: `${doDai} ${CHU_VI - doDai}`, dashOffset: -offsetChay };
+    offsetChay += doDai;
+    return seg;
+  });
+/** Hành mạnh nhất / vắng mặt — để ghi chú giữa vòng tròn cho dễ "kiểm soát". */
+const hanhManhNhat = (nguHanh ?? []).reduce((best, p) => (p.phanTram > (best?.phanTram ?? -1) ? p : best), null as null | { hanh: string; mau: string; phanTram: number });
+const hanhVang = (nguHanh ?? []).filter((p) => p.phanTram === 0).map((p) => p.hanh);
+---
+
+{tuTru && (
+  <div class="mt-4">
+    <p class="mb-2 text-xs font-extrabold uppercase tracking-wide text-slate-600">Tứ Trụ</p>
+    <div class="grid grid-cols-4 gap-2">
+      {tuTru.map((t) => (
+        <div class="overflow-hidden rounded-xl border-2 border-slate-200 text-center">
+          <p class="bg-slate-100 py-1 text-[10px] font-extrabold uppercase tracking-wide text-slate-600">{t.nhan}</p>
+          <p class={`py-2 font-display font-black text-white ${gon ? "text-lg" : "text-xl sm:text-2xl"}`} style={`background:${t.canMau}`}>{t.can}</p>
+          <p class={`py-2 font-display font-black text-white ${gon ? "text-lg" : "text-xl sm:text-2xl"}`} style={`background:${t.chiMau}`}>{t.chi}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+
+{nguHanh && (
+  <div class="mt-4">
+    <p class="mb-2 text-xs font-extrabold uppercase tracking-wide text-slate-600">Phân bố Ngũ Hành</p>
+    <div class="flex flex-col items-center gap-4 sm:flex-row sm:items-center sm:justify-center sm:gap-6">
+      {/* Vòng tròn (donut) — mỗi cung 1 hành, dựng sẵn phía máy chủ bằng stroke-dasharray. */}
+      <svg viewBox="0 0 140 140" class={gon ? "w-32 shrink-0" : "w-40 shrink-0"} role="img" aria-label="Biểu đồ tròn phân bố Ngũ Hành">
+        <circle cx="70" cy="70" r={R_DONUT} fill="none" stroke="#E5E7EB" stroke-width="20" />
+        {cungDonut.map((p) => (
+          <circle
+            cx="70" cy="70" r={R_DONUT} fill="none"
+            stroke={p.mau} stroke-width="20"
+            stroke-dasharray={p.dashArray}
+            stroke-dashoffset={p.dashOffset}
+            transform="rotate(-90 70 70)"
+          ><title>{p.hanh} {p.phanTram}%</title></circle>
+        ))}
+        {hanhManhNhat && (
+          <>
+            <text x="70" y="66" text-anchor="middle" font-size="11" font-weight="700" fill="#475569">Mạnh nhất</text>
+            <text x="70" y="84" text-anchor="middle" font-size="16" font-weight="900" fill={hanhManhNhat.mau}>{hanhManhNhat.hanh} {hanhManhNhat.phanTram}%</text>
+          </>
+        )}
+      </svg>
+
+      {/* Chú giải dạng cột — dễ đối chiếu từng hành, có thanh nhỏ thể hiện tỷ lệ. */}
+      <div class="w-full max-w-[240px] space-y-1.5">
+        {nguHanh.map((p) => (
+          <div class="flex items-center gap-2">
+            <span class="h-3 w-3 shrink-0 rounded-sm" style={`background:${p.mau}`}></span>
+            <span class="w-10 shrink-0 text-[11px] font-extrabold text-slate-700">{p.hanh}</span>
+            <span class="h-2 flex-1 overflow-hidden rounded-full bg-slate-200">
+              <span class="block h-full rounded-full" style={`width:${p.phanTram}%;background:${p.mau}`}></span>
+            </span>
+            <span class={`w-9 shrink-0 text-right text-[11px] font-extrabold ${p.phanTram === 0 ? "text-slate-400" : "text-slate-800"}`}>{p.phanTram}%</span>
+          </div>
+        ))}
+      </div>
+    </div>
+    {hanhVang.length > 0 && (
+      <p class="mt-2 text-center text-[11px] font-bold text-(--color-cinnabar-700)">⚠️ Khuyết hành: {hanhVang.join(", ")} — mảng cần bù bằng môi trường/phương vị.</p>
+    )}
+  </div>
+)}
+
+{daiVan.length > 0 && (
+  <div class="mt-5">
+    <p class="mb-2 text-xs font-extrabold uppercase tracking-wide text-slate-600">Đại Vận Bát Tự</p>
+    <div class="flex gap-1 overflow-x-auto pb-1">
+      {daiVan.map((v) => (
+        <div class={`relative ${oW} flex-1 overflow-hidden rounded-lg pt-2 pb-2.5 text-center`} style={`background:${BAND_MAU[v.band] ?? "#6B7280"}`}>
+          <p class="text-[10px] font-extrabold text-white">{v.tuTuoi}–{v.denTuoi}t</p>
+          <p class="mt-0.5 text-[11px] font-black text-white">{v.canChi}</p>
+          <p class="mt-0.5 text-[9px] font-bold uppercase tracking-wide text-white/85">{BAND_NHAN[v.band] ?? v.band}</p>
+          {!gon && <p class="text-[9px] font-semibold text-white/70">~{v.namDuongLich}</p>}
+        </div>
+      ))}
+    </div>
+  </div>
+)}
+
+{daiHan.length > 0 && (
+  <div class="mt-4">
+    <p class="mb-2 text-xs font-extrabold uppercase tracking-wide text-slate-600">Đại Hạn Tử Vi</p>
+    <div class="flex gap-1 overflow-x-auto pb-1">
+      {daiHan.map((h) => (
+        <div class={`relative ${oW} flex-1 overflow-hidden rounded-lg pt-2 pb-2.5 text-center`} style={`background:${h.soSatTinhTuTap > 0 || h.bietTuanTriet ? "#B45309" : "#1D5FB0"}`}>
+          <p class="text-[10px] font-extrabold text-white">{h.tuTuoi}–{h.denTuoi}t</p>
+          <p class="mt-0.5 text-[11px] font-black text-white">{h.cungName}</p>
+          {(h.soSatTinhTuTap > 0 || h.bietTuanTriet) && (
+            <p class="mt-0.5 text-[9px] font-bold uppercase tracking-wide text-white/90">{h.bietTuanTriet ? "Tuần/Triệt" : `${h.soSatTinhTuTap} sát tinh`}</p>
+          )}
+        </div>
+      ))}
+    </div>
+    {!gon && <p class="mt-1.5 text-[10px] font-semibold text-slate-500">Xanh = ổn định · Cam = có Tuần/Triệt hoặc sát tinh tụ, cần lưu ý.</p>}
+  </div>
+)}

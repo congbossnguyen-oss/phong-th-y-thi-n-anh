@@ -48,11 +48,12 @@ export function chamLopTuVi(input: { day: number; month: number; year: number; h
     hoaKyThuMenh, hoaKyThuTatAch, menhVoChinhDieu,
   };
 
-  // Đại Hạn — 3 hạn đầu (phủ ~0-40 tuổi tùy tuổi khởi hạn), sát tinh tụ + Tuần/Triệt. Engine đã tính
-  // sẵn daiVanTuoi đúng chiều thuận/nghịch theo âm dương nam nữ cho từng cung — chỉ cần lấy 3 cung
-  // có mốc tuổi khởi hạn sớm nhất, không cần tự suy chiều.
+  // Đại Hạn — 6 hạn đầu (phủ ~0-65 tuổi tùy tuổi khởi hạn), để đối chiếu song song với 6 Đại Vận Bát
+  // Tự. Tài liệu (05-dai-van-dai-han.md §5) chỉ YÊU CẦU chấm 3 hạn đầu (~0-40 tuổi) làm tiêu chí
+  // lọc, nhưng hiển thị thêm cho gia đình dễ hình dung cả chặng đời — phần lọc/xếp hạng vẫn chỉ dựa
+  // trên các hạn đầu. Engine đã tính sẵn daiVanTuoi đúng chiều thuận/nghịch theo âm dương nam nữ.
   const daiHan: TuViDaiHanBandItem[] = [];
-  const cungTheoTuoi = [...chart.cungs].filter((c) => c.daiVanTuoi[0] >= 0).sort((a, b) => a.daiVanTuoi[0] - b.daiVanTuoi[0]).slice(0, 3);
+  const cungTheoTuoi = [...chart.cungs].filter((c) => c.daiVanTuoi[0] >= 0).sort((a, b) => a.daiVanTuoi[0] - b.daiVanTuoi[0]).slice(0, 6);
   for (const c of cungTheoTuoi) {
     const soSat = c.phuTinh.filter((s) => satTinhTen.has(s.name)).length;
     daiHan.push({ tuTuoi: c.daiVanTuoi[0], denTuoi: c.daiVanTuoi[1], cungName: c.cungName, soSatTinhTuTap: soSat, bietTuanTriet: c.tuan || c.triet });
