@@ -11,6 +11,7 @@
  */
 import type { BatTuLuanGiai, ManhPhaiLuanGiai, DaiVanLuanGiai } from "./types";
 import { coAnthropicApiKey, layAnthropicApiKey } from "./api-key";
+import { ghiLogChiPhi, type UsageAnthropic } from "./ghi-log-chi-phi";
 
 const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
 const ANTHROPIC_VERSION = "2023-06-01";
@@ -154,7 +155,10 @@ export async function callBatTuLlm(
 
   const data = (await res.json()) as {
     content?: { type: string; input?: unknown }[];
+    usage?: UsageAnthropic;
   };
+  // Ghi chi phí lượt gọi vào log máy chủ (Render → Logs, lọc "AI-COST").
+  ghiLogChiPhi("Bát Tự", model, data.usage);
   const toolUse = data.content?.find((c) => c.type === "tool_use");
   if (!toolUse || typeof toolUse.input !== "object" || toolUse.input === null) {
     return { ok: false, reason: "phan_hoi_khong_hop_le", detail: "Model không trả tool_use hợp lệ." };

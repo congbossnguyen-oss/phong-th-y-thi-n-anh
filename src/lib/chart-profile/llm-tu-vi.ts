@@ -3,6 +3,7 @@
  * Song song `llm.ts` (Bát Tự): cùng model, cùng retry lỗi tạm, cùng prompt caching khối tri thức.
  */
 import { coAnthropicApiKey, layAnthropicApiKey } from "./api-key";
+import { ghiLogChiPhi, type UsageAnthropic } from "./ghi-log-chi-phi";
 
 const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
 const ANTHROPIC_VERSION = "2023-06-01";
