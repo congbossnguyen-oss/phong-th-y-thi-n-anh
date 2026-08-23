@@ -233,23 +233,6 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
 </BaseLayout>
 
 <style>
-  /* Đồng bộ với tông "Quân Sư Thiên Anh" (đen ấm ngả nâu-kim + antique gold, xem src/styles/quan-su.css)
-     — khác tông đỏ-mận mặc định của site (global.css). Chỉ ghi đè token màu, CHỈ trên trang này (Astro
-     tự đóng gói <style> theo từng route) — không đụng global.css nên không ảnh hưởng các trang khác.
-     Không đổi CARD_COLORS trong <script> bên dưới — đó là bảng màu ảnh xuất PNG, đã tinh chỉnh theo mẫu riêng. */
-  :global(body) {
-    --color-ivory-50: #070605;
-    --color-ivory-100: #14110b;
-    --color-ivory-300: rgba(241, 200, 90, 0.2);
-    --color-ink-950: #ece3c6;
-    --color-ink-800: #ece3c6;
-    --color-ink-700: #ece3c6;
-    --color-ink-600: #a9a184;
-    --color-ink-500: #a9a184;
-    --color-gold-300: #f1c85a;
-    --color-gold-400: #f1c85a;
-  }
-
   .kd-tab-btn {
     border-color: var(--color-ivory-300);
     background: var(--color-ivory-50);
@@ -636,12 +619,20 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
           <p style="margin:0;grid-column:1 / -1;">Can Chi: <strong style="color:${CARD_COLORS.text};">${cast.canChiText}</strong></p>
           <p style="margin:0;font-size:13px;">Tiết khí: <strong style="color:${CARD_COLORS.text};">${cast.tietKhi}</strong></p>
           <p style="margin:0;font-size:13px;">Tuần Không: <strong style="color:${CARD_COLORS.text};">${cast.tuanKhong}</strong></p>
-          <p style="margin:0;">Nhật thần: <strong style="color:${CARD_COLORS.text};">${cast.nhatThan}</strong></p>
-          <p style="margin:0;">Nguyệt lệnh: <strong style="color:${CARD_COLORS.text};">${cast.nguyetLenh}</strong></p>
           ${cast.fanYin.enabled ? `<p style="margin:0;grid-column:1 / -1;font-size:16px;">Phản Ngâm: <strong style="color:${CARD_COLORS.red};">${cast.fanYin.label}</strong></p>` : ""}
           ${cast.fuYin.enabled ? `<p style="margin:0;grid-column:1 / -1;font-size:16px;">Phục Ngâm: <strong style="color:${CARD_COLORS.red};">${cast.fuYin.label}</strong></p>` : ""}
         </div>
-        <div style="position:relative;margin-top:18px;display:grid;grid-template-columns:repeat(${queCols}, 1fr);gap:14px;">${blocks.join("")}</div>
+        <div style="position:relative;margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+          <div style="background:${CARD_COLORS.headerBg};border:2px solid ${CARD_COLORS.border};border-radius:10px;padding:6px 12px;text-align:center;">
+            <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:${CARD_COLORS.headerText};opacity:.7;">Nhật Thần</p>
+            <p style="margin:1px 0 0;font-size:28px;font-weight:800;line-height:1.15;color:${CARD_COLORS.headerText};">${cast.nhatThan}</p>
+          </div>
+          <div style="background:${CARD_COLORS.headerBg};border:2px solid ${CARD_COLORS.border};border-radius:10px;padding:6px 12px;text-align:center;">
+            <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:${CARD_COLORS.headerText};opacity:.7;">Nguyệt Lệnh</p>
+            <p style="margin:1px 0 0;font-size:28px;font-weight:800;line-height:1.15;color:${CARD_COLORS.headerText};">${cast.nguyetLenh}</p>
+          </div>
+        </div>
+        <div style="position:relative;margin-top:14px;display:grid;grid-template-columns:repeat(${queCols}, 1fr);gap:14px;">${blocks.join("")}</div>
         <div style="position:relative;margin-top:22px;">${tables}</div>
         <p style="position:relative;margin:12px 0 0;font-size:9px;color:${CARD_COLORS.textMuted};text-align:center;">Lập quẻ Kinh Dịch tại Phong Thủy Thiên Anh — phongthuythienanh.com</p>
       </div>
@@ -723,10 +714,28 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
     return `${input.year}-${String(input.month).padStart(2, "0")}-${String(input.day).padStart(2, "0")}`;
   }
 
+  // Vô hiệu hoá + đổi chữ nút submit trong lúc chờ (đặc biệt `captureCardAsPng` — dựng ảnh PNG
+  // pixelRatio 2 có thể mất vài giây, trước đây không có phản hồi gì nên trông như bị treo/không
+  // lên kết quả dù thực ra vẫn đang chạy).
+  function setFormBusy(form: HTMLFormElement, busy: boolean) {
+    const btn = form.querySelector('button[type="submit"]') as HTMLButtonElement | null;
+    if (!btn) return;
+    if (busy) {
+      btn.dataset.originalText = btn.textContent ?? "";
+      btn.disabled = true;
+      btn.textContent = "Đang lập quẻ...";
+    } else {
+      btn.disabled = false;
+      if (btn.dataset.originalText) btn.textContent = btn.dataset.originalText;
+    }
+  }
+
   // --- Mai Hoa ---
   document.getElementById("form-maihoa")?.addEventListener("submit", async (e) => {
     e.preventDefault();
+    const form = e.currentTarget as HTMLFormElement;
     const label = (document.getElementById("mh-label") as HTMLInputElement).value.trim();
+    setFormBusy(form, true);
     try {
       const input = readCastInput("mh");
       const cast = maiHoaCast(input);
@@ -734,13 +743,17 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
     } catch (err) {
       console.error(err);
       if (!handleLunarError(err)) alert("Không lập được quẻ, vui lòng kiểm tra lại thời gian nhập vào.");
+    } finally {
+      setFormBusy(form, false);
     }
   });
 
   // --- Lục Hào (nhập tay) ---
   document.getElementById("form-luchao")?.addEventListener("submit", async (e) => {
     e.preventDefault();
+    const form = e.currentTarget as HTMLFormElement;
     const label = (document.getElementById("lh-label") as HTMLInputElement).value.trim();
+    setFormBusy(form, true);
     try {
       const input = readCastInput("lh");
       const values: LineVal[] = [];
@@ -755,14 +768,18 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
     } catch (err) {
       console.error(err);
       if (!handleLunarError(err)) alert("Không lập được quẻ, vui lòng kiểm tra lại thông tin đã nhập.");
+    } finally {
+      setFormBusy(form, false);
     }
   });
 
   // --- Seri tiền ---
   document.getElementById("form-serial")?.addEventListener("submit", async (e) => {
     e.preventDefault();
+    const form = e.currentTarget as HTMLFormElement;
     const label = (document.getElementById("sr-label") as HTMLInputElement).value.trim();
     const serial = (document.getElementById("sr-serial") as HTMLInputElement).value.trim();
+    setFormBusy(form, true);
     try {
       const input = readCastInput("sr");
       const cast = seriTienCast(serial, input);
@@ -770,6 +787,8 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
     } catch (err) {
       console.error(err);
       if (!handleLunarError(err)) alert("Vui lòng nhập số Seri hợp lệ (ít nhất 2 chữ số).");
+    } finally {
+      setFormBusy(form, false);
     }
   });
 </script>
