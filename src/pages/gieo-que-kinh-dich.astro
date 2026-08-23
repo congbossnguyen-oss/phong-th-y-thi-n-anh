@@ -464,6 +464,14 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
   // hào với chính nó (hào 2-3-4 và 3-4-5 của 1 quẻ toàn hào giống nhau thì luôn ra lại đúng quẻ đó) —
   // đây là tính chất kinh điển của Kinh Dịch, không phải lỗi tính toán, nhưng nếu không có nhãn thì 2
   // khung giống hệt nhau trông như bị lặp/lỗi.
+  // Tên quẻ 4 chữ (vd "Phong Trạch Trung Phu") để trình duyệt tự xuống dòng thì lệch 3 trên/1 dưới,
+  // không cân — ngắt cứng thành 2 chữ trên/2 chữ dưới cho đều. Tên 2-3 chữ giữ nguyên 1 dòng.
+  function formatQueNameHtml(name: string): string {
+    const words = name.trim().split(/\s+/);
+    if (words.length !== 4) return name;
+    return `${words[0]} ${words[1]}<br/>${words[2]} ${words[3]}`;
+  }
+
   function lightQueBlock(name: string, lines: readonly (0 | 1)[], dongPositions: number[], cungText: string, tenTuong?: string, roleLabel?: string): string {
     const subColor = CARD_COLORS.panelMuted;
     const tenTuongColor = CARD_COLORS.panelText;
@@ -471,7 +479,7 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
     return `
       <div style="border:2px solid ${CARD_COLORS.border};border-radius:12px;padding:14px 10px;text-align:center;background:${CARD_COLORS.panelBg};">
         ${roleLabel ? `<p style="margin:0 0 4px;font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:${subColor};">${roleLabel}</p>` : ""}
-        <p style="margin:0;min-height:44px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;line-height:1.2;letter-spacing:.02em;text-transform:${nameTransform};color:${CARD_COLORS.red};">${name}</p>
+        <p style="margin:0;min-height:44px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;line-height:1.2;letter-spacing:.02em;text-transform:${nameTransform};color:${CARD_COLORS.red};">${formatQueNameHtml(name)}</p>
         <div style="margin-top:10px;">${lightHexBars(lines, dongPositions)}</div>
         <p style="margin:10px 0 0;font-size:12px;font-weight:700;letter-spacing:.02em;color:${subColor};">${cungText}</p>
         ${tenTuong ? `<p style="margin:4px 0 0;font-size:14px;font-weight:700;letter-spacing:.02em;color:${tenTuongColor};white-space:nowrap;">${tenTuong}</p>` : ""}
@@ -624,18 +632,18 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
           <p id="am-lich-row" style="margin:0;">Theo Âm lịch: <strong style="color:${CARD_COLORS.text};">${cast.amLichText}</strong></p>
           <p style="margin:0;grid-column:1 / -1;">Can Chi: <strong style="color:${CARD_COLORS.text};">${cast.canChiText}</strong></p>
           <p style="margin:0;font-size:13px;">Tiết khí: <strong style="color:${CARD_COLORS.text};">${cast.tietKhi}</strong></p>
-          <p style="margin:0;font-size:13px;">Tuần Không: <strong style="color:${CARD_COLORS.text};">${cast.tuanKhong}</strong></p>
+          <p style="margin:0;font-size:15px;">Tuần Không: <strong style="color:${CARD_COLORS.text};">${cast.tuanKhong}</strong></p>
           ${cast.fanYin.enabled ? `<p style="margin:0;grid-column:1 / -1;font-size:16px;">Phản Ngâm: <strong style="color:${CARD_COLORS.red};">${cast.fanYin.label}</strong></p>` : ""}
           ${cast.fuYin.enabled ? `<p style="margin:0;grid-column:1 / -1;font-size:16px;">Phục Ngâm: <strong style="color:${CARD_COLORS.red};">${cast.fuYin.label}</strong></p>` : ""}
         </div>
         <div style="position:relative;margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-          <div style="background:${CARD_COLORS.headerBg};border:2px solid ${CARD_COLORS.border};border-radius:10px;padding:6px 12px;text-align:center;">
-            <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:${CARD_COLORS.headerText};opacity:.7;">Nhật Thần</p>
-            <p style="margin:1px 0 0;font-size:19px;font-weight:800;line-height:1.15;color:${CARD_COLORS.headerText};">${cast.nhatThan}</p>
+          <div style="background:rgba(220,189,122,0.14);border:1px solid rgba(201,162,86,0.45);border-radius:10px;padding:6px 12px;text-align:center;">
+            <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:${CARD_COLORS.gold};opacity:.85;">Nhật Thần</p>
+            <p style="margin:1px 0 0;font-size:19px;font-weight:800;line-height:1.15;color:${CARD_COLORS.text};">${cast.nhatThan}</p>
           </div>
-          <div style="background:${CARD_COLORS.headerBg};border:2px solid ${CARD_COLORS.border};border-radius:10px;padding:6px 12px;text-align:center;">
-            <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:${CARD_COLORS.headerText};opacity:.7;">Nguyệt Lệnh</p>
-            <p style="margin:1px 0 0;font-size:19px;font-weight:800;line-height:1.15;color:${CARD_COLORS.headerText};">${cast.nguyetLenh}</p>
+          <div style="background:rgba(220,189,122,0.14);border:1px solid rgba(201,162,86,0.45);border-radius:10px;padding:6px 12px;text-align:center;">
+            <p style="margin:0;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:${CARD_COLORS.gold};opacity:.85;">Nguyệt Lệnh</p>
+            <p style="margin:1px 0 0;font-size:19px;font-weight:800;line-height:1.15;color:${CARD_COLORS.text};">${cast.nguyetLenh}</p>
           </div>
         </div>
         <div style="position:relative;margin-top:14px;display:grid;grid-template-columns:repeat(${queCols}, 1fr);gap:14px;">${blocks.join("")}</div>
