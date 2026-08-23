@@ -209,7 +209,7 @@ export const paidTools: PaidTool[] = [
     icon: "📱",
     title: "Sim Phong Thủy Khai Vận Khí",
     desc: "Đặt dịch vụ tìm sim hợp mệnh: gửi ngày giờ sinh, mục đích (tài lộc, công danh, quý nhân…), đầu số và ngân sách mong muốn — chuyên gia đối chiếu Bát Tự rồi chọn tay dãy số phù hợp, liên hệ qua Zalo/SĐT.",
-    priceLabel: "1.000.000đ / lượt",
+    priceLabel: "999.999đ / lượt",
     // Dịch vụ THỦ CÔNG (không phải công cụ tính tự động): chuyên gia tìm sim thật từ kho số theo
     // Bát Tự khách cung cấp — không có "kết quả" trả ngay như các công cụ khác. Xem _chung.ts.
   },
