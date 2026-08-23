@@ -16,16 +16,19 @@ const categories = getCategoriesWithCounts();
 // 5 nhóm nổi bật hiện thành icon tròn ngay dưới module cốt lõi (đúng ảnh 1) — trỏ vào đúng
 // category_id thật trong Question Library, không phải mục giả. Nhóm còn lại vẫn xem đủ ở khối
 // "Xem tất cả" bên dưới, không mất tính năng nào.
+//
+// Icon vector 1 màu vàng (không dùng emoji nhiều màu) — Thầy: "icon chỉ để hình vector màu vàng,
+// vòng tròn ngoài cũng vàng cho đồng bộ" (2026-08-23). Trước đó dùng emoji + vòng nhiều màu, đổi
+// nền tảng hay ra màu khác ý muốn (ví dụ ☯ ra ô vuông tím trên iOS) — vector tự vẽ mới kiểm soát
+// được đúng 1 màu trên mọi máy.
 const NOI_BAT_DINH_NGHIA = [
-  { id: "su-nghiep", label: "Công việc", color: "#f1c85a" },
-  { id: "tai-chinh", label: "Tài lộc", color: "#5fcf8a" },
-  { id: "dau-tu", label: "Đầu tư", color: "#5aa8f1" },
-  { id: "tinh-duyen-hon-nhan", label: "Tình cảm", color: "#e879a6" },
-  { id: "nha-cua", label: "Gia đạo", color: "#4fd1c5" },
-];
-const noiBat = NOI_BAT_DINH_NGHIA.map((n) => ({ ...n, cat: categories.find((c) => c.id === n.id) })).filter(
-  (n): n is typeof n & { cat: NonNullable<(typeof n)["cat"]> } => !!n.cat,
-);
+  { id: "su-nghiep", label: "Công việc", icon: "briefcase" },
+  { id: "tai-chinh", label: "Tài lộc", icon: "coin" },
+  { id: "dau-tu", label: "Đầu tư", icon: "trend" },
+  { id: "tinh-duyen-hon-nhan", label: "Tình cảm", icon: "heart" },
+  { id: "nha-cua", label: "Gia đạo", icon: "home" },
+] as const;
+const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === n.id));
 ---
 
 <BaseLayout title="Quân Sư Thiên Anh" description="Hỏi Quân Sư — cố vấn quyết định dựa trên Kinh Dịch." appShell>
@@ -47,7 +50,14 @@ const noiBat = NOI_BAT_DINH_NGHIA.map((n) => ({ ...n, cat: categories.find((c) =
 
       <p class="qs-eyebrow" style="margin-top:1.4rem;">Module cốt lõi</p>
       <div class="qsh-module">
-        <span class="qsh-module-ic">☯</span>
+        <span class="qsh-module-ic">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 3a4.5 4.5 0 0 1 0 9 4.5 4.5 0 0 0 0 9 9 9 0 0 0 0-18Z" fill="currentColor" stroke="none" />
+            <circle cx="12" cy="7.5" r="1.2" fill="var(--qs-midnight)" stroke="none" />
+            <circle cx="12" cy="16.5" r="1.2" fill="currentColor" stroke="none" />
+          </svg>
+        </span>
         <div class="qsh-module-body">
           <h2>Quân Sư Luận Giải</h2>
           <p>Hỏi gì – Đáp nấy – Dịch lý soi đường. Đặt một việc, Quân Sư lập quẻ và chỉ hướng.</p>
@@ -59,7 +69,23 @@ const noiBat = NOI_BAT_DINH_NGHIA.map((n) => ({ ...n, cat: categories.find((c) =
       <div class="qsh-icon-row">
         {noiBat.map((n) => (
           <a href={`/quan-su/${n.id}`} class="qsh-icon-item">
-            <span class="qsh-icon-badge" style={`--c:${n.color};`}>{n.cat.icon}</span>
+            <span class="qsh-icon-badge">
+              {n.icon === "briefcase" && (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3.5" y="7.5" width="17" height="12" rx="2"/><path d="M8.5 7.5V6a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v1.5" stroke-linecap="round"/><path d="M3.5 12.5h17" /></svg>
+              )}
+              {n.icon === "coin" && (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v9M14.5 9.8c0-1-1-1.8-2.5-1.8s-2.5.9-2.5 1.9c0 2.7 5 1.3 5 4 0 1-1 1.9-2.5 1.9s-2.5-.8-2.5-1.8" stroke-linecap="round"/></svg>
+              )}
+              {n.icon === "trend" && (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 17 9.5 11l4 4L20 6" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.5 6H20v5.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              )}
+              {n.icon === "heart" && (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 20s-7.5-4.6-9.7-9.3C.6 7 2.4 4 5.6 4c1.9 0 3.4 1 4.4 2.5C11 5 12.5 4 14.4 4c3.2 0 5 3 3.3 6.7C15.5 15.4 12 20 12 20Z" stroke-linejoin="round"/></svg>
+              )}
+              {n.icon === "home" && (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 11.5 12 4l9 7.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 10v9a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-9" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              )}
+            </span>
             <span>{n.label}</span>
           </a>
         ))}
@@ -100,25 +126,28 @@ const noiBat = NOI_BAT_DINH_NGHIA.map((n) => ({ ...n, cat: categories.find((c) =
 <style>
   .qsh { padding-top: 0; }
 
+  /* MỘT ảnh đạo sĩ xuyên suốt làm nền, chữ đè lên trên — KHÔNG tách 2 khối riêng (Thầy: "chỉ cần
+     để 1 ảnh của Quân Sư thôi", 2026-08-23). Ảnh phủ toàn bộ hero, làm mờ dần từ trái (chữ) sang
+     phải + từ trên xuống dưới để chữ vẫn đọc rõ mà ảnh không bị cắt cứng thành khối riêng. */
   .qsh-hero {
     position: relative;
-    min-height: 340px;
+    min-height: 400px;
     display: flex;
     align-items: flex-end;
     overflow: hidden;
-    background:
-      radial-gradient(ellipse 90% 60% at 75% 0%, rgba(143, 107, 255, 0.22), transparent 60%),
-      radial-gradient(ellipse 80% 60% at 20% 100%, rgba(241, 200, 90, 0.16), transparent 60%),
-      var(--qs-midnight);
+    background: var(--qs-midnight);
   }
   .qsh-hero-img {
-    position: absolute; right: -10px; top: 0; height: 100%; width: auto; max-width: 62%;
-    object-fit: cover; object-position: top;
-    -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
-    mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
-    opacity: 0.92;
+    position: absolute; inset: 0; width: 100%; height: 100%;
+    object-fit: cover; object-position: 78% top;
   }
-  .qsh-hero-text { position: relative; z-index: 1; padding: 1.6rem 1.2rem 1.4rem; max-width: 68%; }
+  .qsh-hero::before {
+    content: ""; position: absolute; inset: 0;
+    background:
+      linear-gradient(90deg, rgba(7,6,5,0.96) 0%, rgba(7,6,5,0.78) 42%, rgba(7,6,5,0.15) 78%, rgba(7,6,5,0.05) 100%),
+      linear-gradient(0deg, rgba(7,6,5,0.9) 0%, rgba(7,6,5,0.15) 55%, rgba(7,6,5,0.35) 100%);
+  }
+  .qsh-hero-text { position: relative; z-index: 1; padding: 1.6rem 1.2rem 1.4rem; max-width: 74%; }
   .qsh-tag { color: var(--qs-gold); text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.7rem; font-weight: 700; margin: 0 0 0.4rem; }
   .qsh-title {
     font-family: "Cormorant Garamond", Georgia, serif; font-weight: 700;
@@ -134,8 +163,9 @@ const noiBat = NOI_BAT_DINH_NGHIA.map((n) => ({ ...n, cat: categories.find((c) =
   }
   .qsh-module-ic {
     flex: 0 0 auto; width: 46px; height: 46px; display: flex; align-items: center; justify-content: center;
-    border-radius: 999px; background: rgba(241, 200, 90, 0.14); font-size: 1.4rem; color: var(--qs-gold);
+    border-radius: 999px; background: rgba(241, 200, 90, 0.14); color: var(--qs-gold);
   }
+  .qsh-module-ic svg { width: 26px; height: 26px; }
   .qsh-module-body h2 { font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.25rem; margin: 0 0 0.3rem; color: var(--qs-ivory); }
   .qsh-module-body p { margin: 0; color: var(--qs-muted); font-size: 0.82rem; line-height: 1.5; }
 

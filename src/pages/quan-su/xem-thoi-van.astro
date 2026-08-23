@@ -15,7 +15,7 @@ import { tinhVanTrinhHienTai, type LuckContext, type Band } from "../../lib/quan
 export const prerender = false;
 
 const user = Astro.locals.user;
-const coQuyen = user ? await coQuyenTruyCap(user.id, "co_ban") : false;
+const coQuyen = user ? await coQuyenTruyCap(user.id, "co_ban", user.isAdmin) : false;
 const hs = user?.hoSoSinh ?? null;
 
 let ketQua: LuckContext | null = null;

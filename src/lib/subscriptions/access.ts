@@ -39,8 +39,14 @@ export async function layGoiDangHoatDong(userId: string): Promise<GoiDangHoatDon
 /**
  * true nếu tài khoản đang có gói ĐỦ HẠNG để dùng tính năng yêu cầu `hangYeuCau` — Cao cấp thỏa
  * mãn cả yêu cầu Cơ bản lẫn Cao cấp; Cơ bản chỉ thỏa mãn yêu cầu Cơ bản.
+ *
+ * `isAdmin=true` BỎ QUA hẳn việc kiểm gói — Thầy, 2026-08-23: "bỏ qua phần thu phí hết của app này
+ * để anh test sản phẩm đã". An toàn vì cả khu Quân Sư đang khóa "chỉ admin" ở middleware.ts (khách
+ * thường không vào được các trang gọi hàm này) — khi mở bán thật, gỡ đối số này cùng lúc với gỡ
+ * cổng admin-only, đừng để sót lại làm admin tự nhiên có full quyền mãi mãi.
  */
-export async function coQuyenTruyCap(userId: string | null, hangYeuCau: SubscriptionTier): Promise<boolean> {
+export async function coQuyenTruyCap(userId: string | null, hangYeuCau: SubscriptionTier, isAdmin = false): Promise<boolean> {
+  if (isAdmin) return true;
   if (!userId) return false;
   const goi = await layGoiDangHoatDong(userId);
   if (!goi) return false;

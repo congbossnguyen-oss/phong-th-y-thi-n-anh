@@ -46,7 +46,7 @@ export const POST: APIRoute = async ({ request, locals }) => {
     return json({ error: "Vui lòng đăng nhập để xem luận giải." }, 401);
   }
   const hangYeuCau = hangYeuCauTheoCauHoi(question.pricing_tier);
-  if (!(await coQuyenTruyCap(locals.user.id, hangYeuCau))) {
+  if (!(await coQuyenTruyCap(locals.user.id, hangYeuCau, locals.user.isAdmin))) {
     const tenHang = hangYeuCau === "cao_cap" ? "Cao cấp" : "Cơ bản";
     return json({ error: `Câu hỏi này cần gói ${tenHang} đang hoạt động. Hãy đăng ký gói hoặc dùng thử 7 ngày miễn phí.` }, 403);
   }
