@@ -29,7 +29,6 @@ export const POST: APIRoute = async ({ request, locals }) => {
     castingMethod?: unknown;
     tosses?: unknown;
     seriTien?: unknown;
-    ngaySinh?: unknown;
     moTa?: unknown;
   };
 
@@ -77,18 +76,13 @@ export const POST: APIRoute = async ({ request, locals }) => {
     seriTien = body.seriTien;
   }
 
-  // ngaySinh (tùy chọn) — nếu có phải đủ ngày/tháng/năm/giới tính.
-  let ngaySinh: NgaySinhInput | undefined;
-  if (body.ngaySinh !== undefined && body.ngaySinh !== null) {
-    const ns = body.ngaySinh as Partial<NgaySinhInput>;
-    if (
-      typeof ns.day !== "number" || typeof ns.month !== "number" || typeof ns.year !== "number" ||
-      (ns.gender !== "Nam" && ns.gender !== "Nữ")
-    ) {
-      return json({ error: "ngaySinh cần { day, month, year, gender: 'Nam'|'Nữ', hour? }." }, 400);
-    }
-    ngaySinh = { day: ns.day, month: ns.month, year: ns.year, gender: ns.gender, hour: typeof ns.hour === "number" ? ns.hour : undefined };
-  }
+  // Ngày sinh KHÔNG còn thu qua form câu hỏi — tự lấy từ hồ sơ tài khoản đã đăng nhập (khai báo lúc
+  // đăng ký hoặc bổ sung ở /hoc-vien/ho-so). Thầy, 2026-08-23: "khai báo lúc đăng ký, lúc đó mới
+  // chạy" — tài khoản chưa khai thì vẫn luận được bình thường, chỉ không có lớp vận trình.
+  const hs = locals.user.hoSoSinh;
+  const ngaySinh: NgaySinhInput | undefined = hs
+    ? { day: hs.day, month: hs.month, year: hs.year, gender: hs.gender, hour: hs.hour ?? undefined }
+    : undefined;
 
   try {
     const result = await runQuanSu({

@@ -26,6 +26,34 @@ export const prerender = true;
         <input id="password" name="password" type="password" required autocomplete="new-password" minlength="6"
           class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20" />
       </div>
+
+      <div class="mt-5 border-t border-(--color-ivory-300) pt-5">
+        <p class="text-sm font-medium text-(--color-ink-800)">Ngày sinh (dương lịch)</p>
+        <p class="mt-1 text-xs text-(--color-ink-500)">Khai báo 1 lần, dùng lại cho các tính năng Quân Sư sau này (không hỏi lại).</p>
+        <div class="mt-2 grid grid-cols-3 gap-2">
+          <input id="birth-day" name="birthDay" type="number" min="1" max="31" placeholder="Ngày" required
+            class="w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20" />
+          <input id="birth-month" name="birthMonth" type="number" min="1" max="12" placeholder="Tháng" required
+            class="w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20" />
+          <input id="birth-year" name="birthYear" type="number" min="1900" max="2026" placeholder="Năm" required
+            class="w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20" />
+        </div>
+      </div>
+      <div class="mt-4">
+        <label for="birth-hour" class="text-sm font-medium text-(--color-ink-800)">Giờ sinh (không bắt buộc)</label>
+        <input id="birth-hour" name="birthHour" type="number" min="0" max="23" placeholder="0-23"
+          class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20" />
+      </div>
+      <div class="mt-4">
+        <label for="gender" class="text-sm font-medium text-(--color-ink-800)">Giới tính</label>
+        <select id="gender" name="gender" required
+          class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20">
+          <option value="">— Chọn —</option>
+          <option value="Nam">Nam</option>
+          <option value="Nữ">Nữ</option>
+        </select>
+      </div>
+
       <Button type="submit" id="submit-btn" size="lg" class="mt-6 w-full">Tạo tài khoản</Button>
       <p class="mt-4 text-center text-sm text-(--color-ink-600)">
         Đã có tài khoản? <a id="login-link" href="/hoc-vien/dang-nhap" class="font-medium text-(--color-gold-300) hover:underline">Đăng nhập</a>
@@ -62,12 +90,21 @@ export const prerender = true;
     const name = (document.getElementById("name") as HTMLInputElement).value.trim();
     const email = (document.getElementById("email") as HTMLInputElement).value.trim();
     const password = (document.getElementById("password") as HTMLInputElement).value;
+    const birthDay = (document.getElementById("birth-day") as HTMLInputElement).value;
+    const birthMonth = (document.getElementById("birth-month") as HTMLInputElement).value;
+    const birthYear = (document.getElementById("birth-year") as HTMLInputElement).value;
+    const birthHourRaw = (document.getElementById("birth-hour") as HTMLInputElement).value;
+    const gender = (document.getElementById("gender") as HTMLSelectElement).value;
 
     try {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify({
+          name, email, password, gender,
+          birthDay: Number(birthDay), birthMonth: Number(birthMonth), birthYear: Number(birthYear),
+          birthHour: birthHourRaw ? Number(birthHourRaw) : undefined,
+        }),
       });
       const data = await res.json();
 

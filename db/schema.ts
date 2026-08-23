@@ -11,6 +11,8 @@ import {
 
 // --- Tài khoản & phiên đăng nhập (khu học viên) ---
 
+export const genderEnum = pgEnum("gender", ["Nam", "Nữ"]);
+
 export const users = pgTable("users", {
   id: uuid("id").primaryKey().defaultRandom(),
   email: text("email").notNull().unique(),
@@ -18,6 +20,16 @@ export const users = pgTable("users", {
   name: text("name").notNull(),
   phone: text("phone"),
   isAdmin: boolean("is_admin").notNull().default(false),
+  // Khai báo 1 lần lúc đăng ký (hoặc bổ sung sau ở hồ sơ), dùng lại cho MỌI tính năng cần vận
+  // trình (Quân Sư luận quẻ, Xem Thời Vận) — không hỏi lại ngày sinh mỗi lần dùng tính năng nữa
+  // (Thầy, 2026-08-23). Nullable vì tài khoản có TRƯỚC cột này (và khách đăng ký khóa học) chưa
+  // chắc đã khai — các tính năng cần vận trình phải tự kiểm tra đủ 3 trường ngày/tháng/năm rồi mới
+  // chạy, thiếu thì bỏ qua lớp vận trình chứ không chặn tính năng chính.
+  birthDay: integer("birth_day"),
+  birthMonth: integer("birth_month"),
+  birthYear: integer("birth_year"),
+  birthHour: integer("birth_hour"), // 0-23, luôn tùy chọn — thiếu giờ thì bỏ qua lớp Tử Vi (xem current-luck.ts)
+  gender: genderEnum("gender"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

@@ -10,11 +10,22 @@ function hashToken(token: string): string {
   return createHash("sha256").update(token).digest("hex");
 }
 
+/** Ngày giờ sinh + giới tính đã khai báo — dùng lại cho mọi tính năng cần vận trình (Quân Sư, Xem
+ * Thời Vận). Chỉ coi là "đủ" khi có cả ngày/tháng/năm; giờ luôn tùy chọn. */
+export interface HoSoSinh {
+  day: number;
+  month: number;
+  year: number;
+  hour: number | null;
+  gender: "Nam" | "Nữ";
+}
+
 export interface SessionUser {
   id: string;
   email: string;
   name: string;
   isAdmin: boolean;
+  hoSoSinh: HoSoSinh | null;
 }
 
 /**
@@ -51,6 +62,11 @@ export async function validateSessionToken(token: string, currentIp: string): Pr
       email: users.email,
       name: users.name,
       isAdmin: users.isAdmin,
+      birthDay: users.birthDay,
+      birthMonth: users.birthMonth,
+      birthYear: users.birthYear,
+      birthHour: users.birthHour,
+      gender: users.gender,
     })
     .from(sessions)
     .innerJoin(users, eq(sessions.userId, users.id))
@@ -70,7 +86,12 @@ export async function validateSessionToken(token: string, currentIp: string): Pr
     return null;
   }
 
-  return { id: row.userId, email: row.email, name: row.name, isAdmin: row.isAdmin };
+  const daDuNgay = row.birthDay != null && row.birthMonth != null && row.birthYear != null && row.gender != null;
+  const hoSoSinh: HoSoSinh | null = daDuNgay
+    ? { day: row.birthDay!, month: row.birthMonth!, year: row.birthYear!, hour: row.birthHour, gender: row.gender! }
+    : null;
+
+  return { id: row.userId, email: row.email, name: row.name, isAdmin: row.isAdmin, hoSoSinh };
 }
 
 export async function invalidateSession(token: string): Promise<void> {
