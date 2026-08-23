@@ -19,7 +19,9 @@ import { phanTichTrachNhatSinhNo, type BirthSelectionInput } from "../trach-nhat
 import { generateTrachNhatSinhNoPdf } from "../dai-cat-loi/trach-nhat-sinh-no-pdf";
 import { apDungMaKhiThanhToan } from "../payments/promo";
 import { ghiDonThuPhiLenSheet, TEN_CONG_CU_HIEN_THI } from "../google-sheets-don-thu-phi";
+import { ghiDonSimPhongThuyLenSheet } from "../google-sheets-sim-phong-thuy";
 import { NHAN_MONG_MUON, NHAN_MANG, NHAN_KHOANG_GIA, type SimPhongThuyInput } from "../sim-phong-thuy-khai-van/labels";
+import { Scoring } from "@thien-anh/rule-engine";
 
 export interface CartLine {
   slug: string;
@@ -268,22 +270,52 @@ export async function markOrderPaidAndFulfill(orderId: string) {
     if (order.toolSlug === "sim-phong-thuy-khai-van" && order.toolInputSnapshot) {
       try {
         const input = JSON.parse(order.toolInputSnapshot) as SimPhongThuyInput;
+        const gioiTinhNhan = input.gioiTinh === "nam" ? "Nam" : "Nữ";
+        const ngaySinhNhan = `${input.ngaySinh.day}/${input.ngaySinh.month}/${input.ngaySinh.year}`;
+        const gioSinhNhan = input.gioSinh !== undefined ? `${input.gioSinh}h` : "Không nhớ";
+        const mongMuonNhan = input.mongMuonTimSim === "khac" ? `Khác — ${input.mongMuonKhac ?? ""}` : NHAN_MONG_MUON[input.mongMuonTimSim];
+        const banMenh = Scoring.getNapAm(input.ngaySinh.year);
+        const banMenhNhan = `${banMenh.name} — ${banMenh.element}`;
+
         dongChiTietSim = [
-          { nhan: "Giới tính", giaTri: input.gioiTinh === "nam" ? "Nam" : "Nữ" },
-          { nhan: "Ngày sinh (dương lịch)", giaTri: `${input.ngaySinh.day}/${input.ngaySinh.month}/${input.ngaySinh.year}` },
-          { nhan: "Giờ sinh", giaTri: input.gioSinh !== undefined ? `${input.gioSinh}h` : "Không nhớ" },
+          { nhan: "Giới tính", giaTri: gioiTinhNhan },
+          { nhan: "Ngày sinh (dương lịch)", giaTri: ngaySinhNhan },
+          { nhan: "Giờ sinh", giaTri: gioSinhNhan },
           { nhan: "Số CCCD", giaTri: input.soCCCD },
           { nhan: "Địa chỉ nhận sim", giaTri: input.diaChiNhanSim },
           { nhan: "Công việc hiện tại", giaTri: input.congViecHienTai },
-          {
-            nhan: "Mong muốn tìm sim",
-            giaTri: input.mongMuonTimSim === "khac" ? `Khác — ${input.mongMuonKhac ?? ""}` : NHAN_MONG_MUON[input.mongMuonTimSim],
-          },
+          { nhan: "Mong muốn tìm sim", giaTri: mongMuonNhan },
           { nhan: "Mạng mong muốn", giaTri: NHAN_MANG[input.mangMongMuon] },
           { nhan: "Đầu số ưu tiên", giaTri: input.dauSoUuTien.join(", ") },
           { nhan: "Khoảng giá", giaTri: NHAN_KHOANG_GIA[input.khoangGia] },
           ...(input.yeuCauRieng ? [{ nhan: "Yêu cầu riêng", giaTri: input.yeuCauRieng }] : []),
         ];
+
+        // Sheet RIÊNG cho module này (anh Công yêu cầu 2026-08-23) — bỏ qua đơn kiểm thử admin,
+        // cùng nguyên tắc với sheet "Khách hàng trả phí" (chỉ chứa doanh thu thật).
+        if (!laDonKiemThu) {
+          await ghiDonSimPhongThuyLenSheet({
+            maDon: order.orderCode,
+            hoTen: order.customerName,
+            soDienThoaiZalo: order.customerPhone,
+            gioiTinh: gioiTinhNhan,
+            ngaySinh: ngaySinhNhan,
+            gioSinh: gioSinhNhan,
+            banMenh: banMenhNhan,
+            soCCCD: input.soCCCD,
+            diaChiNhanSim: input.diaChiNhanSim,
+            congViecHienTai: input.congViecHienTai,
+            mongMuonTimSim: mongMuonNhan,
+            mangMongMuon: NHAN_MANG[input.mangMongMuon],
+            dauSoUuTien: input.dauSoUuTien.join(", "),
+            khoangGia: NHAN_KHOANG_GIA[input.khoangGia],
+            yeuCauRieng: input.yeuCauRieng ?? "",
+            giaGoc: Number(order.totalAmount) + Number(order.promoDiscountAmount ?? 0),
+            maKhuyenMai: maKhuyenMaiDaDung ?? "",
+            duocGiam: Number(order.promoDiscountAmount ?? 0),
+            thucThu: Number(order.totalAmount),
+          });
+        }
       } catch (err) {
         console.error(`[sim-phong-thuy] Không đọc được chi tiết đơn ${order.orderCode}:`, err);
       }
