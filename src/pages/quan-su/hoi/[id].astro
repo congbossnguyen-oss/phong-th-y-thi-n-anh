@@ -84,6 +84,8 @@ const formInputs = [...question.required_inputs, ...question.optional_inputs].fi
 
           <script type="application/json" id="qs-question" set:html={JSON.stringify(question)}></script>
           <script>
+            import { CAN, CHI } from "../../../lib/menh-nap-am";
+
             const qEl = document.getElementById("qs-question");
             const question = JSON.parse(qEl?.textContent || "{}");
             const tossPicker = document.getElementById("qs-toss-picker");
@@ -209,6 +211,69 @@ const formInputs = [...question.required_inputs, ...question.optional_inputs].fi
             function esc(s) { const d = document.createElement("div"); d.textContent = s == null ? "" : String(s); return d.innerHTML; }
             function points(cls, arr) { return `<ul class="qs-points ${cls}">${arr.map((s) => `<li>${esc(s)}</li>`).join("")}</ul>`; }
 
+            // Bảng quẻ đầy đủ (Nạp Giáp, Lục Thân, Thế/Ứng, Tuần Không, Lục Thú) — dark theme khớp
+            // trang, KHÁC bản "thẻ giấy" xuất PNG ở /gieo-que-kinh-dich (bản đó tách riêng để tải
+            // ảnh, không hợp hiển thị giữa 1 trang nền tối). Thầy, 2026-08-23: "phải cho anh hiện
+            // ra ảnh quẻ dịch... anh đối chiếu mới biết đúng hay sai về cách luận giải" — khách và
+            // Thầy cần tự soát số liệu gốc, không chỉ tin lời luận của AI.
+            const LUC_THAN_TAT = { "Huynh Đệ": "Huynh", "Tử Tôn": "Tử", "Thê Tài": "Thê", "Quan Quỷ": "Quan", "Phụ Mẫu": "Phụ" };
+
+            function lineBarHtml(value, isDong) {
+              const color = isDong ? "var(--qs-gold)" : "var(--qs-ivory)";
+              const bar = value === 1
+                ? `<div style="height:8px;border-radius:2px;background:${color};"></div>`
+                : `<div style="height:8px;display:flex;justify-content:space-between;"><div style="width:44%;height:100%;border-radius:2px;background:${color};"></div><div style="width:44%;height:100%;border-radius:2px;background:${color};"></div></div>`;
+              return `<div style="flex:1;">${bar}</div>`;
+            }
+
+            function queTableHtml(q, isBien, dongPositions) {
+              const rows = [...q.hao].reverse();
+              const rowsHtml = rows.map((h) => {
+                const isRowDong = h.isDong || (isBien && dongPositions.includes(h.hao));
+                const rc = isRowDong ? "var(--qs-gold)" : "var(--qs-ivory)";
+                const fw = isRowDong ? "700" : "400";
+                return `
+                  <tr style="border-bottom:1px solid rgba(241,200,90,0.1);">
+                    <td style="padding:5px 4px;width:34px;">${lineBarHtml(h.value, isRowDong)}</td>
+                    <td style="padding:5px 6px;color:${rc};font-weight:${fw};font-size:0.78rem;white-space:nowrap;">${h.theUng ?? ""}</td>
+                    <td style="padding:5px 6px;color:${rc};font-weight:${fw};font-size:0.78rem;white-space:nowrap;">${esc(h.lucThan)}</td>
+                    <td style="padding:5px 6px;color:${rc};font-weight:${fw};font-size:0.78rem;white-space:nowrap;">${CAN[h.canIndex]} ${CHI[h.chiIndex]}</td>
+                    <td style="padding:5px 6px;color:var(--qs-muted);font-size:0.72rem;white-space:nowrap;">${h.phucThan ? `${LUC_THAN_TAT[h.phucThan.lucThan]}-${CHI[h.phucThan.chiIndex]}` : "-"}</td>
+                    <td style="padding:5px 6px;color:${rc};font-size:0.78rem;text-align:center;">${h.xunKong ? "Không" : ""}</td>
+                  </tr>`;
+              }).join("");
+              return `
+                <div style="overflow-x:auto;">
+                  <table style="width:100%;border-collapse:collapse;min-width:340px;">
+                    <thead>
+                      <tr style="color:var(--qs-gold);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.04em;">
+                        <th style="padding:4px;text-align:left;">Hào</th><th style="padding:4px;text-align:left;">T/Ư</th><th style="padding:4px;text-align:left;">Lục Thân</th><th style="padding:4px;text-align:left;">Can Chi</th><th style="padding:4px;text-align:left;">P.Thần</th><th style="padding:4px;text-align:center;">T.Không</th>
+                      </tr>
+                    </thead>
+                    <tbody>${rowsHtml}</tbody>
+                  </table>
+                </div>`;
+            }
+
+            function renderQueDayDu(que) {
+              const dongPositions = que.dongPositions || [];
+              const chinhBlock = `
+                <div class="qs-sect"><h4>Quẻ chính — ${esc(que.chinh.name)}</h4>${queTableHtml(que.chinh, false, dongPositions)}</div>`;
+              const bienBlock = que.bien
+                ? `<div class="qs-sect"><h4>Quẻ biến — ${esc(que.bien.name)}</h4>${queTableHtml(que.bien, true, dongPositions)}</div>`
+                : "";
+              return `
+                <div class="qs-sect">
+                  <p style="margin:0 0 0.6rem;color:var(--qs-muted);font-size:0.8rem;">
+                    ${esc(que.canChiText)} · Tuần Không: <strong style="color:var(--qs-ivory);">${esc(que.tuanKhong)}</strong> · Nhật thần: <strong style="color:var(--qs-ivory);">${esc(que.nhatThan)}</strong> · Nguyệt lệnh: <strong style="color:var(--qs-ivory);">${esc(que.nguyetLenh)}</strong>
+                    ${que.fanYin && que.fanYin.enabled ? ` · <strong style="color:var(--qs-gold);">${esc(que.fanYin.label)}</strong>` : ""}
+                    ${que.fuYin && que.fuYin.enabled ? ` · <strong style="color:var(--qs-gold);">${esc(que.fuYin.label)}</strong>` : ""}
+                  </p>
+                </div>
+                ${chinhBlock}
+                ${bienBlock}`;
+            }
+
             function renderResult(data) {
               const rep = data.report;
               const que = data.que;
@@ -257,11 +322,14 @@ const formInputs = [...question.required_inputs, ...question.optional_inputs].fi
                   ${data.isDemo ? '<div class="qs-demo">⚙ Lần này chưa nối được phần luận sâu, đang hiển thị bản chấm điểm theo quy tắc. Quý bằng hữu thử lại sau ít phút.</div>' : ""}
                 </div>
                 ${luckHtml}
+                <div class="qs-luck" style="margin-top:1rem;">
+                  <h3>Quẻ đã gieo — đối chiếu số liệu gốc</h3>
+                  ${renderQueDayDu(que)}
+                </div>
                 <details class="qs-detail">
-                  <summary>Xem luận giải chi tiết</summary>
+                  <summary>Xem luận giải chi tiết (chấm điểm theo luật)</summary>
                   <div class="body">
                     ${esc(rep.luanGiaiChiTiet)}<br><br>
-                    Quẻ chủ: <strong>${esc(que.chinh)}</strong>${que.bien ? ` → biến: <strong>${esc(que.bien)}</strong>` : ""} · Hào động: ${que.dongPositions.length ? que.dongPositions.join(", ") : "không"}<br>
                     Bảng chấm điểm:
                     <ul style="margin:0.4rem 0 0;padding-left:1.1rem;">
                       ${rep.bangChamDiem.map((i) => `<li>${i.delta > 0 ? "+" : ""}${i.delta} · ${esc(i.factor)} — ${esc(i.reason)}</li>`).join("") || "<li>(không có điều chỉnh)</li>"}

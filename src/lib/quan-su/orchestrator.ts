@@ -62,14 +62,13 @@ export interface RunQuanSuInput {
 export interface QuanSuResult {
   question: { id: string; title: string; category: QuestionDefinition["category"] };
   report: AdvisoryReport; // báo cáo cố vấn 8 phần (verdict + điểm + vận trình + khuyên...)
-  que: {
-    // dữ liệu quẻ thô (cho "xem chi tiết")
-    chinh: string;
-    bien: string | null;
-    dongPositions: number[];
-    canChiText: string;
-    tuanKhong: string;
-  };
+  /**
+   * Dữ liệu quẻ ĐẦY ĐỦ (nguyên `FullCastResult`) — để trang kết quả vẽ được hình quẻ thật (Nạp
+   * Giáp, Lục Thân, Lục Thú, Thế/Ứng, Tuần Không đủ 6 hào), không chỉ tên quẻ suông. Thầy, 2026-08-
+   * 23: "phải cho anh hiện ra ảnh quẻ dịch... anh đối chiếu mới biết đúng hay sai về cách luận
+   * giải" — khách (và Thầy) cần tự soát được số liệu gốc, không chỉ tin lời luận của AI.
+   */
+  que: FullCastResult;
   vanTrinh: LuckContext | null;
   /** Bài luận sâu do Interpretation Engine (AI) trả về. null khi AI hỏng — khi đó chỉ còn `report`. */
   luanAI: LuanGiaiKinhDich | null;
@@ -139,13 +138,7 @@ export async function runQuanSu(input: RunQuanSuInput): Promise<QuanSuResult> {
   return {
     question: { id: question.question_id, title: question.title, category: question.category },
     report,
-    que: {
-      chinh: cast.chinh.name,
-      bien: cast.bien ? cast.bien.name : null,
-      dongPositions: cast.dongPositions,
-      canChiText: cast.canChiText,
-      tuanKhong: cast.tuanKhong,
-    },
+    que: cast,
     vanTrinh,
     luanAI: luan,
     isDemo: luan === null,

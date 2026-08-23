@@ -18,7 +18,7 @@ describe("Orchestrator — chạy đầu-cuối", () => {
     expect(r.report.diemThuan).toHaveLength(3);
     expect(r.report.diemLuuY).toHaveLength(3);
     expect(r.report.quanSuKhuyen).toHaveLength(3);
-    expect(r.que.chinh.length).toBeGreaterThan(0);
+    expect(r.que.chinh.name.length).toBeGreaterThan(0);
     expect(r.que.dongPositions).toEqual([1, 4]);
     expect(r.vanTrinh).not.toBeNull();
     expect(r.report.vanTrinh).not.toBeNull();
@@ -31,7 +31,7 @@ describe("Orchestrator — chạy đầu-cuối", () => {
     const a = await runQuanSu({ question_id: "chuyen-viec", ngaySinh: NGAY_SINH, rng, boQuaAI: true });
     seed = 7;
     const b = await runQuanSu({ question_id: "chuyen-viec", ngaySinh: NGAY_SINH, rng, boQuaAI: true });
-    expect(a.que.chinh).toBe(b.que.chinh);
+    expect(a.que.chinh.name).toBe(b.que.chinh.name);
     expect(a.report.mucDoThuan).toBe(b.report.mucDoThuan);
   });
 
