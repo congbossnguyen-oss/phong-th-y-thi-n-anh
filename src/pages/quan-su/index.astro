@@ -186,10 +186,9 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
         ))}
       </div>
 
-      <!-- Banner cuối trang — ảnh rồng vàng (nửa trái nền đen trơn, đầu rồng lệch phải) làm nền, chữ
-           đè lên nửa trái tối. -->
+      <!-- Banner cuối trang — ảnh hoa sen + đèn lồng nền trong suốt (giữa ảnh rỗng, đúng để đặt chữ). -->
       <div class="qsh-banner">
-        <img src="/images/quan-su/rong-vang.png" alt="" class="qsh-banner-bg" />
+        <img src="/images/quan-su/hoa-sen.png" alt="" class="qsh-banner-bg" />
         <p>Hỏi việc – Luận quẻ – Biết thời<br />Chọn thời – Hành động – Chủ động cuộc đời</p>
       </div>
     </div>
@@ -364,19 +363,13 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
   }
   .qsh-tool-ic svg { width: 20px; height: 20px; }
 
-  /* Banner đóng trang — ảnh rồng vàng (nửa trái nền đen trơn, đầu rồng lệch phải). Đẩy object-position
-     qua phải để vùng đen trống nằm dưới chữ, cộng thêm lớp phủ tối để chữ không lẫn vào phần rồng
-     sáng khi màn hình rộng hơn. */
+  /* Banner đóng trang — ảnh hoa sen + đèn lồng NỀN TRONG SUỐT (giữa ảnh rỗng, đúng để đặt chữ). */
   .qsh-banner {
     position: relative; border-radius: 18px; overflow: hidden; min-height: 150px;
     display: flex; align-items: center; justify-content: center; text-align: center;
-    background: var(--qs-midnight);
+    background: linear-gradient(160deg, rgba(241, 200, 90, 0.06), rgba(143, 107, 255, 0.05));
   }
-  .qsh-banner-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 88% 45%; }
-  .qsh-banner::before {
-    content: ""; position: absolute; inset: 0;
-    background: linear-gradient(90deg, rgba(7,6,5,0.75) 0%, rgba(7,6,5,0.4) 55%, rgba(7,6,5,0.55) 100%);
-  }
+  .qsh-banner-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
   .qsh-banner p {
     position: relative; z-index: 1; margin: 0; padding: 0 1.5rem;
     font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.05rem; line-height: 1.7;
