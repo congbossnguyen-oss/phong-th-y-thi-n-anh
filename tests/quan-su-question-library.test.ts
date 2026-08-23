@@ -120,12 +120,15 @@ describe("Question Library — quy tắc routing engine (khớp kiến trúc Pha
     }
   });
 
-  it("câu dùng Bát Tự/Tử Vi (sơ đồ vận trình) phải yêu cầu ngày sinh", () => {
+  // Thầy chốt 2026-08-23: "ngày sinh, giới tính bỏ, cứ làm đúng như /gieo-que-kinh-dich" — luận
+  // quẻ Kinh Dịch không được bắt điều kiện ngoài việc gieo quẻ. KHÔNG câu nào (kể cả câu có gợi ý
+  // Bát Tự/Tử Vi) được phép đòi ngày sinh mới gieo được — trước đây có, đã cố ý gỡ.
+  it("không câu hỏi nào bắt buộc ngày sinh — chỉ cần mô tả + gieo quẻ (câu so sánh thêm phương án)", () => {
     for (const q of questions) {
-      const canVanTrinh = q.recommended_engines.includes("bat-tu") || q.recommended_engines.includes("tu-vi");
-      if (canVanTrinh) {
-        expect(q.required_inputs.some((i) => i.key === "ngay_sinh"), q.question_id).toBe(true);
-      }
+      if (q.divination_method !== "luc-hao") continue;
+      expect(q.required_inputs.some((i) => i.key === "ngay_sinh"), q.question_id).toBe(false);
+      expect(q.optional_inputs.some((i) => i.key === "ngay_sinh"), q.question_id).toBe(false);
+      expect(q.required_inputs.some((i) => i.key === "gio_sinh"), q.question_id).toBe(false);
     }
   });
 

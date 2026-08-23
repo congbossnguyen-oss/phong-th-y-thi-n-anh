@@ -31,22 +31,6 @@ const IN_GIEO_QUE: InputField = {
   helpText: "Tĩnh tâm nghĩ về điều mình đang phân vân, rồi gieo quẻ.",
 };
 
-const IN_NGAY_SINH: InputField = {
-  key: "ngay_sinh",
-  label: "Ngày sinh (dương lịch)",
-  type: "date",
-  required: true,
-  helpText: "Dùng để xem thời vận hiện tại của anh/chị đang thuận hay chưa thuận.",
-};
-
-const IN_GIO_SINH: InputField = {
-  key: "gio_sinh",
-  label: "Giờ sinh",
-  type: "time",
-  required: false,
-  helpText: "Không có cũng xem được, có thì bức tranh thời vận rõ hơn.",
-};
-
 const IN_PHUONG_AN: InputField = {
   key: "cac_phuong_an",
   label: "Các phương án anh/chị đang cân nhắc",
@@ -83,6 +67,11 @@ interface LuanOpts {
 /**
  * Câu hỏi đóng "Có nên… không?" — một quẻ, một kết luận. Đây là xương sống GÓI CƠ BẢN
  * ("Hỏi một việc — nhận một lời khuyên").
+ *
+ * KHÔNG thu ngày sinh/giới tính — Thầy: "ngày sinh, giới tính bỏ, cứ làm đúng như
+ * /gieo-que-kinh-dich, 3 cách gieo" (2026-08-23). Luận quẻ Kinh Dịch chạy độc lập, không cần lớp
+ * vận trình Bát Tự làm điều kiện. `recommended_engines` giữ lại làm gợi ý Dụng Thần cho AI luận,
+ * không còn kích hoạt thu thập ngày sinh trên UI nữa.
  */
 function qLuan(
   category: CategoryId,
@@ -96,8 +85,8 @@ function qLuan(
     category,
     title,
     subtitle,
-    required_inputs: [IN_MO_TA, IN_NGAY_SINH, IN_GIEO_QUE],
-    optional_inputs: [IN_GIO_SINH],
+    required_inputs: [IN_MO_TA, IN_GIEO_QUE],
+    optional_inputs: [],
     recommended_engines: opts.engines ?? ["bat-tu", "tu-vi"],
     divination_method: "luc-hao",
     output_type: "luan-giai",
@@ -122,8 +111,8 @@ function qSoSanh(
     category,
     title,
     subtitle,
-    required_inputs: [IN_MO_TA, IN_PHUONG_AN, IN_NGAY_SINH, IN_GIEO_QUE],
-    optional_inputs: [IN_GIO_SINH],
+    required_inputs: [IN_MO_TA, IN_PHUONG_AN, IN_GIEO_QUE],
+    optional_inputs: [],
     recommended_engines: opts.engines ?? ["bat-tu", "tu-vi"],
     divination_method: "luc-hao",
     output_type: "so-sanh-phuong-an",

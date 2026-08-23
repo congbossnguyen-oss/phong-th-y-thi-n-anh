@@ -12,8 +12,8 @@ if (!question) {
 }
 const cat = getCategory(question.category);
 const isLucHao = question.divination_method === "luc-hao";
-const canVanTrinh = question.recommended_engines.includes("bat-tu") || question.recommended_engines.includes("tu-vi");
-// Ô nhập cần render dạng form (bỏ 'gieo-que' vì đó là bước gieo quẻ riêng).
+// Ô nhập cần render dạng form (bỏ 'gieo-que' vì đó là bước gieo quẻ riêng). KHÔNG thu ngày sinh/
+// giới tính — Thầy: "ngày sinh, giới tính bỏ, làm đúng như /gieo-que-kinh-dich" (2026-08-23).
 const formInputs = [...question.required_inputs, ...question.optional_inputs].filter((i) => i.type !== "gieo-que");
 ---
 
@@ -46,16 +46,6 @@ const formInputs = [...question.required_inputs, ...question.optional_inputs].fi
                 {inp.helpText && <div class="help">{inp.helpText}</div>}
               </div>
             ))}
-            {canVanTrinh && (
-              <div class="qs-field">
-                <label for="f-gender">Giới tính</label>
-                <select class="qs-input" id="f-gender" data-key="gender">
-                  <option value="Nam">Nam</option>
-                  <option value="Nữ">Nữ</option>
-                </select>
-                <div class="help">Dùng để xem thời vận (đại vận, lưu niên) của anh/chị.</div>
-              </div>
-            )}
           </form>
 
           <p class="qs-eyebrow">Bước 3 · Cách lập quẻ</p>
@@ -192,7 +182,6 @@ const formInputs = [...question.required_inputs, ...question.optional_inputs].fi
             buildManualPicker(); // mặc định đang ở "gieo-tay" khi tải trang
 
             async function submit(opts) {
-              const ngaySinh = collectNgaySinh();
               const moTaEl = document.querySelector('[data-key="mo_ta_tinh_huong"]');
               try {
                 resultEl.classList.remove("qs-hidden");
@@ -205,7 +194,6 @@ const formInputs = [...question.required_inputs, ...question.optional_inputs].fi
                     castingMethod: opts.castingMethod,
                     tosses: opts.tosses,
                     seriTien: opts.seriTien,
-                    ngaySinh,
                     moTa: moTaEl ? moTaEl.value : undefined,
                   }),
                 });
@@ -228,17 +216,6 @@ const formInputs = [...question.required_inputs, ...question.optional_inputs].fi
               } catch (e) {
                 resultEl.innerHTML = '<div class="qs-notice">Không kết nối được máy chủ, vui lòng thử lại.</div>';
               }
-            }
-
-            function collectNgaySinh() {
-              const ns = document.querySelector('[data-key="ngay_sinh"]');
-              if (!ns || !ns.value) return undefined;
-              const [y, m, d] = ns.value.split("-").map(Number);
-              const genderEl = document.querySelector('[data-key="gender"]');
-              const gioEl = document.querySelector('[data-key="gio_sinh"]');
-              let hour = undefined;
-              if (gioEl && gioEl.value) hour = Number(gioEl.value.split(":")[0]);
-              return { day: d, month: m, year: y, gender: genderEl ? genderEl.value : "Nam", hour };
             }
 
             function bar(dim) {
@@ -313,11 +290,8 @@ const formInputs = [...question.required_inputs, ...question.optional_inputs].fi
             }
 
             gieoBtn?.addEventListener("click", () => {
-              // kiểm tra ngày sinh nếu bắt buộc
-              const ns = document.querySelector('[data-key="ngay_sinh"]');
-              const nsRequired = question.required_inputs.some((i) => i.key === "ngay_sinh");
-              if (nsRequired && (!ns || !ns.value)) { alert("Vui lòng nhập ngày sinh để xem được thời vận."); return; }
-
+              // Ngày sinh KHÔNG bắt buộc — chỉ để thêm lớp vận trình bổ trợ, không phải điều kiện
+              // để gieo quẻ. Bỏ trống thì vẫn luận được bình thường, chỉ là không kèm vận trình.
               if (castingMethod === "gieo-tay" && !manualComplete()) {
                 alert("Anh chưa chọn đủ mặt cho cả 6 hào — mỗi hào cần chọn đủ 3 đồng."); return;
               }
