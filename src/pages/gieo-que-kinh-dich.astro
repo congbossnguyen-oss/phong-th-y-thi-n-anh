@@ -459,12 +459,14 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
   // (`dongPositions`, dùng riêng cho `lightHexBars`) mới đổi màu đỏ khi động. In hoa chỉ áp dụng cho
   // TÊN QUẺ, và chỉ khi quẻ đó có hào động (Chính có hào động / Biến luôn có vì chỉ tồn tại khi động) —
   // Hỗ không bao giờ in hoa. Họ quẻ và tên tượng không còn in hoa (giữ nguyên dạng chữ thường).
-  // Tên quẻ 4 chữ (vd "Phong Trạch Trung Phu") để trình duyệt tự xuống dòng thì lệch 3 trên/1 dưới,
-  // không cân — ngắt cứng thành 2 chữ trên/2 chữ dưới cho đều. Tên 2-3 chữ giữ nguyên 1 dòng.
-  function formatQueNameHtml(name: string): string {
-    const words = name.trim().split(/\s+/);
-    if (words.length !== 4) return name;
-    return `${words[0]} ${words[1]}<br/>${words[2]} ${words[3]}`;
+  // Tên quẻ dài (3-4 chữ, vd "Phong Trạch Trung Phu") ở cỡ chữ mặc định 18px dễ tràn dòng trong khung
+  // hẹp (bố cục 3 cột khi có quẻ Biến) — giảm cỡ chữ dần theo số chữ để cố gắng giữ 1 dòng cho đẹp,
+  // thay vì để trình duyệt tự xuống dòng lệch (vd 3 chữ trên/1 chữ dưới).
+  function queNameFontSize(name: string): number {
+    const wordCount = name.trim().split(/\s+/).length;
+    if (wordCount >= 4) return 14;
+    if (wordCount === 3) return 16;
+    return 18;
   }
 
   function lightQueBlock(name: string, lines: readonly (0 | 1)[], dongPositions: number[], cungText: string, tenTuong?: string): string {
@@ -473,7 +475,7 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
     const nameTransform = dongPositions.length > 0 ? "uppercase" : "none";
     return `
       <div style="border:2px solid ${CARD_COLORS.border};border-radius:12px;padding:14px 10px;text-align:center;background:${CARD_COLORS.panelBg};">
-        <p style="margin:0;min-height:44px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:800;line-height:1.2;letter-spacing:.02em;text-transform:${nameTransform};color:${CARD_COLORS.red};">${formatQueNameHtml(name)}</p>
+        <p style="margin:0;min-height:26px;display:flex;align-items:center;justify-content:center;font-size:${queNameFontSize(name)}px;font-weight:800;line-height:1.2;letter-spacing:.02em;text-transform:${nameTransform};color:${CARD_COLORS.red};white-space:nowrap;">${name}</p>
         <div style="margin-top:10px;">${lightHexBars(lines, dongPositions)}</div>
         <p style="margin:10px 0 0;font-size:12px;font-weight:700;letter-spacing:.02em;color:${subColor};">${cungText}</p>
         ${tenTuong ? `<p style="margin:4px 0 0;font-size:14px;font-weight:700;letter-spacing:.02em;color:${tenTuongColor};white-space:nowrap;">${tenTuong}</p>` : ""}
