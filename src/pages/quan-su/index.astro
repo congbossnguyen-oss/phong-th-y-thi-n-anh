@@ -36,9 +36,9 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
     <div class="qsh-hero">
       <img src="/images/quan-su/dao-si.png" alt="Quân Sư Thiên Anh" class="qsh-hero-img" />
       <div class="qsh-hero-text">
-        <p class="qsh-tag">Hiểu mệnh – biết vận – an tâm hạnh phúc</p>
+        <p class="qsh-tag">Thấu mệnh – Minh vận – Kiến tâm</p>
         <h1 class="qsh-title">Quân Sư<br />Thiên Anh</h1>
-        <p class="qsh-slogan">Dẫn lối trí tuệ – Giải quyết mọi vấn đề cuộc sống</p>
+        <p class="qsh-slogan">Minh triết dẫn đường – An tâm hành động</p>
         <p class="qsh-sub">Hỏi đúng việc – Luận đúng quẻ – Tìm đúng hướng</p>
       </div>
     </div>
@@ -51,15 +51,10 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
       <p class="qs-eyebrow" style="margin-top:1.4rem;">Module cốt lõi</p>
       <div class="qsh-module">
         <span class="qsh-module-ic">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-            <circle cx="12" cy="12" r="9" />
-            <path d="M12 3a4.5 4.5 0 0 1 0 9 4.5 4.5 0 0 0 0 9 9 9 0 0 0 0-18Z" fill="currentColor" stroke="none" />
-            <circle cx="12" cy="7.5" r="1.2" fill="var(--qs-midnight)" stroke="none" />
-            <circle cx="12" cy="16.5" r="1.2" fill="currentColor" stroke="none" />
-          </svg>
+          <img src="/images/quan-su/logo-am-duong.png" alt="" />
         </span>
         <div class="qsh-module-body">
-          <h2>Quân Sư Luận Giải</h2>
+          <h2>Huyền Cơ</h2>
           <p>Hỏi gì – Đáp nấy – Dịch lý soi đường. Đặt một việc, Quân Sư lập quẻ và chỉ hướng.</p>
         </div>
       </div>
@@ -247,10 +242,13 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
     border: 1px solid rgba(241, 200, 90, 0.28); border-radius: 16px; padding: 1.1rem;
   }
   .qsh-module-ic {
-    flex: 0 0 auto; width: 46px; height: 46px; display: flex; align-items: center; justify-content: center;
-    border-radius: 999px; background: rgba(241, 200, 90, 0.14); color: var(--qs-gold);
+    flex: 0 0 auto; width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;
+    border-radius: 999px; overflow: hidden; border: 1px solid rgba(241, 200, 90, 0.35);
+    box-shadow: 0 0 14px rgba(241, 200, 90, 0.2);
   }
-  .qsh-module-ic svg { width: 26px; height: 26px; }
+  /* Logo Am Dương (Thầy cấp) đã là badge tròn nền tối sẵn — bọc tròn + viền vàng nhẹ thay vì nền
+     tint riêng, tránh chồng 2 lớp nền lên nhau. */
+  .qsh-module-ic img { width: 100%; height: 100%; object-fit: cover; display: block; }
   .qsh-module-body h2 { font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.25rem; margin: 0 0 0.3rem; color: var(--qs-ivory); }
   .qsh-module-body p { margin: 0; color: var(--qs-muted); font-size: 0.82rem; line-height: 1.5; }
 
