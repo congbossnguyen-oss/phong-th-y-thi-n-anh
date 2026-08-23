@@ -66,11 +66,10 @@ const bieuDo = ketQua ? veBieuDoVanKhi(ketQua.timeline) : null;
 ---
 
 <BaseLayout title="Xem Thời Vận — Phong Thủy Thiên Anh" description="Sơ bộ đại vận và lưu niên bằng sơ đồ và luận giải ngắn gọn — dành cho khách đã đăng ký gói." appShell>
-  <section class="qs">
+  <section class="qs qs-tv">
     <div class="qs-wrap">
       <a class="qs-back" href="/quan-su">← Quân Sư</a>
-      <p class="qs-eyebrow" style="margin-top:1rem;">Thời vận</p>
-      <h1 class="qs-h1">Xem Thời Vận</h1>
+      <h1 class="qs-h1" style="margin-top:1rem;">Xem Thời Vận</h1>
       <p class="qs-sub">Nhìn sơ bộ đại vận đang đi và năm nay thuận hay chưa — bằng sơ đồ và vài dòng luận ngắn, không cần lập lá số đầy đủ.</p>
 
       {!user ? (
@@ -169,3 +168,15 @@ const bieuDo = ketQua ? veBieuDoVanKhi(ketQua.timeline) : null;
 
   <BottomNav />
 </BaseLayout>
+
+<style>
+  /* Riêng trang Xem Thời Vận: đổi ảnh nền `.qs` mặc định (bg-huyen-hoc.webp) sang ảnh "người trong
+     vòng khí" Thầy chỉ định, làm mờ đậm hơn mức mặc định để chữ nổi rõ (Thầy: "cho mờ đi chút để
+     chữ nổi hơn", 2026-08-24). Ghi đè scoped bằng `.qs-tv` cộng cấp — KHÔNG đụng `.qs` dùng chung
+     trong quan-su.css nên các trang khác vẫn giữ nguyên ảnh nền cũ. */
+  .qs.qs-tv {
+    background:
+      linear-gradient(180deg, rgba(7, 6, 5, 0.92) 0%, rgba(7, 6, 5, 0.86) 30%, rgba(7, 6, 5, 0.93) 72%, rgba(7, 6, 5, 0.98) 100%),
+      url("/images/quan-su/nguoi-trong-vong-khi.png") center 12% / cover no-repeat;
+  }
+</style>
