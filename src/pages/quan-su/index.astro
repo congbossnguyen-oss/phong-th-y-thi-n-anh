@@ -143,7 +143,10 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
      phải + từ trên xuống dưới để chữ vẫn đọc rõ mà ảnh không bị cắt cứng thành khối riêng. */
   .qsh-hero {
     position: relative;
-    min-height: 400px;
+    /* Ảnh gốc khổ dọc cao (941×1672 ~ tỉ lệ 0.56) — khung càng thấp càng cắt mất nhiều ảnh. 460px
+       lộ được phần thân trên + cuộn giấy trên tay đầy đủ hơn hẳn mốc 400px cũ (Thầy: "ảnh đạo sĩ
+       bị cắt 1/2", 2026-08-23). */
+    min-height: 460px;
     display: flex;
     align-items: flex-end;
     overflow: hidden;
@@ -151,7 +154,7 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
   }
   .qsh-hero-img {
     position: absolute; inset: 0; width: 100%; height: 100%;
-    object-fit: cover; object-position: 78% top;
+    object-fit: cover; object-position: 78% 8%;
   }
   .qsh-hero::before {
     content: ""; position: absolute; inset: 0;
@@ -194,12 +197,16 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
   .qsh-icon-item { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; text-decoration: none; color: var(--qs-ivory); font-size: 0.72rem; text-align: center; }
   .qsh-icon-badge {
     --c: #f1c85a;
-    width: 56px; height: 56px; display: flex; align-items: center; justify-content: center;
-    border-radius: 999px; font-size: 1.5rem;
+    width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;
+    border-radius: 999px;
     background: color-mix(in srgb, var(--c) 14%, transparent);
     border: 1.5px solid var(--c);
     box-shadow: 0 0 14px color-mix(in srgb, var(--c) 45%, transparent);
   }
+  /* Icon bên trong nhỏ lại rõ ràng — Thầy: "to quá hơi phô" (2026-08-23). Ép kích thước bằng CSS
+     thay vì chỉ dựa vào viewBox, vì <svg> không có width/height riêng dễ bị trình duyệt render
+     theo kích thước mặc định (300×150) rồi mới bị bóp méo bởi layout, không nhất quán giữa máy. */
+  .qsh-icon-badge svg { width: 20px; height: 20px; }
 
   .qsh-more { margin-bottom: 1.6rem; }
   .qsh-more summary {
