@@ -151,11 +151,13 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
       <!-- Dịch vụ VIP — trỏ vào hub trả-phí-theo-lượt sẵn có, KHÔNG nằm trong gói thuê bao Quân Sư
            (mô hình thu phí khác nhau, xem project_quan-su-app-scope.md). -->
       <a href="/dai-cat-loi/dich-vu-thu-phi" class="qsh-vip-card">
-        <img src="/images/quan-su/rong-vang.png" alt="" class="qsh-vip-bg" />
-        <div class="qsh-vip-crown">👑</div>
+        <img src="/images/quan-su/nguoi-trong-vong-khi.png" alt="" class="qsh-vip-bg" />
+        <div class="qsh-vip-crown">
+          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 8.5 7 11l5-6.5L17 11l4-2.5-1.6 9.3a1 1 0 0 1-1 .83H5.6a1 1 0 0 1-1-.83L3 8.5Z" stroke="currentColor" stroke-width="0.5" stroke-linejoin="round"/></svg>
+        </div>
         <div class="qsh-vip-body">
           <p class="qsh-vip-badge">VIP</p>
-          <h3>Tư vấn 1:1 cùng chuyên gia</h3>
+          <h3>Trạch Cát Cao Cấp</h3>
           <p>Phân tích chuyên sâu · Giải pháp cá nhân hóa · Bảo mật tuyệt đối</p>
           <span class="qsh-vip-cta">Khám phá ngay →</span>
         </div>
@@ -184,9 +186,10 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
         ))}
       </div>
 
-      <!-- Banner cuối trang — ảnh hoa sen + đèn lồng nền trong suốt, chữ đè lên giữa. -->
+      <!-- Banner cuối trang — ảnh rồng vàng (nửa trái nền đen trơn, đầu rồng lệch phải) làm nền, chữ
+           đè lên nửa trái tối. -->
       <div class="qsh-banner">
-        <img src="/images/quan-su/hoa-sen.png" alt="" class="qsh-banner-bg" />
+        <img src="/images/quan-su/rong-vang.png" alt="" class="qsh-banner-bg" />
         <p>Hỏi việc – Luận quẻ – Biết thời<br />Chọn thời – Hành động – Chủ động cuộc đời</p>
       </div>
     </div>
@@ -324,18 +327,20 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
   .qsh-tc-label { font-size: 0.74rem; font-weight: 700; line-height: 1.25; }
   .qsh-tc-sub { font-size: 0.64rem; color: var(--qs-muted); line-height: 1.3; }
 
-  /* Dịch vụ VIP — ảnh rồng vàng làm nền (bố cục gốc lệch phải, nền đen), phủ gradient để chữ đọc rõ
-     và mờ dần vào nền trang; KHÔNG thuộc gói thuê bao Quân Sư, dẫn sang hub thu-phí-theo-lượt sẵn có. */
+  /* Dịch vụ VIP — ảnh "người trong vòng khí" làm nền (bố cục đối xứng, vòng bát quái sáng ở giữa-trên),
+     phủ gradient để chữ đọc rõ và mờ dần vào nền trang; KHÔNG thuộc gói thuê bao Quân Sư, dẫn sang hub
+     thu-phí-theo-lượt sẵn có. */
   .qsh-vip-card {
     position: relative; display: block; overflow: hidden; text-decoration: none; color: var(--qs-ivory);
     border-radius: 18px; border: 1px solid rgba(241, 200, 90, 0.3); min-height: 148px; margin-bottom: 1.8rem;
   }
-  .qsh-vip-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 75% 50%; }
+  .qsh-vip-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 28%; }
   .qsh-vip-card::before {
     content: ""; position: absolute; inset: 0;
     background: linear-gradient(90deg, rgba(7,6,5,0.94) 0%, rgba(7,6,5,0.75) 48%, rgba(7,6,5,0.3) 100%);
   }
-  .qsh-vip-crown { position: absolute; top: 1rem; right: 1.1rem; z-index: 1; font-size: 1.3rem; filter: drop-shadow(0 0 8px rgba(241, 200, 90, 0.5)); }
+  .qsh-vip-crown { position: absolute; top: 1rem; right: 1.1rem; z-index: 1; color: var(--qs-gold); filter: drop-shadow(0 0 8px rgba(241, 200, 90, 0.5)); }
+  .qsh-vip-crown svg { width: 22px; height: 22px; display: block; }
   .qsh-vip-body { position: relative; z-index: 1; padding: 1.2rem 1.3rem; max-width: 78%; }
   .qsh-vip-badge {
     display: inline-block; margin: 0 0 0.4rem; padding: 0.15rem 0.6rem; border-radius: 999px;
@@ -359,16 +364,22 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
   }
   .qsh-tool-ic svg { width: 20px; height: 20px; }
 
-  /* Banner đóng trang — ảnh hoa sen + đèn lồng NỀN TRONG SUỐT (giữa ảnh rỗng, đúng để đặt chữ). */
+  /* Banner đóng trang — ảnh rồng vàng (nửa trái nền đen trơn, đầu rồng lệch phải). Đẩy object-position
+     qua phải để vùng đen trống nằm dưới chữ, cộng thêm lớp phủ tối để chữ không lẫn vào phần rồng
+     sáng khi màn hình rộng hơn. */
   .qsh-banner {
     position: relative; border-radius: 18px; overflow: hidden; min-height: 150px;
     display: flex; align-items: center; justify-content: center; text-align: center;
-    background: linear-gradient(160deg, rgba(241, 200, 90, 0.06), rgba(143, 107, 255, 0.05));
+    background: var(--qs-midnight);
   }
-  .qsh-banner-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .qsh-banner-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 88% 45%; }
+  .qsh-banner::before {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(90deg, rgba(7,6,5,0.75) 0%, rgba(7,6,5,0.4) 55%, rgba(7,6,5,0.55) 100%);
+  }
   .qsh-banner p {
     position: relative; z-index: 1; margin: 0; padding: 0 1.5rem;
     font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.05rem; line-height: 1.7;
-    color: var(--qs-ivory); text-shadow: 0 2px 10px rgba(7,6,5,0.8);
+    color: var(--qs-ivory); text-shadow: 0 2px 10px rgba(7,6,5,0.9), 0 1px 4px rgba(7,6,5,0.95);
   }
 </style>
