@@ -19,6 +19,7 @@ import { phanTichTrachNhatSinhNo, type BirthSelectionInput } from "../trach-nhat
 import { generateTrachNhatSinhNoPdf } from "../dai-cat-loi/trach-nhat-sinh-no-pdf";
 import { apDungMaKhiThanhToan } from "../payments/promo";
 import { ghiDonThuPhiLenSheet, TEN_CONG_CU_HIEN_THI } from "../google-sheets-don-thu-phi";
+import { NHAN_MONG_MUON, NHAN_MANG, NHAN_KHOANG_GIA, type SimPhongThuyInput } from "../sim-phong-thuy-khai-van/labels";
 
 export interface CartLine {
   slug: string;
@@ -259,6 +260,35 @@ export async function markOrderPaidAndFulfill(orderId: string) {
     // không ai biết; email là bản sao độc lập để đối chiếu, và khi Sheet lỗi thì email có cảnh
     // báo để anh nhập tay.
     const tien = (n: number) => `${n.toLocaleString("vi-VN")}đ`;
+
+    // Sim Phong Thủy Khai Vận Khí là DỊCH VỤ THỦ CÔNG (chuyên gia tự tay chọn sim, không có hàm
+    // tính "kết quả" tự động) — nên toàn bộ chi tiết yêu cầu PHẢI có trong email báo cáo, đây là
+    // nơi DUY NHẤT anh Công nhận được thông tin để đi tìm sim. Đọc lại `_chung.ts` cho các map nhãn.
+    let dongChiTietSim: { nhan: string; giaTri: string }[] = [];
+    if (order.toolSlug === "sim-phong-thuy-khai-van" && order.toolInputSnapshot) {
+      try {
+        const input = JSON.parse(order.toolInputSnapshot) as SimPhongThuyInput;
+        dongChiTietSim = [
+          { nhan: "Giới tính", giaTri: input.gioiTinh === "nam" ? "Nam" : "Nữ" },
+          { nhan: "Ngày sinh (dương lịch)", giaTri: `${input.ngaySinh.day}/${input.ngaySinh.month}/${input.ngaySinh.year}` },
+          { nhan: "Giờ sinh", giaTri: input.gioSinh !== undefined ? `${input.gioSinh}h` : "Không nhớ" },
+          { nhan: "Số CCCD", giaTri: input.soCCCD },
+          { nhan: "Địa chỉ nhận sim", giaTri: input.diaChiNhanSim },
+          { nhan: "Công việc hiện tại", giaTri: input.congViecHienTai },
+          {
+            nhan: "Mong muốn tìm sim",
+            giaTri: input.mongMuonTimSim === "khac" ? `Khác — ${input.mongMuonKhac ?? ""}` : NHAN_MONG_MUON[input.mongMuonTimSim],
+          },
+          { nhan: "Mạng mong muốn", giaTri: NHAN_MANG[input.mangMongMuon] },
+          { nhan: "Đầu số ưu tiên", giaTri: input.dauSoUuTien.join(", ") },
+          { nhan: "Khoảng giá", giaTri: NHAN_KHOANG_GIA[input.khoangGia] },
+          ...(input.yeuCauRieng ? [{ nhan: "Yêu cầu riêng", giaTri: input.yeuCauRieng }] : []),
+        ];
+      } catch (err) {
+        console.error(`[sim-phong-thuy] Không đọc được chi tiết đơn ${order.orderCode}:`, err);
+      }
+    }
+
     if (!laDonKiemThu) await sendBaoCaoGoogleSheetEmail({
       loai: "Đơn thu phí",
       tomTat: `${tenCongCu} — ${order.customerName} — ${tien(thucThu)}`,
@@ -276,6 +306,7 @@ export async function markOrderPaidAndFulfill(orderId: string) {
             ]
           : []),
         { nhan: "Thực thu", giaTri: tien(thucThu) },
+        ...dongChiTietSim,
       ],
       sheetLoi: !daGhiSheet,
     });
