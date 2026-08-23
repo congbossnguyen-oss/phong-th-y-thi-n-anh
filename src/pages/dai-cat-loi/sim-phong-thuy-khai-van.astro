@@ -39,6 +39,60 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
 
   <Container class="py-16">
     <div class="mx-auto max-w-2xl">
+      <div class="mb-8 rounded-2xl border border-(--color-ivory-300) bg-gradient-to-b from-(--color-ivory-100) to-(--color-ivory-50) p-6 sm:p-8">
+        <h2 class="font-display text-xl font-bold leading-snug text-(--color-ink-950) sm:text-2xl">
+          Chiếc sim bạn đang dùng đang hỗ trợ hay đang cản trở năng lượng của chính mình?
+        </h2>
+
+        <div class="mt-4 space-y-3 text-sm leading-relaxed text-(--color-ink-700)">
+          <p>Có những người đổi xe, đổi đồng hồ, đổi văn phòng để mong sự nghiệp khởi sắc...</p>
+          <p>Nhưng lại quên rằng thứ đồng hành với mình nhiều nhất mỗi ngày chính là số điện thoại.</p>
+          <p class="italic text-(--color-ink-600)">
+            Hàng trăm cuộc gọi. Hàng nghìn tin nhắn. Vô số lần kích hoạt trường năng lượng của dãy số.
+          </p>
+          <p>
+            Theo nguyên lý Âm Dương – Ngũ Hành, mỗi con số đều mang một tần số năng lượng riêng. Khi được lựa chọn phù
+            hợp với bản mệnh và mục tiêu cuộc sống, chiếc sim có thể trở thành một yếu tố phong thủy giúp bạn cảm thấy
+            tự tin hơn, tạo sự hài hòa về năng lượng và đồng hành trên hành trình phát triển.
+          </p>
+        </div>
+
+        <p class="mt-5 font-display text-base font-bold text-(--color-gold-500)">
+          ✨ Sim Phong Thủy Kích Vận Khí không đơn thuần là sim đẹp hay sim đắt tiền.
+        </p>
+        <p class="mt-1.5 text-sm text-(--color-ink-700)">Đó là một dãy số được luận giải dựa trên:</p>
+        <ul class="mt-3 space-y-2">
+          {[
+            "Cân bằng Âm Dương.",
+            "Tương sinh Ngũ Hành.",
+            "Hỗ trợ năng lượng bản mệnh.",
+            "Hướng đến tài lộc, công việc và các mối quan hệ theo nguyên lý phong thủy.",
+          ].map((y) => (
+            <li class="flex items-start gap-2 text-sm text-(--color-ink-800)">
+              <span class="mt-0.5 shrink-0 text-emerald-600">✅</span>
+              <span>{y}</span>
+            </li>
+          ))}
+        </ul>
+
+        <p class="mt-5 text-sm leading-relaxed text-(--color-ink-700)">
+          Kích Vận Khí không đơn thuần là chọn một dãy số đẹp, mà là quá trình tìm ra tần số năng lượng cộng hưởng với
+          bản mệnh. Một chiếc sim phù hợp giúp cân bằng Âm Dương, điều hòa Ngũ Hành và đồng hành cùng bạn trên hành
+          trình phát triển sự nghiệp, tài lộc và nhân duyên. Mỗi con số mang một tầng năng lượng – khi được sắp xếp
+          đúng, chúng sẽ trở thành điểm tựa cho những giá trị tích cực trong cuộc sống.
+        </p>
+
+        <p class="mt-4 text-sm leading-relaxed text-(--color-ink-700)">
+          Nhiều người chỉ đổi một chiếc sim. Nhưng điều họ thực sự muốn thay đổi là tư duy, năng lượng và những cơ hội
+          phía trước.
+        </p>
+
+        <p class="mt-4 rounded-(--radius-card) border-l-4 border-(--color-gold-400) bg-(--color-gold-300)/8 px-4 py-3 text-sm italic leading-relaxed text-(--color-ink-800)">
+          Biết đâu... điều còn thiếu không phải là bạn chưa đủ cố gắng, mà là bạn chưa lựa chọn được một trường năng
+          lượng phù hợp để đồng hành mỗi ngày.
+        </p>
+      </div>
+
       {TEST_MODE && (
         <div class="mb-4 rounded-(--radius-card) border-2 border-amber-400 bg-amber-50 p-4 text-sm font-medium text-amber-800">
           🧪 ĐANG THỬ NGHIỆM — tạm bỏ bước thanh toán ({TOOL_PRICE_LABEL}/lượt khi phát hành chính thức) để test nhanh. Nộp form là ghi nhận yêu cầu ngay, không mất tiền.
@@ -53,10 +107,10 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
       <div class="mb-6 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-4 text-sm text-(--color-ink-600)">
         <p class="font-medium text-(--color-ink-800)">Dịch vụ này khác gì với công cụ tự động?</p>
         <p class="mt-1.5">
-          Đây là dịch vụ <strong>thủ công</strong> — không có "kết quả" trả về ngay. Sau khi ghi nhận yêu cầu, chuyên gia sẽ đối
-          chiếu ngày giờ sinh (lá số Bát Tự), mục đích và ngân sách của bạn, rồi <strong>tự tay chọn dãy số thật</strong> từ kho
-          sim đang có, cân bằng Âm Dương – tương sinh Ngũ Hành với bản mệnh. Kết quả được gửi qua Zalo/số điện thoại bạn cung cấp,
-          thường trong vòng 24 giờ.
+          Đây là dịch vụ <strong>thủ công</strong> — không có "kết quả" trả về ngay. Tìm sim sẽ dựa trên <strong>số CCCD và lá số
+          Bát Tự</strong> (ngày giờ sinh) của bạn. Sau khi ghi nhận yêu cầu, chuyên gia đối chiếu các dữ liệu này cùng mục đích và
+          ngân sách, rồi <strong>tự tay chọn dãy số thật</strong> từ kho sim đang có, cân bằng Âm Dương – tương sinh Ngũ Hành với
+          bản mệnh. Kết quả được gửi qua Zalo/số điện thoại bạn cung cấp, thường trong vòng 24 giờ.
         </p>
         <p class="mt-2 text-xs text-(--color-ink-500)">
           Muốn xem thử số hiện tại của mình trước? Dùng công cụ
@@ -167,7 +221,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
             <option value="15tr-20tr">15 - 20 triệu</option>
             <option value="tren-20tr">Trên 20 triệu</option>
           </select>
-          <p class="mt-1 text-xs text-(--color-ink-500)">Lưu ý: mạng Viettel giá khá đắt — chọn khung giá thấp quá sẽ khó tìm được số hài hòa và năng lượng mạnh.</p>
+          <p class="mt-1 text-xs text-(--color-ink-500)">Lưu ý: mạng Viettel giá khá đắt — chọn khung giá thấp quá sẽ khó tìm được số hài hòa và năng lượng mạnh. Số điện thoại giá cao tất nhiên sẽ có hình thức bắt mắt hơn (tứ quý, lộc phát, thần tài…) cùng năng lượng mạnh hơn.</p>
         </div>
 
         <div>
