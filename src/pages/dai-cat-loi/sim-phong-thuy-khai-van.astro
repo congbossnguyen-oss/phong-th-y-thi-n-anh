@@ -40,18 +40,6 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
 
   <Container class="py-16">
     <div class="mx-auto max-w-2xl">
-      <div class="mb-6 rounded-2xl border-2 border-(--color-cinnabar-500) bg-(--color-cinnabar-500)/8 p-5 sm:p-6">
-        <p class="font-display text-base font-extrabold uppercase tracking-wide text-(--color-cinnabar-500) sm:text-lg">
-          ⚠️ Lưu ý quan trọng — Phí tìm sim KHÔNG PHẢI phí mua sim
-        </p>
-        <p class="mt-2 text-sm leading-relaxed text-(--color-ink-800)">
-          {TOOL_PRICE_LABEL} là <strong>phí dịch vụ tư vấn &amp; tìm sim</strong> hợp mệnh theo Bát Tự. Chuyên gia
-          <strong> chỉ tìm số phù hợp và hướng dẫn bạn cách mua</strong> — <strong>không trực tiếp bán sim</strong>.
-          Chi phí mua số thật (nếu bạn đồng ý với số được đề xuất) do bạn <strong>tự thanh toán riêng</strong> với nhà
-          mạng/đại lý bán sim khi nhận thông tin, hoàn toàn tách biệt với phí dịch vụ này.
-        </p>
-      </div>
-
       <div class="mb-8 rounded-2xl border border-(--color-ivory-300) bg-gradient-to-b from-(--color-ivory-100) to-(--color-ivory-50) p-6 sm:p-8">
         <h2 class="font-display text-xl font-bold leading-snug text-(--color-ink-950) sm:text-2xl">
           Chiếc sim bạn đang dùng đang hỗ trợ hay đang cản trở năng lượng của chính mình?
@@ -254,7 +242,8 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
 
         <p class="rounded-(--radius-control) bg-(--color-cinnabar-500)/8 px-3 py-2 text-xs font-medium text-(--color-cinnabar-500)">
           ⚠️ {TOOL_PRICE_LABEL} là phí <strong>tìm sim</strong>, không phải phí <strong>mua sim</strong>. Chuyên gia chỉ tìm và
-          hướng dẫn — không bán sim.
+          hướng dẫn — không bán sim. Chi phí mua số thật (nếu bạn đồng ý với số được đề xuất) do bạn tự thanh toán
+          riêng với nhà mạng/đại lý bán sim khi nhận thông tin, hoàn toàn tách biệt với phí dịch vụ này.
         </p>
         <Button type="submit" size="lg">Thanh toán {TOOL_PRICE_LABEL} — Gửi yêu cầu tìm sim</Button>
       </form>
