@@ -284,6 +284,7 @@ export const questions: QuestionDefinition[] = [
   qSau("su-nghiep", "can-tro-su-nghiep", "Điều gì đang cản trở sự nghiệp của mình?", "Cảm thấy mãi không tiến lên được, muốn tìm ra nút thắt thật sự."),
   qSau("su-nghiep", "uu-tien-giai-doan-nay", "Giai đoạn này nên ưu tiên điều gì?", "Nhiều việc cùng lúc, muốn biết nên dồn sức vào đâu trước."),
   qSau("su-nghiep", "thoi-diem-doi-viec", "Khi nào là lúc phù hợp để đổi việc?", "Đã định đổi, chỉ còn phân vân nên đi lúc nào cho thuận."),
+  qSau("su-nghiep", "cong-viec-sap-toi", "Công việc sắp tới của mình thế nào?", "Muốn nhìn trước một đoạn ngắn phía trước để chuẩn bị tinh thần và cách làm."),
 
   // ----- TÀI CHÍNH — CHIẾN LƯỢC (mục 9) -----
   qSoSanh("tai-chinh", "giu-tien-hay-dau-tu", "Nên giữ tiền hay đem đầu tư?", "Đang có một khoản trong tay, phân vân để yên hay cho nó chạy.", { safety: "nhay-cam" }),
@@ -291,6 +292,7 @@ export const questions: QuestionDefinition[] = [
   qSoSanh("tai-chinh", "phuong-an-giai-quyet-no", "Nên giải quyết khoản nợ này theo hướng nào?", "Có mấy cách xử lý, muốn chọn cách ít tổn thất nhất.", { safety: "nhay-cam" }),
   qSoSanh("tai-chinh", "tich-luy-hay-mo-rong", "Giai đoạn này nên tích lũy hay mở rộng?", "Muốn biết nên thủ cho chắc hay bung ra làm lớn.", { safety: "nhay-cam" }),
   qSau("tai-chinh", "khi-nao-xuong-tien", "Khi nào nên xuống tiền?", "Đã quyết làm, chỉ còn chọn thời điểm cho thuận.", { safety: "nhay-cam" }),
+  qSau("tai-chinh", "tai-van-sap-toi", "Tài vận sắp tới của mình thế nào?", "Muốn biết dòng tiền, cơ hội tài chính thời gian tới thuận hay khó.", { safety: "nhay-cam" }),
 
   // ----- ĐẦU TƯ — CHIẾN LƯỢC (mục 10) -----
   qSoSanh("dau-tu", "dau-tu-ngay-hay-cho", "Nên đầu tư ngay hay chờ thêm?", "Cơ hội đang mở, phân vân vào luôn hay đợi thời điểm tốt hơn.", { safety: "nhay-cam" }),
