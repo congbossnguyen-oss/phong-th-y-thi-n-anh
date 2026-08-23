@@ -113,21 +113,22 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
         Chưa có gói? <a href="/quan-su/goi-thue-bao" style="color:var(--qs-gold);">Xem gói thuê bao Quân Sư</a>
       </p>
 
-      <!-- Trạch Cát — 9 công cụ nổi bật của Đại Cát Lợi, trỏ THẲNG vào route thật đã có sẵn (không
-           tạo trang mới). "Nhập Trạch" và "Động Thổ" cùng trỏ 1 route vì công cụ xem-ngay-cao-cap
-           xử lý chung cả 2 việc đó. Cưới Hỏi và Sinh Cho Bé là dịch vụ trả phí đang thử nghiệm nội
-           bộ — trang đích tự hiện đúng trạng thái, không cần xử lý gì thêm ở đây. -->
-      <p class="qsh-section-title" style="margin-top:0.4rem;">Xem ngày · Trạch Cát</p>
+      <!-- Trạch Cát (Cơ bản) — 9 công cụ MIỄN PHÍ của Đại Cát Lợi, trỏ THẲNG vào route thật đã có
+           sẵn (không tạo trang mới). Thầy, 2026-08-24: mục này gắn nhãn "(Cơ bản)" nên 5 công cụ trả
+           phí trước đây (Nhập Trạch/Động Thổ/Cưới Hỏi/Nhận Chức/Sinh Cho Bé) không hợp đặt ở đây nữa
+           — đã đổi sang 5 công cụ miễn phí khác: Hoàng Ốc, Chọn Tuổi Kết Hôn, Đi Lễ, Sửa Chữa, Khai
+           Quang. Các công cụ trả phí đã dời sang thẻ "Trạch Cát Cao Cấp" phía dưới. -->
+      <p class="qsh-section-title" style="margin-top:0.4rem;">Xem ngày · Trạch Cát (Cơ bản)</p>
       <div class="qsh-trach-cat-grid">
         {[
           { href: "/xem-ngay-tot-xau", label: "Xem Ngày Tốt", sub: "Cho từng công việc", c: "#5fcf8a", icon: "calendar" },
           { href: "/dai-cat-loi/ngay-ky-hop-dong", label: "Ký Hợp Đồng", sub: "Ngày giờ ký kết", c: "#b18aff", icon: "doc" },
           { href: "/dai-cat-loi/ngay-khai-truong", label: "Khai Trương", sub: "Đại cát – phát lộc", c: "#f0a34d", icon: "store" },
-          { href: "/dai-cat-loi/ngay-cuoi-hoi", label: "Cưới Hỏi", sub: "Trọn gói viên mãn", c: "#e879a6", icon: "couple" },
-          { href: "/dai-cat-loi/xem-ngay-cao-cap", label: "Nhập Trạch", sub: "Về nhà mới", c: "#4fd1c5", icon: "home" },
-          { href: "/dai-cat-loi/xem-ngay-cao-cap", label: "Động Thổ", sub: "Ngày khởi công", c: "#f1c85a", icon: "shovel" },
-          { href: "/dai-cat-loi/nhan-chuc", label: "Nhận Chức", sub: "Ngày nhậm chức", c: "#5aa8f1", icon: "badge" },
-          { href: "/dai-cat-loi/trach-nhat-sinh-no", label: "Sinh Cho Bé", sub: "Chọn giờ sinh", c: "#7fd99a", icon: "baby" },
+          { href: "/dai-cat-loi/hoang-oc-kim-lau", label: "Hoàng Ốc", sub: "Kim Lâu – Tam Tai", c: "#e879a6", icon: "hoang-oc" },
+          { href: "/dai-cat-loi/chon-tuoi-ket-hon", label: "Tuổi Kết Hôn", sub: "So tuổi 2 người", c: "#4fd1c5", icon: "rings" },
+          { href: "/dai-cat-loi/ngay-le-vieng-mo", label: "Đi Lễ", sub: "Chùa – đền – viếng mộ", c: "#f1c85a", icon: "incense" },
+          { href: "/dai-cat-loi/sua-chua-cai-tao-nha", label: "Sửa Chữa", sub: "Ngày giờ động thổ nhỏ", c: "#5aa8f1", icon: "wrench" },
+          { href: "/dai-cat-loi/ngay-khai-quang", label: "Khai Quang", sub: "An vị vật phẩm", c: "#7fd99a", icon: "lamp" },
           { href: "/tinh-trung-tang", label: "Ngày Trùng Tang", sub: "Tra – phân tích", c: "#e8735c", icon: "bowl" },
         ].map((t) => (
           <a href={t.href} class="qsh-tc-item" style={`--c:${t.c};`}>
@@ -135,11 +136,11 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
               {t.icon === "calendar" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4" stroke-linecap="round"/></svg>}
               {t.icon === "doc" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 3.5h9l3 3v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-16a1 1 0 0 1 1-1Z" stroke-linejoin="round"/><path d="M8.5 12h7M8.5 15.5h7M8.5 8.5h4" stroke-linecap="round"/></svg>}
               {t.icon === "store" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 9.5 5 4h14l1 5.5" stroke-linejoin="round"/><path d="M4 9.5a2.3 2.3 0 0 0 4.4 1 2.3 2.3 0 0 0 4.4 0 2.3 2.3 0 0 0 4.4 0 2.3 2.3 0 0 0 4.4-1" stroke-linejoin="round"/><path d="M5.5 11v9h13v-9" /><path d="M10 20v-5.5h4V20" /></svg>}
-              {t.icon === "couple" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="8.5" cy="7" r="2.6"/><circle cx="15.5" cy="7" r="2.6"/><path d="M3.5 20v-2.5a4 4 0 0 1 4-4h2a4 4 0 0 1 4 4V20M10.5 20v-2.5a4 4 0 0 1 4-4h2a4 4 0 0 1 4 4V20" stroke-linecap="round"/></svg>}
-              {t.icon === "home" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 11.5 12 4l9 7.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 10v9a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-9" stroke-linecap="round" stroke-linejoin="round"/></svg>}
-              {t.icon === "shovel" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M15 3 21 9l-3 3-6-6Z" stroke-linejoin="round"/><path d="M13.5 8.5 4 18a2.1 2.1 0 0 0 3 3l9.5-9.5" stroke-linecap="round" stroke-linejoin="round"/></svg>}
-              {t.icon === "badge" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="9" r="5.5"/><path d="M9 13.5 7 21l5-2.5L17 21l-2-7.5" stroke-linejoin="round"/></svg>}
-              {t.icon === "baby" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8.5"/><path d="M9 13c.7.9 1.8 1.5 3 1.5s2.3-.6 3-1.5" stroke-linecap="round"/><path d="M9 9.5h.01M15 9.5h.01" stroke-linecap="round" stroke-width="2.4"/></svg>}
+              {t.icon === "hoang-oc" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 11.5 12 4l9 7.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 10v9a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-9" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 12.5v3" stroke-linecap="round"/><circle cx="12" cy="18" r="0.7" fill="currentColor" stroke="none"/></svg>}
+              {t.icon === "rings" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="9" cy="14" r="5"/><circle cx="15" cy="10" r="5"/></svg>}
+              {t.icon === "incense" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3c1.4 1.7 1.4 3.1 0 4.8-1.4-1.7-1.4-3.1 0-4.8Z" fill="currentColor" stroke="none"/><path d="M12 9v11M8.5 20h7" stroke-linecap="round"/></svg>}
+              {t.icon === "wrench" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14.5 3.5a4.5 4.5 0 0 0-5.7 5.7L3.5 14.5a2 2 0 0 0 2.8 2.8l5.3-5.3a4.5 4.5 0 0 0 5.7-5.7l-2.6 2.6-2-2 2.6-2.6Z" stroke-linejoin="round" stroke-linecap="round"/></svg>}
+              {t.icon === "lamp" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3v2.3" stroke-linecap="round"/><path d="M7 9.3a5 5 0 0 1 10 0c0 2.4-2 3.4-2 5.7H9c0-2.3-2-3.3-2-5.7Z" stroke-linejoin="round"/><path d="M9.5 17.5h5M10.5 20h3" stroke-linecap="round"/></svg>}
               {t.icon === "bowl" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3.5 11h17a8.5 6 0 0 1-17 0Z" stroke-linejoin="round"/><path d="M7 11V8a5 5 0 0 1 10 0v3" /></svg>}
             </span>
             <span class="qsh-tc-label">{t.label}</span>
