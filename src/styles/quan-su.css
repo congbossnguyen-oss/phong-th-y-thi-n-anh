@@ -81,22 +81,22 @@
 .qs-method.active .ti { color: var(--qs-gold); }
 .qs-method .de { display: block; color: var(--qs-muted); font-size: 0.74rem; margin-top: 0.2rem; line-height: 1.35; }
 
-/* Sóc xu tay — chọn mặt cho từng đồng thay vì random (đúng cách hành nghề truyền thống). */
-.qs-toss-row { border: 1px solid rgba(241, 200, 90, 0.14); border-radius: 12px; padding: 0.6rem 0.7rem; margin-bottom: 0.5rem; background: rgba(255, 255, 255, 0.02); }
-.qs-toss-head { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.45rem; font-size: 0.82rem; }
-.qs-toss-head b { color: var(--qs-ivory); }
-.qs-toss-coins { display: flex; gap: 0.7rem; flex-wrap: wrap; }
-.qs-toss-coin { display: flex; gap: 3px; background: rgba(0, 0, 0, 0.15); border-radius: 20px; padding: 3px; }
-.qs-toss-coin button { border: none; background: transparent; padding: 2px; border-radius: 50%; cursor: pointer; opacity: 0.4; transition: opacity 0.15s, box-shadow 0.15s; line-height: 0; }
-.qs-toss-coin button img { width: 24px; height: 24px; border-radius: 50%; display: block; object-fit: cover; }
-.qs-toss-coin button.sel { opacity: 1; box-shadow: 0 0 0 2px var(--qs-gold); }
-.qs-toss-live { display: inline-flex; align-items: center; gap: 4px; margin-left: auto; font-size: 0.72rem; color: var(--qs-muted); }
-.qs-toss-live .dong { color: var(--qs-gold); font-weight: 700; }
-.mini-seg { display: inline-block; height: 6px; background: var(--qs-ivory); border-radius: 2px; }
-.mini-seg:not(.half) { width: 28px; }
-.mini-seg.half { width: 12px; margin-right: 2px; }
-
-.qs-toss-picker { display: flex; flex-direction: column; margin: 1rem 0; }
+/* Bảng chọn Âm/Dương + Động cho 6 hào — đúng kiểu /gieo-que-kinh-dich (dropdown + checkbox), thay
+   cho kiểu bấm ảnh xu trước đây (Thầy: "gieo đồng xu là lỗi quá", 2026-08-23). */
+.qs-hao-table { display: flex; flex-direction: column; gap: 0.4rem; margin: 1rem 0; }
+.qs-hao-row {
+  display: flex; align-items: center; gap: 0.7rem;
+  border: 1px solid rgba(241, 200, 90, 0.14); border-radius: 10px;
+  padding: 0.55rem 0.8rem; background: rgba(255, 255, 255, 0.02);
+}
+.qs-hao-label { flex: 0 0 72px; font-size: 0.85rem; color: var(--qs-ivory); }
+.qs-hao-select {
+  flex: 1; background: rgba(0, 0, 0, 0.2); color: var(--qs-ivory);
+  border: 1px solid rgba(241, 200, 90, 0.22); border-radius: 8px;
+  padding: 0.4rem 0.5rem; font-size: 0.95rem; text-align: center;
+}
+.qs-hao-dong { flex: 0 0 auto; display: flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; color: var(--qs-muted); white-space: nowrap; }
+.qs-hao-dong input { accent-color: var(--qs-gold); width: 16px; height: 16px; }
 
 .qs-result { margin-top: 1.5rem; }
 .qs-verdict {

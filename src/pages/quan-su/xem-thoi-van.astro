@@ -7,9 +7,10 @@
 // /hoc-vien/ho-so). Thầy, 2026-08-23: "khai báo lúc đăng ký, lúc đó mới chạy". Thiếu giờ sinh thì
 // hàm gốc đã tự bỏ qua Tử Vi (gioSinhKnown), không cần thêm gì; thiếu hẳn hồ sơ thì mời sang khai.
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
 import "../../styles/quan-su.css";
 import { coQuyenTruyCap } from "../../lib/subscriptions/access";
-import { tinhVanTrinhHienTai, type LuckContext } from "../../lib/quan-su/current-luck";
+import { tinhVanTrinhHienTai, type LuckContext, type Band } from "../../lib/quan-su/current-luck";
 
 export const prerender = false;
 
@@ -41,9 +42,30 @@ const BAND_LABEL: Record<string, string> = {
   thu_thach: "Thử thách",
   nghich: "Nghịch",
 };
+
+// "Biểu đồ vận khí" — đường cong nối các đại vận theo dải thuận/nghịch, đúng bố cục ảnh mẫu Thầy
+// gửi (2026-08-23). Trục X = tuổi, trục Y = mức thuận quy đổi từ `band` (không bịa số liệu mới,
+// chỉ vẽ lại đúng band đã có sẵn trong timeline).
+const BAND_Y: Record<Band, number> = { rat_thuan: 92, thuan: 74, trung_binh: 50, thu_thach: 28, nghich: 10 };
+function veBieuDoVanKhi(timeline: LuckContext["timeline"]) {
+  if (timeline.length === 0) return null;
+  const W = 300, H = 90, PAD = 10;
+  const tuoiDau = timeline[0].tuoiBatDau;
+  const tuoiCuoi = timeline[timeline.length - 1].tuoiKetThuc;
+  const soNam = Math.max(1, tuoiCuoi - tuoiDau);
+  const diem = timeline.map((gd) => {
+    const tuoiGiua = (gd.tuoiBatDau + gd.tuoiKetThuc) / 2;
+    const x = PAD + ((tuoiGiua - tuoiDau) / soNam) * (W - PAD * 2);
+    const y = PAD + (1 - BAND_Y[gd.band] / 100) * (H - PAD * 2);
+    return { x, y, gd };
+  });
+  const path = diem.map((p, i) => `${i === 0 ? "M" : "L"}${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
+  return { W, H, path, diem, tuoiDau, tuoiCuoi };
+}
+const bieuDo = ketQua ? veBieuDoVanKhi(ketQua.timeline) : null;
 ---
 
-<BaseLayout title="Xem Thời Vận — Phong Thủy Thiên Anh" description="Sơ bộ đại vận và lưu niên bằng sơ đồ và luận giải ngắn gọn — dành cho khách đã đăng ký gói.">
+<BaseLayout title="Xem Thời Vận — Phong Thủy Thiên Anh" description="Sơ bộ đại vận và lưu niên bằng sơ đồ và luận giải ngắn gọn — dành cho khách đã đăng ký gói." appShell>
   <section class="qs">
     <div class="qs-wrap">
       <a class="qs-back" href="/quan-su">← Quân Sư</a>
@@ -100,19 +122,22 @@ const BAND_LABEL: Record<string, string> = {
               </div>
 
               <div class="qs-luck">
-                <h3>Đường đại vận</h3>
-                <div style="display:flex;gap:2px;border-radius:8px;overflow:hidden;margin-bottom:0.5rem;">
-                  {ketQua.timeline.map((gd) => (
-                    <div
-                      style={`flex:1;height:34px;background:${BAND_COLOR[gd.band]};opacity:${gd.laHienTai ? 1 : 0.55};position:relative;${gd.laHienTai ? "box-shadow:inset 0 0 0 2px #fff;" : ""}`}
-                      title={`${gd.tuoiBatDau}-${gd.tuoiKetThuc} tuổi: ${gd.nhan} (${BAND_LABEL[gd.band]})`}
-                    ></div>
-                  ))}
+                <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:0.6rem;">
+                  <h3 style="margin:0;">Biểu đồ vận khí</h3>
+                  {bieuDo && <span style="font-size:0.72rem;color:var(--qs-muted);">Đại vận {bieuDo.tuoiDau} → {bieuDo.tuoiCuoi} tuổi</span>}
                 </div>
-                <div style="display:flex;justify-content:space-between;font-size:0.7rem;color:var(--qs-muted);">
-                  <span>{ketQua.timeline[0]?.tuoiBatDau} tuổi</span>
-                  <span>▲ Hiện tại</span>
-                  <span>{ketQua.timeline[ketQua.timeline.length - 1]?.tuoiKetThuc} tuổi</span>
+                {bieuDo && (
+                  <svg viewBox={`0 0 ${bieuDo.W} ${bieuDo.H}`} style="width:100%;height:auto;overflow:visible;">
+                    <path d={bieuDo.path} fill="none" stroke="var(--qs-gold)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" opacity="0.9" />
+                    {bieuDo.diem.map((p) => (
+                      <circle cx={p.x} cy={p.y} r={p.gd.laHienTai ? 4.5 : 3} fill={BAND_COLOR[p.gd.band]} stroke={p.gd.laHienTai ? "#fff" : "none"} stroke-width="1.5" />
+                    ))}
+                  </svg>
+                )}
+                <div style="display:flex;gap:1rem;margin-top:0.5rem;font-size:0.7rem;color:var(--qs-muted);">
+                  <span><span style={`display:inline-block;width:8px;height:8px;border-radius:999px;background:${BAND_COLOR.rat_thuan};margin-right:0.3rem;`}></span>Thuận</span>
+                  <span><span style={`display:inline-block;width:8px;height:8px;border-radius:999px;background:${BAND_COLOR.trung_binh};margin-right:0.3rem;`}></span>Bình</span>
+                  <span><span style={`display:inline-block;width:8px;height:8px;border-radius:999px;background:${BAND_COLOR.nghich};margin-right:0.3rem;`}></span>Nghịch</span>
                 </div>
               </div>
 
@@ -141,4 +166,6 @@ const BAND_LABEL: Record<string, string> = {
       )}
     </div>
   </section>
+
+  <BottomNav />
 </BaseLayout>

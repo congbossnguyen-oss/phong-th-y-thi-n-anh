@@ -3,6 +3,7 @@
 // GIAI ĐOẠN THỬ NGHIỆM NỘI BỘ — chỉ tài khoản quản trị đăng ký được (xem api/checkout.ts), giá
 // nhiều ô còn "Đang cập nhật" vì Thầy chưa chốt bảng giá (gia-subscription.ts).
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
 import "../../styles/quan-su.css";
 import { layGoiDangHoatDong } from "../../lib/subscriptions/access";
 import { daTungDungThu } from "../../lib/subscriptions/trial";
@@ -21,7 +22,7 @@ const TIERS: SubscriptionTier[] = ["co_ban", "cao_cap"];
 const DURATIONS: SubscriptionDuration[] = ["1_thang", "3_thang", "6_thang", "1_nam"];
 ---
 
-<BaseLayout title="Gói thuê bao Quân Sư — Phong Thủy Thiên Anh" description="Đăng ký gói Cơ bản hoặc Cao cấp để dùng đầy đủ tính năng Quân Sư Thiên Anh.">
+<BaseLayout title="Gói thuê bao Quân Sư — Phong Thủy Thiên Anh" description="Đăng ký gói Cơ bản hoặc Cao cấp để dùng đầy đủ tính năng Quân Sư Thiên Anh." appShell>
   <section class="qs">
     <div class="qs-wrap">
       <a class="qs-back" href="/quan-su">← Quân Sư</a>
@@ -188,4 +189,6 @@ const DURATIONS: SubscriptionDuration[] = ["1_thang", "3_thang", "6_thang", "1_n
       });
     </script>
   )}
+
+  <BottomNav />
 </BaseLayout>

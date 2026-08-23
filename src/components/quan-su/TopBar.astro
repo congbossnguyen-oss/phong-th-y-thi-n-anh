@@ -1,0 +1,28 @@
+---
+// Thanh trên cùng của "app Quân Sư" — logo tròn bên trái + chuông thông báo bên phải, đúng ảnh mẫu
+// Thầy gửi (2026-08-23). Thay cho Header marketing của site chính khi appShell=true.
+---
+
+<div class="qst-bar">
+  <a href="/quan-su" class="qst-logo" aria-label="Về trang chủ Quân Sư">
+    <img src="/images/brand/zhi-gong-logo.png" alt="Quân Sư Thiên Anh" />
+  </a>
+  <a href="/quan-su#thong-bao" class="qst-bell" aria-label="Thông báo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+      <path d="M6 9a6 6 0 1 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 13 6 9Z" stroke-linecap="round" stroke-linejoin="round" />
+      <path d="M10 19a2 2 0 0 0 4 0" stroke-linecap="round" />
+    </svg>
+  </a>
+</div>
+
+<style>
+  .qst-bar {
+    position: sticky; top: 0; z-index: 30;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0.7rem 1rem; background: rgba(7, 6, 5, 0.85); backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(241, 200, 90, 0.1);
+  }
+  .qst-logo img { width: 34px; height: 34px; border-radius: 999px; object-fit: cover; display: block; }
+  .qst-bell { color: #ece3c6; width: 22px; height: 22px; display: flex; }
+  .qst-bell svg { width: 100%; height: 100%; }
+</style>

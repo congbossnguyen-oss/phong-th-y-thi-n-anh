@@ -1,44 +1,180 @@
 ---
+// Trang chủ "app Quân Sư" — dựng lại theo đúng 4 ảnh tham khảo Thầy gửi (2026-08-23, chốt phương án
+// B: khung app đầy đủ, không chỉ chỉnh từng trang riêng lẻ). Bố cục: Hero đạo sĩ → Module cốt lõi
+// "Quân Sư Luận Giải" (RIÊNG, không gộp với Trạch Cát — Thầy nhắc rõ) → 5 icon nhóm nổi bật → toàn
+// bộ nhóm câu hỏi (thu gọn) → thẻ Xem Thời Vận → thanh điều hướng 5 tab dưới cùng.
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
 import "../../styles/quan-su.css";
 import NutBatThongBao from "../../components/NutBatThongBao.astro";
-import { APP_OPENING_PROMPT, getCategoriesWithCounts } from "../../lib/quan-su";
+import { getCategoriesWithCounts } from "../../lib/quan-su";
 
 export const prerender = false;
 
 const categories = getCategoriesWithCounts();
+
+// 5 nhóm nổi bật hiện thành icon tròn ngay dưới module cốt lõi (đúng ảnh 1) — trỏ vào đúng
+// category_id thật trong Question Library, không phải mục giả. Nhóm còn lại vẫn xem đủ ở khối
+// "Xem tất cả" bên dưới, không mất tính năng nào.
+const NOI_BAT_DINH_NGHIA = [
+  { id: "su-nghiep", label: "Công việc", color: "#f1c85a" },
+  { id: "tai-chinh", label: "Tài lộc", color: "#5fcf8a" },
+  { id: "dau-tu", label: "Đầu tư", color: "#5aa8f1" },
+  { id: "tinh-duyen-hon-nhan", label: "Tình cảm", color: "#e879a6" },
+  { id: "nha-cua", label: "Gia đạo", color: "#4fd1c5" },
+];
+const noiBat = NOI_BAT_DINH_NGHIA.map((n) => ({ ...n, cat: categories.find((c) => c.id === n.id) })).filter(
+  (n): n is typeof n & { cat: NonNullable<(typeof n)["cat"]> } => !!n.cat,
+);
 ---
 
-<BaseLayout title="Quân Sư Thiên Anh" description="Hỏi Quân Sư — cố vấn quyết định dựa trên Kinh Dịch.">
-  <section class="qs">
-    <div class="qs-wrap">
-      <p class="qs-eyebrow">Quân Sư Thiên Anh</p>
-      <h1 class="qs-h1">{APP_OPENING_PROMPT}</h1>
-      <p class="qs-sub">Chọn một vấn đề anh/chị đang phân vân — Quân Sư sẽ cùng anh/chị nhìn cho rõ.</p>
+<BaseLayout title="Quân Sư Thiên Anh" description="Hỏi Quân Sư — cố vấn quyết định dựa trên Kinh Dịch." appShell>
+  <section class="qs qsh">
+    <div class="qsh-hero">
+      <img src="/images/quan-su/dao-si.png" alt="Quân Sư Thiên Anh" class="qsh-hero-img" />
+      <div class="qsh-hero-text">
+        <p class="qsh-tag">Hiểu mệnh – biết vận – an tâm hạnh phúc</p>
+        <h1 class="qsh-title">Quân Sư<br />Thiên Anh</h1>
+        <p class="qsh-slogan">Dẫn lối trí tuệ – Giải quyết mọi vấn đề cuộc sống</p>
+        <p class="qsh-sub">Hỏi đúng việc – Luận đúng quẻ – Tìm đúng hướng</p>
+      </div>
+    </div>
 
-      <NutBatThongBao />
-
-
-      <div class="qs-grid">
-        {categories.map((c) => (
-          <a class="qs-card" href={`/quan-su/${c.id}`}>
-            <div class="ic">{c.icon}</div>
-            <div class="ti">{c.title}</div>
-            <div class="de">{c.subtitle}</div>
-            <div class="ct">{c.questionCount} câu hỏi</div>
-          </a>
-        ))}
-        <a class="qs-card" href="/quan-su/xem-thoi-van">
-          <div class="ic">🌙</div>
-          <div class="ti">Xem Thời Vận</div>
-          <div class="de">Đại vận và năm nay đang thuận hay chưa — bằng sơ đồ và luận ngắn.</div>
-          <div class="ct">Dành cho khách có gói</div>
-        </a>
+    <div class="qs-wrap" style="margin-top:0;">
+      <div id="thong-bao" style="scroll-margin-top:1rem;">
+        <NutBatThongBao />
       </div>
 
-      <p class="qs-sub" style="margin-top:1.6rem;">
+      <p class="qs-eyebrow" style="margin-top:1.4rem;">Module cốt lõi</p>
+      <div class="qsh-module">
+        <span class="qsh-module-ic">☯</span>
+        <div class="qsh-module-body">
+          <h2>Quân Sư Luận Giải</h2>
+          <p>Hỏi gì – Đáp nấy – Dịch lý soi đường. Đặt một việc, Quân Sư lập quẻ và chỉ hướng.</p>
+        </div>
+      </div>
+      <a href="#hoi" class="qsh-cta">💬 Hỏi Quân Sư</a>
+
+      <h2 id="hoi" class="qsh-section-title">Anh muốn hỏi việc gì?</h2>
+      <div class="qsh-icon-row">
+        {noiBat.map((n) => (
+          <a href={`/quan-su/${n.id}`} class="qsh-icon-item">
+            <span class="qsh-icon-badge" style={`--c:${n.color};`}>{n.cat.icon}</span>
+            <span>{n.label}</span>
+          </a>
+        ))}
+      </div>
+
+      <details class="qsh-more">
+        <summary>Xem tất cả {categories.length} nhóm câu hỏi</summary>
+        <div class="qs-grid" style="margin-top:1rem;">
+          {categories.map((c) => (
+            <a class="qs-card" href={`/quan-su/${c.id}`}>
+              <div class="ic">{c.icon}</div>
+              <div class="ti">{c.title}</div>
+              <div class="de">{c.subtitle}</div>
+              <div class="ct">{c.questionCount} câu hỏi</div>
+            </a>
+          ))}
+        </div>
+      </details>
+
+      <a href="/quan-su/xem-thoi-van" class="qsh-tv-card">
+        <div>
+          <p class="qs-eyebrow" style="margin:0 0 0.2rem;">Thời vận</p>
+          <h3>Xem Thời Vận</h3>
+          <p>Đại vận và năm nay đang thuận hay chưa — bằng sơ đồ và luận ngắn.</p>
+        </div>
+        <span class="qsh-arrow">→</span>
+      </a>
+
+      <p class="qs-sub" style="margin-top:1rem;">
         Chưa có gói? <a href="/quan-su/goi-thue-bao" style="color:var(--qs-gold);">Xem gói thuê bao Quân Sư</a>
       </p>
     </div>
   </section>
+
+  <BottomNav />
 </BaseLayout>
+
+<style>
+  .qsh { padding-top: 0; }
+
+  .qsh-hero {
+    position: relative;
+    min-height: 340px;
+    display: flex;
+    align-items: flex-end;
+    overflow: hidden;
+    background:
+      radial-gradient(ellipse 90% 60% at 75% 0%, rgba(143, 107, 255, 0.22), transparent 60%),
+      radial-gradient(ellipse 80% 60% at 20% 100%, rgba(241, 200, 90, 0.16), transparent 60%),
+      var(--qs-midnight);
+  }
+  .qsh-hero-img {
+    position: absolute; right: -10px; top: 0; height: 100%; width: auto; max-width: 62%;
+    object-fit: cover; object-position: top;
+    -webkit-mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+    mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+    opacity: 0.92;
+  }
+  .qsh-hero-text { position: relative; z-index: 1; padding: 1.6rem 1.2rem 1.4rem; max-width: 68%; }
+  .qsh-tag { color: var(--qs-gold); text-transform: uppercase; letter-spacing: 0.08em; font-size: 0.7rem; font-weight: 700; margin: 0 0 0.4rem; }
+  .qsh-title {
+    font-family: "Cormorant Garamond", Georgia, serif; font-weight: 700;
+    font-size: clamp(1.9rem, 8vw, 2.6rem); line-height: 1.05; color: var(--qs-ivory); margin: 0 0 0.6rem;
+  }
+  .qsh-slogan { color: var(--qs-ivory); font-size: 0.85rem; margin: 0 0 0.3rem; }
+  .qsh-sub { color: var(--qs-muted); font-size: 0.76rem; margin: 0; }
+
+  .qsh-module {
+    display: flex; gap: 0.9rem; align-items: flex-start;
+    background: linear-gradient(160deg, rgba(241, 200, 90, 0.1), rgba(255, 255, 255, 0.02));
+    border: 1px solid rgba(241, 200, 90, 0.28); border-radius: 16px; padding: 1.1rem;
+  }
+  .qsh-module-ic {
+    flex: 0 0 auto; width: 46px; height: 46px; display: flex; align-items: center; justify-content: center;
+    border-radius: 999px; background: rgba(241, 200, 90, 0.14); font-size: 1.4rem; color: var(--qs-gold);
+  }
+  .qsh-module-body h2 { font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.25rem; margin: 0 0 0.3rem; color: var(--qs-ivory); }
+  .qsh-module-body p { margin: 0; color: var(--qs-muted); font-size: 0.82rem; line-height: 1.5; }
+
+  .qsh-cta {
+    display: block; text-align: center; margin: 0.9rem 0 1.8rem; text-decoration: none;
+    background: linear-gradient(160deg, #f6d878, #d9a53a); color: #1a1206; font-weight: 800;
+    border-radius: 999px; padding: 0.85rem 1.2rem; font-size: 0.95rem;
+    box-shadow: 0 8px 20px rgba(241, 200, 90, 0.25);
+  }
+
+  .qsh-section-title { font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.3rem; color: var(--qs-ivory); margin: 0 0 1rem; scroll-margin-top: 1rem; }
+
+  .qsh-icon-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.5rem; margin-bottom: 1.6rem; }
+  .qsh-icon-item { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; text-decoration: none; color: var(--qs-ivory); font-size: 0.72rem; text-align: center; }
+  .qsh-icon-badge {
+    --c: #f1c85a;
+    width: 56px; height: 56px; display: flex; align-items: center; justify-content: center;
+    border-radius: 999px; font-size: 1.5rem;
+    background: color-mix(in srgb, var(--c) 14%, transparent);
+    border: 1.5px solid var(--c);
+    box-shadow: 0 0 14px color-mix(in srgb, var(--c) 45%, transparent);
+  }
+
+  .qsh-more { margin-bottom: 1.6rem; }
+  .qsh-more summary {
+    cursor: pointer; color: var(--qs-gold); font-size: 0.85rem; font-weight: 600;
+    padding: 0.7rem 0.9rem; border: 1px solid rgba(241, 200, 90, 0.2); border-radius: 12px;
+    background: rgba(255, 255, 255, 0.02); list-style: none;
+  }
+  .qsh-more summary::-webkit-details-marker { display: none; }
+  .qsh-more summary::after { content: "▾"; float: right; }
+  .qsh-more[open] summary::after { content: "▴"; }
+
+  .qsh-tv-card {
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem; text-decoration: none;
+    border: 1px solid rgba(143, 107, 255, 0.3); border-radius: 16px; padding: 1.1rem 1.2rem;
+    background: linear-gradient(160deg, rgba(143, 107, 255, 0.12), rgba(255, 255, 255, 0.02));
+  }
+  .qsh-tv-card h3 { font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.1rem; margin: 0 0 0.25rem; color: var(--qs-ivory); }
+  .qsh-tv-card p { margin: 0; color: var(--qs-muted); font-size: 0.78rem; }
+  .qsh-arrow { color: var(--qs-purple); font-size: 1.3rem; }
+</style>

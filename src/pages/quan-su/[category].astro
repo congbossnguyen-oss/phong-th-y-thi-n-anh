@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
 import "../../styles/quan-su.css";
 import { getCategoryWithQuestions } from "../../lib/quan-su";
 import { layGoiDangHoatDong } from "../../lib/subscriptions/access";
@@ -19,7 +20,7 @@ const goi = Astro.locals.user ? await layGoiDangHoatDong(Astro.locals.user.id) :
 const coCaoCap = goi?.tier === "cao_cap";
 ---
 
-<BaseLayout title={`${cat.title} — Quân Sư Thiên Anh`} description={cat.subtitle}>
+<BaseLayout title={`${cat.title} — Quân Sư Thiên Anh`} description={cat.subtitle} appShell>
   <section class="qs">
     <div class="qs-wrap">
       <a class="qs-back" href="/quan-su">← Chọn nhóm khác</a>
@@ -56,4 +57,6 @@ const coCaoCap = goi?.tier === "cao_cap";
       )}
     </div>
   </section>
+
+  <BottomNav />
 </BaseLayout>

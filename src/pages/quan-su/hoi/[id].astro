@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../../layouts/BaseLayout.astro";
+import BottomNav from "../../../components/quan-su/BottomNav.astro";
 import "../../../styles/quan-su.css";
 import { getQuestion, getCategory } from "../../../lib/quan-su";
 
@@ -17,7 +18,7 @@ const isLucHao = question.divination_method === "luc-hao";
 const formInputs = [...question.required_inputs, ...question.optional_inputs].filter((i) => i.type !== "gieo-que");
 ---
 
-<BaseLayout title={`${question.title} — Quân Sư Thiên Anh`} description={question.subtitle}>
+<BaseLayout title={`${question.title} — Quân Sư Thiên Anh`} description={question.subtitle} appShell>
   <section class="qs">
     <div class="qs-wrap">
       <a class="qs-back" href={`/quan-su/${question.category}`}>← {cat?.title ?? "Quay lại"}</a>
@@ -53,7 +54,7 @@ const formInputs = [...question.required_inputs, ...question.optional_inputs].fi
           <div class="qs-methods" id="qs-methods">
             <button type="button" class="qs-method active" data-method="gieo-tay">
               <span class="ti">Gieo đồng xu</span>
-              <span class="de">Sóc xu thật, tự chọn mặt đã ra</span>
+              <span class="de">Tự gieo 3 đồng xu 6 lần, chọn đúng Âm/Dương và hào động</span>
             </button>
             <button type="button" class="qs-method" data-method="mai-hoa">
               <span class="ti">Mai Hoa Dịch Số</span>
@@ -72,8 +73,8 @@ const formInputs = [...question.required_inputs, ...question.optional_inputs].fi
           </div>
 
           <p class="qs-eyebrow">Bước 4 · An quẻ</p>
-          <p class="qs-sub" id="qs-step-sub">Sóc 3 đồng xu thật trong tay, thả xuống, rồi bấm chọn đúng mặt đã ra cho từng đồng — làm lần lượt từ Hào 1 đến Hào 6.</p>
-          <div class="qs-toss-picker" id="qs-toss-picker"></div>
+          <p class="qs-sub" id="qs-step-sub">Thành tâm nghĩ về việc muốn hỏi, tự gieo 3 đồng xu (hoặc vật tương đương) 6 lần từ hào 1 đến hào 6, rồi chọn đúng Âm/Dương và đánh dấu hào động (nếu có) vào bảng dưới.</p>
+          <div class="qs-hao-table" id="qs-toss-picker"></div>
           <div class="qs-row" style="max-width:420px;">
             <button class="qs-btn" id="qs-gieo" type="button" disabled>Xem kết quả</button>
             <button class="qs-btn qs-btn-ghost" id="qs-lai" type="button" style="display:none;">Làm lại</button>
@@ -93,72 +94,53 @@ const formInputs = [...question.required_inputs, ...question.optional_inputs].fi
             const seriField = document.getElementById("qs-seri-field");
             const stepSub = document.getElementById("qs-step-sub");
             let castingMethod = "gieo-tay";
-            // 6 hào × 3 đồng — null = chưa chọn, 2 = mặt Âm, 3 = mặt Dương. Người dùng tự sóc xu thật rồi
-            // bấm chọn đúng mặt đã ra (KHÔNG random) — đúng cách hành nghề truyền thống.
-            let manualCoins = [[null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null]];
+            const HAO_TEN = { 6: "Thượng", 5: "Ngũ", 4: "Tứ", 3: "Tam", 2: "Nhị", 1: "Sơ" };
 
             const METHOD_SUB = {
-              "gieo-tay": "Sóc 3 đồng xu thật trong tay, thả xuống, rồi bấm chọn đúng mặt đã ra cho từng đồng — làm lần lượt từ Hào 1 đến Hào 6.",
+              "gieo-tay": "Thành tâm nghĩ về việc muốn hỏi, tự gieo 3 đồng xu (hoặc vật tương đương) 6 lần từ hào 1 đến hào 6, rồi chọn đúng Âm/Dương và đánh dấu hào động (nếu có) vào bảng dưới.",
               "mai-hoa": "Quân Sư lập quẻ theo đúng thời điểm anh/chị bấm — không cần thao tác gì thêm.",
               "seri-tien": "Tĩnh tâm nghĩ về điều anh/chị đang phân vân, rút ngẫu nhiên 1 tờ tiền, rồi nhập seri của tờ đó.",
             };
             const METHOD_BTN_LABEL = { "gieo-tay": "Xem kết quả" };
 
-            function manualComplete() { return manualCoins.every((h) => h.every((c) => c !== null)); }
-
-            function miniLineHtml(sum) {
-              const yang = sum === 7 || sum === 9;
-              const dong = sum === 6 || sum === 9;
-              const bar = yang ? '<span class="mini-seg"></span>' : '<span class="mini-seg half"></span><span class="mini-seg half"></span>';
-              return `<span class="qs-mini-line">${bar}</span>${dong ? '<b class="dong"> · động</b>' : ""}`;
-            }
-
-            function updateGieoBtnState() {
-              if (castingMethod !== "gieo-tay") return;
-              gieoBtn.disabled = !manualComplete();
-            }
-
-            function renderTossPreview(haoIdx) {
-              const row = tossPicker.querySelector(`.qs-toss-row[data-hao="${haoIdx + 1}"]`);
-              const live = row?.querySelector(".qs-toss-live");
-              if (!live) return;
-              const coins = manualCoins[haoIdx];
-              if (coins.every((c) => c !== null)) live.innerHTML = miniLineHtml(coins[0] + coins[1] + coins[2]);
-              else live.innerHTML = "";
-            }
-
+            // Bảng chọn Âm/Dương + Động cho từng hào — đúng kiểu /gieo-que-kinh-dich (khác kiểu bấm
+            // ảnh xu trước đây). Mặc định mọi hào là Dương/tĩnh; anh/chị tự đổi theo đúng mặt xu thật
+            // đã gieo, không bắt buộc phải bấm hết mới cho xem kết quả — giống hệt trang tham khảo.
             function buildManualPicker() {
-              manualCoins = [[null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null]];
               tossPicker.innerHTML = "";
-              for (let h = 0; h < 6; h++) {
+              for (let h = 6; h >= 1; h--) {
                 const row = document.createElement("div");
-                row.className = "qs-toss-row";
-                row.dataset.hao = String(h + 1);
-                let coinsHtml = "";
-                for (let c = 0; c < 3; c++) {
-                  coinsHtml += `<div class="qs-toss-coin" data-coin="${c}">
-                    <button type="button" data-face="am"><img src="/images/quan-su/coin-am.jpg" alt="Mặt âm"></button>
-                    <button type="button" data-face="duong"><img src="/images/quan-su/coin-duong.jpg" alt="Mặt dương"></button>
-                  </div>`;
-                }
-                row.innerHTML = `<div class="qs-toss-head"><b>Hào ${h + 1}</b><span class="qs-toss-live"></span></div><div class="qs-toss-coins">${coinsHtml}</div>`;
+                row.className = "qs-hao-row";
+                row.innerHTML = `
+                  <span class="qs-hao-label">${h} - ${HAO_TEN[h]}</span>
+                  <select class="qs-hao-select" data-hao="${h}">
+                    <option value="1">────</option>
+                    <option value="0">── ──</option>
+                  </select>
+                  <label class="qs-hao-dong"><input type="checkbox" data-hao="${h}" /> Động</label>
+                `;
                 tossPicker.appendChild(row);
               }
-              updateGieoBtnState();
+              gieoBtn.disabled = false;
             }
 
-            tossPicker?.addEventListener("click", (e) => {
-              const btn = e.target.closest(".qs-toss-coin button");
-              if (!btn) return;
-              const coinEl = btn.closest(".qs-toss-coin");
-              const rowEl = btn.closest(".qs-toss-row");
-              const haoIdx = Number(rowEl.dataset.hao) - 1;
-              const coinIdx = Number(coinEl.dataset.coin);
-              manualCoins[haoIdx][coinIdx] = btn.dataset.face === "duong" ? 3 : 2;
-              coinEl.querySelectorAll("button").forEach((b) => b.classList.toggle("sel", b === btn));
-              renderTossPreview(haoIdx);
-              updateGieoBtnState();
-            });
+            // Đổi Âm/Dương (0/1) + Động (có/không) của 1 hào thành tổng 3 đồng xu (6/7/8/9) — đúng
+            // công thức: Dương tĩnh=7, Dương động=9 (lão dương), Âm tĩnh=8, Âm động=6 (lão âm). Nhờ
+            // vậy dùng lại được thẳng API "tosses" đã có sẵn, không cần sửa gì ở máy chủ.
+            function haoToTossSum(gia, dong) {
+              if (gia === 1) return dong ? 9 : 7;
+              return dong ? 6 : 8;
+            }
+
+            function collectManualTosses() {
+              const tosses = [];
+              for (let h = 1; h <= 6; h++) {
+                const gia = Number(tossPicker.querySelector(`select[data-hao="${h}"]`).value);
+                const dong = tossPicker.querySelector(`input[type="checkbox"][data-hao="${h}"]`).checked;
+                tosses.push(haoToTossSum(gia, dong));
+              }
+              return tosses;
+            }
 
             methodsEl?.addEventListener("click", (e) => {
               const btn = e.target.closest(".qs-method");
@@ -304,8 +286,7 @@ const formInputs = [...question.required_inputs, ...question.optional_inputs].fi
               laiBtn.style.display = "";
 
               if (castingMethod === "gieo-tay") {
-                const tosses = manualCoins.map((h) => h[0] + h[1] + h[2]);
-                submit({ castingMethod, tosses });
+                submit({ castingMethod, tosses: collectManualTosses() });
               } else if (castingMethod === "seri-tien") {
                 submit({ castingMethod, seriTien: document.getElementById("f-seri-tien").value.trim() });
               } else {
@@ -323,4 +304,6 @@ const formInputs = [...question.required_inputs, ...question.optional_inputs].fi
       )}
     </div>
   </section>
+
+  <BottomNav />
 </BaseLayout>
