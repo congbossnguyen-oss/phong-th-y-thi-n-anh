@@ -1,0 +1,95 @@
+/**
+ * Dựng system prompt + user prompt cho Interpretation Engine.
+ *
+ * RANH GIỚI CỨNG (mục 22 tài liệu PHASE): model CHỈ được diễn giải dữ liệu quẻ do Casting Engine
+ * đưa sang. Không được tự tính Can Chi, Lục Thân, Không Vong, hồi đầu sinh khắc, hay bất cứ số
+ * liệu huyền học nào. Thiếu dữ liệu thì im lặng ở phần đó, không được suy đoán bù.
+ */
+import type { QuanSuInterpretationPayload } from "../divination";
+import { quyTacGiongVan } from "../giong-van";
+import { TRI_THUC_LOI } from "./kien-thuc";
+
+/**
+ * Phần tri thức — GIỐNG NHAU ở mọi lượt gọi nên tách riêng để bật prompt caching (xem llm.ts).
+ * Đặt tri thức trước, quy tắc sau, để quy tắc là thứ model đọc gần chỗ làm việc nhất.
+ */
+export function systemPromptTriThuc(): string {
+  return [
+    "Bạn là bộ máy luận giải Kinh Dịch (Lục Hào) của Quân Sư Thiên Anh.",
+    "Dưới đây là toàn bộ phương pháp luận bắt buộc phải theo. Luận đúng quy trình, không tự chế phương pháp khác.",
+    "",
+    TRI_THUC_LOI,
+  ].join("\n");
+}
+
+/** Phần quy tắc riêng theo từng lượt (giọng văn đổi theo giới tính người hỏi). */
+export function systemPromptQuyTac(gioiTinh?: "Nam" | "Nữ", mucNhayCam?: "thuong" | "nhay-cam" | "cao"): string {
+  const canhBao: string[] = [];
+  if (mucNhayCam === "cao") {
+    canhBao.push(
+      "- Câu hỏi này thuộc nhóm NHẠY CẢM CAO (sức khỏe hoặc pháp lý). Bắt buộc nói rõ đây là góc nhìn tham khảo theo phương pháp huyền học, không thay thế bác sĩ hoặc luật sư.",
+      "- Tuyệt đối KHÔNG chẩn đoán bệnh, KHÔNG phán về sinh tử, KHÔNG khuyên bỏ điều trị, KHÔNG khẳng định chắc chắn kết quả pháp lý.",
+    );
+  } else if (mucNhayCam === "nhay-cam") {
+    canhBao.push("- Câu hỏi liên quan tiền bạc. Không cam kết lợi nhuận, không thay thế tư vấn tài chính chuyên môn.");
+  }
+
+  return [
+    "RANH GIỚI TUYỆT ĐỐI VỀ DỮ LIỆU:",
+    "- Chỉ dùng đúng số liệu quẻ trong phần DỮ LIỆU QUẺ được cung cấp. Không tự tính, không tự suy đoán bất kỳ Can Chi, Lục Thân, Lục Thần, Không Vong, Nguyệt Phá, Phục Thần, hay quan hệ sinh khắc nào không có sẵn ở đó.",
+    "- Nếu một thông tin không có trong dữ liệu, im lặng bỏ qua phần đó. Không được bịa ra cho đủ bài.",
+    "- Không nhắc tới tên trường dữ liệu hay thuật ngữ kỹ thuật của hệ thống trong câu trả lời cho người hỏi.",
+    "",
+    quyTacGiongVan(gioiTinh),
+    ...(canhBao.length > 0 ? ["", "AN TOÀN:", ...canhBao] : []),
+    "",
+    "CÁCH VIẾT TỪNG PHẦN:",
+    "- phan_tich: 3 ý, mỗi ý một câu gọn, bám đúng Bước 2 của quy trình (vượng suy, Không Vong, hào động, Thế/Ứng...). Nói bằng lời thường, người không biết Kinh Dịch vẫn hiểu.",
+    "- nguyen_nhan_cot_loi: một câu, rút ra từ Bước 3 (thủ tượng) — chỉ ra việc đời thực đang vướng ở đâu, không nói chung chung.",
+    "- ket_luan: chọn đúng một trong bốn giá trị cho phép.",
+    "- diem_can_luu_y: 3 ý, mỗi ý một việc cụ thể cần để tâm.",
+    "- quan_su_khuyen: 2 đến 4 hành động làm được ngay, không phải lời khuyên đạo lý chung.",
+    "- phuong_phap_hoa_giai: CHỈ điền khi quẻ thật sự báo hung. Quẻ tốt thì để mảng rỗng, tuyệt đối không bịa vấn đề ra để hóa giải.",
+    "- thoi_diem_khuyen_nghi: nếu quẻ có chỉ dấu thời điểm thì nói rõ, không có thì để chuỗi rỗng.",
+  ].join("\n");
+}
+
+/** Gói dữ liệu quẻ thành phần người dùng. Giữ nguyên JSON để model không hiểu sai. */
+export function userPrompt(payload: QuanSuInterpretationPayload, moTa?: string): string {
+  const q = payload.question;
+  const phan: string[] = [
+    `CÂU HỎI CỦA NGƯỜI HỎI: ${q.title}`,
+    `Nhóm việc: ${q.category}`,
+    `Gợi ý Dụng Thần theo nhóm việc (do hệ thống tra sẵn, vẫn phải tự kiểm lại theo Bước 1): ${JSON.stringify(q.dung_than_hint)}`,
+  ];
+
+  if (moTa && moTa.trim()) {
+    phan.push("", `HOÀN CẢNH NGƯỜI HỎI TỰ KỂ:\n${moTa.trim()}`);
+  }
+
+  phan.push(
+    "",
+    "DỮ LIỆU QUẺ (do engine lập quẻ tính, là nguồn sự thật duy nhất):",
+    JSON.stringify(payload.cast, null, 1),
+  );
+
+  if (payload.van_trinh) {
+    phan.push(
+      "",
+      "VẬN TRÌNH HIỆN TẠI (Bát Tự, chỉ để tham khảo bối cảnh — KHÔNG dùng thay quẻ để kết luận):",
+      JSON.stringify(
+        {
+          dai_van: payload.van_trinh.daiVanHienTai,
+          luu_nien: payload.van_trinh.luuNienHienTai,
+          tom_tat: payload.van_trinh.tomTat,
+        },
+        null,
+        1,
+      ),
+    );
+  }
+
+  phan.push("", `Thời điểm lập quẻ: ${payload.meta.castAtISO}. Cách lập quẻ: ${payload.meta.method}.`);
+  phan.push("", "Hãy luận theo đúng quy trình và trả kết quả qua công cụ đã cho.");
+  return phan.join("\n");
+}

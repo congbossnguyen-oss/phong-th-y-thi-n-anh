@@ -25,5 +25,18 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
   }
 
+  // GIAI ĐOẠN THỬ NGHIỆM NỘI BỘ — cả khu Quân Sư (app trả phí) CHỈ mở cho admin. Khách thường (kể
+  // cả chưa đăng nhập) vào /quan-su/* bị đưa về trang chủ, coi như khu này chưa tồn tại. Cho phép
+  // test trên trang thật mà không lộ cho khách. KHI MỞ BÁN: xóa nguyên khối này (một chỗ duy nhất).
+  //
+  // KHÔNG chặn ở đây: /api/thong-bao/* (service worker + cron phải gọi được, không có đăng nhập) và
+  // /api/quan-su/* (đã có auth riêng: đăng nhập + gói). Chỉ khóa các TRANG hiển thị của Quân Sư.
+  const path = context.url.pathname;
+  if (path === "/quan-su" || path.startsWith("/quan-su/")) {
+    if (!context.locals.user?.isAdmin) {
+      return context.redirect("/");
+    }
+  }
+
   return next();
 });

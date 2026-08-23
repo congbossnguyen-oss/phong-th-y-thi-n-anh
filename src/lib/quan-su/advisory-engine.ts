@@ -96,7 +96,7 @@ function resolveDungThan(chinh: QueDayDu, hint: QuanSuInterpretationPayload["que
       hao: the,
       target: "the-hao",
       trangThai: the ? "hien" : "khong_hien",
-      lyDo: hint.kind === "framework" ? "Loại việc cần khung riêng — bản này tạm chấm theo Hào Thế (chính bạn)." : "Chấm theo Hào Thế (chính bạn).",
+      lyDo: hint.kind === "framework" ? "Loại việc cần khung riêng — bản này tạm chấm theo Hào Thế (chính anh/chị)." : "Chấm theo Hào Thế (chính anh/chị).",
     };
   }
   // kind === "luc-than"
@@ -110,7 +110,7 @@ function resolveDungThan(chinh: QueDayDu, hint: QuanSuInterpretationPayload["que
   if (phuc) {
     return { hao: phuc, target, trangThai: "phuc_tang", lyDo: `Dụng Thần ${target} phục tàng (ẩn) dưới hào ${phuc.hao} — chưa lộ rõ.` };
   }
-  return { hao: null, target, trangThai: "khong_hien", lyDo: `Dụng Thần ${target} không hiện trên quẻ, cũng không phục tàng — quẻ chưa nói rõ điều bạn hỏi.` };
+  return { hao: null, target, trangThai: "khong_hien", lyDo: `Dụng Thần ${target} không hiện trên quẻ, cũng không phục tàng — quẻ chưa nói rõ điều anh/chị hỏi.` };
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -152,7 +152,7 @@ function chamDiem(resolved: DungThanResolved, chinh: QueDayDu, luck: LuckContext
       else if (r.type === "Hại") add("Bị hại", -3, "Có hại ngầm — cần đề phòng tiểu tiết.");
     }
   } else if (resolved.trangThai === "phuc_tang") {
-    add("Phục tàng", -10, "Điều bạn hỏi đang ẩn, chưa lộ ra — thường là chưa tới lúc.");
+    add("Phục tàng", -10, "Điều anh/chị hỏi đang ẩn, chưa lộ ra — thường là chưa tới lúc.");
     timingBlocker = true;
   }
 
@@ -215,7 +215,7 @@ function moTaXuHuong(verdict: Verdict, diem: number): string {
     case "CO_DIEU_KIEN": return `Hướng này làm được, nhưng chưa trọn vẹn (mức thuận ${diem}/100) — có vài điều kiện cần chuẩn bị trước khi bắt tay.`;
     case "NEN_CHO": return `Việc chưa đến độ chín (mức thuận ${diem}/100). Trở ngại chủ yếu mang tính thời điểm hơn là bản chất — nên chờ thêm một nhịp.`;
     case "KHONG_NEN": return `Các dấu hiệu đang nghịch (mức thuận ${diem}/100). Lúc này chưa phải thời điểm phù hợp để dấn tới.`;
-    case "CHUA_DU_DU_LIEU": return `Quẻ chưa phản ánh rõ điều bạn hỏi. Có thể câu hỏi cần cụ thể hơn, hoặc nên gieo lại khi tâm đã thật tĩnh.`;
+    case "CHUA_DU_DU_LIEU": return `Quẻ chưa phản ánh rõ điều anh/chị hỏi. Có thể câu hỏi cần cụ thể hơn, hoặc nên gieo lại khi tâm đã thật tĩnh.`;
   }
 }
 

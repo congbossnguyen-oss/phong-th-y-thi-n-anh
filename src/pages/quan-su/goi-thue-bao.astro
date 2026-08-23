@@ -1,0 +1,191 @@
+---
+// Trang đăng ký/gia hạn gói thuê bao "Quân Sư" (Cơ bản / Cao cấp × 1-3-6-12 tháng).
+// GIAI ĐOẠN THỬ NGHIỆM NỘI BỘ — chỉ tài khoản quản trị đăng ký được (xem api/checkout.ts), giá
+// nhiều ô còn "Đang cập nhật" vì Thầy chưa chốt bảng giá (gia-subscription.ts).
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import "../../styles/quan-su.css";
+import { layGoiDangHoatDong } from "../../lib/subscriptions/access";
+import { daTungDungThu } from "../../lib/subscriptions/trial";
+import { GIA_SUBSCRIPTION, SO_THANG_THEO_KY_HAN, dinhDangTien, type SubscriptionTier, type SubscriptionDuration } from "../../lib/payments/gia-subscription";
+
+export const prerender = false;
+
+const user = Astro.locals.user;
+const goiHienTai = user ? await layGoiDangHoatDong(user.id) : null;
+const daDungThu = user && !goiHienTai ? await daTungDungThu(user.id) : false;
+const coTheDungThu = !!user && !goiHienTai && !daDungThu;
+
+const TEN_HANG: Record<SubscriptionTier, string> = { co_ban: "Cơ bản", cao_cap: "Cao cấp" };
+const TEN_KY_HAN: Record<SubscriptionDuration, string> = { "1_thang": "1 tháng", "3_thang": "3 tháng", "6_thang": "6 tháng", "1_nam": "1 năm" };
+const TIERS: SubscriptionTier[] = ["co_ban", "cao_cap"];
+const DURATIONS: SubscriptionDuration[] = ["1_thang", "3_thang", "6_thang", "1_nam"];
+---
+
+<BaseLayout title="Gói thuê bao Quân Sư — Phong Thủy Thiên Anh" description="Đăng ký gói Cơ bản hoặc Cao cấp để dùng đầy đủ tính năng Quân Sư Thiên Anh.">
+  <section class="qs">
+    <div class="qs-wrap">
+      <a class="qs-back" href="/quan-su">← Quân Sư</a>
+      <p class="qs-eyebrow" style="margin-top:1rem;">Gói thuê bao</p>
+      <h1 class="qs-h1">Gói Quân Sư Thiên Anh</h1>
+      <p class="qs-sub">Trọng tâm là <strong style="color:var(--qs-gold);">luận quẻ Kinh Dịch</strong> cùng Quân Sư — các công cụ Đại Cát Lợi, luận số điện thoại, tính trùng tang, xem ngày tốt xấu đi kèm theo gói.</p>
+
+      <div class="qs-notice" style="background:rgba(241,200,90,0.1);border-color:rgba(241,200,90,0.4);color:var(--qs-gold);">
+        ⚙ Đang trong giai đoạn thử nghiệm nội bộ — chỉ tài khoản quản trị đăng ký được lúc này.
+      </div>
+
+      {!user ? (
+        <div class="qs-card" style="text-align:center;padding:1.5rem;">
+          <p style="margin-bottom:1rem;">Cần đăng nhập để đăng ký gói.</p>
+          <div class="qs-row" style="max-width:360px;margin:0 auto;">
+            <a href="/hoc-vien/dang-nhap" class="qs-btn" style="text-decoration:none;">Đăng nhập</a>
+            <a href="/hoc-vien/dang-ky" class="qs-btn qs-btn-ghost" style="text-decoration:none;">Đăng ký tài khoản</a>
+          </div>
+        </div>
+      ) : (
+        <>
+          {goiHienTai ? (
+            <div class="qs-verdict" style="margin-bottom:1.5rem;">
+              <h2>{goiHienTai.isTrial ? "Đang dùng thử" : "Gói đang dùng"}</h2>
+              <div class="qs-badge NEN">{TEN_HANG[goiHienTai.tier]}{goiHienTai.isTrial && " · Dùng thử"}</div>
+              <p>Hết hạn: <strong style="color:var(--qs-ivory);">{goiHienTai.expiresAt.toLocaleDateString("vi-VN")}</strong>
+                {goiHienTai.isTrial
+                  ? " — chốt 1 gói bên dưới trước ngày này để không bị gián đoạn."
+                  : " — đăng ký thêm bên dưới sẽ CỘNG DỒN thời hạn."}
+              </p>
+            </div>
+          ) : (
+            <p class="qs-sub">Anh {user.name} chưa có gói nào đang hoạt động.</p>
+          )}
+
+          {coTheDungThu && (
+            <div class="qs-card" style="margin-bottom:1.5rem;text-align:center;">
+              <p class="qs-eyebrow" style="margin-top:0;">Chưa chắc chắn?</p>
+              <p style="margin:0.3rem 0 0.9rem;">Dùng thử <strong style="color:var(--qs-gold);">7 ngày miễn phí</strong>, trải nghiệm trọn gói Cao cấp — hết hạn thì chốt gói nào cũng được.</p>
+              <button type="button" id="btn-dung-thu" class="qs-btn">Dùng thử 7 ngày miễn phí</button>
+            </div>
+          )}
+          {daDungThu && !goiHienTai && (
+            <div class="qs-notice">Tài khoản đã dùng thử rồi — chọn 1 gói bên dưới để tiếp tục nhé.</div>
+          )}
+
+          <div id="goi-grid" style="display:grid;grid-template-columns:1fr;gap:1rem;">
+            {TIERS.map((tier) => (
+              <div class="qs-card">
+                <p class="qs-eyebrow" style="margin-top:0;">{TEN_HANG[tier]}</p>
+                <div class="qs-row" style="flex-wrap:wrap;gap:0.6rem;">
+                  {DURATIONS.map((duration) => {
+                    const gia = GIA_SUBSCRIPTION[tier][duration];
+                    const soThang = SO_THANG_THEO_KY_HAN[duration];
+                    return (
+                      <button
+                        type="button"
+                        class="goi-btn"
+                        data-tier={tier}
+                        data-duration={duration}
+                        disabled={gia === null}
+                        style="flex:1;min-width:120px;text-align:center;padding:0.8rem 0.6rem;border-radius:10px;border:1px solid rgba(241,200,90,0.25);background:rgba(255,255,255,0.02);cursor:pointer;color:inherit;font:inherit;"
+                      >
+                        <span style="display:block;font-weight:700;color:var(--qs-gold);">{TEN_KY_HAN[duration]}</span>
+                        <span style="display:block;font-size:0.78rem;color:var(--qs-muted);margin-top:0.2rem;">
+                          {gia !== null ? dinhDangTien(gia) : "Đang cập nhật"}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div class="qs-field" style="margin-top:1.2rem;">
+            <label for="phone">Số điện thoại liên hệ</label>
+            <input class="qs-input" id="phone" type="text" inputmode="numeric" placeholder="09xxxxxxxx" />
+          </div>
+
+          <div id="qs-sub-result" class="qs-result qs-hidden"></div>
+        </>
+      )}
+    </div>
+  </section>
+
+  {user && (
+    <script define:vars={{ userIsAdmin: user.isAdmin }}>
+      const grid = document.getElementById("goi-grid");
+      const phoneInput = document.getElementById("phone");
+      const resultEl = document.getElementById("qs-sub-result");
+      const trialBtn = document.getElementById("btn-dung-thu");
+      let pollTimer = null;
+
+      function esc(s) { const d = document.createElement("div"); d.textContent = s == null ? "" : String(s); return d.innerHTML; }
+
+      trialBtn?.addEventListener("click", async () => {
+        trialBtn.disabled = true;
+        trialBtn.textContent = "Đang kích hoạt…";
+        try {
+          const res = await fetch("/api/quan-su/goi-thue-bao/dung-thu", { method: "POST" });
+          const data = await res.json();
+          if (!data.ok) {
+            alert(data.error || "Không kích hoạt được dùng thử.");
+            trialBtn.disabled = false;
+            trialBtn.textContent = "Dùng thử 7 ngày miễn phí";
+            return;
+          }
+          window.location.reload();
+        } catch (e) {
+          alert("Không kết nối được máy chủ, vui lòng thử lại.");
+          trialBtn.disabled = false;
+          trialBtn.textContent = "Dùng thử 7 ngày miễn phí";
+        }
+      });
+
+      async function pollStatus(orderCode) {
+        try {
+          const res = await fetch(`/api/quan-su/goi-thue-bao/result?orderCode=${encodeURIComponent(orderCode)}`);
+          const data = await res.json();
+          if (data.status === "confirmed") {
+            clearInterval(pollTimer);
+            resultEl.innerHTML = '<div class="qs-notice" style="background:rgba(127,184,160,0.12);border-color:#7fb8a0;color:#a9e0c9;">✓ Kích hoạt thành công! Tải lại trang để xem gói mới.</div>';
+          } else if (data.status === "cancelled") {
+            clearInterval(pollTimer);
+            resultEl.innerHTML = '<div class="qs-notice">Đơn đã bị hủy.</div>';
+          }
+        } catch (e) { /* im lặng, thử lại lần poll sau */ }
+      }
+
+      grid?.addEventListener("click", async (e) => {
+        const btn = e.target.closest(".goi-btn");
+        if (!btn || btn.disabled) return;
+        const phone = (phoneInput?.value || "").trim();
+        if (!phone) { alert("Vui lòng nhập số điện thoại liên hệ."); return; }
+
+        resultEl.classList.remove("qs-hidden");
+        resultEl.innerHTML = '<p class="qs-sub">Đang tạo đơn…</p>';
+
+        try {
+          const res = await fetch("/api/quan-su/goi-thue-bao/checkout", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ tier: btn.dataset.tier, duration: btn.dataset.duration, customerPhone: phone }),
+          });
+          const data = await res.json();
+          if (!data.ok) { resultEl.innerHTML = `<div class="qs-notice">${esc(data.error || "Có lỗi xảy ra.")}</div>`; return; }
+
+          if (data.mienPhi) {
+            resultEl.innerHTML = '<div class="qs-notice" style="background:rgba(127,184,160,0.12);border-color:#7fb8a0;color:#a9e0c9;">✓ Đơn thử nghiệm (0đ) đã kích hoạt. Tải lại trang để xem gói mới.</div>';
+            return;
+          }
+
+          resultEl.innerHTML = `
+            <div class="qs-verdict" style="text-align:center;">
+              <h2>Quét mã để thanh toán</h2>
+              <img src="${data.qrUrl}" alt="QR thanh toán" style="max-width:280px;border-radius:12px;margin:0.5rem auto;display:block;" />
+              <p class="qs-sub">Mã đơn: ${esc(data.orderCode)} — trang tự làm mới khi thanh toán xong.</p>
+            </div>`;
+          pollTimer = setInterval(() => pollStatus(data.orderCode), 3000);
+        } catch (e) {
+          resultEl.innerHTML = '<div class="qs-notice">Không kết nối được máy chủ, vui lòng thử lại.</div>';
+        }
+      });
+    </script>
+  )}
+</BaseLayout>

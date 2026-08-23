@@ -53,17 +53,40 @@ const formInputs = [...question.required_inputs, ...question.optional_inputs].fi
                   <option value="Nam">Nam</option>
                   <option value="Nữ">Nữ</option>
                 </select>
-                <div class="help">Dùng để xem thời vận (đại vận, lưu niên) của bạn.</div>
+                <div class="help">Dùng để xem thời vận (đại vận, lưu niên) của anh/chị.</div>
               </div>
             )}
           </form>
 
-          <p class="qs-eyebrow">Bước 3 · An quẻ</p>
-          <p class="qs-sub">Tĩnh tâm nghĩ về điều bạn đang phân vân, rồi gieo quẻ.</p>
-          <div class="qs-hexrow" id="qs-hexrow"></div>
+          <p class="qs-eyebrow">Bước 3 · Cách lập quẻ</p>
+          <p class="qs-sub">Chọn 1 trong 3 cách lập quẻ Kinh Dịch — kết quả luận giải như nhau, chỉ khác cách nhập.</p>
+          <div class="qs-methods" id="qs-methods">
+            <button type="button" class="qs-method active" data-method="gieo-tay">
+              <span class="ti">Gieo đồng xu</span>
+              <span class="de">Sóc xu thật, tự chọn mặt đã ra</span>
+            </button>
+            <button type="button" class="qs-method" data-method="mai-hoa">
+              <span class="ti">Mai Hoa Dịch Số</span>
+              <span class="de">Lập quẻ tự động theo giờ hỏi việc</span>
+            </button>
+            <button type="button" class="qs-method" data-method="seri-tien">
+              <span class="ti">Seri tiền</span>
+              <span class="de">Tĩnh tâm, rút 1 tờ tiền, nhập số seri</span>
+            </button>
+          </div>
+
+          <div class="qs-field qs-hidden" id="qs-seri-field">
+            <label for="f-seri-tien">Seri tiền</label>
+            <input class="qs-input" id="f-seri-tien" type="text" inputmode="numeric" placeholder="Ví dụ: AB 12345678" />
+            <div class="help">Tĩnh tâm nghĩ về việc đang phân vân, rút ngẫu nhiên 1 tờ tiền đang có trong người, rồi nhập đúng dãy số seri trên tờ đó.</div>
+          </div>
+
+          <p class="qs-eyebrow">Bước 4 · An quẻ</p>
+          <p class="qs-sub" id="qs-step-sub">Sóc 3 đồng xu thật trong tay, thả xuống, rồi bấm chọn đúng mặt đã ra cho từng đồng — làm lần lượt từ Hào 1 đến Hào 6.</p>
+          <div class="qs-toss-picker" id="qs-toss-picker"></div>
           <div class="qs-row" style="max-width:420px;">
-            <button class="qs-btn" id="qs-gieo" type="button">Gieo quẻ</button>
-            <button class="qs-btn qs-btn-ghost" id="qs-lai" type="button" style="display:none;">Gieo lại</button>
+            <button class="qs-btn" id="qs-gieo" type="button" disabled>Xem kết quả</button>
+            <button class="qs-btn qs-btn-ghost" id="qs-lai" type="button" style="display:none;">Làm lại</button>
           </div>
 
           <div class="qs-result qs-hidden" id="qs-result"></div>
@@ -72,39 +95,103 @@ const formInputs = [...question.required_inputs, ...question.optional_inputs].fi
           <script>
             const qEl = document.getElementById("qs-question");
             const question = JSON.parse(qEl?.textContent || "{}");
-            const hexrow = document.getElementById("qs-hexrow");
+            const tossPicker = document.getElementById("qs-toss-picker");
             const gieoBtn = document.getElementById("qs-gieo");
             const laiBtn = document.getElementById("qs-lai");
             const resultEl = document.getElementById("qs-result");
+            const methodsEl = document.getElementById("qs-methods");
+            const seriField = document.getElementById("qs-seri-field");
+            const stepSub = document.getElementById("qs-step-sub");
+            let castingMethod = "gieo-tay";
+            // 6 hào × 3 đồng — null = chưa chọn, 2 = mặt Âm, 3 = mặt Dương. Người dùng tự sóc xu thật rồi
+            // bấm chọn đúng mặt đã ra (KHÔNG random) — đúng cách hành nghề truyền thống.
+            let manualCoins = [[null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null]];
 
-            // 1 lần gieo 3 đồng xu: sấp=2, ngửa=3 → tổng 6..9. 6/8=Âm, 7/9=Dương; 6/9=động.
-            function tossOne() {
-              let s = 0;
-              for (let i = 0; i < 3; i++) s += Math.random() < 0.5 ? 2 : 3;
-              return s;
+            const METHOD_SUB = {
+              "gieo-tay": "Sóc 3 đồng xu thật trong tay, thả xuống, rồi bấm chọn đúng mặt đã ra cho từng đồng — làm lần lượt từ Hào 1 đến Hào 6.",
+              "mai-hoa": "Quân Sư lập quẻ theo đúng thời điểm anh/chị bấm — không cần thao tác gì thêm.",
+              "seri-tien": "Tĩnh tâm nghĩ về điều anh/chị đang phân vân, rút ngẫu nhiên 1 tờ tiền, rồi nhập seri của tờ đó.",
+            };
+            const METHOD_BTN_LABEL = { "gieo-tay": "Xem kết quả" };
+
+            function manualComplete() { return manualCoins.every((h) => h.every((c) => c !== null)); }
+
+            function miniLineHtml(sum) {
+              const yang = sum === 7 || sum === 9;
+              const dong = sum === 6 || sum === 9;
+              const bar = yang ? '<span class="mini-seg"></span>' : '<span class="mini-seg half"></span><span class="mini-seg half"></span>';
+              return `<span class="qs-mini-line">${bar}</span>${dong ? '<b class="dong"> · động</b>' : ""}`;
             }
-            function renderHao(container, value, dong, idx, delay) {
-              const yang = value === 7 || value === 9;
-              const row = document.createElement("div");
-              row.className = "qs-hex";
-              const lines = document.createElement("div");
-              lines.className = "lines";
-              if (yang) {
-                const seg = document.createElement("span"); seg.className = "seg"; seg.style.width = "74px"; lines.appendChild(seg);
-              } else {
-                for (let k = 0; k < 2; k++) { const seg = document.createElement("span"); seg.className = "seg"; lines.appendChild(seg); }
+
+            function updateGieoBtnState() {
+              if (castingMethod !== "gieo-tay") return;
+              gieoBtn.disabled = !manualComplete();
+            }
+
+            function renderTossPreview(haoIdx) {
+              const row = tossPicker.querySelector(`.qs-toss-row[data-hao="${haoIdx + 1}"]`);
+              const live = row?.querySelector(".qs-toss-live");
+              if (!live) return;
+              const coins = manualCoins[haoIdx];
+              if (coins.every((c) => c !== null)) live.innerHTML = miniLineHtml(coins[0] + coins[1] + coins[2]);
+              else live.innerHTML = "";
+            }
+
+            function buildManualPicker() {
+              manualCoins = [[null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null], [null, null, null]];
+              tossPicker.innerHTML = "";
+              for (let h = 0; h < 6; h++) {
+                const row = document.createElement("div");
+                row.className = "qs-toss-row";
+                row.dataset.hao = String(h + 1);
+                let coinsHtml = "";
+                for (let c = 0; c < 3; c++) {
+                  coinsHtml += `<div class="qs-toss-coin" data-coin="${c}">
+                    <button type="button" data-face="am"><img src="/images/quan-su/coin-am.jpg" alt="Mặt âm"></button>
+                    <button type="button" data-face="duong"><img src="/images/quan-su/coin-duong.jpg" alt="Mặt dương"></button>
+                  </div>`;
+                }
+                row.innerHTML = `<div class="qs-toss-head"><b>Hào ${h + 1}</b><span class="qs-toss-live"></span></div><div class="qs-toss-coins">${coinsHtml}</div>`;
+                tossPicker.appendChild(row);
               }
-              row.appendChild(lines);
-              const tag = document.createElement("span");
-              tag.textContent = `Hào ${idx + 1}` + (dong ? " · động" : "");
-              if (dong) tag.className = "dong";
-              else { tag.style.color = "var(--qs-muted)"; tag.style.fontSize = "0.75rem"; }
-              row.appendChild(tag);
-              container.appendChild(row);
-              setTimeout(() => row.classList.add("show"), delay);
+              updateGieoBtnState();
             }
 
-            async function submit(tosses) {
+            tossPicker?.addEventListener("click", (e) => {
+              const btn = e.target.closest(".qs-toss-coin button");
+              if (!btn) return;
+              const coinEl = btn.closest(".qs-toss-coin");
+              const rowEl = btn.closest(".qs-toss-row");
+              const haoIdx = Number(rowEl.dataset.hao) - 1;
+              const coinIdx = Number(coinEl.dataset.coin);
+              manualCoins[haoIdx][coinIdx] = btn.dataset.face === "duong" ? 3 : 2;
+              coinEl.querySelectorAll("button").forEach((b) => b.classList.toggle("sel", b === btn));
+              renderTossPreview(haoIdx);
+              updateGieoBtnState();
+            });
+
+            methodsEl?.addEventListener("click", (e) => {
+              const btn = e.target.closest(".qs-method");
+              if (!btn) return;
+              methodsEl.querySelectorAll(".qs-method").forEach((b) => b.classList.remove("active"));
+              btn.classList.add("active");
+              castingMethod = btn.dataset.method;
+              seriField.classList.toggle("qs-hidden", castingMethod !== "seri-tien");
+              resultEl.classList.add("qs-hidden");
+              laiBtn.style.display = "none";
+              gieoBtn.textContent = METHOD_BTN_LABEL[castingMethod] || "Lập quẻ";
+              if (castingMethod === "gieo-tay") {
+                buildManualPicker();
+              } else {
+                tossPicker.innerHTML = "";
+                gieoBtn.disabled = false;
+              }
+              if (stepSub) stepSub.textContent = METHOD_SUB[castingMethod] || METHOD_SUB["gieo-tay"];
+            });
+
+            buildManualPicker(); // mặc định đang ở "gieo-tay" khi tải trang
+
+            async function submit(opts) {
               const ngaySinh = collectNgaySinh();
               const moTaEl = document.querySelector('[data-key="mo_ta_tinh_huong"]');
               try {
@@ -113,9 +200,29 @@ const formInputs = [...question.required_inputs, ...question.optional_inputs].fi
                 const res = await fetch("/api/quan-su/luan", {
                   method: "POST",
                   headers: { "Content-Type": "application/json" },
-                  body: JSON.stringify({ question_id: question.question_id, tosses, ngaySinh, moTa: moTaEl ? moTaEl.value : undefined }),
+                  body: JSON.stringify({
+                    question_id: question.question_id,
+                    castingMethod: opts.castingMethod,
+                    tosses: opts.tosses,
+                    seriTien: opts.seriTien,
+                    ngaySinh,
+                    moTa: moTaEl ? moTaEl.value : undefined,
+                  }),
                 });
                 const data = await res.json();
+                if (res.status === 401) {
+                  resultEl.innerHTML = `<div class="qs-notice">${data.error || "Vui lòng đăng nhập."}</div>
+                    <div class="qs-row" style="max-width:360px;margin-top:0.6rem;">
+                      <a href="/hoc-vien/dang-nhap" class="qs-btn" style="text-decoration:none;">Đăng nhập</a>
+                      <a href="/hoc-vien/dang-ky" class="qs-btn qs-btn-ghost" style="text-decoration:none;">Đăng ký</a>
+                    </div>`;
+                  return;
+                }
+                if (res.status === 403) {
+                  resultEl.innerHTML = `<div class="qs-notice">${data.error || "Cần gói thuê bao."}</div>
+                    <a href="/quan-su/goi-thue-bao" class="qs-btn" style="text-decoration:none;display:inline-flex;margin-top:0.6rem;">Xem gói thuê bao</a>`;
+                  return;
+                }
                 if (!res.ok) { resultEl.innerHTML = `<div class="qs-notice">${data.error || "Có lỗi xảy ra."}</div>`; return; }
                 renderResult(data);
               } catch (e) {
@@ -154,6 +261,30 @@ const formInputs = [...question.required_inputs, ...question.optional_inputs].fi
                   <div style="color:var(--qs-muted);font-size:0.82rem;margin-bottom:0.6rem;">Đại vận ${esc(rep.vanTrinh.daiVan)} · Năm ${esc(rep.vanTrinh.namHienTai)}</div>
                   ${bars}</div>`;
               }
+              // Có bài luận sâu thì lấy làm phần chính; không có thì lùi về bản chấm điểm bằng luật.
+              const ai = data.luanAI;
+              const li = (arr) => (arr || []).map((x) => `<li>${esc(x)}</li>`).join("");
+              const khoiAI = ai
+                ? `
+                  <div class="qs-sect"><h4>Quân Sư luận</h4>
+                    <ul style="margin:0;padding-left:1.1rem;line-height:1.75;">${li(ai.phan_tich)}</ul>
+                  </div>
+                  ${ai.nguyen_nhan_cot_loi ? `<div class="qs-sect"><h4>Gốc rễ vấn đề</h4><p style="margin:0;line-height:1.75;">${esc(ai.nguyen_nhan_cot_loi)}</p></div>` : ""}
+                  <div class="qs-sect"><h4>Điểm cần lưu tâm</h4>
+                    <ul style="margin:0;padding-left:1.1rem;line-height:1.75;">${li(ai.diem_can_luu_y)}</ul>
+                  </div>
+                  <div class="qs-sect"><h4>Quân Sư khuyên</h4>
+                    <ul style="margin:0;padding-left:1.1rem;line-height:1.75;">${li(ai.quan_su_khuyen)}</ul>
+                  </div>
+                  ${ai.phuong_phap_hoa_giai && ai.phuong_phap_hoa_giai.length
+                    ? `<div class="qs-sect"><h4>Cách hóa giải</h4><ul style="margin:0;padding-left:1.1rem;line-height:1.75;">${li(ai.phuong_phap_hoa_giai)}</ul></div>`
+                    : ""}
+                  ${ai.thoi_diem_khuyen_nghi ? `<div class="qs-sect"><h4>Thời điểm</h4><p style="margin:0;line-height:1.75;">${esc(ai.thoi_diem_khuyen_nghi)}</p></div>` : ""}`
+                : `
+                  <div class="qs-sect"><h4>Điểm thuận</h4>${points("thuan", rep.diemThuan)}</div>
+                  <div class="qs-sect"><h4>Điểm cần lưu ý</h4>${points("luuy", rep.diemLuuY)}</div>
+                  <div class="qs-sect"><h4>Quân Sư khuyên</h4>${points("khuyen", rep.quanSuKhuyen)}</div>`;
+
               resultEl.innerHTML = `
                 <div class="qs-verdict">
                   <h2>KẾT QUẢ QUÂN SƯ</h2>
@@ -163,10 +294,8 @@ const formInputs = [...question.required_inputs, ...question.optional_inputs].fi
                     <div class="track"><div class="fill" style="width:${rep.mucDoThuan}%"></div></div>
                   </div>
                   <p>${esc(rep.xuHuong)}</p>
-                  <div class="qs-sect"><h4>Điểm thuận</h4>${points("thuan", rep.diemThuan)}</div>
-                  <div class="qs-sect"><h4>Điểm cần lưu ý</h4>${points("luuy", rep.diemLuuY)}</div>
-                  <div class="qs-sect"><h4>Quân Sư khuyên</h4>${points("khuyen", rep.quanSuKhuyen)}</div>
-                  ${data.isDemo ? '<div class="qs-demo">⚙ Bản demo: điểm số theo quy tắc đã có; phần diễn giải bằng lời sẽ do Quân Sư (AI) viết lại khi hoàn thiện.</div>' : ""}
+                  ${khoiAI}
+                  ${data.isDemo ? '<div class="qs-demo">⚙ Lần này chưa nối được phần luận sâu, đang hiển thị bản chấm điểm theo quy tắc. Quý bằng hữu thử lại sau ít phút.</div>' : ""}
                 </div>
                 ${luckHtml}
                 <details class="qs-detail">
@@ -189,16 +318,32 @@ const formInputs = [...question.required_inputs, ...question.optional_inputs].fi
               const nsRequired = question.required_inputs.some((i) => i.key === "ngay_sinh");
               if (nsRequired && (!ns || !ns.value)) { alert("Vui lòng nhập ngày sinh để xem được thời vận."); return; }
 
-              hexrow.innerHTML = "";
+              if (castingMethod === "gieo-tay" && !manualComplete()) {
+                alert("Anh chưa chọn đủ mặt cho cả 6 hào — mỗi hào cần chọn đủ 3 đồng."); return;
+              }
+              if (castingMethod === "seri-tien") {
+                const v = (document.getElementById("f-seri-tien")?.value || "").trim();
+                if (v.replace(/\D/g, "").length < 2) { alert("Vui lòng nhập seri tiền (ít nhất 2 chữ số)."); return; }
+              }
               resultEl.classList.add("qs-hidden");
-              const tosses = [];
-              for (let i = 0; i < 6; i++) tosses.push(tossOne());
-              tosses.forEach((v, i) => renderHao(hexrow, v, v === 6 || v === 9, i, i * 260));
               gieoBtn.disabled = true;
               laiBtn.style.display = "";
-              setTimeout(() => submit(tosses), 6 * 260 + 300);
+
+              if (castingMethod === "gieo-tay") {
+                const tosses = manualCoins.map((h) => h[0] + h[1] + h[2]);
+                submit({ castingMethod, tosses });
+              } else if (castingMethod === "seri-tien") {
+                submit({ castingMethod, seriTien: document.getElementById("f-seri-tien").value.trim() });
+              } else {
+                submit({ castingMethod });
+              }
             });
-            laiBtn?.addEventListener("click", () => { gieoBtn.disabled = false; hexrow.innerHTML = ""; resultEl.classList.add("qs-hidden"); });
+            laiBtn?.addEventListener("click", () => {
+              resultEl.classList.add("qs-hidden");
+              laiBtn.style.display = "none";
+              if (castingMethod === "gieo-tay") buildManualPicker();
+              else gieoBtn.disabled = false;
+            });
           </script>
         </>
       )}

@@ -26,6 +26,8 @@ export {
   castInputNow,
   castLucHaoFromTosses,
   castLucHaoRandom,
+  castMaiHoa,
+  castSeriTien,
   dungThanHintFor,
   type DungThanHint,
   type QuanSuInterpretationPayload,
@@ -48,6 +50,7 @@ export {
 } from "./advisory-engine";
 export {
   runQuanSu,
+  type CastingMethod,
   type NgaySinhInput,
   type QuanSuResult,
   type RunQuanSuInput,

@@ -45,8 +45,19 @@ export type OutputType =
   | "chon-thoi-diem" // danh sách ngày/giờ tốt được xếp hạng (nhóm chọn ngày giờ)
   | "so-sanh-phuong-an"; // so sánh 2-3 phương án (nhóm quyết định, chọn A/B/C...)
 
-/** Tầng giá — theo độ phức tạp + số engine cần gọi. Thầy có thể chỉnh sau. */
-export type PricingTier = "co-ban" | "nang-cao" | "cao-cap";
+/**
+ * Tầng gói của câu hỏi — CHỈ 2 tầng, khớp đúng 2 gói thuê bao (Cơ bản / Cao cấp).
+ *
+ * Nguyên tắc phân tầng (theo PHASE_QUESTION_LIBRARY, Thầy chốt 2026-08-23) — phân theo DẠNG LUẬN,
+ * không phân theo chủ đề hay mức rủi ro (rủi ro đã có `safety_level` lo riêng):
+ *
+ * - "co-ban"  → "Hỏi một việc — nhận một lời khuyên": một câu hỏi đóng ("Có nên… không?"),
+ *               gieo một quẻ, ra một kết luận NÊN / KHÔNG NÊN / NÊN CHỜ / CÓ ĐIỀU KIỆN.
+ * - "cao-cap" → "Đưa vấn đề — Quân Sư phân tích cùng anh/chị": so sánh nhiều phương án, hoặc câu
+ *               hỏi mở cần phân tích sâu (chẩn đoán "điều gì đang cản trở", chiến lược "nên thế
+ *               nào", thời điểm "khi nào nên"). Cần nhiều quẻ hoặc nhiều lớp dữ liệu hơn.
+ */
+export type PricingTier = "co-ban" | "cao-cap";
 
 /**
  * Mức nhạy cảm — quyết định tầng cảnh báo an toàn bắt buộc (xem QUESTION_SCHEMA.md mục 8).

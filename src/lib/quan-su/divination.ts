@@ -13,6 +13,8 @@
 import {
   lucHaoCastFromTosses,
   lucHaoCastRandom,
+  maiHoaCast,
+  seriTienCast,
   type CastInput,
   type CoinLineValue,
   type FullCastResult,
@@ -118,6 +120,22 @@ export function castLucHaoRandom(input: CastInput = castInputNow(), rng: () => n
   return lucHaoCastRandom(input, rng);
 }
 
+/**
+ * Lập quẻ Mai Hoa Dịch Số theo Năm/Tháng/Ngày/Giờ Âm lịch tại thời điểm hỏi việc — không cần người
+ * dùng thao tác gì. Tái dùng `maiHoaCast` (Thiệu Khang Tiết) — KHÔNG tự tính.
+ */
+export function castMaiHoa(input: CastInput = castInputNow()): FullCastResult {
+  return maiHoaCast(input);
+}
+
+/**
+ * Lập quẻ từ dãy số Seri trên tờ tiền ("số linh quẻ", ứng dụng Mai Hoa Dịch Số cho số bất kỳ).
+ * Tái dùng `seriTienCast` — KHÔNG tự tính.
+ */
+export function castSeriTien(serial: string, input: CastInput = castInputNow()): FullCastResult {
+  return seriTienCast(serial, input);
+}
+
 // ---------------------------------------------------------------------------------------------
 // Vận trình (Bát Tự/Tử Vi) do engine current-luck.ts trích (Phase 4). Ở đây chỉ dùng làm slot trong
 // payload — engine thật nằm ở current-luck.ts (tinhVanTrinhHienTai).
@@ -141,7 +159,7 @@ export interface QuanSuInterpretationPayload {
   van_trinh: LuckContext | null;
   meta: {
     castAtISO: string;
-    method: "luc-hao-tosses" | "luc-hao-random";
+    method: "luc-hao-tosses" | "luc-hao-random" | "mai-hoa" | "seri-tien";
   };
 }
 

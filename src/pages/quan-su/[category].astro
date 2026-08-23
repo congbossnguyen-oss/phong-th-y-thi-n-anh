@@ -2,6 +2,7 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import "../../styles/quan-su.css";
 import { getCategoryWithQuestions } from "../../lib/quan-su";
+import { layGoiDangHoatDong } from "../../lib/subscriptions/access";
 
 export const prerender = false;
 
@@ -12,6 +13,10 @@ if (!data) {
   return Astro.redirect("/quan-su");
 }
 const { category: cat, questions } = data;
+
+// Gắn nhãn "Cao cấp" lên câu ngoài gói để khách biết trước, thay vì bấm vào mới bị chặn.
+const goi = Astro.locals.user ? await layGoiDangHoatDong(Astro.locals.user.id) : null;
+const coCaoCap = goi?.tier === "cao_cap";
 ---
 
 <BaseLayout title={`${cat.title} — Quân Sư Thiên Anh`} description={cat.subtitle}>
@@ -19,18 +24,36 @@ const { category: cat, questions } = data;
     <div class="qs-wrap">
       <a class="qs-back" href="/quan-su">← Chọn nhóm khác</a>
       <p class="qs-eyebrow" style="margin-top:1rem;">{cat.icon} {cat.title}</p>
-      <h1 class="qs-h1">Bạn muốn hỏi điều gì?</h1>
+      <h1 class="qs-h1">Anh/chị muốn hỏi điều gì?</h1>
 
       {cat.notice && <div class="qs-notice">{cat.notice}</div>}
 
       <div class="qs-list">
         {questions.map((q) => (
           <a class="qs-q" href={`/quan-su/hoi/${q.question_id}`} style="text-decoration:none;color:inherit;display:block;">
-            <div class="ti">{q.title}</div>
+            <div class="ti">
+              {q.title}
+              {q.pricing_tier === "cao-cap" && (
+                <span
+                  style={`margin-left:0.5rem;font-size:0.68rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;padding:0.15rem 0.5rem;border-radius:999px;vertical-align:middle;${
+                    coCaoCap
+                      ? "background:rgba(127,184,160,0.16);color:#a9e0c9;border:1px solid #7fb8a0;"
+                      : "background:rgba(241,200,90,0.14);color:var(--qs-gold);border:1px solid rgba(241,200,90,0.45);"
+                  }`}
+                >Cao cấp</span>
+              )}
+            </div>
             <div class="de">{q.subtitle}</div>
           </a>
         ))}
       </div>
+
+      {!coCaoCap && questions.some((q) => q.pricing_tier === "cao-cap") && (
+        <p class="qs-sub" style="margin-top:1.2rem;font-size:0.85rem;">
+          Câu gắn nhãn <strong style="color:var(--qs-gold);">Cao cấp</strong> là những câu Quân Sư phân tích sâu — so sánh nhiều phương án, tìm nguyên nhân, chọn thời điểm.
+          <a href="/quan-su/goi-thue-bao" style="color:var(--qs-gold);"> Xem gói thuê bao</a>
+        </p>
+      )}
     </div>
   </section>
 </BaseLayout>

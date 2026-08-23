@@ -9,10 +9,13 @@ import {
   castInputNow,
   castLucHaoFromTosses,
   castLucHaoRandom,
+  castMaiHoa,
+  castSeriTien,
   type QuanSuInterpretationPayload,
 } from "./divination";
 import { tinhVanTrinhHienTai, type LuckContext } from "./current-luck";
 import { buildAdvisoryReport, type AdvisoryReport } from "./advisory-engine";
+import { luanGiaiBangAI, type LuanGiaiKinhDich } from "./luan-giai";
 import { getQuestion } from "./index";
 import type { CoinLineValue, FullCastResult } from "../luc-hao";
 import type { QuestionDefinition } from "./types";
@@ -25,16 +28,35 @@ export interface NgaySinhInput {
   hour?: number;
 }
 
+/**
+ * Cách lập quẻ Kinh Dịch — cả 3 cách đều cho ra cùng 1 dạng kết quả (`FullCastResult`, xem luc-hao.ts),
+ * chỉ khác nguồn dữ liệu đầu vào. Đây là lựa chọn CỦA NGƯỜI DÙNG khi hỏi 1 câu (divination_method của
+ * câu hỏi luôn là "luc-hao" — tức "dùng Kinh Dịch"; castingMethod chỉ là cách NHẬP để lập quẻ đó).
+ * - "gieo-tay": tự gieo 3 đồng xu 6 lần (mặc định, cách truyền thống) — dùng `tosses`.
+ * - "mai-hoa": Mai Hoa Dịch Số theo giờ hỏi việc — không cần input thêm.
+ * - "seri-tien": từ dãy số Seri trên tờ tiền — cần `seriTien`.
+ */
+export type CastingMethod = "gieo-tay" | "mai-hoa" | "seri-tien";
+
 export interface RunQuanSuInput {
   question_id: string;
-  /** 6 giá trị gieo (6/7/8/9) nếu người dùng tự gieo; bỏ trống → app gieo giúp (random). */
+  /** Mặc định "gieo-tay". */
+  castingMethod?: CastingMethod;
+  /** 6 giá trị gieo (6/7/8/9) — dùng khi castingMethod="gieo-tay" và người dùng tự gieo; bỏ trống → app gieo giúp (random). */
   tosses?: CoinLineValue[];
+  /** Dãy số Seri trên tờ tiền — bắt buộc khi castingMethod="seri-tien". */
+  seriTien?: string;
   /** Ngày sinh — bắt buộc nếu câu hỏi có dùng Bát Tự/Tử Vi (vẽ vận trình). */
   ngaySinh?: NgaySinhInput;
   /** Mô tả tình huống người dùng nhập (chỉ đưa vào ngữ cảnh, không ảnh hưởng quẻ). */
   moTa?: string;
   /** Cho phép truyền RNG để test tái lập (mặc định Math.random). */
   rng?: () => number;
+  /**
+   * Bỏ qua bước luận bằng AI. Dùng cho test phần chấm điểm bằng luật — nếu không có, mỗi lần chạy
+   * test lại gọi API thật, vừa chậm vừa tốn tiền.
+   */
+  boQuaAI?: boolean;
 }
 
 export interface QuanSuResult {
@@ -49,11 +71,14 @@ export interface QuanSuResult {
     tuanKhong: string;
   };
   vanTrinh: LuckContext | null;
-  isDemo: true; // văn xuôi luận giải hiện là bản demo (chưa có AI thật)
+  /** Bài luận sâu do Interpretation Engine (AI) trả về. null khi AI hỏng — khi đó chỉ còn `report`. */
+  luanAI: LuanGiaiKinhDich | null;
+  /** true khi CHƯA có bài luận sâu — lúc đó văn xuôi chỉ là bản chấm điểm bằng luật. */
+  isDemo: boolean;
 }
 
 /** Chạy 1 lượt hỏi cho câu hỏi Kinh Dịch (luc-hao). Câu chọn-ngày-giờ đi đường khác (trach-nhat). */
-export function runQuanSu(input: RunQuanSuInput): QuanSuResult {
+export async function runQuanSu(input: RunQuanSuInput): Promise<QuanSuResult> {
   const question = getQuestion(input.question_id);
   if (!question) throw new Error(`Không tìm thấy câu hỏi: ${input.question_id}`);
   if (question.divination_method !== "luc-hao") {
@@ -62,11 +87,22 @@ export function runQuanSu(input: RunQuanSuInput): QuanSuResult {
     );
   }
 
-  // 1) Gieo quẻ (tự gieo nếu có tosses, không thì gieo giúp).
+  // 1) Gieo quẻ — theo castingMethod người dùng chọn (mặc định "gieo-tay", giữ đúng hành vi cũ:
+  //    tự gieo nếu có tosses, không thì gieo giúp). Cả 3 cách đều cho FullCastResult cùng dạng.
   const castInput = castInputNow();
+  const castingMethod: CastingMethod = input.castingMethod ?? "gieo-tay";
   let cast: FullCastResult;
   let method: QuanSuInterpretationPayload["meta"]["method"];
-  if (input.tosses && input.tosses.length === 6) {
+  if (castingMethod === "mai-hoa") {
+    cast = castMaiHoa(castInput);
+    method = "mai-hoa";
+  } else if (castingMethod === "seri-tien") {
+    if (!input.seriTien || input.seriTien.replace(/\D/g, "").length < 2) {
+      throw new Error("Cần nhập seri tiền (ít nhất 2 chữ số) để lập quẻ theo Seri tiền.");
+    }
+    cast = castSeriTien(input.seriTien, castInput);
+    method = "seri-tien";
+  } else if (input.tosses && input.tosses.length === 6) {
     cast = castLucHaoFromTosses(input.tosses, castInput);
     method = "luc-hao-tosses";
   } else {
@@ -90,8 +126,15 @@ export function runQuanSu(input: RunQuanSuInput): QuanSuResult {
   // 3) Đóng gói payload cho Advisory Engine.
   const payload = buildInterpretationPayload(question, cast, { method, vanTrinh });
 
-  // 4) Sinh BÁO CÁO CỐ VẤN: điểm số + verdict deterministic; văn xuôi demo (thay bằng LLM khi có Phần E).
+  // 4) Báo cáo cố vấn bằng LUẬT — điểm số + verdict deterministic. Luôn chạy, vì đây là lưới an
+  //    toàn: AI hỏng thì khách vẫn có kết quả để xem.
   const report = buildAdvisoryReport(payload);
+
+  // 5) Bài luận sâu bằng AI (Interpretation Engine). Hỏng thì trả null, KHÔNG ném lỗi — cố ý, để
+  //    một lần gọi mạng trục trặc không làm mất trắng lượt hỏi của khách.
+  const { luan } = input.boQuaAI
+    ? { luan: null }
+    : await luanGiaiBangAI(payload, { gioiTinh: input.ngaySinh?.gender, moTa: input.moTa });
 
   return {
     question: { id: question.question_id, title: question.title, category: question.category },
@@ -104,6 +147,7 @@ export function runQuanSu(input: RunQuanSuInput): QuanSuResult {
       tuanKhong: cast.tuanKhong,
     },
     vanTrinh,
-    isDemo: true,
+    luanAI: luan,
+    isDemo: luan === null,
   };
 }

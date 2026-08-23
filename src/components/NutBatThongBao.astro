@@ -1,0 +1,145 @@
+---
+/**
+ * Nút bật/tắt nhắc mùng Một và ngày Rằm.
+ *
+ * Khóa công khai VAPID nhúng thẳng vào trang — đúng thiết kế, nó KHÔNG phải bí mật (khóa riêng
+ * nằm ở máy chủ). Nếu chưa cấu hình khóa thì không hiện nút, tránh khách bấm vào rồi lỗi.
+ */
+import { docBien } from "../lib/thong-bao/env";
+const vapidPublicKey = docBien("VAPID_PUBLIC_KEY") || "";
+---
+
+{vapidPublicKey && (
+  <div class="tb-hop" id="tb-hop" hidden>
+    <div class="tb-chu">
+      <strong>Nhắc ngày Rằm và mùng Một</strong>
+      <span id="tb-mo-ta">Để Quân Sư nhắc quý bằng hữu lo chuyện thờ cúng, khỏi quên.</span>
+    </div>
+    <button type="button" id="tb-nut" class="tb-nut">Bật nhắc</button>
+  </div>
+
+  <style>
+    .tb-hop {
+      display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+      background: rgba(241, 200, 90, 0.06);
+      border: 1px solid rgba(241, 200, 90, 0.28);
+      border-radius: 12px; padding: 0.9rem 1.1rem; margin: 1.5rem 0;
+    }
+    .tb-chu { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 0.2rem; }
+    .tb-chu strong { color: #f1c85a; font-size: 0.95rem; }
+    .tb-chu span { font-size: 0.82rem; opacity: 0.75; }
+    .tb-nut {
+      background: #f1c85a; color: #1a1206; border: 0; border-radius: 999px;
+      padding: 0.55rem 1.3rem; font-weight: 700; font-size: 0.88rem; cursor: pointer;
+      font-family: inherit; white-space: nowrap;
+    }
+    .tb-nut:hover { filter: brightness(1.08); }
+    .tb-nut:disabled { opacity: 0.55; cursor: default; }
+    .tb-nut.tb-tat { background: transparent; color: #f1c85a; border: 1px solid rgba(241, 200, 90, 0.5); }
+  </style>
+
+  <script define:vars={{ vapidPublicKey }}>
+    (async () => {
+      const hop = document.getElementById("tb-hop");
+      const nut = document.getElementById("tb-nut");
+      const moTa = document.getElementById("tb-mo-ta");
+
+      // Trình duyệt không đỡ được thì ẩn luôn, không bày ra nút bấm không chạy.
+      if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) return;
+
+      // iPhone chỉ cho nhận thông báo khi trang đã được thêm vào màn hình chính. Nhận biết bằng
+      // chế độ standalone; nếu chưa thì hướng dẫn thay vì để khách bấm mãi không được.
+      const laIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+      const daCaiVeManHinh = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
+
+      hop.hidden = false;
+
+      if (laIOS && !daCaiVeManHinh) {
+        moTa.textContent = "Trên iPhone, hãy bấm nút Chia sẻ rồi chọn “Thêm vào MH chính”, sau đó mở lại từ biểu tượng ngoài màn hình để bật nhắc.";
+        nut.disabled = true;
+        nut.textContent = "Cần thêm vào màn hình";
+        return;
+      }
+
+      function doiKhoa(base64) {
+        const dem = "=".repeat((4 - (base64.length % 4)) % 4);
+        const chuoi = (base64 + dem).replace(/-/g, "+").replace(/_/g, "/");
+        const raw = atob(chuoi);
+        return Uint8Array.from([...raw].map((c) => c.charCodeAt(0)));
+      }
+
+      let dangKy = null;
+      try {
+        dangKy = await navigator.serviceWorker.register("/sw.js");
+        await navigator.serviceWorker.ready;
+      } catch (e) {
+        hop.hidden = true;
+        return;
+      }
+
+      async function capNhatNut() {
+        const sub = await dangKy.pushManager.getSubscription();
+        if (sub && Notification.permission === "granted") {
+          nut.textContent = "Đang bật · Tắt đi";
+          nut.classList.add("tb-tat");
+          moTa.textContent = "Quân Sư sẽ nhắc quý bằng hữu trước mỗi dịp Rằm và mùng Một.";
+        } else {
+          nut.textContent = "Bật nhắc";
+          nut.classList.remove("tb-tat");
+        }
+        nut.disabled = false;
+      }
+
+      await capNhatNut();
+
+      nut.addEventListener("click", async () => {
+        nut.disabled = true;
+        const sub = await dangKy.pushManager.getSubscription();
+
+        // Đang bật -> tắt.
+        if (sub && Notification.permission === "granted") {
+          try {
+            await fetch("/api/thong-bao/huy", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ endpoint: sub.endpoint }),
+            });
+            await sub.unsubscribe();
+          } catch (e) { /* tắt phía máy chủ là đủ, không chặn khách */ }
+          moTa.textContent = "Đã tắt nhắc. Bấm lại bất cứ lúc nào để bật.";
+          await capNhatNut();
+          return;
+        }
+
+        // Chưa bật -> xin quyền rồi đăng ký.
+        let quyen = Notification.permission;
+        if (quyen === "default") quyen = await Notification.requestPermission();
+        if (quyen !== "granted") {
+          moTa.textContent = "Trình duyệt đang chặn thông báo. Hãy mở phần cài đặt của trang và cho phép, rồi bật lại.";
+          nut.disabled = false;
+          return;
+        }
+
+        try {
+          const moi = await dangKy.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: doiKhoa(vapidPublicKey),
+          });
+          const khoa = moi.toJSON().keys || {};
+          const res = await fetch("/api/thong-bao/dang-ky", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ endpoint: moi.endpoint, p256dh: khoa.p256dh, auth: khoa.auth }),
+          });
+          if (!res.ok) throw new Error("luu that bai");
+        } catch (e) {
+          moTa.textContent = "Chưa bật được, quý bằng hữu thử lại giúp.";
+          nut.disabled = false;
+          return;
+        }
+
+        await capNhatNut();
+      });
+    })();
+  </script>
+)}

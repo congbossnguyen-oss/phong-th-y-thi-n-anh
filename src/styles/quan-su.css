@@ -1,19 +1,23 @@
 /* QUÂN SƯ THIÊN ANH — style dùng chung cho khu vực /quan-su.
    Sub-brand riêng (Modern Mystical / Oriental / Premium) — xem UI_DESIGN_SYSTEM.md.
-   Bản khung: tối giản, đủ dùng; chưa phải giao diện cuối cùng. */
+   Tông: đen ấm ngả nâu-kim (không phải navy) + antique gold + nhấn tím rất nhẹ — đã duyệt cùng
+   Thầy trên bộ mockup "Quân Sư Thiên Anh" (tránh xanh navy gây cảm giác "lóa", ăn với ảnh đạo sĩ). */
 
 .qs {
-  --qs-midnight: #0b1120;
-  --qs-navy: #111a2e;
-  --qs-navy-2: #16233c;
-  --qs-purple: #6b4e9e;
-  --qs-gold: #c9a15a;
-  --qs-ivory: #f4efe6;
-  --qs-muted: #9aa6bd;
+  --qs-midnight: #070605;
+  --qs-navy: #14110b;
+  --qs-navy-2: #1b150c;
+  --qs-purple: #8f6bff;
+  --qs-gold: #f1c85a;
+  --qs-ivory: #ece3c6;
+  --qs-muted: #a9a184;
   --qs-good: #7fb8a0;
   --qs-bad: #c47a6a;
 
-  background: var(--qs-midnight);
+  background:
+    linear-gradient(180deg, rgba(7, 6, 5, 0.88) 0%, rgba(7, 6, 5, 0.68) 28%, rgba(7, 6, 5, 0.9) 72%, rgba(7, 6, 5, 0.98) 100%),
+    url("/images/quan-su/bg-huyen-hoc.webp") center top / cover no-repeat;
+  background-color: var(--qs-midnight);
   color: var(--qs-ivory);
   min-height: 70vh;
   padding: 2rem 1rem 4rem;
@@ -21,7 +25,7 @@
 }
 .qs-wrap { max-width: 760px; margin: 0 auto; }
 .qs-eyebrow { color: var(--qs-gold); letter-spacing: 0.14em; text-transform: uppercase; font-size: 0.72rem; }
-.qs-h1 { font-family: "Noto Serif", Georgia, serif; font-size: clamp(1.5rem, 4vw, 2.1rem); margin: 0.3rem 0 1.2rem; }
+.qs-h1 { font-family: "Cormorant Garamond", Georgia, serif; font-size: clamp(1.5rem, 4vw, 2.1rem); margin: 0.3rem 0 1.2rem; }
 .qs-sub { color: var(--qs-muted); margin: 0 0 1.6rem; }
 .qs-back { color: var(--qs-muted); text-decoration: none; font-size: 0.85rem; }
 .qs-back:hover { color: var(--qs-gold); }
@@ -31,7 +35,7 @@
 
 .qs-card {
   display: block; text-decoration: none; color: inherit;
-  background: var(--qs-navy); border: 1px solid rgba(201, 161, 90, 0.18);
+  background: var(--qs-navy); border: 1px solid rgba(241, 200, 90, 0.18);
   border-radius: 14px; padding: 1rem; transition: border-color 0.2s, transform 0.2s;
 }
 .qs-card:hover { border-color: var(--qs-gold); transform: translateY(-2px); }
@@ -41,7 +45,7 @@
 .qs-card .ct { color: var(--qs-gold); font-size: 0.72rem; margin-top: 0.5rem; }
 
 .qs-list { display: flex; flex-direction: column; gap: 0.6rem; }
-.qs-q { background: var(--qs-navy); border: 1px solid rgba(201, 161, 90, 0.14); border-radius: 12px; padding: 0.9rem 1rem; }
+.qs-q { background: var(--qs-navy); border: 1px solid rgba(241, 200, 90, 0.14); border-radius: 12px; padding: 0.9rem 1rem; }
 .qs-q .ti { font-weight: 600; }
 .qs-q .de { color: var(--qs-muted); font-size: 0.82rem; margin-top: 0.2rem; }
 
@@ -52,7 +56,7 @@
 .qs-field .help { color: var(--qs-muted); font-size: 0.76rem; margin-top: 0.25rem; }
 .qs-input, .qs-textarea {
   width: 100%; box-sizing: border-box; background: var(--qs-navy-2); color: var(--qs-ivory);
-  border: 1px solid rgba(201, 161, 90, 0.2); border-radius: 10px; padding: 0.6rem 0.7rem; font: inherit;
+  border: 1px solid rgba(241, 200, 90, 0.2); border-radius: 10px; padding: 0.6rem 0.7rem; font: inherit;
 }
 .qs-row { display: flex; gap: 0.5rem; }
 .qs-row > * { flex: 1; }
@@ -62,28 +66,50 @@
   border-radius: 10px; padding: 0.75rem 1.2rem; font: inherit; font-weight: 700; cursor: pointer;
 }
 .qs-btn:disabled { opacity: 0.5; cursor: default; }
-.qs-btn-ghost { background: transparent; color: var(--qs-ivory); border: 1px solid rgba(201, 161, 90, 0.35); }
+.qs-btn-ghost { background: transparent; color: var(--qs-ivory); border: 1px solid rgba(241, 200, 90, 0.35); }
 
-.qs-hexrow { display: flex; flex-direction: column-reverse; gap: 0.4rem; margin: 1rem 0; }
-.qs-hex { display: flex; align-items: center; gap: 0.6rem; opacity: 0; transform: translateY(6px); transition: opacity 0.4s, transform 0.4s; }
-.qs-hex.show { opacity: 1; transform: none; }
-.qs-hex .lines { display: flex; gap: 6px; }
-.qs-hex .seg { width: 34px; height: 8px; background: var(--qs-ivory); border-radius: 2px; }
-.qs-hex .seg.off { background: transparent; }
-.qs-hex .dong { color: var(--qs-gold); font-size: 0.75rem; }
+.qs-methods { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.6rem; margin-bottom: 1.2rem; }
+@media (min-width: 640px) { .qs-methods { grid-template-columns: repeat(3, 1fr); } }
+.qs-method {
+  display: block; text-align: left; background: var(--qs-navy); border: 1px solid rgba(241, 200, 90, 0.18);
+  border-radius: 12px; padding: 0.75rem 0.85rem; cursor: pointer; font: inherit; color: inherit;
+  transition: border-color 0.2s, background 0.2s;
+}
+.qs-method:hover { border-color: rgba(241, 200, 90, 0.4); }
+.qs-method.active { border-color: var(--qs-gold); background: rgba(241, 200, 90, 0.08); }
+.qs-method .ti { display: block; font-weight: 600; font-size: 0.88rem; }
+.qs-method.active .ti { color: var(--qs-gold); }
+.qs-method .de { display: block; color: var(--qs-muted); font-size: 0.74rem; margin-top: 0.2rem; line-height: 1.35; }
+
+/* Sóc xu tay — chọn mặt cho từng đồng thay vì random (đúng cách hành nghề truyền thống). */
+.qs-toss-row { border: 1px solid rgba(241, 200, 90, 0.14); border-radius: 12px; padding: 0.6rem 0.7rem; margin-bottom: 0.5rem; background: rgba(255, 255, 255, 0.02); }
+.qs-toss-head { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.45rem; font-size: 0.82rem; }
+.qs-toss-head b { color: var(--qs-ivory); }
+.qs-toss-coins { display: flex; gap: 0.7rem; flex-wrap: wrap; }
+.qs-toss-coin { display: flex; gap: 3px; background: rgba(0, 0, 0, 0.15); border-radius: 20px; padding: 3px; }
+.qs-toss-coin button { border: none; background: transparent; padding: 2px; border-radius: 50%; cursor: pointer; opacity: 0.4; transition: opacity 0.15s, box-shadow 0.15s; line-height: 0; }
+.qs-toss-coin button img { width: 24px; height: 24px; border-radius: 50%; display: block; object-fit: cover; }
+.qs-toss-coin button.sel { opacity: 1; box-shadow: 0 0 0 2px var(--qs-gold); }
+.qs-toss-live { display: inline-flex; align-items: center; gap: 4px; margin-left: auto; font-size: 0.72rem; color: var(--qs-muted); }
+.qs-toss-live .dong { color: var(--qs-gold); font-weight: 700; }
+.mini-seg { display: inline-block; height: 6px; background: var(--qs-ivory); border-radius: 2px; }
+.mini-seg:not(.half) { width: 28px; }
+.mini-seg.half { width: 12px; margin-right: 2px; }
+
+.qs-toss-picker { display: flex; flex-direction: column; margin: 1rem 0; }
 
 .qs-result { margin-top: 1.5rem; }
 .qs-verdict {
   background: var(--qs-navy); border: 1px solid var(--qs-gold);
-  border-radius: 14px; padding: 1.2rem 1.3rem; box-shadow: 0 0 44px rgba(201, 161, 90, 0.12);
+  border-radius: 14px; padding: 1.2rem 1.3rem; box-shadow: 0 0 44px rgba(241, 200, 90, 0.12);
 }
-.qs-verdict h2 { font-family: "Noto Serif", Georgia, serif; color: var(--qs-gold); margin: 0 0 0.8rem; font-size: 1.1rem; letter-spacing: 0.04em; }
+.qs-verdict h2 { font-family: "Cormorant Garamond", Georgia, serif; color: var(--qs-gold); margin: 0 0 0.8rem; font-size: 1.1rem; letter-spacing: 0.04em; }
 .qs-verdict p { line-height: 1.7; margin: 0 0 0.8rem; white-space: pre-line; }
-.qs-verdict .ket { border-top: 1px solid rgba(201, 161, 90, 0.2); padding-top: 0.8rem; }
+.qs-verdict .ket { border-top: 1px solid rgba(241, 200, 90, 0.2); padding-top: 0.8rem; }
 .qs-luuy { color: var(--qs-muted); font-size: 0.82rem; margin-top: 0.6rem; }
 .qs-demo { color: var(--qs-purple); font-size: 0.78rem; margin-top: 0.6rem; }
 
-.qs-luck { background: var(--qs-navy); border: 1px solid rgba(201, 161, 90, 0.14); border-radius: 12px; padding: 1rem 1.1rem; margin-top: 1rem; }
+.qs-luck { background: var(--qs-navy); border: 1px solid rgba(241, 200, 90, 0.14); border-radius: 12px; padding: 1rem 1.1rem; margin-top: 1rem; }
 .qs-luck h3 { margin: 0 0 0.8rem; font-size: 0.95rem; }
 .qs-dim { margin-bottom: 0.6rem; }
 .qs-dim .lab { display: flex; justify-content: space-between; font-size: 0.8rem; margin-bottom: 0.25rem; }
@@ -93,10 +119,10 @@
 
 .qs-badge { display: inline-block; font-weight: 800; letter-spacing: 0.04em; padding: 0.35rem 0.9rem; border-radius: 999px; font-size: 0.95rem; margin-bottom: 0.8rem; }
 .qs-badge.NEN { background: rgba(127,184,160,0.18); color: #a9e0c9; border: 1px solid #7fb8a0; }
-.qs-badge.CO_DIEU_KIEN { background: rgba(201,161,90,0.18); color: #e6cf9e; border: 1px solid var(--qs-gold); }
-.qs-badge.NEN_CHO { background: rgba(107,78,158,0.2); color: #c9b6ea; border: 1px solid var(--qs-purple); }
+.qs-badge.CO_DIEU_KIEN { background: rgba(241,200,90,0.18); color: #e6cf9e; border: 1px solid var(--qs-gold); }
+.qs-badge.NEN_CHO { background: rgba(143,107,255,0.2); color: #c9b6ea; border: 1px solid var(--qs-purple); }
 .qs-badge.KHONG_NEN { background: rgba(196,122,106,0.16); color: #e7b6ab; border: 1px solid var(--qs-bad); }
-.qs-badge.CHUA_DU_DU_LIEU { background: rgba(154,166,189,0.14); color: var(--qs-muted); border: 1px solid var(--qs-muted); }
+.qs-badge.CHUA_DU_DU_LIEU { background: rgba(169,161,132,0.14); color: var(--qs-muted); border: 1px solid var(--qs-muted); }
 
 .qs-score { margin: 0.6rem 0 1rem; }
 .qs-score .lab { display: flex; justify-content: space-between; font-size: 0.82rem; margin-bottom: 0.3rem; color: var(--qs-muted); }

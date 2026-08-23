@@ -1,6 +1,7 @@
 import { and, eq } from "drizzle-orm";
 import { db } from "./client";
-import { orders, orderItems, courseEnrollments, users } from "../../../db/schema";
+import { orders, orderItems, courseEnrollments, users, subscriptions } from "../../../db/schema";
+import { SO_THANG_THEO_KY_HAN, type SubscriptionTier, type SubscriptionDuration } from "../payments/gia-subscription";
 import { generateOrderCode } from "../payments/sepay";
 import { products } from "../placeholder-data";
 import { getCourseBySlug } from "../cms/queries";
@@ -181,6 +182,48 @@ export async function createToolOrder(params: {
       customerEmail: params.customerEmail,
       toolSlug: params.toolSlug,
       toolInputSnapshot: JSON.stringify(params.toolInput),
+      totalAmount: String(params.totalAmount),
+      orderCode,
+      promoCodeId: params.promoCodeId ?? null,
+      promoDiscountAmount:
+        params.promoDiscountAmount != null ? String(params.promoDiscountAmount) : null,
+    })
+    .returning({ id: orders.id, orderCode: orders.orderCode });
+
+  return { orderId: order.id, orderCode: order.orderCode, totalAmount: params.totalAmount };
+}
+
+/**
+ * Tạo đơn hàng gói thuê bao "Quân Sư" (Cơ bản / Cao cấp × 1-3-6-12 tháng). KHÁC `createToolOrder`:
+ * BẮT BUỘC đăng nhập (`userId` không được null) — quyền truy cập gói tính theo tài khoản, không
+ * theo orderCode của 1 lần mua, nên không có tài khoản thì không có gì để gắn quyền vào.
+ */
+export async function createSubscriptionOrder(params: {
+  userId: string;
+  tier: SubscriptionTier;
+  duration: SubscriptionDuration;
+  customerName: string;
+  customerPhone: string;
+  customerEmail: string | null;
+  totalAmount: number;
+  promoCodeId?: string | null;
+  promoDiscountAmount?: number | null;
+}) {
+  const orderCode = generateOrderCode();
+
+  const [order] = await db
+    .insert(orders)
+    .values({
+      userId: params.userId,
+      orderType: "subscription",
+      status: "pending_payment",
+      paymentMethod: "sepay_qr",
+      customerName: params.customerName,
+      customerPhone: params.customerPhone,
+      customerEmail: params.customerEmail,
+      // Không có "tool_slug" riêng cho gói thuê bao — tái dùng cột JSON snapshot sẵn có để lưu
+      // {tier, duration}, đọc lại đúng lúc thanh toán xong (markOrderPaidAndFulfill).
+      toolInputSnapshot: JSON.stringify({ tier: params.tier, duration: params.duration }),
       totalAmount: String(params.totalAmount),
       orderCode,
       promoCodeId: params.promoCodeId ?? null,
@@ -409,6 +452,41 @@ export async function markOrderPaidAndFulfill(orderId: string) {
         console.error(`[trach-nhat-sinh-no] Lỗi dựng/gửi PDF cho đơn ${order.orderCode}:`, err);
       }
     }
+  }
+
+  if (order.orderType === "subscription" && order.userId && order.toolInputSnapshot) {
+    try {
+      const { tier, duration } = JSON.parse(order.toolInputSnapshot) as {
+        tier: SubscriptionTier;
+        duration: SubscriptionDuration;
+      };
+      const soThang = SO_THANG_THEO_KY_HAN[duration];
+
+      // Còn gói ACTIVE chưa hết hạn → GIA HẠN từ ngày hết hạn hiện tại (mua sớm không mất ngày còn
+      // lại), không tạo dòng mới. Hết hạn hoặc chưa từng mua → tạo dòng mới tính từ hôm nay.
+      // Đơn giản hoá: hạng mới LUÔN ghi đè hạng cũ (đúng với "mua Cao cấp" khi đang có Cơ bản —
+      // nâng hạng ngay; nếu Thầy cần logic không-hạ-hạng phức tạp hơn thì bổ sung sau).
+      const [active] = await db
+        .select({ id: subscriptions.id, expiresAt: subscriptions.expiresAt })
+        .from(subscriptions)
+        .where(and(eq(subscriptions.userId, order.userId), eq(subscriptions.status, "active")))
+        .limit(1);
+
+      const now = new Date();
+      const baseDate = active && active.expiresAt > now ? active.expiresAt : now;
+      const expiresAt = new Date(baseDate);
+      expiresAt.setMonth(expiresAt.getMonth() + soThang);
+
+      if (active) {
+        // isTrial: false — dù dòng active cũ đang là gói dùng thử, mua thật thì hết còn là dùng thử.
+        await db.update(subscriptions).set({ tier, duration, expiresAt, orderId: order.id, isTrial: false }).where(eq(subscriptions.id, active.id));
+      } else {
+        await db.insert(subscriptions).values({ userId: order.userId, tier, duration, expiresAt, orderId: order.id, isTrial: false });
+      }
+    } catch (err) {
+      console.error(`[subscription] Lỗi kích hoạt gói cho đơn ${order.orderCode}:`, err);
+    }
+    return;
   }
 
   if (order.orderType === "course" && order.courseRef && order.userId) {

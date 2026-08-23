@@ -15,19 +15,19 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
 ---
 
 <BaseLayout
-  title="Lập quẻ Kinh Dịch — Mai Hoa, Lục Hào, Seri tiền, Số điện thoại"
-  description="Lập quẻ Kinh Dịch đầy đủ theo 4 phương pháp: Mai Hoa Dịch Số, Lục Hào (gieo đồng xu), Seri tiền, Số điện thoại — luận giải Nạp Giáp, Lục Thân, Lục Thú, Thế Ứng, Tuần Không."
+  title="Lập quẻ Kinh Dịch — Mai Hoa, Lục Hào, Seri tiền"
+  description="Lập quẻ Kinh Dịch đầy đủ theo 3 phương pháp: Mai Hoa Dịch Số, Lục Hào (gieo đồng xu), Seri tiền — luận giải Nạp Giáp, Lục Thân, Lục Thú, Thế Ứng, Tuần Không."
 >
   <PageHero
     eyebrow="Công cụ"
     title="Lập quẻ Kinh Dịch"
-    description="Chọn 1 trong 4 phương pháp lập quẻ bên dưới. Kết quả hiển thị đầy đủ: quẻ chính, quẻ biến (nếu có hào động), Nạp Giáp Can Chi từng hào, Lục Thân, Lục Thú, Thế/Ứng và Tuần Không."
+    description="Chọn 1 trong 3 phương pháp lập quẻ bên dưới. Kết quả hiển thị đầy đủ: quẻ chính, quẻ biến (nếu có hào động), Nạp Giáp Can Chi từng hào, Lục Thân, Lục Thú, Thế/Ứng và Tuần Không."
     breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Lập quẻ Kinh Dịch" }]}
   />
 
   <Container class="py-16">
     <div class="mx-auto max-w-5xl">
-      <div id="kd-tabs" class="mx-auto grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <div id="kd-tabs" class="mx-auto grid grid-cols-1 gap-5 sm:grid-cols-3">
         <button type="button" data-tab="maihoa" class="kd-tab-btn flex h-full flex-col items-center rounded-(--radius-card) border p-6 text-center transition">
           <span class="size-14 shrink-0 overflow-hidden rounded-full border border-(--color-gold-400)/30">
             <img src="/images/tools/mai-hoa.jpg" alt="Mai Hoa Dịch Số" class="size-full object-cover" />
@@ -48,13 +48,6 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
           </span>
           <span class="mt-4 flex min-h-[2.75rem] items-center justify-center font-display text-base font-semibold text-(--color-ink-950)">Seri tiền</span>
           <span class="mt-2 flex-1 text-sm leading-relaxed text-(--color-ink-600)">Lập quẻ từ dãy số Seri trên tờ tiền — theo cách "số linh quẻ" ứng dụng Mai Hoa Dịch Số.</span>
-        </button>
-        <button type="button" data-tab="phone" class="kd-tab-btn flex h-full flex-col items-center rounded-(--radius-card) border p-6 text-center transition">
-          <span class="size-14 shrink-0 overflow-hidden rounded-full border border-(--color-gold-400)/30">
-            <img src="/images/tools/so-dien-thoai.jpg" alt="Số điện thoại" class="size-full object-cover" />
-          </span>
-          <span class="mt-4 flex min-h-[2.75rem] items-center justify-center font-display text-base font-semibold text-(--color-ink-950)">Số điện thoại</span>
-          <span class="mt-2 flex-1 text-sm leading-relaxed text-(--color-ink-600)">Lập quẻ từ dãy số điện thoại đang dùng, cùng cách "số linh quẻ" như Seri tiền.</span>
         </button>
       </div>
 
@@ -223,54 +216,6 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
         </div>
       </div>
 
-      <!-- Số điện thoại -->
-      <div id="panel-phone" class="kd-panel mt-6 hidden">
-        <button type="button" class="kd-back-link mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-(--color-gold-300) hover:underline">← Đổi phương pháp lập quẻ</button>
-        <form id="form-phone" class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6 sm:p-8">
-          <h2 class="font-display text-2xl font-bold text-(--color-ink-950)">Lập quẻ bằng Số Điện Thoại</h2>
-          <div class="mt-5 border-t border-(--color-ivory-300) pt-5">
-            <label for="ph-label" class={labelClass}>Việc cần xem</label>
-            <input id="ph-label" type="text" placeholder="Việc cần xem...." class={inputClass} />
-          </div>
-          <div class="mt-4">
-            <label for="ph-phone" class={labelClass}>Số điện thoại: <span class="text-(--color-cinnabar-400)">*</span></label>
-            <input id="ph-phone" type="text" inputmode="numeric" placeholder="0912345678" required class={inputClass} />
-          </div>
-          <div class="mt-4">
-            <p class={labelClass}>Ngày lập quẻ:</p>
-            <div class="mt-1.5 grid grid-cols-3 gap-3">
-              <select id="ph-day" class={selectClass}></select>
-              <select id="ph-month" class={selectClass}></select>
-              <select id="ph-year" class={selectClass}></select>
-            </div>
-          </div>
-          <div class="mt-4">
-            <p class={labelClass}>Giờ lập quẻ:</p>
-            <div class="mt-1.5 flex flex-wrap items-center gap-2">
-              <select id="ph-hour" class={`${selectClass} w-24`}></select>
-              <span class="text-sm text-(--color-ink-600)">Giờ</span>
-              <select id="ph-minute" class={`${selectClass} w-24`}></select>
-              <span class="text-sm text-(--color-ink-600)">Phút</span>
-            </div>
-          </div>
-          <label class="mt-4 flex items-center gap-2 text-sm text-(--color-ink-700)">
-            <input id="ph-lunar" type="checkbox" class="size-4 rounded border-(--color-ivory-300)" /> Ngày Âm lịch
-          </label>
-          <p class="mt-4 text-xs text-(--color-ink-500)">
-            Áp dụng cùng cách "số linh quẻ" như Seri tiền, tính trên toàn bộ dãy số điện thoại đã nhập.
-          </p>
-          <Button type="submit" size="lg" class="mt-5 w-full sm:w-auto">Lập quẻ</Button>
-        </form>
-        <div id="result-phone" class="mt-8 hidden">
-          <div class="pointer-events-none h-0 overflow-hidden"><div id="ph-card"></div></div>
-          <img id="ph-preview-img" alt="Quẻ Kinh Dịch" class="w-full rounded-2xl border-2 border-(--color-gold-400)/60" />
-          <div class="mt-4 flex flex-wrap items-center gap-3">
-            <Button id="ph-save-image" type="button" variant="secondary">Lưu ảnh</Button>
-            <p class="text-xs text-(--color-ink-500)">Chuột phải (máy tính) / nhấn giữ (điện thoại) vào ảnh để lưu trực tiếp.</p>
-          </div>
-        </div>
-      </div>
-
       <div class="mt-10 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6">
         <h2 class="font-display text-lg font-semibold text-(--color-ink-950)">Lưu ý về công cụ này</h2>
         <p class="mt-2 text-sm leading-relaxed text-(--color-ink-600)">
@@ -288,6 +233,23 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
 </BaseLayout>
 
 <style>
+  /* Đồng bộ với tông "Quân Sư Thiên Anh" (đen ấm ngả nâu-kim + antique gold, xem src/styles/quan-su.css)
+     — khác tông đỏ-mận mặc định của site (global.css). Chỉ ghi đè token màu, CHỈ trên trang này (Astro
+     tự đóng gói <style> theo từng route) — không đụng global.css nên không ảnh hưởng các trang khác.
+     Không đổi CARD_COLORS trong <script> bên dưới — đó là bảng màu ảnh xuất PNG, đã tinh chỉnh theo mẫu riêng. */
+  :global(body) {
+    --color-ivory-50: #070605;
+    --color-ivory-100: #14110b;
+    --color-ivory-300: rgba(241, 200, 90, 0.2);
+    --color-ink-950: #ece3c6;
+    --color-ink-800: #ece3c6;
+    --color-ink-700: #ece3c6;
+    --color-ink-600: #a9a184;
+    --color-ink-500: #a9a184;
+    --color-gold-300: #f1c85a;
+    --color-gold-400: #f1c85a;
+  }
+
   .kd-tab-btn {
     border-color: var(--color-ivory-300);
     background: var(--color-ivory-50);
@@ -307,7 +269,6 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
     maiHoaCast,
     lucHaoCastManual,
     seriTienCast,
-    soDienThoaiCast,
     type FullCastResult,
     type QueDayDu,
     type CastInput,
@@ -323,7 +284,6 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
     maihoa: document.getElementById("panel-maihoa")!,
     luchao: document.getElementById("panel-luchao")!,
     serial: document.getElementById("panel-serial")!,
-    phone: document.getElementById("panel-phone")!,
   };
   function activateTab(tab: string) {
     tabButtons.forEach((btn) => btn.classList.toggle("active", btn.dataset.tab === tab));
@@ -350,7 +310,7 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
   const HOUR_OPTIONS: [number, string][] = Array.from({ length: 24 }, (_, i) => [i, String(i).padStart(2, "0")]);
   const MINUTE_OPTIONS: [number, string][] = Array.from({ length: 60 }, (_, i) => [i, String(i).padStart(2, "0")]);
 
-  const PREFIXES = ["mh", "lh", "sr", "ph"];
+  const PREFIXES = ["mh", "lh", "sr"];
   const now = new Date();
   PREFIXES.forEach((p) => {
     const daySel = document.getElementById(`${p}-day`) as HTMLSelectElement;
@@ -676,18 +636,10 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
           <p style="margin:0;grid-column:1 / -1;">Can Chi: <strong style="color:${CARD_COLORS.text};">${cast.canChiText}</strong></p>
           <p style="margin:0;font-size:13px;">Tiết khí: <strong style="color:${CARD_COLORS.text};">${cast.tietKhi}</strong></p>
           <p style="margin:0;font-size:13px;">Tuần Không: <strong style="color:${CARD_COLORS.text};">${cast.tuanKhong}</strong></p>
+          <p style="margin:0;">Nhật thần: <strong style="color:${CARD_COLORS.text};">${cast.nhatThan}</strong></p>
+          <p style="margin:0;">Nguyệt lệnh: <strong style="color:${CARD_COLORS.text};">${cast.nguyetLenh}</strong></p>
           ${cast.fanYin.enabled ? `<p style="margin:0;grid-column:1 / -1;font-size:16px;">Phản Ngâm: <strong style="color:${CARD_COLORS.red};">${cast.fanYin.label}</strong></p>` : ""}
           ${cast.fuYin.enabled ? `<p style="margin:0;grid-column:1 / -1;font-size:16px;">Phục Ngâm: <strong style="color:${CARD_COLORS.red};">${cast.fuYin.label}</strong></p>` : ""}
-        </div>
-        <div style="position:relative;margin-top:12px;display:grid;grid-template-columns:1fr 1fr;gap:12px;">
-          <div style="border:2px solid ${CARD_COLORS.border};border-radius:12px;background:rgba(201,162,86,0.13);padding:9px 16px;">
-            <p style="margin:0;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:${CARD_COLORS.textMuted};">Nhật thần · ngày</p>
-            <p style="margin:3px 0 0;font-size:24px;font-weight:800;color:${CARD_COLORS.gold};">${cast.nhatThan}</p>
-          </div>
-          <div style="border:2px solid ${CARD_COLORS.border};border-radius:12px;background:rgba(201,162,86,0.13);padding:9px 16px;">
-            <p style="margin:0;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:${CARD_COLORS.textMuted};">Nguyệt lệnh · tháng</p>
-            <p style="margin:3px 0 0;font-size:24px;font-weight:800;color:${CARD_COLORS.gold};">${cast.nguyetLenh}</p>
-          </div>
         </div>
         <div style="position:relative;margin-top:18px;display:grid;grid-template-columns:repeat(${queCols}, 1fr);gap:14px;">${blocks.join("")}</div>
         <div style="position:relative;margin-top:22px;">${tables}</div>
@@ -818,21 +770,6 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
     } catch (err) {
       console.error(err);
       if (!handleLunarError(err)) alert("Vui lòng nhập số Seri hợp lệ (ít nhất 2 chữ số).");
-    }
-  });
-
-  // --- Số điện thoại ---
-  document.getElementById("form-phone")?.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    const label = (document.getElementById("ph-label") as HTMLInputElement).value.trim();
-    const phone = (document.getElementById("ph-phone") as HTMLInputElement).value.trim();
-    try {
-      const input = readCastInput("ph");
-      const cast = soDienThoaiCast(phone, input);
-      await renderExportCard("ph", "result-phone", cast, `Lập quẻ bằng Số điện thoại - ${phone}`, label, formatTimeLabel(input), `so-dien-thoai-${fileDateSlug(input)}`);
-    } catch (err) {
-      console.error(err);
-      if (!handleLunarError(err)) alert("Vui lòng nhập số điện thoại hợp lệ (ít nhất 2 chữ số).");
     }
   });
 </script>

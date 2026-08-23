@@ -42,7 +42,7 @@ export const orderStatusEnum = pgEnum("order_status", [
 
 export const paymentMethodEnum = pgEnum("payment_method", ["bank_transfer", "cod", "sepay_qr"]);
 
-export const orderTypeEnum = pgEnum("order_type", ["product", "course", "tool"]);
+export const orderTypeEnum = pgEnum("order_type", ["product", "course", "tool", "subscription"]);
 
 export const orders = pgTable("orders", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -84,6 +84,32 @@ export const orderItems = pgTable("order_items", {
   productNameSnapshot: text("product_name_snapshot").notNull(),
   unitPriceSnapshot: numeric("unit_price_snapshot", { precision: 12, scale: 0 }).notNull(),
   quantity: integer("quantity").notNull(),
+});
+
+// --- Gói thuê bao "Quân Sư" (Cơ bản / Cao cấp × 1-3-6-12 tháng) ---
+// Khác hẳn `orders` kiểu "tool" (mua-đứt-theo-lượt, khóa theo orderCode, không cần tài khoản):
+// subscription BẮT BUỘC có tài khoản (users), quyền truy cập tính theo userId + còn hạn hay không,
+// không phải theo orderCode của 1 lần mua. `orderId` chỉ để truy vết đơn hàng đã tạo ra gói này.
+
+export const subscriptionTierEnum = pgEnum("subscription_tier", ["co_ban", "cao_cap"]);
+export const subscriptionDurationEnum = pgEnum("subscription_duration", ["1_thang", "3_thang", "6_thang", "1_nam"]);
+export const subscriptionStatusEnum = pgEnum("subscription_status", ["active", "expired", "cancelled"]);
+
+export const subscriptions = pgTable("subscriptions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  tier: subscriptionTierEnum("tier").notNull(),
+  // null khi isTrial=true (dùng thử không có kỳ hạn tháng/giá — xem isTrial bên dưới).
+  duration: subscriptionDurationEnum("duration"),
+  status: subscriptionStatusEnum("status").notNull().default("active"),
+  // Dùng thử 7 ngày miễn phí, mỗi tài khoản chỉ 1 lần (xem trial.ts). Khi mua gói thật đè lên gói
+  // đang dùng thử, nhánh nâng cấp trong orders.ts phải set lại false.
+  isTrial: boolean("is_trial").notNull().default(false),
+  startedAt: timestamp("started_at", { withTimezone: true }).notNull().defaultNow(),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  // Đơn hàng đã thanh toán tạo ra gói này (orderType="subscription"). null nếu tạo tay (vd admin gia hạn, dùng thử).
+  orderId: uuid("order_id").references(() => orders.id, { onDelete: "set null" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
 // --- Khóa học: đăng ký & tiến độ học ---
@@ -180,4 +206,24 @@ export const promoRedemptions = pgTable("promo_redemptions", {
   // Số tiền thực tế được giảm cho đơn này (lưu lại vì mức giảm của mã có thể bị sửa về sau).
   discountAmount: numeric("discount_amount", { precision: 12, scale: 0 }).notNull(),
   redeemedAt: timestamp("redeemed_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// --- Đăng ký nhận thông báo đẩy (Web Push) — nhắc mùng Một / ngày Rằm ---
+
+export const pushSubscriptions = pgTable("push_subscriptions", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  // Endpoint do trình duyệt cấp — định danh DUY NHẤT của một máy/trình duyệt. Rất dài (có thể
+  // vài trăm ký tự) nên dùng text, và đặt unique để đăng ký lại trên cùng máy thì ghi đè chứ
+  // không nhân bản thành nhiều dòng gửi trùng.
+  endpoint: text("endpoint").notNull().unique(),
+  p256dh: text("p256dh").notNull(),
+  auth: text("auth").notNull(),
+  // Cho phép cả khách CHƯA đăng nhập bật thông báo (đây là tiện ích giữ chân, không phải tính
+  // năng trả phí) — nên nullable. Nếu có đăng nhập thì gắn để sau còn cá nhân hóa được.
+  userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
+  // Đếm số lần gửi thất bại liên tiếp. Trình duyệt trả 404/410 nghĩa là máy đã gỡ đăng ký —
+  // khi đó xóa hẳn dòng này để không gửi mãi vào chỗ chết.
+  failCount: integer("fail_count").notNull().default(0),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  lastSentAt: timestamp("last_sent_at", { withTimezone: true }),
 });

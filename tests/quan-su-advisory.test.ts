@@ -37,15 +37,15 @@ const QUESTION_TYPES: string[] = [
 ];
 
 describe("Advisory Engine — cấu trúc báo cáo hợp lệ trên 24 loại câu hỏi", () => {
-  it("có ít nhất 20 loại câu hỏi để test", () => {
+  it("có ít nhất 20 loại câu hỏi để test", async () => {
     expect(QUESTION_TYPES.length).toBeGreaterThanOrEqual(20);
   });
 
   for (const qid of QUESTION_TYPES) {
-    it(`[${qid}] báo cáo đủ 8 phần, verdict hợp lệ, điểm 0-100, 3/3/3`, () => {
+    it(`[${qid}] báo cáo đủ 8 phần, verdict hợp lệ, điểm 0-100, 3/3/3`, async () => {
       const q = getQuestion(qid);
       expect(q, `câu hỏi tồn tại: ${qid}`).toBeTruthy();
-      const r = runQuanSu({ question_id: qid, ngaySinh: NGAY_SINH, rng: seededRng(12345) });
+      const r = await runQuanSu({ question_id: qid, ngaySinh: NGAY_SINH, rng: seededRng(12345), boQuaAI: true });
       const rep = r.report;
 
       // 1. KẾT LUẬN
@@ -82,11 +82,11 @@ describe("Advisory Engine — cấu trúc báo cáo hợp lệ trên 24 loại c
 });
 
 describe("Advisory Engine — quy tắc verdict & điểm số", () => {
-  it("verdict CHUA_DU_DU_LIEU → điểm ≤ 45 (không khẳng định khi thiếu dữ liệu)", () => {
+  it("verdict CHUA_DU_DU_LIEU → điểm ≤ 45 (không khẳng định khi thiếu dữ liệu)", async () => {
     // Quét nhiều tổ hợp gieo cho tới khi gặp 1 ca Dụng Thần không hiện; nếu gặp, kiểm điểm.
     let gapChuaDu = false;
     for (let seed = 1; seed <= 200 && !gapChuaDu; seed++) {
-      const r = runQuanSu({ question_id: "vay-tien", ngaySinh: NGAY_SINH, rng: seededRng(seed) });
+      const r = await runQuanSu({ question_id: "vay-tien", ngaySinh: NGAY_SINH, rng: seededRng(seed), boQuaAI: true });
       if (r.report.ketLuan === "CHUA_DU_DU_LIEU") {
         gapChuaDu = true;
         expect(r.report.mucDoThuan).toBeLessThanOrEqual(45);
@@ -96,7 +96,7 @@ describe("Advisory Engine — quy tắc verdict & điểm số", () => {
     expect(true).toBe(true);
   });
 
-  it("không có ngày sinh → vẫn ra báo cáo, vận trình = null, khuyên vẫn đủ 3", () => {
+  it("không có ngày sinh → vẫn ra báo cáo, vận trình = null, khuyên vẫn đủ 3", async () => {
     const tosses: CoinLineValue[] = [7, 8, 7, 8, 7, 8]; // không hào động
     const q = getQuestion("chuyen-viec")!;
     const cast = castLucHaoFromTosses(tosses, { day: 15, month: 6, year: 2024, hour: 10 });
@@ -108,12 +108,12 @@ describe("Advisory Engine — quy tắc verdict & điểm số", () => {
     expect(VERDICTS).toContain(rep.ketLuan);
   });
 
-  it("có vận trình → bảng chấm điểm CÓ yếu tố Đại vận/Lưu niên khi vận khác trung bình", () => {
+  it("có vận trình → bảng chấm điểm CÓ yếu tố Đại vận/Lưu niên khi vận khác trung bình", async () => {
     // Người có đại vận/lưu niên KHÔNG trung tính (thu_thach/nghich) → phải xuất hiện trong bảng điểm.
     const nguoiVanNghich = { day: 3, month: 11, year: 1978, gender: "Nữ" as const, hour: 6 };
     let coVanTrinhTrongDiem = false;
     for (let seed = 1; seed <= 30 && !coVanTrinhTrongDiem; seed++) {
-      const r = runQuanSu({ question_id: "dau-tu-du-an", ngaySinh: nguoiVanNghich, rng: seededRng(seed) });
+      const r = await runQuanSu({ question_id: "dau-tu-du-an", ngaySinh: nguoiVanNghich, rng: seededRng(seed), boQuaAI: true });
       if (r.report.bangChamDiem.some((i) => i.factor === "Đại vận" || i.factor === "Lưu niên")) coVanTrinhTrongDiem = true;
     }
     expect(coVanTrinhTrongDiem).toBe(true);
