@@ -117,6 +117,83 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
       <p class="qs-sub" style="margin-top:1rem;">
         Chưa có gói? <a href="/quan-su/goi-thue-bao" style="color:var(--qs-gold);">Xem gói thuê bao Quân Sư</a>
       </p>
+
+      <!-- Trạch Cát — 9 công cụ nổi bật của Đại Cát Lợi, trỏ THẲNG vào route thật đã có sẵn (không
+           tạo trang mới). "Nhập Trạch" và "Động Thổ" cùng trỏ 1 route vì công cụ xem-ngay-cao-cap
+           xử lý chung cả 2 việc đó. Cưới Hỏi và Sinh Cho Bé là dịch vụ trả phí đang thử nghiệm nội
+           bộ — trang đích tự hiện đúng trạng thái, không cần xử lý gì thêm ở đây. -->
+      <p class="qsh-section-title" style="margin-top:0.4rem;">Xem ngày · Trạch Cát</p>
+      <div class="qsh-trach-cat-grid">
+        {[
+          { href: "/xem-ngay-tot-xau", label: "Xem Ngày Tốt", sub: "Cho từng công việc", c: "#5fcf8a", icon: "calendar" },
+          { href: "/dai-cat-loi/ngay-ky-hop-dong", label: "Ký Hợp Đồng", sub: "Ngày giờ ký kết", c: "#b18aff", icon: "doc" },
+          { href: "/dai-cat-loi/ngay-khai-truong", label: "Khai Trương", sub: "Đại cát – phát lộc", c: "#f0a34d", icon: "store" },
+          { href: "/dai-cat-loi/ngay-cuoi-hoi", label: "Cưới Hỏi", sub: "Trọn gói viên mãn", c: "#e879a6", icon: "couple" },
+          { href: "/dai-cat-loi/xem-ngay-cao-cap", label: "Nhập Trạch", sub: "Về nhà mới", c: "#4fd1c5", icon: "home" },
+          { href: "/dai-cat-loi/xem-ngay-cao-cap", label: "Động Thổ", sub: "Ngày khởi công", c: "#f1c85a", icon: "shovel" },
+          { href: "/dai-cat-loi/nhan-chuc", label: "Nhận Chức", sub: "Ngày nhậm chức", c: "#5aa8f1", icon: "badge" },
+          { href: "/dai-cat-loi/trach-nhat-sinh-no", label: "Sinh Cho Bé", sub: "Chọn giờ sinh", c: "#7fd99a", icon: "baby" },
+          { href: "/tinh-trung-tang", label: "Ngày Trùng Tang", sub: "Tra – phân tích", c: "#e8735c", icon: "bowl" },
+        ].map((t) => (
+          <a href={t.href} class="qsh-tc-item" style={`--c:${t.c};`}>
+            <span class="qsh-tc-badge">
+              {t.icon === "calendar" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4" stroke-linecap="round"/></svg>}
+              {t.icon === "doc" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 3.5h9l3 3v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-16a1 1 0 0 1 1-1Z" stroke-linejoin="round"/><path d="M8.5 12h7M8.5 15.5h7M8.5 8.5h4" stroke-linecap="round"/></svg>}
+              {t.icon === "store" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 9.5 5 4h14l1 5.5" stroke-linejoin="round"/><path d="M4 9.5a2.3 2.3 0 0 0 4.4 1 2.3 2.3 0 0 0 4.4 0 2.3 2.3 0 0 0 4.4 0 2.3 2.3 0 0 0 4.4-1" stroke-linejoin="round"/><path d="M5.5 11v9h13v-9" /><path d="M10 20v-5.5h4V20" /></svg>}
+              {t.icon === "couple" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="8.5" cy="7" r="2.6"/><circle cx="15.5" cy="7" r="2.6"/><path d="M3.5 20v-2.5a4 4 0 0 1 4-4h2a4 4 0 0 1 4 4V20M10.5 20v-2.5a4 4 0 0 1 4-4h2a4 4 0 0 1 4 4V20" stroke-linecap="round"/></svg>}
+              {t.icon === "home" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 11.5 12 4l9 7.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 10v9a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-9" stroke-linecap="round" stroke-linejoin="round"/></svg>}
+              {t.icon === "shovel" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M15 3 21 9l-3 3-6-6Z" stroke-linejoin="round"/><path d="M13.5 8.5 4 18a2.1 2.1 0 0 0 3 3l9.5-9.5" stroke-linecap="round" stroke-linejoin="round"/></svg>}
+              {t.icon === "badge" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="9" r="5.5"/><path d="M9 13.5 7 21l5-2.5L17 21l-2-7.5" stroke-linejoin="round"/></svg>}
+              {t.icon === "baby" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8.5"/><path d="M9 13c.7.9 1.8 1.5 3 1.5s2.3-.6 3-1.5" stroke-linecap="round"/><path d="M9 9.5h.01M15 9.5h.01" stroke-linecap="round" stroke-width="2.4"/></svg>}
+              {t.icon === "bowl" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3.5 11h17a8.5 6 0 0 1-17 0Z" stroke-linejoin="round"/><path d="M7 11V8a5 5 0 0 1 10 0v3" /></svg>}
+            </span>
+            <span class="qsh-tc-label">{t.label}</span>
+            <span class="qsh-tc-sub">{t.sub}</span>
+          </a>
+        ))}
+      </div>
+
+      <!-- Dịch vụ VIP — trỏ vào hub trả-phí-theo-lượt sẵn có, KHÔNG nằm trong gói thuê bao Quân Sư
+           (mô hình thu phí khác nhau, xem project_quan-su-app-scope.md). -->
+      <a href="/dai-cat-loi/dich-vu-thu-phi" class="qsh-vip-card">
+        <img src="/images/quan-su/rong-vang.png" alt="" class="qsh-vip-bg" />
+        <div class="qsh-vip-crown">👑</div>
+        <div class="qsh-vip-body">
+          <p class="qsh-vip-badge">VIP</p>
+          <h3>Tư vấn 1:1 cùng chuyên gia</h3>
+          <p>Phân tích chuyên sâu · Giải pháp cá nhân hóa · Bảo mật tuyệt đối</p>
+          <span class="qsh-vip-cta">Khám phá ngay →</span>
+        </div>
+      </a>
+
+      <!-- Công cụ hữu ích — CHỈ 4/8 mục có trang thật tương ứng trên site (Can Chi/Ngũ Hành/Cung
+           Hoàng Đạo/Phong Thủy Nhà chưa có công cụ tra cứu riêng — không đưa vào để tránh dẫn khách
+           tới trang không tồn tại; bổ sung sau khi các công cụ đó được xây). -->
+      <p class="qsh-section-title">Công cụ hữu ích</p>
+      <div class="qsh-tool-grid">
+        {[
+          { href: "/dai-cat-loi/doi-lich-am-duong", label: "Đổi Lịch", icon: "calendar" },
+          { href: "/gieo-que-kinh-dich", label: "64 Quẻ Dịch", icon: "yinyang" },
+          { href: "/dai-cat-loi/ngay-gio-xuat-hanh", label: "Hướng Xuất Hành", icon: "compass" },
+          { href: "/dai-cat-loi/gio-tot-trong-ngay", label: "Giờ Hoàng Đạo", icon: "clock" },
+        ].map((t) => (
+          <a href={t.href} class="qsh-tool-item">
+            <span class="qsh-tool-ic">
+              {t.icon === "calendar" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4" stroke-linecap="round"/></svg>}
+              {t.icon === "yinyang" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9" /><path d="M12 3a4.5 4.5 0 0 1 0 9 4.5 4.5 0 0 0 0 9 9 9 0 0 0 0-18Z" fill="currentColor" stroke="none" /><circle cx="12" cy="7.5" r="1.1" fill="var(--qs-midnight)" stroke="none" /><circle cx="12" cy="16.5" r="1.1" fill="currentColor" stroke="none" /></svg>}
+              {t.icon === "compass" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9" /><path d="m15 9-2 6-6 2 2-6 6-2Z" stroke-linejoin="round" /></svg>}
+              {t.icon === "clock" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3.5 2" stroke-linecap="round" stroke-linejoin="round" /></svg>}
+            </span>
+            <span>{t.label}</span>
+          </a>
+        ))}
+      </div>
+
+      <!-- Banner cuối trang — ảnh hoa sen + đèn lồng nền trong suốt, chữ đè lên giữa. -->
+      <div class="qsh-banner">
+        <img src="/images/quan-su/hoa-sen.png" alt="" class="qsh-banner-bg" />
+        <p>Hỏi việc – Luận quẻ – Biết thời<br />Chọn thời – Hành động – Chủ động cuộc đời</p>
+      </div>
     </div>
   </section>
 
@@ -219,4 +296,73 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
   .qsh-tv-card h3 { font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.1rem; margin: 0 0 0.25rem; color: var(--qs-ivory); }
   .qsh-tv-card p { margin: 0; color: var(--qs-muted); font-size: 0.78rem; }
   .qsh-arrow { color: var(--qs-purple); font-size: 1.3rem; }
+
+  /* Trạch Cát — lưới 3×3, mỗi ô 1 màu neon riêng (--c) giống mockup, cùng kiểu badge tròn viền sáng
+     như .qsh-icon-badge phía trên nhưng nhỏ hơn để đủ chỗ cho tên + mô tả 2 dòng. */
+  .qsh-trach-cat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.7rem; margin: 0 0 1.8rem; }
+  .qsh-tc-item {
+    --c: #f1c85a;
+    display: flex; flex-direction: column; align-items: center; gap: 0.4rem; text-align: center;
+    text-decoration: none; color: var(--qs-ivory);
+    background: rgba(255, 255, 255, 0.02); border: 1px solid rgba(241, 200, 90, 0.12);
+    border-radius: 14px; padding: 0.9rem 0.4rem 0.8rem; transition: border-color 0.2s, transform 0.2s;
+  }
+  .qsh-tc-item:hover { border-color: var(--c); transform: translateY(-2px); }
+  .qsh-tc-badge {
+    width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
+    border-radius: 999px; background: color-mix(in srgb, var(--c) 14%, transparent);
+    border: 1.5px solid var(--c); color: var(--c);
+    box-shadow: 0 0 12px color-mix(in srgb, var(--c) 40%, transparent);
+  }
+  .qsh-tc-badge svg { width: 19px; height: 19px; }
+  .qsh-tc-label { font-size: 0.74rem; font-weight: 700; line-height: 1.25; }
+  .qsh-tc-sub { font-size: 0.64rem; color: var(--qs-muted); line-height: 1.3; }
+
+  /* Dịch vụ VIP — ảnh rồng vàng làm nền (bố cục gốc lệch phải, nền đen), phủ gradient để chữ đọc rõ
+     và mờ dần vào nền trang; KHÔNG thuộc gói thuê bao Quân Sư, dẫn sang hub thu-phí-theo-lượt sẵn có. */
+  .qsh-vip-card {
+    position: relative; display: block; overflow: hidden; text-decoration: none; color: var(--qs-ivory);
+    border-radius: 18px; border: 1px solid rgba(241, 200, 90, 0.3); min-height: 148px; margin-bottom: 1.8rem;
+  }
+  .qsh-vip-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 75% 50%; }
+  .qsh-vip-card::before {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(90deg, rgba(7,6,5,0.94) 0%, rgba(7,6,5,0.75) 48%, rgba(7,6,5,0.3) 100%);
+  }
+  .qsh-vip-crown { position: absolute; top: 1rem; right: 1.1rem; z-index: 1; font-size: 1.3rem; filter: drop-shadow(0 0 8px rgba(241, 200, 90, 0.5)); }
+  .qsh-vip-body { position: relative; z-index: 1; padding: 1.2rem 1.3rem; max-width: 78%; }
+  .qsh-vip-badge {
+    display: inline-block; margin: 0 0 0.4rem; padding: 0.15rem 0.6rem; border-radius: 999px;
+    background: rgba(241, 200, 90, 0.16); border: 1px solid var(--qs-gold); color: var(--qs-gold);
+    font-size: 0.66rem; font-weight: 800; letter-spacing: 0.08em;
+  }
+  .qsh-vip-body h3 { font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.2rem; margin: 0 0 0.35rem; }
+  .qsh-vip-body p { margin: 0 0 0.7rem; color: var(--qs-muted); font-size: 0.76rem; line-height: 1.4; }
+  .qsh-vip-cta { color: var(--qs-gold); font-size: 0.82rem; font-weight: 700; }
+
+  /* Công cụ hữu ích — chỉ 4 công cụ có trang thật (xem ghi chú trong markup), lưới 4 cột 1 hàng để
+     không để trống ô thừa (mockup gốc 8 ô nhưng thiếu 4 trang tương ứng trên site). */
+  .qsh-tool-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.6rem; margin: 0 0 1.8rem; }
+  .qsh-tool-item {
+    display: flex; flex-direction: column; align-items: center; gap: 0.45rem; text-align: center;
+    text-decoration: none; color: var(--qs-ivory); font-size: 0.68rem; line-height: 1.25;
+  }
+  .qsh-tool-ic {
+    width: 48px; height: 48px; display: flex; align-items: center; justify-content: center;
+    border-radius: 14px; background: var(--qs-navy); border: 1px solid rgba(241, 200, 90, 0.2); color: var(--qs-gold);
+  }
+  .qsh-tool-ic svg { width: 20px; height: 20px; }
+
+  /* Banner đóng trang — ảnh hoa sen + đèn lồng NỀN TRONG SUỐT (giữa ảnh rỗng, đúng để đặt chữ). */
+  .qsh-banner {
+    position: relative; border-radius: 18px; overflow: hidden; min-height: 150px;
+    display: flex; align-items: center; justify-content: center; text-align: center;
+    background: linear-gradient(160deg, rgba(241, 200, 90, 0.06), rgba(143, 107, 255, 0.05));
+  }
+  .qsh-banner-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .qsh-banner p {
+    position: relative; z-index: 1; margin: 0; padding: 0 1.5rem;
+    font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.05rem; line-height: 1.7;
+    color: var(--qs-ivory); text-shadow: 0 2px 10px rgba(7,6,5,0.8);
+  }
 </style>

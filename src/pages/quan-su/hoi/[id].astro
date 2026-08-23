@@ -358,9 +358,12 @@ const formInputs = [...question.required_inputs, ...question.optional_inputs].fi
             gieoBtn?.addEventListener("click", () => {
               // Ngày sinh KHÔNG bắt buộc — chỉ để thêm lớp vận trình bổ trợ, không phải điều kiện
               // để gieo quẻ. Bỏ trống thì vẫn luận được bình thường, chỉ là không kèm vận trình.
-              if (castingMethod === "gieo-tay" && !manualComplete()) {
-                alert("Anh chưa chọn đủ mặt cho cả 6 hào — mỗi hào cần chọn đủ 3 đồng."); return;
-              }
+              // Hào cũng KHÔNG bắt buộc phải tự đổi hết — mặc định Dương/tĩnh vẫn là 1 kết quả gieo
+              // hợp lệ, giống hệt hành vi trang tham khảo /gieo-que-kinh-dich (Thầy báo "gieo đồng xu
+              // vẫn không được" liên tục, 2026-08-23 — nguyên nhân thật: nút này từng gọi
+              // `manualComplete()` nhưng hàm đó CHƯA TỪNG được định nghĩa trong file, nên mỗi lần
+              // bấm ở cách gieo tay đều ném ReferenceError và im lặng không làm gì — không phải lỗi
+              // vùng chạm nhỏ như đã tưởng trước đó).
               if (castingMethod === "seri-tien") {
                 const v = (document.getElementById("f-seri-tien")?.value || "").trim();
                 if (v.replace(/\D/g, "").length < 2) { alert("Vui lòng nhập seri tiền (ít nhất 2 chữ số)."); return; }

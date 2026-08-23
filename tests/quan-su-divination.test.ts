@@ -68,10 +68,21 @@ describe("Divination — lập quẻ tái dùng engine có sẵn", () => {
     expect(() => castLucHaoFromTosses([7, 8, 7] as CoinLineValue[], FIXED_INPUT)).toThrow();
   });
 
-  it("castInputNow lấy đúng thời điểm truyền vào", () => {
-    const d = new Date(2025, 0, 20, 14, 5);
+  it("castInputNow quy đổi đúng sang GIỜ VIỆT NAM, không phụ thuộc múi giờ máy chạy code", () => {
+    // 07:05 UTC = 14:05 giờ Việt Nam (UTC+7) — dựng bằng Date.UTC để test không phụ thuộc múi giờ
+    // của máy chạy test (Thầy báo Mai Hoa Dịch Số ra sai quẻ vì castInputNow trước đây lấy giờ hệ
+    // thống server thay vì giờ VN, 2026-08-23).
+    const d = new Date(Date.UTC(2025, 0, 20, 7, 5));
     const inp = castInputNow(d);
     expect(inp).toMatchObject({ day: 20, month: 1, year: 2025, hour: 14, minute: 5 });
+  });
+
+  it("castInputNow đổi cả NGÀY khi giờ VN đã sang hôm sau so với giờ UTC", () => {
+    // 20:00 UTC ngày 20/1 = 03:00 giờ VN ngày 21/1 — trường hợp hay bị bỏ sót nếu chỉ cộng offset
+    // vào giờ mà quên ngày cũng đổi theo.
+    const d = new Date(Date.UTC(2025, 0, 20, 20, 0));
+    const inp = castInputNow(d);
+    expect(inp).toMatchObject({ day: 21, month: 1, year: 2025, hour: 3, minute: 0 });
   });
 });
 

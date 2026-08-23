@@ -94,14 +94,30 @@ export function dungThanHintFor(category: CategoryId): DungThanHint {
 // ---------------------------------------------------------------------------------------------
 // Lập quẻ — CHỈ gọi engine có sẵn, không tự tính.
 
-/** CastInput cho thời điểm hiện tại (quẻ luận theo thời điểm gieo). */
+/**
+ * CastInput cho thời điểm hiện tại (quẻ luận theo thời điểm gieo) — LUÔN theo GIỜ VIỆT NAM, bất kể
+ * máy chủ chạy múi giờ nào (đúng idiom `ngayVietNam()` đã dùng khắp dự án). Trước đây dùng
+ * `now.getHours()`/`getDate()` (giờ hệ thống server) — nếu server chạy UTC thì lệch 7 tiếng so với
+ * giờ VN, khiến Mai Hoa Dịch Số (dựa vào giờ hỏi việc) ra sai quẻ dù công thức đúng (Thầy báo
+ * "vẫn sai" nhiều lần, 2026-08-23 — nguyên nhân là múi giờ đầu vào, không phải công thức).
+ */
 export function castInputNow(now: Date = new Date()): CastInput {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    year: "numeric",
+    month: "numeric",
+    day: "numeric",
+    hour: "numeric",
+    minute: "numeric",
+    hour12: false,
+  }).formatToParts(now);
+  const get = (type: string) => Number(parts.find((p) => p.type === type)?.value ?? 0);
   return {
-    day: now.getDate(),
-    month: now.getMonth() + 1,
-    year: now.getFullYear(),
-    hour: now.getHours(),
-    minute: now.getMinutes(),
+    day: get("day"),
+    month: get("month"),
+    year: get("year"),
+    hour: get("hour") % 24, // một số runtime trả "24" cho nửa đêm khi hour12:false
+    minute: get("minute"),
   };
 }
 
