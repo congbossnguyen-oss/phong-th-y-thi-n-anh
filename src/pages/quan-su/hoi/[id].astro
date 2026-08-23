@@ -126,6 +126,14 @@ const formInputs = [...question.required_inputs, ...question.optional_inputs].fi
               gieoBtn.disabled = false;
             }
 
+            // Đánh dấu ô đã bấm/chọn (đổi màu, viền sáng) — Thầy: "hình như không ấn được" (2026-08-
+            // 23). Bản thân select/checkbox vẫn nhận sự kiện bình thường, nhưng KHÔNG có phản hồi
+            // hình ảnh khi chọn xong nên trông như chưa ăn. Bắt sự kiện ủy quyền trên cả bảng, không
+            // gắn riêng từng hào — đỡ phải gắn lại listener mỗi lần buildManualPicker() dựng lại DOM.
+            tossPicker?.addEventListener("change", (e) => {
+              if (e.target.matches("select.qs-hao-select")) e.target.classList.add("qs-hao-set");
+            });
+
             // Đổi Âm/Dương (0/1) + Động (có/không) của 1 hào thành tổng 3 đồng xu (6/7/8/9) — đúng
             // công thức: Dương tĩnh=7, Dương động=9 (lão dương), Âm tĩnh=8, Âm động=6 (lão âm). Nhờ
             // vậy dùng lại được thẳng API "tosses" đã có sẵn, không cần sửa gì ở máy chủ.
@@ -238,16 +246,15 @@ const formInputs = [...question.required_inputs, ...question.optional_inputs].fi
                     <td style="padding:5px 6px;color:${rc};font-weight:${fw};font-size:0.78rem;white-space:nowrap;">${h.theUng ?? ""}</td>
                     <td style="padding:5px 6px;color:${rc};font-weight:${fw};font-size:0.78rem;white-space:nowrap;">${esc(h.lucThan)}</td>
                     <td style="padding:5px 6px;color:${rc};font-weight:${fw};font-size:0.78rem;white-space:nowrap;">${CAN[h.canIndex]} ${CHI[h.chiIndex]}</td>
-                    <td style="padding:5px 6px;color:var(--qs-muted);font-size:0.72rem;white-space:nowrap;">${h.phucThan ? `${LUC_THAN_TAT[h.phucThan.lucThan]}-${CHI[h.phucThan.chiIndex]}` : "-"}</td>
                     <td style="padding:5px 6px;color:${rc};font-size:0.78rem;text-align:center;">${h.xunKong ? "Không" : ""}</td>
                   </tr>`;
               }).join("");
               return `
                 <div style="overflow-x:auto;">
-                  <table style="width:100%;border-collapse:collapse;min-width:340px;">
+                  <table style="width:100%;border-collapse:collapse;min-width:230px;">
                     <thead>
-                      <tr style="color:var(--qs-gold);font-size:0.7rem;text-transform:uppercase;letter-spacing:0.04em;">
-                        <th style="padding:4px;text-align:left;">Hào</th><th style="padding:4px;text-align:left;">T/Ư</th><th style="padding:4px;text-align:left;">Lục Thân</th><th style="padding:4px;text-align:left;">Can Chi</th><th style="padding:4px;text-align:left;">P.Thần</th><th style="padding:4px;text-align:center;">T.Không</th>
+                      <tr style="color:var(--qs-gold);font-size:0.66rem;text-transform:uppercase;letter-spacing:0.02em;">
+                        <th style="padding:3px;text-align:left;">Hào</th><th style="padding:3px;text-align:left;">T/Ư</th><th style="padding:3px;text-align:left;">Lục Thân</th><th style="padding:3px;text-align:left;">Can Chi</th><th style="padding:3px;text-align:center;">T.K</th>
                       </tr>
                     </thead>
                     <tbody>${rowsHtml}</tbody>
@@ -255,23 +262,32 @@ const formInputs = [...question.required_inputs, ...question.optional_inputs].fi
                 </div>`;
             }
 
+            // Quẻ chính + quẻ biến CÙNG HÀNG, sát nhau (Thầy: "cho sát lại gần nhau chút", 2026-08-
+            // 23) — bảng đã rút gọn còn 4 cột (bỏ P.Thần lẻ ra thành 1 dòng ghi chú riêng) để vừa 2
+            // cột trên màn hình điện thoại mà không phải cuộn ngang từng bảng.
             function renderQueDayDu(que) {
               const dongPositions = que.dongPositions || [];
-              const chinhBlock = `
-                <div class="qs-sect"><h4>Quẻ chính — ${esc(que.chinh.name)}</h4>${queTableHtml(que.chinh, false, dongPositions)}</div>`;
-              const bienBlock = que.bien
-                ? `<div class="qs-sect"><h4>Quẻ biến — ${esc(que.bien.name)}</h4>${queTableHtml(que.bien, true, dongPositions)}</div>`
+              const coBien = !!que.bien;
+              const chinhBlock = `<div><h4 style="margin:0 0 0.4rem;color:var(--qs-gold);font-size:0.82rem;">Quẻ chính<br/><span style="color:var(--qs-ivory);font-size:0.95rem;">${esc(que.chinh.name)}</span></h4>${queTableHtml(que.chinh, false, dongPositions)}</div>`;
+              const bienBlock = coBien
+                ? `<div><h4 style="margin:0 0 0.4rem;color:var(--qs-gold);font-size:0.82rem;">Quẻ biến<br/><span style="color:var(--qs-ivory);font-size:0.95rem;">${esc(que.bien.name)}</span></h4>${queTableHtml(que.bien, true, dongPositions)}</div>`
+                : "";
+              const phucThanHao = que.chinh.hao.filter((h) => h.phucThan);
+              const phucThanNote = phucThanHao.length
+                ? `<p style="margin:0.5rem 0 0;color:var(--qs-muted);font-size:0.74rem;">Phục Thần: ${phucThanHao.map((h) => `hào ${h.hao} ẩn ${LUC_THAN_TAT[h.phucThan.lucThan]}-${CHI[h.phucThan.chiIndex]}`).join(", ")}</p>`
+                : "";
+              const ngamNote = (que.fanYin && que.fanYin.enabled) || (que.fuYin && que.fuYin.enabled)
+                ? `<p style="margin:0.3rem 0 0;color:var(--qs-gold);font-size:0.78rem;">${[que.fanYin?.enabled ? que.fanYin.label : null, que.fuYin?.enabled ? que.fuYin.label : null].filter(Boolean).join(" · ")}</p>`
                 : "";
               return `
-                <div class="qs-sect">
-                  <p style="margin:0 0 0.6rem;color:var(--qs-muted);font-size:0.8rem;">
-                    ${esc(que.canChiText)} · Tuần Không: <strong style="color:var(--qs-ivory);">${esc(que.tuanKhong)}</strong> · Nhật thần: <strong style="color:var(--qs-ivory);">${esc(que.nhatThan)}</strong> · Nguyệt lệnh: <strong style="color:var(--qs-ivory);">${esc(que.nguyetLenh)}</strong>
-                    ${que.fanYin && que.fanYin.enabled ? ` · <strong style="color:var(--qs-gold);">${esc(que.fanYin.label)}</strong>` : ""}
-                    ${que.fuYin && que.fuYin.enabled ? ` · <strong style="color:var(--qs-gold);">${esc(que.fuYin.label)}</strong>` : ""}
-                  </p>
+                <p style="margin:0 0 0.6rem;color:var(--qs-muted);font-size:0.8rem;">
+                  ${esc(que.canChiText)} · Tuần Không: <strong style="color:var(--qs-ivory);">${esc(que.tuanKhong)}</strong> · Nhật thần: <strong style="color:var(--qs-ivory);">${esc(que.nhatThan)}</strong> · Nguyệt lệnh: <strong style="color:var(--qs-ivory);">${esc(que.nguyetLenh)}</strong>
+                </p>
+                <div style="display:grid;grid-template-columns:${coBien ? "1fr 1fr" : "1fr"};gap:0.8rem;">
+                  ${chinhBlock}${bienBlock}
                 </div>
-                ${chinhBlock}
-                ${bienBlock}`;
+                ${phucThanNote}
+                ${ngamNote}`;
             }
 
             function renderResult(data) {

@@ -89,14 +89,22 @@
   border: 1px solid rgba(241, 200, 90, 0.14); border-radius: 10px;
   padding: 0.55rem 0.8rem; background: rgba(255, 255, 255, 0.02);
 }
-.qs-hao-label { flex: 0 0 72px; font-size: 0.85rem; color: var(--qs-ivory); }
+.qs-hao-label { flex: 0 0 60px; font-size: 0.85rem; color: var(--qs-ivory); }
+/* min-height 44px = ngưỡng vùng chạm tối thiểu Apple/Google khuyến nghị — Thầy: "hình như không
+   ấn được" (2026-08-23). Kiểm tra kỹ thì <select>/checkbox vẫn nhận sự kiện bình thường, nghi vấn
+   thật là vùng chạm quá nhỏ (35px) + không có phản hồi rõ khi đã chọn nên tưởng chưa ăn — tăng
+   kích thước và viền sáng hẳn lên khi giá trị khác mặc định (.qs-hao-select.qs-hao-set). */
 .qs-hao-select {
-  flex: 1; background: rgba(0, 0, 0, 0.2); color: var(--qs-ivory);
-  border: 1px solid rgba(241, 200, 90, 0.22); border-radius: 8px;
-  padding: 0.4rem 0.5rem; font-size: 0.95rem; text-align: center;
+  flex: 1; min-height: 44px; background: rgba(0, 0, 0, 0.25); color: var(--qs-ivory);
+  border: 1.5px solid rgba(241, 200, 90, 0.3); border-radius: 8px;
+  padding: 0.5rem; font-size: 1rem; font-weight: 600; text-align: center;
 }
-.qs-hao-dong { flex: 0 0 auto; display: flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; color: var(--qs-muted); white-space: nowrap; }
-.qs-hao-dong input { accent-color: var(--qs-gold); width: 16px; height: 16px; }
+.qs-hao-select.qs-hao-set { border-color: var(--qs-gold); background: rgba(241, 200, 90, 0.1); box-shadow: 0 0 0 1px rgba(241, 200, 90, 0.25); }
+.qs-hao-dong {
+  flex: 0 0 auto; display: flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; color: var(--qs-muted);
+  white-space: nowrap; min-height: 44px; padding: 0 0.3rem; cursor: pointer;
+}
+.qs-hao-dong input { accent-color: var(--qs-gold); width: 20px; height: 20px; cursor: pointer; }
 
 .qs-result { margin-top: 1.5rem; }
 .qs-verdict {
