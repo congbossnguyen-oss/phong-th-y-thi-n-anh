@@ -14,7 +14,7 @@ export const GIA_CONG_CU = {
   "ngay-khai-truong-cao-cap": 499000,
   "dinh-huong-nghe-nghiep": 499000,
   "trach-nhat-sinh-no": 499000,
-  "sim-phong-thuy-khai-van": 1000000,
+  "sim-phong-thuy-khai-van": 999999,
 } as const;
 
 export type ToolSlug = keyof typeof GIA_CONG_CU;
