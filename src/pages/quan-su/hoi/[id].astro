@@ -229,11 +229,15 @@ const formInputs = [...question.required_inputs, ...question.optional_inputs].fi
             function lineBarHtml(value, isDong) {
               const color = isDong ? "var(--qs-gold)" : "var(--qs-ivory)";
               const bar = value === 1
-                ? `<div style="height:8px;border-radius:2px;background:${color};"></div>`
-                : `<div style="height:8px;display:flex;justify-content:space-between;"><div style="width:44%;height:100%;border-radius:2px;background:${color};"></div><div style="width:44%;height:100%;border-radius:2px;background:${color};"></div></div>`;
-              return `<div style="flex:1;">${bar}</div>`;
+                ? `<div style="height:6px;border-radius:2px;background:${color};"></div>`
+                : `<div style="height:6px;display:flex;justify-content:space-between;"><div style="width:42%;height:100%;border-radius:2px;background:${color};"></div><div style="width:42%;height:100%;border-radius:2px;background:${color};"></div></div>`;
+              return `<div style="width:16px;">${bar}</div>`;
             }
 
+            // Bảng thu gọn tối đa để 2 cột (Chính/Biến) vừa khung điện thoại hẹp nhất mà KHÔNG tràn
+            // trang (Thầy: "quẻ trên mobile đang lỗi tràn ra... chỉ cần nhìn đúng quẻ là được", 2026-
+            // 08-24) — dùng Lục Thân viết tắt (LUC_THAN_TAT) và chấm tròn nhỏ thay chữ "Không" cho
+            // Tuần Không, đổi padding/cỡ chữ nhỏ lại.
             function queTableHtml(q, isBien, dongPositions) {
               const rows = [...q.hao].reverse();
               const rowsHtml = rows.map((h) => {
@@ -242,19 +246,19 @@ const formInputs = [...question.required_inputs, ...question.optional_inputs].fi
                 const fw = isRowDong ? "700" : "400";
                 return `
                   <tr style="border-bottom:1px solid rgba(241,200,90,0.1);">
-                    <td style="padding:5px 4px;width:34px;">${lineBarHtml(h.value, isRowDong)}</td>
-                    <td style="padding:5px 6px;color:${rc};font-weight:${fw};font-size:0.78rem;white-space:nowrap;">${h.theUng ?? ""}</td>
-                    <td style="padding:5px 6px;color:${rc};font-weight:${fw};font-size:0.78rem;white-space:nowrap;">${esc(h.lucThan)}</td>
-                    <td style="padding:5px 6px;color:${rc};font-weight:${fw};font-size:0.78rem;white-space:nowrap;">${CAN[h.canIndex]} ${CHI[h.chiIndex]}</td>
-                    <td style="padding:5px 6px;color:${rc};font-size:0.78rem;text-align:center;">${h.xunKong ? "Không" : ""}</td>
+                    <td style="padding:4px 2px;">${lineBarHtml(h.value, isRowDong)}</td>
+                    <td style="padding:4px 3px;color:${rc};font-weight:${fw};font-size:0.66rem;white-space:nowrap;">${h.theUng ?? ""}</td>
+                    <td style="padding:4px 3px;color:${rc};font-weight:${fw};font-size:0.66rem;white-space:nowrap;">${esc(LUC_THAN_TAT[h.lucThan] ?? h.lucThan)}</td>
+                    <td style="padding:4px 3px;color:${rc};font-weight:${fw};font-size:0.66rem;white-space:nowrap;">${CAN[h.canIndex]}${CHI[h.chiIndex]}</td>
+                    <td style="padding:4px 2px;text-align:center;">${h.xunKong ? `<span style="display:inline-block;width:6px;height:6px;border-radius:999px;background:${rc};" title="Tuần Không"></span>` : ""}</td>
                   </tr>`;
               }).join("");
               return `
                 <div style="overflow-x:auto;">
-                  <table style="width:100%;border-collapse:collapse;min-width:230px;">
+                  <table style="width:100%;border-collapse:collapse;min-width:150px;">
                     <thead>
-                      <tr style="color:var(--qs-gold);font-size:0.66rem;text-transform:uppercase;letter-spacing:0.02em;">
-                        <th style="padding:3px;text-align:left;">Hào</th><th style="padding:3px;text-align:left;">T/Ư</th><th style="padding:3px;text-align:left;">Lục Thân</th><th style="padding:3px;text-align:left;">Can Chi</th><th style="padding:3px;text-align:center;">T.K</th>
+                      <tr style="color:var(--qs-gold);font-size:0.56rem;text-transform:uppercase;letter-spacing:0.01em;">
+                        <th style="padding:2px;"></th><th style="padding:2px;text-align:left;">T/Ư</th><th style="padding:2px;text-align:left;">L.Thân</th><th style="padding:2px;text-align:left;">Can Chi</th><th style="padding:2px;text-align:center;">T.K</th>
                       </tr>
                     </thead>
                     <tbody>${rowsHtml}</tbody>
@@ -283,7 +287,7 @@ const formInputs = [...question.required_inputs, ...question.optional_inputs].fi
                 <p style="margin:0 0 0.6rem;color:var(--qs-muted);font-size:0.8rem;">
                   ${esc(que.canChiText)} · Tuần Không: <strong style="color:var(--qs-ivory);">${esc(que.tuanKhong)}</strong> · Nhật thần: <strong style="color:var(--qs-ivory);">${esc(que.nhatThan)}</strong> · Nguyệt lệnh: <strong style="color:var(--qs-ivory);">${esc(que.nguyetLenh)}</strong>
                 </p>
-                <div style="display:grid;grid-template-columns:${coBien ? "1fr 1fr" : "1fr"};gap:0.8rem;">
+                <div style="display:grid;grid-template-columns:${coBien ? "minmax(0,1fr) minmax(0,1fr)" : "minmax(0,1fr)"};gap:0.6rem;min-width:0;">
                   ${chinhBlock}${bienBlock}
                 </div>
                 ${phucThanNote}
