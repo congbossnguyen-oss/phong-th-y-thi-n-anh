@@ -124,19 +124,12 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
 </BaseLayout>
 
 <style>
-  /* Riêng trang chủ Quân Sư: nhạt lớp phủ tối của .qs (quan-su.css) để ảnh nền phong cách huyền
-     học thấy rõ ở các khối SAU hero (Module cốt lõi, icon nhóm...) — Thầy: "để ảnh đạo sĩ ở hero,
-     cho ảnh phong cách huyền học vào các mục sau" (2026-08-23). Lớp phủ gốc (0.88-0.98) làm đúng
-     nhiệm vụ giữ chữ dễ đọc ở CÁC TRANG KHÁC (danh sách câu hỏi, kết quả luận...) nên KHÔNG đổi ở
-     đó — chỉ ghi đè cho `.qsh`, không ảnh hưởng trang nào khác dùng chung file CSS này.
-     Chữ vẫn đọc được vì mọi nội dung nằm trong thẻ nền tối riêng (.qsh-module, .qsh-icon-badge...). */
-  .qsh {
-    padding-top: 0;
-    background:
-      linear-gradient(180deg, rgba(7, 6, 5, 0.55) 0%, rgba(7, 6, 5, 0.35) 30%, rgba(7, 6, 5, 0.6) 70%, rgba(7, 6, 5, 0.88) 100%),
-      url("/images/quan-su/bg-huyen-hoc.webp") center top / cover no-repeat;
-    background-color: var(--qs-midnight);
-  }
+  /* Riêng trang chủ Quân Sư: PHẲNG, không dùng ảnh nền huyền học riêng nữa — ảnh hero (dao-si.png)
+     giờ đã gộp sẵn đủ phong cảnh/trăng/bát quái, thêm 1 ảnh nền nữa ở dưới là thừa (Thầy: "bỏ 2 ảnh
+     đó đi thay bằng ảnh đạo sĩ 2", 2026-08-23 — chỉ còn ĐÚNG 1 ảnh cho cả trang chủ). Ghi đè nền
+     phẳng cho `.qsh` thay vì đụng `.qs` trong quan-su.css, để KHÔNG ảnh hưởng các trang khác (danh
+     sách câu hỏi, kết quả luận...) vẫn đang dùng ảnh nền đó bình thường. */
+  .qsh { padding-top: 0; background: var(--qs-midnight); }
 
   /* MỘT ảnh đạo sĩ xuyên suốt làm nền, chữ đè lên trên — KHÔNG tách 2 khối riêng (Thầy: "chỉ cần
      để 1 ảnh của Quân Sư thôi", 2026-08-23). Ảnh phủ toàn bộ hero, làm mờ dần từ trái (chữ) sang
