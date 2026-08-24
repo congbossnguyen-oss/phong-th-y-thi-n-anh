@@ -1,0 +1,68 @@
+{
+  "_meta": {
+    "purpose": "Cấu hình cho module luận vận khí Đại Vận/Lưu Niên (app điện thoại). Mapping 4 lĩnh vực (quan/tài/sức khỏe/tình duyên) → Thập Thần liên quan, thang nhãn an toàn, và từ khóa CẤM cho tầng AI. Dùng kèm SPEC.md.",
+    "nguon_logic": "skill luan-giai-bat-tu: ung-ky.md, quan-he-can-chi.md (mục 4 Tầng Thứ), tai-van.md, quan-van.md, benh-tat.md, hon-nhan.md, dung-than.md",
+    "nguyen_tac": "Engine chấm điểm 0-10 mỗi lĩnh vực cho mỗi năm Lưu Niên + tổng quan Đại Vận. AI chỉ diễn giải TỪ điểm số + căn cứ engine trả, KHÔNG tự tính lại, KHÔNG tự phán sự kiện."
+  },
+
+  "linh_vuc": {
+    "tai_van": {
+      "ten_hien_thi": "Tài vận",
+      "thap_than_lien_quan": ["Chính Tài", "Thiên Tài", "Thực Thần", "Thương Quan"],
+      "nguon": "tai-van.md",
+      "logic_tom_tat": "Thân đủ sức gánh Tài mới phát. Lưu Niên/Đại Vận mang Tài (khi Thân vượng) hoặc Thực Thương sinh Tài → cộng điểm. Tỷ Kiếp/Kiếp Tài vượng cướp Tài, hoặc Tài đến khi Thân nhược → trừ điểm (phá tài). Kiêu đoạt Thực → trừ.",
+      "cong_diem_khi": ["Lưu Niên/ĐV mang Tài tinh khi Thân vượng", "Thực Thương sinh Tài thông suốt", "Tài tinh là Hỷ/Dụng Thần được kích hoạt", "Tài kho được xung khai đúng lúc (Thân vượng)"],
+      "tru_diem_khi": ["Tỷ Kiếp/Kiếp Tài vượng địa (tranh Tài)", "Tài đến khi Thân nhược không gánh nổi", "Kiêu Thần đoạt Thực Thần", "Kình Dương gặp tuế vận (hao tài)"]
+    },
+    "quan_van": {
+      "ten_hien_thi": "Quan vận / Sự nghiệp",
+      "thap_than_lien_quan": ["Chính Quan", "Thất Sát", "Chính Ấn", "Thiên Ấn"],
+      "nguon": "quan-van.md",
+      "logic_tom_tat": "Quan Sát có chế/hóa + Thân đủ vượng → thăng tiến. Thương Quan gặp Quan (phá Quan) → trừ nặng (mất chức HOẶC hại sức khỏe). Quan-Ấn tương sinh → cộng. Tài phá Ấn (khi Ấn là chỗ dựa) → trừ.",
+      "cong_diem_khi": ["Quan Sát được Ấn hóa hoặc Thực chế đúng mức", "Quan-Ấn tương sinh, Thân vượng", "Tài sinh Quan (Thân đủ vượng)", "Lưu Niên gỡ bớt Quan Sát hỗn tạp còn 1 loại thuần"],
+      "tru_diem_khi": ["Thương Quan gặp/khắc Chính Quan", "Quan không có Ấn hỗ trợ (chức không bền)", "Tài phá Ấn khi Ấn là chỗ dựa", "Quan Sát hỗn tạp không được gỡ"]
+    },
+    "suc_khoe": {
+      "ten_hien_thi": "Sức khỏe",
+      "thap_than_lien_quan": ["all"],
+      "nguon": "benh-tat.md (mục 5-8)",
+      "logic_tom_tat": "Ngũ Hành mất cân bằng cực đoan tại Lưu Niên/ĐV (hành Kị vượng khắc trực diện, hoặc Dụng Thần bị khắc mạnh) → trừ điểm (giai đoạn cần giữ gìn). Tuế Vận cùng gặp, Thiên Khắc Địa Xung, nhập Mộ, nhiều Hung Sát tụ → trừ. Dụng Thần được sinh vượng → cộng (khỏe).",
+      "cong_diem_khi": ["Dụng Thần/Ấn được sinh vượng tại tuế vận", "Ngũ Hành về cân bằng hơn", "Có Thiên Đức/Nguyệt Đức tại Lưu Niên"],
+      "tru_diem_khi": ["Dụng Thần bị khắc mạnh + Lưu Niên là Kị Thần vượng", "Tuế Vận cùng gặp (Can Chi ĐV trùng Lưu Niên)", "Thiên Khắc Địa Xung với trụ Năm/Nhật Can", "Nhật Can nhập Mộ / Mộ bị xung khai", "Nhiều Hung Sát (Dương Nhận, Kiếp Sát, Kình Dương) tụ tại tuế vận"]
+    },
+    "tinh_duyen": {
+      "ten_hien_thi": "Tình duyên / Hôn nhân",
+      "thap_than_lien_quan_nam": ["Chính Tài", "Thiên Tài"],
+      "thap_than_lien_quan_nu": ["Chính Quan", "Thất Sát"],
+      "nguon": "hon-nhan.md",
+      "logic_tom_tat": "Nam xem Tài, Nữ xem Quan Sát, cùng Chi Ngày (cung Phu/Thê). Lưu Niên/ĐV hợp hóa ra đúng Tài (Nam)/Quan (Nữ) là Hỷ Thần, hoặc hợp vào cung Phu/Thê → cộng (thuận, dễ có tin vui). Xung/Hình/Hại cung Phu/Thê, hoặc Phu/Thê tinh nhập Mộ-Tuyệt-Không Vong → trừ (trắc trở).",
+      "cong_diem_khi": ["Lưu Niên hợp hóa ra Tài(Nam)/Quan(Nữ) là Hỷ Thần", "Lưu Niên hợp vào cung Phu/Thê (Chi Ngày)", "Đào Hoa/Hồng Loan/Hồng Diễm đúng cung, có kiểm soát", "Thân vượng gặp vận Tài/Quan phù hợp giới"],
+      "tru_diem_khi": ["Xung/Hình/Hại cung Phu/Thê (Chi Ngày)", "Phu/Thê tinh nhập Mộ/Tuyệt/Không Vong", "Kình Dương gặp tuế vận tại cung Phu/Thê", "Tài(Nam)/Quan(Nữ) hợp hóa thành Kị Thần"]
+    }
+  },
+
+  "thang_nhan": {
+    "_note": "Map điểm 0-10 → nhãn. KHÔNG dùng ngôn ngữ tiên tri sự kiện. Chỉ mô tả mức độ thuận lợi/cần thận trọng.",
+    "8-10": {"nhan": "Rất thuận lợi", "mau": "xanh lá"},
+    "6-7":  {"nhan": "Thuận lợi", "mau": "xanh dương"},
+    "5":    {"nhan": "Bình hòa", "mau": "xám"},
+    "3-4":  {"nhan": "Cần lưu ý", "mau": "vàng"},
+    "0-2":  {"nhan": "Cần thận trọng", "mau": "cam"}
+  },
+
+  "content_safety": {
+    "_note": "Ràng buộc BẮT BUỘC cho tầng AI viết lời luận — vì đây là app người dùng cuối tự đọc, không có thầy lọc.",
+    "tu_khoa_cam_tuyet_doi": [
+      "chết", "tử vong", "qua đời", "mất mạng", "tang", "ly hôn", "ly dị", "phá sản hoàn toàn", "tuyệt tự", "vô sinh", "ung thư", "đột quỵ", "tai nạn chết người", "án tù", "ngồi tù"
+    ],
+    "quy_tac_dien_dat": [
+      "Sức khỏe điểm thấp → 'giai đoạn nên chú ý giữ gìn sức khỏe, khám định kỳ', KHÔNG nêu bệnh danh cụ thể, KHÔNG nói tính mạng.",
+      "Tình duyên điểm thấp → 'giai đoạn tình cảm có thể gặp thử thách, cần dành thời gian vun đắp/thấu hiểu', KHÔNG nói ly hôn/chia tay/mất người.",
+      "Tài vận điểm thấp → 'giai đoạn nên thận trọng trong đầu tư/chi tiêu lớn', KHÔNG nói phá sản/trắng tay.",
+      "Quan vận điểm thấp → 'giai đoạn công việc có thể nhiều áp lực/cạnh tranh, nên giữ mối quan hệ và tránh mạo hiểm', KHÔNG nói mất chức/sa thải chắc chắn.",
+      "Luôn đóng khung là XU HƯỚNG/KHUYNH HƯỚNG cần lưu ý, không phải điều chắc chắn xảy ra.",
+      "Điểm cao cũng không hứa hẹn tuyệt đối ('chắc chắn giàu', 'chắc chắn thăng chức') — dùng 'thuận lợi cho', 'là thời điểm tốt để'."
+    ],
+    "disclaimer_bat_buoc": "Kết quả mang tính tham khảo theo phương pháp mệnh lý cổ truyền, không thay thế tư vấn y tế/tài chính/pháp lý chuyên môn và không phải sự tiên đoán chắc chắn về tương lai."
+  }
+}
