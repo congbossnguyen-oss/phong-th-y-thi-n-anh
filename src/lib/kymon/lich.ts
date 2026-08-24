@@ -3,7 +3,7 @@
 import { getGanzhiMonth } from "@thien-anh/calendar-core";
 import { CHI_LIST } from "./constants";
 import { _layLaBanTheoLichNoiBo } from "./engine";
-import { kmDataByDate } from "./tables";
+import { ensureKmDataLoaded, kmDataByDate } from "./tables";
 import { quetTamThang } from "./tamThang";
 
 /** 12 Kiến Trừ, thứ tự cố định — ngày có chi trùng chi tháng = "Kiến", đi thuận theo 12 chi. */
@@ -97,11 +97,16 @@ export type NgayLichKyMon = {
 const cacheThang = new Map<string, NgayLichKyMon[]>();
 
 /** Lấy lịch 1 tháng dương lịch (Kỳ Môn) — có cache theo "nam-thang" vì phải chạy engine tới
- * ~30 lần cho cột nhãn thắng cách (v1v2/v3). */
-export function layLichThang(nam: number, thang: number): NgayLichKyMon[] {
+ * ~30 lần cho cột nhãn thắng cách (v1v2/v3).
+ *
+ * `async` CHỈ vì phải đảm bảo km_data.json đã nạp xong (xem tables.ts) trước khi tra
+ * `kmDataByDate` trong vòng lặp bên dưới — vòng lặp và toàn bộ logic tính lịch giữ nguyên 100%
+ * đồng bộ, không đổi thuật toán. */
+export async function layLichThang(nam: number, thang: number): Promise<NgayLichKyMon[]> {
   const cacheKey = `${nam}-${thang}`;
   const cached = cacheThang.get(cacheKey);
   if (cached) return cached;
+  await ensureKmDataLoaded();
 
   const soNgayTrongThang = new Date(nam, thang, 0).getDate();
   const ketQua: NgayLichKyMon[] = [];

@@ -17,6 +17,7 @@ import {
 import {
   buildPalaceCycle,
   diaBanCanByCung as buildDiaBanCanByCung,
+  ensureKmDataLoaded,
   giapTyByTen,
   homeCungOfSao,
   kmDataByDate,
@@ -294,8 +295,13 @@ export function _layLaBanTheoLichNoiBo(input: LapLaBanInputLich, cheDo: CheDo): 
 /**
  * Lập lá bàn Kỳ Môn Độn Giáp — 3 chế độ đang hỗ trợ chính thức: **Giờ / Mệnh / 1080**
  * (SPEC mục 6B). Ngày/Tháng/Năm tạm ngưng, xem README mục "Prompt 2" trước khi bật lại.
+ *
+ * `async` CHỈ vì phải đảm bảo km_data.json (nạp runtime, xem tables.ts) đã sẵn sàng trước khi
+ * tra `kmDataByDate` — sau khi `await` xong, toàn bộ phần tính toán bên dưới giữ nguyên 100%
+ * đồng bộ, không đổi 1 bước thuật toán nào so với trước.
  */
-export function lapLaBan(input: LapLaBanInput): LapLaBanResult {
+export async function lapLaBan(input: LapLaBanInput): Promise<LapLaBanResult> {
+  await ensureKmDataLoaded();
   if (input.cheDo === "1080") {
     const { soCuc, amDuong, hoaGiap } = input;
     const hoaGiapRow = giapTyByTen.get(hoaGiap);

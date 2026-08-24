@@ -24,7 +24,7 @@ export const GET: APIRoute = async ({ url }) => {
   }
 
   try {
-    const ngayList = layLichThang(nam, thang);
+    const ngayList = await layLichThang(nam, thang);
     return jsonResponse({ nam, thang, ngayList }, 200);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Lỗi không xác định.";

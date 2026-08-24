@@ -1,7 +1,12 @@
 // Nạp + tiền xử lý 3 file dữ liệu (km_data.json, km_giaptytable.json, km_core_tables.json).
 // Theo đúng yêu cầu SPEC: chỉ tra bảng có sẵn, không tự tính lịch âm/tiết khí/cục.
+//
+// km_data.json (~7.27MB) KHÔNG còn nạp bằng static import — file đó nằm ngoài Worker script
+// (Cloudflare Workers giới hạn kích thước script; xem `public/kymon-data/km_data.json`), nạp
+// đúng LÚC CHẠY, MỘT LẦN, cache lại trong bộ nhớ tiến trình. Nội dung/thứ tự dữ liệu giữ nguyên
+// 100% — chỉ đổi CƠ CHẾ nạp (build-time import → runtime fetch/đọc file), không đổi cách xử lý.
+// 2 file JSON nhỏ (km_giaptytable, km_core_tables — vài KB) vẫn static import như cũ, không cần đổi.
 
-import kmDataRaw from "./data/km_data.json";
 import kmGiapTyRaw from "./data/km_giaptytable.json";
 import kmCoreRaw from "./data/km_core_tables.json";
 
@@ -35,12 +40,49 @@ type KmCoreTables = {
   dia_ban_cong_thuc: Record<string, DiaBanCellConfig | string>;
 };
 
-const kmData = kmDataRaw as KmDataRow[];
 const kmGiapTy = kmGiapTyRaw as GiapTyRow[];
 const core = kmCoreRaw as unknown as KmCoreTables;
 
 export const kmDataByDate = new Map<string, KmDataRow>();
-for (const row of kmData) kmDataByDate.set(row.date, row);
+
+const KM_DATA_ASSET_PATH = "/kymon-data/km_data.json";
+
+/** Đọc nguyên văn km_data.json — Workers dùng ASSETS binding (qua module `cloudflare:workers`,
+ * cách chính thức thay cho `Astro.locals.runtime.env` đã bị bỏ ở Astro v6), Node thật (vitest,
+ * hoặc bất kỳ ngữ cảnh non-Workers nào) đọc trực tiếp file trên đĩa — CÙNG một file, CÙNG nội
+ * dung, chỉ khác đường lấy. Nhận diện Workers theo cách chuẩn (navigator.userAgent). */
+async function docKmDataRaw(): Promise<KmDataRow[]> {
+  const isWorkerd = typeof navigator !== "undefined" && navigator.userAgent === "Cloudflare-Workers";
+  if (isWorkerd) {
+    const cf = (await import(/* @vite-ignore */ "cloudflare:workers")) as {
+      env: { ASSETS: { fetch(req: Request): Promise<Response> } };
+    };
+    const res = await cf.env.ASSETS.fetch(new Request(new URL(KM_DATA_ASSET_PATH, "https://assets.local")));
+    if (!res.ok) {
+      throw new Error(`Không tải được km_data.json qua ASSETS binding (HTTP ${res.status}).`);
+    }
+    return (await res.json()) as KmDataRow[];
+  }
+  const { readFile } = await import("node:fs/promises");
+  const { fileURLToPath } = await import("node:url");
+  const path = fileURLToPath(new URL(`../../../public${KM_DATA_ASSET_PATH}`, import.meta.url));
+  const text = await readFile(path, "utf8");
+  return JSON.parse(text) as KmDataRow[];
+}
+
+let kmDataLoadPromise: Promise<void> | null = null;
+
+/** Đảm bảo `kmDataByDate` đã có dữ liệu trước khi tra cứu — gọi ở ĐÚNG 2 điểm vào công khai
+ * (`lapLaBan()` trong engine.ts, `layLichThang()` trong lich.ts), idempotent (nạp đúng 1 lần,
+ * các lần gọi sau dùng lại cùng Promise/kết quả đã cache). */
+export function ensureKmDataLoaded(): Promise<void> {
+  if (!kmDataLoadPromise) {
+    kmDataLoadPromise = docKmDataRaw().then((rows) => {
+      for (const row of rows) kmDataByDate.set(row.date, row);
+    });
+  }
+  return kmDataLoadPromise;
+}
 
 export const giapTyByTen = new Map<string, GiapTyRow>();
 for (const row of kmGiapTy) giapTyByTen.set(row.ten, row);

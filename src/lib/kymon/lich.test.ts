@@ -2,15 +2,15 @@ import { describe, expect, it } from "vitest";
 import { layLichThang } from "./lich";
 
 describe("layLichThang — SPEC mục 6D", () => {
-  it("tháng 08/2026 có đủ 31 ngày, đúng ngày đầu/cuối", () => {
-    const thang = layLichThang(2026, 8);
+  it("tháng 08/2026 có đủ 31 ngày, đúng ngày đầu/cuối", async () => {
+    const thang = await layLichThang(2026, 8);
     expect(thang).toHaveLength(31);
     expect(thang[0]).toMatchObject({ ngayDuong: 1, date: "2026-08-01" });
     expect(thang[30]).toMatchObject({ ngayDuong: 31, date: "2026-08-31" });
   });
 
-  it("can-chi ngày khớp km_data.json (đối chiếu 19/08/2026 — đã xác nhận nhiều lần trong Prompt 1/2)", () => {
-    const thang = layLichThang(2026, 8);
+  it("can-chi ngày khớp km_data.json (đối chiếu 19/08/2026 — đã xác nhận nhiều lần trong Prompt 1/2)", async () => {
+    const thang = await layLichThang(2026, 8);
     const ngay19 = thang.find((n) => n.ngayDuong === 19)!;
     expect(ngay19.can).toBe("Ất");
     expect(ngay19.chi).toBe("Sửu");
@@ -18,14 +18,14 @@ describe("layLichThang — SPEC mục 6D", () => {
     expect(ngay19.thangChi).toBe("Thân");
   });
 
-  it("Kiến Trừ: ngày có chi trùng chi tháng phải là 'Kiến'", () => {
-    const thang = layLichThang(2026, 8);
+  it("Kiến Trừ: ngày có chi trùng chi tháng phải là 'Kiến'", async () => {
+    const thang = await layLichThang(2026, 8);
     const ngayTrungChiThang = thang.find((n) => n.chi === n.thangChi);
     expect(ngayTrungChiThang?.kienTru).toBe("Kiến");
   });
 
-  it("Kiến Trừ đi tuần tự đúng thứ tự cố định qua các ngày liên tiếp (chi ngày +1 → Kiến Trừ +1, xoay vòng 12)", () => {
-    const thang = layLichThang(2026, 8);
+  it("Kiến Trừ đi tuần tự đúng thứ tự cố định qua các ngày liên tiếp (chi ngày +1 → Kiến Trừ +1, xoay vòng 12)", async () => {
+    const thang = await layLichThang(2026, 8);
     const KIEN_TRU_LIST = ["Kiến", "Trừ", "Mãn", "Bình", "Định", "Chấp", "Phá", "Nguy", "Thành", "Thu", "Khai", "Bế"];
     for (let i = 1; i < thang.length; i++) {
       const prevIdx = KIEN_TRU_LIST.indexOf(thang[i - 1].kienTru);
@@ -37,8 +37,8 @@ describe("layLichThang — SPEC mục 6D", () => {
     }
   });
 
-  it("28 Tú xoay vòng đúng chu kỳ 28 theo stt liên tiếp", () => {
-    const thang = layLichThang(2026, 8);
+  it("28 Tú xoay vòng đúng chu kỳ 28 theo stt liên tiếp", async () => {
+    const thang = await layLichThang(2026, 8);
     const TU_LIST = [
       "Giác","Cang","Đê","Phòng","Tâm","Vĩ","Cơ","Đẩu","Ngưu","Nữ","Hư","Nguy","Thất","Bích",
       "Khuê","Lâu","Vị","Mão","Tất","Chủy","Sâm","Tỉnh","Quỷ","Liễu","Tinh","Trương","Dực","Chẩn",
@@ -50,9 +50,9 @@ describe("layLichThang — SPEC mục 6D", () => {
     }
   });
 
-  it("cache: gọi lại cùng tháng trả về cùng tham chiếu mảng (không chạy lại engine)", () => {
-    const a = layLichThang(2026, 8);
-    const b = layLichThang(2026, 8);
+  it("cache: gọi lại cùng tháng trả về cùng tham chiếu mảng (không chạy lại engine)", async () => {
+    const a = await layLichThang(2026, 8);
+    const b = await layLichThang(2026, 8);
     expect(a).toBe(b);
   });
 });

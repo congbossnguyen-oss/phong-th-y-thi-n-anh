@@ -16,6 +16,11 @@
     "directory": "./dist",
     "binding": "ASSETS"
   },
+  // @astrojs/cloudflare tự khai báo binding KV "SESSION" cho tính năng Astro Sessions — app này
+  // KHÔNG dùng (session tự cài bằng DB, xem src/lib/auth/session.ts). Trỏ vào namespace RỖNG đã có
+  // sẵn trong tài khoản (tự phát sinh từ một lần thử deploy trước, cùng đúng tên theo quy ước
+  // wrangler) thay vì để wrangler tự tạo namespace mới — namespace mới bị trùng tên nên deploy lỗi.
+  "kv_namespaces": [{ "binding": "SESSION", "id": "6d7b9d11decd4f7dacd97ede5deab9d2" }],
   "observability": {
     "enabled": true
   }

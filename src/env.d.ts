@@ -20,3 +20,11 @@ declare namespace App {
     user: import("./lib/auth/session").SessionUser | null;
   }
 }
+
+// Không cài @cloudflare/workers-types (tránh thêm phụ thuộc chỉ vì type) — khai báo tối thiểu
+// đúng phần thực sự dùng (env.ASSETS.fetch) trong src/lib/kymon/tables.ts. Module này chỉ tồn
+// tại thật lúc chạy dưới Cloudflare Workers; nhánh code đọc nó luôn được canh bởi kiểm tra
+// runtime (navigator.userAgent === "Cloudflare-Workers") trước khi import.
+declare module "cloudflare:workers" {
+  export const env: { ASSETS: { fetch(req: Request): Promise<Response> } };
+}

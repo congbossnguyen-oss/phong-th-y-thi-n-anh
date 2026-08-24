@@ -32,7 +32,7 @@ export const GET: APIRoute = async ({ url }) => {
       if (amDuongRaw !== "+" && amDuongRaw !== "-") {
         return jsonResponse({ error: 'amDuong phải là "+" hoặc "-".' }, 400);
       }
-      const laBan = lapLaBan({ cheDo: "1080", soCuc, amDuong: amDuongRaw, hoaGiap });
+      const laBan = await lapLaBan({ cheDo: "1080", soCuc, amDuong: amDuongRaw, hoaGiap });
       return jsonResponse({ laBan, tamThang: quetTamThang(laBan) }, 200);
     }
 
@@ -60,7 +60,7 @@ export const GET: APIRoute = async ({ url }) => {
       return jsonResponse({ error: "nam, thang, ngay, gio, phut phải là số nguyên." }, 400);
     }
 
-    const laBan = lapLaBan({ cheDo, nam, thang, ngay, gio, phut });
+    const laBan = await lapLaBan({ cheDo, nam, thang, ngay, gio, phut });
     return jsonResponse({ laBan, tamThang: quetTamThang(laBan) }, 200);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Lỗi không xác định.";

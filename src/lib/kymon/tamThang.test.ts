@@ -10,8 +10,8 @@ import { quetTamThang } from "./tamThang";
 // chi tiết với ví dụ; chỉ V3 (Trực Phù) lệch, đúng bằng phần đã sửa — nên coi ví dụ 6C là dữ
 // liệu cũ chưa cập nhật, KHÔNG phải lỗi engine. Test dưới đây theo giá trị engine đã xác nhận.
 describe("quetTamThang — SPEC mục 6C", () => {
-  it("lá 17:43 19/08/2026 chế độ Mệnh: V1V2 gộp tại Tây, V3 tại Tây Nam", () => {
-    const r = lapLaBan({ nam: 2026, thang: 8, ngay: 19, gio: 17, phut: 43, cheDo: "menh" });
+  it("lá 17:43 19/08/2026 chế độ Mệnh: V1V2 gộp tại Tây, V3 tại Tây Nam", async () => {
+    const r = await lapLaBan({ nam: 2026, thang: 8, ngay: 19, gio: 17, phut: 43, cheDo: "menh" });
     const hang = quetTamThang(r);
 
     expect(hang).toEqual([
@@ -20,15 +20,15 @@ describe("quetTamThang — SPEC mục 6C", () => {
     ]);
   });
 
-  it("chế độ Giờ và Mệnh cho cùng thời điểm phải ra Tam Thắng giống hệt nhau", () => {
+  it("chế độ Giờ và Mệnh cho cùng thời điểm phải ra Tam Thắng giống hệt nhau", async () => {
     const input = { nam: 2026, thang: 8, ngay: 19, gio: 17, phut: 43 };
-    const gio = quetTamThang(lapLaBan({ ...input, cheDo: "gio" }));
-    const menh = quetTamThang(lapLaBan({ ...input, cheDo: "menh" }));
+    const gio = quetTamThang(await lapLaBan({ ...input, cheDo: "gio" }));
+    const menh = quetTamThang(await lapLaBan({ ...input, cheDo: "menh" }));
     expect(menh).toEqual(gio);
   });
 
-  it("lá mẫu chính SPEC mục 6 (22:41 19/07/2026): không thắng cách nào trùng cung khác (3 hàng riêng hoặc gộp tùy dữ liệu)", () => {
-    const r = lapLaBan({ nam: 2026, thang: 7, ngay: 19, gio: 22, phut: 41 });
+  it("lá mẫu chính SPEC mục 6 (22:41 19/07/2026): không thắng cách nào trùng cung khác (3 hàng riêng hoặc gộp tùy dữ liệu)", async () => {
+    const r = await lapLaBan({ nam: 2026, thang: 7, ngay: 19, gio: 22, phut: 41 });
     const hang = quetTamThang(r);
     // Chỉ kiểm tính nhất quán nội bộ: tổng số "V" xuất hiện trong các hàng phải đúng 3 (V1+V2+V3),
     // không thiếu/thừa thắng cách nào dù gộp hàng hay không.

@@ -1,11 +1,15 @@
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import { lapLaBan } from "./engine";
+import type { LapLaBanResult } from "./types";
 
 // Lá bàn mẫu SPEC_cho_Claude_Code.md mục 6: 22:41 ngày 19/07/2026 (dương lịch).
 // Một số ô sao Thiên Bàn trong lá mẫu được chính Công đánh dấu "Thiên ?" (chưa chắc chắn
 // từ ảnh chụp) — các ô đó KHÔNG được assert ở đây, chỉ assert những gì lá mẫu ghi rõ.
 describe("lapLaBan — chế độ Giờ (Prompt 1)", () => {
-  const result = lapLaBan({ nam: 2026, thang: 7, ngay: 19, gio: 22, phut: 41 });
+  let result: LapLaBanResult;
+  beforeAll(async () => {
+    result = await lapLaBan({ nam: 2026, thang: 7, ngay: 19, gio: 22, phut: 41 });
+  });
 
   it("tứ trụ khớp lá mẫu", () => {
     expect(result.tuTru.gio).toEqual({ can: "Ất", chi: "Hợi" });

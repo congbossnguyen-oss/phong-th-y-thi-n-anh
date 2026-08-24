@@ -121,6 +121,30 @@ export default defineConfig({
   ],
 
   vite: {
-    plugins: [tailwindcss()]
+    plugins: [tailwindcss()],
+    build: {
+      rollupOptions: {
+        output: {
+          // pdf-lib/fontkit + 4 font base64 + logo được import từ 3 nơi độc lập (certificate/generate.ts,
+          // dai-cat-loi/pdf-khung.ts dùng chung cho ho-so-tang-le-pdf.ts + nghe-nghiep-pdf.ts +
+          // trach-nhat-sinh-no-pdf.ts). Rollup mặc định KHÔNG tự gộp chung 1 chunk giữa các nhánh
+          // import độc lập này (đã xác nhận qua build thật: cùng nội dung font bị nhân đôi ở cả
+          // "BeVietnamPro-Italic_*.mjs" lẫn "orders_*.mjs") — ép về đúng 1 chunk dùng chung, KHÔNG
+          // đổi logic/kết quả PDF, chỉ đổi cách Rollup gói mã.
+          manualChunks(id) {
+            if (
+              id.includes('/certificate/fonts/') ||
+              id.includes('/certificate/generate') ||
+              id.includes('/dai-cat-loi/pdf-khung') ||
+              id.includes('/dai-cat-loi/assets/logo-thien-anh') ||
+              id.includes('node_modules/pdf-lib') ||
+              id.includes('node_modules/@pdf-lib')
+            ) {
+              return 'pdf-shared';
+            }
+          },
+        },
+      },
+    },
   }
 });

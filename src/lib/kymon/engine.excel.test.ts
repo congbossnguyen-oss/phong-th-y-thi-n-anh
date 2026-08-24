@@ -1,12 +1,17 @@
-import { describe, expect, it } from "vitest";
+import { beforeAll, describe, expect, it } from "vitest";
 import { lapLaBan } from "./engine";
+import type { LapLaBanResult } from "./types";
 
 // Bàn phục ngâm 08:46 08/09/2021 (giờ Mậu Thìn, cục Âm 6, phù đầu Mậu) — đối chiếu Excel gốc
 // (KM ung dung 1.1.xlsx, sheet KỲ MÔN). Excel cho phục ngâm toàn bàn: thiên can = địa can,
 // sao ở nhà, thần khởi Trực Phù tại Càn(6).
 describe("engine — đối chiếu Excel gốc (phục ngâm, giờ Mậu)", () => {
-  const r = lapLaBan({ nam: 2021, thang: 9, ngay: 8, gio: 8, phut: 46 });
-  const by = new Map(r.cungList.map((c) => [c.soCung, c]));
+  let r: LapLaBanResult;
+  let by: Map<number, LapLaBanResult["cungList"][number]>;
+  beforeAll(async () => {
+    r = await lapLaBan({ nam: 2021, thang: 9, ngay: 8, gio: 8, phut: 46 });
+    by = new Map(r.cungList.map((c) => [c.soCung, c]));
+  });
   // Excel: [soCung] -> {thien, sao, than}
   const EXCEL: Record<number, { thien: string; sao: string; than: string }> = {
     4: { thien: "Canh", sao: "T.Phò", than: "B.Hổ" }, // Tốn

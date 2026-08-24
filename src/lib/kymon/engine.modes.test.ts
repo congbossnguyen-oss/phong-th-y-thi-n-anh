@@ -6,16 +6,16 @@ import { lapLaBan } from "./engine";
 const MOC = { nam: 2026, thang: 8, ngay: 19, gio: 17, phut: 43 };
 
 describe("lapLaBan — 3 chế độ đang hỗ trợ: Giờ / Mệnh / 1080 (Prompt 2)", () => {
-  it("mặc định (không truyền cheDo) = chế độ Giờ", () => {
-    const macDinh = lapLaBan(MOC);
-    const gio = lapLaBan({ ...MOC, cheDo: "gio" });
+  it("mặc định (không truyền cheDo) = chế độ Giờ", async () => {
+    const macDinh = await lapLaBan(MOC);
+    const gio = await lapLaBan({ ...MOC, cheDo: "gio" });
     expect(macDinh).toEqual(gio);
     expect(macDinh.cheDo).toBe("gio");
   });
 
-  it("Mệnh (nhập giờ SINH) ra bàn 9 cung Y HỆT chế độ Giờ khi cùng thời điểm — đúng SPEC 6B", () => {
-    const gio = lapLaBan({ ...MOC, cheDo: "gio" });
-    const menh = lapLaBan({ ...MOC, cheDo: "menh" });
+  it("Mệnh (nhập giờ SINH) ra bàn 9 cung Y HỆT chế độ Giờ khi cùng thời điểm — đúng SPEC 6B", async () => {
+    const gio = await lapLaBan({ ...MOC, cheDo: "gio" });
+    const menh = await lapLaBan({ ...MOC, cheDo: "menh" });
     expect(menh.cheDo).toBe("menh");
     expect(menh.cungList).toEqual(gio.cungList);
     expect(menh.trucPhu).toBe(gio.trucPhu);
@@ -24,8 +24,8 @@ describe("lapLaBan — 3 chế độ đang hỗ trợ: Giờ / Mệnh / 1080 (Pr
     expect(menh.tuTru).toEqual(gio.tuTru);
   });
 
-  it("chế độ Giờ (17:43 19/08/2026) khớp TEST_6_che_do.md: Trực Phù=Thiên Nhậm tại Khôn, Trực Sử=Sinh tại Đoài", () => {
-    const r = lapLaBan({ ...MOC, cheDo: "gio" });
+  it("chế độ Giờ (17:43 19/08/2026) khớp TEST_6_che_do.md: Trực Phù=Thiên Nhậm tại Khôn, Trực Sử=Sinh tại Đoài", async () => {
+    const r = await lapLaBan({ ...MOC, cheDo: "gio" });
     expect(r.tuTru).toEqual({
       gio: { can: "Ất", chi: "Dậu" },
       ngay: { can: "Ất", chi: "Sửu" },
@@ -40,9 +40,9 @@ describe("lapLaBan — 3 chế độ đang hỗ trợ: Giờ / Mệnh / 1080 (Pr
     expect(r.trucSuCung).toBe(7); // Đoài
   });
 
-  it("chế độ 1080: tự nhập cục+âm/dương+hoa giáp, bỏ qua tra lịch — khớp y hệt chế độ Giờ khi cùng dữ kiện (case1 SPEC mục 6)", () => {
-    const gioMode = lapLaBan({ nam: 2026, thang: 7, ngay: 19, gio: 22, phut: 41 });
-    const mode1080 = lapLaBan({ cheDo: "1080", soCuc: 7, amDuong: "-", hoaGiap: "Ất Hợi" });
+  it("chế độ 1080: tự nhập cục+âm/dương+hoa giáp, bỏ qua tra lịch — khớp y hệt chế độ Giờ khi cùng dữ kiện (case1 SPEC mục 6)", async () => {
+    const gioMode = await lapLaBan({ nam: 2026, thang: 7, ngay: 19, gio: 22, phut: 41 });
+    const mode1080 = await lapLaBan({ cheDo: "1080", soCuc: 7, amDuong: "-", hoaGiap: "Ất Hợi" });
     expect(mode1080.cheDo).toBe("1080");
     expect(mode1080.tuTru).toEqual({});
     expect(mode1080.trucPhu).toBe(gioMode.trucPhu);
@@ -52,12 +52,12 @@ describe("lapLaBan — 3 chế độ đang hỗ trợ: Giờ / Mệnh / 1080 (Pr
     expect(mode1080.cungList).toEqual(gioMode.cungList);
   });
 
-  it("Ngày/Tháng/Năm tạm ngưng — báo lỗi rõ ràng thay vì âm thầm trả kết quả chưa xác nhận", () => {
+  it("Ngày/Tháng/Năm tạm ngưng — báo lỗi rõ ràng thay vì âm thầm trả kết quả chưa xác nhận", async () => {
     // @ts-expect-error cheDo "ngay"/"thang"/"nam" không còn nằm trong LapLaBanInputLich công khai.
-    expect(() => lapLaBan({ ...MOC, cheDo: "ngay" })).toThrow(/tạm ngưng/);
+    await expect(lapLaBan({ ...MOC, cheDo: "ngay" })).rejects.toThrow(/tạm ngưng/);
     // @ts-expect-error như trên.
-    expect(() => lapLaBan({ ...MOC, cheDo: "thang" })).toThrow(/tạm ngưng/);
+    await expect(lapLaBan({ ...MOC, cheDo: "thang" })).rejects.toThrow(/tạm ngưng/);
     // @ts-expect-error như trên.
-    expect(() => lapLaBan({ ...MOC, cheDo: "nam" })).toThrow(/tạm ngưng/);
+    await expect(lapLaBan({ ...MOC, cheDo: "nam" })).rejects.toThrow(/tạm ngưng/);
   });
 });
