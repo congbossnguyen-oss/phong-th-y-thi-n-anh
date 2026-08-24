@@ -17,26 +17,26 @@ describe("ký VAPID", () => {
     expect(fromB64url(k.privateKey).length).toBe(32);
   });
 
-  it("JWT có 3 phần, header đúng chuẩn ES256", () => {
+  it("JWT có 3 phần, header đúng chuẩn ES256", async () => {
     const k = taoKhoaVapid();
-    const jwt = kyJwtVapid("https://fcm.googleapis.com/fcm/send/abc123", k, "mailto:a@b.com");
+    const jwt = await kyJwtVapid("https://fcm.googleapis.com/fcm/send/abc123", k, "mailto:a@b.com");
     const phan = jwt.split(".");
     expect(phan).toHaveLength(3);
     expect(JSON.parse(fromB64url(phan[0]).toString())).toEqual({ typ: "JWT", alg: "ES256" });
   });
 
-  it("aud là ORIGIN của endpoint, không phải toàn bộ đường dẫn", () => {
+  it("aud là ORIGIN của endpoint, không phải toàn bộ đường dẫn", async () => {
     const k = taoKhoaVapid();
-    const jwt = kyJwtVapid("https://updates.push.services.mozilla.com/wpush/v2/gAAA...", k, "mailto:a@b.com");
+    const jwt = await kyJwtVapid("https://updates.push.services.mozilla.com/wpush/v2/gAAA...", k, "mailto:a@b.com");
     const payload = JSON.parse(fromB64url(jwt.split(".")[1]).toString());
     expect(payload.aud).toBe("https://updates.push.services.mozilla.com");
     expect(payload.sub).toBe("mailto:a@b.com");
     expect(payload.exp).toBeGreaterThan(Math.floor(Date.now() / 1000));
   });
 
-  it("chữ ký xác minh được bằng chính khóa công khai (r||s 64 byte)", () => {
+  it("chữ ký xác minh được bằng chính khóa công khai (r||s 64 byte)", async () => {
     const k = taoKhoaVapid();
-    const jwt = kyJwtVapid("https://fcm.googleapis.com/fcm/send/abc", k, "mailto:a@b.com");
+    const jwt = await kyJwtVapid("https://fcm.googleapis.com/fcm/send/abc", k, "mailto:a@b.com");
     const [h, p, s] = jwt.split(".");
     const chuKy = fromB64url(s);
     expect(chuKy.length).toBe(64); // ES256 phải là r||s, KHÔNG phải DER
@@ -56,10 +56,10 @@ describe("ký VAPID", () => {
     expect(hopLe).toBe(true);
   });
 
-  it("chữ ký KHÔNG xác minh được bằng khóa của cặp khác", () => {
+  it("chữ ký KHÔNG xác minh được bằng khóa của cặp khác", async () => {
     const k1 = taoKhoaVapid();
     const k2 = taoKhoaVapid();
-    const jwt = kyJwtVapid("https://fcm.googleapis.com/fcm/send/abc", k1, "mailto:a@b.com");
+    const jwt = await kyJwtVapid("https://fcm.googleapis.com/fcm/send/abc", k1, "mailto:a@b.com");
     const [h, p, s] = jwt.split(".");
 
     const point = fromB64url(k2.publicKey);

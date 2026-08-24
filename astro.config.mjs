@@ -1,7 +1,7 @@
 // @ts-check
 import { defineConfig } from 'astro/config';
 
-import node from '@astrojs/node';
+import cloudflare from '@astrojs/cloudflare';
 import tailwindcss from '@tailwindcss/vite';
 import sitemap from '@astrojs/sitemap';
 import { readFileSync, existsSync } from 'node:fs';
@@ -79,14 +79,31 @@ export default defineConfig({
   // thay vì rơi về localhost trên bản production.
   site: 'https://phongthuythienanh.com',
 
-  // host: true -> lắng nghe trên 0.0.0.0 (bắt buộc để Render/Docker/VPS scan thấy cổng mở ra ngoài,
-  // thay vì chỉ mở ở localhost bên trong container).
+  // host: true -> lắng nghe trên 0.0.0.0. Giữ lại vì chỉ ảnh hưởng `astro dev`/`astro preview` cục
+  // bộ (Render/Docker cần cổng mở ra ngoài container) — không liên quan runtime Cloudflare Workers,
+  // nơi không có khái niệm "server nghe cổng" theo kiểu Node.
   server: {
     host: true,
   },
 
-  adapter: node({
-    mode: 'standalone'
+  // MIGRATION Render -> Cloudflare (nhánh cloudflare-migration, KHÔNG ảnh hưởng bản Render đang
+  // chạy trên main): thay @astrojs/node bằng @astrojs/cloudflare. Adapter v14 không còn tham số
+  // `mode` (directory/advanced) như bản cũ — đơn giản hơn, dựa trên @cloudflare/vite-plugin.
+  //
+  // imageService: 'passthrough' — mặc định adapter tự bật "Cloudflare Images" (cần projectId của
+  // tài khoản Cloudflare thật, build cục bộ báo lỗi "Configuration must contain `projectId`" vì
+  // chưa đăng nhập tài khoản nào). Xác nhận toàn repo KHÔNG dùng `<Image />`/astro:assets ở đâu cả
+  // (chỉ dùng thẻ <img> thường) — nên tắt hẳn xử lý ảnh của adapter không đổi hành vi gì, ảnh vẫn
+  // phục vụ y hệt cũ qua Static Assets.
+  adapter: cloudflare({
+    imageService: 'passthrough',
+    // Mặc định adapter prerender 51 trang tĩnh bằng cách giả lập workerd cục bộ (miniflare) — bị
+    // lỗi "Configuration must contain `projectId`" vì máy build (kể cả CI của Cloudflare) không có
+    // sẵn tài khoản Cloudflare thật gắn vào lúc build. Đổi về 'node' — Astro dùng đúng môi trường
+    // Node bình thường để dựng HTML tĩnh lúc build (y hệt cách Render vẫn làm), không ảnh hưởng gì
+    // đến runtime Workers thật sau khi deploy (trang tĩnh ra rồi thì chỉ còn là HTML, không chạy
+    // code nữa).
+    prerenderEnvironment: 'node',
   }),
 
   integrations: [

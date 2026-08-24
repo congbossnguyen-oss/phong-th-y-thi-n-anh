@@ -1,0 +1,22 @@
+{
+  // MIGRATION Render -> Cloudflare Workers (nhánh cloudflare-migration, CHƯA deploy, CHƯA đổi DNS).
+  // "main" là điểm vào THỐNG NHẤT do @astrojs/cloudflare cung cấp sẵn (không phải đường dẫn file
+  // trong dist/) — xác nhận từ tài liệu chính thức Astro (docs.astro.build/.../cloudflare/), không
+  // tự đoán.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "phong-thuy-thien-anh",
+  "main": "@astrojs/cloudflare/entrypoints/server",
+  "compatibility_date": "2025-05-21",
+  // Bắt buộc để dùng node:crypto (session auth src/lib/auth/session.ts) và các Node API khác đang
+  // dùng trong code (node:url, node:path...). VAPID (thong-bao/web-push.ts) đã chuyển sang Web
+  // Crypto API (crypto.subtle) vì node:crypto polyfill không nhận KeyObject trong sign() — đã kiểm
+  // chứng PASS trên wrangler dev thật.
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS"
+  },
+  "observability": {
+    "enabled": true
+  }
+}

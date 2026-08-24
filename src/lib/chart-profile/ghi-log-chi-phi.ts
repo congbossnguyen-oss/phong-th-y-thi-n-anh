@@ -6,9 +6,16 @@
  * (Render → Logs), có đủ số token và tiền ước tính quy ra VNĐ.
  *
  * Đơn giá đọc từ handoff/config/gia-ai.json — KHÔNG hard-code, để đổi giá không phải sửa code.
+ *
+ * ⚠️ MIGRATION Cloudflare Workers (24/8/2026, nhánh cloudflare-migration): xác nhận `gia-ai.json`
+ * là config TĨNH, không có chỗ nào trong code GHI vào file này (đã grep toàn repo xác nhận) — cơ
+ * chế cập nhật vốn dĩ đã là "sửa file trong git + deploy lại" (đúng ghi chú `_ghi_chu` trong chính
+ * file JSON: "Sửa file này khi Anthropic đổi giá — KHÔNG sửa trong code"), không phải dữ liệu
+ * runtime cần ghi/đổi khi server đang chạy. Vì vậy đổi từ readFileSync sang import JSON tĩnh là
+ * ĐÚNG bản chất (không phải biến bộ nhớ tự chế — `gia-ai.json` vẫn là nguồn duy nhất, chỉ đổi thời
+ * điểm đọc từ lúc chạy sang lúc build), KHÔNG cần D1/KV để lưu trạng thái ghi được.
  */
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import giaAiJson from "../../../handoff/config/gia-ai.json";
 
 interface GiaModel {
   input_usd_1m: number;
@@ -23,12 +30,8 @@ interface CauHinhGia {
   models: Record<string, GiaModel>;
 }
 
-let cache: CauHinhGia | null = null;
 function loadGia(): CauHinhGia {
-  if (!cache) {
-    cache = JSON.parse(readFileSync(join(process.cwd(), "handoff", "config", "gia-ai.json"), "utf-8")) as CauHinhGia;
-  }
-  return cache;
+  return giaAiJson as CauHinhGia;
 }
 
 export interface UsageAnthropic {

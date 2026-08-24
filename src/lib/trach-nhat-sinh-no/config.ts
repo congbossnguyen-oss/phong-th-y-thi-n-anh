@@ -2,9 +2,11 @@
  * Nạp config trach-nhat-sinh-no.json — đọc từ FILE, không hard-code trọng số/ngưỡng trong code
  * (đúng quy ước dự án). Nhiều mục trong file này đánh dấu ⚠️ = quy ước làm việc của tài liệu nguồn,
  * chưa đối chiếu án lệ — xem `_warn` trong từng mục.
+ *
+ * ⚠️ MIGRATION Cloudflare Workers (24/8/2026, nhánh cloudflare-migration): đổi từ readFileSync lúc
+ * runtime sang import JSON tĩnh (bundled lúc build) — Workers không có filesystem.
  */
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
+import trachNhatConfigJson from "../../../handoff/config/trach-nhat-sinh-no.json";
 
 export interface TrachNhatConfig {
   chin_tieu_chi: string[];
@@ -22,7 +24,6 @@ let cached: TrachNhatConfig | null = null;
 
 export function loadTrachNhatConfig(): TrachNhatConfig {
   if (cached) return cached;
-  const raw = readFileSync(join(process.cwd(), "handoff", "config", "trach-nhat-sinh-no.json"), "utf-8");
-  cached = JSON.parse(raw) as TrachNhatConfig;
+  cached = trachNhatConfigJson as TrachNhatConfig;
   return cached;
 }

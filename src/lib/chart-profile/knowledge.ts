@@ -11,30 +11,37 @@
  * gọi vừa có nguy cơ vượt giới hạn ngữ cảnh hợp lý. Việc bật `tu_vi_profile` cần một chiến lược
  * nạp tri thức khác (chọn lọc theo cách cục thay vì nhồi hết) — để dành cho phase sau, KHÔNG tự ý
  * làm nửa vời ở v1.
+ *
+ * ⚠️ MIGRATION Cloudflare Workers (24/8/2026, nhánh cloudflare-migration): Workers không có
+ * filesystem lúc runtime, nên đổi từ readdirSync/readFileSync (đọc đĩa lúc chạy) sang Vite
+ * `import.meta.glob` — quét + NHÚNG NỘI DUNG file .md thẳng vào bundle lúc BUILD, cùng nguyên tắc
+ * `?raw` mà `src/lib/quan-su/luan-giai/kien-thuc.ts` đã dùng, chỉ khác là quét theo glob vì số
+ * lượng file trong mỗi thư mục skill không cố định (không thể liệt kê tay như quan-su làm với 5
+ * file biết trước).
+ *
+ * Hành vi giữ NGUYÊN 100% so với bản đọc đĩa cũ: cùng 2 thư mục skill, cùng cách sắp xếp (SKILL.md
+ * lên đầu, còn lại theo bảng chữ cái), cùng định dạng ghép chuỗi — không cắt, không đổi thứ tự,
+ * không đổi nội dung tri thức.
  */
-import { readFileSync, readdirSync, statSync } from "node:fs";
-import { join } from "node:path";
 
-const HANDOFF_ROOT = join(process.cwd(), "handoff", "knowledge");
+// Glob pattern PHẢI là chuỗi tĩnh (bắt buộc của Vite, không dùng biến được) — quét lúc build, nhúng
+// thẳng nội dung vào bundle. CHỈ quét đúng 2 thư mục Bát Tự (không quét cả handoff/knowledge/**),
+// để không vô tình nhúng thêm 2 skill Tử Vi (~4,3MB) vào bundle này — đúng ranh giới phạm vi v1 đã
+// ghi rõ ở đầu file.
+const rawFiles = import.meta.glob<string>(
+  "../../../handoff/knowledge/{luan-giai-bat-tu,luan-giai-bat-tu-manh-phai}/**/*.md",
+  { eager: true, query: "?raw", import: "default" },
+);
 
-/** Đọc đệ quy toàn bộ .md trong 1 thư mục skill, SKILL.md trước rồi tới references/ (theo tên). */
+/** Lọc + sắp xếp các file .md thuộc 1 thư mục skill từ tập đã nhúng sẵn lúc build. */
 function readSkillMarkdown(skillDir: string): { path: string; content: string }[] {
-  const root = join(HANDOFF_ROOT, skillDir);
+  const marker = `knowledge/${skillDir}/`;
   const out: { path: string; content: string }[] = [];
-
-  function walk(dir: string, relBase: string): void {
-    const entries = readdirSync(dir).sort();
-    for (const name of entries) {
-      const full = join(dir, name);
-      const rel = relBase ? `${relBase}/${name}` : name;
-      if (statSync(full).isDirectory()) {
-        walk(full, rel);
-      } else if (name.endsWith(".md")) {
-        out.push({ path: rel, content: readFileSync(full, "utf-8") });
-      }
-    }
+  for (const [filePath, content] of Object.entries(rawFiles)) {
+    const idx = filePath.indexOf(marker);
+    if (idx === -1) continue;
+    out.push({ path: filePath.slice(idx + marker.length), content });
   }
-  walk(root, "");
 
   // SKILL.md luôn đứng đầu (là bảng chỉ dẫn quy trình — Claude cần đọc trước khi vào references/).
   out.sort((a, b) => (a.path === "SKILL.md" ? -1 : b.path === "SKILL.md" ? 1 : a.path.localeCompare(b.path)));

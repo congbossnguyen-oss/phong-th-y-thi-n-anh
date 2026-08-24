@@ -13,7 +13,7 @@
  *   - Nhược: máy khách phải có mạng lúc nhận (vốn dĩ nhận push đã cần mạng), và nếu gọi API hỏng
  *     thì hiện lời nhắc chung chung — service worker đã có sẵn phương án dự phòng cho việc này.
  */
-import { createPrivateKey, generateKeyPairSync, sign as cryptoSign } from "node:crypto";
+import { generateKeyPairSync } from "node:crypto";
 import { docBien } from "./env";
 
 function b64url(buf: Buffer): string {
@@ -50,29 +50,40 @@ function pad32(b: Buffer): Buffer {
   return Buffer.concat([Buffer.alloc(32 - b.length), b]);
 }
 
-/** Dựng KeyObject khóa riêng từ cặp khóa VAPID dạng chuỗi. */
-function khoaRieng(keys: VapidKeys) {
+/**
+ * Dựng CryptoKey (Web Crypto) khóa riêng từ cặp khóa VAPID dạng chuỗi.
+ *
+ * Trước đây dùng `node:crypto` `createPrivateKey()` + `sign()` với KeyObject. Polyfill `node:crypto`
+ * của Cloudflare Workers KHÔNG chấp nhận KeyObject trong `sign()` (`TypeError [ERR_INVALID_ARG_TYPE]`
+ * — xác nhận bằng test thực tế trên `wrangler dev`, không phải suy đoán). Chuyển sang Web Crypto API
+ * (`crypto.subtle`) vì chuẩn này chạy giống hệt nhau trên cả Workers lẫn Node thật (Node ≥ 19) —
+ * khỏi phải rẽ nhánh theo runtime.
+ */
+function khoaRieng(keys: VapidKeys): Promise<CryptoKey> {
   const point = fromB64url(keys.publicKey);
   if (point.length !== 65 || point[0] !== 0x04) {
     throw new Error("VAPID_PUBLIC_KEY không đúng định dạng điểm EC không nén 65 byte.");
   }
-  return createPrivateKey({
-    key: {
+  return crypto.subtle.importKey(
+    "jwk",
+    {
       kty: "EC",
       crv: "P-256",
       x: b64url(point.subarray(1, 33)),
       y: b64url(point.subarray(33, 65)),
       d: keys.privateKey,
     },
-    format: "jwk",
-  });
+    { name: "ECDSA", namedCurve: "P-256" },
+    false,
+    ["sign"],
+  );
 }
 
 /**
  * Ký JWT VAPID cho một endpoint. `aud` phải là origin của endpoint (ví dụ
  * https://fcm.googleapis.com), không phải toàn bộ đường dẫn.
  */
-export function kyJwtVapid(endpoint: string, keys: VapidKeys, subject: string, hanGioSong = 12): string {
+export async function kyJwtVapid(endpoint: string, keys: VapidKeys, subject: string, hanGioSong = 12): Promise<string> {
   const aud = new URL(endpoint).origin;
   const header = b64url(Buffer.from(JSON.stringify({ typ: "JWT", alg: "ES256" })));
   const payload = b64url(
@@ -85,9 +96,12 @@ export function kyJwtVapid(endpoint: string, keys: VapidKeys, subject: string, h
     ),
   );
   const data = Buffer.from(`${header}.${payload}`);
-  // ieee-p1363 cho chữ ký dạng r||s 64 byte — đúng thứ JWS ES256 cần (KHÁC mặc định DER của Node).
-  const chuKy = cryptoSign("sha256", data, { key: khoaRieng(keys), dsaEncoding: "ieee-p1363" });
-  return `${header}.${payload}.${b64url(chuKy)}`;
+  const privateKey = await khoaRieng(keys);
+  // Theo đặc tả W3C Web Crypto, chữ ký ECDSA trả về ĐÃ SẴN dạng IEEE P1363 (r||s ghép thẳng, 64
+  // byte cho P-256) — đúng khuôn JWS ES256 cần, không phải DER như mặc định của node:crypto. Đã
+  // kiểm chứng thực nghiệm (không chỉ tin theo đặc tả) bằng route chẩn đoán — xem diag-vapid-tmp.
+  const chuKy = await crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, privateKey, data);
+  return `${header}.${payload}.${b64url(Buffer.from(chuKy))}`;
 }
 
 export type KetQuaGui = "da-gui" | "het-han" | "loi";
@@ -105,10 +119,11 @@ export async function guiTinHieuDay(
   ttlGiay = 12 * 3600,
 ): Promise<KetQuaGui> {
   try {
+    const jwt = await kyJwtVapid(endpoint, keys, subject);
     const res = await fetch(endpoint, {
       method: "POST",
       headers: {
-        Authorization: `vapid t=${kyJwtVapid(endpoint, keys, subject)}, k=${keys.publicKey}`,
+        Authorization: `vapid t=${jwt}, k=${keys.publicKey}`,
         TTL: String(ttlGiay),
         // Không có thân yêu cầu, nhưng vẫn phải khai độ dài bằng 0 cho một số dịch vụ đẩy.
         "Content-Length": "0",

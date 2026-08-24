@@ -20,23 +20,24 @@
     "db:studio": "drizzle-kit studio --config db/drizzle.config.ts"
   },
   "dependencies": {
-    "@astrojs/node": "^11.0.3",
+    "@astrojs/cloudflare": "^14.2.3",
     "@astrojs/sitemap": "^3.7.3",
     "@neondatabase/serverless": "^1.1.0",
     "@pdf-lib/fontkit": "^1.1.1",
     "@sanity/client": "^7.26.0",
     "@tailwindcss/vite": "^4.3.3",
     "@thien-anh/calendar-core": "*",
+    "@thien-anh/phone-energy-engine": "*",
+    "@thien-anh/tinhdanh-engine": "*",
     "@thien-anh/trachnhat-engine": "*",
-    "astro": "^7.1.6",
+    "astro": "^7.2.4",
     "drizzle-orm": "^0.45.2",
     "html-to-image": "^1.11.13",
     "jspdf": "^4.2.1",
     "pdf-lib": "^1.17.1",
     "resend": "^6.18.1",
     "tailwindcss": "^4.3.3",
-    "@thien-anh/phone-energy-engine": "*",
-    "@thien-anh/tinhdanh-engine": "*"
+    "wrangler": "^4.125.0"
   },
   "devDependencies": {
     "drizzle-kit": "^0.31.10",

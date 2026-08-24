@@ -4,11 +4,16 @@
  *
  * Module này KHÔNG luận huyền học — chỉ đọc `BatTuProfile` (đã luận sẵn ở tầng `chart-profile`)
  * + 3 file dưới đây rồi tính theo đúng công thức mục 3 của `handoff/docs/module-nghe-bat-tu.md`.
+ *
+ * ⚠️ MIGRATION Cloudflare Workers (24/8/2026, nhánh cloudflare-migration): đổi từ readFileSync lúc
+ * runtime sang import JSON tĩnh (Vite/TypeScript hỗ trợ sẵn `resolveJsonModule`, đã bật trong
+ * astro/tsconfigs/base) — nội dung được nhúng vào bundle lúc build, Workers không có filesystem.
+ * Vẫn đọc đúng 4 file này, đúng nội dung, không đổi format — chỉ đổi thời điểm đọc.
  */
-import { readFileSync } from "node:fs";
-import { join } from "node:path";
-
-const CONFIG_DIR = join(process.cwd(), "handoff", "config");
+import careerMappingJson from "../../../handoff/config/career_mapping.json";
+import domainMappingJson from "../../../handoff/config/domain_mapping.json";
+import batTuNganhJson from "../../../handoff/config/bat_tu_nganh_ngu_hanh.json";
+import thapThanNgheJson from "../../../handoff/config/thap_than_nghe.json";
 
 export interface CareerMechanismEntry {
   label: string;
@@ -71,19 +76,14 @@ let cached: {
   thapThanNghe: ThapThanNgheConfig;
 } | null = null;
 
-function readJson<T>(fileName: string): T {
-  const raw = readFileSync(join(CONFIG_DIR, fileName), "utf-8");
-  return JSON.parse(raw) as T;
-}
-
-/** Nạp + cache 3 file config trong bộ nhớ tiến trình — nội dung không đổi giữa các request. */
+/** Nạp + cache 4 file config trong bộ nhớ tiến trình — nội dung không đổi giữa các request. */
 export function loadCareerConfig(): { career: CareerMappingConfig; domain: DomainMappingConfig; batTuNganh: BatTuNganhNguHanhConfig; thapThanNghe: ThapThanNgheConfig } {
   if (cached) return cached;
   cached = {
-    career: readJson<CareerMappingConfig>("career_mapping.json"),
-    domain: readJson<DomainMappingConfig>("domain_mapping.json"),
-    batTuNganh: readJson<BatTuNganhNguHanhConfig>("bat_tu_nganh_ngu_hanh.json"),
-    thapThanNghe: readJson<ThapThanNgheConfig>("thap_than_nghe.json"),
+    career: careerMappingJson as unknown as CareerMappingConfig,
+    domain: domainMappingJson as DomainMappingConfig,
+    batTuNganh: batTuNganhJson as BatTuNganhNguHanhConfig,
+    thapThanNghe: thapThanNgheJson as ThapThanNgheConfig,
   };
   return cached;
 }
