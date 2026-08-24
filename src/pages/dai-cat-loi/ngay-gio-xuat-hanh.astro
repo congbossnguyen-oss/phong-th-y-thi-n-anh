@@ -135,9 +135,9 @@ export const prerender = true;
   interface RangeResult { xepHang: ToHop[] }
 
   const MAU_TANG: Record<string, string> = {
-    "chan-loc": "bg-(--color-gold-400)/15 text-(--color-gold-500)", "chan-duong-quy": "bg-violet-100 text-violet-700",
-    "chan-am-quy": "bg-indigo-100 text-indigo-700", "loc": "bg-(--color-gold-400)/10 text-(--color-gold-400) ring-1 ring-(--color-gold-400)/30",
-    "tam-hop": "bg-emerald-100 text-emerald-700", "luc-hop": "bg-teal-100 text-teal-700",
+    "chan-loc": "bg-(--color-gold-400)/15 text-(--color-gold-500)", "chan-duong-quy": "bg-(--color-gold-300)/20 text-(--color-gold-300)",
+    "chan-am-quy": "bg-(--color-gold-600)/20 text-(--color-gold-600)", "loc": "bg-(--color-gold-400)/10 text-(--color-gold-400) ring-1 ring-(--color-gold-400)/30",
+    "tam-hop": "bg-(--color-success-500)/15 text-(--color-success-500)", "luc-hop": "bg-(--color-success-500)/10 text-(--color-success-500)",
   };
   const ICON_TANG: Record<string, string> = { "chan-loc": "💰", "chan-duong-quy": "🌤️", "chan-am-quy": "🌙", "loc": "🪙", "tam-hop": "☯", "luc-hop": "☯" };
   function badgeCat(c: { tang: string | null; nhan: string } | null | undefined): string {
@@ -152,7 +152,7 @@ export const prerender = true;
     if (list.length === 0) return `<li class="text-(--color-ink-400)">Không có yếu tố đặc biệt.</li>`;
     return list
       .map((y) => {
-        const cls = y.diem > 0 ? "text-emerald-600" : y.diem < 0 ? "text-(--color-cinnabar-500)" : "text-(--color-ink-500)";
+        const cls = y.diem > 0 ? "text-(--color-success-500)" : y.diem < 0 ? "text-(--color-cinnabar-500)" : "text-(--color-ink-500)";
         const dau = y.diem > 0 ? "+" : "";
         return `<li class="flex justify-between gap-2"><span>${y.ten}</span><span class="${cls} font-semibold">${dau}${y.diem}</span></li>`;
       })
@@ -315,7 +315,7 @@ export const prerender = true;
             </div>
             <p class="mt-1.5 text-xs text-(--color-ink-500)">Giờ tốt nhất: ${t.khungGio} (giờ ${t.chiGio}) · Ngày: ${nhanDotHtml(t.dayScore.nhan)} (${t.dayScore.diem}/10) · Giờ: ${nhanDotHtml(t.hourScore.nhan)} (${t.hourScore.diem}/10)</p>
             <div class="mt-2 flex gap-2">
-              <button type="button" class="xh-xem-gio rounded-lg bg-(--color-gold-400) px-2.5 py-1 text-xs font-semibold text-white" data-year="${t.solarDate.year}" data-month="${t.solarDate.month}" data-day="${t.solarDate.day}">Xem giờ khác</button>
+              <button type="button" class="xh-xem-gio rounded-lg bg-(--color-gold-400) px-2.5 py-1 text-xs font-semibold text-(--color-on-accent)" data-year="${t.solarDate.year}" data-month="${t.solarDate.month}" data-day="${t.solarDate.day}">Xem giờ khác</button>
               <button type="button" class="xh-vi-sao rounded-lg border border-(--color-ivory-400) px-2.5 py-1 text-xs font-semibold text-(--color-ink-700)" data-idx="${i}">Vì sao?</button>
             </div>
             <div class="xh-ngay-chi-tiet hidden mt-2.5 border-t border-(--color-ivory-300) pt-2.5">${dayViSaoHtml(t.dayScore)}</div>

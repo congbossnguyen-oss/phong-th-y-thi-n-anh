@@ -215,12 +215,12 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
 
   // Mỗi mức xếp hạng một tông màu riêng cho bắt mắt.
   const STATUS_STYLE: Record<string, { pill: string; score: string; bar: string; ring: string }> = {
-    "ĐẠI TỐT":    { pill: "bg-emerald-500 text-white", score: "text-emerald-600", bar: "from-emerald-400 to-emerald-600", ring: "ring-emerald-200" },
-    "TỐT":        { pill: "bg-teal-500 text-white",    score: "text-teal-600",    bar: "from-teal-400 to-teal-600",       ring: "ring-teal-200" },
-    "KHÁ":        { pill: "bg-sky-500 text-white",     score: "text-sky-600",     bar: "from-sky-400 to-sky-600",         ring: "ring-sky-200" },
-    "TRUNG BÌNH": { pill: "bg-(--color-gold-400) text-white",   score: "text-(--color-gold-400)",   bar: "from-(--color-gold-400) to-(--color-gold-500)",     ring: "ring-(--color-gold-400)/30" },
-    "XẤU":        { pill: "bg-orange-500 text-white",  score: "text-orange-600",  bar: "from-orange-400 to-orange-500",   ring: "ring-orange-200" },
-    "LOẠI":       { pill: "bg-rose-500 text-white",    score: "text-rose-600",    bar: "from-rose-400 to-rose-600",       ring: "ring-rose-200" },
+    "ĐẠI TỐT":    { pill: "bg-(--color-success-500) text-(--color-on-accent)", score: "text-(--color-success-500)", bar: "from-(--color-success-500) to-(--color-success-500)", ring: "ring-(--color-success-500)/40" },
+    "TỐT":        { pill: "bg-(--color-success-500)/70 text-(--color-on-accent)", score: "text-(--color-success-500)", bar: "from-(--color-success-500)/70 to-(--color-success-500)/40", ring: "ring-(--color-success-500)/25" },
+    "KHÁ":        { pill: "bg-(--color-gold-500) text-(--color-on-accent)", score: "text-(--color-gold-500)", bar: "from-(--color-gold-400) to-(--color-gold-500)", ring: "ring-(--color-gold-400)/30" },
+    "TRUNG BÌNH": { pill: "bg-(--color-gold-400)/70 text-(--color-on-accent)", score: "text-(--color-gold-400)", bar: "from-(--color-gold-300) to-(--color-gold-400)", ring: "ring-(--color-gold-300)/25" },
+    "XẤU":        { pill: "bg-(--color-cinnabar-500)/75 text-(--color-on-accent)", score: "text-(--color-cinnabar-500)", bar: "from-(--color-cinnabar-400) to-(--color-cinnabar-500)", ring: "ring-(--color-cinnabar-400)/30" },
+    "LOẠI":       { pill: "bg-(--color-cinnabar-500) text-(--color-on-accent)", score: "text-(--color-cinnabar-500)", bar: "from-(--color-cinnabar-500) to-(--color-cinnabar-700)", ring: "ring-(--color-cinnabar-500)/40" },
   };
   const HANG = ["🥇 TOP 1", "🥈 TOP 2", "🥉 TOP 3", "TOP 4", "TOP 5"];
 
@@ -229,7 +229,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
     const chips = gio
       .map((g, i) => {
         const best = i === 0;
-        const cls = best ? "bg-(--color-gold-400) text-white ring-(--color-gold-500) shadow-sm" : "bg-(--color-gold-400)/15 text-(--color-gold-600) ring-(--color-gold-300)";
+        const cls = best ? "bg-(--color-gold-400) text-(--color-on-accent) ring-(--color-gold-500) shadow-sm" : "bg-(--color-gold-400)/15 text-(--color-gold-600) ring-(--color-gold-300)";
         const nhan = best ? "★ Tốt nhất · " : `#${i + 1} · `;
         const mauGio = best ? "text-(--color-gold-100)" : "text-(--color-gold-400)";
         return `<span class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ring-1 ${cls}">🕐 ${nhan}${esc(g.chiGio)} <span class="font-normal ${mauGio}">${esc(g.khungGio)}</span></span>`;
@@ -248,8 +248,8 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
         const d = Number(y.diem);
         const tot = d >= 7.5;
         const kha = d >= 5.5 && d < 7.5;
-        const mau = tot ? "text-emerald-700" : kha ? "text-sky-700" : d >= 4 ? "text-(--color-gold-500)" : "text-rose-700";
-        const iconMau = tot ? "text-emerald-500" : kha ? "text-sky-500" : d >= 4 ? "text-(--color-gold-400)" : "text-rose-500";
+        const mau = tot ? "text-(--color-success-500)" : kha ? "text-(--color-gold-300)" : d >= 4 ? "text-(--color-gold-500)" : "text-(--color-cinnabar-500)";
+        const iconMau = tot ? "text-(--color-success-500)" : kha ? "text-(--color-gold-300)" : d >= 4 ? "text-(--color-gold-400)" : "text-(--color-cinnabar-500)";
         const icon = tot ? "✓" : kha ? "•" : "⚠";
         // KHÔNG hiển thị ghiChu kỹ thuật (tham chiếu bảng chưa số hoá, tên config, "thieuDuLieu",
         // "mục 15/35"…) cho khách — đây là ghi chú nội bộ, gây rối và lộ chi tiết engine.
@@ -295,7 +295,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
     const chuc = r.tenChucVu ? ` để nhận chức <strong class="text-(--color-gold-500)">${esc(r.tenChucVu)}</strong>` : "";
     if (r.soNgayDung === 0 || r.ketQua.length === 0) {
       const lyDo = (r.lyDoLoaiPhoBien ?? [])
-        .map((l: any) => `<li><strong class="text-rose-700">${l.soNgay} ngày</strong> — ${esc(l.lyDo)}</li>`)
+        .map((l: any) => `<li><strong class="text-(--color-cinnabar-500)">${l.soNgay} ngày</strong> — ${esc(l.lyDo)}</li>`)
         .join("");
       ketQuaEl.innerHTML = `<div class="rounded-2xl border-2 border-(--color-gold-300) bg-gradient-to-br from-white to-(--color-gold-400)/10/50 p-6 text-(--color-ink-950) shadow-lg">
         <p class="font-display text-lg font-extrabold">😕 Không có ngày nào dùng được trong khoảng đã quét</p>

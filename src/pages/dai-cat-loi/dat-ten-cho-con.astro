@@ -44,7 +44,7 @@ const laQuanTri = Astro.locals.user?.isAdmin === true;
   <Container class="py-12">
     <div class="mx-auto max-w-4xl">
       {laQuanTri && (
-        <div class="mb-4 rounded-(--radius-card) border-2 border-emerald-400 bg-emerald-50 p-4 text-sm font-medium text-emerald-800">
+        <div class="mb-4 rounded-(--radius-card) border-2 border-(--color-gold-400) bg-(--color-gold-400)/10 p-4 text-sm font-medium text-(--color-gold-600)">
           🔧 Bạn đang đăng nhập bằng <strong>tài khoản quản trị</strong> — đơn sẽ là 0đ, tự xác nhận,
           đi trọn luồng thật để kiểm thử (không mất phí).
         </div>
@@ -260,7 +260,7 @@ const laQuanTri = Astro.locals.user?.isAdmin === true;
               <span class="inline-block size-3 rounded-sm" style="background:${MAU_HANH[h]}"></span>
               <span class="w-10 text-(--color-ink-900)">${h}</span>
               <span class="text-(--color-ink-700)">${(tyLe[h] ?? 0).toFixed(1)}%</span>
-              ${khuyet.includes(h) ? `<span class="rounded-full bg-red-500/15 px-2 py-0.5 text-[11px] font-bold text-red-500">cần bổ</span>` : ""}
+              ${khuyet.includes(h) ? `<span class="rounded-full bg-(--color-cinnabar-500)/15 px-2 py-0.5 text-[11px] font-bold text-(--color-cinnabar-500)">cần bổ</span>` : ""}
             </li>`).join("")}
         </ul>
       </div>`;
@@ -292,7 +292,7 @@ const laQuanTri = Astro.locals.user?.isAdmin === true;
               ${top3 ? `<span class="rounded-full bg-(--color-gold-400) px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-(--color-on-accent)">Hợp nhất</span>` : ""}
               <span class="font-display ${top3 ? "text-xl" : "text-lg"} font-bold text-(--color-ink-900)">${esc(t.hoTenDayDu)}</span>
               <span class="rounded-full px-2 py-0.5 text-[11px] font-bold" style="background:${MAU_HANH[t.hanh]}22;color:${MAU_HANH[t.hanh]}">${esc(t.hanh)}</span>
-              <span class="text-[11px] font-semibold ${t.loaiTinhDanh === "Điền Thực" ? "text-emerald-600" : "text-(--color-ink-600)"}">${esc(t.loaiTinhDanh)}</span>
+              <span class="text-[11px] font-semibold ${t.loaiTinhDanh === "Điền Thực" ? "text-(--color-success-500)" : "text-(--color-ink-600)"}">${esc(t.loaiTinhDanh)}</span>
             </div>
             ${ngh.length ? `<p class="mt-0.5 text-sm text-(--color-ink-700)">${ngh.join(" · ")}</p>` : ""}
             <p class="mt-1 text-xs text-(--color-ink-600)">Mệnh Cục ${t.menhCuc.tinhCuc.so} (${esc(t.menhCuc.tinhCuc.ten ?? "—")}) · ${esc(t.menhCuc.luanKetHop)}</p>
@@ -430,14 +430,14 @@ const laQuanTri = Astro.locals.user?.isAdmin === true;
     const khuyet = kq.hanhKhuyetKhaDi.map((h: any) => h.hanh).join(" / ");
     const rows = kq.danhGia.map((t: any, i: number) => {
       const top = i === 0;
-      const mauLoai = t.loaiTinhDanh === "Điền Thực" ? "text-emerald-600"
-        : t.loaiTinhDanh === "Bất Tương" ? "text-red-500" : "text-(--color-ink-600)";
+      const mauLoai = t.loaiTinhDanh === "Điền Thực" ? "text-(--color-success-500)"
+        : t.loaiTinhDanh === "Bất Tương" ? "text-(--color-cinnabar-500)" : "text-(--color-ink-600)";
       return `
-      <li class="flex items-start gap-3 rounded-(--radius-control) p-3.5 ${top ? "border-2 border-emerald-500 bg-emerald-500/10 shadow-md" : "border border-(--color-ivory-300)"}">
-        <span class="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-full ${top ? "bg-emerald-500 text-white" : "bg-(--color-ivory-300) text-(--color-ink-700)"} text-sm font-black">${t.xepHang}</span>
+      <li class="flex items-start gap-3 rounded-(--radius-control) p-3.5 ${top ? "border-2 border-(--color-gold-400) bg-(--color-gold-400)/10 shadow-md" : "border border-(--color-ivory-300)"}">
+        <span class="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-full ${top ? "bg-(--color-gold-400) text-(--color-on-accent)" : "bg-(--color-ivory-300) text-(--color-ink-700)"} text-sm font-black">${t.xepHang}</span>
         <div class="min-w-0 flex-1">
           <div class="flex flex-wrap items-baseline gap-2">
-            ${top ? `<span class="rounded-full bg-emerald-500 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-white">Hợp nhất</span>` : ""}
+            ${top ? `<span class="rounded-full bg-(--color-gold-400) px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-(--color-on-accent)">Hợp nhất</span>` : ""}
             <span class="font-display text-lg font-bold text-(--color-ink-900)">${esc(t.hoTenDayDu)}</span>
             ${t.hanhTen.length ? `<span class="text-[11px] text-(--color-ink-600)">hành ${t.hanhTen.map((h: string) => esc(h)).join(", ")}</span>` : ""}
             <span class="text-[11px] font-semibold ${mauLoai}">${esc(t.loaiTinhDanh)}</span>

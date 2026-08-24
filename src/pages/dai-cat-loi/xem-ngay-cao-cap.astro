@@ -296,12 +296,12 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
   }
 
   const NHAN_KET_LUAN: Record<string, { text: string; cls: string }> = {
-    dung_duoc: { text: "✅ DÙNG ĐƯỢC", cls: "text-emerald-600" },
+    dung_duoc: { text: "✅ DÙNG ĐƯỢC", cls: "text-(--color-success-500)" },
     dung_duoc_co_dieu_kien: { text: "⚠️ DÙNG ĐƯỢC CÓ ĐIỀU KIỆN", cls: "text-(--color-gold-400)" },
     khong_dung: { text: "❌ KHÔNG DÙNG", cls: "text-(--color-cinnabar-500)" },
   };
   const NHAN_TRANG_THAI: Record<string, { text: string; cls: string }> = {
-    dat: { text: "Đạt", cls: "text-emerald-600" },
+    dat: { text: "Đạt", cls: "text-(--color-success-500)" },
     khong_dat: { text: "Không đạt", cls: "text-(--color-cinnabar-500)" },
     thieu_du_lieu: { text: "Thiếu dữ liệu", cls: "text-(--color-gold-400)" },
   };
@@ -352,7 +352,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
         const canhBao: string[] = [];
         if (g.xungChiNgay) canhBao.push("xung Chi ngày");
         if (g.phamTamSatGio) canhBao.push("phạm Tam Sát");
-        const mau = g.laHoangDao && canhBao.length === 0 ? "text-emerald-600" : canhBao.length > 0 ? "text-(--color-cinnabar-500)" : "text-(--color-ink-500)";
+        const mau = g.laHoangDao && canhBao.length === 0 ? "text-(--color-success-500)" : canhBao.length > 0 ? "text-(--color-cinnabar-500)" : "text-(--color-ink-500)";
         return `<div class="rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200) p-3">
           <div class="flex items-baseline justify-between gap-2">
             <p class="font-display text-base font-bold text-(--color-ink-950)">${i === 0 ? "⭐ " : ""}Giờ ${esc(g.chiGio)} <span class="text-sm font-normal text-(--color-ink-500)">(${esc(g.khungGio)})</span></p>
@@ -534,8 +534,8 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
     khong_dung: "Không dùng",
   };
   const MAU_MUC: Record<string, string> = {
-    ly_tuong: "bg-emerald-100 text-emerald-800 border-emerald-300",
-    tot: "bg-sky-100 text-sky-800 border-sky-300",
+    ly_tuong: "bg-(--color-success-500)/20 text-(--color-success-500) border-(--color-success-500)/50",
+    tot: "bg-(--color-success-500)/10 text-(--color-success-500) border-(--color-success-500)/30",
     duoc: "bg-(--color-gold-400)/15 text-(--color-gold-600) border-(--color-gold-300)",
   };
 

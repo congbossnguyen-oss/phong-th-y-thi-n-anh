@@ -352,7 +352,7 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
         <div class="mt-4 flex flex-wrap gap-3">
           <a
             href="/lien-he"
-            class="inline-flex items-center rounded-(--radius-control) bg-(--color-gold-500) px-4 py-2.5 text-sm font-medium text-white hover:bg-(--color-gold-600)"
+            class="inline-flex items-center rounded-(--radius-control) bg-(--color-gold-500) px-4 py-2.5 text-sm font-medium text-(--color-on-accent) hover:bg-(--color-gold-600)"
           >
             Đặt lịch khảo sát huyệt mộ
           </a>
@@ -511,7 +511,7 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
   }
 
   const NHAN_PHAN_LOAI: Record<string, string> = { "nhap-mo": "Nhập Mộ", "thien-di": "Thiên Di", "trung-tang": "Trùng Tang" };
-  const MAU_PHAN_LOAI: Record<string, string> = { "nhap-mo": "text-emerald-600", "thien-di": "text-(--color-ink-500)", "trung-tang": "text-(--color-cinnabar-500)" };
+  const MAU_PHAN_LOAI: Record<string, string> = { "nhap-mo": "text-(--color-success-500)", "thien-di": "text-(--color-ink-500)", "trung-tang": "text-(--color-cinnabar-500)" };
 
   function ngayLabel(n: { nam: number; thang: number; ngay: number }): string {
     return `${String(n.ngay).padStart(2, "0")}/${String(n.thang).padStart(2, "0")}/${n.nam}`;

@@ -162,13 +162,13 @@ export const prerender = true;
     document.getElementById("mn-ket-luan")!.textContent = r.ketLuan.nhan;
     const hoangOcEl = document.getElementById("mn-hoang-oc")!;
     hoangOcEl.textContent = r.hoangOc.ten;
-    hoangOcEl.className = `mt-0.5 text-sm font-semibold ${r.hoangOc.tot ? "text-emerald-600" : "text-(--color-cinnabar-500)"}`;
+    hoangOcEl.className = `mt-0.5 text-sm font-semibold ${r.hoangOc.tot ? "text-(--color-success-500)" : "text-(--color-cinnabar-500)"}`;
     const kimLauEl = document.getElementById("mn-kim-lau")!;
     kimLauEl.textContent = r.kimLau.ten;
-    kimLauEl.className = `mt-0.5 text-sm font-semibold ${r.kimLau.pham ? "text-(--color-cinnabar-500)" : "text-emerald-600"}`;
+    kimLauEl.className = `mt-0.5 text-sm font-semibold ${r.kimLau.pham ? "text-(--color-cinnabar-500)" : "text-(--color-success-500)"}`;
     const tamTaiEl = document.getElementById("mn-tam-tai")!;
     tamTaiEl.textContent = r.tamTai.pham ? "Phạm Tam Tai" : "Không phạm";
-    tamTaiEl.className = `mt-0.5 text-sm font-semibold ${r.tamTai.pham ? "text-(--color-cinnabar-500)" : "text-emerald-600"}`;
+    tamTaiEl.className = `mt-0.5 text-sm font-semibold ${r.tamTai.pham ? "text-(--color-cinnabar-500)" : "text-(--color-success-500)"}`;
     ketQuaMotNamEl.classList.remove("hidden");
   }
 

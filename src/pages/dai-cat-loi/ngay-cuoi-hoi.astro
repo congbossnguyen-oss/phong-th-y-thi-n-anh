@@ -174,8 +174,8 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
   }
 
   const MAU_HANG: Record<string, string> = {
-    "dai-cat": "text-emerald-600",
-    "rat-tot": "text-emerald-600",
+    "dai-cat": "text-(--color-success-500)",
+    "rat-tot": "text-(--color-success-500)",
     tot: "text-(--color-gold-400)",
     "co-the-dung": "text-(--color-ink-600)",
     "khong-thuan": "text-(--color-cinnabar-500)",
@@ -259,7 +259,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
     const dsHtml = (r.ngayXepHang as any[])
       .map((n, i) => {
         const huy = ["🥇", "🥈", "🥉"][i] ?? `${i + 1}.`;
-        const catTinh = n.catTinhMoTa.length ? `<p class="mt-1 text-xs text-emerald-700">✨ ${n.catTinhMoTa.map(esc).join(" · ")}</p>` : "";
+        const catTinh = n.catTinhMoTa.length ? `<p class="mt-1 text-xs text-(--color-success-500)">✨ ${n.catTinhMoTa.map(esc).join(" · ")}</p>` : "";
         const canhBao = n.canhBao.length ? `<p class="mt-1 text-xs text-(--color-cinnabar-500)">⚠ ${n.canhBao.map(esc).join("; ")}</p>` : "";
         return `<div class="rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-100) p-4 shadow-sm">
           <div class="flex items-baseline justify-between">

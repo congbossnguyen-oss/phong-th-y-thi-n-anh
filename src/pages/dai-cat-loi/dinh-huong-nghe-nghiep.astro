@@ -47,10 +47,12 @@ const DOMAIN_LABEL: Record<string, string> = {
   media_language: "Truyền thông – Ngôn ngữ", education_consulting: "Giáo dục – Tư vấn",
   arts_design: "Nghệ thuật – Thiết kế", real_estate_assets: "Bất động sản – Tài sản",
 };
+// mau/nen dùng var(--color-*) thay vì hex cứng — 2 biến này đã đăng ký trên :root trong global.css
+// nên tự đảo màu đúng theo theme sáng/tối giống mọi nơi khác trên trang (không phải giá trị mới).
 const BAC_STYLE: Record<string, { label: string; mau: string; nen: string }> = {
-  cao: { label: "CAO — hai hệ hội tụ", mau: "#166534", nen: "#DCF3E3" },
-  trung: { label: "TRUNG BÌNH — đồng thuận một phần", mau: "#B8860B", nen: "#FBF1CF" },
-  thap: { label: "THẤP — hai hệ phân kỳ", mau: "#CF2A22", nen: "#FBE0DD" },
+  cao: { label: "CAO — hai hệ hội tụ", mau: "var(--color-success-500)", nen: "color-mix(in srgb, var(--color-success-500) 18%, transparent)" },
+  trung: { label: "TRUNG BÌNH — đồng thuận một phần", mau: "var(--color-gold-400)", nen: "color-mix(in srgb, var(--color-gold-400) 18%, transparent)" },
+  thap: { label: "THẤP — hai hệ phân kỳ", mau: "var(--color-cinnabar-500)", nen: "color-mix(in srgb, var(--color-cinnabar-500) 18%, transparent)" },
 };
 const ketHop = ketQua?.ketHop ?? null;
 const bacStyle = ketHop && !ketHop.insufficient && ketHop.bac ? BAC_STYLE[ketHop.bac] : null;
@@ -113,7 +115,7 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
                     <>
                       <div class="flex flex-col items-center gap-2 rounded-2xl p-5" style={`background:${bacStyle?.nen}`}>
                         <p class="font-display text-6xl font-black" style={`color:${bacStyle?.mau}`}>{ketHop!.agreement}%</p>
-                        <p class="rounded-full px-4 py-1 text-sm font-extrabold text-white" style={`background:${bacStyle?.mau}`}>{bacStyle?.label}</p>
+                        <p class="rounded-full px-4 py-1 text-sm font-extrabold text-(--color-on-accent)" style={`background:${bacStyle?.mau}`}>{bacStyle?.label}</p>
                         <p class="mt-1 text-center text-sm font-bold text-(--color-ink-950)">{ketHop!.ketLuanNgan}</p>
                       </div>
 
