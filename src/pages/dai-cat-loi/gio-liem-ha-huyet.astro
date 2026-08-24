@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
@@ -47,6 +48,7 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
 <BaseLayout
   title="Chọn Giờ Liệm – Đóng Quan – Ngày Giờ Hạ Huyệt"
   description="Dành cho trường hợp người mất KHÔNG phạm Trùng Tang. Xếp hạng giờ liệm/đóng quan và ngày giờ hạ huyệt theo Chưởng Pháp Nhập Mộ – Thiên Di, có sàng thần sát an táng và xét tuổi thân quyến. Dịch vụ VIP 499.000đ/lượt, thanh toán qua QR, không cần tạo tài khoản."
+  appShell
 >
   <PageHero
     eyebrow="⭐ Dịch vụ VIP"
@@ -396,6 +398,7 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
       </div>
     </div>
   </Container>
+  <BottomNav />
 </BaseLayout>
 
 <script define:vars={{ CHI_LIST }}>

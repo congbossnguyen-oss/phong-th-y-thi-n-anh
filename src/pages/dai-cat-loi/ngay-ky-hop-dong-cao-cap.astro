@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
@@ -27,6 +28,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
 <BaseLayout
   title="Chọn Ngày Giờ Ký Kết Hợp Đồng (Cao Cấp)"
   description="Tìm và xếp hạng ngày giờ ký hợp đồng, giao dịch, cam kết hợp tác. Lọc loại ngày đại kỵ trước, rồi chấm điểm theo Thập Nhị Trực, 28 Tú, Tiểu Lục Nhâm và lớp Thập Thần theo Nhật Chủ người ký."
+  appShell
 >
   <PageHero
     eyebrow="⭐ Dịch vụ VIP"
@@ -137,6 +139,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
       <div id="nkhd-ket-qua" class="mt-6 hidden space-y-4"></div>
     </div>
   </Container>
+  <BottomNav />
 </BaseLayout>
 
 <script>

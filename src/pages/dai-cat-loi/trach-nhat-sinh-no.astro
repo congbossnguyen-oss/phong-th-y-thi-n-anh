@@ -4,6 +4,7 @@
 //  - Có ?orderCode đã confirmed → server tính kết quả (thuần công thức, không AI) và hiện phương án.
 // ⏸️ THỬ NGHIỆM NỘI BỘ: chỉ tài khoản quản trị thấy form/dùng được, khách thấy màn "đang thử nghiệm".
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
@@ -64,6 +65,7 @@ const UU_TIEN = [
 <BaseLayout
   title="Chọn Ngày Giờ Sinh Cho Bé"
   description="Lập toàn bộ ứng viên trong khung dự sinh bác sĩ cho phép, kết hợp Bát Tự (xếp hạng ngày) và Tử Vi (chọn giờ) để đưa ra phương án ưu tiên kèm 2 phương án dự phòng, luôn nêu rõ khuyết điểm. Dịch vụ VIP, trả kết quả kèm PDF về email."
+  appShell
 >
   <PageHero
     eyebrow="⭐ Dịch vụ VIP"
@@ -377,6 +379,7 @@ const UU_TIEN = [
       )}
     </div>
   </Container>
+  <BottomNav />
 </BaseLayout>
 
 <style>

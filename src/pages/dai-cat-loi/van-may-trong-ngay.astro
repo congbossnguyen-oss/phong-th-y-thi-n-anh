@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
@@ -10,6 +11,7 @@ export const prerender = true;
 <BaseLayout
   title="Vận may trong ngày"
   description="Đánh giá mức độ vận may của bạn trong 1 ngày cụ thể, kết hợp nền Trạch Cát của ngày và tương tác giữa ngày đó với tuổi của bạn."
+  appShell
 >
   <PageHero
     eyebrow="Đại Cát Lợi"
@@ -80,6 +82,7 @@ export const prerender = true;
       </div>
     </div>
   </Container>
+  <BottomNav />
 </BaseLayout>
 
 <script>

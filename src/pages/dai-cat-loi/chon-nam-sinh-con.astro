@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
@@ -10,6 +11,7 @@ export const prerender = true;
 <BaseLayout
   title="Chọn Năm Sinh Con"
   description="Tìm năm sinh con phù hợp nhất với cả cha và mẹ theo Mệnh, Thiên Can, Địa Chi, Cung Mệnh Bát Trạch và Niên Mệnh — quét 1 khoảng năm, xếp hạng, không hard-code."
+  appShell
 >
   <PageHero
     eyebrow="Đại Cát Lợi"
@@ -63,6 +65,7 @@ export const prerender = true;
       </p>
     </div>
   </Container>
+  <BottomNav />
 </BaseLayout>
 
 <script>

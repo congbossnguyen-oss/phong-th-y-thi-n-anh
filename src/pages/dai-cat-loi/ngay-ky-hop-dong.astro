@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 
@@ -9,6 +10,7 @@ export const prerender = true;
 <BaseLayout
   title="Ngày ký hợp đồng"
   description="Tự động tìm và xếp hạng ngày đẹp cho ký kết, giao dịch, hợp tác — có thể xét thêm tuổi người ký."
+  appShell
 >
   <PageHero
     eyebrow="Đại Cát Lợi"
@@ -41,6 +43,7 @@ export const prerender = true;
       </div>
     </div>
   </Container>
+  <BottomNav />
 </BaseLayout>
 
 <script>

@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
@@ -10,6 +11,7 @@ export const prerender = true;
 <BaseLayout
   title="Đổi Dương Lịch ↔ Âm Lịch"
   description="Đổi ngày Dương lịch sang Âm lịch Việt Nam và ngược lại, có xử lý tháng nhuận, chính xác theo thuật toán thiên văn."
+  appShell
 >
   <PageHero
     eyebrow="Đại Cát Lợi"
@@ -80,6 +82,7 @@ export const prerender = true;
       </div>
     </div>
   </Container>
+  <BottomNav />
 </BaseLayout>
 
 <script>

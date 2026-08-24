@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
@@ -33,6 +34,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
 <BaseLayout
   title="Xem Ngày Cao Cấp (Động Thổ / Nhập Trạch)"
   description="Giám định ngày động thổ / nhập trạch theo Huyền Không Đại Quái: kiểm Ngũ Hoàng, Tam Sát, Bát Sát, Thái Tuế, Tuế Phá rồi luận cách cục Tam Tài Thiên - Địa - Nhân giao."
+  appShell
 >
   <PageHero
     eyebrow="⭐ Dịch vụ VIP"
@@ -260,6 +262,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
       <div id="xncc-ket-qua" class="mt-6 hidden space-y-6"></div>
     </div>
   </Container>
+  <BottomNav />
 </BaseLayout>
 
 <script>

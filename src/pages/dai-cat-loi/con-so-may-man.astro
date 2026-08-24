@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
@@ -11,6 +12,7 @@ export const prerender = true;
 <BaseLayout
   title="Con Số May Mắn 00–99"
   description="Quét toàn bộ 100 số từ 00 đến 99, chấm điểm theo Ngũ Hành bản mệnh, cấu trúc cặp số và Nạp Âm ngày, trả về 3 con số may mắn nhất cho một ngày cụ thể."
+  appShell
 >
   <PageHero
     eyebrow="Đại Cát Lợi"
@@ -53,6 +55,7 @@ export const prerender = true;
       <div id="csmm-ket-qua" class="mt-4 hidden space-y-2"></div>
     </div>
   </Container>
+  <BottomNav />
 </BaseLayout>
 
 <script>
