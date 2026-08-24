@@ -22,12 +22,12 @@ export const prerender = true;
 
   <Container class="py-16">
     <div class="mx-auto max-w-2xl">
-      <div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
-        <div class="flex gap-2 border-b border-slate-200 pb-3">
+      <div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+        <div class="flex gap-2 border-b border-(--color-ivory-300) pb-3">
           <button type="button" id="tab-duong-am" class="rounded-(--radius-pill) bg-(--color-gold-400) px-4 py-2 text-sm font-semibold text-(--color-on-accent)">
             🌞 Dương → Âm
           </button>
-          <button type="button" id="tab-am-duong" class="rounded-(--radius-pill) border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50">
+          <button type="button" id="tab-am-duong" class="rounded-(--radius-pill) border border-(--color-ivory-400) px-4 py-2 text-sm font-semibold text-(--color-ink-600) hover:bg-(--color-ivory-200)">
             🌙 Âm → Dương
           </button>
         </div>
@@ -35,15 +35,15 @@ export const prerender = true;
         <form id="form-duong-am" class="mt-4 flex flex-col gap-3">
           <div class="grid grid-cols-3 gap-2">
             <div>
-              <label for="da-ngay" class="text-xs font-medium text-slate-600">Ngày</label>
+              <label for="da-ngay" class="text-xs font-medium text-(--color-ink-600)">Ngày</label>
               <input type="number" id="da-ngay" min="1" max="31" required placeholder="18" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
             </div>
             <div>
-              <label for="da-thang" class="text-xs font-medium text-slate-600">Tháng</label>
+              <label for="da-thang" class="text-xs font-medium text-(--color-ink-600)">Tháng</label>
               <input type="number" id="da-thang" min="1" max="12" required placeholder="8" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
             </div>
             <div>
-              <label for="da-nam" class="text-xs font-medium text-slate-600">Năm</label>
+              <label for="da-nam" class="text-xs font-medium text-(--color-ink-600)">Năm</label>
               <input type="number" id="da-nam" min="1900" max="2100" required placeholder="2026" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
             </div>
           </div>
@@ -53,19 +53,19 @@ export const prerender = true;
         <form id="form-am-duong" class="mt-4 hidden flex-col gap-3">
           <div class="grid grid-cols-3 gap-2">
             <div>
-              <label for="ad-ngay" class="text-xs font-medium text-slate-600">Ngày âm</label>
+              <label for="ad-ngay" class="text-xs font-medium text-(--color-ink-600)">Ngày âm</label>
               <input type="number" id="ad-ngay" min="1" max="30" required placeholder="6" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
             </div>
             <div>
-              <label for="ad-thang" class="text-xs font-medium text-slate-600">Tháng âm</label>
+              <label for="ad-thang" class="text-xs font-medium text-(--color-ink-600)">Tháng âm</label>
               <input type="number" id="ad-thang" min="1" max="12" required placeholder="7" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
             </div>
             <div>
-              <label for="ad-nam" class="text-xs font-medium text-slate-600">Năm âm</label>
+              <label for="ad-nam" class="text-xs font-medium text-(--color-ink-600)">Năm âm</label>
               <input type="number" id="ad-nam" min="1900" max="2100" required placeholder="2026" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
             </div>
           </div>
-          <label class="flex items-center gap-1.5 text-sm text-slate-600">
+          <label class="flex items-center gap-1.5 text-sm text-(--color-ink-600)">
             <input type="checkbox" id="ad-nhuan" /> Tháng nhuận
           </label>
           <Button type="submit" size="lg">Đổi sang Dương lịch</Button>
@@ -73,11 +73,11 @@ export const prerender = true;
 
         <div id="loi" class="mt-3 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-3 text-sm text-(--color-danger-500)"></div>
 
-        <div id="ket-qua" class="mt-4 hidden rounded-xl border border-slate-200 bg-slate-50 p-5 text-center">
-          <p id="kq-tren" class="text-lg font-semibold text-slate-500"></p>
+        <div id="ket-qua" class="mt-4 hidden rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200) p-5 text-center">
+          <p id="kq-tren" class="text-lg font-semibold text-(--color-ink-500)"></p>
           <p class="my-2 text-2xl">↓</p>
-          <p id="kq-duoi" class="font-display text-2xl font-bold text-slate-900"></p>
-          <p id="kq-nam-am-lich" class="mt-2 text-sm text-slate-500"></p>
+          <p id="kq-duoi" class="font-display text-2xl font-bold text-(--color-ink-950)"></p>
+          <p id="kq-nam-am-lich" class="mt-2 text-sm text-(--color-ink-500)"></p>
         </div>
       </div>
     </div>
@@ -112,7 +112,7 @@ export const prerender = true;
   const kqNamAmLichEl = document.getElementById("kq-nam-am-lich")!;
 
   const TAB_ACTIVE = "rounded-(--radius-pill) bg-(--color-gold-400) px-4 py-2 text-sm font-semibold text-(--color-on-accent)";
-  const TAB_INACTIVE = "rounded-(--radius-pill) border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50";
+  const TAB_INACTIVE = "rounded-(--radius-pill) border border-(--color-ivory-400) px-4 py-2 text-sm font-semibold text-(--color-ink-600) hover:bg-(--color-ivory-200)";
 
   function showTab(which: "duong-am" | "am-duong") {
     loiEl.classList.add("hidden");

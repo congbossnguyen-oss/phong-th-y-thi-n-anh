@@ -159,11 +159,11 @@ const laQuanTri = Astro.locals.user?.isAdmin === true;
       <div id="dtc-loi" class="mt-4 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm font-semibold text-(--color-danger-500)"></div>
 
       <!-- Bước thanh toán -->
-      <div id="dtc-thanh-toan" class="mt-6 hidden space-y-4 rounded-2xl border-2 border-(--color-gold-400) bg-white p-6 text-center text-slate-900 shadow-lg">
+      <div id="dtc-thanh-toan" class="mt-6 hidden space-y-4 rounded-2xl border-2 border-(--color-gold-400) bg-(--color-ivory-100) p-6 text-center text-(--color-ink-950) shadow-lg">
         <p class="font-display text-lg font-bold">Quét mã QR để thanh toán {TOOL_PRICE_LABEL}</p>
-        <img id="dtc-qr" src="" alt="Mã QR thanh toán" class="mx-auto h-64 w-64 rounded-xl border border-slate-200" />
-        <p class="text-sm text-slate-600">Mã đơn hàng: <strong id="dtc-order-code"></strong></p>
-        <p id="dtc-trang-thai" class="text-sm font-medium text-amber-600">Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)</p>
+        <img id="dtc-qr" src="" alt="Mã QR thanh toán" class="mx-auto h-64 w-64 rounded-xl border border-(--color-ivory-300)" />
+        <p class="text-sm text-(--color-ink-600)">Mã đơn hàng: <strong id="dtc-order-code"></strong></p>
+        <p id="dtc-trang-thai" class="text-sm font-medium text-(--color-gold-400)">Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)</p>
       </div>
 
       <!-- Kết quả gợi ý tên (sau khi thanh toán) -->
@@ -271,8 +271,8 @@ const laQuanTri = Astro.locals.user?.isAdmin === true;
     const khuyet = kq.hanhKhuyetKhaDi.map((h: any) => h.hanh);
 
     const canhBao = kq.canhBaoThieuDuLieu.length
-      ? `<div class="mb-6 rounded-(--radius-card) border border-amber-400/50 bg-amber-400/10 p-4">
-           <p class="text-sm font-bold text-amber-700">Lưu ý</p>
+      ? `<div class="mb-6 rounded-(--radius-card) border border-(--color-gold-400)/50 bg-(--color-gold-400)/10 p-4">
+           <p class="text-sm font-bold text-(--color-gold-500)">Lưu ý</p>
            <ul class="mt-1 list-disc pl-5 text-sm text-(--color-ink-800)">
              ${kq.canhBaoThieuDuLieu.map((c: string) => `<li>${esc(c)}</li>`).join("")}
            </ul></div>`
@@ -444,7 +444,7 @@ const laQuanTri = Astro.locals.user?.isAdmin === true;
           </div>
           <p class="mt-0.5 text-sm text-(--color-ink-800)">${esc(t.nhanXet)}</p>
           <p class="mt-1 text-xs text-(--color-ink-600)">Mệnh Cục ${t.menhCuc.tinhCuc.so} (${esc(t.menhCuc.tinhCuc.ten ?? "—")}) / ${t.menhCuc.dongCuc.so} (${esc(t.menhCuc.dongCuc.ten ?? "—")})</p>
-          ${t.canhBao.length ? `<p class="mt-1 text-xs text-amber-600">${t.canhBao.map((c: string) => esc(c)).join(" ")}</p>` : ""}
+          ${t.canhBao.length ? `<p class="mt-1 text-xs text-(--color-gold-400)">${t.canhBao.map((c: string) => esc(c)).join(" ")}</p>` : ""}
         </div>
       </li>`;
     }).join("");

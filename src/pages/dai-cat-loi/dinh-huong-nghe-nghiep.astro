@@ -79,7 +79,7 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
       {ketQua ? (
         <>
           {!ketQua.batTuAiOk && (
-            <div class="mb-5 rounded-(--radius-card) border-2 border-amber-400 bg-amber-50 p-4 text-sm font-bold text-amber-900">
+            <div class="mb-5 rounded-(--radius-card) border-2 border-(--color-gold-400) bg-(--color-gold-400)/10 p-4 text-sm font-bold text-(--color-gold-700)">
               ⚠️ Phần luận AI Bát Tự chưa chạy được (chưa cấu hình khoá AI trên máy chủ). Các con số/lá số bên dưới là phần tính thuần; phần luận sâu sẽ đầy đủ khi khoá AI hoạt động.
             </div>
           )}
@@ -102,36 +102,36 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
             <section class="pane pane-bat-tu"><LuanVanNghe luan={ketQua.luanVanBatTu} he="bat_tu" /><NgheDashboard vm={ketQua.batTuVM} /></section>
             <section class="pane pane-tu-vi"><LuanVanNghe luan={ketQua.luanVanTuVi} he="tu_vi" /><NgheDashboard vm={ketQua.tuViVM} /></section>
             <section class="pane pane-ket-hop">
-              <div class="overflow-hidden rounded-2xl border-2 border-(--color-gold-400)/60 bg-white shadow-lg">
+              <div class="overflow-hidden rounded-2xl border-2 border-(--color-gold-400)/60 bg-(--color-ivory-100) shadow-lg">
                 <div class="bg-gradient-to-r from-(--color-gold-400) to-(--color-gold-500) px-5 py-3">
                   <h3 class="font-display text-base font-extrabold uppercase tracking-wide text-(--color-on-accent)">Mức đồng thuận Bát Tự × Tử Vi</h3>
                 </div>
                 <div class="p-5">
                   {ketHop!.insufficient ? (
-                    <p class="text-sm font-semibold text-slate-700">{ketHop!.ketLuanNgan}</p>
+                    <p class="text-sm font-semibold text-(--color-ink-700)">{ketHop!.ketLuanNgan}</p>
                   ) : (
                     <>
                       <div class="flex flex-col items-center gap-2 rounded-2xl p-5" style={`background:${bacStyle?.nen}`}>
                         <p class="font-display text-6xl font-black" style={`color:${bacStyle?.mau}`}>{ketHop!.agreement}%</p>
                         <p class="rounded-full px-4 py-1 text-sm font-extrabold text-white" style={`background:${bacStyle?.mau}`}>{bacStyle?.label}</p>
-                        <p class="mt-1 text-center text-sm font-bold text-slate-900">{ketHop!.ketLuanNgan}</p>
+                        <p class="mt-1 text-center text-sm font-bold text-(--color-ink-950)">{ketHop!.ketLuanNgan}</p>
                       </div>
 
                       <div class="mt-5 grid gap-3 sm:grid-cols-3">
                         <div class="rounded-xl border-2 border-(--color-ivory-300) p-3 text-center">
-                          <p class="text-xs font-bold uppercase text-slate-600">Trùng 5 trục</p>
-                          <p class="font-display text-2xl font-extrabold text-slate-900">{ketHop!.thanhPhan.trung5Truc}%</p>
-                          <p class="text-[10px] font-semibold text-slate-500">trọng số 40%</p>
+                          <p class="text-xs font-bold uppercase text-(--color-ink-600)">Trùng 5 trục</p>
+                          <p class="font-display text-2xl font-extrabold text-(--color-ink-950)">{ketHop!.thanhPhan.trung5Truc}%</p>
+                          <p class="text-[10px] font-semibold text-(--color-ink-500)">trọng số 40%</p>
                         </div>
                         <div class="rounded-xl border-2 border-(--color-ivory-300) p-3 text-center">
-                          <p class="text-xs font-bold uppercase text-slate-600">Trùng hướng Q↔K</p>
-                          <p class="font-display text-2xl font-extrabold text-slate-900">{ketHop!.thanhPhan.trungHuongQK}%</p>
-                          <p class="text-[10px] font-semibold text-slate-500">trọng số 30%</p>
+                          <p class="text-xs font-bold uppercase text-(--color-ink-600)">Trùng hướng Q↔K</p>
+                          <p class="font-display text-2xl font-extrabold text-(--color-ink-950)">{ketHop!.thanhPhan.trungHuongQK}%</p>
+                          <p class="text-[10px] font-semibold text-(--color-ink-500)">trọng số 30%</p>
                         </div>
                         <div class="rounded-xl border-2 border-(--color-ivory-300) p-3 text-center">
-                          <p class="text-xs font-bold uppercase text-slate-600">Trùng ngành</p>
-                          <p class="font-display text-2xl font-extrabold text-slate-900">{ketHop!.thanhPhan.trungNganh}%</p>
-                          <p class="text-[10px] font-semibold text-slate-500">trọng số 30%</p>
+                          <p class="text-xs font-bold uppercase text-(--color-ink-600)">Trùng ngành</p>
+                          <p class="font-display text-2xl font-extrabold text-(--color-ink-950)">{ketHop!.thanhPhan.trungNganh}%</p>
+                          <p class="text-[10px] font-semibold text-(--color-ink-500)">trọng số 30%</p>
                         </div>
                       </div>
 
@@ -143,24 +143,24 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
                           <div class="grid gap-0 sm:grid-cols-2">
                             <div class="border-b-2 border-(--color-ivory-300) p-4 sm:border-b-0 sm:border-r-2">
                               <p class="mb-1 inline-block rounded-full px-2.5 py-0.5 text-xs font-black text-white" style="background:#1E8A45">🌿 BÁT TỰ</p>
-                              <p class="text-sm font-bold leading-relaxed text-slate-900">{ketHop!.docTheoTang.batTu}</p>
+                              <p class="text-sm font-bold leading-relaxed text-(--color-ink-950)">{ketHop!.docTheoTang.batTu}</p>
                             </div>
                             <div class="p-4">
                               <p class="mb-1 inline-block rounded-full px-2.5 py-0.5 text-xs font-black text-white" style="background:#1D5FB0">⭐ TỬ VI</p>
-                              <p class="text-sm font-bold leading-relaxed text-slate-900">{ketHop!.docTheoTang.tuVi}</p>
+                              <p class="text-sm font-bold leading-relaxed text-(--color-ink-950)">{ketHop!.docTheoTang.tuVi}</p>
                             </div>
                           </div>
-                          <div class="border-t-2 border-(--color-ivory-300) bg-amber-50 p-4">
+                          <div class="border-t-2 border-(--color-ivory-300) bg-(--color-gold-400)/10 p-4">
                             <p class="mb-1 text-xs font-black uppercase tracking-wide text-(--color-gold-700)">→ Lộ trình bắc cầu gợi ý</p>
-                            <p class="text-sm font-bold leading-relaxed text-slate-900">{ketHop!.docTheoTang.loTrinh}</p>
+                            <p class="text-sm font-bold leading-relaxed text-(--color-ink-950)">{ketHop!.docTheoTang.loTrinh}</p>
                           </div>
                         </div>
                       )}
 
                       <div class="mt-5">
-                        <p class="mb-2 text-sm font-extrabold text-slate-900">Ngành CẢ HAI HỆ cùng đề xuất (đáng tin nhất):</p>
+                        <p class="mb-2 text-sm font-extrabold text-(--color-ink-950)">Ngành CẢ HAI HỆ cùng đề xuất (đáng tin nhất):</p>
                         {ketHop!.nganhHopNhat.length === 0 ? (
-                          <p class="text-sm font-semibold italic text-slate-600">Chưa có ngành nào trùng ở Top-6 của cả hai hệ.</p>
+                          <p class="text-sm font-semibold italic text-(--color-ink-600)">Chưa có ngành nào trùng ở Top-6 của cả hai hệ.</p>
                         ) : (
                           <div class="flex flex-wrap gap-2">
                             {ketHop!.nganhHopNhat.map((d) => (
@@ -194,7 +194,7 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
         </div>
       ) : (
         <>
-          <div class="mb-4 rounded-(--radius-card) border-2 border-amber-400 bg-amber-50 p-4 text-sm font-medium text-amber-800">
+          <div class="mb-4 rounded-(--radius-card) border-2 border-(--color-gold-400) bg-(--color-gold-400)/10 p-4 text-sm font-medium text-(--color-gold-600)">
             🔒 CHẾ ĐỘ QUẢN TRỊ — dịch vụ đang thử nghiệm nội bộ, chỉ tài khoản quản trị thấy & dùng được. Đơn của bạn được tạo ở mức 0đ và tự xác nhận để test trọn luồng thu phí ({TOOL_PRICE_LABEL}/lượt khi mở bán).
           </div>
 
@@ -214,20 +214,20 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
 
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label for="dhn-gio" class="text-xs font-medium text-slate-600">Giờ sinh <span class="text-(--color-cinnabar-400)">*</span></label>
+                <label for="dhn-gio" class="text-xs font-medium text-(--color-ink-600)">Giờ sinh <span class="text-(--color-cinnabar-400)">*</span></label>
                 <select id="dhn-gio" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-2 py-2.5 text-sm text-(--color-ink-800)">
                   <option value="">Chọn giờ (0–23)</option>
                   {gioOptions.map((h) => <option value={h}>{`${h}h — ${h}:00–${h}:59`}</option>)}
                 </select>
               </div>
               <div>
-                <label for="dhn-phut" class="text-xs font-medium text-slate-600">Phút (nếu nhớ)</label>
+                <label for="dhn-phut" class="text-xs font-medium text-(--color-ink-600)">Phút (nếu nhớ)</label>
                 <input type="number" id="dhn-phut" min="0" max="59" placeholder="vd 20" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
               </div>
             </div>
 
             <div>
-              <span class="text-xs font-medium text-slate-600">Giới tính <span class="text-(--color-cinnabar-400)">*</span></span>
+              <span class="text-xs font-medium text-(--color-ink-600)">Giới tính <span class="text-(--color-cinnabar-400)">*</span></span>
               <div class="mt-1.5 flex gap-3">
                 <label class="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm font-medium text-(--color-ink-800) has-[:checked]:border-(--color-gold-500) has-[:checked]:bg-(--color-gold-400)/15">
                   <input type="radio" name="dhn-gioi-tinh" value="Nam" /> Nam
@@ -257,11 +257,11 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
           </div>
           <div id="dhn-loi" class="mt-4 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm text-(--color-danger-500)"></div>
 
-          <div id="dhn-thanh-toan" class="mt-6 hidden space-y-4 rounded-2xl border-2 border-amber-300 bg-white p-6 text-center text-slate-900 shadow-lg">
+          <div id="dhn-thanh-toan" class="mt-6 hidden space-y-4 rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-center text-(--color-ink-950) shadow-lg">
             <p class="font-display text-lg font-bold">Quét mã QR để thanh toán <span id="dhn-so-tien">{TOOL_PRICE_LABEL}</span></p>
-            <img id="dhn-qr" src="" alt="Mã QR thanh toán" class="mx-auto h-64 w-64 rounded-xl border border-slate-200" />
-            <p class="text-sm text-slate-600">Mã đơn hàng: <strong id="dhn-order-code"></strong></p>
-            <p id="dhn-trang-thai" class="text-sm font-medium text-amber-600">Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)</p>
+            <img id="dhn-qr" src="" alt="Mã QR thanh toán" class="mx-auto h-64 w-64 rounded-xl border border-(--color-ivory-300)" />
+            <p class="text-sm text-(--color-ink-600)">Mã đơn hàng: <strong id="dhn-order-code"></strong></p>
+            <p id="dhn-trang-thai" class="text-sm font-medium text-(--color-gold-400)">Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)</p>
           </div>
         </>
       )}

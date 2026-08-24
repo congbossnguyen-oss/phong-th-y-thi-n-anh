@@ -83,7 +83,7 @@ const UU_TIEN = [
     <div class="mx-auto max-w-4xl">
       {ketQua && r ? (
         <>
-          <p class="mb-5 text-center text-sm font-bold text-slate-700">
+          <p class="mb-5 text-center text-sm font-bold text-(--color-ink-700)">
             Kết quả cho: <span class="text-(--color-gold-400)">{order?.customerName}</span> · Mã đơn: {orderCode}
           </p>
 
@@ -93,10 +93,10 @@ const UU_TIEN = [
           </div>
 
           {!r.primary ? (
-            <div class="rounded-2xl border-2 border-(--color-cinnabar-400) bg-white p-6 text-center shadow-lg">
+            <div class="rounded-2xl border-2 border-(--color-cinnabar-400) bg-(--color-ivory-100) p-6 text-center shadow-lg">
               <p class="text-3xl">😕</p>
-              <p class="mt-2 font-display text-lg font-bold text-slate-900">Không có phương án nào thực sự nổi trội</p>
-              <p class="mt-1 text-sm text-slate-600">Trong khung dự sinh đã cho, chưa tìm được lựa chọn đạt đủ tiêu chí. Vui lòng nới rộng khung ngày/khung giờ bệnh viện, hoặc liên hệ trực tiếp để được tư vấn thêm.</p>
+              <p class="mt-2 font-display text-lg font-bold text-(--color-ink-950)">Không có phương án nào thực sự nổi trội</p>
+              <p class="mt-1 text-sm text-(--color-ink-600)">Trong khung dự sinh đã cho, chưa tìm được lựa chọn đạt đủ tiêu chí. Vui lòng nới rộng khung ngày/khung giờ bệnh viện, hoặc liên hệ trực tiếp để được tư vấn thêm.</p>
             </div>
           ) : (
             <div class="tns-tabs">
@@ -139,28 +139,28 @@ const UU_TIEN = [
               {/* TAB 1 — Phương án chọn ngày tối ưu */}
               <section class="pane pane-phuong-an">
               {/* ⭐ Phương án ưu tiên */}
-              <div class="overflow-hidden rounded-2xl border-2 border-(--color-gold-400)/60 bg-white shadow-lg">
+              <div class="overflow-hidden rounded-2xl border-2 border-(--color-gold-400)/60 bg-(--color-ivory-100) shadow-lg">
                 <div class="bg-gradient-to-r from-(--color-gold-400) to-(--color-gold-500) px-5 py-3">
                   <h3 class="font-display text-base font-extrabold uppercase tracking-wide text-(--color-on-accent)">⭐ Phương án ưu tiên</h3>
                 </div>
                 <div class="p-5">
                   <div class="flex flex-wrap items-center justify-between gap-3">
-                    <p class="font-display text-2xl font-black text-slate-900">{r.primary.ngayDuongLich} <span class="text-lg font-bold text-(--color-gold-600)">· {r.primary.khungGio}</span></p>
-                    <div class="rounded-xl bg-slate-900 px-4 py-2 text-center">
+                    <p class="font-display text-2xl font-black text-(--color-ink-950)">{r.primary.ngayDuongLich} <span class="text-lg font-bold text-(--color-gold-600)">· {r.primary.khungGio}</span></p>
+                    <div class="rounded-xl bg-(--color-ivory-50) px-4 py-2 text-center">
                       <p class="font-display text-2xl font-black leading-none text-white">{r.primary.diem.tong}<span class="text-sm font-bold text-white/50">/100</span></p>
                       <p class="mt-0.5 text-[10px] font-extrabold uppercase tracking-wide text-(--color-gold-300)">{r.primary.diem.mucNhan}</p>
                     </div>
                   </div>
                   <div class="mt-3 flex flex-wrap gap-2">
-                    <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">Vượng suy: {r.primary.vuongSuy}</span>
-                    <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">Dụng Thần: {r.primary.dungThan}</span>
-                    <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">Cung Mệnh: {r.primary.cungMenh}</span>
-                    <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">Cục: {r.primary.cuc}</span>
+                    <span class="rounded-full bg-(--color-ivory-200) px-3 py-1 text-xs font-bold text-(--color-ink-700)">Vượng suy: {r.primary.vuongSuy}</span>
+                    <span class="rounded-full bg-(--color-ivory-200) px-3 py-1 text-xs font-bold text-(--color-ink-700)">Dụng Thần: {r.primary.dungThan}</span>
+                    <span class="rounded-full bg-(--color-ivory-200) px-3 py-1 text-xs font-bold text-(--color-ink-700)">Cung Mệnh: {r.primary.cungMenh}</span>
+                    <span class="rounded-full bg-(--color-ivory-200) px-3 py-1 text-xs font-bold text-(--color-ink-700)">Cục: {r.primary.cuc}</span>
                   </div>
 
                   <DoHinhUngVien candidate={primaryCandidate} />
 
-                  <p class="mt-4 text-sm font-bold text-slate-700">Tứ trụ đầy đủ: {r.primary.tuTru}</p>
+                  <p class="mt-4 text-sm font-bold text-(--color-ink-700)">Tứ trụ đầy đủ: {r.primary.tuTru}</p>
                   {r.primary.diemNoiBat.length > 0 && (
                     <div class="mt-4">
                       <p class="text-xs font-extrabold uppercase tracking-wide text-emerald-700">Điểm nổi bật</p>
@@ -179,15 +179,15 @@ const UU_TIEN = [
               </div>
 
               {/* Vì sao chọn */}
-              <div class="mt-5 overflow-hidden rounded-2xl border-2 border-(--color-gold-400)/50 bg-white shadow-lg">
+              <div class="mt-5 overflow-hidden rounded-2xl border-2 border-(--color-gold-400)/50 bg-(--color-ivory-100) shadow-lg">
                 <div class="bg-gradient-to-r from-(--color-gold-400) to-(--color-gold-500) px-5 py-3">
                   <h3 class="font-display text-base font-extrabold uppercase tracking-wide text-(--color-on-accent)">Vì sao chọn phương án này?</h3>
                 </div>
                 <div class="space-y-3 p-5">
                   {r.decisiveFactors.map((f) => (
                     <div>
-                      <p class="text-sm font-extrabold text-slate-900">{f.label}</p>
-                      <p class="text-sm font-semibold text-slate-700">{f.detail}</p>
+                      <p class="text-sm font-extrabold text-(--color-ink-950)">{f.label}</p>
+                      <p class="text-sm font-semibold text-(--color-ink-700)">{f.detail}</p>
                     </div>
                   ))}
                 </div>
@@ -207,23 +207,23 @@ const UU_TIEN = [
                 </p>
               {/* Phương án dự phòng */}
               {r.alternatives.map((alt, i) => (
-                <div class="mt-5 overflow-hidden rounded-2xl border-2 border-slate-300 bg-white shadow-lg">
-                  <div class="bg-slate-100 px-5 py-3">
-                    <h3 class="font-display text-base font-extrabold uppercase tracking-wide text-slate-800">Phương án dự phòng {i + 2}</h3>
+                <div class="mt-5 overflow-hidden rounded-2xl border-2 border-(--color-ivory-400) bg-(--color-ivory-100) shadow-lg">
+                  <div class="bg-(--color-ivory-200) px-5 py-3">
+                    <h3 class="font-display text-base font-extrabold uppercase tracking-wide text-(--color-ink-800)">Phương án dự phòng {i + 2}</h3>
                   </div>
                   <div class="p-5">
                     <div class="flex flex-wrap items-center justify-between gap-3">
-                      <p class="font-display text-xl font-black text-slate-900">{alt.ngayDuongLich} <span class="text-base font-bold text-slate-600">· {alt.khungGio}</span></p>
-                      <div class="rounded-lg bg-slate-100 px-3 py-1.5 text-center">
-                        <p class="font-display text-lg font-black leading-none text-slate-800">{alt.diem.tong}<span class="text-xs font-bold text-slate-400">/100</span></p>
-                        <p class="text-[9.5px] font-extrabold uppercase tracking-wide text-slate-500">{alt.diem.mucNhan}</p>
+                      <p class="font-display text-xl font-black text-(--color-ink-950)">{alt.ngayDuongLich} <span class="text-base font-bold text-(--color-ink-600)">· {alt.khungGio}</span></p>
+                      <div class="rounded-lg bg-(--color-ivory-200) px-3 py-1.5 text-center">
+                        <p class="font-display text-lg font-black leading-none text-(--color-ink-800)">{alt.diem.tong}<span class="text-xs font-bold text-(--color-ink-400)">/100</span></p>
+                        <p class="text-[9.5px] font-extrabold uppercase tracking-wide text-(--color-ink-500)">{alt.diem.mucNhan}</p>
                       </div>
                     </div>
-                    <p class="mt-1 text-sm font-bold text-slate-700">Tứ trụ: {alt.tuTru}</p>
+                    <p class="mt-1 text-sm font-bold text-(--color-ink-700)">Tứ trụ: {alt.tuTru}</p>
                     <div class="mt-3 flex flex-wrap gap-2">
-                      <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">Vượng suy: {alt.vuongSuy}</span>
-                      <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">Dụng Thần: {alt.dungThan}</span>
-                      <span class="rounded-full bg-slate-100 px-3 py-1 text-xs font-bold text-slate-700">Cung Mệnh: {alt.cungMenh}</span>
+                      <span class="rounded-full bg-(--color-ivory-200) px-3 py-1 text-xs font-bold text-(--color-ink-700)">Vượng suy: {alt.vuongSuy}</span>
+                      <span class="rounded-full bg-(--color-ivory-200) px-3 py-1 text-xs font-bold text-(--color-ink-700)">Dụng Thần: {alt.dungThan}</span>
+                      <span class="rounded-full bg-(--color-ivory-200) px-3 py-1 text-xs font-bold text-(--color-ink-700)">Cung Mệnh: {alt.cungMenh}</span>
                     </div>
 
                     <DoHinhUngVien candidate={timUngVien(alt.candidateId)} gon />
@@ -274,7 +274,7 @@ const UU_TIEN = [
               </a>
               <a
                 href="/dich-vu"
-                class="inline-flex items-center gap-2 rounded-(--radius-pill) border-2 border-white/30 px-6 py-3 text-sm font-extrabold text-white/90 transition hover:bg-white/10"
+                class="inline-flex items-center gap-2 rounded-(--radius-pill) border-2 border-white/30 px-6 py-3 text-sm font-extrabold text-white/90 transition hover:bg-(--color-ivory-100)/10"
               >
                 Xem các dịch vụ khác →
               </a>
@@ -285,7 +285,7 @@ const UU_TIEN = [
         <>
           {laQuanTri ? (
             <>
-              <div class="mb-4 rounded-(--radius-card) border-2 border-amber-400 bg-amber-50 p-4 text-sm font-medium text-amber-800">
+              <div class="mb-4 rounded-(--radius-card) border-2 border-(--color-gold-400) bg-(--color-gold-400)/10 p-4 text-sm font-medium text-(--color-gold-600)">
                 🔒 CHẾ ĐỘ QUẢN TRỊ — dịch vụ đang thử nghiệm nội bộ, chỉ tài khoản quản trị thấy & dùng được. Đơn của bạn được tạo ở mức 0đ và tự xác nhận để test trọn luồng thu phí ({TOOL_PRICE_LABEL}/lượt khi mở bán).
               </div>
 
@@ -305,7 +305,7 @@ const UU_TIEN = [
                 <p class="-mt-1 text-xs text-(--color-ink-500)">Tối đa 31 ngày cho một lần tính.</p>
 
                 <div>
-                  <span class="text-xs font-medium text-slate-600">Giới tính bé <span class="text-(--color-cinnabar-400)">*</span></span>
+                  <span class="text-xs font-medium text-(--color-ink-600)">Giới tính bé <span class="text-(--color-cinnabar-400)">*</span></span>
                   <div class="mt-1.5 flex gap-3">
                     <label class="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm font-medium text-(--color-ink-800) has-[:checked]:border-(--color-gold-500) has-[:checked]:bg-(--color-gold-400)/15">
                       <input type="radio" name="tnsn-gioi-tinh" value="Nam" /> Nam
@@ -317,7 +317,7 @@ const UU_TIEN = [
                 </div>
 
                 <div>
-                  <label for="tnsn-hinh-thuc" class="text-xs font-medium text-slate-600">Hình thức sinh <span class="text-(--color-cinnabar-400)">*</span></label>
+                  <label for="tnsn-hinh-thuc" class="text-xs font-medium text-(--color-ink-600)">Hình thức sinh <span class="text-(--color-cinnabar-400)">*</span></label>
                   <select id="tnsn-hinh-thuc" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-2 py-2.5 text-sm text-(--color-ink-800)">
                     {HINH_THUC_SINH.map((h) => (<option value={h.value}>{h.label}</option>))}
                   </select>
@@ -336,7 +336,7 @@ const UU_TIEN = [
                 <p class="-mt-2 text-xs text-(--color-ink-500)">Áp dụng cho mọi ngày trong khung. Bỏ trống nếu chưa rõ hoặc sinh thường — hệ thống xét đủ 12 giờ.</p>
 
                 <div>
-                  <label for="tnsn-uu-tien" class="text-xs font-medium text-slate-600">Ưu tiên của gia đình</label>
+                  <label for="tnsn-uu-tien" class="text-xs font-medium text-(--color-ink-600)">Ưu tiên của gia đình</label>
                   <select id="tnsn-uu-tien" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-2 py-2.5 text-sm text-(--color-ink-800)">
                     {UU_TIEN.map((u) => (<option value={u.value}>{u.label}</option>))}
                   </select>
@@ -361,11 +361,11 @@ const UU_TIEN = [
               </div>
               <div id="tnsn-loi" class="mt-4 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm text-(--color-danger-500)"></div>
 
-              <div id="tnsn-thanh-toan" class="mt-6 hidden space-y-4 rounded-2xl border-2 border-amber-300 bg-white p-6 text-center text-slate-900 shadow-lg">
+              <div id="tnsn-thanh-toan" class="mt-6 hidden space-y-4 rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-center text-(--color-ink-950) shadow-lg">
                 <p class="font-display text-lg font-bold">Quét mã QR để thanh toán <span id="tnsn-so-tien">{TOOL_PRICE_LABEL}</span></p>
-                <img id="tnsn-qr" src="" alt="Mã QR thanh toán" class="mx-auto h-64 w-64 rounded-xl border border-slate-200" />
-                <p class="text-sm text-slate-600">Mã đơn hàng: <strong id="tnsn-order-code"></strong></p>
-                <p id="tnsn-trang-thai" class="text-sm font-medium text-amber-600">Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)</p>
+                <img id="tnsn-qr" src="" alt="Mã QR thanh toán" class="mx-auto h-64 w-64 rounded-xl border border-(--color-ivory-300)" />
+                <p class="text-sm text-(--color-ink-600)">Mã đơn hàng: <strong id="tnsn-order-code"></strong></p>
+                <p id="tnsn-trang-thai" class="text-sm font-medium text-(--color-gold-400)">Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)</p>
               </div>
             </>
           ) : (
