@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
@@ -11,6 +12,7 @@ export const prerender = true;
 <BaseLayout
   title="Chọn Ngày Giao Dịch / Nhận Tài Sản"
   description="Tìm ngày đẹp để mua nhà, mua xe, nhận nhà, nhận xe — quét 1 khoảng ngày, chấm điểm theo Trạch Cát và mục đích, có thể xét tuổi chủ, sau đó xem giờ tốt trong ngày đã chọn."
+  appShell
 >
   <PageHero
     eyebrow="Đại Cát Lợi"
@@ -21,17 +23,17 @@ export const prerender = true;
 
   <Container class="py-16">
     <div class="mx-auto max-w-2xl">
-      <form id="form-giao-dich" class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
+      <form id="form-giao-dich" class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label for="gd-tai-san" class="text-xs font-medium text-slate-600">Tài sản</label>
+            <label for="gd-tai-san" class="text-xs font-medium text-(--color-ink-600)">Tài sản</label>
             <select id="gd-tai-san" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)">
               <option value="NHA">🏠 Nhà</option>
               <option value="XE">🚗 Xe</option>
             </select>
           </div>
           <div>
-            <label for="gd-viec" class="text-xs font-medium text-slate-600">Việc cần làm</label>
+            <label for="gd-viec" class="text-xs font-medium text-(--color-ink-600)">Việc cần làm</label>
             <select id="gd-viec" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)">
               <option value="MUA">Mua</option>
               <option value="NHAN">Nhận</option>
@@ -39,14 +41,14 @@ export const prerender = true;
           </div>
         </div>
         <div class="mt-3">
-          <label for="gd-nam-sinh-chu" class="text-xs font-medium text-slate-600">Năm sinh chủ (tùy chọn)</label>
+          <label for="gd-nam-sinh-chu" class="text-xs font-medium text-(--color-ink-600)">Năm sinh chủ (tùy chọn)</label>
           <input type="number" id="gd-nam-sinh-chu" min="1900" max="2100" placeholder="Bỏ trống nếu chỉ cần ngày chung" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
         </div>
         <div class="mt-3 space-y-3">
           <DateSelect idPrefix="gd-tu-ngay" label="Từ ngày" />
           <DateSelect idPrefix="gd-den-ngay" label="Đến ngày" />
         </div>
-        <p class="mt-2 text-xs text-slate-400">Tối đa 62 ngày mỗi lượt quét.</p>
+        <p class="mt-2 text-xs text-(--color-ink-400)">Tối đa 62 ngày mỗi lượt quét.</p>
         <Button type="submit" size="lg" class="mt-4 w-full">Tìm ngày tốt</Button>
       </form>
 
@@ -54,9 +56,9 @@ export const prerender = true;
 
       <div id="ket-qua" class="mt-4 hidden space-y-2"></div>
 
-      <div id="ket-qua-gio" class="mt-4 hidden rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
-        <p class="text-xs font-bold uppercase tracking-wide text-amber-600">🕘 Giờ tốt</p>
-        <p id="gio-tieu-de" class="mt-1 text-sm text-slate-500"></p>
+      <div id="ket-qua-gio" class="mt-4 hidden rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+        <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-400)">🕘 Giờ tốt</p>
+        <p id="gio-tieu-de" class="mt-1 text-sm text-(--color-ink-500)"></p>
         <div id="gio-danh-sach" class="mt-2 space-y-1.5"></div>
       </div>
 
@@ -66,6 +68,7 @@ export const prerender = true;
       </p>
     </div>
   </Container>
+  <BottomNav />
 </BaseLayout>
 
 <script>
@@ -97,14 +100,14 @@ export const prerender = true;
   }
 
   const MAU_TANG: Record<string, string> = {
-    "chan-loc": "bg-amber-100 text-amber-700", "chan-duong-quy": "bg-violet-100 text-violet-700",
-    "chan-am-quy": "bg-indigo-100 text-indigo-700", "loc": "bg-amber-50 text-amber-600 ring-1 ring-amber-200",
-    "tam-hop": "bg-emerald-100 text-emerald-700", "luc-hop": "bg-teal-100 text-teal-700",
+    "chan-loc": "bg-(--color-gold-400)/15 text-(--color-gold-500)", "chan-duong-quy": "bg-(--color-gold-300)/20 text-(--color-gold-300)",
+    "chan-am-quy": "bg-(--color-gold-600)/20 text-(--color-gold-600)", "loc": "bg-(--color-gold-400)/10 text-(--color-gold-400) ring-1 ring-(--color-gold-400)/30",
+    "tam-hop": "bg-(--color-success-500)/15 text-(--color-success-500)", "luc-hop": "bg-(--color-success-500)/10 text-(--color-success-500)",
   };
   const ICON_TANG: Record<string, string> = { "chan-loc": "💰", "chan-duong-quy": "🌤️", "chan-am-quy": "🌙", "loc": "🪙", "tam-hop": "☯", "luc-hop": "☯" };
   function badgeCat(c: { tang: string | null; nhan: string } | null | undefined): string {
     if (!c || !c.tang) return "";
-    return `<span class="mt-1 inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-bold ${MAU_TANG[c.tang] ?? "bg-slate-100 text-slate-600"}">${ICON_TANG[c.tang] ?? ""} ${c.nhan}</span>`;
+    return `<span class="mt-1 inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-bold ${MAU_TANG[c.tang] ?? "bg-(--color-ivory-200) text-(--color-ink-600)"}">${ICON_TANG[c.tang] ?? ""} ${c.nhan}</span>`;
   }
   interface TransactionRangeResult { assetType: string; purpose: string; ngayXepHang: TransactionDay[] }
   interface GioKetQua { chiGio: string; canGio: string; khungGio: string; diem: number; nhan: string }
@@ -160,13 +163,13 @@ export const prerender = true;
         .map((d, i) => {
           const huyChuong = HUY_CHUONG[i] ?? `${i + 1}.`;
           const ngayStr = `${pad2(d.solarDate.day)}/${pad2(d.solarDate.month)}/${d.solarDate.year}`;
-          return `<button type="button" class="gd-item w-full rounded-xl border border-slate-200 bg-slate-50 p-3 text-left hover:bg-slate-100" data-year="${d.solarDate.year}" data-month="${d.solarDate.month}" data-day="${d.solarDate.day}">
+          return `<button type="button" class="gd-item w-full rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200) p-3 text-left hover:bg-(--color-ivory-200)" data-year="${d.solarDate.year}" data-month="${d.solarDate.month}" data-day="${d.solarDate.day}">
             <div class="flex items-center justify-between">
-              <p class="font-display text-base font-bold text-slate-900">${huyChuong} ${ngayStr}</p>
+              <p class="font-display text-base font-bold text-(--color-ink-950)">${huyChuong} ${ngayStr}</p>
               <span class="text-sm font-semibold">${nhanDotHtml(d.nhan)} — ${d.diem}/10</span>
             </div>
             ${badgeCat(d.catCaNhan)}
-            <p class="mt-1 text-xs text-slate-500">Bấm để xem giờ tốt trong ngày này</p>
+            <p class="mt-1 text-xs text-(--color-ink-500)">Bấm để xem giờ tốt trong ngày này</p>
           </button>`;
         })
         .join("");
@@ -188,8 +191,8 @@ export const prerender = true;
               .slice(0, 3)
               .map(
                 (g, i) =>
-                  `<div class="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-2.5">
-                    <p class="text-sm font-semibold text-slate-900">${HUY_CHUONG[i] ?? `${i + 1}.`} ${g.khungGio} (giờ ${g.chiGio})</p>
+                  `<div class="flex items-center justify-between rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200) p-2.5">
+                    <p class="text-sm font-semibold text-(--color-ink-950)">${HUY_CHUONG[i] ?? `${i + 1}.`} ${g.khungGio} (giờ ${g.chiGio})</p>
                     <span class="text-sm">${nhanDotHtml(g.nhan)} — ${g.diem}/10</span>
                   </div>`,
               )

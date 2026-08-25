@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
@@ -11,6 +12,7 @@ export const prerender = true;
 <BaseLayout
   title="Ngày Tốt Đi Lễ – Viếng Mộ"
   description="Tìm ngày tốt để đi lễ chùa/đền/phủ cầu an, cầu tài, cầu công danh, hoặc viếng mộ/tảo mộ tổ tiên — quét 1 khoảng ngày, tổng hợp nhiều tầng dữ liệu Trạch Cát, không chỉ dựa vào Hoàng Đạo."
+  appShell
 >
   <PageHero
     eyebrow="Đại Cát Lợi"
@@ -21,12 +23,12 @@ export const prerender = true;
 
   <Container class="py-16">
     <div class="mx-auto max-w-2xl">
-      <div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
-        <div class="flex gap-2 border-b border-slate-200 pb-3">
+      <div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+        <div class="flex gap-2 border-b border-(--color-ivory-300) pb-3">
           <button type="button" id="tab-worship" class="rounded-(--radius-pill) bg-(--color-gold-400) px-4 py-2 text-sm font-semibold text-(--color-on-accent)">
             🙏 Đi lễ
           </button>
-          <button type="button" id="tab-grave" class="rounded-(--radius-pill) border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50">
+          <button type="button" id="tab-grave" class="rounded-(--radius-pill) border border-(--color-ivory-400) px-4 py-2 text-sm font-semibold text-(--color-ink-600) hover:bg-(--color-ivory-200)">
             🪦 Viếng mộ
           </button>
         </div>
@@ -38,11 +40,11 @@ export const prerender = true;
             <DateSelect idPrefix="den-ngay" label="Đến ngày" />
           </div>
           <div>
-            <label for="nam-sinh" class="text-xs font-medium text-slate-600">Năm sinh (không bắt buộc)</label>
+            <label for="nam-sinh" class="text-xs font-medium text-(--color-ink-600)">Năm sinh (không bắt buộc)</label>
             <input type="number" id="nam-sinh" min="1900" max="2100" placeholder="Để trống nếu chỉ cần ngày chung" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
-            <p class="mt-1 text-xs text-slate-400">Nhập năm sinh để xét thêm xung/hợp tuổi người đi.</p>
+            <p class="mt-1 text-xs text-(--color-ink-400)">Nhập năm sinh để xét thêm xung/hợp tuổi người đi.</p>
           </div>
-          <p class="text-xs text-slate-400">Tối đa 62 ngày mỗi lượt quét.</p>
+          <p class="text-xs text-(--color-ink-400)">Tối đa 62 ngày mỗi lượt quét.</p>
           <Button type="submit" size="lg">Tìm ngày tốt</Button>
         </form>
 
@@ -58,6 +60,7 @@ export const prerender = true;
       </p>
     </div>
   </Container>
+  <BottomNav />
 </BaseLayout>
 
 <script>
@@ -101,7 +104,7 @@ export const prerender = true;
   const ketQuaEl = document.getElementById("ket-qua")!;
 
   const TAB_ACTIVE = "rounded-(--radius-pill) bg-(--color-gold-400) px-4 py-2 text-sm font-semibold text-(--color-on-accent)";
-  const TAB_INACTIVE = "rounded-(--radius-pill) border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50";
+  const TAB_INACTIVE = "rounded-(--radius-pill) border border-(--color-ivory-400) px-4 py-2 text-sm font-semibold text-(--color-ink-600) hover:bg-(--color-ivory-200)";
   const HUY_CHUONG = ["🥇", "🥈", "🥉"];
 
   function pad2(n: number): string {
@@ -171,14 +174,14 @@ export const prerender = true;
             ? `<p class="mt-1 text-xs text-(--color-cinnabar-500)">⚠️ Bách Kỵ: ${d.bachKy.chiTiet.map((c) => `${c.nhan} — ${c.viec}`).join("; ")}</p>`
             : "";
           const canNhanText = d.canNhan
-            ? `<p class="mt-1 text-xs text-slate-500">Tuổi người đi: Can ${d.canNhan.can.moTa}; Chi ${d.canNhan.chi.moTa}</p>`
+            ? `<p class="mt-1 text-xs text-(--color-ink-500)">Tuổi người đi: Can ${d.canNhan.can.moTa}; Chi ${d.canNhan.chi.moTa}</p>`
             : "";
-          return `<div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+          return `<div class="rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200) p-3">
             <div class="flex items-center justify-between">
-              <p class="font-display text-base font-bold text-slate-900">${huyChuong} ${ngayStr}</p>
+              <p class="font-display text-base font-bold text-(--color-ink-950)">${huyChuong} ${ngayStr}</p>
               <span class="text-sm font-semibold">${nhanDotHtml(d.nhan)} — ${d.diem}/10</span>
             </div>
-            <p class="mt-1 text-xs text-slate-500">Lý do: ${lyDoText}</p>
+            <p class="mt-1 text-xs text-(--color-ink-500)">Lý do: ${lyDoText}</p>
             ${thanhMinhBadge}
             ${bachKyBadge}
             ${canNhanText}

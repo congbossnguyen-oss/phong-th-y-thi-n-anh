@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import { paidTools } from "../../lib/dai-cat-loi-tools";
@@ -25,6 +26,7 @@ const ANH_BIA_VIP: Record<string, string> = {
   title="Dịch vụ VIP"
   description="Các công cụ trạch cát chuyên sâu, tính toán theo yêu cầu riêng của từng khách hàng — thu phí theo lượt sử dụng."
   ogImage="/images/brand/og-dich-vu-vip.png"
+  appShell
 >
   <PageHero
     eyebrow="Công cụ tra cứu"
@@ -58,4 +60,5 @@ const ANH_BIA_VIP: Record<string, string> = {
       Cần một công cụ thu phí khác chưa có ở đây? <a href="/lien-he" class="text-(--color-gold-300) hover:underline">Liên hệ đặt lịch tư vấn trực tiếp</a>.
     </p>
   </Container>
+  <BottomNav />
 </BaseLayout>

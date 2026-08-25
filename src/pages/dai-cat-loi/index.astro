@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import { daiCatLoiTools as muc } from "../../lib/dai-cat-loi-tools";
@@ -10,6 +11,7 @@ export const prerender = true;
 <BaseLayout
   title="Đại Cát Lợi"
   description="Bộ công cụ Trạch Cát cá nhân hóa: Ngày Đại Cát Cá Nhân, Vận May Trong Ngày, Ngày Ký Hợp Đồng, Giờ Tốt Trong Ngày, Ngày Khai Trương, Tuổi Hợp Làm Ăn."
+  appShell
 >
   <PageHero
     eyebrow="Công cụ tra cứu"
@@ -24,7 +26,7 @@ export const prerender = true;
         muc.map((m) => (
           <a
             href={m.href}
-            class="relative flex flex-col gap-2 overflow-hidden rounded-2xl border-2 border-amber-300 bg-cover bg-center p-6 text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl"
+            class="relative flex flex-col gap-2 overflow-hidden rounded-2xl border-2 border-(--color-gold-300) bg-cover bg-center p-6 text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl"
             style="background-image:url('/nen%205.png')"
           >
             <span class="absolute inset-0 bg-black/55"></span>
@@ -50,4 +52,5 @@ export const prerender = true;
       <span class="shrink-0 text-sm font-semibold text-(--color-gold-400)">Xem thêm →</span>
     </a>
   </Container>
+  <BottomNav />
 </BaseLayout>

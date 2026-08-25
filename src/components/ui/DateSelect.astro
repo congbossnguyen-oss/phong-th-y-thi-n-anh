@@ -20,7 +20,7 @@ const selectClass =
 ---
 
 <div>
-  <label class="text-xs font-medium text-slate-600">{label}{required && <span class="text-(--color-cinnabar-400)"> *</span>}</label>
+  <label class="text-xs font-medium text-(--color-ink-600)">{label}{required && <span class="text-(--color-cinnabar-400)"> *</span>}</label>
   <div class="mt-1 grid grid-cols-3 gap-1.5">
     <select id={`${idPrefix}-ngay`} aria-label={`Ngày — ${label}`} class={selectClass}>
       <option value="">Ngày</option>

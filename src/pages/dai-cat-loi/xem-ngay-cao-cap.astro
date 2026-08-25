@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
@@ -33,6 +34,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
 <BaseLayout
   title="Xem Ngày Cao Cấp (Động Thổ / Nhập Trạch)"
   description="Giám định ngày động thổ / nhập trạch theo Huyền Không Đại Quái: kiểm Ngũ Hoàng, Tam Sát, Bát Sát, Thái Tuế, Tuế Phá rồi luận cách cục Tam Tài Thiên - Địa - Nhân giao."
+  appShell
 >
   <PageHero
     eyebrow="⭐ Dịch vụ VIP"
@@ -250,16 +252,17 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
         <p id="xncc-dang-chay-chi-tiet" class="mt-1 text-xs text-(--color-ink-600)"></p>
       </div>
 
-      <div id="xncc-thanh-toan" class="mt-6 hidden space-y-4 rounded-2xl border-2 border-amber-300 bg-white p-6 text-center text-slate-900 shadow-lg">
+      <div id="xncc-thanh-toan" class="mt-6 hidden space-y-4 rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-center text-(--color-ink-950) shadow-lg">
         <p class="font-display text-lg font-bold">Quét mã QR để thanh toán <span id="xncc-so-tien">{TOOL_PRICE_LABEL}</span></p>
-        <img id="xncc-qr" src="" alt="Mã QR thanh toán" class="mx-auto h-64 w-64 rounded-xl border border-slate-200" />
-        <p class="text-sm text-slate-600">Mã đơn hàng: <strong id="xncc-order-code"></strong></p>
-        <p id="xncc-trang-thai" class="text-sm font-medium text-amber-600">Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)</p>
+        <img id="xncc-qr" src="" alt="Mã QR thanh toán" class="mx-auto h-64 w-64 rounded-xl border border-(--color-ivory-300)" />
+        <p class="text-sm text-(--color-ink-600)">Mã đơn hàng: <strong id="xncc-order-code"></strong></p>
+        <p id="xncc-trang-thai" class="text-sm font-medium text-(--color-gold-400)">Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)</p>
       </div>
 
       <div id="xncc-ket-qua" class="mt-6 hidden space-y-6"></div>
     </div>
   </Container>
+  <BottomNav />
 </BaseLayout>
 
 <script>
@@ -293,14 +296,14 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
   }
 
   const NHAN_KET_LUAN: Record<string, { text: string; cls: string }> = {
-    dung_duoc: { text: "✅ DÙNG ĐƯỢC", cls: "text-emerald-600" },
-    dung_duoc_co_dieu_kien: { text: "⚠️ DÙNG ĐƯỢC CÓ ĐIỀU KIỆN", cls: "text-amber-600" },
+    dung_duoc: { text: "✅ DÙNG ĐƯỢC", cls: "text-(--color-success-500)" },
+    dung_duoc_co_dieu_kien: { text: "⚠️ DÙNG ĐƯỢC CÓ ĐIỀU KIỆN", cls: "text-(--color-gold-400)" },
     khong_dung: { text: "❌ KHÔNG DÙNG", cls: "text-(--color-cinnabar-500)" },
   };
   const NHAN_TRANG_THAI: Record<string, { text: string; cls: string }> = {
-    dat: { text: "Đạt", cls: "text-emerald-600" },
+    dat: { text: "Đạt", cls: "text-(--color-success-500)" },
     khong_dat: { text: "Không đạt", cls: "text-(--color-cinnabar-500)" },
-    thieu_du_lieu: { text: "Thiếu dữ liệu", cls: "text-amber-600" },
+    thieu_du_lieu: { text: "Thiếu dữ liệu", cls: "text-(--color-gold-400)" },
   };
 
   function esc(s: string): string {
@@ -308,9 +311,9 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
   }
 
   function truCell(t: TruQue): string {
-    return `<td class="border border-slate-200 px-2 py-1.5 text-center">
-      <div class="font-semibold text-slate-900">${esc(t.can)} ${esc(t.chi)}</div>
-      <div class="text-xs text-slate-500">${esc(t.que)}</div>
+    return `<td class="border border-(--color-ivory-300) px-2 py-1.5 text-center">
+      <div class="font-semibold text-(--color-ink-950)">${esc(t.can)} ${esc(t.chi)}</div>
+      <div class="text-xs text-(--color-ink-500)">${esc(t.que)}</div>
       <div class="text-sm font-bold text-(--color-gold-400)">${t.hknh}/${t.quaiVan}</div>
     </td>`;
   }
@@ -324,18 +327,18 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
     const buocHtml = r.chieuTungBuoc
       .map((b) => {
         const tt = NHAN_TRANG_THAI[b.trangThai]!;
-        return `<div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+        return `<div class="rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200) p-3">
           <div class="flex items-baseline justify-between gap-2">
-            <p class="text-sm font-semibold text-slate-900">Bước ${b.buoc} — ${esc(b.ten)}</p>
+            <p class="text-sm font-semibold text-(--color-ink-950)">Bước ${b.buoc} — ${esc(b.ten)}</p>
             <span class="shrink-0 text-sm font-bold ${tt.cls}">${tt.text}</span>
           </div>
-          <p class="mt-1 text-xs leading-relaxed text-slate-600">${esc(b.lyDo)}</p>
+          <p class="mt-1 text-xs leading-relaxed text-(--color-ink-600)">${esc(b.lyDo)}</p>
         </div>`;
       })
       .join("");
 
     const dsHtml = (items: string[]) =>
-      items.length > 0 ? items.map((s) => `<li>${esc(s)}</li>`).join("") : `<li class="text-slate-400">(không có)</li>`;
+      items.length > 0 ? items.map((s) => `<li>${esc(s)}</li>`).join("") : `<li class="text-(--color-ink-400)">(không có)</li>`;
 
     // Chỉ hiện 6 giờ đầu (đã xếp hạng) để tránh rối; giờ xấu rõ ràng vẫn hiện nhãn cảnh báo.
     const gioHtml = r.gioDeXuat
@@ -349,62 +352,62 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
         const canhBao: string[] = [];
         if (g.xungChiNgay) canhBao.push("xung Chi ngày");
         if (g.phamTamSatGio) canhBao.push("phạm Tam Sát");
-        const mau = g.laHoangDao && canhBao.length === 0 ? "text-emerald-600" : canhBao.length > 0 ? "text-(--color-cinnabar-500)" : "text-slate-500";
-        return `<div class="rounded-xl border border-slate-200 bg-slate-50 p-3">
+        const mau = g.laHoangDao && canhBao.length === 0 ? "text-(--color-success-500)" : canhBao.length > 0 ? "text-(--color-cinnabar-500)" : "text-(--color-ink-500)";
+        return `<div class="rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200) p-3">
           <div class="flex items-baseline justify-between gap-2">
-            <p class="font-display text-base font-bold text-slate-900">${i === 0 ? "⭐ " : ""}Giờ ${esc(g.chiGio)} <span class="text-sm font-normal text-slate-500">(${esc(g.khungGio)})</span></p>
+            <p class="font-display text-base font-bold text-(--color-ink-950)">${i === 0 ? "⭐ " : ""}Giờ ${esc(g.chiGio)} <span class="text-sm font-normal text-(--color-ink-500)">(${esc(g.khungGio)})</span></p>
           </div>
           <p class="mt-0.5 text-sm font-semibold ${mau}">${nhan.join(" · ")}</p>
-          ${canhBao.length > 0 ? `<p class="mt-1 text-xs text-amber-600">⚠️ ${canhBao.join(" · ")}</p>` : ""}
+          ${canhBao.length > 0 ? `<p class="mt-1 text-xs text-(--color-gold-400)">⚠️ ${canhBao.join(" · ")}</p>` : ""}
         </div>`;
       })
       .join("");
 
     el.innerHTML = `
-      <div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
-        <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Kết luận</p>
+      <div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+        <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-400)">Kết luận</p>
         <p class="mt-1 font-display text-2xl font-bold ${kl.cls}">${kl.text}</p>
-        <p class="mt-1 text-sm text-slate-600">
+        <p class="mt-1 text-sm text-(--color-ink-600)">
           Ngày ${ngayLbl} (ÂL ${r.amLich.ngay}/${r.amLich.thang}${r.amLich.nhuan ? " nhuận" : ""}/${r.amLich.nam})
         </p>
       </div>
 
-      <div class="overflow-x-auto rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
-        <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Bảng Tứ Trụ (HKNH / Quái Vận)</p>
+      <div class="overflow-x-auto rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+        <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-400)">Bảng Tứ Trụ (HKNH / Quái Vận)</p>
         <table class="mt-3 w-full min-w-[26rem] border-collapse text-sm">
           <thead>
             <tr>
-              <th class="border border-slate-200 bg-slate-100 px-2 py-1.5 text-xs">Trụ Năm</th>
-              <th class="border border-slate-200 bg-slate-100 px-2 py-1.5 text-xs">Trụ Tháng</th>
-              <th class="border border-slate-200 bg-slate-100 px-2 py-1.5 text-xs">Trụ Ngày</th>
+              <th class="border border-(--color-ivory-300) bg-(--color-ivory-200) px-2 py-1.5 text-xs">Trụ Năm</th>
+              <th class="border border-(--color-ivory-300) bg-(--color-ivory-200) px-2 py-1.5 text-xs">Trụ Tháng</th>
+              <th class="border border-(--color-ivory-300) bg-(--color-ivory-200) px-2 py-1.5 text-xs">Trụ Ngày</th>
             </tr>
           </thead>
           <tbody><tr>${truCell(r.tuTru.nam)}${truCell(r.tuTru.thang)}${truCell(r.tuTru.ngay)}</tr></tbody>
         </table>
-        <div class="mt-3 space-y-1 text-sm text-slate-700">
-          <p><strong>Tọa nhà:</strong> ${esc(r.toaNha.ten)} — cung ${esc(r.toaNha.cung)}${r.toaNha.phuong ? ` (phương ${esc(r.toaNha.phuong)})` : " (chưa rõ phương — cần độ số)"} — ${r.toaNha.hknh !== null ? `quẻ <strong class="text-(--color-gold-400)">${r.toaNha.hknh}/${r.toaNha.quaiVan}</strong>` : `<span class="text-amber-600">chưa nhập quẻ tọa</span>`}</p>
+        <div class="mt-3 space-y-1 text-sm text-(--color-ink-700)">
+          <p><strong>Tọa nhà:</strong> ${esc(r.toaNha.ten)} — cung ${esc(r.toaNha.cung)}${r.toaNha.phuong ? ` (phương ${esc(r.toaNha.phuong)})` : " (chưa rõ phương — cần độ số)"} — ${r.toaNha.hknh !== null ? `quẻ <strong class="text-(--color-gold-400)">${r.toaNha.hknh}/${r.toaNha.quaiVan}</strong>` : `<span class="text-(--color-gold-400)">chưa nhập quẻ tọa</span>`}</p>
           ${r.huongNha ? `<p><strong>Hướng nhà:</strong> ${esc(r.huongNha.ten)} — cung ${esc(r.huongNha.cung)}</p>` : ""}
           <p><strong>Mệnh Chủ chính:</strong> ${esc(r.menhChuChinh.canChiNamSinh)} — ${esc(r.menhChuChinh.que)} <strong class="text-(--color-gold-400)">${r.menhChuChinh.hknh}/${r.menhChuChinh.quaiVan}</strong></p>
           ${r.menhChuPhu ? `<p><strong>Mệnh Chủ phụ:</strong> ${esc(r.menhChuPhu.canChiNamSinh)} — ${esc(r.menhChuPhu.que)} <strong class="text-(--color-gold-400)">${r.menhChuPhu.hknh}/${r.menhChuPhu.quaiVan}</strong></p>` : ""}
         </div>
       </div>
 
-      <div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
-        <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Chiếu từng bước</p>
+      <div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+        <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-400)">Chiếu từng bước</p>
         <div class="mt-3 space-y-2">${buocHtml}</div>
       </div>
 
-      <div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
-        <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Bước 6 — Giờ đề xuất trong ngày</p>
-        <p class="mt-1 text-xs text-slate-500">Xếp hạng 12 giờ Địa Chi. Nguyên tắc nguồn: không hy sinh chất lượng Ngày để lấy Giờ đẹp.</p>
+      <div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+        <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-400)">Bước 6 — Giờ đề xuất trong ngày</p>
+        <p class="mt-1 text-xs text-(--color-ink-500)">Xếp hạng 12 giờ Địa Chi. Nguyên tắc nguồn: không hy sinh chất lượng Ngày để lấy Giờ đẹp.</p>
         <div class="mt-3 space-y-2">${gioHtml}</div>
       </div>
 
-      <div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
-        <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Điểm mạnh của cách cục</p>
-        <ul class="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">${dsHtml(r.diemManh)}</ul>
-        <p class="mt-4 text-xs font-bold uppercase tracking-wide text-amber-600">Điểm cần lưu ý</p>
-        <ul class="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">${dsHtml(r.diemLuuY)}</ul>
+      <div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+        <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-400)">Điểm mạnh của cách cục</p>
+        <ul class="mt-2 list-disc space-y-1 pl-5 text-sm text-(--color-ink-700)">${dsHtml(r.diemManh)}</ul>
+        <p class="mt-4 text-xs font-bold uppercase tracking-wide text-(--color-gold-400)">Điểm cần lưu ý</p>
+        <ul class="mt-2 list-disc space-y-1 pl-5 text-sm text-(--color-ink-700)">${dsHtml(r.diemLuuY)}</ul>
       </div>
 
       <p class="text-xs text-(--color-ink-500)">
@@ -531,9 +534,9 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
     khong_dung: "Không dùng",
   };
   const MAU_MUC: Record<string, string> = {
-    ly_tuong: "bg-emerald-100 text-emerald-800 border-emerald-300",
-    tot: "bg-sky-100 text-sky-800 border-sky-300",
-    duoc: "bg-amber-100 text-amber-800 border-amber-300",
+    ly_tuong: "bg-(--color-success-500)/20 text-(--color-success-500) border-(--color-success-500)/50",
+    tot: "bg-(--color-success-500)/10 text-(--color-success-500) border-(--color-success-500)/30",
+    duoc: "bg-(--color-gold-400)/15 text-(--color-gold-600) border-(--color-gold-300)",
   };
 
   interface YeuToDatUI { ten: string; diem: number }
@@ -552,18 +555,18 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
     const gio = n.gioTot.length
       ? n.gioTot.map((g) => `${g.chiGio} (${g.khungGio})`).join(" · ")
       : "Không có giờ Hoàng Đạo sạch trong ngày";
-    return `<div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+    return `<div class="rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200) p-4">
       <div class="flex flex-wrap items-center justify-between gap-2">
-        <p class="font-display text-lg font-bold text-slate-900">
+        <p class="font-display text-lg font-bold text-(--color-ink-950)">
           ${String(d.ngay).padStart(2, "0")}/${String(d.thang).padStart(2, "0")}/${d.nam}
-          <span class="ml-1 text-sm font-normal text-slate-500">(ÂL ${n.amLich.ngay}/${n.amLich.thang}${n.amLich.nhuan ? " nhuận" : ""} · ${n.canChiNgay})</span>
+          <span class="ml-1 text-sm font-normal text-(--color-ink-500)">(ÂL ${n.amLich.ngay}/${n.amLich.thang}${n.amLich.nhuan ? " nhuận" : ""} · ${n.canChiNgay})</span>
         </p>
         <span class="rounded-(--radius-pill) border px-2.5 py-0.5 text-xs font-semibold ${MAU_MUC[n.muc] ?? ""}">${TEN_MUC[n.muc] ?? n.muc} · ${n.diem} điểm</span>
       </div>
-      <p class="mt-2 text-sm text-slate-700"><strong>Giờ tốt:</strong> ${gio}</p>
+      <p class="mt-2 text-sm text-(--color-ink-700)"><strong>Giờ tốt:</strong> ${gio}</p>
       <details class="mt-2">
         <summary class="cursor-pointer text-xs font-medium text-(--color-gold-300)">Vì sao ngày này được ${n.diem} điểm?</summary>
-        <ul class="mt-1.5 space-y-0.5 text-xs text-slate-600">
+        <ul class="mt-1.5 space-y-0.5 text-xs text-(--color-ink-600)">
           ${n.yeuToDat.map((y) => `<li>${y.diem >= 0 ? "+" : ""}${y.diem} — ${y.ten}</li>`).join("")}
         </ul>
       </details>
@@ -575,16 +578,16 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
       const lyDo = (data.lyDoLoaiPhoBien ?? [])
         .map((l: any) => `<li><strong>${l.soNgay} ngày</strong> — ${l.lyDo}</li>`)
         .join("");
-      ketQuaEl.innerHTML = `<div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
+      ketQuaEl.innerHTML = `<div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
         <p class="font-display text-lg font-bold">Không có ngày nào dùng được trong khoảng đã quét</p>
-        <p class="mt-1 text-sm text-slate-600">Đã quét ${data.tongSoNgayQuet} ngày. Lý do bị loại nhiều nhất:</p>
-        <ul class="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">${lyDo}</ul>
-        <p class="mt-3 text-sm text-slate-700">Thường gặp khi tọa nhà phạm sát theo NĂM — khi đó cả năm đều vướng, nên cân nhắc <strong>đổi sang năm khác</strong>, hoặc <a href="/lien-he" class="text-(--color-gold-300) hover:underline">hỏi chuyên gia về phương án mượn tuổi</a>.</p>
+        <p class="mt-1 text-sm text-(--color-ink-600)">Đã quét ${data.tongSoNgayQuet} ngày. Lý do bị loại nhiều nhất:</p>
+        <ul class="mt-2 list-disc space-y-1 pl-5 text-sm text-(--color-ink-700)">${lyDo}</ul>
+        <p class="mt-3 text-sm text-(--color-ink-700)">Thường gặp khi tọa nhà phạm sát theo NĂM — khi đó cả năm đều vướng, nên cân nhắc <strong>đổi sang năm khác</strong>, hoặc <a href="/lien-he" class="text-(--color-gold-300) hover:underline">hỏi chuyên gia về phương án mượn tuổi</a>.</p>
       </div>`;
     } else {
-      ketQuaEl.innerHTML = `<div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
+      ketQuaEl.innerHTML = `<div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
         <p class="font-display text-lg font-bold">Tìm được ${data.soNgayDung} ngày dùng được / ${data.tongSoNgayQuet} ngày đã quét</p>
-        <p class="mt-1 text-sm text-slate-600">Xếp theo tổng số yếu tố tốt đạt được — càng nhiều yếu tố, điểm càng cao.</p>
+        <p class="mt-1 text-sm text-(--color-ink-600)">Xếp theo tổng số yếu tố tốt đạt được — càng nhiều yếu tố, điểm càng cao.</p>
         <div class="mt-3 space-y-2">${data.ketQua.map(theNgay).join("")}</div>
       </div>`;
     }
@@ -599,18 +602,18 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
       ? co
           .sort((a: any, b: any) => b.diemCaoNhat - a.diemCaoNhat)
           .map(
-            (t: any) => `<div class="rounded-xl border border-slate-200 bg-white p-4">
-              <p class="font-display text-base font-bold text-slate-900">Tháng ${t.thangDuongLich}/${t.namDuongLich} — ${t.soNgayDung} ngày dùng được</p>
-              <p class="mt-1 text-xs text-slate-500">Ngày tốt nhất trong tháng:</p>
+            (t: any) => `<div class="rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-100) p-4">
+              <p class="font-display text-base font-bold text-(--color-ink-950)">Tháng ${t.thangDuongLich}/${t.namDuongLich} — ${t.soNgayDung} ngày dùng được</p>
+              <p class="mt-1 text-xs text-(--color-ink-500)">Ngày tốt nhất trong tháng:</p>
               <div class="mt-1.5">${theNgay(t.ngayTotNhat)}</div>
             </div>`,
           )
           .join("")
       : "";
-    ketQuaEl.innerHTML = `<div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
+    ketQuaEl.innerHTML = `<div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
       <p class="font-display text-lg font-bold">Năm ${data.namDuongLich}: ${co.length}/12 tháng có ngày dùng được</p>
-      ${khong.length ? `<p class="mt-1 text-sm text-slate-600">Không có ngày nào dùng được trong tháng: <strong>${khong.join(", ")}</strong>.</p>` : ""}
-      ${co.length ? `<div class="mt-3 space-y-3">${khoi}</div>` : `<p class="mt-3 text-sm text-slate-700">Cả năm ${data.namDuongLich} đều không có ngày phù hợp với tọa nhà này — thường do phạm sát theo NĂM. Nên thử năm khác, hoặc <a href="/lien-he" class="text-(--color-gold-300) hover:underline">hỏi chuyên gia về phương án mượn tuổi</a>.</p>`}
+      ${khong.length ? `<p class="mt-1 text-sm text-(--color-ink-600)">Không có ngày nào dùng được trong tháng: <strong>${khong.join(", ")}</strong>.</p>` : ""}
+      ${co.length ? `<div class="mt-3 space-y-3">${khoi}</div>` : `<p class="mt-3 text-sm text-(--color-ink-700)">Cả năm ${data.namDuongLich} đều không có ngày phù hợp với tọa nhà này — thường do phạm sát theo NĂM. Nên thử năm khác, hoặc <a href="/lien-he" class="text-(--color-gold-300) hover:underline">hỏi chuyên gia về phương án mượn tuổi</a>.</p>`}
     </div>`;
     ketQuaEl.classList.remove("hidden");
     ketQuaEl.scrollIntoView({ behavior: "smooth", block: "start" });

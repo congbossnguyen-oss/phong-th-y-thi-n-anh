@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
@@ -27,6 +28,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
 <BaseLayout
   title="Chọn Ngày Giờ Ký Kết Hợp Đồng (Cao Cấp)"
   description="Tìm và xếp hạng ngày giờ ký hợp đồng, giao dịch, cam kết hợp tác. Lọc loại ngày đại kỵ trước, rồi chấm điểm theo Thập Nhị Trực, 28 Tú, Tiểu Lục Nhâm và lớp Thập Thần theo Nhật Chủ người ký."
+  appShell
 >
   <PageHero
     eyebrow="⭐ Dịch vụ VIP"
@@ -127,16 +129,17 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
 
       <div id="nkhd-loi" class="mt-4 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm text-(--color-danger-500)"></div>
 
-      <div id="nkhd-thanh-toan" class="mt-6 hidden space-y-4 rounded-2xl border-2 border-amber-300 bg-white p-6 text-center text-slate-900 shadow-lg">
+      <div id="nkhd-thanh-toan" class="mt-6 hidden space-y-4 rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-center text-(--color-ink-950) shadow-lg">
         <p class="font-display text-lg font-bold">Quét mã QR để thanh toán <span id="nkhd-so-tien">{TOOL_PRICE_LABEL}</span></p>
-        <img id="nkhd-qr" src="" alt="Mã QR thanh toán" class="mx-auto h-64 w-64 rounded-xl border border-slate-200" />
-        <p class="text-sm text-slate-600">Mã đơn hàng: <strong id="nkhd-order-code"></strong></p>
-        <p id="nkhd-trang-thai" class="text-sm font-medium text-amber-600">Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)</p>
+        <img id="nkhd-qr" src="" alt="Mã QR thanh toán" class="mx-auto h-64 w-64 rounded-xl border border-(--color-ivory-300)" />
+        <p class="text-sm text-(--color-ink-600)">Mã đơn hàng: <strong id="nkhd-order-code"></strong></p>
+        <p id="nkhd-trang-thai" class="text-sm font-medium text-(--color-gold-400)">Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)</p>
       </div>
 
       <div id="nkhd-ket-qua" class="mt-6 hidden space-y-4"></div>
     </div>
   </Container>
+  <BottomNav />
 </BaseLayout>
 
 <script>
@@ -184,7 +187,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
 
   function theGio(gio: any[]): string {
     if (!gio || gio.length === 0) return "";
-    return `<p class="mt-2 text-sm text-slate-700"><strong>Giờ nên ký:</strong> ${gio
+    return `<p class="mt-2 text-sm text-(--color-ink-700)"><strong>Giờ nên ký:</strong> ${gio
       .map((g) => `${esc(g.chiGio)} (${esc(g.khungGio)})`)
       .join(" · ")}</p>`;
   }
@@ -192,19 +195,19 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
   function theNgay(n: any): string {
     const yeuTo = (n.yeuTo ?? [])
       .slice(0, 6)
-      .map((y: any) => `<li>${esc(y.ten)} <span class="text-slate-500">(${y.diem})</span></li>`)
+      .map((y: any) => `<li>${esc(y.ten)} <span class="text-(--color-ink-500)">(${y.diem})</span></li>`)
       .join("");
-    return `<div class="rounded-xl border border-slate-200 bg-white p-4">
+    return `<div class="rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-100) p-4">
       <div class="flex flex-wrap items-baseline justify-between gap-2">
-        <p class="font-display text-base font-bold text-slate-900">
+        <p class="font-display text-base font-bold text-(--color-ink-950)">
           ${esc(n.solarDate.day)}/${esc(n.solarDate.month)}/${esc(n.solarDate.year)}
-          <span class="font-normal text-slate-500">— ngày ${esc(n.canChiNgay)}</span>
+          <span class="font-normal text-(--color-ink-500)">— ngày ${esc(n.canChiNgay)}</span>
         </p>
-        <p class="text-sm font-semibold text-slate-900">${esc(n.diem)}/10 · ${esc(n.xepHang)}</p>
+        <p class="text-sm font-semibold text-(--color-ink-950)">${esc(n.diem)}/10 · ${esc(n.xepHang)}</p>
       </div>
-      <p class="mt-1 text-xs text-slate-500">Âm lịch ${esc(n.lunarDate.day)}/${esc(n.lunarDate.month)}${n.lunarDate.isLeapMonth ? " (nhuận)" : ""}${n.thapThan ? ` · Can ngày là <strong>${esc(n.thapThan)}</strong> với Nhật Chủ` : ""}</p>
+      <p class="mt-1 text-xs text-(--color-ink-500)">Âm lịch ${esc(n.lunarDate.day)}/${esc(n.lunarDate.month)}${n.lunarDate.isLeapMonth ? " (nhuận)" : ""}${n.thapThan ? ` · Can ngày là <strong>${esc(n.thapThan)}</strong> với Nhật Chủ` : ""}</p>
       ${theGio(n.gioDeXuat)}
-      <ul class="mt-2 list-disc space-y-0.5 pl-5 text-sm text-slate-700">${yeuTo}</ul>
+      <ul class="mt-2 list-disc space-y-0.5 pl-5 text-sm text-(--color-ink-700)">${yeuTo}</ul>
     </div>`;
   }
 
@@ -213,21 +216,21 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
       const lyDo = (r.lyDoLoaiPhoBien ?? [])
         .map((l: any) => `<li><strong>${l.soNgay} ngày</strong> — ${esc(l.lyDo)}</li>`)
         .join("");
-      ketQuaEl.innerHTML = `<div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
+      ketQuaEl.innerHTML = `<div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
         <p class="font-display text-lg font-bold">Không có ngày nào dùng được trong khoảng đã quét</p>
-        <p class="mt-1 text-sm text-slate-600">Đã quét ${esc(r.tongSoNgayQuet)} ngày. Lý do bị loại nhiều nhất:</p>
-        <ul class="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">${lyDo}</ul>
-        <p class="mt-3 text-sm text-slate-700">Thử nới rộng khoảng ngày, hoặc bỏ ngày sinh người ký để xem ngày tốt chung.</p>
+        <p class="mt-1 text-sm text-(--color-ink-600)">Đã quét ${esc(r.tongSoNgayQuet)} ngày. Lý do bị loại nhiều nhất:</p>
+        <ul class="mt-2 list-disc space-y-1 pl-5 text-sm text-(--color-ink-700)">${lyDo}</ul>
+        <p class="mt-3 text-sm text-(--color-ink-700)">Thử nới rộng khoảng ngày, hoặc bỏ ngày sinh người ký để xem ngày tốt chung.</p>
       </div>`;
     } else {
       const nhatChu = r.nhatChu
-        ? `<p class="mt-1 text-sm text-slate-600">Nhật Chủ người ký: <strong>${esc(r.nhatChu)}</strong> — đã áp dụng lớp Thập Thần.</p>`
-        : `<p class="mt-1 text-sm text-slate-600">Chế độ chung (chưa nhập ngày sinh) — chưa áp dụng lớp Thập Thần theo người ký.</p>`;
-      ketQuaEl.innerHTML = `<div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
+        ? `<p class="mt-1 text-sm text-(--color-ink-600)">Nhật Chủ người ký: <strong>${esc(r.nhatChu)}</strong> — đã áp dụng lớp Thập Thần.</p>`
+        : `<p class="mt-1 text-sm text-(--color-ink-600)">Chế độ chung (chưa nhập ngày sinh) — chưa áp dụng lớp Thập Thần theo người ký.</p>`;
+      ketQuaEl.innerHTML = `<div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
         <p class="font-display text-lg font-bold">Tìm được ${esc(r.soNgayDung)} ngày dùng được / ${esc(r.tongSoNgayQuet)} ngày đã quét</p>
         ${nhatChu}
         <div class="mt-3 space-y-2">${r.ketQua.map(theNgay).join("")}</div>
-        <p class="mt-3 text-xs text-slate-500">Chưa tính (thiếu công thức tra cứu tin cậy): ${(r.thieuDuLieu ?? []).join(", ")}.</p>
+        <p class="mt-3 text-xs text-(--color-ink-500)">Chưa tính (thiếu công thức tra cứu tin cậy): ${(r.thieuDuLieu ?? []).join(", ")}.</p>
       </div>`;
     }
     ketQuaEl.classList.remove("hidden");

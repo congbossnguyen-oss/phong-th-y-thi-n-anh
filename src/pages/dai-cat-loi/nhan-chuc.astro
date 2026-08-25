@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
@@ -25,6 +26,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
 <BaseLayout
   title="Chọn Ngày Giờ Nhận Chức"
   description="Tìm và xếp hạng ngày giờ tốt để nhận chức, nhậm chức, bổ nhiệm. Lọc hung sát trước (Kim Thần, Sát Chủ, Thọ Tử, Lục Xung tuổi), rồi chấm điểm theo 28 Tú, Thập Nhị Trực, Hoàng Đạo và lớp Thập Thần theo Nhật Chủ người nhận chức."
+  appShell
 >
   <PageHero
     eyebrow="⭐ Dịch vụ VIP"
@@ -41,7 +43,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
   <Container class="py-16">
     <div class="mx-auto max-w-2xl">
       {laQuanTri && (
-        <div class="mb-4 rounded-(--radius-card) border-2 border-amber-400 bg-amber-50 p-4 text-sm font-medium text-amber-800">
+        <div class="mb-4 rounded-(--radius-card) border-2 border-(--color-gold-400) bg-(--color-gold-400)/10 p-4 text-sm font-medium text-(--color-gold-600)">
           🔒 CHẾ ĐỘ QUẢN TRỊ — đơn của bạn được tạo ở mức 0đ và tự xác nhận để test trọn luồng thu phí ({TOOL_PRICE_LABEL}/lượt với khách).
         </div>
       )}
@@ -156,16 +158,17 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
 
       <div id="nc-loi" class="mt-4 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm text-(--color-danger-500)"></div>
 
-      <div id="nc-thanh-toan" class="mt-6 hidden space-y-4 rounded-2xl border-2 border-amber-300 bg-white p-6 text-center text-slate-900 shadow-lg">
+      <div id="nc-thanh-toan" class="mt-6 hidden space-y-4 rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-center text-(--color-ink-950) shadow-lg">
         <p class="font-display text-lg font-bold">Quét mã QR để thanh toán <span id="nc-so-tien">{TOOL_PRICE_LABEL}</span></p>
-        <img id="nc-qr" src="" alt="Mã QR thanh toán" class="mx-auto h-64 w-64 rounded-xl border border-slate-200" />
-        <p class="text-sm text-slate-600">Mã đơn hàng: <strong id="nc-order-code"></strong></p>
-        <p id="nc-trang-thai" class="text-sm font-medium text-amber-600">Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)</p>
+        <img id="nc-qr" src="" alt="Mã QR thanh toán" class="mx-auto h-64 w-64 rounded-xl border border-(--color-ivory-300)" />
+        <p class="text-sm text-(--color-ink-600)">Mã đơn hàng: <strong id="nc-order-code"></strong></p>
+        <p id="nc-trang-thai" class="text-sm font-medium text-(--color-gold-400)">Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)</p>
       </div>
 
       <div id="nc-ket-qua" class="mt-6 hidden space-y-4"></div>
     </div>
   </Container>
+  <BottomNav />
 </BaseLayout>
 
 <script>
@@ -212,12 +215,12 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
 
   // Mỗi mức xếp hạng một tông màu riêng cho bắt mắt.
   const STATUS_STYLE: Record<string, { pill: string; score: string; bar: string; ring: string }> = {
-    "ĐẠI TỐT":    { pill: "bg-emerald-500 text-white", score: "text-emerald-600", bar: "from-emerald-400 to-emerald-600", ring: "ring-emerald-200" },
-    "TỐT":        { pill: "bg-teal-500 text-white",    score: "text-teal-600",    bar: "from-teal-400 to-teal-600",       ring: "ring-teal-200" },
-    "KHÁ":        { pill: "bg-sky-500 text-white",     score: "text-sky-600",     bar: "from-sky-400 to-sky-600",         ring: "ring-sky-200" },
-    "TRUNG BÌNH": { pill: "bg-amber-500 text-white",   score: "text-amber-600",   bar: "from-amber-400 to-amber-500",     ring: "ring-amber-200" },
-    "XẤU":        { pill: "bg-orange-500 text-white",  score: "text-orange-600",  bar: "from-orange-400 to-orange-500",   ring: "ring-orange-200" },
-    "LOẠI":       { pill: "bg-rose-500 text-white",    score: "text-rose-600",    bar: "from-rose-400 to-rose-600",       ring: "ring-rose-200" },
+    "ĐẠI TỐT":    { pill: "bg-(--color-success-500) text-(--color-on-accent)", score: "text-(--color-success-500)", bar: "from-(--color-success-500) to-(--color-success-500)", ring: "ring-(--color-success-500)/40" },
+    "TỐT":        { pill: "bg-(--color-success-500)/70 text-(--color-on-accent)", score: "text-(--color-success-500)", bar: "from-(--color-success-500)/70 to-(--color-success-500)/40", ring: "ring-(--color-success-500)/25" },
+    "KHÁ":        { pill: "bg-(--color-gold-500) text-(--color-on-accent)", score: "text-(--color-gold-500)", bar: "from-(--color-gold-400) to-(--color-gold-500)", ring: "ring-(--color-gold-400)/30" },
+    "TRUNG BÌNH": { pill: "bg-(--color-gold-400)/70 text-(--color-on-accent)", score: "text-(--color-gold-400)", bar: "from-(--color-gold-300) to-(--color-gold-400)", ring: "ring-(--color-gold-300)/25" },
+    "XẤU":        { pill: "bg-(--color-cinnabar-500)/75 text-(--color-on-accent)", score: "text-(--color-cinnabar-500)", bar: "from-(--color-cinnabar-400) to-(--color-cinnabar-500)", ring: "ring-(--color-cinnabar-400)/30" },
+    "LOẠI":       { pill: "bg-(--color-cinnabar-500) text-(--color-on-accent)", score: "text-(--color-cinnabar-500)", bar: "from-(--color-cinnabar-500) to-(--color-cinnabar-700)", ring: "ring-(--color-cinnabar-500)/40" },
   };
   const HANG = ["🥇 TOP 1", "🥈 TOP 2", "🥉 TOP 3", "TOP 4", "TOP 5"];
 
@@ -226,14 +229,14 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
     const chips = gio
       .map((g, i) => {
         const best = i === 0;
-        const cls = best ? "bg-amber-500 text-white ring-amber-500 shadow-sm" : "bg-amber-100 text-amber-800 ring-amber-300";
+        const cls = best ? "bg-(--color-gold-400) text-(--color-on-accent) ring-(--color-gold-500) shadow-sm" : "bg-(--color-gold-400)/15 text-(--color-gold-600) ring-(--color-gold-300)";
         const nhan = best ? "★ Tốt nhất · " : `#${i + 1} · `;
-        const mauGio = best ? "text-amber-50" : "text-amber-600";
+        const mauGio = best ? "text-(--color-gold-100)" : "text-(--color-gold-400)";
         return `<span class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ring-1 ${cls}">🕐 ${nhan}${esc(g.chiGio)} <span class="font-normal ${mauGio}">${esc(g.khungGio)}</span></span>`;
       })
       .join(" ");
     return `<div class="mt-3">
-      <p class="text-xs font-bold uppercase tracking-wide text-amber-700">⏰ Giờ nên nhận chức <span class="font-normal normal-case text-slate-400">(xếp theo tốt nhất)</span></p>
+      <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-500)">⏰ Giờ nên nhận chức <span class="font-normal normal-case text-(--color-ink-400)">(xếp theo tốt nhất)</span></p>
       <div class="mt-1.5 flex flex-wrap gap-2">${chips}</div>
     </div>`;
   }
@@ -245,14 +248,14 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
         const d = Number(y.diem);
         const tot = d >= 7.5;
         const kha = d >= 5.5 && d < 7.5;
-        const mau = tot ? "text-emerald-700" : kha ? "text-sky-700" : d >= 4 ? "text-amber-700" : "text-rose-700";
-        const iconMau = tot ? "text-emerald-500" : kha ? "text-sky-500" : d >= 4 ? "text-amber-500" : "text-rose-500";
+        const mau = tot ? "text-(--color-success-500)" : kha ? "text-(--color-gold-300)" : d >= 4 ? "text-(--color-gold-500)" : "text-(--color-cinnabar-500)";
+        const iconMau = tot ? "text-(--color-success-500)" : kha ? "text-(--color-gold-300)" : d >= 4 ? "text-(--color-gold-400)" : "text-(--color-cinnabar-500)";
         const icon = tot ? "✓" : kha ? "•" : "⚠";
         // KHÔNG hiển thị ghiChu kỹ thuật (tham chiếu bảng chưa số hoá, tên config, "thieuDuLieu",
         // "mục 15/35"…) cho khách — đây là ghi chú nội bộ, gây rối và lộ chi tiết engine.
         return `<li class="flex gap-2">
           <span class="${iconMau} font-bold leading-6">${icon}</span>
-          <span class="flex-1 leading-6"><span class="font-medium ${mau}">${esc(y.ten)}</span> <span class="text-xs font-bold text-slate-400">(${esc(y.diem)}/10)</span></span>
+          <span class="flex-1 leading-6"><span class="font-medium ${mau}">${esc(y.ten)}</span> <span class="text-xs font-bold text-(--color-ink-400)">(${esc(y.diem)}/10)</span></span>
         </li>`;
       })
       .join("");
@@ -262,58 +265,58 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
     const st = STATUS_STYLE[n.status] ?? STATUS_STYLE["TRUNG BÌNH"]!;
     const hang = HANG[i] ?? `TOP ${i + 1}`;
     const thapThan = n.thapThan
-      ? `<span class="inline-flex items-center rounded-full bg-(--color-gold-400)/15 px-2.5 py-0.5 text-xs font-bold text-(--color-ink-800) ring-1 ring-(--color-gold-400)/50">🔑 Thập Thần: <span class="ml-1 text-amber-700">${esc(n.thapThan)}</span></span>`
+      ? `<span class="inline-flex items-center rounded-full bg-(--color-gold-400)/15 px-2.5 py-0.5 text-xs font-bold text-(--color-ink-800) ring-1 ring-(--color-gold-400)/50">🔑 Thập Thần: <span class="ml-1 text-(--color-gold-500)">${esc(n.thapThan)}</span></span>`
       : "";
-    return `<div class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm ring-1 ${st.ring}">
+    return `<div class="overflow-hidden rounded-2xl border border-(--color-ivory-300) bg-(--color-ivory-100) shadow-sm ring-1 ${st.ring}">
       <div class="h-1.5 w-full bg-gradient-to-r ${st.bar}"></div>
       <div class="p-4 sm:p-5">
         <div class="flex flex-wrap items-start justify-between gap-3">
           <div>
             <span class="inline-block rounded-full bg-(--color-gold-400) px-2.5 py-0.5 text-xs font-extrabold text-(--color-on-accent)">${hang}</span>
-            <p class="mt-2 font-display text-2xl font-extrabold leading-none text-slate-900">${esc(n.solarDate.day)}/${esc(n.solarDate.month)}/${esc(n.solarDate.year)}</p>
-            <p class="mt-1 text-sm text-slate-500">Ngày <span class="font-bold text-amber-700">${esc(n.canChiNgay)}</span> <span class="text-slate-300">·</span> <span class="italic">Âm lịch ${esc(n.lunarDate.day)}/${esc(n.lunarDate.month)}${n.lunarDate.isLeapMonth ? " nhuận" : ""}</span></p>
+            <p class="mt-2 font-display text-2xl font-extrabold leading-none text-(--color-ink-950)">${esc(n.solarDate.day)}/${esc(n.solarDate.month)}/${esc(n.solarDate.year)}</p>
+            <p class="mt-1 text-sm text-(--color-ink-500)">Ngày <span class="font-bold text-(--color-gold-500)">${esc(n.canChiNgay)}</span> <span class="text-(--color-ink-400)">·</span> <span class="italic">Âm lịch ${esc(n.lunarDate.day)}/${esc(n.lunarDate.month)}${n.lunarDate.isLeapMonth ? " nhuận" : ""}</span></p>
           </div>
           <div class="text-right">
-            <p class="font-display text-4xl font-extrabold leading-none ${st.score}">${esc(n.diem)}<span class="text-lg font-bold text-slate-300">/10</span></p>
+            <p class="font-display text-4xl font-extrabold leading-none ${st.score}">${esc(n.diem)}<span class="text-lg font-bold text-(--color-ink-400)">/10</span></p>
             <span class="mt-1.5 inline-block rounded-full ${st.pill} px-3 py-1 text-xs font-extrabold uppercase tracking-wide shadow-sm">${esc(n.status)}</span>
           </div>
         </div>
         ${n.thapThan ? `<div class="mt-2.5">${thapThan}</div>` : ""}
         ${theGio(n.gioDeXuat)}
-        <details class="group mt-3 border-t border-slate-100 pt-2.5">
-          <summary class="cursor-pointer text-xs font-bold text-amber-700 hover:underline">Vì sao ngày này? — xem chi tiết từng yếu tố ▾</summary>
-          <ul class="mt-2 space-y-1.5 text-sm text-slate-700">${theYeuTo(n.yeuTo)}</ul>
+        <details class="group mt-3 border-t border-(--color-ivory-200) pt-2.5">
+          <summary class="cursor-pointer text-xs font-bold text-(--color-gold-500) hover:underline">Vì sao ngày này? — xem chi tiết từng yếu tố ▾</summary>
+          <ul class="mt-2 space-y-1.5 text-sm text-(--color-ink-700)">${theYeuTo(n.yeuTo)}</ul>
         </details>
       </div>
     </div>`;
   }
 
   function render(r: any) {
-    const chuc = r.tenChucVu ? ` để nhận chức <strong class="text-amber-700">${esc(r.tenChucVu)}</strong>` : "";
+    const chuc = r.tenChucVu ? ` để nhận chức <strong class="text-(--color-gold-500)">${esc(r.tenChucVu)}</strong>` : "";
     if (r.soNgayDung === 0 || r.ketQua.length === 0) {
       const lyDo = (r.lyDoLoaiPhoBien ?? [])
-        .map((l: any) => `<li><strong class="text-rose-700">${l.soNgay} ngày</strong> — ${esc(l.lyDo)}</li>`)
+        .map((l: any) => `<li><strong class="text-(--color-cinnabar-500)">${l.soNgay} ngày</strong> — ${esc(l.lyDo)}</li>`)
         .join("");
-      ketQuaEl.innerHTML = `<div class="rounded-2xl border-2 border-amber-300 bg-gradient-to-br from-white to-amber-50/50 p-6 text-slate-900 shadow-lg">
+      ketQuaEl.innerHTML = `<div class="rounded-2xl border-2 border-(--color-gold-300) bg-gradient-to-br from-white to-(--color-gold-400)/10/50 p-6 text-(--color-ink-950) shadow-lg">
         <p class="font-display text-lg font-extrabold">😕 Không có ngày nào dùng được trong khoảng đã quét</p>
-        <p class="mt-1 text-sm text-slate-600">Đã quét <strong>${esc(r.tongSoNgayQuet)}</strong> ngày. Lý do bị loại nhiều nhất:</p>
-        <ul class="mt-2 list-disc space-y-1 pl-5 text-sm text-slate-700">${lyDo}</ul>
-        <p class="mt-3 text-sm italic text-slate-600">Thử nới rộng khoảng ngày, bỏ khung giờ, hoặc bỏ ngày sinh để xem ngày tốt chung.</p>
+        <p class="mt-1 text-sm text-(--color-ink-600)">Đã quét <strong>${esc(r.tongSoNgayQuet)}</strong> ngày. Lý do bị loại nhiều nhất:</p>
+        <ul class="mt-2 list-disc space-y-1 pl-5 text-sm text-(--color-ink-700)">${lyDo}</ul>
+        <p class="mt-3 text-sm italic text-(--color-ink-600)">Thử nới rộng khoảng ngày, bỏ khung giờ, hoặc bỏ ngày sinh để xem ngày tốt chung.</p>
       </div>`;
     } else {
       const nhatChu = r.nhatChu
-        ? `<p class="mt-1.5 text-sm text-slate-600">Nhật Chủ người nhận chức: <strong class="text-amber-700">${esc(r.nhatChu)}</strong> — đã áp dụng lớp <span class="font-medium">Thập Thần</span>.</p>`
-        : `<p class="mt-1.5 text-sm italic text-slate-500">Chế độ chung (chưa nhập ngày sinh) — chưa áp dụng lớp Thập Thần & xét tuổi.</p>`;
+        ? `<p class="mt-1.5 text-sm text-(--color-ink-600)">Nhật Chủ người nhận chức: <strong class="text-(--color-gold-500)">${esc(r.nhatChu)}</strong> — đã áp dụng lớp <span class="font-medium">Thập Thần</span>.</p>`
+        : `<p class="mt-1.5 text-sm italic text-(--color-ink-500)">Chế độ chung (chưa nhập ngày sinh) — chưa áp dụng lớp Thập Thần & xét tuổi.</p>`;
       // KHÔNG hiển thị mục "Cần xem xét thêm" (canXacNhan) cho khách — nội dung là ghi chú kỹ
       // thuật nội bộ (tên config như SAT_NHAP_TRUNG_CUNG_CONFIG.enabled, "hard block"…), khó hiểu
       // và không cần thiết với người dùng cuối.
-      ketQuaEl.innerHTML = `<div class="rounded-2xl border-2 border-(--color-gold-400)/50 bg-gradient-to-br from-white to-amber-50/40 p-5 shadow-xl sm:p-6">
+      ketQuaEl.innerHTML = `<div class="rounded-2xl border-2 border-(--color-gold-400)/50 bg-gradient-to-br from-white to-(--color-gold-400)/10/40 p-5 shadow-xl sm:p-6">
         <div class="flex items-center gap-2">
           <span class="text-2xl">🎖️</span>
-          <p class="font-display text-lg font-extrabold text-slate-900 sm:text-xl">Tìm được <span class="text-amber-600">${esc(r.soNgayDung)}</span> ngày tốt${chuc} <span class="text-sm font-normal text-slate-400">/ ${esc(r.tongSoNgayQuet)} ngày đã quét</span></p>
+          <p class="font-display text-lg font-extrabold text-(--color-ink-950) sm:text-xl">Tìm được <span class="text-(--color-gold-400)">${esc(r.soNgayDung)}</span> ngày tốt${chuc} <span class="text-sm font-normal text-(--color-ink-400)">/ ${esc(r.tongSoNgayQuet)} ngày đã quét</span></p>
         </div>
         ${nhatChu}
-        <p class="mt-2 rounded-lg bg-slate-50 px-3 py-2 text-xs text-slate-500">💡 Điểm mỗi ngày (x/10) là <strong>trung bình có trọng số</strong> của các nhóm yếu tố (nên–kỵ theo việc, công danh, tuổi–mệnh, Thập Thần, hoàng/hắc đạo) — <strong>không phải cộng dồn</strong> từng dòng. Mở "Vì sao ngày này?" để xem điểm thành phần.</p>
+        <p class="mt-2 rounded-lg bg-(--color-ivory-200) px-3 py-2 text-xs text-(--color-ink-500)">💡 Điểm mỗi ngày (x/10) là <strong>trung bình có trọng số</strong> của các nhóm yếu tố (nên–kỵ theo việc, công danh, tuổi–mệnh, Thập Thần, hoàng/hắc đạo) — <strong>không phải cộng dồn</strong> từng dòng. Mở "Vì sao ngày này?" để xem điểm thành phần.</p>
         <div class="mt-4 space-y-3">${r.ketQua.map(theNgay).join("")}</div>
       </div>`;
     }

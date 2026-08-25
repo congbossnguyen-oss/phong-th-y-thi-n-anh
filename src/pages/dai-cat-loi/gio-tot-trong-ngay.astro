@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
@@ -10,6 +11,7 @@ export const prerender = true;
 <BaseLayout
   title="Giờ tốt trong ngày"
   description="Phân tích đủ 12 giờ Địa Chi trong 1 ngày, xếp hạng giờ tốt/xấu theo Trạch Cát và (tùy chọn) theo tuổi cá nhân, có thể chọn mục đích sử dụng."
+  appShell
 >
   <PageHero
     eyebrow="Đại Cát Lợi"
@@ -59,6 +61,7 @@ export const prerender = true;
       </div>
     </div>
   </Container>
+  <BottomNav />
 </BaseLayout>
 
 <script>
@@ -174,18 +177,18 @@ export const prerender = true;
         const huyChuong = HUY_CHUONG[i] ?? "";
         const yeuToHtml = g.yeuTo
           .map((y) => {
-            const dauCls = y.diem >= 5 ? "text-(--color-cinnabar-500)" : "text-slate-500";
+            const dauCls = y.diem >= 5 ? "text-(--color-cinnabar-500)" : "text-(--color-ink-500)";
             return `<li class="flex justify-between gap-2"><span>${y.ten}</span><span class="${dauCls} font-semibold">${y.diem}</span></li>`;
           })
           .join("");
         return `
-          <div class="rounded-lg border border-slate-200 bg-white">
+          <div class="rounded-lg border border-(--color-ivory-300) bg-(--color-ivory-100)">
             <button type="button" class="gio-tot-row w-full px-4 py-3 text-left" data-idx="${i}">
-              <p class="text-sm font-bold text-slate-900">${huyChuong} ${g.khungGio} (giờ ${g.chiGio})</p>
+              <p class="text-sm font-bold text-(--color-ink-950)">${huyChuong} ${g.khungGio} (giờ ${g.chiGio})</p>
               <p class="text-sm">${nhanDotHtml(g.hang, g.nhan)} — ${g.diem}/10</p>
             </button>
-            <div class="gio-tot-detail hidden border-t border-slate-100 px-4 py-3">
-              <ul class="space-y-0.5 text-xs text-slate-600">${yeuToHtml}</ul>
+            <div class="gio-tot-detail hidden border-t border-(--color-ivory-200) px-4 py-3">
+              <ul class="space-y-0.5 text-xs text-(--color-ink-600)">${yeuToHtml}</ul>
             </div>
           </div>`;
       })

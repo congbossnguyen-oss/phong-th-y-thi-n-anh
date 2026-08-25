@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
@@ -47,6 +48,7 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
 <BaseLayout
   title="Chọn Giờ Liệm – Đóng Quan – Ngày Giờ Hạ Huyệt"
   description="Dành cho trường hợp người mất KHÔNG phạm Trùng Tang. Xếp hạng giờ liệm/đóng quan và ngày giờ hạ huyệt theo Chưởng Pháp Nhập Mộ – Thiên Di, có sàng thần sát an táng và xét tuổi thân quyến. Dịch vụ VIP 499.000đ/lượt, thanh toán qua QR, không cần tạo tài khoản."
+  appShell
 >
   <PageHero
     eyebrow="⭐ Dịch vụ VIP"
@@ -63,7 +65,7 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
   <Container class="py-16">
     <div class="mx-auto max-w-2xl">
       {laQuanTri && (
-      <div class="mb-4 rounded-(--radius-card) border-2 border-amber-400 bg-amber-50 p-4 text-sm font-medium text-amber-800">
+      <div class="mb-4 rounded-(--radius-card) border-2 border-(--color-gold-400) bg-(--color-gold-400)/10 p-4 text-sm font-medium text-(--color-gold-600)">
         🔑 ĐANG XEM BẰNG TÀI KHOẢN QUẢN TRỊ — chạy TRỌN luồng thu phí thật (tạo đơn → xác nhận → trả kết quả → gửi email),
         nhưng đơn được miễn phí nên không phải chuyển khoản. Đơn kiểm thử không vào sổ doanh thu.
       </div>
@@ -324,25 +326,25 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
         năm thì không ngày giờ nào hoá giải được, nên hệ thống dừng TRƯỚC bước thanh toán. Đây là
         điểm xây uy tín mạnh nhất của sản phẩm, không phải một thông báo lỗi.
       */}
-      <div id="glhh-chua-thu-phi" class="mt-6 hidden rounded-(--radius-card) border-2 border-amber-400 bg-amber-50 p-6">
-        <p class="font-display text-lg font-bold text-amber-900">Trường hợp này chúng tôi chưa thu phí</p>
-        <p id="glhh-ctp-ly-do" class="mt-3 text-sm leading-relaxed text-amber-900"></p>
+      <div id="glhh-chua-thu-phi" class="mt-6 hidden rounded-(--radius-card) border-2 border-(--color-gold-400) bg-(--color-gold-400)/10 p-6">
+        <p class="font-display text-lg font-bold text-(--color-gold-700)">Trường hợp này chúng tôi chưa thu phí</p>
+        <p id="glhh-ctp-ly-do" class="mt-3 text-sm leading-relaxed text-(--color-gold-700)"></p>
 
         {/*
           Chỉ hiện khi lọc theo tọa hướng không ra phương án nào NHƯNG phần chưởng pháp vẫn có kết
           quả. Đây là nói thật — phần không làm được thì không thu tiền — chứ không phải hạ giá để
           vớt khách. Vì vậy không có câu nào thúc ép hay đếm ngược.
         */}
-        <div id="glhh-goi-co-ban" class="mt-4 hidden rounded-(--radius-control) border border-amber-300 bg-white/70 p-4">
-          <p class="text-sm font-medium text-amber-900">Gia đình vẫn có thể dùng gói cơ bản</p>
-          <p class="mt-1 text-sm leading-relaxed text-amber-900">
+        <div id="glhh-goi-co-ban" class="mt-4 hidden rounded-(--radius-control) border border-(--color-gold-300) bg-(--color-ivory-100)/70 p-4">
+          <p class="text-sm font-medium text-(--color-gold-700)">Gia đình vẫn có thể dùng gói cơ bản</p>
+          <p class="mt-1 text-sm leading-relaxed text-(--color-gold-700)">
             Phần chọn giờ liệm, giờ đóng quan và ngày giờ hạ huyệt theo chưởng pháp vẫn cho kết quả bình thường.
             Chỉ riêng bước lọc theo tọa hướng huyệt mộ là không ra phương án nào, nên chúng tôi không thu phần phí đó.
           </p>
           <button
             type="button"
             id="glhh-chuyen-co-ban"
-            class="mt-3 inline-flex items-center rounded-(--radius-control) border border-amber-600 px-4 py-2 text-sm font-medium text-amber-900 hover:bg-amber-100"
+            class="mt-3 inline-flex items-center rounded-(--radius-control) border border-(--color-gold-600) px-4 py-2 text-sm font-medium text-(--color-gold-700) hover:bg-(--color-gold-400)/15"
           >
             Dùng gói cơ bản
           </button>
@@ -350,14 +352,14 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
         <div class="mt-4 flex flex-wrap gap-3">
           <a
             href="/lien-he"
-            class="inline-flex items-center rounded-(--radius-control) bg-amber-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-amber-700"
+            class="inline-flex items-center rounded-(--radius-control) bg-(--color-gold-500) px-4 py-2.5 text-sm font-medium text-(--color-on-accent) hover:bg-(--color-gold-600)"
           >
             Đặt lịch khảo sát huyệt mộ
           </a>
           <button
             type="button"
             id="glhh-ctp-quay-lai"
-            class="inline-flex items-center rounded-(--radius-control) border border-amber-600 px-4 py-2.5 text-sm font-medium text-amber-900 hover:bg-amber-100"
+            class="inline-flex items-center rounded-(--radius-control) border border-(--color-gold-600) px-4 py-2.5 text-sm font-medium text-(--color-gold-700) hover:bg-(--color-gold-400)/15"
           >
             Nhập lại tọa độ
           </button>
@@ -371,11 +373,11 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
       </div>
 
       <!-- Bước thanh toán -->
-      <div id="glhh-thanh-toan" class="mt-6 hidden space-y-4 rounded-2xl border-2 border-amber-300 bg-white p-6 text-center text-slate-900 shadow-lg">
+      <div id="glhh-thanh-toan" class="mt-6 hidden space-y-4 rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-center text-(--color-ink-950) shadow-lg">
         <p class="font-display text-lg font-bold">Quét mã QR để thanh toán {TOOL_PRICE_LABEL}</p>
-        <img id="glhh-qr" src="" alt="Mã QR thanh toán" class="mx-auto h-64 w-64 rounded-xl border border-slate-200" />
-        <p class="text-sm text-slate-600">Mã đơn hàng: <strong id="glhh-order-code"></strong></p>
-        <p id="glhh-trang-thai" class="text-sm font-medium text-amber-600">Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)</p>
+        <img id="glhh-qr" src="" alt="Mã QR thanh toán" class="mx-auto h-64 w-64 rounded-xl border border-(--color-ivory-300)" />
+        <p class="text-sm text-(--color-ink-600)">Mã đơn hàng: <strong id="glhh-order-code"></strong></p>
+        <p id="glhh-trang-thai" class="text-sm font-medium text-(--color-gold-400)">Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)</p>
       </div>
 
       <!-- Kết quả -->
@@ -396,6 +398,7 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
       </div>
     </div>
   </Container>
+  <BottomNav />
 </BaseLayout>
 
 <script define:vars={{ CHI_LIST }}>
@@ -508,7 +511,7 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
   }
 
   const NHAN_PHAN_LOAI: Record<string, string> = { "nhap-mo": "Nhập Mộ", "thien-di": "Thiên Di", "trung-tang": "Trùng Tang" };
-  const MAU_PHAN_LOAI: Record<string, string> = { "nhap-mo": "text-emerald-600", "thien-di": "text-slate-500", "trung-tang": "text-(--color-cinnabar-500)" };
+  const MAU_PHAN_LOAI: Record<string, string> = { "nhap-mo": "text-(--color-success-500)", "thien-di": "text-(--color-ink-500)", "trung-tang": "text-(--color-cinnabar-500)" };
 
   function ngayLabel(n: { nam: number; thang: number; ngay: number }): string {
     return `${String(n.ngay).padStart(2, "0")}/${String(n.thang).padStart(2, "0")}/${n.nam}`;
@@ -565,19 +568,19 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
     for (const c of y.canhBaoThanSat ?? []) nhan.push(c.nhan);
     if (nhan.length === 0) return "";
     return `<div class="mt-1.5 flex flex-wrap gap-1">${nhan
-      .map((n) => `<span class="rounded-md bg-amber-50 px-1.5 py-0.5 text-xs font-medium text-amber-700 ring-1 ring-amber-200">${n}</span>`)
+      .map((n) => `<span class="rounded-md bg-(--color-gold-400)/10 px-1.5 py-0.5 text-xs font-medium text-(--color-gold-500) ring-1 ring-(--color-gold-400)/30">${n}</span>`)
       .join("")}</div>`;
   }
 
   function candidateCardHtml(params: { ngayLbl: string; gioLbl: string; khungLbl?: string; nhan: string; mau: string; thanSat?: string; canhBao?: string }): string {
-    return `<div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
+    return `<div class="rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200) p-4">
       <div class="flex items-center justify-between">
-        <p class="font-display text-lg font-bold text-slate-900">${params.ngayLbl} — giờ ${params.gioLbl}</p>
+        <p class="font-display text-lg font-bold text-(--color-ink-950)">${params.ngayLbl} — giờ ${params.gioLbl}</p>
       </div>
-      ${params.khungLbl ? `<p class="text-sm font-medium text-slate-600">${params.khungLbl}</p>` : ""}
+      ${params.khungLbl ? `<p class="text-sm font-medium text-(--color-ink-600)">${params.khungLbl}</p>` : ""}
       <p class="mt-1 text-sm font-semibold ${params.mau}">${params.nhan}</p>
       ${params.thanSat ?? ""}
-      ${params.canhBao ? `<p class="mt-1.5 text-xs text-amber-600">⚠️ ${params.canhBao}</p>` : ""}
+      ${params.canhBao ? `<p class="mt-1.5 text-xs text-(--color-gold-400)">⚠️ ${params.canhBao}</p>` : ""}
     </div>`;
   }
 
@@ -600,7 +603,7 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
     const el = document.getElementById("glhh-ket-qua")!;
 
     if (result.duoi10Tuoi) {
-      el.innerHTML = `<div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
+      el.innerHTML = `<div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
         <p class="text-sm">Người mất dưới 10 tuổi — theo sách nguồn <strong>không tính Trùng Tang</strong> cho trường hợp này, nên không xếp hạng được giờ liệm/hạ huyệt theo phương pháp này.</p>
       </div>`;
       el.classList.remove("hidden");
@@ -615,7 +618,7 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
           gioLbl: c.chiGio,
           khungLbl: khungGioLabel(c.khungGio),
           nhan: yeuToLabel(c),
-          mau: MAU_PHAN_LOAI[c.phanLoaiCung] ?? "text-slate-700",
+          mau: MAU_PHAN_LOAI[c.phanLoaiCung] ?? "text-(--color-ink-700)",
           thanSat: thanSatChipsHtml(c),
           ...(c.chiGioThuocTuSinh
             ? { canhBao: "Giờ Dần/Thân/Tỵ/Hợi thuộc nhóm nên tránh khi liệm — vẫn dùng được nếu không còn lựa chọn nào khá hơn, nhưng có giờ khác tương đương thì nên ưu tiên giờ đó." }
@@ -632,7 +635,7 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
           gioLbl: c.chiGio,
           khungLbl: khungGioLabel(c.khungGio),
           nhan: yeuToLabel(c),
-          mau: MAU_PHAN_LOAI[c.phanLoaiCung] ?? "text-slate-700",
+          mau: MAU_PHAN_LOAI[c.phanLoaiCung] ?? "text-(--color-ink-700)",
           thanSat: thanSatChipsHtml(c),
           ...(c.chiGioThuocTuSinh
             ? { canhBao: "Giờ này thuộc nhóm nên hạn chế nếu có lựa chọn khác tốt hơn — chọn vì đạt Nhập Mộ và hoàng đạo, hai yếu tố sách xếp ưu tiên cao nhất." }
@@ -646,43 +649,43 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
     const dq = result.gioDongQuan;
     // Động quan là MỐC, di quan là CHẶNG — không dựng di quan thành một giờ riêng để chọn.
     const dongQuanHtml = dq
-      ? `<div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
-          <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Giờ động quan — bắt đầu đưa linh cữu đi</p>
+      ? `<div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+          <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-400)">Giờ động quan — bắt đầu đưa linh cữu đi</p>
           <p class="mt-3 text-sm"><strong>Nên khởi hành lúc ${dq.dongQuanKhuyenNghi.gio}</strong>, ngày ${ngayLabel(dq.dongQuanKhuyenNghi.ngayDuongLich)}</p>
           <p class="mt-1 text-sm">Muộn nhất phải khởi hành lúc ${dq.dongQuanMuonNhat.gio}, ngày ${ngayLabel(dq.dongQuanMuonNhat.ngayDuongLich)}</p>
-          <p class="mt-2 text-sm text-slate-600">
+          <p class="mt-2 text-sm text-(--color-ink-600)">
             <strong>Di quan</strong> — chặng đưa linh cữu từ nơi quàn tới huyệt: khoảng ${dq.thoiGianDiChuyenPhut} phút đường đi,
             cộng ${dq.demPhut} phút tới sớm chờ sẵn.
           </p>
-          <p class="mt-1 text-xs text-slate-500">Hai mốc trên trừ lùi từ giờ hạ huyệt ${dq.theoHaHuyet.batDau} ngày ${ngayLabel(dq.theoHaHuyet.ngayDuongLich)} (giờ ${dq.theoHaHuyet.chiGio}).</p>
+          <p class="mt-1 text-xs text-(--color-ink-500)">Hai mốc trên trừ lùi từ giờ hạ huyệt ${dq.theoHaHuyet.batDau} ngày ${ngayLabel(dq.theoHaHuyet.ngayDuongLich)} (giờ ${dq.theoHaHuyet.chiGio}).</p>
           ${dq.canhBao ? `<p class="mt-2 text-xs text-(--color-cinnabar-500)">${escapeHtml(dq.canhBao)}</p>` : ""}
         </div>`
       : "";
 
     const tuoiTranhHtml = tct
-      ? `<div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
-          <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Tuổi cần tránh mặt</p>
-          <p class="mt-1 text-xs text-slate-500">Áp dụng lúc nhập quan · khâm liệm · đóng cá · hạ huyệt và lấp đất.</p>
+      ? `<div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+          <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-400)">Tuổi cần tránh mặt</p>
+          <p class="mt-1 text-xs text-(--color-ink-500)">Áp dụng lúc nhập quan · khâm liệm · đóng cá · hạ huyệt và lấp đất.</p>
           <div class="mt-3 rounded-xl border border-(--color-cinnabar-500)/30 bg-(--color-cinnabar-500)/5 p-4">
             <p class="text-sm font-bold text-(--color-cinnabar-500)">Long Hổ Kê Xà — tuyệt đối không được có mặt</p>
             <div class="mt-1.5 flex flex-wrap gap-1.5">${chipList(tct.nhom1LongHoKeXa)}</div>
-            <p class="mt-2 text-xs text-slate-600">Tránh mặt lúc: <strong>Khâm liệm · Nhập quan · Đóng cá · Hạ huyệt</strong>. Nhóm này áp dụng trong mọi trường hợp, không phụ thuộc tuổi người mất.</p>
+            <p class="mt-2 text-xs text-(--color-ink-600)">Tránh mặt lúc: <strong>Khâm liệm · Nhập quan · Đóng cá · Hạ huyệt</strong>. Nhóm này áp dụng trong mọi trường hợp, không phụ thuộc tuổi người mất.</p>
           </div>
           <div class="mt-2 grid gap-2 sm:grid-cols-2">
-            <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <p class="text-sm font-semibold text-slate-700">Tam hợp với tuổi người mất</p>
+            <div class="rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200) p-4">
+              <p class="text-sm font-semibold text-(--color-ink-700)">Tam hợp với tuổi người mất</p>
               <div class="mt-1.5 flex flex-wrap gap-1.5">${chipList(tct.nhom3TamHopTuoiVong)}</div>
-              <p class="mt-2 text-xs text-slate-600">Tránh mặt lúc: Khâm liệm · Nhập quan · Đóng cá · Hạ huyệt.</p>
+              <p class="mt-2 text-xs text-(--color-ink-600)">Tránh mặt lúc: Khâm liệm · Nhập quan · Đóng cá · Hạ huyệt.</p>
             </div>
-            <div class="rounded-xl border border-slate-200 bg-slate-50 p-4">
-              <p class="text-sm font-semibold text-slate-700">Xung / hình với tuổi người mất</p>
+            <div class="rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200) p-4">
+              <p class="text-sm font-semibold text-(--color-ink-700)">Xung / hình với tuổi người mất</p>
               <div class="mt-1.5 flex flex-wrap gap-1.5">${chipList([tct.nhom4XungHinh.xung, ...tct.nhom4XungHinh.hinh])}</div>
-              <p class="mt-2 text-xs text-slate-600">Tránh mặt lúc: Khâm liệm · Nhập quan · Đóng cá · Hạ huyệt.</p>
+              <p class="mt-2 text-xs text-(--color-ink-600)">Tránh mặt lúc: Khâm liệm · Nhập quan · Đóng cá · Hạ huyệt.</p>
             </div>
             ${
               tct.nhom2TamHopCungPham.length > 0
-                ? `<div class="rounded-xl border border-slate-200 bg-slate-50 p-4 sm:col-span-2">
-                     <p class="text-sm font-semibold text-slate-700">Tam hợp với cung phạm Trùng Tang</p>
+                ? `<div class="rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200) p-4 sm:col-span-2">
+                     <p class="text-sm font-semibold text-(--color-ink-700)">Tam hợp với cung phạm Trùng Tang</p>
                      <div class="mt-1.5 flex flex-wrap gap-1.5">${chipList(tct.nhom2TamHopCungPham)}</div>
                    </div>`
                 : ""
@@ -693,7 +696,7 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
               ? `<div class="mt-2 rounded-xl border border-(--color-cinnabar-500)/30 bg-(--color-cinnabar-500)/5 p-4">
                    <p class="text-sm font-bold text-(--color-cinnabar-500)">Hành Niên Tầm Thái Tuế — 6 tuổi bị Thái Tuế áp trong năm mất</p>
                    <div class="mt-1.5 flex flex-wrap gap-1.5">${chipList(result.hanhNienThaiTue!)}</div>
-                   <p class="mt-2 text-xs text-slate-600">
+                   <p class="mt-2 text-xs text-(--color-ink-600)">
                      Tránh mặt lúc: <strong>khâm liệm</strong> và <strong>hạ huyệt</strong>.
                      Sáu tuổi này nên <strong>đứng hẳn ra xa huyệt</strong>, không lại gần — sách dặn làm vậy mới tốt.
                      Mức này nặng hơn các nhóm dưới, vốn chỉ cần đứng lánh và quay mặt đi.
@@ -707,7 +710,7 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
                  </div>`
               : ""
           }
-          <p class="mt-3 text-xs text-slate-600">
+          <p class="mt-3 text-xs text-(--color-ink-600)">
             <strong>Phạm vi:</strong> chỉ người huyết thống trực hệ với người mất (cha, mẹ, vợ/chồng, con, anh chị em ruột, cháu nội).
             Con dâu, con rể, cháu ngoại và người ngoài <strong>không</strong> chịu tác động.
           </p>
@@ -715,31 +718,31 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
       : "";
 
     el.innerHTML = `
-      <div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
-        <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Giờ liệm / đóng quan (dùng chung công thức)</p>
-        ${result.thanQuyenDaNoiLong ? `<p class="mt-1 text-xs text-amber-600">Đã bỏ ràng buộc tuổi thân quyến do không còn ứng viên hợp lệ nào phù hợp.</p>` : ""}
+      <div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+        <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-400)">Giờ liệm / đóng quan (dùng chung công thức)</p>
+        ${result.thanQuyenDaNoiLong ? `<p class="mt-1 text-xs text-(--color-gold-400)">Đã bỏ ràng buộc tuổi thân quyến do không còn ứng viên hợp lệ nào phù hợp.</p>` : ""}
         ${
           result.daNoiLongGioSatChu
             ? `<p class="mt-1 text-xs text-(--color-cinnabar-500)">⚠️ Mọi giờ hợp lệ trong ngày đều phạm Giờ Sát Chủ nên buộc phải giữ lại — vui lòng hỏi thầy trực tiếp trước khi dùng.</p>`
             : ""
         }
-        <div class="mt-3 space-y-2">${gioLiemHtml || `<p class="text-sm text-slate-500">Không tìm được giờ phù hợp trong khung 12 giờ sau khi mất.</p>`}</div>
+        <div class="mt-3 space-y-2">${gioLiemHtml || `<p class="text-sm text-(--color-ink-500)">Không tìm được giờ phù hợp trong khung 12 giờ sau khi mất.</p>`}</div>
       </div>
       ${dongQuanHtml}
-      <div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
-        <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Ngày giờ hạ huyệt</p>
+      <div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+        <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-400)">Ngày giờ hạ huyệt</p>
         ${
           result.apDungMienTru3Ngay
-            ? `<p class="mt-1 text-xs text-slate-500">Áp dụng quy tắc miễn trừ (chôn trong ≤3 ngày): chỉ chọn giờ, giữ nguyên ngày mất.</p>`
+            ? `<p class="mt-1 text-xs text-(--color-ink-500)">Áp dụng quy tắc miễn trừ (chôn trong ≤3 ngày): chỉ chọn giờ, giữ nguyên ngày mất.</p>`
             : ""
         }
-        ${result.khongTimThayNgayHaHuyet ? `<p class="mt-1 text-xs text-amber-600">Không tìm được ngày phù hợp trong 20 ngày quét — vui lòng liên hệ tư vấn trực tiếp.</p>` : ""}
+        ${result.khongTimThayNgayHaHuyet ? `<p class="mt-1 text-xs text-(--color-gold-400)">Không tìm được ngày phù hợp trong 20 ngày quét — vui lòng liên hệ tư vấn trực tiếp.</p>` : ""}
         ${
           result.nhapMoTrungTuSinh
-            ? `<p class="mt-1 text-xs text-slate-500">Ngày này có Cung Ngày thuộc nhóm Nhập Mộ, nên theo quy luật chưởng pháp chỉ 4 giờ Dần/Tỵ/Thân/Hợi mới đạt Nhập Mộ — mà đó đúng là nhóm giờ nên hạn chế khi chôn. Vì vậy không có giờ nào đạt trọn vẹn cả hai tiêu chí.</p>`
+            ? `<p class="mt-1 text-xs text-(--color-ink-500)">Ngày này có Cung Ngày thuộc nhóm Nhập Mộ, nên theo quy luật chưởng pháp chỉ 4 giờ Dần/Tỵ/Thân/Hợi mới đạt Nhập Mộ — mà đó đúng là nhóm giờ nên hạn chế khi chôn. Vì vậy không có giờ nào đạt trọn vẹn cả hai tiêu chí.</p>`
             : ""
         }
-        <div class="mt-3 space-y-2">${haHuyetHtml || `<p class="text-sm text-slate-500">Chưa có ứng viên phù hợp.</p>`}</div>
+        <div class="mt-3 space-y-2">${haHuyetHtml || `<p class="text-sm text-(--color-ink-500)">Chưa có ứng viên phù hợp.</p>`}</div>
       </div>
       ${tuoiTranhHtml}
       ${DISCLAIMER_HTML}
@@ -760,10 +763,10 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
     if (p2.ketCuc === "mien-tru") {
       el.insertAdjacentHTML(
         "beforeend",
-        `<div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
-          <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Lọc theo tọa hướng huyệt mộ</p>
+        `<div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+          <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-400)">Lọc theo tọa hướng huyệt mộ</p>
           <p class="mt-2 text-sm font-medium">Áp dụng phép quyền biến: ${escapeHtml(p2.nhanh)}</p>
-          <p class="mt-1 text-sm text-slate-600">${escapeHtml(p2.giaiThich)}</p>
+          <p class="mt-1 text-sm text-(--color-ink-600)">${escapeHtml(p2.giaiThich)}</p>
         </div>`,
       );
       return;
@@ -773,22 +776,22 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
     const dsHtml = p2.phuongAn
       .map(
         (pa: any) => `
-        <div class="rounded-xl border border-amber-200 bg-amber-50/60 p-4">
-          <p class="font-display font-bold text-slate-900">Phương án ${pa.thuHang} — ${escapeHtml(pa.id)}</p>
+        <div class="rounded-xl border border-(--color-gold-300) bg-(--color-gold-400)/10 p-4">
+          <p class="font-display font-bold text-(--color-ink-950)">Phương án ${pa.thuHang} — ${escapeHtml(pa.id)}</p>
           <dl class="mt-2 space-y-1 text-sm">
             <div class="flex gap-2">
-              <dt class="shrink-0 text-slate-500">Cách cục nền:</dt>
-              <dd class="font-medium text-slate-900">${escapeHtml(pa.cachCuc.tenLop)}</dd>
+              <dt class="shrink-0 text-(--color-ink-500)">Cách cục nền:</dt>
+              <dd class="font-medium text-(--color-ink-950)">${escapeHtml(pa.cachCuc.tenLop)}</dd>
             </div>
             <div class="flex gap-2">
-              <dt class="shrink-0 text-slate-500">Quan hệ đạt:</dt>
-              <dd class="text-slate-800">${pa.quanHeDat.length ? pa.quanHeDat.map(escapeHtml).join(" · ") : "—"}</dd>
+              <dt class="shrink-0 text-(--color-ink-500)">Quan hệ đạt:</dt>
+              <dd class="text-(--color-ink-800)">${pa.quanHeDat.length ? pa.quanHeDat.map(escapeHtml).join(" · ") : "—"}</dd>
             </div>
             ${
               pa.canhBao.length
                 ? `<div class="flex gap-2">
-                     <dt class="shrink-0 text-slate-500">Ghi chú:</dt>
-                     <dd class="text-amber-700">${pa.canhBao.map(escapeHtml).join("; ")}</dd>
+                     <dt class="shrink-0 text-(--color-ink-500)">Ghi chú:</dt>
+                     <dd class="text-(--color-gold-500)">${pa.canhBao.map(escapeHtml).join("; ")}</dd>
                    </div>`
                 : ""
             }
@@ -799,9 +802,9 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
 
     el.insertAdjacentHTML(
       "beforeend",
-      `<div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
-        <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Lọc &amp; xếp hạng theo tọa hướng huyệt mộ</p>
-        <p class="mt-1 text-sm text-slate-600">
+      `<div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+        <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-400)">Lọc &amp; xếp hạng theo tọa hướng huyệt mộ</p>
+        <p class="mt-1 text-sm text-(--color-ink-600)">
           Tọa ${escapeHtml(p2.toaHuong.sonToa)} ${p2.toaHuong.doSoToa.toFixed(1)}° —
           hướng ${escapeHtml(p2.toaHuong.sonHuong)} ${p2.toaHuong.doSoHuong.toFixed(1)}°.
           ${
@@ -810,11 +813,11 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
               : ""
           }
         </p>
-        <div class="mt-3 space-y-3">${dsHtml || `<p class="text-sm text-slate-500">Không còn phương án nào qua được lọc tọa hướng — vui lòng liên hệ tư vấn trực tiếp.</p>`}</div>
-        ${p2.cauKetLuan ? `<p class="mt-3 text-sm font-medium text-slate-700">${escapeHtml(p2.cauKetLuan)}</p>` : ""}
+        <div class="mt-3 space-y-3">${dsHtml || `<p class="text-sm text-(--color-ink-500)">Không còn phương án nào qua được lọc tọa hướng — vui lòng liên hệ tư vấn trực tiếp.</p>`}</div>
+        ${p2.cauKetLuan ? `<p class="mt-3 text-sm font-medium text-(--color-ink-700)">${escapeHtml(p2.cauKetLuan)}</p>` : ""}
         ${
           p2.thieuDuLieu.length
-            ? `<p class="mt-3 text-xs text-amber-700">${p2.thieuDuLieu.map(escapeHtml).join(" ")}</p>`
+            ? `<p class="mt-3 text-xs text-(--color-gold-500)">${p2.thieuDuLieu.map(escapeHtml).join(" ")}</p>`
             : ""
         }
       </div>`,

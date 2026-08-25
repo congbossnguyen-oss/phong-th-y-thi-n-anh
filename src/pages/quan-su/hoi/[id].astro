@@ -85,6 +85,7 @@ const formInputs = [...question.required_inputs, ...question.optional_inputs].fi
           <script type="application/json" id="qs-question" set:html={JSON.stringify(question)}></script>
           <script>
             import { CAN, CHI } from "../../../lib/menh-nap-am";
+            import { CHI_NGU_HANH } from "../../../lib/bat-tu";
 
             const qEl = document.getElementById("qs-question");
             const question = JSON.parse(qEl?.textContent || "{}");
@@ -249,7 +250,7 @@ const formInputs = [...question.required_inputs, ...question.optional_inputs].fi
                     <td style="padding:4px 2px;">${lineBarHtml(h.value, isRowDong)}</td>
                     <td style="padding:4px 3px;color:${rc};font-weight:${fw};font-size:0.66rem;white-space:nowrap;">${h.theUng ?? ""}</td>
                     <td style="padding:4px 3px;color:${rc};font-weight:${fw};font-size:0.66rem;white-space:nowrap;">${esc(LUC_THAN_TAT[h.lucThan] ?? h.lucThan)}</td>
-                    <td style="padding:4px 3px;color:${rc};font-weight:${fw};font-size:0.66rem;white-space:nowrap;">${CAN[h.canIndex]}${CHI[h.chiIndex]}</td>
+                    <td style="padding:4px 3px;color:${rc};font-weight:${fw};font-size:0.66rem;white-space:nowrap;">${CAN[h.canIndex]}${CHI[h.chiIndex]}<br/><span style="font-size:0.56rem;color:var(--qs-muted);font-weight:400;">${CHI_NGU_HANH[h.chiIndex]}</span></td>
                     <td style="padding:4px 2px;text-align:center;">${h.xunKong ? `<span style="display:inline-block;width:6px;height:6px;border-radius:999px;background:${rc};" title="Tuần Không"></span>` : ""}</td>
                   </tr>`;
               }).join("");

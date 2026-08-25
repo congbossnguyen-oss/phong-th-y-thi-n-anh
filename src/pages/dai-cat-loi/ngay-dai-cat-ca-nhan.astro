@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
@@ -10,6 +11,7 @@ export const prerender = true;
 <BaseLayout
   title="Ngày đại cát cá nhân"
   description="Nhập năm sinh và chọn tháng cần xem — hệ thống tự quét toàn bộ tháng và tìm ra 3-5 ngày tốt nhất dành riêng cho bạn."
+  appShell
 >
   <PageHero
     eyebrow="Đại Cát Lợi"
@@ -50,24 +52,25 @@ export const prerender = true;
       <div id="dai-cat-loi" class="mt-4 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm text-(--color-danger-500)"></div>
 
       <div id="dai-cat-ket-qua" class="mt-6 hidden space-y-6">
-        <div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
+        <div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
           <p id="dai-cat-noi-bat" class="text-sm font-semibold text-(--color-cinnabar-500)"></p>
-          <p class="mt-2 text-xs font-bold uppercase tracking-wide text-amber-600">🌟 Ngày đại cát nhất</p>
+          <p class="mt-2 text-xs font-bold uppercase tracking-wide text-(--color-gold-400)">🌟 Ngày đại cát nhất</p>
           <div id="dai-cat-tot-nhat" class="mt-3 space-y-1.5"></div>
         </div>
 
-        <div id="dai-cat-nen-tranh-wrap" class="hidden rounded-2xl border-2 border-slate-200 bg-white p-6 text-slate-900 shadow-lg">
-          <p class="text-xs font-bold uppercase tracking-wide text-slate-500">⚠️ Ngày nên tránh</p>
+        <div id="dai-cat-nen-tranh-wrap" class="hidden rounded-2xl border-2 border-(--color-ivory-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+          <p class="text-xs font-bold uppercase tracking-wide text-(--color-ink-500)">⚠️ Ngày nên tránh</p>
           <div id="dai-cat-nen-tranh" class="mt-3 space-y-1.5"></div>
         </div>
 
-        <div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
-          <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Toàn bộ tháng</p>
+        <div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+          <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-400)">Toàn bộ tháng</p>
           <div id="dai-cat-list" class="mt-3 max-h-[420px] space-y-1.5 overflow-y-auto"></div>
         </div>
       </div>
     </div>
   </Container>
+  <BottomNav />
 </BaseLayout>
 
 <script>
@@ -95,12 +98,12 @@ export const prerender = true;
   }
 
   const MAU_TANG: Record<string, string> = {
-    "chan-loc": "bg-amber-100 text-amber-700",
-    "chan-duong-quy": "bg-violet-100 text-violet-700",
-    "chan-am-quy": "bg-indigo-100 text-indigo-700",
-    "loc": "bg-amber-50 text-amber-600 ring-1 ring-amber-200",
-    "tam-hop": "bg-emerald-100 text-emerald-700",
-    "luc-hop": "bg-teal-100 text-teal-700",
+    "chan-loc": "bg-(--color-gold-400)/15 text-(--color-gold-500)",
+    "chan-duong-quy": "bg-(--color-gold-300)/20 text-(--color-gold-300)",
+    "chan-am-quy": "bg-(--color-gold-600)/20 text-(--color-gold-600)",
+    "loc": "bg-(--color-gold-400)/10 text-(--color-gold-400) ring-1 ring-(--color-gold-400)/30",
+    "tam-hop": "bg-(--color-success-500)/15 text-(--color-success-500)",
+    "luc-hop": "bg-(--color-success-500)/10 text-(--color-success-500)",
   };
   const ICON_TANG: Record<string, string> = {
     "chan-loc": "💰", "chan-duong-quy": "🌤️", "chan-am-quy": "🌙", "loc": "🪙", "tam-hop": "☯", "luc-hop": "☯",
@@ -108,7 +111,7 @@ export const prerender = true;
   /** Badge tiêu chí cát tinh cá nhân — để dễ lọc ngày hợp tuổi. */
   function badgeCat(c: CatTinh | null | undefined): string {
     if (!c || !c.tang) return "";
-    const mau = MAU_TANG[c.tang] ?? "bg-slate-100 text-slate-600";
+    const mau = MAU_TANG[c.tang] ?? "bg-(--color-ivory-200) text-(--color-ink-600)";
     return `<span class="mt-1 inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-bold ${mau}">${ICON_TANG[c.tang] ?? ""} ${c.nhan}</span>`;
   }
   interface DaiCatResult {
@@ -147,9 +150,9 @@ export const prerender = true;
     const ngayStr = `${String(n.solarDate.day).padStart(2, "0")}/${String(n.solarDate.month).padStart(2, "0")}/${n.solarDate.year}`;
     const gioLink = `/dai-cat-loi/gio-tot-trong-ngay?year=${n.solarDate.year}&month=${n.solarDate.month}&day=${n.solarDate.day}`;
     return `
-      <div class="flex items-center justify-between gap-2 rounded-lg border ${noiBat ? "border-amber-300 bg-amber-50/50" : "border-slate-100"} px-3 py-2.5">
+      <div class="flex items-center justify-between gap-2 rounded-lg border ${noiBat ? "border-(--color-gold-300) bg-(--color-gold-400)/10" : "border-(--color-ivory-200)"} px-3 py-2.5">
         <div>
-          <p class="text-sm font-bold text-slate-900">${ngayStr} (${n.lunarDate.day} âm)</p>
+          <p class="text-sm font-bold text-(--color-ink-950)">${ngayStr} (${n.lunarDate.day} âm)</p>
           <p class="text-sm">${nhanDotHtml(n.nhan)} — ${n.diem}/10</p>
           ${badgeCat(n.catCaNhan)}
         </div>

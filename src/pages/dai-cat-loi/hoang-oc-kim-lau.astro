@@ -1,5 +1,6 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
@@ -10,6 +11,7 @@ export const prerender = true;
 <BaseLayout
   title="Hoàng Ốc – Kim Lâu – Tam Tai"
   description="Tính Hoàng Ốc, Kim Lâu, Tam Tai theo năm sinh và năm cần xem — tham khảo khi định xây nhà, sửa nhà, việc lớn. Có thể quét nhiều năm để tìm năm thuận nhất."
+  appShell
 >
   <PageHero
     eyebrow="Đại Cát Lợi"
@@ -25,12 +27,12 @@ export const prerender = true;
         đối chiếu được với 1 nguồn sách cụ thể. Kim Lâu và Tam Tai dùng đúng bảng đã có trong hệ thống.
       </div>
 
-      <div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
-        <div class="flex gap-2 border-b border-slate-200 pb-3">
+      <div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+        <div class="flex gap-2 border-b border-(--color-ivory-300) pb-3">
           <button type="button" id="tab-mot-nam" class="rounded-(--radius-pill) bg-(--color-gold-400) px-4 py-2 text-sm font-semibold text-(--color-on-accent)">
             Xem 1 năm
           </button>
-          <button type="button" id="tab-quet-nam" class="rounded-(--radius-pill) border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50">
+          <button type="button" id="tab-quet-nam" class="rounded-(--radius-pill) border border-(--color-ivory-400) px-4 py-2 text-sm font-semibold text-(--color-ink-600) hover:bg-(--color-ivory-200)">
             Tìm năm tốt
           </button>
         </div>
@@ -38,11 +40,11 @@ export const prerender = true;
         <form id="form-mot-nam" class="mt-4 flex flex-col gap-3">
           <div class="grid grid-cols-2 gap-2">
             <div>
-              <label for="mn-nam-sinh" class="text-xs font-medium text-slate-600">Năm sinh</label>
+              <label for="mn-nam-sinh" class="text-xs font-medium text-(--color-ink-600)">Năm sinh</label>
               <input type="number" id="mn-nam-sinh" min="1900" max="2100" required placeholder="1988" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
             </div>
             <div>
-              <label for="mn-nam-xem" class="text-xs font-medium text-slate-600">Năm cần xem</label>
+              <label for="mn-nam-xem" class="text-xs font-medium text-(--color-ink-600)">Năm cần xem</label>
               <input type="number" id="mn-nam-xem" min="1900" max="2100" required placeholder="2026" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
             </div>
           </div>
@@ -52,38 +54,38 @@ export const prerender = true;
         <form id="form-quet-nam" class="mt-4 hidden flex-col gap-3">
           <div class="grid grid-cols-3 gap-2">
             <div>
-              <label for="qn-nam-sinh" class="text-xs font-medium text-slate-600">Năm sinh</label>
+              <label for="qn-nam-sinh" class="text-xs font-medium text-(--color-ink-600)">Năm sinh</label>
               <input type="number" id="qn-nam-sinh" min="1900" max="2100" required placeholder="1988" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
             </div>
             <div>
-              <label for="qn-tu-nam" class="text-xs font-medium text-slate-600">Từ năm</label>
+              <label for="qn-tu-nam" class="text-xs font-medium text-(--color-ink-600)">Từ năm</label>
               <input type="number" id="qn-tu-nam" min="1900" max="2100" required placeholder="2026" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
             </div>
             <div>
-              <label for="qn-den-nam" class="text-xs font-medium text-slate-600">Đến năm</label>
+              <label for="qn-den-nam" class="text-xs font-medium text-(--color-ink-600)">Đến năm</label>
               <input type="number" id="qn-den-nam" min="1900" max="2100" required placeholder="2040" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
             </div>
           </div>
-          <p class="text-xs text-slate-400">Tối đa 30 năm mỗi lượt quét.</p>
+          <p class="text-xs text-(--color-ink-400)">Tối đa 30 năm mỗi lượt quét.</p>
           <Button type="submit" size="lg">Tìm năm tốt</Button>
         </form>
 
         <div id="loi" class="mt-3 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-3 text-sm text-(--color-danger-500)"></div>
 
-        <div id="ket-qua-mot-nam" class="mt-4 hidden rounded-xl border border-slate-200 bg-slate-50 p-5">
-          <p id="mn-tieu-de" class="text-sm text-slate-500"></p>
-          <p id="mn-ket-luan" class="mt-1 font-display text-xl font-bold text-slate-900"></p>
-          <div class="mt-3 grid grid-cols-3 gap-2 border-t border-slate-200 pt-3 text-center">
+        <div id="ket-qua-mot-nam" class="mt-4 hidden rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200) p-5">
+          <p id="mn-tieu-de" class="text-sm text-(--color-ink-500)"></p>
+          <p id="mn-ket-luan" class="mt-1 font-display text-xl font-bold text-(--color-ink-950)"></p>
+          <div class="mt-3 grid grid-cols-3 gap-2 border-t border-(--color-ivory-300) pt-3 text-center">
             <div>
-              <p class="text-[11px] uppercase tracking-wide text-slate-500">Hoàng Ốc</p>
+              <p class="text-[11px] uppercase tracking-wide text-(--color-ink-500)">Hoàng Ốc</p>
               <p id="mn-hoang-oc" class="mt-0.5 text-sm font-semibold"></p>
             </div>
             <div>
-              <p class="text-[11px] uppercase tracking-wide text-slate-500">Kim Lâu</p>
+              <p class="text-[11px] uppercase tracking-wide text-(--color-ink-500)">Kim Lâu</p>
               <p id="mn-kim-lau" class="mt-0.5 text-sm font-semibold"></p>
             </div>
             <div>
-              <p class="text-[11px] uppercase tracking-wide text-slate-500">Tam Tai</p>
+              <p class="text-[11px] uppercase tracking-wide text-(--color-ink-500)">Tam Tai</p>
               <p id="mn-tam-tai" class="mt-0.5 text-sm font-semibold"></p>
             </div>
           </div>
@@ -93,6 +95,7 @@ export const prerender = true;
       </div>
     </div>
   </Container>
+  <BottomNav />
 </BaseLayout>
 
 <script>
@@ -129,7 +132,7 @@ export const prerender = true;
   const ketQuaQuetNamEl = document.getElementById("ket-qua-quet-nam")!;
 
   const TAB_ACTIVE = "rounded-(--radius-pill) bg-(--color-gold-400) px-4 py-2 text-sm font-semibold text-(--color-on-accent)";
-  const TAB_INACTIVE = "rounded-(--radius-pill) border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-50";
+  const TAB_INACTIVE = "rounded-(--radius-pill) border border-(--color-ivory-400) px-4 py-2 text-sm font-semibold text-(--color-ink-600) hover:bg-(--color-ivory-200)";
 
   function showTab(which: "mot-nam" | "quet-nam") {
     loiEl.classList.add("hidden");
@@ -159,13 +162,13 @@ export const prerender = true;
     document.getElementById("mn-ket-luan")!.textContent = r.ketLuan.nhan;
     const hoangOcEl = document.getElementById("mn-hoang-oc")!;
     hoangOcEl.textContent = r.hoangOc.ten;
-    hoangOcEl.className = `mt-0.5 text-sm font-semibold ${r.hoangOc.tot ? "text-emerald-600" : "text-(--color-cinnabar-500)"}`;
+    hoangOcEl.className = `mt-0.5 text-sm font-semibold ${r.hoangOc.tot ? "text-(--color-success-500)" : "text-(--color-cinnabar-500)"}`;
     const kimLauEl = document.getElementById("mn-kim-lau")!;
     kimLauEl.textContent = r.kimLau.ten;
-    kimLauEl.className = `mt-0.5 text-sm font-semibold ${r.kimLau.pham ? "text-(--color-cinnabar-500)" : "text-emerald-600"}`;
+    kimLauEl.className = `mt-0.5 text-sm font-semibold ${r.kimLau.pham ? "text-(--color-cinnabar-500)" : "text-(--color-success-500)"}`;
     const tamTaiEl = document.getElementById("mn-tam-tai")!;
     tamTaiEl.textContent = r.tamTai.pham ? "Phạm Tam Tai" : "Không phạm";
-    tamTaiEl.className = `mt-0.5 text-sm font-semibold ${r.tamTai.pham ? "text-(--color-cinnabar-500)" : "text-emerald-600"}`;
+    tamTaiEl.className = `mt-0.5 text-sm font-semibold ${r.tamTai.pham ? "text-(--color-cinnabar-500)" : "text-(--color-success-500)"}`;
     ketQuaMotNamEl.classList.remove("hidden");
   }
 
@@ -210,10 +213,10 @@ export const prerender = true;
       ketQuaQuetNamEl.innerHTML = results
         .map((r, i) => {
           const huyChuong = HUY_CHUONG[i] ?? `${i + 1}.`;
-          return `<div class="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-3">
+          return `<div class="flex items-center justify-between rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200) p-3">
             <div>
-              <p class="font-display text-base font-bold text-slate-900">${huyChuong} Năm ${r.namXem} <span class="text-xs font-normal text-slate-500">(tuổi mụ ${r.tuoiMu})</span></p>
-              <p class="text-xs text-slate-500">${r.hoangOc.ten} · ${r.kimLau.ten} · ${r.tamTai.pham ? "Phạm Tam Tai" : "Không phạm Tam Tai"}</p>
+              <p class="font-display text-base font-bold text-(--color-ink-950)">${huyChuong} Năm ${r.namXem} <span class="text-xs font-normal text-(--color-ink-500)">(tuổi mụ ${r.tuoiMu})</span></p>
+              <p class="text-xs text-(--color-ink-500)">${r.hoangOc.ten} · ${r.kimLau.ten} · ${r.tamTai.pham ? "Phạm Tam Tai" : "Không phạm Tam Tai"}</p>
             </div>
             <span class="text-sm font-semibold">${nhanDotHtml(r.ketLuan.nhan)}</span>
           </div>`;
