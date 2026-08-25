@@ -1,0 +1,18 @@
+{
+  "_meta": { "nguon": "mo-kho.md", "dongBoLuc": "2026-08-25" },
+  "moKhoTheoHanh": {
+    "Mộc": "Mùi",
+    "Hỏa": "Tuất",
+    "Thổ": "Tuất",
+    "Kim": "Sửu",
+    "Thủy": "Thìn"
+  },
+  "canTangKhiMoKho": {
+    "Thìn": { "banKhi": "Mậu", "trungKhi": "Ất", "khiMoKho": "Quý" },
+    "Tuất": { "banKhi": "Mậu", "trungKhi": "Tân", "khiMoKho": "Đinh" },
+    "Sửu": { "banKhi": "Kỷ", "trungKhi": "Quý", "khiMoKho": "Tân" },
+    "Mùi": { "banKhi": "Kỷ", "trungKhi": "Đinh", "khiMoKho": "Ất" }
+  },
+  "nguyenTacKhoCuaAiVsMoCuaAi": "Khố/Mộ ở Chi Ngày hoặc Chi Giờ = của chính mệnh chủ. Khố/Mộ ở Chi Năm hoặc Chi Tháng = của lục thân (xem knowledge/luc-than.md để xác định lục thân tương ứng theo trụ).",
+  "nguyenTacVuongLaKhoSuyLaMo": "Cùng 1 hành 'nhập' vào đúng Chi Mộ Khố của nó: nếu hành đó đang được lệnh/vượng tại Nguyệt Lệnh (tra bang vuong-suy trong bat-tu-engine) → gọi là Khố (cát, ý nghĩa tích lũy/tài sản). Nếu hành đó đang suy/hưu/tù/tử → gọi là Mộ (hung, ý nghĩa cất giấu/bế tắc — nhưng theo content-safety-full.json, khi diễn giải KHÔNG dùng ngôn ngữ 'ẩn họa', chỉ nói 'tiềm năng/khía cạnh chưa bộc lộ rõ')."
+}

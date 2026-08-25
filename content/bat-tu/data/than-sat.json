@@ -1,0 +1,223 @@
+{
+  "_meta": {
+    "nguon": "than-sat.md",
+    "dongBoLuc": "2026-08-25",
+    "huongDanDoc": "Mỗi entry có 'loaiTra' mô tả cách engine cần tra (theo Can nào, Chi nào, nhóm nào), và 'bang' là dữ liệu tra cứu. Ý nghĩa đầy đủ (nguyên văn) nằm ở knowledge/than-sat.md — file JSON này CHỈ dùng để Tầng 1 (Findings Engine) xác định CÓ/KHÔNG và VỊ TRÍ, không chứa diễn giải ý nghĩa.",
+    "nguyenTacChung": "Mọi sao đều phải kiểm tra điều kiện 'mất tác dụng' SAU KHI xác định có mặt: đồng trụ Không Vong, hoặc bị Hình/Xung/Khắc/Hại trực tiếp trong tứ trụ — xem knowledge/than-sat.md nguyên tắc 2."
+  },
+
+  "phanA_catThan": {
+    "thienAtQuyNhan": {
+      "loaiTra": "theo Can Năm hoặc Can Ngày, tìm ở Địa Chi các trụ khác",
+      "bang": { "Giáp":["Sửu","Mùi"],"Ất":["Tý","Thân"],"Bính":["Dậu","Hợi"],"Đinh":["Dậu","Hợi"],"Mậu":["Sửu","Mùi"],"Kỷ":["Tý","Thân"],"Canh":["Dần","Ngọ"],"Tân":["Dần","Ngọ"],"Nhâm":["Mão","Tị"],"Quý":["Mão","Tị"] }
+    },
+    "thaiCucQuyNhan": {
+      "loaiTra": "theo Can Năm hoặc Can Ngày",
+      "bang": { "Giáp":["Tý","Ngọ"],"Ất":["Tý","Ngọ"],"Bính":["Mão","Dậu"],"Đinh":["Mão","Dậu"],"Mậu":["Thìn","Tuất","Sửu","Mùi"],"Kỷ":["Thìn","Tuất","Sửu","Mùi"],"Canh":["Dần","Hợi"],"Tân":["Dần","Hợi"],"Nhâm":["Tị","Thân"],"Quý":["Tị","Thân"] }
+    },
+    "hoaCai": {
+      "loaiTra": "theo Chi Năm hoặc Chi Ngày, nhóm Tam Hợp",
+      "bang": { "Thân,Tý,Thìn":"Thìn", "Dần,Ngọ,Tuất":"Tuất", "Tị,Dậu,Sửu":"Sửu", "Hợi,Mão,Mùi":"Mùi" }
+    },
+    "thienDucNguyetDuc": {
+      "loaiTra": "theo Chi Tháng",
+      "bangThienDuc": { "Dần":"Đinh","Mão":"Thân(chi)","Thìn":"Nhâm","Tị":"Tân","Ngọ":"Hợi(chi)","Mùi":"Giáp","Thân":"Quý","Dậu":"Dần(chi)","Tuất":"Bính","Hợi":"Ất","Tý":"Tị(chi)","Sửu":"Canh" },
+      "bangNguyetDuc": { "Dần":"Bính","Mão":"Giáp","Thìn":"Nhâm","Tị":"Canh","Ngọ":"Bính","Mùi":"Giáp","Thân":"Nhâm","Dậu":"Canh","Tuất":"Bính","Hợi":"Giáp","Tý":"Nhâm","Sửu":"Canh" }
+    },
+    "vanXuongQuyNhan": {
+      "loaiTra": "theo Can Năm hoặc Can Ngày",
+      "bang": { "Giáp":"Tị","Ất":"Ngọ","Bính":"Thân","Đinh":"Dậu","Mậu":"Thân","Kỷ":"Dậu","Canh":"Hợi","Tân":"Tý","Nhâm":"Dần","Quý":"Mão" }
+    },
+    "tamKyQuyNhan": {
+      "loaiTra": "3 Thiên Can liền nhau tạo đủ 1 trong 3 bộ (thứ tự không bắt buộc)",
+      "boToHop": [["Giáp","Mậu","Canh"],["Ất","Bính","Đinh"],["Nhâm","Quý","Tân"]]
+    },
+    "tuongTinh": {
+      "loaiTra": "theo Chi Năm hoặc Chi Ngày, nhóm Tam Hợp",
+      "bang": { "Thân,Tý,Thìn":"Tý", "Dần,Ngọ,Tuất":"Ngọ", "Tị,Dậu,Sửu":"Dậu", "Hợi,Mão,Mùi":"Mão" }
+    },
+    "hocDuongTuQuan": {
+      "loaiTra": "theo hành Nạp Âm của Trụ Ngày (tra nap-am.json trước để biết hành)",
+      "bangHocDuong": { "Mộc":"Hợi","Hỏa":"Dần","Thổ":"Thân","Kim":"Tị","Thủy":"Thân" },
+      "bangTuQuan": { "Mộc":"Dần","Hỏa":"Tị","Thổ":"Hợi","Kim":"Thân","Thủy":"Hợi" }
+    },
+    "quocAnQuyNhan": {
+      "loaiTra": "theo Can Năm hoặc Can Ngày",
+      "bang": { "Giáp":"Tuất","Ất":"Hợi","Bính":"Sửu","Đinh":"Dần","Mậu":"Sửu","Kỷ":"Dần","Canh":"Thìn","Tân":"Tị","Nhâm":"Mùi","Quý":"Thân" }
+    },
+    "dichMa": {
+      "loaiTra": "theo Chi Năm hoặc Chi Ngày, nhóm Tam Hợp",
+      "bang": { "Thân,Tý,Thìn":"Dần", "Dần,Ngọ,Tuất":"Thân", "Tị,Dậu,Sửu":"Hợi", "Hợi,Mão,Mùi":"Tị" }
+    },
+    "kimDu": {
+      "loaiTra": "theo Can Năm hoặc Can Ngày",
+      "bang": { "Giáp":"Thìn","Ất":"Tị","Bính":"Mùi","Đinh":"Thân","Mậu":"Mùi","Kỷ":"Thân","Canh":"Tuất","Tân":"Hợi","Nhâm":"Sửu","Quý":"Dần" }
+    },
+    "thienYQuyNhan": {
+      "loaiTra": "theo Chi Tháng (chi liền trước theo thứ tự 12 địa chi)",
+      "bang": { "Tý":"Hợi","Sửu":"Tý","Dần":"Sửu","Mão":"Dần","Thìn":"Mão","Tị":"Thìn","Ngọ":"Tị","Mùi":"Ngọ","Thân":"Mùi","Dậu":"Thân","Tuất":"Dậu","Hợi":"Tuất" }
+    },
+    "locThan": {
+      "loaiTra": "theo Can Ngày (= Lâm Quan của Can đó)",
+      "bang": { "Giáp":"Dần","Ất":"Mão","Bính":"Tị","Đinh":"Ngọ","Mậu":"Tị","Kỷ":"Ngọ","Canh":"Thân","Tân":"Dậu","Nhâm":"Hợi","Quý":"Tý" },
+      "ghiChuCungVi": { "TruNam":"Tuế Lộc","TruThang":"Kiến Lộc (mạnh nhất)","TruNgay":"Chuyên Lộc","TruGio":"Quy Lộc" }
+    },
+    "thienXaQuyNhan": {
+      "loaiTra": "theo mùa sinh (Chi Tháng), CHỈ đứng ở Trụ Ngày",
+      "bang": { "Dần,Mão,Thìn":"Mậu Dần", "Tị,Ngọ,Mùi":"Giáp Ngọ", "Thân,Dậu,Tuất":"Mậu Thân", "Hợi,Tý,Sửu":"Giáp Tý" }
+    },
+    "amChuDuongThu": {
+      "loaiTra": "theo Chi Tháng",
+      "bang": { "Tý":"Dần","Sửu":"Sửu","Dần":"Tý","Mão":"Hợi","Thìn":"Tuất","Tị":"Dậu","Ngọ":"Tuất","Mùi":"Hợi","Thân":"Tý","Dậu":"Sửu","Tuất":"Dần","Hợi":"Mão" }
+    },
+    "kimThan": {
+      "loaiTra": "Trụ Ngày + Trụ Giờ đúng 1 trong 3 tổ hợp, VÀ Can Ngày là Giáp hoặc Kỷ",
+      "toHopNgayGio": ["Ất Sửu","Kỷ Tị","Quý Dậu"],
+      "dieuKienThanhCach": "Cần có Hỏa chế Kim (Tị/Ngọ ở Địa Chi hoặc Bính/Đinh ở Thiên Can), Hỏa ở Chi Tháng tốt nhất"
+    },
+    "khoiCuong": {
+      "loaiTra": "Trụ Ngày là 1 trong 4 ngày",
+      "danhSachNgay": ["Canh Thìn","Nhâm Thìn","Canh Tuất","Mậu Tuất"]
+    },
+    "hongDiem": {
+      "loaiTra": "theo Can Năm hoặc Can Ngày",
+      "bang": { "Giáp":"Ngọ","Ất":"Thân","Bính":"Dần","Đinh":"Mùi","Mậu":"Thìn","Kỷ":"Thìn","Canh":"Thân","Tân":"Dậu","Nhâm":"Tý","Quý":"Tuất" }
+    },
+    "hongLoanThienHy": {
+      "loaiTra": "theo Chi Năm",
+      "bangHongLoan": { "Tý":"Mão","Sửu":"Dần","Dần":"Sửu","Mão":"Tý","Thìn":"Hợi","Tị":"Tuất","Ngọ":"Dậu","Mùi":"Thân","Thân":"Mùi","Dậu":"Ngọ","Tuất":"Tị","Hợi":"Thìn" },
+      "bangThienHy": { "Tý":"Hợi","Sửu":"Tuất","Dần":"Dậu","Mão":"Thân","Thìn":"Mùi","Tị":"Ngọ","Ngọ":"Tị","Mùi":"Thìn","Thân":"Mão","Dậu":"Dần","Tuất":"Sửu","Hợi":"Tý" }
+    },
+    "phucTinhQuyNhan": {
+      "loaiTra": "Trụ Ngày là 1 trong danh sách",
+      "danhSachNgay": ["Giáp Dần","Ất Sửu","Bính Tý","Đinh Dậu","Mậu Thân","Kỷ Mùi","Canh Ngọ","Tân Tị","Nhâm Thìn","Quý Mão"]
+    },
+    "thienDucHop": {
+      "loaiTra": "lấy Thiên Đức theo Chi Tháng rồi tìm Ngũ Hợp — CHỈ áp dụng 8/12 tháng (4 tháng Mão/Ngọ/Dậu/Tý chưa có công thức vì Thiên Đức tháng đó là Địa Chi)",
+      "bang": { "Dần":"Nhâm","Thìn":"Đinh","Tị":"Bính","Mùi":"Kỷ","Thân":"Mậu","Tuất":"Tân","Hợi":"Canh","Sửu":"Ất" }
+    },
+    "nguyetDucHop": {
+      "loaiTra": "theo Chi Tháng, nhóm Tam Hợp — áp dụng đủ 12 tháng",
+      "bang": { "Dần,Ngọ,Tuất":"Tân", "Thân,Tý,Thìn":"Đinh", "Hợi,Mão,Mùi":"Kỷ", "Tị,Dậu,Sửu":"Ất" }
+    },
+    "kimQuy": {
+      "loaiTra": "theo Chi Năm, nhóm Tam Hợp",
+      "bang": { "Thân,Tý,Thìn":"Tý", "Hợi,Mão,Mùi":"Mão", "Dần,Ngọ,Tuất":"Ngọ", "Tị,Dậu,Sửu":"Dậu" }
+    },
+    "lucTu": {
+      "loaiTra": "Trụ Ngày là 1 trong 6 ngày",
+      "danhSachNgay": ["Bính Tý","Đinh Sửu","Mậu Dần","Kỷ Mão","Canh Ngọ","Tân Mùi"]
+    },
+    "thapLinh": {
+      "loaiTra": "CHỈ xét Nhật Trụ (không tính nếu trùng ở trụ khác)",
+      "danhSachNgay": ["Giáp Thìn","Ất Hợi","Bính Thìn","Đinh Dậu","Mậu Ngọ","Canh Tuất","Canh Dần","Tân Hợi","Nhâm Dần","Quý Mùi"]
+    },
+    "tienThan": {
+      "loaiTra": "Trụ Ngày là 1 trong 4 ngày",
+      "danhSachNgay": ["Giáp Tý","Giáp Ngọ","Kỷ Mão","Kỷ Dậu"]
+    },
+    "thienTru": {
+      "loaiTra": "lấy Can Ngày tra 1 Địa Chi, rồi rà cả 4 trụ xem trụ nào trùng Địa Chi đó",
+      "bang": { "Giáp":"Tị","Ất":"Ngọ","Bính":"Tị","Đinh":"Ngọ","Mậu":"Thân","Kỷ":"Dậu","Canh":"Hợi","Tân":"Tý","Nhâm":"Dần","Quý":"Mão" }
+    },
+    "cungLoc": {
+      "loaiTra": "Trụ Ngày và Trụ Giờ CÙNG Thiên Can, 2 Địa Chi kẹp đúng Lộc của Can đó ở giữa MÀ Lộc đó KHÔNG xuất hiện trực tiếp trong tứ trụ",
+      "ghiChu": "Dùng bảng locThan.bang để biết Lộc của mỗi Can là chi nào, rồi kiểm tra 2 chi Ngày+Giờ có kẹp đúng chi đó theo thứ tự vòng địa chi hay không. Điều kiện phá cách: chi Lộc bị 'điền đầy' (xuất hiện thật ở trụ khác) → hỏng cách."
+    }
+  },
+
+  "phanB_hungThan": {
+    "duongNhan": {
+      "loaiTra": "theo Can Ngày — CHỈ áp dụng 5 Dương Can (Âm Can còn tranh cãi, không dùng)",
+      "bang": { "Giáp":"Mão","Bính":"Ngọ","Mậu":"Ngọ","Canh":"Dậu","Nhâm":"Tý" }
+    },
+    "taiSat": {
+      "loaiTra": "theo Chi Năm hoặc Chi Ngày, nhóm Tam Hợp",
+      "bang": { "Thân,Tý,Thìn":"Ngọ", "Dần,Ngọ,Tuất":"Tý", "Tị,Dậu,Sửu":"Mão", "Hợi,Mão,Mùi":"Dậu" }
+    },
+    "kiepSat": {
+      "loaiTra": "theo Chi Năm hoặc Chi Ngày, nhóm Tam Hợp",
+      "bang": { "Thân,Tý,Thìn":"Tị", "Dần,Ngọ,Tuất":"Hợi", "Tị,Dậu,Sửu":"Dần", "Hợi,Mão,Mùi":"Thân" }
+    },
+    "vongThan": {
+      "loaiTra": "theo Chi Năm hoặc Chi Ngày, nhóm Tam Hợp",
+      "bang": { "Thân,Tý,Thìn":"Hợi", "Dần,Ngọ,Tuất":"Tị", "Tị,Dậu,Sửu":"Thân", "Hợi,Mão,Mùi":"Dần" }
+    },
+    "thienLaDiaVong": {
+      "loaiTra": "theo Chi Năm hoặc Chi Ngày, cặp cố định",
+      "thienLa": { "dieuKien":"có Tuất VÀ Hợi cùng lúc trong tứ trụ", "kyGioi":"Nam" },
+      "diaVong": { "dieuKien":"có Thìn VÀ Tị cùng lúc trong tứ trụ", "kyGioi":"Nữ" }
+    },
+    "thapAcDaiBai": {
+      "loaiTra": "Trụ Ngày là 1 trong 10 tổ hợp",
+      "danhSachNgay": ["Giáp Thìn","Ất Tị","Bính Thân","Đinh Hợi","Mậu Tuất","Kỷ Sửu","Canh Thìn","Tân Tị","Nhâm Thân","Quý Hợi"]
+    },
+    "coThanQuaTu": {
+      "loaiTra": "theo Chi Năm, nhóm Tam Hợp",
+      "bangCoThan": { "Hợi,Tý,Sửu":"Dần", "Dần,Mão,Thìn":"Tị", "Tị,Ngọ,Mùi":"Thân", "Thân,Dậu,Tuất":"Hợi" },
+      "bangQuaTu": { "Hợi,Tý,Sửu":"Tuất", "Dần,Mão,Thìn":"Sửu", "Tị,Ngọ,Mùi":"Thìn", "Thân,Dậu,Tuất":"Mùi" }
+    },
+    "amDuongSaiTho": {
+      "loaiTra": "Trụ Ngày là 1 trong 12 tổ hợp",
+      "danhSachNgay": ["Bính Tý","Đinh Sửu","Mậu Dần","Tân Mão","Nhâm Thìn","Quý Tị","Bính Ngọ","Đinh Mùi","Mậu Thân","Tân Dậu","Nhâm Tuất","Quý Hợi"]
+    },
+    "tangMonDieuKhach": {
+      "loaiTra": "theo Chi Năm, tiến 2 vị = Tang Môn, lùi 2 vị = Điếu Khách (theo vòng 12 địa chi)",
+      "ghiChu": "Ví dụ Chi Năm Tý → Tang Môn tại Dần (tiến 2), Điếu Khách tại Tuất (lùi 2). Áp dụng công thức tương tự cho các Chi Năm khác theo đúng thứ tự vòng địa chi Tý-Sửu-Dần-Mão-Thìn-Tị-Ngọ-Mùi-Thân-Dậu-Tuất-Hợi."
+    },
+    "nguyenThanDaiHao": {
+      "loaiTra": "theo Chi Năm, phân biệt Dương Nam/Âm Nữ vs Âm Nam/Dương Nữ",
+      "duongNamAmNu": "lấy Chi xung với Chi Năm rồi lùi lại 1 vị",
+      "amNamDuongNu": "lấy Chi xung với Chi Năm rồi tiến lên 1 vị"
+    },
+    "cauGiaoSat": {
+      "loaiTra": "theo Chi Năm, phân biệt Dương Nam/Âm Nữ vs Âm Nam/Dương Nữ, tiến/lùi 3 vị",
+      "duongNamAmNu": "tiến 3 vị = Câu, lùi 3 vị = Giảo",
+      "amNamDuongNu": "tiến 3 vị = Giảo, lùi 3 vị = Câu"
+    },
+    "huyetNhan": {
+      "loaiTra": "theo Chi Năm",
+      "bang": { "Tý":"Tuất","Sửu":"Dậu","Dần":"Thân","Mão":"Mùi","Thìn":"Ngọ","Tị":"Tị","Ngọ":"Thìn","Mùi":"Mão","Thân":"Dần","Dậu":"Sửu","Tuất":"Tý","Hợi":"Hợi" }
+    },
+    "quanPhuNguQuy": {
+      "loaiTra": "theo Chi Năm, tiến 4 vị (theo vòng 12 địa chi)",
+      "bang": { "Tý":"Thìn","Sửu":"Tị","Dần":"Ngọ","Mão":"Mùi","Thìn":"Thân","Tị":"Dậu","Ngọ":"Tuất","Mùi":"Hợi","Thân":"Tý","Dậu":"Sửu","Tuất":"Dần","Hợi":"Mão" }
+    },
+    "cachGoc": {
+      "loaiTra": "theo Chi Ngày, tiến 2 vị",
+      "bang": { "Tý":"Dần","Sửu":"Mão","Dần":"Thìn","Mão":"Tị","Thìn":"Ngọ","Tị":"Mùi","Ngọ":"Thân","Mùi":"Dậu","Thân":"Tuất","Dậu":"Hợi","Tuất":"Tý","Hợi":"Sửu" }
+    },
+    "daoHoa": {
+      "loaiTra": "theo Chi Năm hoặc Chi Ngày, nhóm Tứ Sinh/Tứ Vượng",
+      "bang": { "Thân,Tý,Thìn":"Dậu", "Dần,Ngọ,Tuất":"Mão", "Tị,Dậu,Sửu":"Ngọ", "Hợi,Mão,Mùi":"Tý" },
+      "ghiChuPhanLoai": "Xem knowledge/than-sat.md để phân loại Đào Hoa Kiếp/Sát/Nhận, Cổn Lãng, Lõa Thể, Biến Dã, Tường Nội/Ngoại, Mộc Dục, Quan Tinh, Chính Ấn, Thiên Đức, Thương Quan Đào Hoa — các biến thể này cần đối chiếu thêm vị trí Thập Thần, không chỉ tra bảng vị trí Chi."
+    },
+    "giapSat": {
+      "loaiTra": "so Chi Ngày với Chi Giờ, Chi Giờ tiến 2 vị so với Chi Ngày",
+      "bang": { "Tý":"Dần","Sửu":"Mão","Dần":"Thìn","Mão":"Tị","Thìn":"Ngọ","Tị":"Mùi","Ngọ":"Thân","Mùi":"Dậu","Thân":"Tuất","Dậu":"Hợi","Tuất":"Tý","Hợi":"Sửu" }
+    },
+    "coLoanSat": {
+      "loaiTra": "CHỈ tra Trụ Ngày (Can-Chi)",
+      "danhSachNgay": ["Ất Tị","Đinh Tị","Tân Hợi","Mậu Thân","Nhâm Dần","Mậu Ngọ","Nhâm Tý","Bính Ngọ"]
+    },
+    "tuPhe": {
+      "loaiTra": "theo mùa sinh (Chi Tháng), tra Can-Chi Trụ Ngày (có thể xét cả Năm/Tháng/Giờ)",
+      "bang": { "Dần,Mão,Thìn": ["Canh Thân","Tân Dậu"], "Tị,Ngọ,Mùi": ["Nhâm Tý","Quý Hợi"], "Thân,Dậu,Tuất": ["Giáp Dần","Ất Mão"], "Hợi,Tý,Sửu": ["Bính Thìn","Đinh Tị"] }
+    },
+    "phiNhan": {
+      "loaiTra": "theo Can Ngày, lấy Chi xung với Dương Nhận của Can đó — áp dụng đủ 10 Can (5 Âm Can dùng bảng riêng, khác giới hạn của duongNhan)",
+      "bang": { "Giáp":"Dậu","Ất":"Thân","Bính":"Tý","Mậu":"Tý","Đinh":"Sửu","Kỷ":"Sửu","Canh":"Mão","Tân":"Thìn","Nhâm":"Ngọ","Quý":"Mùi" }
+    },
+    "luuHa": {
+      "loaiTra": "theo Can Ngày",
+      "bang": { "Giáp":"Dậu","Ất":"Tuất","Bính":"Mùi","Đinh":"Thân","Mậu":"Tị","Kỷ":"Ngọ","Canh":"Thìn","Tân":"Mão","Nhâm":"Hợi","Quý":"Dần" }
+    },
+    "khongVong": {
+      "loaiTra": "theo Trụ Ngày (hoặc Trụ Năm), theo 'tuần Giáp' — xác định Can-Chi Trụ Ngày thuộc tuần nào rồi tra 2 chi dư",
+      "bang": { "Giáp Tý":["Tuất","Hợi"], "Giáp Tuất":["Thân","Dậu"], "Giáp Thân":["Ngọ","Mùi"], "Giáp Ngọ":["Thìn","Tị"], "Giáp Thìn":["Dần","Mão"], "Giáp Dần":["Tý","Sửu"] },
+      "ghiChu": "Mỗi 'tuần Giáp' gồm 10 Can-Chi liên tiếp (ví dụ tuần Giáp Tý = Giáp Tý, Ất Sửu, Bính Dần...Quý Dậu). Cần logic xác định Trụ Ngày thuộc tuần nào trước khi tra bảng này."
+    }
+  },
+
+  "phanA1_chuaDuDuKien": ["Đức Tú — không có bảng an, không đưa vào engine"]
+}

@@ -1,0 +1,66 @@
+{
+  "_meta": { "nguon": "quan-he-can-chi.md", "dongBoLuc": "2026-08-25" },
+
+  "lucHop": {
+    "_note": "6 cặp Địa Chi liền kề hợp thành hành mới",
+    "Tý-Sửu": "Thổ", "Dần-Hợi": "Mộc", "Mão-Tuất": "Hỏa",
+    "Thìn-Dậu": "Kim", "Tị-Thân": "Thủy", "Ngọ-Mùi": "Thổ"
+  },
+
+  "tamHop": {
+    "_note": "3 chi tạo cục ngũ hành, cách nhau 4 vị trí trên vòng địa chi",
+    "Thân-Tý-Thìn": "Thủy",
+    "Hợi-Mão-Mùi": "Mộc",
+    "Dần-Ngọ-Tuất": "Hỏa",
+    "Tị-Dậu-Sửu": "Kim"
+  },
+
+  "tamHoi": {
+    "_note": "3 chi cùng phương hội thành 1 hành, lực mạnh hơn tam hợp",
+    "Dần-Mão-Thìn": "Mộc",
+    "Tị-Ngọ-Mùi": "Hỏa",
+    "Thân-Dậu-Tuất": "Kim",
+    "Hợi-Tý-Sửu": "Thủy"
+  },
+
+  "lucXung": [
+    ["Tý", "Ngọ"], ["Sửu", "Mùi"], ["Dần", "Thân"],
+    ["Mão", "Dậu"], ["Thìn", "Tuất"], ["Tị", "Hợi"]
+  ],
+
+  "lucHai": [
+    ["Tý", "Mùi"], ["Sửu", "Ngọ"], ["Dần", "Tị"],
+    ["Mão", "Thìn"], ["Thân", "Hợi"], ["Dậu", "Tuất"]
+  ],
+
+  "tuongHinh": {
+    "tamHinh": [
+      ["Dần", "Tị", "Thân"],
+      ["Sửu", "Mùi", "Tuất"]
+    ],
+    "tuongHinh2Chi": [["Tý", "Mão"]],
+    "tuHinh": ["Thìn", "Ngọ", "Dậu", "Hợi"]
+  },
+
+  "lucPha": [
+    ["Dần", "Hợi"], ["Ngọ", "Mão"], ["Tị", "Thân"],
+    ["Tý", "Dậu"], ["Thìn", "Sửu"], ["Tuất", "Mùi"]
+  ],
+
+  "amHop": [
+    ["Dần", "Ngọ"], ["Dần", "Sửu"], ["Thân", "Mão"],
+    ["Tý", "Tị"], ["Tị", "Dậu"], ["Hợi", "Ngọ"]
+  ],
+
+  "thienCanNguHop": {
+    "_note": "5 cặp Thiên Can hợp, hành hóa ra nếu đủ điều kiện (xem knowledge/quan-he-can-chi.md mục 3 để biết điều kiện đủ)",
+    "Giáp-Kỷ": "Thổ", "Ất-Canh": "Kim", "Bính-Tân": "Thủy",
+    "Đinh-Nhâm": "Mộc", "Mậu-Quý": "Hỏa"
+  },
+
+  "thienCanTuongXung": [
+    ["Giáp", "Canh"], ["Ất", "Tân"], ["Bính", "Nhâm"], ["Đinh", "Quý"]
+  ],
+
+  "canhBaoQuanTrong": "Bảng trên chỉ là DỮ LIỆU THÔ để engine dò match — việc quyết định 1 quan hệ có THỰC SỰ thành lập (đủ điều kiện hóa, không bị tranh hợp, thứ tự Tầng Thứ Lưu Niên>Đại Vận>Mệnh cục...) PHẢI đọc đúng logic trong knowledge/quan-he-can-chi.md mục 2-4, không được chỉ dựa vào việc 2 Chi/Can có xuất hiện trong bảng trên là kết luận quan hệ đó có hiệu lực."
+}

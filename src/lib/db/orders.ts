@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 import { db } from "./client";
 import { orders, orderItems, courseEnrollments, users, subscriptions } from "../../../db/schema";
 import { SO_THANG_THEO_KY_HAN, type SubscriptionTier, type SubscriptionDuration } from "../payments/gia-subscription";
@@ -237,6 +237,22 @@ export async function createSubscriptionOrder(params: {
 
 export async function getOrderByCode(orderCode: string) {
   const [order] = await db.select().from(orders).where(eq(orders.orderCode, orderCode)).limit(1);
+  return order ?? null;
+}
+
+/**
+ * Đơn "tool" GẦN NHẤT đã thanh toán của 1 tài khoản cho 1 công cụ — dùng cho công cụ bắt đăng nhập
+ * (vd luan-giai-bat-tu-toan-dien) để kiểm tra quyền truy cập khi khách quay lại KHÔNG mang orderCode
+ * (đã đóng tab lúc thanh toán, hoặc bookmark thẳng trang). Khác `getOrderByCode`: tra theo tài
+ * khoản, không theo mã đơn cụ thể.
+ */
+export async function getConfirmedToolOrderForUser(userId: string, toolSlug: string) {
+  const [order] = await db
+    .select()
+    .from(orders)
+    .where(and(eq(orders.userId, userId), eq(orders.toolSlug, toolSlug), eq(orders.status, "confirmed")))
+    .orderBy(desc(orders.createdAt))
+    .limit(1);
   return order ?? null;
 }
 
