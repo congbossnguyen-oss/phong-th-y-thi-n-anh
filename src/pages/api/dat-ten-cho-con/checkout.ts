@@ -8,8 +8,6 @@ export const prerender = false;
 // Giá lấy từ bảng giá phía máy chủ (lib/payments/gia-cong-cu.ts) — không tin số tiền client gửi.
 const TOOL_SLUG = "dat-ten-cho-con";
 
-const namNay = new Date().getFullYear();
-
 function jsonResponse(body: unknown, status: number): Response {
   return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 }
@@ -47,6 +45,7 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
   const gioiTinh = b.gioiTinh === "nam" || b.gioiTinh === "nu" ? b.gioiTinh : null;
   if (!gioiTinh) return jsonResponse({ ok: false, error: "Vui lòng chọn giới tính của bé." }, 400);
 
+  const namNay = new Date().getFullYear();
   const nam = Number(b.nam);
   const thang = Number(b.thang);
   const ngay = Number(b.ngay);
