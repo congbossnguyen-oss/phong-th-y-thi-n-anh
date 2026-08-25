@@ -106,16 +106,18 @@ export function findingsE(chart: BatTuChart, analysis: BatTuAnalysis): GiaiDoanF
 // --- F. Lục Thân (mẫu computable: vị trí Thập Thần đại diện từng vai vế + quan hệ với trụ tương ứng) ---
 export function findingsF(chart: BatTuChart, analysis: BatTuAnalysis): GiaiDoanFindings {
   const dt = analysis.dungThan;
+  const lyDoTheoTru = tinhMatTacDungTheoTru(chart);
   const layThapThanOTru = (thapThanCanXet: string[]) => {
-    const ketQua: { tru: string; can: string; thapThan: string; hyKy: string; laTangCan: boolean }[] = [];
+    const ketQua: { tru: string; can: string; thapThan: string; hyKy: string; laTangCan: boolean; truBiXungHinhHai: boolean; lyDo: string[] }[] = [];
     for (const key of ["year", "month", "day", "hour"] as const) {
       const p: PillarInfo = chart[key];
+      const ly = lyDoTheoTru[key];
       if (key !== "day" && thapThanCanXet.includes(p.thapThan)) {
-        ketQua.push({ tru: key, can: p.can, thapThan: p.thapThan, hyKy: hyKyCuaHanh(CAN_NGU_HANH[CAN_NAMES.indexOf(p.can)], dt), laTangCan: false });
+        ketQua.push({ tru: key, can: p.can, thapThan: p.thapThan, hyKy: hyKyCuaHanh(CAN_NGU_HANH[CAN_NAMES.indexOf(p.can)], dt), laTangCan: false, truBiXungHinhHai: coMatTacDung(ly), lyDo: moTaLyDo(ly) });
       }
       for (const tc of p.tangCan) {
         if (thapThanCanXet.includes(tc.thapThan)) {
-          ketQua.push({ tru: key, can: tc.can, thapThan: tc.thapThan, hyKy: hyKyCuaHanh(CAN_NGU_HANH[CAN_NAMES.indexOf(tc.can)], dt), laTangCan: true });
+          ketQua.push({ tru: key, can: tc.can, thapThan: tc.thapThan, hyKy: hyKyCuaHanh(CAN_NGU_HANH[CAN_NAMES.indexOf(tc.can)], dt), laTangCan: true, truBiXungHinhHai: coMatTacDung(ly), lyDo: moTaLyDo(ly) });
         }
       }
     }
@@ -133,9 +135,9 @@ export function findingsF(chart: BatTuChart, analysis: BatTuAnalysis): GiaiDoanF
       anhChiEm: layThapThanOTru(["Tỷ Kiên", "Kiếp Tài"]),
       voChong: chart.gender === "Nam" ? layThapThanOTru(["Chính Tài", "Thiên Tài"]) : layThapThanOTru(["Chính Quan", "Thất Sát"]),
       conCai: chart.gender === "Nam" ? layThapThanOTru(["Chính Quan", "Thất Sát"]) : layThapThanOTru(["Thực Thần", "Thương Quan"]),
-      luuY: "Bảng trên là vị trí + Hỷ/Kỵ theo Thập Thần đại diện mỗi vai vế (quy ước Tử Bình phổ thông). Phần diễn giải chi tiết theo knowledge/luc-than.md.",
+      luuY: "Bảng trên là vị trí + Hỷ/Kỵ theo Thập Thần đại diện mỗi vai vế (quy ước Tử Bình phổ thông), kèm cờ truBiXungHinhHai đánh dấu trụ đó có bị Không Vong/Xung/Hình/Hại hay không (than-sat-mat-tac-dung.ts) — vị trí lục thân bị các quan hệ này thường gắn với xa cách/ít gắn bó theo luc-than.md. Phần diễn giải chi tiết theo knowledge/luc-than.md.",
     },
-    canCu: ["knowledge/luc-than.md"],
+    canCu: ["knowledge/luc-than.md", "than-sat-mat-tac-dung.ts (Không Vong/Xung/Hình/Hại)"],
   };
 }
 
@@ -149,6 +151,12 @@ export function findingsI(chart: BatTuChart, analysis: BatTuAnalysis): GiaiDoanF
   const hanhThieu = (Object.entries(dem) as [Hanh, number][]).filter(([, n]) => n === 0).map(([h]) => h);
   const hanhNhieu = (Object.entries(dem) as [Hanh, number][]).filter(([, n]) => n >= 3).map(([h]) => h);
 
+  // Nhật Chủ (trụ Ngày) bị Không Vong/Xung/Hình/Hại — 1 dấu hiệu thường được nhắc trong benh-tat.md
+  // khi luận sức khỏe (Nhật Chủ đại diện chính thân thể mệnh chủ, bị công phá trực tiếp đáng chú ý
+  // hơn các trụ khác). Đây là SỰ KIỆN cấu trúc, không phải kết luận bệnh cụ thể.
+  const lyDoTheoTru = tinhMatTacDungTheoTru(chart);
+  const nhatChuBiCongPha = coMatTacDung(lyDoTheoTru.day);
+
   return {
     maGiaiDoan: "I",
     tenGiaiDoan: "Sức khỏe",
@@ -158,9 +166,11 @@ export function findingsI(chart: BatTuChart, analysis: BatTuAnalysis): GiaiDoanF
       phanBoNguHanhTrenThienCan: dem,
       hanhThieuHoanToanTrenThienCan: hanhThieu,
       hanhVuongTrenThienCan: hanhNhieu,
-      luuY: "Chỉ đếm trên Thiên Can (4 can) để gợi mở nhanh — luận chi tiết theo knowledge/benh-tat.md, đối chiếu đủ tàng can + vượng suy.",
+      nhatChuBiXungHinhHai: nhatChuBiCongPha,
+      nhatChuLyDo: moTaLyDo(lyDoTheoTru.day),
+      luuY: "Chỉ đếm trên Thiên Can (4 can) để gợi mở nhanh — luận chi tiết theo knowledge/benh-tat.md, đối chiếu đủ tàng can + vượng suy. nhatChuBiXungHinhHai chỉ nêu SỰ KIỆN cấu trúc (trụ Ngày bị Không Vong/Xung/Hình/Hại), KHÔNG tự suy ra bệnh danh cụ thể.",
     },
-    canCu: ["knowledge/benh-tat.md"],
+    canCu: ["knowledge/benh-tat.md", "than-sat-mat-tac-dung.ts (Không Vong/Xung/Hình/Hại)"],
   };
 }
 

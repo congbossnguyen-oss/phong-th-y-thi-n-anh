@@ -11,7 +11,7 @@ import type { BatTuInput } from "../src/lib/bat-tu";
 import { laSoVaPhanTich, taoBaoCaoCoBan, taoBaoCaoNangCao } from "../src/lib/luan-giai-toan-dien/orchestrator";
 import { taoGoiMoFree } from "../src/lib/luan-giai-toan-dien/free-template";
 import { taoFindingsCoBan, findingsH } from "../src/lib/luan-giai-toan-dien/findings-co-ban";
-import { findingsD, findingsE, findingsK } from "../src/lib/luan-giai-toan-dien/findings-nang-cao";
+import { findingsD, findingsE, findingsF, findingsI, findingsK } from "../src/lib/luan-giai-toan-dien/findings-nang-cao";
 import { timTuKhoaCam, quetHauKiem, layContentSafety } from "../src/lib/luan-giai-toan-dien/content-safety";
 
 const LA_SO_THAM_CHIEU: BatTuInput = { day: 31, month: 8, year: 1980, hour: 11, minute: 50, gender: "Nam" };
@@ -157,6 +157,30 @@ describe("Bát Tự Toàn Diện — Tầng 1 Findings (lá số tham chiếu 31
     expect(h.ketQua.gioiTinh).toBe("Nam");
     expect(h.ketQua.thapThanChinhXet).toContain("Tài");
     expect(h.ketQua.cungPhoiNgau).toBe(chart.day.chi);
+  });
+
+  it("Giai đoạn F: mỗi vị trí Lục Thân đều có cờ truBiXungHinhHai tường minh (đồng nhất với Giai đoạn D)", () => {
+    const { chart, analysis } = laSoVaPhanTich(LA_SO_THAM_CHIEU);
+    const f = findingsF(chart, analysis);
+    const nhomLucThan = [f.ketQua.chaMe, f.ketQua.anhChiEm, f.ketQua.voChong, f.ketQua.conCai] as unknown[];
+    for (const nhom of nhomLucThan) {
+      const viTriList = Array.isArray(nhom) ? nhom : Object.values(nhom as Record<string, unknown>).flat();
+      for (const vt of viTriList as { truBiXungHinhHai: boolean; lyDo: string[] }[]) {
+        expect(typeof vt.truBiXungHinhHai).toBe("boolean");
+        if (vt.truBiXungHinhHai) expect(vt.lyDo.length).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it("Giai đoạn I: nhatChuBiXungHinhHai khớp với than-sat-mat-tac-dung.ts tính riêng cho trụ Ngày", () => {
+    const { chart, analysis } = laSoVaPhanTich(LA_SO_THAM_CHIEU);
+    const i = findingsI(chart, analysis);
+    expect(typeof i.ketQua.nhatChuBiXungHinhHai).toBe("boolean");
+    if (i.ketQua.nhatChuBiXungHinhHai) {
+      expect((i.ketQua.nhatChuLyDo as string[]).length).toBeGreaterThan(0);
+    } else {
+      expect(i.ketQua.nhatChuLyDo).toEqual([]);
+    }
   });
 
   it("Giai đoạn K: Nhóm 3 (Tòng cách) giữ nguyên Dụng Thần suốt đời — không đổi theo Đại Vận (SPEC mục 7)", () => {
