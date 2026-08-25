@@ -1,0 +1,25 @@
+---
+// Bản in-app của Tính Trùng Tang — TỰ CHỨA trong app Quân Sư (chuẩn bị đóng gói App Store, KHÔNG link
+// ra trang web). Dùng chung component với bản web nên tính năng + giao diện y hệt.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
+import TinhTrungTang from "../../components/tools/TinhTrungTang.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout
+  title="Tính Trùng Tang — Quân Sư Thiên Anh"
+  description="Tính Trùng Tang – Nhập Mộ – Thiên Di trong app Quân Sư."
+  appShell
+>
+  <PageHero
+    eyebrow="Công cụ"
+    title="Tính Trùng Tang"
+    description="Nhập năm sinh và ngày giờ mất (âm lịch) — hệ thống tự tính Chưởng pháp Trùng Tang – Nhập Mộ – Thiên Di và các ngày trùng kỵ theo Can Chi. Công cụ tham khảo, không thay thế tư vấn trực tiếp."
+    breadcrumbs={[{ label: "Quân Sư", href: "/quan-su" }, { label: "Tính Trùng Tang" }]}
+  />
+  <TinhTrungTang />
+  <BottomNav />
+</BaseLayout>

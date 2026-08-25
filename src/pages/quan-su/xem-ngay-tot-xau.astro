@@ -1,0 +1,25 @@
+---
+// Bản in-app của Xem Ngày Tốt Xấu — TỰ CHỨA trong app Quân Sư (chuẩn bị App Store, KHÔNG link ra web).
+// Dùng chung component XemNgayTotXau nên tính năng + giao diện y hệt bản web (giữ nguyên, không đổi màu).
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
+import XemNgayTotXau from "../../components/tools/XemNgayTotXau.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout
+  title="Xem Ngày Tốt Xấu — Quân Sư Thiên Anh"
+  description="Tra cứu Trạch Nhật đầy đủ trong app Quân Sư: Tứ Trụ, Âm lịch, Tiết Khí, Trực, Nhị Thập Bát Tú, Hoàng Đạo/Hắc Đạo theo ngày và từng giờ."
+  appShell
+>
+  <PageHero
+    eyebrow="Công cụ"
+    title="Xem Ngày Tốt Xấu"
+    description="Chọn một ngày dương lịch để xem đầy đủ thông tin Trạch Nhật: Tứ Trụ, Âm lịch, Tiết Khí, Trực, Nhị Thập Bát Tú, Hoàng Đạo/Hắc Đạo theo ngày và theo từng giờ."
+    breadcrumbs={[{ label: "Quân Sư", href: "/quan-su" }, { label: "Xem Ngày Tốt Xấu" }]}
+  />
+  <XemNgayTotXau />
+  <BottomNav />
+</BaseLayout>

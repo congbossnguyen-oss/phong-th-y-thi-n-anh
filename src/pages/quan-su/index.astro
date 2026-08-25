@@ -149,9 +149,9 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
         ))}
       </div>
 
-      <!-- Dịch vụ VIP — trỏ vào hub trả-phí-theo-lượt sẵn có, KHÔNG nằm trong gói thuê bao Quân Sư
-           (mô hình thu phí khác nhau, xem project_quan-su-app-scope.md). -->
-      <a href="/dai-cat-loi/dich-vu-thu-phi" class="qsh-vip-card">
+      <!-- Dịch vụ VIP — trỏ vào trang danh sách trong app Quân Sư (/quan-su/dich-vu-vip): giao diện
+           Quân Sư, đã bỏ mục Sim Phong Thủy và KHÔNG hiển thị giá (đi kèm quyền gói Cao Cấp). -->
+      <a href="/quan-su/dich-vu-vip" class="qsh-vip-card">
         <img src="/images/quan-su/rong-vang.jpg" alt="" class="qsh-vip-bg" />
         <div class="qsh-vip-crown">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 8.5 7 11l5-6.5L17 11l4-2.5-1.6 9.3a1 1 0 0 1-1 .83H5.6a1 1 0 0 1-1-.83L3 8.5Z" stroke="currentColor" stroke-width="0.5" stroke-linejoin="round"/></svg>
@@ -170,8 +170,10 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
       <p class="qsh-section-title">Công cụ hữu ích</p>
       <div class="qsh-tool-grid">
         {[
+          { href: "/quan-su/xem-ngay-tot-xau", label: "Xem Ngày Tốt Xấu", icon: "calendar" },
+          { href: "/quan-su/luan-so-dien-thoai", label: "Luận Số Điện Thoại", icon: "phone" },
+          { href: "/quan-su/tinh-trung-tang", label: "Tính Trùng Tang", icon: "clock" },
           { href: "/dai-cat-loi/doi-lich-am-duong", label: "Đổi Lịch", icon: "calendar" },
-          { href: "/luan-so-dien-thoai", label: "Luận Số Điện Thoại", icon: "phone" },
           { href: "/dai-cat-loi/ngay-gio-xuat-hanh", label: "Hướng Xuất Hành", icon: "compass" },
           { href: "/dai-cat-loi/gio-tot-trong-ngay", label: "Giờ Hoàng Đạo", icon: "clock" },
         ].map((t) => (

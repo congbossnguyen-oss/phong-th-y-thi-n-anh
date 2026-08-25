@@ -1,0 +1,25 @@
+---
+// Bản in-app của Luận Số Điện Thoại — TỰ CHỨA trong app Quân Sư (chuẩn bị App Store, KHÔNG link ra web).
+// Dùng chung component LuanSoDienThoai nên tính năng + giao diện y hệt bản web.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
+import LuanSoDienThoai from "../../components/tools/LuanSoDienThoai.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout
+  title="Luận Số Điện Thoại — Quân Sư Thiên Anh"
+  description="Luận số điện thoại theo Bát Cực Linh Số trong app Quân Sư: tách cặp Bát tinh, chấm điểm năng lượng kèm biểu đồ và hướng hoá giải."
+  appShell
+>
+  <PageHero
+    eyebrow="Công cụ"
+    title="Luận Số Điện Thoại"
+    description="Nhập số điện thoại, hệ thống tách từng cặp năng lượng theo phương pháp Bát Cực Linh Số, chấm điểm và vẽ biểu đồ năng lượng của cả dãy số."
+    breadcrumbs={[{ label: "Quân Sư", href: "/quan-su" }, { label: "Luận Số Điện Thoại" }]}
+  />
+  <LuanSoDienThoai />
+  <BottomNav />
+</BaseLayout>
