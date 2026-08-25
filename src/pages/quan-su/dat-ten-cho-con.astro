@@ -1,0 +1,21 @@
+---
+// Ban in-app cua dich vu VIP "Đặt Tên Cho Con Theo Việt Danh Học" — TU CHUA trong app Quan Su (App Store, khong link ra web).
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
+import VipQuyenBanner from "../../components/quan-su/VipQuyenBanner.astro";
+import DatTenChoCon from "../../components/tools/DatTenChoCon.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout title="Đặt Tên Cho Con Theo Việt Danh Học — Quân Sư Thiên Anh" description="Đặt Tên Cho Con Theo Việt Danh Học trong app Quân Sư." appShell>
+  <PageHero
+    eyebrow="Dịch vụ VIP"
+    title="Đặt Tên Cho Con Theo Việt Danh Học"
+    breadcrumbs={[{ label: "Quân Sư", href: "/quan-su" }, { label: "Dịch vụ VIP", href: "/quan-su/dich-vu-vip" }, { label: "Đặt Tên Cho Con Theo Việt Danh Học" }]}
+  />
+  <VipQuyenBanner />
+  <DatTenChoCon />
+  <BottomNav />
+</BaseLayout>

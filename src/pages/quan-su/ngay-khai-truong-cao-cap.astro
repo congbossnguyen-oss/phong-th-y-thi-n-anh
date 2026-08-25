@@ -1,0 +1,21 @@
+---
+// Ban in-app cua dich vu VIP "Chọn Ngày Khai Trương Cao Cấp (Bát Tự Mệnh Chủ)" — TU CHUA trong app Quan Su (App Store, khong link ra web).
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
+import VipQuyenBanner from "../../components/quan-su/VipQuyenBanner.astro";
+import NgayKhaiTruongCaoCap from "../../components/tools/NgayKhaiTruongCaoCap.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout title="Chọn Ngày Khai Trương Cao Cấp (Bát Tự Mệnh Chủ) — Quân Sư Thiên Anh" description="Chọn Ngày Khai Trương Cao Cấp (Bát Tự Mệnh Chủ) trong app Quân Sư." appShell>
+  <PageHero
+    eyebrow="Dịch vụ VIP"
+    title="Chọn Ngày Khai Trương Cao Cấp (Bát Tự Mệnh Chủ)"
+    breadcrumbs={[{ label: "Quân Sư", href: "/quan-su" }, { label: "Dịch vụ VIP", href: "/quan-su/dich-vu-vip" }, { label: "Chọn Ngày Khai Trương Cao Cấp (Bát Tự Mệnh Chủ)" }]}
+  />
+  <VipQuyenBanner />
+  <NgayKhaiTruongCaoCap />
+  <BottomNav />
+</BaseLayout>

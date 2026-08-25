@@ -1,0 +1,21 @@
+---
+// Ban in-app cua dich vu VIP "Chọn Giờ Liệm – Đóng Quan – Ngày Giờ Hạ Huyệt" — TU CHUA trong app Quan Su (App Store, khong link ra web).
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
+import VipQuyenBanner from "../../components/quan-su/VipQuyenBanner.astro";
+import GioLiemHaHuyet from "../../components/tools/GioLiemHaHuyet.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout title="Chọn Giờ Liệm – Đóng Quan – Ngày Giờ Hạ Huyệt — Quân Sư Thiên Anh" description="Chọn Giờ Liệm – Đóng Quan – Ngày Giờ Hạ Huyệt trong app Quân Sư." appShell>
+  <PageHero
+    eyebrow="Dịch vụ VIP"
+    title="Chọn Giờ Liệm – Đóng Quan – Ngày Giờ Hạ Huyệt"
+    breadcrumbs={[{ label: "Quân Sư", href: "/quan-su" }, { label: "Dịch vụ VIP", href: "/quan-su/dich-vu-vip" }, { label: "Chọn Giờ Liệm – Đóng Quan – Ngày Giờ Hạ Huyệt" }]}
+  />
+  <VipQuyenBanner />
+  <GioLiemHaHuyet />
+  <BottomNav />
+</BaseLayout>

@@ -28,7 +28,7 @@ const dichVu = paidTools.filter((t) => t.href !== "/dai-cat-loi/sim-phong-thuy-k
 
       <div class="qs-vip-grid">
         {dichVu.map((m) => (
-          <a href={m.href} class="qs-vip-item" aria-label={m.title}>
+          <a href={m.href.replace("/dai-cat-loi/", "/quan-su/")} class="qs-vip-item" aria-label={m.title}>
             <span class="ic">{m.icon}</span>
             <span class="tx">
               <b>{m.title}</b>

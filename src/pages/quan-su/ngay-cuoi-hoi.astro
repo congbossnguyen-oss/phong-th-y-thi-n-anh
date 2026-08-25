@@ -1,0 +1,21 @@
+---
+// Ban in-app cua dich vu VIP "Xem Ngày Cưới Hỏi Trọn Gói" — TU CHUA trong app Quan Su (App Store, khong link ra web).
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
+import VipQuyenBanner from "../../components/quan-su/VipQuyenBanner.astro";
+import NgayCuoiHoi from "../../components/tools/NgayCuoiHoi.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout title="Xem Ngày Cưới Hỏi Trọn Gói — Quân Sư Thiên Anh" description="Xem Ngày Cưới Hỏi Trọn Gói trong app Quân Sư." appShell>
+  <PageHero
+    eyebrow="Dịch vụ VIP"
+    title="Xem Ngày Cưới Hỏi Trọn Gói"
+    breadcrumbs={[{ label: "Quân Sư", href: "/quan-su" }, { label: "Dịch vụ VIP", href: "/quan-su/dich-vu-vip" }, { label: "Xem Ngày Cưới Hỏi Trọn Gói" }]}
+  />
+  <VipQuyenBanner />
+  <NgayCuoiHoi />
+  <BottomNav />
+</BaseLayout>
