@@ -1,11 +1,12 @@
 {
   // MIGRATION Render -> Cloudflare Workers (nhánh cloudflare-migration, CHƯA deploy, CHƯA đổi DNS).
-  // "main" là điểm vào THỐNG NHẤT do @astrojs/cloudflare cung cấp sẵn (không phải đường dẫn file
-  // trong dist/) — xác nhận từ tài liệu chính thức Astro (docs.astro.build/.../cloudflare/), không
-  // tự đoán.
+  // "main" trỏ vào src/worker-entry.ts — điểm vào TỰ VIẾT, bọc lại điểm vào gốc của @astrojs/cloudflare
+  // ("@astrojs/cloudflare/entrypoints/server", chỉ có fetch()) để thêm scheduled() cho Cron Trigger
+  // (2026-08-25, thay Render Cron Job cũ gọi /api/thong-bao/gui-nhac-ngay-le qua HTTP). fetch() bên
+  // trong gọi thẳng handler gốc, không đổi hành vi phục vụ web.
   "$schema": "node_modules/wrangler/config-schema.json",
   "name": "phong-thuy-thien-anh",
-  "main": "@astrojs/cloudflare/entrypoints/server",
+  "main": "src/worker-entry.ts",
   "compatibility_date": "2025-05-21",
   // Bắt buộc để dùng node:crypto (session auth src/lib/auth/session.ts) và các Node API khác đang
   // dùng trong code (node:url, node:path...). VAPID (thong-bao/web-push.ts) đã chuyển sang Web
@@ -21,6 +22,19 @@
   // sẵn trong tài khoản (tự phát sinh từ một lần thử deploy trước, cùng đúng tên theo quy ước
   // wrangler) thay vì để wrangler tự tạo namespace mới — namespace mới bị trùng tên nên deploy lỗi.
   "kv_namespaces": [{ "binding": "SESSION", "id": "6d7b9d11decd4f7dacd97ede5deab9d2" }],
+  // Thay Render Cron Job cũ gọi /api/thong-bao/gui-nhac-ngay-le qua HTTP (xem comment gốc trong file
+  // đó + src/worker-entry.ts). Giữ NGUYÊN 2 mốc giờ UTC y hệt lịch Render trước đây — 04:00 và 23:00.
+  //
+  // ⚠️ CHƯA XÁC ĐỊNH: module ngay-le-am-lich.ts ghi rõ 2 mốc này ứng với 2 KIỂU nhắc khác nhau
+  // ("bao-truoc" lúc 04:00 UTC, "dung-hom-do" lúc 23:00 UTC) và code CHỈ đọc MỘT kiểu đang bật qua
+  // biến môi trường KIEU_NHAC_NGAY_LE — comment gốc mô tả đây là "có 2 phương án, chỉ đổi cấu hình"
+  // (tức thiết kế để CHỈ 1 kiểu hoạt động thật, không phải cả 2 cùng lúc). Không rõ trước đây Render
+  // có thật sự bật CẢ 2 Cron Job song song hay chỉ 1 cái đang dùng — KHÔNG tự đoán, khai đủ cả 2 mốc
+  // giờ y hệt những gì đã xác nhận là lịch Render cũ, giữ đúng KIEU_NHAC_NGAY_LE hiện có (không đổi).
+  // Nếu thực tế chỉ cần 1 mốc, xoá bớt dòng cron còn lại trong mảng dưới đây.
+  "triggers": {
+    "crons": ["0 4 * * *", "0 23 * * *"]
+  },
   "observability": {
     "enabled": true
   }
