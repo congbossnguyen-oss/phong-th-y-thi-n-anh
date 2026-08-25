@@ -7,6 +7,8 @@ import type { BatTuChart, PillarInfo } from "../bat-tu";
 import { CAN_NGU_HANH } from "../bat-tu";
 import type { BatTuAnalysis, Hanh } from "../bat-tu-engine/engine";
 import { MO_KHO, hanhCan, chiChuan } from "../bat-tu-engine/engine";
+import { timThanSatBoSung } from "./than-sat-bo-sung";
+import { tinhMatTacDungTheoTru, coMatTacDung, moTaLyDo } from "./than-sat-mat-tac-dung";
 import type { GiaiDoanFindings } from "./types";
 
 const CAN_NAMES = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"];
@@ -19,29 +21,50 @@ function hyKyCuaHanh(h: Hanh, dt: BatTuAnalysis["dungThan"]): "dung_than" | "hy_
   return "trung_tinh";
 }
 
-// --- D. Thần Sát — tái dùng NGUYÊN kết quả đã tính sẵn trong bat-tu.ts (36 sao, đã đối chiếu tài
-// liệu gốc nhiều lần — xem header bat-tu.ts). KHÔNG viết lại 49 công thức trong than-sat.json từ
-// đầu: rủi ro sai cao (mỗi sao 1 cách tra khác nhau), trong khi phần lớn đã có sẵn, đúng nguyên tắc
-// "Bao trùm — tái dùng hạ tầng đã có" (SPEC mục 0.1). 3 sao than-sat.json có nhưng bat-tu.ts CHỦ
-// ĐỘNG bỏ (Học Đường/Từ Quán, Phúc Tinh Quý Nhân, Kim Thần — nguồn OCR gốc rách/mâu thuẫn, xem
-// header bat-tu.ts) — giữ nguyên quyết định đó, không tự thêm lại khi chưa có bảng tra đáng tin.
+// --- D. Thần Sát ---
+//
+// Đối chiếu ĐẦY ĐỦ 49 sao trong content/bat-tu/data/than-sat.json với 36 sao bat-tu.ts đã tính sẵn
+// (đã đối chiếu tài liệu gốc nhiều lần — xem header bat-tu.ts), kết quả:
+//   - 35 sao trùng nhau (1 sao trùng tên khác: quanPhuNguQuy = "Quan Phù" bat-tu.ts đã có, công
+//     thức khớp 100% "+4 vị theo Chi Năm").
+//   - 12 sao than-sat.json có mà bat-tu.ts chưa tính → code hóa thêm ở than-sat-bo-sung.ts (dùng
+//     thẳng bảng tra trong than-sat.json, không tự suy công thức).
+//   - 3 sao than-sat.json có nhưng bat-tu.ts CHỦ ĐỘNG bỏ (Học Đường/Từ Quán, Phúc Tinh Quý Nhân, Kim
+//     Thần — nguồn OCR gốc rách/mâu thuẫn, xem header bat-tu.ts) — giữ nguyên quyết định đó.
+//   - 1 sao "cungLoc" (Cung Lộc) CHỦ ĐỘNG bỏ ở than-sat-bo-sung.ts — thuật toán "kẹp Lộc + phá cách"
+//     phức tạp hơn hẳn các sao còn lại, rủi ro cài sai cao hơn giá trị mang lại.
+//   - 1 sao "khongVong" (Không Vong/Tuần Không) đã tính RIÊNG ở chart.nienKhong/nhatKhong, không
+//     nằm trong danh sách thần sát ở đây (tránh trùng lặp 2 nơi).
+// Tổng: 47/49 sao có trong findings (35 bat-tu.ts + 12 bổ sung), 2 sao bỏ có chủ đích (đã nêu rõ).
+//
+// Mỗi sao tìm thấy được gắn kèm CÓ hay KHÔNG rơi vào điều kiện "mất tác dụng" (Không Vong/Xung/Hình/
+// Hại tại đúng trụ đó — xem than-sat-mat-tac-dung.ts) để Tầng 2 AI luận đúng mức độ, không mặc định
+// mọi sao tìm thấy đều phát huy trọn vẹn.
 export function findingsD(chart: BatTuChart): GiaiDoanFindings {
-  const saoCoMat = Object.entries(chart.thanSat)
-    .flatMap(([tru, danhSach]) => danhSach.map((ten) => ({ tru, ten })))
-    .reduce<Record<string, string[]>>((acc, { tru, ten }) => {
-      (acc[ten] ??= []).push(tru);
-      return acc;
-    }, {});
+  const boSung = timThanSatBoSung(chart);
+  const gopTatCa: Record<string, string[]> = { year: [], month: [], day: [], hour: [] };
+  for (const tru of ["year", "month", "day", "hour"] as const) {
+    gopTatCa[tru] = [...chart.thanSat[tru], ...boSung[tru]];
+  }
+
+  const lyDoTheoTru = tinhMatTacDungTheoTru(chart);
+  const danhSachSao = Object.entries(gopTatCa).flatMap(([tru, danhSach]) =>
+    danhSach.map((ten) => ({ ten, tru, matTacDung: coMatTacDung(lyDoTheoTru[tru as keyof typeof lyDoTheoTru]), lyDo: moTaLyDo(lyDoTheoTru[tru as keyof typeof lyDoTheoTru]) })),
+  );
+  const saoCoMat = danhSachSao.reduce<Record<string, { viTri: string; matTacDung: boolean; lyDo: string[] }[]>>((acc, { ten, tru, matTacDung, lyDo }) => {
+    (acc[ten] ??= []).push({ viTri: tru, matTacDung, lyDo });
+    return acc;
+  }, {});
 
   return {
     maGiaiDoan: "D",
     tenGiaiDoan: "Thần Sát",
     ketQua: {
-      saoCoMat: Object.entries(saoCoMat).map(([ten, truList]) => ({ ten, viTri: truList })),
+      saoCoMat: Object.entries(saoCoMat).map(([ten, viTriList]) => ({ ten, viTriList })),
       tongSoSao: Object.keys(saoCoMat).length,
-      luuY: "Danh sách đã loại các sao bị 'mất tác dụng' theo nguyên tắc Không Vong/Hình/Xung/Khắc/Hại trực tiếp (tính sẵn trong bat-tu.ts).",
+      luuY: "Mỗi sao kèm cờ matTacDung (true nếu trụ đó bị Không Vong/Xung/Hình/Hại) — sao Hỷ mà mất tác dụng thì giảm cái tốt, sao Kị mà mất tác dụng thì giảm cái xấu (không phải luôn luôn triệt tiêu hoàn toàn), Tầng 2 AI tự cân nhắc mức độ theo đúng nguyên tắc than-sat.md.",
     },
-    canCu: ["bat-tu.ts (thanSat nguyên cục, 36 sao)", "knowledge/than-sat.md"],
+    canCu: ["bat-tu.ts (thanSat nguyên cục, 35 sao)", "than-sat-bo-sung.ts (12 sao bổ sung)", "than-sat-mat-tac-dung.ts (Không Vong/Xung/Hình/Hại)", "knowledge/than-sat.md"],
   };
 }
 
