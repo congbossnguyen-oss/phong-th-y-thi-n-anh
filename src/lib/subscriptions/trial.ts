@@ -6,11 +6,39 @@
  * Không đi qua `orders`/SePay — tạo thẳng 1 dòng `subscriptions` với isTrial=true, duration=null,
  * orderId=null.
  */
-import { and, eq } from "drizzle-orm";
+import { and, eq, gte } from "drizzle-orm";
 import { db } from "../db/client";
-import { subscriptions } from "../../../db/schema";
+import { subscriptions, trialDevices } from "../../../db/schema";
 
 const SO_NGAY_DUNG_THU = 7;
+
+// Chống lạm dụng mức "Vừa": mỗi THIẾT BỊ chỉ 1 lượt trial; mỗi IP tối đa IP_TRIAL_TOI_DA lượt trong
+// IP_CUA_SO_NGAY ngày (nới để không chặn nhầm gia đình/công ty dùng chung 1 IP). Xem docs quyết định
+// của chủ dự án 2026-08-25.
+export const IP_TRIAL_TOI_DA = 3;
+export const IP_CUA_SO_NGAY = 90;
+
+/** Ngữ cảnh thiết bị để chống lạm dụng — endpoint truyền vào (device id từ cookie + IP client). */
+export interface TrialDeviceContext {
+  deviceId: string;
+  ip: string;
+}
+
+/**
+ * Quyết định chặn trial theo thiết bị/IP (mức "Vừa") — HÀM THUẦN, không đụng DB, để test được.
+ * Trả về thông báo lỗi (hiển thị thẳng cho khách) nếu phải chặn, hoặc null nếu cho phép.
+ * @param thietBiDaThu  thiết bị (deviceId) này đã từng dùng thử chưa
+ * @param soLuotIp      số lượt trial đã cấp cho IP này trong IP_CUA_SO_NGAY ngày
+ */
+export function lyDoChanTrialTheoThietBi(input: { thietBiDaThu: boolean; soLuotIp: number }): string | null {
+  if (input.thietBiDaThu) {
+    return "Thiết bị này đã dùng thử rồi — mỗi thiết bị chỉ dùng thử được 1 lần. Vui lòng nâng gói để tiếp tục.";
+  }
+  if (input.soLuotIp >= IP_TRIAL_TOI_DA) {
+    return "Mạng của bạn đã có nhiều lượt dùng thử gần đây. Vui lòng nâng gói để tiếp tục sử dụng.";
+  }
+  return null;
+}
 
 export async function daTungDungThu(userId: string): Promise<boolean> {
   const [row] = await db
@@ -25,7 +53,7 @@ export async function daTungDungThu(userId: string): Promise<boolean> {
  * Kích hoạt dùng thử. Ném lỗi (message tiếng Việt, hiển thị thẳng cho khách) nếu không đủ điều
  * kiện — KHÔNG âm thầm bỏ qua, để tránh lộ ra bug "bấm mà không thấy gì xảy ra".
  */
-export async function batDauDungThu(userId: string): Promise<{ expiresAt: Date }> {
+export async function batDauDungThu(userId: string, device?: TrialDeviceContext): Promise<{ expiresAt: Date }> {
   const [dangHoatDong] = await db
     .select({ id: subscriptions.id })
     .from(subscriptions)
@@ -37,6 +65,24 @@ export async function batDauDungThu(userId: string): Promise<{ expiresAt: Date }
 
   if (await daTungDungThu(userId)) {
     throw new Error("Tài khoản đã dùng thử rồi, mỗi tài khoản chỉ dùng thử được 1 lần.");
+  }
+
+  // --- Chống lạm dụng mức "Vừa" (theo thiết bị + IP): đọc DB rồi để hàm thuần quyết định ---
+  if (device) {
+    const [thietBi] = await db
+      .select({ id: trialDevices.id })
+      .from(trialDevices)
+      .where(eq(trialDevices.deviceId, device.deviceId))
+      .limit(1);
+
+    const tuNgay = new Date(Date.now() - IP_CUA_SO_NGAY * 24 * 60 * 60 * 1000);
+    const luotCungIp = await db
+      .select({ id: trialDevices.id })
+      .from(trialDevices)
+      .where(and(eq(trialDevices.ip, device.ip), gte(trialDevices.createdAt, tuNgay)));
+
+    const loi = lyDoChanTrialTheoThietBi({ thietBiDaThu: !!thietBi, soLuotIp: luotCungIp.length });
+    if (loi) throw new Error(loi);
   }
 
   const startedAt = new Date();
@@ -53,6 +99,11 @@ export async function batDauDungThu(userId: string): Promise<{ expiresAt: Date }
     expiresAt,
     orderId: null,
   });
+
+  // Ghi lại thiết bị + IP đã dùng trial để lần sau chặn (mức "Vừa").
+  if (device) {
+    await db.insert(trialDevices).values({ userId, deviceId: device.deviceId, ip: device.ip });
+  }
 
   return { expiresAt };
 }

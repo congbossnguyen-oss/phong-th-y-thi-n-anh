@@ -11,6 +11,8 @@ import { createToolOrder, markOrderPaidAndFulfill } from "../db/orders";
 import { getSepayQrUrl } from "./sepay";
 import { kiemMaKhuyenMai, chuanHoaMa } from "./promo";
 import { GIA_CONG_CU, type ToolSlug } from "./gia-cong-cu";
+import { coQuyenTruyCap } from "../subscriptions/access";
+import { VIP_SLUG_THEO_GOI } from "./vip-slugs";
 
 export interface KetQuaTaoDon {
   ok: true;
@@ -66,11 +68,18 @@ export async function taoDonCongCu(params: {
   let promoCodeId: string | undefined;
   let moTaGiam: string | undefined;
 
-  // Quản trị kiểm thử: miễn toàn bộ. CỐ Ý không đụng tới mã khuyến mãi — nếu vẫn chạy nhánh mã
-  // thì mỗi lần anh test sẽ đốt mất một lượt của mã thật đang phát cho khách.
-  if (params.laQuanTri) {
+  // Miễn phí theo gói Cao Cấp: dịch vụ VIP + khách có quyền Cao Cấp (gói trả phí HOẶC đang dùng thử).
+  // Kiểm ở phía máy chủ (coQuyenTruyCap đọc bảng subscriptions), không tin cờ nào từ client.
+  const laMienPhiTheoGoi =
+    VIP_SLUG_THEO_GOI.has(params.toolSlug) && !!params.userId && (await coQuyenTruyCap(params.userId, "cao_cap"));
+
+  // Quản trị kiểm thử HOẶC khách có gói Cao Cấp: miễn toàn bộ. CỐ Ý không đụng tới mã khuyến mãi —
+  // nếu vẫn chạy nhánh mã thì mỗi lần dùng miễn phí sẽ đốt mất một lượt của mã thật đang phát cho khách.
+  if (params.laQuanTri || laMienPhiTheoGoi) {
     soTienGiam = soTienGoc;
-    moTaGiam = "Tài khoản quản trị — miễn phí để kiểm thử";
+    moTaGiam = params.laQuanTri
+      ? "Tài khoản quản trị — miễn phí để kiểm thử"
+      : "Miễn phí theo gói Cao Cấp";
   } else if (ma) {
     const kq = await kiemMaKhuyenMai({ ma, toolSlug: params.toolSlug, soTienGoc });
     if (!kq.hopLe) {

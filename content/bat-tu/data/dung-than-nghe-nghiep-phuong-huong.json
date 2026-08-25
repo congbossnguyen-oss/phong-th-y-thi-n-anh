@@ -1,0 +1,18 @@
+{
+  "_meta": { "nguon": "dung-than.md muc 5", "dongBoLuc": "2026-08-25" },
+  "ngheNghiepTheoHanh": {
+    "Mộc": ["giáo dục", "xuất bản", "nông lâm", "thời trang", "y dược (Đông y)"],
+    "Hỏa": ["điện", "năng lượng", "IT", "truyền thông", "giải trí"],
+    "Thổ": ["bất động sản", "xây dựng", "nông nghiệp", "tâm linh"],
+    "Kim": ["tài chính", "luật", "kim loại", "cơ khí", "ô tô"],
+    "Thủy": ["thương mại", "du lịch", "vận tải", "truyền thông", "ngoại giao"]
+  },
+  "phuongHuongMauSac": {
+    "Mộc": { "phuong": "Đông", "mauSac": ["xanh lá", "xanh ngọc"] },
+    "Hỏa": { "phuong": "Nam", "mauSac": ["đỏ", "hồng", "cam", "tím"] },
+    "Thổ": { "phuong": "Trung tâm (hoặc Đông Bắc/Tây Nam)", "mauSac": ["vàng", "nâu đất", "be"] },
+    "Kim": { "phuong": "Tây", "mauSac": ["trắng", "bạc", "ánh kim"] },
+    "Thủy": { "phuong": "Bắc", "mauSac": ["đen", "xanh dương đậm"] }
+  },
+  "luuY": "Nghề nghiệp và phương hướng/màu sắc theo hành DỤNG THẦN của lá số (tra từ bat-tu-engine). Phương hướng/màu sắc nên ưu tiên theo hành Dụng-Hỷ Thần của ĐẠI VẬN HIỆN TẠI (không phải Dụng Thần gốc cả đời) nếu lá số thuộc Nhóm 1/2 (Dụng Thần đổi theo Đại Vận — xem knowledge/vuong-suy.md mục 5). Đây là gợi ý tổng quát theo hành, PHẢI ghi rõ trong output là 'gợi ý theo hành, không phải quy tắc cứng', không trình bày như quy luật tuyệt đối."
+}

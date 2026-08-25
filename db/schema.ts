@@ -124,6 +124,18 @@ export const subscriptions = pgTable("subscriptions", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// --- Chống lạm dụng dùng thử (mức "Vừa"): 1 lượt/thiết bị + ngưỡng IP. Ghi lại mỗi lượt trial đã
+// cấp để chặn tạo nhiều tài khoản trên cùng thiết bị/mạng. Xem src/lib/subscriptions/trial.ts. ---
+export const trialDevices = pgTable("trial_devices", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  // Định danh thiết bị bền (cookie httpOnly ngẫu nhiên, ~400 ngày) — xem src/lib/auth/device-id.ts.
+  deviceId: text("device_id").notNull(),
+  // IP lúc kích hoạt trial (dùng cho ngưỡng IP, nới để tránh chặn nhầm nhà/công ty chung IP).
+  ip: text("ip"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // --- Khóa học: đăng ký & tiến độ học ---
 
 export const enrollmentSourceEnum = pgEnum("enrollment_source", [

@@ -1,0 +1,21 @@
+---
+// Ban in-app cua dich vu VIP "Xem Ngày Cao Cấp – Động Thổ / Nhập Trạch" — TU CHUA trong app Quan Su (App Store, khong link ra web).
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
+import VipQuyenBanner from "../../components/quan-su/VipQuyenBanner.astro";
+import XemNgayCaoCap from "../../components/tools/XemNgayCaoCap.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout title="Xem Ngày Cao Cấp – Động Thổ / Nhập Trạch — Quân Sư Thiên Anh" description="Xem Ngày Cao Cấp – Động Thổ / Nhập Trạch trong app Quân Sư." appShell>
+  <PageHero
+    eyebrow="Dịch vụ VIP"
+    title="Xem Ngày Cao Cấp – Động Thổ / Nhập Trạch"
+    breadcrumbs={[{ label: "Quân Sư", href: "/quan-su" }, { label: "Dịch vụ VIP", href: "/quan-su/dich-vu-vip" }, { label: "Xem Ngày Cao Cấp – Động Thổ / Nhập Trạch" }]}
+  />
+  <VipQuyenBanner />
+  <XemNgayCaoCap />
+  <BottomNav />
+</BaseLayout>

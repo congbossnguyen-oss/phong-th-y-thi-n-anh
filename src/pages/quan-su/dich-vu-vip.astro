@@ -1,0 +1,60 @@
+---
+// "Dịch vụ VIP" phiên bản trong app Quân Sư — danh sách các dịch vụ trạch cát chuyên sâu, dựng theo
+// giao diện Quân Sư (navy/vàng, BottomNav), KHÁC bản hub cũ /dai-cat-loi/dich-vu-thu-phi (ảnh bìa,
+// thu phí theo lượt). Theo yêu cầu chủ dự án (2026-08-25):
+//   - Bỏ mục "Sim Phong Thủy Khai Vận Khí".
+//   - KHÔNG hiển thị giá/chi phí (các dịch vụ này đi kèm quyền gói Cao Cấp, không thu phí lẻ ở đây).
+// Nguồn danh mục: paidTools trong src/lib/dai-cat-loi-tools.ts (1 nguồn sự thật, không lặp lại).
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
+import "../../styles/quan-su.css";
+import { paidTools } from "../../lib/dai-cat-loi-tools";
+
+export const prerender = false;
+
+const dichVu = paidTools.filter((t) => t.href !== "/dai-cat-loi/sim-phong-thuy-khai-van");
+---
+
+<BaseLayout
+  title="Dịch vụ VIP — Quân Sư Thiên Anh"
+  description="Các dịch vụ trạch cát chuyên sâu trong app Quân Sư — tính riêng cho từng trường hợp, đi kèm quyền lợi gói Cao Cấp."
+  appShell
+>
+  <section class="qs">
+    <div class="qs-wrap">
+      <a class="qs-back" href="/quan-su">← Quân Sư</a>
+      <h1 class="qs-h1" style="margin-top:1rem;">Dịch vụ VIP</h1>
+      <p class="qs-sub">Các dịch vụ trạch cát chuyên sâu, tính riêng cho từng trường hợp — đi kèm quyền lợi gói Cao Cấp.</p>
+
+      <div class="qs-vip-grid">
+        {dichVu.map((m) => (
+          <a href={m.href.replace("/dai-cat-loi/", "/quan-su/")} class="qs-vip-item" aria-label={m.title}>
+            <span class="ic">{m.icon}</span>
+            <span class="tx">
+              <b>{m.title}</b>
+              <small>{m.desc}</small>
+            </span>
+            <span class="chev">›</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <BottomNav />
+</BaseLayout>
+
+<style>
+  .qs-vip-grid { display: grid; gap: 0.7rem; margin-top: 1.2rem; }
+  .qs-vip-item {
+    display: grid; grid-template-columns: 44px 1fr 16px; align-items: center; gap: 0.85rem;
+    background: var(--qs-navy); border: 1px solid rgba(241, 200, 90, 0.2); border-radius: 14px;
+    padding: 0.9rem 1rem; text-decoration: none; color: var(--qs-ivory);
+    transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+  .qs-vip-item:hover { border-color: var(--qs-gold); transform: translateY(-1px); }
+  .qs-vip-item .ic { font-size: 1.55rem; text-align: center; line-height: 1; }
+  .qs-vip-item .tx b { display: block; font-size: 0.92rem; font-weight: 700; line-height: 1.3; color: var(--qs-ivory); }
+  .qs-vip-item .tx small { display: block; font-size: 0.72rem; color: var(--qs-muted); margin-top: 0.22rem; line-height: 1.45; }
+  .qs-vip-item .chev { color: var(--qs-gold); font-size: 1.2rem; text-align: center; }
+</style>

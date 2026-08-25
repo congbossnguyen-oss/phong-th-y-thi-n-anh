@@ -9,6 +9,7 @@ import {
   hoSoTangLeEmail,
   nghePdfEmail,
   trachNhatSinhNoPdfEmail,
+  kyMonMenhPdfEmail,
 } from "./templates";
 
 // Gửi email không được phép làm sập luồng nghiệp vụ chính (vd webhook thanh toán phải trả 200
@@ -146,5 +147,18 @@ export async function sendTrachNhatSinhNoPdfEmail(params: {
   const { subject, html } = trachNhatSinhNoPdfEmail(params);
   await safeSend(params.to, subject, html, [
     { filename: `trach-nhat-sinh-no-${params.orderCode}.pdf`, content: Buffer.from(params.pdfBytes) },
+  ]);
+}
+
+/** Gửi PDF Luận Giải Kỳ Môn Mệnh chi tiết kèm email. Dùng safeSend — lỗi chỉ log. */
+export async function sendKyMonMenhPdfEmail(params: {
+  to: string;
+  orderCode: string;
+  customerName: string;
+  pdfBytes: Uint8Array;
+}) {
+  const { subject, html } = kyMonMenhPdfEmail(params);
+  await safeSend(params.to, subject, html, [
+    { filename: `ky-mon-menh-${params.orderCode}.pdf`, content: Buffer.from(params.pdfBytes) },
   ]);
 }

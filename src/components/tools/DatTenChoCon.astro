@@ -1,0 +1,477 @@
+---
+// Than dich vu VIP tach dung chung cho web + in-app Quan Su (giu nguyen logic/giao dien).
+import BottomNav from "../../components/quan-su/BottomNav.astro";
+import Container from "../../components/ui/Container.astro";
+import Button from "../../components/ui/Button.astro";
+import MaKhuyenMai from "../../components/ui/MaKhuyenMai.astro";
+import { siteConfig } from "../../lib/site-config";
+import { dinhDangTien, GIA_CONG_CU } from "../../lib/payments/gia-cong-cu";
+
+// Render phía máy chủ (không prerender) để đọc được phiên đăng nhập — cần nhận diện tài khoản
+// QUẢN TRỊ (test 0đ trọn luồng thật). Prerender thì Astro.locals.user luôn rỗng lúc build.
+export const prerender = false;
+
+const namNay = new Date().getFullYear();
+const TOOL_SLUG = "dat-ten-cho-con";
+const TOOL_PRICE = GIA_CONG_CU["dat-ten-cho-con"];
+const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
+const hotlineHref = `tel:${siteConfig.hotline.replace(/\s/g, "")}`;
+
+// ĐÃ MỞ BÁN + THU PHÍ (chủ dự án chốt 2026-08-18): khách thanh toán thật qua QR; tài khoản quản
+// trị được checkout-cong-cu tạo đơn 0đ tự xác nhận (cờ laQuanTri lấy từ phiên đăng nhập) nên vẫn
+// test miễn phí trọn luồng. Không bắt đăng nhập với khách — orderCode làm "vé" mở kết quả.
+const laQuanTri = Astro.locals.user?.isAdmin === true;
+---
+
+  <Container class="py-12">
+    <div class="mx-auto max-w-4xl">
+      {laQuanTri && (
+        <div class="mb-4 rounded-(--radius-card) border-2 border-(--color-gold-400) bg-(--color-gold-400)/10 p-4 text-sm font-medium text-(--color-gold-600)">
+          🔧 Bạn đang đăng nhập bằng <strong>tài khoản quản trị</strong> — đơn sẽ là 0đ, tự xác nhận,
+          đi trọn luồng thật để kiểm thử (không mất phí).
+        </div>
+      )}
+
+      <div class="mb-4 rounded-(--radius-card) border-2 border-(--color-gold-400) bg-(--color-gold-400)/10 p-4 text-sm font-medium text-(--color-ink-800)">
+        ⭐ Dịch vụ VIP — phí <strong>{TOOL_PRICE_LABEL}/lượt</strong>. Một lần thanh toán mở cả
+        <strong> gợi ý 20 tên hợp mệnh</strong> và <strong>đánh giá tên bạn đã chọn</strong> (tối đa 10 tên).
+        Thanh toán qua QR, không cần tạo tài khoản.
+      </div>
+
+      <form
+        id="dtc-form"
+        class="grid gap-4 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6"
+      >
+        <div>
+          <label for="dtc-ho" class="text-sm font-semibold text-(--color-ink-900)">
+            Họ của bé <span class="text-(--color-danger-500)">*</span>
+          </label>
+          <input
+            id="dtc-ho"
+            type="text"
+            required
+            autocomplete="off"
+            placeholder="Ví dụ: Nguyễn"
+            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-400) bg-(--color-ivory-50) px-3 py-3 text-base font-semibold text-(--color-ink-900) placeholder:font-normal placeholder:text-(--color-ink-600)"
+          />
+        </div>
+
+        <div class="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label for="dtc-dem" class="text-sm font-semibold text-(--color-ink-900)">Tên đệm mong muốn</label>
+            <input
+              id="dtc-dem"
+              type="text"
+              autocomplete="off"
+              placeholder="Để trống để gợi ý cả đệm"
+              class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-400) bg-(--color-ivory-50) px-3 py-3 text-base text-(--color-ink-900) placeholder:text-(--color-ink-600)"
+            />
+            <p class="mt-1 text-xs text-(--color-ink-600)">Bỏ trống thì hệ thống gợi ý luôn cả đệm + tên hợp mệnh.</p>
+          </div>
+          <div>
+            <label for="dtc-gioi-tinh" class="text-sm font-semibold text-(--color-ink-900)">
+              Giới tính <span class="text-(--color-danger-500)">*</span>
+            </label>
+            <select
+              id="dtc-gioi-tinh"
+              required
+              class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-400) bg-(--color-ivory-50) px-3 py-3 text-base text-(--color-ink-900)"
+            >
+              <option value="">— Chọn —</option>
+              <option value="nam">Bé trai</option>
+              <option value="nu">Bé gái</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="text-sm font-semibold text-(--color-ink-900)">
+            Ngày sinh dương lịch của bé <span class="text-(--color-danger-500)">*</span>
+          </label>
+          <div class="mt-1.5 grid grid-cols-3 gap-3">
+            <input id="dtc-ngay" type="number" min="1" max="31" required placeholder="Ngày"
+              class="w-full rounded-(--radius-control) border border-(--color-ivory-400) bg-(--color-ivory-50) px-3 py-3 text-base text-(--color-ink-900) placeholder:text-(--color-ink-600)" />
+            <input id="dtc-thang" type="number" min="1" max="12" required placeholder="Tháng"
+              class="w-full rounded-(--radius-control) border border-(--color-ivory-400) bg-(--color-ivory-50) px-3 py-3 text-base text-(--color-ink-900) placeholder:text-(--color-ink-600)" />
+            <input id="dtc-nam" type="number" min="1900" max={namNay} required placeholder="Năm"
+              class="w-full rounded-(--radius-control) border border-(--color-ivory-400) bg-(--color-ivory-50) px-3 py-3 text-base text-(--color-ink-900) placeholder:text-(--color-ink-600)" />
+          </div>
+        </div>
+
+        <details class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3">
+          <summary class="cursor-pointer text-sm font-semibold text-(--color-ink-900)">
+            Thêm giờ sinh để chính xác hơn (không bắt buộc)
+          </summary>
+          <div class="mt-3 grid grid-cols-2 gap-3">
+            <div>
+              <label for="dtc-gio" class="text-sm font-medium text-(--color-ink-800)">Giờ (0–23)</label>
+              <input id="dtc-gio" type="number" min="0" max="23" placeholder="Ví dụ: 10"
+                class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-400) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-900) placeholder:text-(--color-ink-600)" />
+            </div>
+            <div>
+              <label for="dtc-phut" class="text-sm font-medium text-(--color-ink-800)">Phút</label>
+              <input id="dtc-phut" type="number" min="0" max="59" placeholder="Ví dụ: 30"
+                class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-400) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-900) placeholder:text-(--color-ink-600)" />
+            </div>
+          </div>
+          <p class="mt-2 text-xs text-(--color-ink-600)">
+            Không có giờ sinh vẫn luận được (3 trụ), nhưng ngũ hành khuyết sẽ chỉ ở mức tương đối.
+          </p>
+        </details>
+
+        <div class="border-t border-(--color-ivory-300) pt-4">
+          <p class="text-sm font-medium text-(--color-ink-800)">Thông tin liên hệ (để nhận kết quả sau khi thanh toán)</p>
+          <div class="mt-2 grid gap-3">
+            <input id="dtc-ten" type="text" placeholder="Họ tên" required
+              class="w-full rounded-(--radius-control) border border-(--color-ivory-400) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-900) placeholder:text-(--color-ink-600)" />
+            <input id="dtc-sdt" type="tel" placeholder="Số điện thoại" required
+              class="w-full rounded-(--radius-control) border border-(--color-ivory-400) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-900) placeholder:text-(--color-ink-600)" />
+            <input id="dtc-email" type="email" placeholder="Email (tùy chọn)"
+              class="w-full rounded-(--radius-control) border border-(--color-ivory-400) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-900) placeholder:text-(--color-ink-600)" />
+          </div>
+        </div>
+
+        <MaKhuyenMai idPrefix="dtc-ma" toolSlug={TOOL_SLUG} giaGoc={TOOL_PRICE} />
+
+        <Button type="submit" size="lg">
+          <span id="dtc-nhan-nut">Thanh toán {TOOL_PRICE_LABEL} & Gợi ý tên cho con</span>
+        </Button>
+      </form>
+
+      <div id="dtc-loi" class="mt-4 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm font-semibold text-(--color-danger-500)"></div>
+
+      <!-- Bước thanh toán -->
+      <div id="dtc-thanh-toan" class="mt-6 hidden space-y-4 rounded-2xl border-2 border-(--color-gold-400) bg-(--color-ivory-100) p-6 text-center text-(--color-ink-950) shadow-lg">
+        <p class="font-display text-lg font-bold">Quét mã QR để thanh toán {TOOL_PRICE_LABEL}</p>
+        <img id="dtc-qr" src="" alt="Mã QR thanh toán" class="mx-auto h-64 w-64 rounded-xl border border-(--color-ivory-300)" />
+        <p class="text-sm text-(--color-ink-600)">Mã đơn hàng: <strong id="dtc-order-code"></strong></p>
+        <p id="dtc-trang-thai" class="text-sm font-medium text-(--color-gold-400)">Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)</p>
+      </div>
+
+      <!-- Kết quả gợi ý tên (sau khi thanh toán) -->
+      <div id="dtc-ket-qua" class="mt-8 hidden"></div>
+
+      <!-- Đánh giá tên khách đã chọn — MỞ KHÓA sau khi thanh toán, dùng chung đơn (không tính thêm phí) -->
+      <div id="dtc-dg-khoi" class="mt-10 hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
+        <h2 class="font-display text-lg font-bold text-(--color-ink-900)">Đánh giá những tên bạn đã ưng</h2>
+        <p class="mt-1 text-sm text-(--color-ink-600)">
+          Nhập tối đa <strong>10 tên</strong> bạn đang cân nhắc (mỗi dòng một tên, có thể kèm đệm, ví dụ
+          <em>Gia Bảo</em>). Hệ thống chấm điểm từng tên theo Tứ Trụ của bé và xếp hạng tên hợp nhất.
+          Dùng chung đơn đã thanh toán — <strong>không tính thêm phí</strong>.
+        </p>
+        <textarea
+          id="dtc-danh-sach"
+          rows="4"
+          placeholder={"Gia Bảo\nMinh Tuấn\nĐức Anh"}
+          class="mt-3 w-full rounded-(--radius-control) border border-(--color-ivory-400) bg-(--color-ivory-50) px-3 py-3 text-base text-(--color-ink-900) placeholder:text-(--color-ink-600)"
+        ></textarea>
+        <Button id="dtc-nut-danh-gia" type="button" size="lg" class="mt-3">Đánh giá các tên này</Button>
+        <div id="dtc-dg-dang-chay" class="mt-4 hidden rounded-(--radius-card) border border-(--color-gold-500)/40 bg-(--color-gold-400)/10 p-4 text-sm font-medium text-(--color-ink-900)">
+          ⏳ Đang chấm điểm từng tên…
+        </div>
+        <div id="dtc-dg-loi" class="mt-4 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm font-semibold text-(--color-danger-500)"></div>
+        <div id="dtc-dg-ket-qua" class="mt-6 hidden"></div>
+      </div>
+
+      <div class="mt-10 rounded-(--radius-card) border-2 border-(--color-gold-400) bg-(--color-gold-400)/10 p-6 text-center">
+        <p class="font-display text-lg font-bold text-(--color-ink-900)">Muốn chuyên gia luận kỹ và chốt tên?</p>
+        <p class="mx-auto mt-2 max-w-xl text-sm font-medium text-(--color-ink-800)">
+          Công cụ gợi ý theo số lý. Để chốt một cái tên trọn vẹn cả nghĩa chữ, âm đọc và cả bát tự,
+          anh/chị nên để chuyên gia Thiên Anh luận trực tiếp.
+        </p>
+        <div class="mt-5 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <a href={hotlineHref} class="flex w-full items-center justify-center gap-2 rounded-(--radius-pill) bg-(--color-gold-400) px-6 py-3 text-sm font-bold text-(--color-on-accent) hover:bg-(--color-gold-300) sm:w-auto">
+            📞 Gọi hotline {siteConfig.hotline}
+          </a>
+          <a href="https://zalo.me/0836768768" class="flex w-full items-center justify-center gap-2 rounded-(--radius-pill) border border-(--color-gold-400) px-6 py-3 text-sm font-bold text-(--color-gold-300) hover:bg-(--color-ivory-200) sm:w-auto">
+            💬 Chat Zalo với Thiên Anh
+          </a>
+        </div>
+      </div>
+    </div>
+  </Container>
+  <BottomNav />
+
+<script>
+  const form = document.getElementById("dtc-form") as HTMLFormElement;
+  const oLoi = document.getElementById("dtc-loi")!;
+  const oKetQua = document.getElementById("dtc-ket-qua")!;
+  const oThanhToan = document.getElementById("dtc-thanh-toan")!;
+  const qrImg = document.getElementById("dtc-qr") as HTMLImageElement;
+  const orderCodeEl = document.getElementById("dtc-order-code")!;
+  const trangThaiEl = document.getElementById("dtc-trang-thai")!;
+  const dgKhoi = document.getElementById("dtc-dg-khoi")!;
+
+  // Mã đơn đã thanh toán — làm "vé" mở chức năng đánh giá tên (endpoint danh-gia kiểm lại phía máy chủ).
+  let orderCodeDaTra: string | null = null;
+
+  const esc = (s: string) =>
+    String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+
+  const MAU_HANH: Record<string, string> = {
+    "Kim": "#eab308", "Mộc": "#22c55e", "Thủy": "#3b82f6", "Hỏa": "#ef4444", "Thổ": "#d97706",
+  };
+  const THU_TU = ["Kim", "Mộc", "Thủy", "Hỏa", "Thổ"];
+
+  /** Đồ hình tròn (donut) tỷ lệ ngũ hành, tô nhạt hành không khuyết, làm nổi hành cần bổ. */
+  function donutNguHanh(tyLe: Record<string, number>, khuyet: string[]): string {
+    const r = 60, vong = 2 * Math.PI * r;
+    let mocDau = 0;
+    const cung = THU_TU.map((h) => {
+      const pct = tyLe[h] ?? 0;
+      const dai = (pct / 100) * vong;
+      const canBo = khuyet.includes(h);
+      const seg = `<circle cx="80" cy="80" r="${r}" fill="none" stroke="${MAU_HANH[h]}"
+        stroke-width="${canBo ? 26 : 18}" stroke-dasharray="${dai} ${vong - dai}"
+        stroke-dashoffset="${-mocDau}" opacity="${canBo || khuyet.length === 0 ? 1 : 0.4}"
+        transform="rotate(-90 80 80)" />`;
+      mocDau += dai;
+      return seg;
+    }).join("");
+    return `
+      <div class="flex flex-col items-center sm:flex-row sm:items-center sm:gap-6">
+        <svg viewBox="0 0 160 160" style="width:180px;height:180px" role="img" aria-label="Tỷ lệ ngũ hành">
+          ${cung}
+          <text x="80" y="74" text-anchor="middle" class="fill-(--color-ink-700)" style="font-size:11px;font-weight:700">CẦN BỔ</text>
+          <text x="80" y="92" text-anchor="middle" style="font-size:15px;font-weight:900;fill:${MAU_HANH[khuyet[0]] ?? "#9ca3af"}">${esc(khuyet.join(" / ") || "—")}</text>
+        </svg>
+        <ul class="mt-4 grid gap-1.5 sm:mt-0">
+          ${THU_TU.map((h) => `
+            <li class="flex items-center gap-2 text-sm ${khuyet.includes(h) ? "font-bold" : ""}">
+              <span class="inline-block size-3 rounded-sm" style="background:${MAU_HANH[h]}"></span>
+              <span class="w-10 text-(--color-ink-900)">${h}</span>
+              <span class="text-(--color-ink-700)">${(tyLe[h] ?? 0).toFixed(1)}%</span>
+              ${khuyet.includes(h) ? `<span class="rounded-full bg-(--color-cinnabar-500)/15 px-2 py-0.5 text-[11px] font-bold text-(--color-cinnabar-500)">cần bổ</span>` : ""}
+            </li>`).join("")}
+        </ul>
+      </div>`;
+  }
+
+  function veKetQua(kq: any): string {
+    const tru = (t: any) => t ? `${esc(t.can)} ${esc(t.chi)}` : "—";
+    const khuyet = kq.hanhKhuyetKhaDi.map((h: any) => h.hanh);
+
+    const canhBao = kq.canhBaoThieuDuLieu.length
+      ? `<div class="mb-6 rounded-(--radius-card) border border-(--color-gold-400)/50 bg-(--color-gold-400)/10 p-4">
+           <p class="text-sm font-bold text-(--color-gold-500)">Lưu ý</p>
+           <ul class="mt-1 list-disc pl-5 text-sm text-(--color-ink-800)">
+             ${kq.canhBaoThieuDuLieu.map((c: string) => `<li>${esc(c)}</li>`).join("")}
+           </ul></div>`
+      : "";
+
+    const dsTen = kq.danhSachTen.length
+      ? kq.danhSachTen.map((t: any, i: number) => {
+          const top3 = i < 3;
+          const ngh: string[] = [];
+          if (t.demGoiY && t.yNghiaDem) ngh.push(`đệm <strong>${esc(t.demGoiY)}</strong>: ${esc(t.yNghiaDem)}`);
+          if (t.yNghia) ngh.push(`tên <strong>${esc(t.ten)}</strong>: ${esc(t.yNghia)}`);
+          return `
+        <li class="flex items-start gap-3 rounded-(--radius-control) p-3.5 ${top3 ? "border-2 border-(--color-gold-400) bg-(--color-gold-400)/12 shadow-md" : "border border-(--color-ivory-300)"}">
+          <span class="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-full ${top3 ? "bg-(--color-gold-400) text-(--color-on-accent)" : "bg-(--color-ivory-300) text-(--color-ink-700)"} text-sm font-black">${i + 1}</span>
+          <div class="min-w-0 flex-1">
+            <div class="flex flex-wrap items-baseline gap-2">
+              ${top3 ? `<span class="rounded-full bg-(--color-gold-400) px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-(--color-on-accent)">Hợp nhất</span>` : ""}
+              <span class="font-display ${top3 ? "text-xl" : "text-lg"} font-bold text-(--color-ink-900)">${esc(t.hoTenDayDu)}</span>
+              <span class="rounded-full px-2 py-0.5 text-[11px] font-bold" style="background:${MAU_HANH[t.hanh]}22;color:${MAU_HANH[t.hanh]}">${esc(t.hanh)}</span>
+              <span class="text-[11px] font-semibold ${t.loaiTinhDanh === "Điền Thực" ? "text-(--color-success-500)" : "text-(--color-ink-600)"}">${esc(t.loaiTinhDanh)}</span>
+            </div>
+            ${ngh.length ? `<p class="mt-0.5 text-sm text-(--color-ink-700)">${ngh.join(" · ")}</p>` : ""}
+            <p class="mt-1 text-xs text-(--color-ink-600)">Mệnh Cục ${t.menhCuc.tinhCuc.so} (${esc(t.menhCuc.tinhCuc.ten ?? "—")}) · ${esc(t.menhCuc.luanKetHop)}</p>
+          </div>
+        </li>`;
+        }).join("")
+      : `<li class="rounded-(--radius-control) border border-(--color-ivory-300) p-4 text-sm text-(--color-ink-700)">Chưa có tên phù hợp trong kho — vui lòng liên hệ chuyên gia.</li>`;
+
+    return `
+      ${canhBao}
+      <section class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-5">
+        <h2 class="font-display text-lg font-bold text-(--color-ink-900)">Tứ Trụ của bé</h2>
+        <div class="mt-3 grid grid-cols-4 gap-2 text-center">
+          ${[["Năm", kq.tuTru.nam], ["Tháng", kq.tuTru.thang], ["Ngày", kq.tuTru.ngay], ["Giờ", kq.tuTru.gio]].map(([nhan, t]: any) => `
+            <div class="rounded-(--radius-control) bg-(--color-ivory-200) p-2">
+              <p class="text-[11px] font-bold tracking-wider text-(--color-ink-600)">${nhan}</p>
+              <p class="mt-0.5 font-mono text-sm font-bold text-(--color-ink-900)">${tru(t)}</p>
+            </div>`).join("")}
+        </div>
+      </section>
+
+      <section class="mt-6 rounded-(--radius-card) border-2 border-(--color-gold-400) bg-(--color-gold-400)/10 p-5">
+        <h2 class="text-center font-display text-xl font-black text-(--color-ink-900)">Ngũ hành của bé & hành cần bổ</h2>
+        <p class="mx-auto mt-1 max-w-lg text-center text-sm text-(--color-ink-700)">
+          Vòng tròn thể hiện tỷ lệ 5 hành trong Tứ Trụ. Hành tô đậm là chỗ còn thiếu, cần bổ bằng cái tên để cân bằng mệnh.
+        </p>
+        <div class="mt-4 flex justify-center">${donutNguHanh(kq.tyLeNguHanh, khuyet)}</div>
+        <div class="mt-4 space-y-1.5">
+          ${kq.hanhKhuyetKhaDi.map((h: any) => `<p class="text-sm text-(--color-ink-800)"><strong style="color:${MAU_HANH[h.hanh]}">Bổ hành ${esc(h.hanh)}:</strong> ${esc(h.giaiThich)}</p>`).join("")}
+        </div>
+      </section>
+
+      <section class="mt-6 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-5">
+        <h2 class="font-display text-lg font-bold text-(--color-ink-900)">Tên gợi ý hợp mệnh</h2>
+        <p class="mt-1 text-sm text-(--color-ink-600)">Xếp theo điểm số Tứ Đại Cục giảm dần. 3 tên đầu là hợp nhất.</p>
+        <ul class="mt-4 space-y-2.5">${dsTen}</ul>
+      </section>`;
+  }
+
+  // ------------------------------------------------------------------ Thanh toán + poll
+  let pollTimer: ReturnType<typeof setInterval> | null = null;
+  function stopPolling() {
+    if (pollTimer) clearInterval(pollTimer);
+    pollTimer = null;
+  }
+
+  async function pollResult(orderCode: string) {
+    try {
+      const res = await fetch(`/api/dat-ten-cho-con/result?orderCode=${encodeURIComponent(orderCode)}`);
+      const data = await res.json();
+      if (!res.ok || !data.ok) return; // giữ trạng thái chờ, thử lại lần sau
+
+      if (data.status === "confirmed") {
+        stopPolling();
+        orderCodeDaTra = orderCode;
+        trangThaiEl.textContent = "Đã thanh toán — kết quả hiển thị bên dưới.";
+        oThanhToan.classList.add("hidden");
+        form.classList.add("hidden"); // tránh nộp lại form (tạo đơn mới, thu phí lần nữa)
+        oKetQua.innerHTML = veKetQua(data.ketQua);
+        oKetQua.classList.remove("hidden");
+        dgKhoi.classList.remove("hidden"); // mở khóa chức năng đánh giá tên
+        oKetQua.scrollIntoView({ behavior: "smooth", block: "start" });
+      } else if (data.status === "cancelled") {
+        stopPolling();
+        trangThaiEl.textContent = "Đơn hàng đã bị hủy. Vui lòng thử lại.";
+      }
+    } catch {
+      // lỗi mạng tạm thời — chờ lần poll kế tiếp
+    }
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    oLoi.classList.add("hidden");
+    oThanhToan.classList.add("hidden");
+    oKetQua.classList.add("hidden");
+    stopPolling();
+
+    const val = (id: string) => (document.getElementById(id) as HTMLInputElement).value.trim();
+    const maKhuyenMai = (document.getElementById("dtc-ma-input") as HTMLInputElement | null)?.value.trim() ?? "";
+    const payload = {
+      ho: val("dtc-ho"),
+      dem: val("dtc-dem"),
+      gioiTinh: (document.getElementById("dtc-gioi-tinh") as HTMLSelectElement).value,
+      ngay: Number(val("dtc-ngay")),
+      thang: Number(val("dtc-thang")),
+      nam: Number(val("dtc-nam")),
+      gio: val("dtc-gio") ? Number(val("dtc-gio")) : undefined,
+      phut: val("dtc-phut") ? Number(val("dtc-phut")) : undefined,
+      customerName: val("dtc-ten"),
+      customerPhone: val("dtc-sdt"),
+      customerEmail: val("dtc-email"),
+      ...(maKhuyenMai ? { maKhuyenMai } : {}),
+    };
+
+    try {
+      const res = await fetch("/api/dat-ten-cho-con/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        oLoi.textContent = data.error || "Không tạo được đơn hàng. Vui lòng thử lại.";
+        oLoi.classList.remove("hidden");
+        return;
+      }
+
+      // Mã miễn phí 100% / tài khoản quản trị: server xác nhận đơn luôn, qrUrl = null → lấy kết quả ngay.
+      if (data.mienPhi) {
+        orderCodeEl.textContent = data.orderCode;
+        await pollResult(data.orderCode);
+        return;
+      }
+
+      qrImg.src = data.qrUrl;
+      orderCodeEl.textContent = data.orderCode;
+      trangThaiEl.textContent = "Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)";
+      oThanhToan.classList.remove("hidden");
+      oThanhToan.scrollIntoView({ behavior: "smooth", block: "start" });
+      pollTimer = setInterval(() => pollResult(data.orderCode), 3000);
+    } catch {
+      oLoi.textContent = "Không kết nối được máy chủ. Vui lòng thử lại.";
+      oLoi.classList.remove("hidden");
+    }
+  });
+
+  // ---------------------------------------------------------- Đánh giá tên khách chọn (đã mở khóa)
+  const nutDG = document.getElementById("dtc-nut-danh-gia")!;
+  const oDgChay = document.getElementById("dtc-dg-dang-chay")!;
+  const oDgLoi = document.getElementById("dtc-dg-loi")!;
+  const oDgKq = document.getElementById("dtc-dg-ket-qua")!;
+
+  function veKetQuaDanhGia(kq: any): string {
+    const khuyet = kq.hanhKhuyetKhaDi.map((h: any) => h.hanh).join(" / ");
+    const rows = kq.danhGia.map((t: any, i: number) => {
+      const top = i === 0;
+      const mauLoai = t.loaiTinhDanh === "Điền Thực" ? "text-(--color-success-500)"
+        : t.loaiTinhDanh === "Bất Tương" ? "text-(--color-cinnabar-500)" : "text-(--color-ink-600)";
+      return `
+      <li class="flex items-start gap-3 rounded-(--radius-control) p-3.5 ${top ? "border-2 border-(--color-gold-400) bg-(--color-gold-400)/10 shadow-md" : "border border-(--color-ivory-300)"}">
+        <span class="mt-0.5 inline-flex size-8 shrink-0 items-center justify-center rounded-full ${top ? "bg-(--color-gold-400) text-(--color-on-accent)" : "bg-(--color-ivory-300) text-(--color-ink-700)"} text-sm font-black">${t.xepHang}</span>
+        <div class="min-w-0 flex-1">
+          <div class="flex flex-wrap items-baseline gap-2">
+            ${top ? `<span class="rounded-full bg-(--color-gold-400) px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-(--color-on-accent)">Hợp nhất</span>` : ""}
+            <span class="font-display text-lg font-bold text-(--color-ink-900)">${esc(t.hoTenDayDu)}</span>
+            ${t.hanhTen.length ? `<span class="text-[11px] text-(--color-ink-600)">hành ${t.hanhTen.map((h: string) => esc(h)).join(", ")}</span>` : ""}
+            <span class="text-[11px] font-semibold ${mauLoai}">${esc(t.loaiTinhDanh)}</span>
+          </div>
+          <p class="mt-0.5 text-sm text-(--color-ink-800)">${esc(t.nhanXet)}</p>
+          <p class="mt-1 text-xs text-(--color-ink-600)">Mệnh Cục ${t.menhCuc.tinhCuc.so} (${esc(t.menhCuc.tinhCuc.ten ?? "—")}) / ${t.menhCuc.dongCuc.so} (${esc(t.menhCuc.dongCuc.ten ?? "—")})</p>
+          ${t.canhBao.length ? `<p class="mt-1 text-xs text-(--color-gold-400)">${t.canhBao.map((c: string) => esc(c)).join(" ")}</p>` : ""}
+        </div>
+      </li>`;
+    }).join("");
+    return `
+      <p class="mb-3 text-sm text-(--color-ink-700)">Bé đang cần bổ hành <strong>${esc(khuyet)}</strong>. Xếp hạng các tên bạn chọn theo mức hợp mệnh:</p>
+      <ul class="space-y-2.5">${rows}</ul>`;
+  }
+
+  nutDG.addEventListener("click", async () => {
+    oDgLoi.classList.add("hidden");
+    oDgKq.classList.add("hidden");
+
+    if (!orderCodeDaTra) {
+      oDgLoi.textContent = "Vui lòng thanh toán để mở chức năng đánh giá tên.";
+      oDgLoi.classList.remove("hidden");
+      return;
+    }
+    const danhSach = (document.getElementById("dtc-danh-sach") as HTMLTextAreaElement).value
+      .split("\n").map((s) => s.trim()).filter(Boolean);
+    if (danhSach.length === 0) {
+      oDgLoi.textContent = "Vui lòng nhập ít nhất một tên để đánh giá.";
+      oDgLoi.classList.remove("hidden");
+      return;
+    }
+
+    oDgChay.classList.remove("hidden");
+    try {
+      const res = await fetch("/api/dat-ten-cho-con/danh-gia", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderCode: orderCodeDaTra, danhSach }),
+      });
+      const data = await res.json();
+      oDgChay.classList.add("hidden");
+      if (!res.ok || !data.ok) {
+        oDgLoi.textContent = data.error || "Có lỗi xảy ra, vui lòng thử lại.";
+        oDgLoi.classList.remove("hidden");
+        return;
+      }
+      oDgKq.innerHTML = veKetQuaDanhGia(data.ketQua);
+      oDgKq.classList.remove("hidden");
+      oDgKq.scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch {
+      oDgChay.classList.add("hidden");
+      oDgLoi.textContent = "Không kết nối được máy chủ. Vui lòng thử lại.";
+      oDgLoi.classList.remove("hidden");
+    }
+  });
+</script>

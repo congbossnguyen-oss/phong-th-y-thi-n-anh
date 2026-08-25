@@ -1,0 +1,98 @@
+{
+  "_meta": {
+    "purpose": "Cấu hình an toàn nội dung MỞ RỘNG cho engine luận giải toàn diện (khách hàng đọc trực tiếp, không qua thầy lọc). Mức độ nghiêm ngặt CAO HƠN luan-van-khi.json vì đụng tới Lục Thân, Sức Khỏe, Hôn Nhân chi tiết — vùng dễ gây tổn thương tâm lý nhất trong toàn bộ nội dung Bát Tự.",
+    "nguyen_tac_tren_het": "Phân biệt rõ 2 việc KHÁC NHAU: (1) NỘI DUNG/KẾT LUẬN — luôn nói thẳng, đúng những gì lá số thực sự chỉ ra, không né tránh, không pha loãng, không giấu bớt dấu hiệu bất lợi để tạo cảm giác dễ chịu giả tạo. (2) CÁCH DIỄN ĐẠT — chọn từ ngữ nhẹ nhàng, đo lường, không nặng nề/gây hoảng, không khẳng định tuyệt đối những gì bản chất là xác suất/khuynh hướng. Bộ quy tắc dưới đây chỉ chi phối MỤC (2) — không dùng để cắt giảm hay làm mờ đi kết luận thật ở MỤC (1)."
+  },
+
+  "tu_khoa_cam_tuyet_doi": {
+    "_note": "Áp dụng cho MỌI giai đoạn, không riêng sức khỏe/hôn nhân như luan-van-khi trước đây.",
+    "list": [
+      "chết", "tử vong", "qua đời", "mất mạng", "tự tử", "tự sát",
+      "ly hôn", "ly dị", "ngoại tình chắc chắn", "phản bội chắc chắn",
+      "phá sản hoàn toàn", "trắng tay", "vô sinh", "hiếm muộn", "sảy thai", "khó sinh",
+      "ung thư", "đột quỵ", "tai nạn chết người", "tàn phế", "tàn tật vĩnh viễn",
+      "án tù", "ngồi tù", "phạm tội", "tử hình",
+      "mồ côi", "khắc chết cha", "khắc chết mẹ", "khắc chết vợ", "khắc chết chồng", "khắc chết con",
+      "tuyệt tự", "không có con", "vô phúc", "đoản thọ", "chết yểu"
+    ]
+  },
+
+  "tu_dien_thay_the_ngon_tu": {
+    "_note": "Bát Tự dùng nhiều từ Hán-Việt cổ vốn mang sắc thái nặng/cay nghiệt theo thói quen ngôn ngữ hiện đại, dù bản thân thuật ngữ chỉ là trung tính về mặt kỹ thuật. Bảng dưới đây là từ điển thay thế BẮT BUỘC tham khảo khi Tầng 2 (AI) viết văn — đổi CÁCH GỌI, không đổi Ý đang nói. Đây không phải danh sách đầy đủ tuyệt đối — Tầng 2 được phép chọn từ tương đương khác miễn giữ đúng tinh thần 'nói thẳng ý, nhẹ giọng từ'.",
+
+    "tu_lien_quan_khac_hai": {
+      "khắc cha / khắc mẹ / khắc vợ / khắc chồng / khắc con": "mối quan hệ với [cha/mẹ/vợ/chồng/con] có thể cần thêm sự thấu hiểu và quan tâm nhiều hơn",
+      "hình khắc": "có thể trải qua giai đoạn căng thẳng/khó khăn trong quan hệ với",
+      "tổn hại / tổn thương (lục thân)": "cần chú ý chăm sóc/quan tâm nhiều hơn tới sức khỏe và tinh thần của"
+    },
+
+    "tu_lien_quan_hung_han_tieu_cuc": {
+      "hung / đại hung": "cần thận trọng / giai đoạn nhiều thử thách",
+      "họa / tai họa / đại họa": "khó khăn/biến động cần chuẩn bị tinh thần",
+      "bại / phá bại / suy bại": "sa sút, cần điều chỉnh hướng đi",
+      "tuyệt / tuyệt lộ": "bế tắc tạm thời, cần tìm hướng khác",
+      "vô phúc / bạc phúc": "giai đoạn thiếu may mắn, cần kiên nhẫn",
+      "cô độc / cô khắc": "có xu hướng độc lập, ít gắn bó bên ngoài",
+      "đoản thọ / yểu": "*(không dùng — xem tu_khoa_cam_tuyet_doi; nếu cần nhắc sức khỏe, chỉ nói 'nên chú ý giữ gìn sức khỏe, khám định kỳ')*",
+      "nghèo hèn / bần hàn": "còn nhiều thử thách về vật chất, cần nỗ lực tích lũy",
+      "thất bại": "chưa đạt kết quả mong muốn, cần điều chỉnh"
+    },
+
+    "tu_lien_quan_hon_nhan": {
+      "khắc vợ/khắc chồng": "hôn nhân có thể cần nhiều nỗ lực vun đắp hơn người khác",
+      "vợ/chồng bất hòa": "vợ chồng có thể cần dành thời gian thấu hiểu nhau nhiều hơn",
+      "đổ vỡ / tan vỡ": "trải qua giai đoạn thử thách trong quan hệ",
+      "ngoại tình": "*(không khẳng định — chỉ nói 'nên giữ gìn sự gắn kết, tránh để những mối quan hệ bên ngoài ảnh hưởng')*"
+    },
+
+    "tu_lien_quan_suc_khoe": {
+      "bệnh nặng / trọng bệnh": "cần đặc biệt chú ý sức khỏe, nên khám định kỳ",
+      "tai nạn": "nên cẩn trọng hơn trong sinh hoạt/di chuyển giai đoạn này",
+      "thương tật": "*(không dùng cụ thể — chỉ nói 'nên chú ý an toàn, giữ gìn sức khỏe')*"
+    },
+
+    "tu_lien_quan_tai_van_quan_van": {
+      "phá sản": "giai đoạn cần thận trọng trong tài chính, tránh quyết định liều lĩnh",
+      "mất chức / cách chức": "sự nghiệp có thể gặp biến động, nên chuẩn bị phương án dự phòng",
+      "thị phi / tai tiếng": "nên cẩn trọng trong giao tiếp, tránh hiểu lầm không đáng có"
+    }
+  },
+
+  "cach_dung_tu_dien": [
+    "Đây là bảng THAM KHẢO CÁCH GỌI, không phải bảng kiểm duyệt cứng — Tầng 2 (AI) nên chủ động dùng các cụm thay thế này hoặc tương đương khi gặp đúng thuật ngữ gốc, thay vì chờ Tầng 3 (hậu kiểm) phát hiện rồi mới sửa.",
+    "Với vài mục đánh dấu '*(không dùng...)*': đây là những khái niệm mà ngay cả bản thay thế nhẹ nhàng cũng không nên đưa ra dưới dạng khẳng định cụ thể (ví dụ không khẳng định 'sẽ ngoại tình', chỉ nói ở dạng lời khuyên phòng ngừa chung).",
+    "Nếu gặp thuật ngữ Bát Tự cay nghiệt không có trong bảng này, áp dụng đúng tinh thần: giữ nguyên NỘI DUNG đang nói, đổi sang cách gọi đời thường/nhẹ nhàng/mang tính xây dựng hơn là thuật ngữ Hán-Việt cổ mang sắc thái phán xét."
+  ],
+
+  "quy_tac_theo_giai_doan": {
+    "_note": "Bổ sung riêng cho từng Giai đoạn nhạy cảm trong mau-bao-cao-tong-hop.md — áp dụng CÙNG LÚC với content_safety chung.",
+
+    "giai_doan_E_mo_kho": "Không dùng ngôn ngữ 'giấu tai họa' hay 'ẩn họa lớn' cho Mộ/Khố — chỉ nói 'tiềm năng/khía cạnh này chưa bộc lộ rõ, có thể thay đổi khi gặp đúng giai đoạn'.",
+
+    "giai_doan_F_luc_than": {
+      "cha_me": "KHÔNG BAO GIỜ dùng cụm 'khắc chết cha/mẹ' hoặc gợi ý mệnh chủ là NGUYÊN NHÂN gây hại cho cha mẹ. Dùng bảng tu_dien_thay_the_ngon_tu. Mục 'tổ nghiệp sa sút' diễn đạt trung tính: 'không phải mọi thành công phụ thuộc vào nền tảng gia đình — cấu trúc lá số của chính người này quan trọng hơn'.",
+      "anh_chi_em": "Không nói 'không có anh chị em' như sự thật chắc chắn (đây chỉ là suy luận từ Can Chi, có thể sai lệch thực tế) — luôn nói 'khuynh hướng ít anh chị em ruột thịt, hoặc quan hệ anh em không quá gắn bó — đây chỉ là khuynh hướng từ lá số, thực tế gia đình quan trọng hơn'.",
+      "vo_chong": "Không dùng 'khắc vợ/khắc chồng' như phán quyết — dùng bảng thay thế. Không bao giờ nói 'sẽ ly hôn' hay 'sẽ có người thứ ba' — chỉ nói xu hướng cần lưu ý.",
+      "con_cai": "Mục 4.3 (khắc con/khó nuôi) và 4.1 (số lượng) là vùng NGUY HIỂM NHẤT trong toàn bộ Lục Thân — nhiều người dùng có thể đang cố gắng có con hoặc đã mất con. KHÔNG BAO GIỜ đưa ra con số cụ thể ('sẽ có 2 con', 'khó có con'). Nếu dấu hiệu rõ ràng theo hướng bất lợi, chỉ nói: 'một số khía cạnh trong lá số gợi ý nên quan tâm sức khỏe sinh sản và dành thời gian chăm sóc con cái nhiều hơn — đây là khuynh hướng tham khảo, không phải kết luận y khoa'. Mục 4.4 (dự đoán giới tính con đầu) — KHÔNG đưa vào báo cáo tự động trừ khi có UI riêng cho khách chủ động chọn xem, kèm cảnh báo rõ đây là phương pháp tham khảo của 1 tác giả, độ chính xác không được kiểm chứng khoa học."
+    },
+
+    "giai_doan_D_than_sat": "Với các Hung Sát mang tên gợi tai họa (Kiếp Sát, Tai Sát, Tang Môn-Điếu Khách, Cô Thần-Quả Tú...), không dịch thẳng nghĩa đen — luôn diễn đạt thành khuynh hướng tính cách/thận trọng, không phải điềm báo."
+  },
+
+  "quy_tac_dien_dat_chung": [
+    "Nói thẳng đúng những gì findings chỉ ra — không né tránh, không giấu bớt, không thêm dấu hiệu tích cực giả để 'cho đỡ nặng' nếu lá số thực sự không có dấu hiệu đó ở mảng đang luận.",
+    "Chọn từ ngữ nhẹ nhàng, cụ thể, dễ tiếp nhận thay cho từ ngữ nặng nề/lâm sàng/gây hoảng — dùng bảng tu_dien_thay_the_ngon_tu ở trên. Đây là đổi CÁCH NÓI, không phải đổi Ý đang nói.",
+    "Dùng thì/giọng điệu 'xu hướng, khuynh hướng, có thể, thường gặp ở' thay vì khẳng định tuyệt đối ('sẽ', 'chắc chắn') — vì đây đúng là bản chất xác suất của phương pháp, không phải để né nội dung.",
+    "Không dùng các từ trong tu_khoa_cam_tuyet_doi (đây là ranh giới cứng về ĐỘ CHẮC CHẮN được phép khẳng định, không phải để xóa bỏ nội dung — vẫn có thể diễn đạt cùng 1 dấu hiệu bằng cách khác, chỉ là không dùng đúng từ đó)."
+  ],
+
+  "hau_kiem_bat_buoc": {
+    "_note": "Lớp kiểm tra sau khi AI viết xong toàn bộ báo cáo, trước khi hiển thị cho khách — không được bỏ qua với bất kỳ lý do tối ưu tốc độ nào.",
+    "buoc_1": "Quét toàn văn bản báo cáo qua tu_khoa_cam_tuyet_doi — nếu phát hiện, chặn hiển thị, yêu cầu AI viết lại đoạn chứa từ cấm.",
+    "buoc_2": "Quét từng câu tìm ngôn ngữ QUÁ nặng nề/khẳng định tuyệt đối không phù hợp mức độ xác suất của phương pháp (ví dụ câu khẳng định chắc chắn 1 sự kiện sẽ xảy ra, hoặc dùng từ mang tính lâm sàng/gây hoảng dù không nằm trong danh sách cấm tuyệt đối) — gắn cờ yêu cầu viết lại CÁCH DIỄN ĐẠT câu đó, giữ nguyên Ý đang nói. KHÔNG đếm tỷ lệ câu tích cực/tiêu cực và KHÔNG yêu cầu viết lại chỉ vì 1 giai đoạn có nhiều nội dung bất lợi hơn tích cực — nếu lá số thực sự vậy thì báo cáo phản ánh đúng vậy, đó không phải lỗi.",
+    "buoc_3": "Kiểm tra Giai đoạn F (Lục Thân) và Giai đoạn I (Sức khỏe) đặc biệt kỹ — đây là 2 giai đoạn rủi ro cao nhất, nên có bước review riêng (có thể là 1 lệnh gọi AI thứ 2 chuyên làm nhiệm vụ 'kiểm duyệt' 2 đoạn này trước khi ghép vào báo cáo cuối). Nhiệm vụ của lượt kiểm duyệt này là CHỈNH TỪ NGỮ cho nhẹ nhàng hơn nếu cần, KHÔNG phải xóa bớt hay pha loãng kết luận đã có."
+  },
+
+  "disclaimer_bat_buoc": "Báo cáo này được tổng hợp tự động theo phương pháp mệnh lý Bát Tự cổ truyền, mang tính chất tham khảo văn hóa và định hướng tư duy — KHÔNG phải là tiên đoán chắc chắn về tương lai, KHÔNG thay thế tư vấn y tế, tâm lý, tài chính hay pháp lý chuyên môn. Nếu bạn đang gặp khó khăn về sức khỏe tinh thần, các mối quan hệ gia đình, hoặc sức khỏe sinh sản, hãy tìm đến chuyên gia phù hợp để được hỗ trợ trực tiếp.",
+  "disclaimer_vi_tri": "Hiển thị đầu VÀ cuối báo cáo (không chỉ 1 lần ở cuối) — vì báo cáo dài, khách có thể đọc lướt bỏ qua phần cuối. Đây là yêu cầu về MINH BẠCH hiển thị, không liên quan đến việc chỉnh sửa nội dung."
+}

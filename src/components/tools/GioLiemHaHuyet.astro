@@ -1,0 +1,1154 @@
+---
+// Than dich vu VIP tach dung chung cho web + in-app Quan Su (giu nguyen logic/giao dien).
+import BottomNav from "../../components/quan-su/BottomNav.astro";
+import Container from "../../components/ui/Container.astro";
+import Button from "../../components/ui/Button.astro";
+import DateSelect from "../../components/ui/DateSelect.astro";
+import MaKhuyenMai from "../../components/ui/MaKhuyenMai.astro";
+import { GIA_GIO_LIEM_HA_HUYET, dinhDangTien } from "../../lib/payments/gia-cong-cu";
+
+// ⚠️ Module này CỐ Ý KHÔNG bắt đăng nhập (quyết định của Công), khác với Xem Ngày Cao Cấp:
+// khách dùng ngay lúc gia đình vừa có tang, thường nửa đêm và đang rối — bắt tạo tài khoản lúc đó
+// là rào cản sai chỗ. Kết quả truy cập bằng orderCode làm "vé".
+// Render phía máy chủ (không prerender tĩnh) để đọc được phiên đăng nhập — cần cho việc nhận
+// diện tài khoản QUẢN TRỊ ở dưới. Prerender thì `Astro.locals.user` luôn rỗng lúc build.
+export const prerender = false;
+
+const CHI_LIST = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"];
+// Cờ thử nghiệm: true = bỏ bước thanh toán, nộp form ra kết quả ngay (không tạo đơn thật).
+// Khai báo ở frontmatter để MARKUP cũng dùng được — các ô chỉ có nghĩa khi thu phí (số điện
+// thoại, mã khuyến mãi) phải ẩn đi lúc đang thử nghiệm, nếu không khách nhập mã, thấy báo giảm
+// giá thành công, rồi form lại nộp sang test-calculate: mã không đi đâu cả mà khách tưởng đã
+// dùng mất mã tặng. Script đọc lại cờ này qua data-test-mode trên thẻ form (1 nguồn sự thật).
+//
+// ⚠️ CHỈ TẮT THỬ NGHIỆM CHO TÀI KHOẢN QUẢN TRỊ.
+//
+// Chủ dự án cần test trọn luồng thu phí (tạo đơn → xác nhận → trả kết quả → gửi email), nhưng
+// tắt hẳn cờ này thì bất kỳ khách nào vào đúng link cũng bị thu tiền thật — mà module vẫn đang
+// gỡ khỏi menu công khai, tức chưa sẵn sàng mở bán. Nên:
+//   - Quản trị  → đi LUỒNG THẬT, đơn 0đ tự xác nhận (xem `laQuanTri` ở checkout-cong-cu.ts).
+//   - Khách     → giữ nguyên chế độ thử nghiệm, không tạo đơn, không thu tiền.
+// ĐÃ MỞ BÁN + THU PHÍ (chủ dự án chốt 2026-08-18): khách thanh toán thật; admin vẫn được
+// checkout-cong-cu tạo đơn 0đ tự xác nhận (cờ laQuanTri từ phiên đăng nhập) nên test miễn phí.
+const laQuanTri = Astro.locals.user?.isAdmin === true;
+const TEST_MODE = false;
+
+const TOOL_SLUG = "gio-liem-ha-huyet";
+// Hai bậc giá — xem ghi chú "định tuyến, không phải upsell" ở lib/payments/gia-cong-cu.ts.
+// Giá hiển thị ở đây chỉ để khách xem; con số quyết định đơn hàng do máy chủ tự tính lại.
+const GIA_CO_BAN = GIA_GIO_LIEM_HA_HUYET.coBan;
+const GIA_DAY_DU = GIA_GIO_LIEM_HA_HUYET.dayDu;
+const NHAN_GIA_CO_BAN = dinhDangTien(GIA_CO_BAN);
+const NHAN_GIA_DAY_DU = dinhDangTien(GIA_DAY_DU);
+const TOOL_PRICE = GIA_CO_BAN;
+const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
+---
+
+  <Container class="py-16">
+    <div class="mx-auto max-w-2xl">
+      {laQuanTri && (
+      <div class="mb-4 rounded-(--radius-card) border-2 border-(--color-gold-400) bg-(--color-gold-400)/10 p-4 text-sm font-medium text-(--color-gold-600)">
+        🔑 ĐANG XEM BẰNG TÀI KHOẢN QUẢN TRỊ — chạy TRỌN luồng thu phí thật (tạo đơn → xác nhận → trả kết quả → gửi email),
+        nhưng đơn được miễn phí nên không phải chuyển khoản. Đơn kiểm thử không vào sổ doanh thu.
+      </div>
+      )}
+      {/* Phạm vi áp dụng — chủ dự án yêu cầu 2026-08-16 ghi ngay đầu module. Nguồn sách ghi rõ ở
+      tiêu đề mục: "Tính giờ nhập liệm, hạ huyệt (DÙNG CHO TRƯỜNG HỢP KHÔNG TRÙNG TANG)". Gia đình
+      có vong ĐANG phạm trùng tang mà dùng nhầm bảng này thì sai phương pháp, nên phải cảnh báo
+      đậm ngay trên đầu, không giấu trong đoạn chữ nhỏ. */}
+      <div class="mb-4 rounded-(--radius-card) border-2 border-(--color-cinnabar-500) bg-(--color-cinnabar-500)/5 p-4">
+        <p class="font-display text-base font-bold text-(--color-cinnabar-500)">
+          Công cụ này chỉ dùng khi người mất KHÔNG phạm Trùng Tang
+        </p>
+        <p class="mt-1.5 text-sm text-(--color-ink-700)">
+          Phương pháp Chưởng Pháp bên dưới được sách quy định rõ là dành cho <strong>trường hợp không trùng tang</strong>.
+        </p>
+        <p class="mt-1.5 text-sm text-(--color-ink-700)">
+          Nếu người mất <strong>đang phạm Trùng Tang</strong> thì hướng xử lý là <strong>tiến hành hoá giải</strong>, và
+          <strong>mang ra ngoài liệm</strong> — không dùng bảng xếp hạng giờ ở đây.
+        </p>
+        <p class="mt-1.5 text-sm text-(--color-ink-700)">
+          Chưa biết có phạm hay không, hãy kiểm tra bằng
+          <a href="/tinh-trung-tang" class="font-semibold text-(--color-gold-300) hover:underline">công cụ Tính Trùng Tang miễn phí</a>
+          trước khi dùng công cụ này. Nếu kết quả là CÓ phạm, xin
+          <a href="/lien-he" class="font-semibold text-(--color-gold-300) hover:underline">liên hệ tư vấn trực tiếp</a>.
+        </p>
+      </div>
+
+      <div class="mb-6 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-4 text-sm text-(--color-ink-600)">
+        Công cụ này KHÔNG tự chẩn đoán Trùng Tang — chỉ dùng Chưởng Pháp để xếp hạng giờ liệm/đóng quan và ngày giờ
+        hạ huyệt tốt nhất, kèm sàng thần sát an táng và danh sách tuổi cần tránh mặt. Cách tính dựa trên tư liệu dân
+        gian tổng hợp, mang tính tương đối, không thay thế tư vấn phong thủy trực tiếp.
+      </div>
+
+      <form id="glhh-form" data-test-mode={String(TEST_MODE)} data-gia-co-ban={NHAN_GIA_CO_BAN} data-gia-day-du={NHAN_GIA_DAY_DU} class="flex flex-col gap-4 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
+        <div>
+          <p class="text-sm font-medium text-(--color-ink-800)">Giới tính người mất</p>
+          <div class="mt-1.5 flex gap-4">
+            <label class="flex items-center gap-1.5 text-sm text-(--color-ink-700)">
+              <input type="radio" name="gioiTinh" value="nam" checked /> Nam
+            </label>
+            <label class="flex items-center gap-1.5 text-sm text-(--color-ink-700)">
+              <input type="radio" name="gioiTinh" value="nu" /> Nữ
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <label for="glhh-nam-sinh" class="text-sm font-medium text-(--color-ink-800)">Năm sinh (dương lịch)</label>
+          <input
+            type="number"
+            id="glhh-nam-sinh"
+            placeholder="vd. 1950"
+            min="1900"
+            max="2100"
+            required
+            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"
+          />
+        </div>
+
+        <div>
+          <DateSelect idPrefix="glhh-ngay-mat" label="Ngày mất (dương lịch)" required yearsBack={80} yearsForward={0} />
+        </div>
+
+        <div>
+          <label for="glhh-gio-mat" class="text-sm font-medium text-(--color-ink-800)">Giờ mất</label>
+          <select
+            id="glhh-gio-mat"
+            required
+            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"
+          ></select>
+        </div>
+
+        <div>
+          <label for="glhh-so-ngay" class="text-sm font-medium text-(--color-ink-800)">Số ngày dự kiến tới khi hạ huyệt (tùy chọn)</label>
+          <input
+            type="number"
+            id="glhh-so-ngay"
+            placeholder="Bỏ trống hoặc ≤3 nếu chôn trong vài ngày tới"
+            min="1"
+            max="60"
+            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"
+          />
+          <p class="mt-1 text-xs text-(--color-ink-500)">Nếu ≤3 ngày (hoặc bỏ trống): chỉ chọn giờ hạ huyệt, giữ nguyên ngày mất.</p>
+        </div>
+
+        <div>
+          <label for="glhh-di-chuyen" class="text-sm font-medium text-(--color-ink-800)">Thời gian đi từ nhà tới huyệt (phút, tùy chọn)</label>
+          <input
+            type="number"
+            id="glhh-di-chuyen"
+            placeholder="Ví dụ 90 — bỏ trống nếu chưa rõ quãng đường"
+            min="5"
+            max="480"
+            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"
+          />
+          <p class="mt-1 text-xs text-(--color-ink-500)">Có số này mới tính thêm được giờ động quan (giờ rời nhà), tính lùi từ giờ hạ huyệt.</p>
+        </div>
+
+        <div>
+          <label for="glhh-ho-ten-vong" class="text-sm font-medium text-(--color-ink-800)">Họ tên người mất (tùy chọn)</label>
+          <input
+            type="text"
+            id="glhh-ho-ten-vong"
+            maxlength="80"
+            placeholder="Để in lên hồ sơ PDF"
+            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"
+          />
+        </div>
+
+        <div>
+          <label for="glhh-nguyen-nhan" class="text-sm font-medium text-(--color-ink-800)">Nguyên nhân mất</label>
+          <select
+            id="glhh-nguyen-nhan"
+            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"
+          >
+            <option value="benh-tuoi-gia">Bệnh / tuổi già</option>
+            <option value="tai-nan-dot-ngot">Tai nạn / đột ngột</option>
+          </select>
+          <p class="mt-1 text-xs text-(--color-ink-500)">
+            Mất do tai nạn mà chôn trong 3–5 ngày thì theo phép quyền biến "Thừa hung mai táng" được miễn chọn ngày giờ.
+          </p>
+        </div>
+
+        {/*
+          ĐỊNH TUYẾN, KHÔNG PHẢI UPSELL. Nhà chưa có huyệt thì gói cơ bản mới là sản phẩm ĐÚNG với
+          họ — không có tọa mộ để nhập thì nâng cấp là vô nghĩa. Copy ở đây tuyệt đối không được
+          dùng nỗi sợ để đẩy lên gói cao (đặc tả Phase 2 mục 8 cấm).
+        */}
+        <fieldset class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4">
+          <legend class="px-1 text-sm font-medium text-(--color-ink-800)">Gia đình đã có huyệt mộ chưa?</legend>
+          <div class="mt-2 flex flex-col gap-2">
+            <label class="flex items-start gap-2 text-sm text-(--color-ink-700)">
+              <input type="radio" name="glhh-co-huyet" value="chua" checked class="mt-1" />
+              <span>
+                <strong>Chưa có</strong> — hỏa táng, gửi chùa, hoặc chưa mua đất. <span class="font-medium text-(--color-gold-700)">{NHAN_GIA_CO_BAN}</span>
+                <span class="block text-xs text-(--color-ink-500)">Chọn giờ liệm, đóng quan và ngày giờ hạ huyệt theo chưởng pháp + thần sát trạch nhật.</span>
+              </span>
+            </label>
+            <label class="flex items-start gap-2 text-sm text-(--color-ink-700)">
+              <input type="radio" name="glhh-co-huyet" value="da-co" class="mt-1" />
+              <span>
+                <strong>Đã có huyệt mộ</strong> — biết tọa độ huyệt. <span class="font-medium text-(--color-gold-700)">{NHAN_GIA_DAY_DU}</span>
+                <span class="block text-xs text-(--color-ink-500)">Có thêm bước lọc và xếp hạng lại ngày giờ theo tọa hướng huyệt mộ.</span>
+              </span>
+            </label>
+          </div>
+
+          <div id="glhh-khoi-toa" class="mt-4 hidden">
+            <p class="text-sm font-medium text-(--color-ink-800)">Số đo huyệt mộ (độ, đo bằng la kinh)</p>
+            <p class="mt-1 text-xs text-(--color-ink-500)">
+              Gia đình đo được số nào thì nhập số đó — <strong>tọa</strong> (lưng huyệt) hoặc <strong>hướng</strong> (mặt huyệt).
+              Nhập một ô, ô còn lại tự hiện ra, vì tọa và hướng luôn đối nhau 180°.
+            </p>
+            <div class="mt-2 grid gap-3 sm:grid-cols-2">
+              <div>
+                <label for="glhh-toa-do" class="text-xs text-(--color-ink-600)">Tọa (lưng huyệt)</label>
+                <input
+                  type="number"
+                  id="glhh-toa-do"
+                  placeholder="Ví dụ 30 — tọa Sửu"
+                  min="0"
+                  max="360"
+                  step="0.1"
+                  class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"
+                />
+              </div>
+              <div>
+                <label for="glhh-huong-do" class="text-xs text-(--color-ink-600)">Hướng (mặt huyệt)</label>
+                <input
+                  type="number"
+                  id="glhh-huong-do"
+                  placeholder="Ví dụ 210 — hướng Mùi"
+                  min="0"
+                  max="360"
+                  step="0.1"
+                  class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"
+                />
+              </div>
+            </div>
+            <p id="glhh-quy-doi" class="mt-1.5 text-xs text-(--color-gold-700)"></p>
+            <p class="mt-1 text-xs text-(--color-ink-500)">
+              Mỗi sơn rộng 15° nên cần đo cho chính xác — lệch một sơn là đổi hẳn kết quả. Nếu số đo rơi sát ranh giới hai sơn,
+              hệ thống sẽ báo để gia đình đo lại.
+            </p>
+          </div>
+        </fieldset>
+
+        <details class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3">
+          <summary class="cursor-pointer text-sm font-medium text-(--color-ink-800)">Thêm tuổi thân quyến (tùy chọn — để xét giờ liệm kỵ)</summary>
+          <div class="mt-3 grid grid-cols-2 gap-2">
+            <div>
+              <label for="glhh-truong-nam" class="text-xs text-(--color-ink-600)">Tuổi (Chi) trưởng nam</label>
+              <select id="glhh-truong-nam" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-2 py-2 text-sm text-(--color-ink-800)">
+                <option value="">Không rõ</option>
+              </select>
+            </div>
+            <div>
+              <label for="glhh-con-dau-lon" class="text-xs text-(--color-ink-600)">Tuổi (Chi) con dâu lớn</label>
+              <select id="glhh-con-dau-lon" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-2 py-2 text-sm text-(--color-ink-800)">
+                <option value="">Không rõ</option>
+              </select>
+            </div>
+            <div>
+              <label for="glhh-chau-dich-ton" class="text-xs text-(--color-ink-600)">Tuổi (Chi) cháu đích tôn</label>
+              <select id="glhh-chau-dich-ton" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-2 py-2 text-sm text-(--color-ink-800)">
+                <option value="">Không rõ</option>
+              </select>
+            </div>
+            <div>
+              <label for="glhh-anh-trai-lon" class="text-xs text-(--color-ink-600)">Tuổi (Chi) anh trai lớn</label>
+              <select id="glhh-anh-trai-lon" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-2 py-2 text-sm text-(--color-ink-800)">
+                <option value="">Không rõ</option>
+              </select>
+            </div>
+          </div>
+          <p class="mt-2 text-xs text-(--color-ink-500)">Nếu không có trưởng nam/con dâu lớn/cháu đích tôn, dùng anh trai lớn thay thế.</p>
+        </details>
+
+        {!TEST_MODE && (
+        <>
+        <div class="border-t border-(--color-ivory-300) pt-4">
+          <p class="text-sm font-medium text-(--color-ink-800)">Thông tin liên hệ (để nhận kết quả sau khi thanh toán)</p>
+          <div class="mt-2 grid gap-3">
+            <input
+              type="text"
+              id="glhh-ten"
+              placeholder="Họ tên"
+              required
+              class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"
+            />
+            <input
+              type="tel"
+              id="glhh-sdt"
+              placeholder="Số điện thoại"
+              required
+              class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"
+            />
+            <input
+              type="email"
+              id="glhh-email"
+              placeholder="Email (tùy chọn)"
+              class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"
+            />
+          </div>
+        </div>
+
+        <MaKhuyenMai idPrefix="glhh-ma" toolSlug={TOOL_SLUG} giaGoc={TOOL_PRICE} />
+        </>
+        )}
+
+        <Button type="submit" size="lg"><span id="glhh-nhan-nut">Thanh toán {NHAN_GIA_CO_BAN} & Xem kết quả</span></Button>
+      </form>
+
+      <div id="glhh-loi" class="mt-4 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm text-(--color-danger-500)"></div>
+
+      {/*
+        MÀN HÌNH "CHƯA THU PHÍ" — hiện khi tọa hướng huyệt phạm sát cấp NĂM (kết cục C). Sát cấp
+        năm thì không ngày giờ nào hoá giải được, nên hệ thống dừng TRƯỚC bước thanh toán. Đây là
+        điểm xây uy tín mạnh nhất của sản phẩm, không phải một thông báo lỗi.
+      */}
+      <div id="glhh-chua-thu-phi" class="mt-6 hidden rounded-(--radius-card) border-2 border-(--color-gold-400) bg-(--color-gold-400)/10 p-6">
+        <p class="font-display text-lg font-bold text-(--color-gold-700)">Trường hợp này chúng tôi chưa thu phí</p>
+        <p id="glhh-ctp-ly-do" class="mt-3 text-sm leading-relaxed text-(--color-gold-700)"></p>
+
+        {/*
+          Chỉ hiện khi lọc theo tọa hướng không ra phương án nào NHƯNG phần chưởng pháp vẫn có kết
+          quả. Đây là nói thật — phần không làm được thì không thu tiền — chứ không phải hạ giá để
+          vớt khách. Vì vậy không có câu nào thúc ép hay đếm ngược.
+        */}
+        <div id="glhh-goi-co-ban" class="mt-4 hidden rounded-(--radius-control) border border-(--color-gold-300) bg-(--color-ivory-100)/70 p-4">
+          <p class="text-sm font-medium text-(--color-gold-700)">Gia đình vẫn có thể dùng gói cơ bản</p>
+          <p class="mt-1 text-sm leading-relaxed text-(--color-gold-700)">
+            Phần chọn giờ liệm, giờ đóng quan và ngày giờ hạ huyệt theo chưởng pháp vẫn cho kết quả bình thường.
+            Chỉ riêng bước lọc theo tọa hướng huyệt mộ là không ra phương án nào, nên chúng tôi không thu phần phí đó.
+          </p>
+          <button
+            type="button"
+            id="glhh-chuyen-co-ban"
+            class="mt-3 inline-flex items-center rounded-(--radius-control) border border-(--color-gold-600) px-4 py-2 text-sm font-medium text-(--color-gold-700) hover:bg-(--color-gold-400)/15"
+          >
+            Dùng gói cơ bản
+          </button>
+        </div>
+        <div class="mt-4 flex flex-wrap gap-3">
+          <a
+            href="/lien-he"
+            class="inline-flex items-center rounded-(--radius-control) bg-(--color-gold-500) px-4 py-2.5 text-sm font-medium text-(--color-on-accent) hover:bg-(--color-gold-600)"
+          >
+            Đặt lịch khảo sát huyệt mộ
+          </a>
+          <button
+            type="button"
+            id="glhh-ctp-quay-lai"
+            class="inline-flex items-center rounded-(--radius-control) border border-(--color-gold-600) px-4 py-2.5 text-sm font-medium text-(--color-gold-700) hover:bg-(--color-gold-400)/15"
+          >
+            Nhập lại tọa độ
+          </button>
+        </div>
+      </div>
+
+      {/* Tọa độ rơi sát ranh giới hai sơn — mời đo lại, chưa bàn tới tiền. */}
+      <div id="glhh-do-lai" class="mt-6 hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-5">
+        <p class="font-medium text-(--color-ink-800)">Cần đo lại tọa độ</p>
+        <p id="glhh-do-lai-ly-do" class="mt-2 text-sm leading-relaxed text-(--color-ink-700)"></p>
+      </div>
+
+      <!-- Bước thanh toán -->
+      <div id="glhh-thanh-toan" class="mt-6 hidden space-y-4 rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-center text-(--color-ink-950) shadow-lg">
+        <p class="font-display text-lg font-bold">Quét mã QR để thanh toán {TOOL_PRICE_LABEL}</p>
+        <img id="glhh-qr" src="" alt="Mã QR thanh toán" class="mx-auto h-64 w-64 rounded-xl border border-(--color-ivory-300)" />
+        <p class="text-sm text-(--color-ink-600)">Mã đơn hàng: <strong id="glhh-order-code"></strong></p>
+        <p id="glhh-trang-thai" class="text-sm font-medium text-(--color-gold-400)">Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)</p>
+      </div>
+
+      <!-- Kết quả -->
+      <div id="glhh-ket-qua" class="mt-6 hidden space-y-6"></div>
+
+      {/* Hồ sơ PDF — đặc tả Phase 2 mục 9: phải là thứ cầm được, in được, đưa họ hàng xem. */}
+      <div id="glhh-khoi-pdf" class="mt-4 hidden">
+        <button
+          type="button"
+          id="glhh-tai-pdf"
+          class="inline-flex items-center gap-2 rounded-(--radius-control) border border-(--color-gold-500) bg-(--color-ivory-100) px-4 py-2.5 text-sm font-medium text-(--color-ink-800) hover:bg-(--color-ivory-200) disabled:opacity-60"
+        >
+          Tải hồ sơ PDF
+        </button>
+        <p class="mt-1.5 text-xs text-(--color-ink-500)">
+          Hồ sơ gồm ngày giờ đề xuất (dương + âm lịch), lý do chọn từng phương án, các tuổi cần tránh mặt và thông tin liên hệ.
+        </p>
+      </div>
+    </div>
+  </Container>
+  <BottomNav />
+
+<script define:vars={{ CHI_LIST }}>
+  const gioMatSelect = document.getElementById("glhh-gio-mat");
+  const truongNamSelect = document.getElementById("glhh-truong-nam");
+  const conDauLonSelect = document.getElementById("glhh-con-dau-lon");
+  const chauDichTonSelect = document.getElementById("glhh-chau-dich-ton");
+  const anhTraiLonSelect = document.getElementById("glhh-anh-trai-lon");
+
+  for (const chi of CHI_LIST) {
+    gioMatSelect.insertAdjacentHTML("beforeend", `<option value="${chi}">Giờ ${chi}</option>`);
+    truongNamSelect.insertAdjacentHTML("beforeend", `<option value="${chi}">${chi}</option>`);
+    conDauLonSelect.insertAdjacentHTML("beforeend", `<option value="${chi}">${chi}</option>`);
+    chauDichTonSelect.insertAdjacentHTML("beforeend", `<option value="${chi}">${chi}</option>`);
+    anhTraiLonSelect.insertAdjacentHTML("beforeend", `<option value="${chi}">${chi}</option>`);
+  }
+</script>
+
+<script>
+  import { readDateSelects } from "../../lib/date-select";
+
+  // ⚠️ TẠM THỜI — true = bỏ qua thanh toán, gọi thẳng test-calculate.ts (test nội bộ, yêu cầu
+  // Công 2026-08-14). Đổi lại `false` khi quay lại thu phí thật (và khôi phục nhánh checkout.ts
+  // đã có sẵn bên dưới — không cần viết lại).
+  // Đọc từ thẻ form để không lệch với cờ ở frontmatter (chỗ quyết định ẩn/hiện các ô thu phí).
+  const TEST_MODE = (document.getElementById("glhh-form") as HTMLFormElement).dataset.testMode === "true";
+
+  type NgayDL = { nam: number; thang: number; ngay: number };
+
+  /** Khung giờ đồng hồ thực tế — giờ Tý bắt đầu 23h của ngày dương liền TRƯỚC ngày trụ Can Chi. */
+  interface KhungGioThucTe {
+    batDau: string;
+    ketThuc: string;
+    ngayBatDau: NgayDL;
+    vatQuaNuaDem: boolean;
+  }
+  interface UngVienGioLiem {
+    chiGio: string;
+    canGio: string;
+    ngayDuongLich: NgayDL;
+    khungGio: KhungGioThucTe;
+    cungGio: string;
+    phanLoaiCung: "nhap-mo" | "thien-di" | "trung-tang";
+    cungDungDuoc: boolean;
+    nhapMoTuKy: boolean;
+    hoangDaoTen: string;
+    hoangDaoLaCat: boolean;
+    canGioDatBangDep: boolean;
+    phamGioSatChu: boolean;
+    hacDaoKyAnTang: boolean;
+    chiGioThuocTuSinh: boolean;
+    diem: number;
+  }
+  interface CanhBaoThanSat {
+    ma: string;
+    nhan: string;
+  }
+  interface UngVienNgayGioHaHuyet {
+    ngayDuongLich: NgayDL;
+    khungGio: KhungGioThucTe;
+    canChiNgay: { can: string; chi: string };
+    chiGio: string;
+    canGio: string;
+    cungNgay: string;
+    cungGio: string;
+    phanLoaiCung: "nhap-mo" | "thien-di" | "trung-tang";
+    cungDungDuoc: boolean;
+    nhapMoTuKy: boolean;
+    hoangDaoTen: string;
+    hoangDaoLaCat: boolean;
+    canGioDatBangDep: boolean;
+    ngayHopVoiVong: "tam-hop" | "luc-hop" | null;
+    trucTot: boolean;
+    chiGioThuocTuSinh: boolean;
+    phamGioSatChu: boolean;
+    hacDaoKyAnTang: boolean;
+    hungDaHoaGiai?: string[];
+    canhBaoThanSat: CanhBaoThanSat[];
+    tamDaiCatTinh?: { co: boolean; ten: string | null };
+    diem: number;
+  }
+  interface GioDongQuan {
+    theoHaHuyet: { ngayDuongLich: NgayDL; chiGio: string; batDau: string };
+    dongQuanKhuyenNghi: { gio: string; ngayDuongLich: NgayDL };
+    dongQuanMuonNhat: { gio: string; ngayDuongLich: NgayDL };
+    thoiGianDiChuyenPhut: number;
+    demPhut: number;
+    canhBao?: string;
+  }
+  interface GioLiemHaHuyetResult {
+    tuoiTa: number;
+    duoi10Tuoi: boolean;
+    bonCung?: { cungTuoi: string; cungThang: string; cungNgay: string; cungGio: string | null };
+    gioLiemDongQuan?: UngVienGioLiem[];
+    thanQuyenDaNoiLong?: boolean;
+    apDungMienTru3Ngay?: boolean;
+    ngayGioHaHuyet?: UngVienNgayGioHaHuyet[];
+    khongTimThayNgayHaHuyet?: boolean;
+    gioDongQuan?: GioDongQuan;
+    nhapMoTrungTuSinh?: boolean;
+    daNoiLongGioSatChu?: boolean;
+    hanhNienThaiTue?: string[];
+    tuoiCanTranh?: {
+      nhom1LongHoKeXa: string[];
+      nhom2TamHopCungPham: string[];
+      nhom3TamHopTuoiVong: string[];
+      nhom4XungHinh: { xung: string; hinh: string[] };
+      nhom6GioLiemKyThanQuyen: string[];
+    };
+  }
+
+  const NHAN_PHAN_LOAI: Record<string, string> = { "nhap-mo": "Nhập Mộ", "thien-di": "Thiên Di", "trung-tang": "Trùng Tang" };
+  const MAU_PHAN_LOAI: Record<string, string> = { "nhap-mo": "text-(--color-success-500)", "thien-di": "text-(--color-ink-500)", "trung-tang": "text-(--color-cinnabar-500)" };
+
+  function ngayLabel(n: { nam: number; thang: number; ngay: number }): string {
+    return `${String(n.ngay).padStart(2, "0")}/${String(n.thang).padStart(2, "0")}/${n.nam}`;
+  }
+
+  /**
+   * Giờ đồng hồ thực tế của một ứng viên. Với giờ Tý phải ghi rõ mốc 23h thuộc NGÀY TRƯỚC, nếu
+   * không gia chủ rất dễ hiểu nhầm sang 0h cùng ngày — lệch hẳn một ngày tang lễ.
+   */
+  function khungGioLabel(k: KhungGioThucTe): string {
+    if (!k) return "";
+    return k.vatQuaNuaDem ? `${k.batDau} ngày ${ngayLabel(k.ngayBatDau)} → ${k.ketThuc}` : `${k.batDau}–${k.ketThuc}`;
+  }
+
+  function yeuToLabel(y: {
+    phanLoaiCung: string;
+    cungDungDuoc?: boolean;
+    nhapMoTuKy?: boolean;
+    tamDaiCatTinh?: { co: boolean; ten: string | null };
+    hoangDaoTen: string;
+    hoangDaoLaCat: boolean;
+    canGioDatBangDep?: boolean;
+    ngayHopVoiVong?: string | null;
+  }): string {
+    const nhanCung = NHAN_PHAN_LOAI[y.phanLoaiCung] ?? y.phanLoaiCung;
+    // Cung Thìn vẫn ĐÚNG là Nhập Mộ, chỉ thuộc Tứ Kỵ nên xếp sau Tuất/Sửu/Mùi — nói rõ "bất đắc
+    // dĩ" chứ không nói "không tính", để gia chủ hiểu đúng bản chất. Cung Dậu (Thiên Di) thì bị
+    // loại khỏi tập dùng được theo mục 3 đặc tả.
+    // Hậu tố "cung kỵ" CHỈ dành cho Thìn (Nhập Mộ) và Dậu (Thiên Di) — cung Trùng Tang thì bản
+    // thân cái tên đã nói hết, gắn thêm "(cung kỵ, không tính ưu tiên)" chỉ làm rối gia chủ.
+    const nhan = y.nhapMoTuKy
+      ? `${nhanCung} (Tứ Kỵ — bất đắc dĩ mới dùng)`
+      : y.cungDungDuoc === false && y.phanLoaiCung !== "trung-tang"
+        ? `${nhanCung} (cung kỵ, không tính ưu tiên)`
+        : nhanCung;
+    const parts: string[] = [nhan];
+    if (y.hoangDaoLaCat) parts.push(`Hoàng đạo ${y.hoangDaoTen}`);
+    // Trúng bảng Trần Tử Tánh — điểm cộng "nếu có càng tốt", không phải điều kiện chọn.
+    if (y.canGioDatBangDep) parts.push("Can giờ hợp bảng Trần Tử Tánh");
+    // Tam Đại Cát Tinh — chủ dự án gọi là ba sao "cực kỳ cát", đưa lên ngay sau nhãn cung.
+    if (y.tamDaiCatTinh?.co && y.tamDaiCatTinh.ten) parts.splice(1, 0, `${y.tamDaiCatTinh.ten} (đại cát)`);
+    if (y.ngayHopVoiVong === "tam-hop") parts.push("ngày tam hợp tuổi vong");
+    if (y.ngayHopVoiVong === "luc-hop") parts.push("ngày lục hợp tuổi vong");
+    return parts.join(" · ");
+  }
+
+  /** Nhãn thần sát mức cảnh báo — không loại ứng viên, chỉ để gia chủ và thầy cùng cân nhắc. */
+  function thanSatChipsHtml(y: { hacDaoKyAnTang?: boolean; phamGioSatChu?: boolean; hungDaHoaGiai?: string[]; canhBaoThanSat?: CanhBaoThanSat[] }): string {
+    const nhan: string[] = [];
+    // Ngày lẽ ra bị loại nhưng được Tam Đại Cát Tinh hoá — phải nói rõ hoá cái gì.
+    for (const h of y.hungDaHoaGiai ?? []) nhan.push(`${h} (đã hoá giải)`);
+    if (y.phamGioSatChu) nhan.push("Giờ Sát Chủ");
+    if (y.hacDaoKyAnTang) nhan.push("Hắc đạo kỵ an táng");
+    for (const c of y.canhBaoThanSat ?? []) nhan.push(c.nhan);
+    if (nhan.length === 0) return "";
+    return `<div class="mt-1.5 flex flex-wrap gap-1">${nhan
+      .map((n) => `<span class="rounded-md bg-(--color-gold-400)/10 px-1.5 py-0.5 text-xs font-medium text-(--color-gold-500) ring-1 ring-(--color-gold-400)/30">${n}</span>`)
+      .join("")}</div>`;
+  }
+
+  function candidateCardHtml(params: { ngayLbl: string; gioLbl: string; khungLbl?: string; nhan: string; mau: string; thanSat?: string; canhBao?: string }): string {
+    return `<div class="rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200) p-4">
+      <div class="flex items-center justify-between">
+        <p class="font-display text-lg font-bold text-(--color-ink-950)">${params.ngayLbl} — giờ ${params.gioLbl}</p>
+      </div>
+      ${params.khungLbl ? `<p class="text-sm font-medium text-(--color-ink-600)">${params.khungLbl}</p>` : ""}
+      <p class="mt-1 text-sm font-semibold ${params.mau}">${params.nhan}</p>
+      ${params.thanSat ?? ""}
+      ${params.canhBao ? `<p class="mt-1.5 text-xs text-(--color-gold-400)">⚠️ ${params.canhBao}</p>` : ""}
+    </div>`;
+  }
+
+  const DISCLAIMER_HTML = `<p class="text-xs text-(--color-ink-500)">
+    Kết quả tính theo phương pháp dân gian tổng hợp, mang tính tương đối. Không thay thế tư vấn phong thủy trực tiếp.
+    Xem thêm: <a href="/tinh-trung-tang" class="text-(--color-gold-300) hover:underline">công cụ Tính Trùng Tang miễn phí</a> ·
+    <a href="/lien-he" class="text-(--color-gold-300) hover:underline">đặt lịch tư vấn</a>.
+  </p>`;
+
+  /** Thoát HTML trước khi ghép chuỗi vào innerHTML — tên sát, tên quẻ, ghi chú đều là chuỗi tự do. */
+  function escapeHtml(s: unknown): string {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function renderKetQua(result: GioLiemHaHuyetResult) {
+    const el = document.getElementById("glhh-ket-qua")!;
+
+    if (result.duoi10Tuoi) {
+      el.innerHTML = `<div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+        <p class="text-sm">Người mất dưới 10 tuổi — theo sách nguồn <strong>không tính Trùng Tang</strong> cho trường hợp này, nên không xếp hạng được giờ liệm/hạ huyệt theo phương pháp này.</p>
+      </div>`;
+      el.classList.remove("hidden");
+      return;
+    }
+
+    const gioLiem = result.gioLiemDongQuan ?? [];
+    const gioLiemHtml = gioLiem
+      .map((c) =>
+        candidateCardHtml({
+          ngayLbl: ngayLabel(c.ngayDuongLich),
+          gioLbl: c.chiGio,
+          khungLbl: khungGioLabel(c.khungGio),
+          nhan: yeuToLabel(c),
+          mau: MAU_PHAN_LOAI[c.phanLoaiCung] ?? "text-(--color-ink-700)",
+          thanSat: thanSatChipsHtml(c),
+          ...(c.chiGioThuocTuSinh
+            ? { canhBao: "Giờ Dần/Thân/Tỵ/Hợi thuộc nhóm nên tránh khi liệm — vẫn dùng được nếu không còn lựa chọn nào khá hơn, nhưng có giờ khác tương đương thì nên ưu tiên giờ đó." }
+            : {}),
+        }),
+      )
+      .join("");
+
+    const haHuyet = result.ngayGioHaHuyet ?? [];
+    const haHuyetHtml = haHuyet
+      .map((c) =>
+        candidateCardHtml({
+          ngayLbl: ngayLabel(c.ngayDuongLich),
+          gioLbl: c.chiGio,
+          khungLbl: khungGioLabel(c.khungGio),
+          nhan: yeuToLabel(c),
+          mau: MAU_PHAN_LOAI[c.phanLoaiCung] ?? "text-(--color-ink-700)",
+          thanSat: thanSatChipsHtml(c),
+          ...(c.chiGioThuocTuSinh
+            ? { canhBao: "Giờ này thuộc nhóm nên hạn chế nếu có lựa chọn khác tốt hơn — chọn vì đạt Nhập Mộ và hoàng đạo, hai yếu tố sách xếp ưu tiên cao nhất." }
+            : {}),
+        }),
+      )
+      .join("");
+
+    // Giờ ĐỘNG QUAN (chuyển quan tài ra khỏi nhà) — khác giờ ĐÓNG QUAN (đậy nắp) ở khối trên.
+    // Là giờ dẫn xuất: lấy giờ hạ huyệt phương án 1 trừ lùi quãng đường, nên trả về một KHOẢNG.
+    const dq = result.gioDongQuan;
+    // Động quan là MỐC, di quan là CHẶNG — không dựng di quan thành một giờ riêng để chọn.
+    const dongQuanHtml = dq
+      ? `<div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+          <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-400)">Giờ động quan — bắt đầu đưa linh cữu đi</p>
+          <p class="mt-3 text-sm"><strong>Nên khởi hành lúc ${dq.dongQuanKhuyenNghi.gio}</strong>, ngày ${ngayLabel(dq.dongQuanKhuyenNghi.ngayDuongLich)}</p>
+          <p class="mt-1 text-sm">Muộn nhất phải khởi hành lúc ${dq.dongQuanMuonNhat.gio}, ngày ${ngayLabel(dq.dongQuanMuonNhat.ngayDuongLich)}</p>
+          <p class="mt-2 text-sm text-(--color-ink-600)">
+            <strong>Di quan</strong> — chặng đưa linh cữu từ nơi quàn tới huyệt: khoảng ${dq.thoiGianDiChuyenPhut} phút đường đi,
+            cộng ${dq.demPhut} phút tới sớm chờ sẵn.
+          </p>
+          <p class="mt-1 text-xs text-(--color-ink-500)">Hai mốc trên trừ lùi từ giờ hạ huyệt ${dq.theoHaHuyet.batDau} ngày ${ngayLabel(dq.theoHaHuyet.ngayDuongLich)} (giờ ${dq.theoHaHuyet.chiGio}).</p>
+          ${dq.canhBao ? `<p class="mt-2 text-xs text-(--color-cinnabar-500)">${escapeHtml(dq.canhBao)}</p>` : ""}
+        </div>`
+      : "";
+
+    const tuoiTranhHtml = tct
+      ? `<div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+          <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-400)">Tuổi cần tránh mặt</p>
+          <p class="mt-1 text-xs text-(--color-ink-500)">Áp dụng lúc nhập quan · khâm liệm · đóng cá · hạ huyệt và lấp đất.</p>
+          <div class="mt-3 rounded-xl border border-(--color-cinnabar-500)/30 bg-(--color-cinnabar-500)/5 p-4">
+            <p class="text-sm font-bold text-(--color-cinnabar-500)">Long Hổ Kê Xà — tuyệt đối không được có mặt</p>
+            <div class="mt-1.5 flex flex-wrap gap-1.5">${chipList(tct.nhom1LongHoKeXa)}</div>
+            <p class="mt-2 text-xs text-(--color-ink-600)">Tránh mặt lúc: <strong>Khâm liệm · Nhập quan · Đóng cá · Hạ huyệt</strong>. Nhóm này áp dụng trong mọi trường hợp, không phụ thuộc tuổi người mất.</p>
+          </div>
+          <div class="mt-2 grid gap-2 sm:grid-cols-2">
+            <div class="rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200) p-4">
+              <p class="text-sm font-semibold text-(--color-ink-700)">Tam hợp với tuổi người mất</p>
+              <div class="mt-1.5 flex flex-wrap gap-1.5">${chipList(tct.nhom3TamHopTuoiVong)}</div>
+              <p class="mt-2 text-xs text-(--color-ink-600)">Tránh mặt lúc: Khâm liệm · Nhập quan · Đóng cá · Hạ huyệt.</p>
+            </div>
+            <div class="rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200) p-4">
+              <p class="text-sm font-semibold text-(--color-ink-700)">Xung / hình với tuổi người mất</p>
+              <div class="mt-1.5 flex flex-wrap gap-1.5">${chipList([tct.nhom4XungHinh.xung, ...tct.nhom4XungHinh.hinh])}</div>
+              <p class="mt-2 text-xs text-(--color-ink-600)">Tránh mặt lúc: Khâm liệm · Nhập quan · Đóng cá · Hạ huyệt.</p>
+            </div>
+            ${
+              tct.nhom2TamHopCungPham.length > 0
+                ? `<div class="rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200) p-4 sm:col-span-2">
+                     <p class="text-sm font-semibold text-(--color-ink-700)">Tam hợp với cung phạm Trùng Tang</p>
+                     <div class="mt-1.5 flex flex-wrap gap-1.5">${chipList(tct.nhom2TamHopCungPham)}</div>
+                   </div>`
+                : ""
+            }
+          </div>
+          ${
+            (result.hanhNienThaiTue?.length ?? 0) > 0
+              ? `<div class="mt-2 rounded-xl border border-(--color-cinnabar-500)/30 bg-(--color-cinnabar-500)/5 p-4">
+                   <p class="text-sm font-bold text-(--color-cinnabar-500)">Hành Niên Tầm Thái Tuế — 6 tuổi bị Thái Tuế áp trong năm mất</p>
+                   <div class="mt-1.5 flex flex-wrap gap-1.5">${chipList(result.hanhNienThaiTue!)}</div>
+                   <p class="mt-2 text-xs text-(--color-ink-600)">
+                     Tránh mặt lúc: <strong>khâm liệm</strong> và <strong>hạ huyệt</strong>.
+                     Sáu tuổi này nên <strong>đứng hẳn ra xa huyệt</strong>, không lại gần — sách dặn làm vậy mới tốt.
+                     Mức này nặng hơn các nhóm dưới, vốn chỉ cần đứng lánh và quay mặt đi.
+                     Nhóm này ghi đích danh Can Chi (ví dụ "Giáp Ngọ") nên hẹp hơn hẳn các nhóm trên —
+                     chỉ đúng 6 tuổi này, không phải cả 12 con giáp.
+                   </p>
+                   <p class="mt-2 text-xs font-medium text-(--color-cinnabar-500)">
+                     Không chỉ đám tang trong nhà: sáu tuổi này khi đi đám tang của làng xóm, bà con
+                     cũng không nên ở gần huyệt lúc khâm liệm và hạ táng.
+                   </p>
+                 </div>`
+              : ""
+          }
+          <p class="mt-3 text-xs text-(--color-ink-600)">
+            <strong>Phạm vi:</strong> chỉ người huyết thống trực hệ với người mất (cha, mẹ, vợ/chồng, con, anh chị em ruột, cháu nội).
+            Con dâu, con rể, cháu ngoại và người ngoài <strong>không</strong> chịu tác động.
+          </p>
+        </div>`
+      : "";
+
+    el.innerHTML = `
+      <div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+        <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-400)">Giờ liệm / đóng quan (dùng chung công thức)</p>
+        ${result.thanQuyenDaNoiLong ? `<p class="mt-1 text-xs text-(--color-gold-400)">Đã bỏ ràng buộc tuổi thân quyến do không còn ứng viên hợp lệ nào phù hợp.</p>` : ""}
+        ${
+          result.daNoiLongGioSatChu
+            ? `<p class="mt-1 text-xs text-(--color-cinnabar-500)">⚠️ Mọi giờ hợp lệ trong ngày đều phạm Giờ Sát Chủ nên buộc phải giữ lại — vui lòng hỏi thầy trực tiếp trước khi dùng.</p>`
+            : ""
+        }
+        <div class="mt-3 space-y-2">${gioLiemHtml || `<p class="text-sm text-(--color-ink-500)">Không tìm được giờ phù hợp trong khung 12 giờ sau khi mất.</p>`}</div>
+      </div>
+      ${dongQuanHtml}
+      <div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+        <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-400)">Ngày giờ hạ huyệt</p>
+        ${
+          result.apDungMienTru3Ngay
+            ? `<p class="mt-1 text-xs text-(--color-ink-500)">Áp dụng quy tắc miễn trừ (chôn trong ≤3 ngày): chỉ chọn giờ, giữ nguyên ngày mất.</p>`
+            : ""
+        }
+        ${result.khongTimThayNgayHaHuyet ? `<p class="mt-1 text-xs text-(--color-gold-400)">Không tìm được ngày phù hợp trong 20 ngày quét — vui lòng liên hệ tư vấn trực tiếp.</p>` : ""}
+        ${
+          result.nhapMoTrungTuSinh
+            ? `<p class="mt-1 text-xs text-(--color-ink-500)">Ngày này có Cung Ngày thuộc nhóm Nhập Mộ, nên theo quy luật chưởng pháp chỉ 4 giờ Dần/Tỵ/Thân/Hợi mới đạt Nhập Mộ — mà đó đúng là nhóm giờ nên hạn chế khi chôn. Vì vậy không có giờ nào đạt trọn vẹn cả hai tiêu chí.</p>`
+            : ""
+        }
+        <div class="mt-3 space-y-2">${haHuyetHtml || `<p class="text-sm text-(--color-ink-500)">Chưa có ứng viên phù hợp.</p>`}</div>
+      </div>
+      ${tuoiTranhHtml}
+      ${DISCLAIMER_HTML}
+    `;
+    el.classList.remove("hidden");
+  }
+
+  /**
+   * Kết quả PHASE 2 — chèn thêm vào cuối khối kết quả.
+   *
+   * ⚠️ TUYỆT ĐỐI KHÔNG hiện điểm số thô. Đặc tả mục 6 yêu cầu tách rõ 2 phần "cách cục nền" và
+   * "quan hệ đạt", và cấm hẳn kiểu câu "Hà Đồ 140 điểm tốt hơn Đồng quái khí 120 điểm". Engine đã
+   * để điểm ở trường `diemNoiBo` riêng — không được đọc trường đó ra đây.
+   */
+  function renderPhase2(p2: any) {
+    const el = document.getElementById("glhh-ket-qua")!;
+
+    if (p2.ketCuc === "mien-tru") {
+      el.insertAdjacentHTML(
+        "beforeend",
+        `<div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+          <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-400)">Lọc theo tọa hướng huyệt mộ</p>
+          <p class="mt-2 text-sm font-medium">Áp dụng phép quyền biến: ${escapeHtml(p2.nhanh)}</p>
+          <p class="mt-1 text-sm text-(--color-ink-600)">${escapeHtml(p2.giaiThich)}</p>
+        </div>`,
+      );
+      return;
+    }
+    if (p2.ketCuc !== "A" && p2.ketCuc !== "B") return;
+
+    const dsHtml = p2.phuongAn
+      .map(
+        (pa: any) => `
+        <div class="rounded-xl border border-(--color-gold-300) bg-(--color-gold-400)/10 p-4">
+          <p class="font-display font-bold text-(--color-ink-950)">Phương án ${pa.thuHang} — ${escapeHtml(pa.id)}</p>
+          <dl class="mt-2 space-y-1 text-sm">
+            <div class="flex gap-2">
+              <dt class="shrink-0 text-(--color-ink-500)">Cách cục nền:</dt>
+              <dd class="font-medium text-(--color-ink-950)">${escapeHtml(pa.cachCuc.tenLop)}</dd>
+            </div>
+            <div class="flex gap-2">
+              <dt class="shrink-0 text-(--color-ink-500)">Quan hệ đạt:</dt>
+              <dd class="text-(--color-ink-800)">${pa.quanHeDat.length ? pa.quanHeDat.map(escapeHtml).join(" · ") : "—"}</dd>
+            </div>
+            ${
+              pa.canhBao.length
+                ? `<div class="flex gap-2">
+                     <dt class="shrink-0 text-(--color-ink-500)">Ghi chú:</dt>
+                     <dd class="text-(--color-gold-500)">${pa.canhBao.map(escapeHtml).join("; ")}</dd>
+                   </div>`
+                : ""
+            }
+          </dl>
+        </div>`,
+      )
+      .join("");
+
+    el.insertAdjacentHTML(
+      "beforeend",
+      `<div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+        <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-400)">Lọc &amp; xếp hạng theo tọa hướng huyệt mộ</p>
+        <p class="mt-1 text-sm text-(--color-ink-600)">
+          Tọa ${escapeHtml(p2.toaHuong.sonToa)} ${p2.toaHuong.doSoToa.toFixed(1)}° —
+          hướng ${escapeHtml(p2.toaHuong.sonHuong)} ${p2.toaHuong.doSoHuong.toFixed(1)}°.
+          ${
+            p2.soPhuongAnQuaLoc > 0
+              ? `Đã rà toàn bộ ngày giờ trong khung 20 ngày, loại hết các phương án có sát phương vị đáo tọa hoặc đáo hướng. Dưới đây là những phương án đạt nhất.`
+              : ""
+          }
+        </p>
+        <div class="mt-3 space-y-3">${dsHtml || `<p class="text-sm text-(--color-ink-500)">Không còn phương án nào qua được lọc tọa hướng — vui lòng liên hệ tư vấn trực tiếp.</p>`}</div>
+        ${p2.cauKetLuan ? `<p class="mt-3 text-sm font-medium text-(--color-ink-700)">${escapeHtml(p2.cauKetLuan)}</p>` : ""}
+        ${
+          p2.thieuDuLieu.length
+            ? `<p class="mt-3 text-xs text-(--color-gold-500)">${p2.thieuDuLieu.map(escapeHtml).join(" ")}</p>`
+            : ""
+        }
+      </div>`,
+    );
+  }
+
+  const form = document.getElementById("glhh-form") as HTMLFormElement;
+  const loiEl = document.getElementById("glhh-loi")!;
+  const thanhToanEl = document.getElementById("glhh-thanh-toan")!;
+  const ketQuaEl = document.getElementById("glhh-ket-qua")!;
+  const qrImg = document.getElementById("glhh-qr") as HTMLImageElement;
+  const orderCodeEl = document.getElementById("glhh-order-code")!;
+  const trangThaiEl = document.getElementById("glhh-trang-thai")!;
+
+  const khoiToaEl = document.getElementById("glhh-khoi-toa")!;
+  const chuaThuPhiEl = document.getElementById("glhh-chua-thu-phi")!;
+  const doLaiEl = document.getElementById("glhh-do-lai")!;
+  const toaDoInput = document.getElementById("glhh-toa-do") as HTMLInputElement;
+
+  const nhanNutEl = document.getElementById("glhh-nhan-nut");
+  const huongDoInput = document.getElementById("glhh-huong-do") as HTMLInputElement;
+  const quyDoiEl = document.getElementById("glhh-quy-doi")!;
+
+  /**
+   * Tọa và hướng luôn đối nhau 180°, nên gia đình đo được số nào thì nhập số đó.
+   *
+   * Chỉ điền ô còn lại, KHÔNG tự sửa ô người dùng đang gõ — nếu hai ô cùng ghi đè lẫn nhau thì
+   * con trỏ nhảy lung tung và không sửa nổi số đã nhập. Máy chủ vẫn chỉ nhận `doSoToa`.
+   */
+  function doiSang180(v: string): string {
+    const n = Number(v);
+    if (v.trim() === "" || !Number.isFinite(n)) return "";
+    return String(Math.round((((n + 180) % 360) + 360) % 360 * 10) / 10);
+  }
+
+  function moTaQuyDoi() {
+    const toa = toaDoInput.value.trim();
+    quyDoiEl.textContent = toa === "" ? "" : `Hệ thống sẽ tính theo tọa ${toa}° — hướng ${doiSang180(toa)}°.`;
+  }
+
+  toaDoInput.addEventListener("input", () => {
+    huongDoInput.value = doiSang180(toaDoInput.value);
+    moTaQuyDoi();
+  });
+  huongDoInput.addEventListener("input", () => {
+    toaDoInput.value = doiSang180(huongDoInput.value);
+    moTaQuyDoi();
+  });
+
+  /**
+   * Ô tọa độ chỉ hiện khi gia đình đã có huyệt — chưa có huyệt thì nhập tọa độ là vô nghĩa.
+   * Đồng thời đổi nhãn giá trên nút, để khách thấy đúng số tiền sắp trả trước khi bấm.
+   */
+  function capNhatKhoiToa() {
+    const daCo = (form.querySelector('input[name="glhh-co-huyet"]:checked') as HTMLInputElement)?.value === "da-co";
+    khoiToaEl.classList.toggle("hidden", !daCo);
+    if (nhanNutEl) {
+      const gia = daCo ? form.dataset.giaDayDu : form.dataset.giaCoBan;
+      nhanNutEl.textContent = `Thanh toán ${gia} & Xem kết quả`;
+    }
+  }
+  for (const radio of form.querySelectorAll('input[name="glhh-co-huyet"]')) {
+    radio.addEventListener("change", capNhatKhoiToa);
+  }
+  capNhatKhoiToa();
+
+  const khoiPdfEl = document.getElementById("glhh-khoi-pdf")!;
+  const taiPdfBtn = document.getElementById("glhh-tai-pdf") as HTMLButtonElement;
+  /** Payload của lần tính gần nhất — endpoint hồ sơ tự tính lại từ đây, không nhận kết quả sẵn. */
+  let payloadGanNhat: Record<string, unknown> | null = null;
+
+  taiPdfBtn.addEventListener("click", async () => {
+    if (!payloadGanNhat) return;
+    const chuGoc = taiPdfBtn.textContent;
+    taiPdfBtn.disabled = true;
+    taiPdfBtn.textContent = "Đang tạo hồ sơ...";
+    try {
+      const res = await fetch("/api/dai-cat-loi/gio-liem-ha-huyet/ho-so", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payloadGanNhat),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => null);
+        loiEl.textContent = data?.error ?? "Không tạo được hồ sơ PDF.";
+        loiEl.classList.remove("hidden");
+        return;
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "ho-so-tang-le.pdf";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch {
+      loiEl.textContent = "Không tạo được hồ sơ PDF. Vui lòng thử lại.";
+      loiEl.classList.remove("hidden");
+    } finally {
+      taiPdfBtn.disabled = false;
+      taiPdfBtn.textContent = chuGoc;
+    }
+  });
+
+  const goiCoBanEl = document.getElementById("glhh-goi-co-ban")!;
+
+  // Chuyển sang gói cơ bản = bỏ tọa mộ đi rồi tính lại. Không giữ lại tọa độ để tránh cảnh khách
+  // tưởng mình vẫn được lọc theo tọa hướng mà thực ra không.
+  document.getElementById("glhh-chuyen-co-ban")!.addEventListener("click", () => {
+    (form.querySelector('input[name="glhh-co-huyet"][value="chua"]') as HTMLInputElement).click();
+    toaDoInput.value = "";
+    huongDoInput.value = "";
+    quyDoiEl.textContent = "";
+    chuaThuPhiEl.classList.add("hidden");
+    goiCoBanEl.classList.add("hidden");
+    form.requestSubmit();
+  });
+
+  document.getElementById("glhh-ctp-quay-lai")!.addEventListener("click", () => {
+    chuaThuPhiEl.classList.add("hidden");
+    toaDoInput.focus();
+    toaDoInput.select();
+  });
+
+  let pollTimer: ReturnType<typeof setInterval> | null = null;
+
+  function stopPolling() {
+    if (pollTimer) clearInterval(pollTimer);
+    pollTimer = null;
+  }
+
+  async function pollResult(orderCode: string) {
+    try {
+      const res = await fetch(`/api/dai-cat-loi/gio-liem-ha-huyet/result?orderCode=${encodeURIComponent(orderCode)}`);
+      const data = await res.json();
+      if (!res.ok || !data.ok) return; // giữ nguyên trạng thái chờ, thử lại lần sau
+
+      if (data.status === "confirmed") {
+        stopPolling();
+        trangThaiEl.textContent = "Đã thanh toán — đang hiển thị kết quả bên dưới.";
+        thanhToanEl.classList.add("hidden");
+        form.classList.add("hidden"); // tránh gửi lại form (tạo đơn mới, thu phí lần nữa) sau khi đã có kết quả
+        renderKetQua(data.result as GioLiemHaHuyetResult);
+        if (data.phase2) renderPhase2(data.phase2);
+        khoiPdfEl.classList.remove("hidden");
+      } else if (data.status === "cancelled") {
+        stopPolling();
+        trangThaiEl.textContent = "Đơn hàng đã bị hủy. Vui lòng thử lại.";
+      }
+    } catch {
+      // lỗi mạng tạm thời — bỏ qua, chờ lần poll kế tiếp
+    }
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    loiEl.classList.add("hidden");
+    thanhToanEl.classList.add("hidden");
+    ketQuaEl.classList.add("hidden");
+    chuaThuPhiEl.classList.add("hidden");
+    doLaiEl.classList.add("hidden");
+    khoiPdfEl.classList.add("hidden");
+    stopPolling();
+
+    const gioiTinh = (form.querySelector('input[name="gioiTinh"]:checked') as HTMLInputElement).value;
+    const namSinhDuongLich = (document.getElementById("glhh-nam-sinh") as HTMLInputElement).value;
+    const ngayMat = readDateSelects("glhh-ngay-mat");
+    const chiGioMat = (document.getElementById("glhh-gio-mat") as HTMLSelectElement).value;
+    const soNgayRaw = (document.getElementById("glhh-so-ngay") as HTMLInputElement).value;
+    const diChuyenRaw = (document.getElementById("glhh-di-chuyen") as HTMLInputElement).value;
+    const truongNam = (document.getElementById("glhh-truong-nam") as HTMLSelectElement).value;
+    const conDauLon = (document.getElementById("glhh-con-dau-lon") as HTMLSelectElement).value;
+    const chauDichTon = (document.getElementById("glhh-chau-dich-ton") as HTMLSelectElement).value;
+    const anhTraiLon = (document.getElementById("glhh-anh-trai-lon") as HTMLSelectElement).value;
+    // Các ô này chỉ tồn tại khi đã bật thu phí (xem TEST_MODE ở frontmatter) — dùng optional
+    // chaining để lúc thử nghiệm không vỡ vì getElementById trả null.
+    const doc = (id: string) =>
+      (document.getElementById(id) as HTMLInputElement | null)?.value.trim() ?? "";
+    const customerName = doc("glhh-ten");
+    const customerPhone = doc("glhh-sdt");
+    const customerEmail = doc("glhh-email");
+    const maKhuyenMai = doc("glhh-ma-input");
+
+    if (!ngayMat) {
+      loiEl.textContent = "Vui lòng chọn đầy đủ ngày mất.";
+      loiEl.classList.remove("hidden");
+      return;
+    }
+    if (!chiGioMat) {
+      loiEl.textContent = "Vui lòng chọn giờ mất.";
+      loiEl.classList.remove("hidden");
+      return;
+    }
+
+    const daCoHuyet =
+      (form.querySelector('input[name="glhh-co-huyet"]:checked') as HTMLInputElement)?.value === "da-co";
+    const nguyenNhanMat = (document.getElementById("glhh-nguyen-nhan") as HTMLSelectElement).value;
+    const doSoToaRaw = toaDoInput.value.trim();
+    if (daCoHuyet && doSoToaRaw === "") {
+      loiEl.textContent = "Gia đình đã có huyệt mộ — vui lòng nhập số đo tọa hoặc hướng huyệt (đo bằng la kinh).";
+      loiEl.classList.remove("hidden");
+      return;
+    }
+
+    // ⚠️ CỔNG KIỂM CHẠY TRƯỚC MỌI THỨ, KỂ CẢ TRƯỚC KHI TẠO ĐƠN. Phạm sát cấp năm thì không ngày
+    // giờ nào cứu được, nên phải chặn ở đây — không bao giờ để thu tiền rồi mới báo không làm
+    // được (đặc tả Phase 2 mục 2.1b).
+    if (daCoHuyet) {
+      try {
+        const resKiem = await fetch("/api/dai-cat-loi/gio-liem-ha-huyet/kiem-toa-huong", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            doSoToa: Number(doSoToaRaw),
+            namMat: ngayMat.year,
+            thangMat: ngayMat.month,
+            ngayMat: ngayMat.day,
+            gioiTinh,
+            namSinhDuongLich: Number(namSinhDuongLich),
+            chiGioMat,
+            ...(soNgayRaw ? { soNgayDuKienToiChon: Number(soNgayRaw) } : {}),
+            nguyenNhanMat,
+          }),
+        });
+        const dataKiem = await resKiem.json();
+        if (!resKiem.ok || !dataKiem.ok) {
+          loiEl.textContent = dataKiem.error ?? "Không kiểm được tọa hướng.";
+          loiEl.classList.remove("hidden");
+          return;
+        }
+        const kq = dataKiem.ketQua;
+        if (kq.ketCuc === "can-do-lai") {
+          document.getElementById("glhh-do-lai-ly-do")!.textContent = kq.thongDiep;
+          doLaiEl.classList.remove("hidden");
+          doLaiEl.scrollIntoView({ behavior: "smooth", block: "center" });
+          return;
+        }
+        // Kết cục C, hoặc lọc sạch không còn phương án nào — cả hai đều KHÔNG thu phí.
+        if (kq.ketCuc === "C" || kq.ketCuc === "rong") {
+          document.getElementById("glhh-ctp-ly-do")!.textContent = kq.thongDiep;
+          // Phần lọc theo tọa hướng không làm được thì không thu tiền phần đó — nhưng Phase 1 vẫn
+          // có kết quả, nên mời gói cơ bản. Đây là nói thật, không phải hạ giá để vớt khách.
+          goiCoBanEl.classList.toggle("hidden", kq.ketCuc !== "rong" || !kq.conGoiCoBan);
+          chuaThuPhiEl.classList.remove("hidden");
+          chuaThuPhiEl.scrollIntoView({ behavior: "smooth", block: "center" });
+          return;
+        }
+      } catch {
+        loiEl.textContent = "Không kiểm được tọa hướng. Vui lòng thử lại.";
+        loiEl.classList.remove("hidden");
+        return;
+      }
+    }
+
+    const thanQuyen: Record<string, string> = {};
+    if (truongNam) thanQuyen.chiTruongNam = truongNam;
+    if (conDauLon) thanQuyen.chiConDauLon = conDauLon;
+    if (chauDichTon) thanQuyen.chiChauDichTon = chauDichTon;
+    if (anhTraiLon) thanQuyen.chiAnhTraiLon = anhTraiLon;
+
+    const payload = {
+      gioiTinh,
+      namSinhDuongLich: Number(namSinhDuongLich),
+      namMat: ngayMat.year,
+      thangMat: ngayMat.month,
+      ngayMat: ngayMat.day,
+      chiGioMat,
+      ...(soNgayRaw ? { soNgayDuKienToiChon: Number(soNgayRaw) } : {}),
+      ...(diChuyenRaw ? { thoiGianDiChuyenPhut: Number(diChuyenRaw) } : {}),
+      ...(Object.keys(thanQuyen).length > 0 ? { thanQuyen } : {}),
+      nguyenNhanMat,
+      ...(daCoHuyet ? { doSoToa: Number(doSoToaRaw) } : {}),
+      ...(doc("glhh-ho-ten-vong") ? { hoTenNguoiMat: doc("glhh-ho-ten-vong") } : {}),
+      customerName,
+      customerPhone,
+      ...(customerEmail ? { customerEmail } : {}),
+      ...(maKhuyenMai ? { maKhuyenMai } : {}),
+    };
+    // Ghi lại để nút "Tải hồ sơ PDF" gửi đúng bộ dữ liệu này — dùng chung cho cả luồng thử
+    // nghiệm lẫn luồng thu phí.
+    payloadGanNhat = payload;
+
+    // ⚠️ TẠM THỜI (test nội bộ, yêu cầu Công 2026-08-14): gọi thẳng test-calculate.ts, bỏ qua
+    // bước tạo đơn + QR SePay. Để bật lại thu phí: đổi endpoint về checkout.ts và khôi phục
+    // đoạn xử lý QR/polling đã lưu trong lịch sử git (commit thêm module này).
+    if (TEST_MODE) {
+      try {
+        const res = await fetch("/api/dai-cat-loi/gio-liem-ha-huyet/test-calculate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) {
+          loiEl.textContent = data.error ?? "Không tính được.";
+          loiEl.classList.remove("hidden");
+          return;
+        }
+        renderKetQua(data.result as GioLiemHaHuyetResult);
+        if (data.phase2) renderPhase2(data.phase2);
+        khoiPdfEl.classList.remove("hidden");
+        ketQuaEl.scrollIntoView({ behavior: "smooth", block: "start" });
+      } catch {
+        loiEl.textContent = "Không tính được. Vui lòng thử lại.";
+        loiEl.classList.remove("hidden");
+      }
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/dai-cat-loi/gio-liem-ha-huyet/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        // Máy chủ cũng chặn kết cục C (hàng rào thứ hai, phòng khi hàng rào phía trình duyệt bị
+        // bỏ qua). Trường hợp này KHÔNG phải lỗi nhập liệu — hiện đúng màn hình "chưa thu phí".
+        if (data.chuaThuPhi) {
+          document.getElementById("glhh-ctp-ly-do")!.textContent = data.error;
+          chuaThuPhiEl.classList.remove("hidden");
+          chuaThuPhiEl.scrollIntoView({ behavior: "smooth", block: "center" });
+          return;
+        }
+        loiEl.textContent = data.error ?? "Không tạo được đơn hàng.";
+        loiEl.classList.remove("hidden");
+        return;
+      }
+
+      // Mã miễn phí 100%: server đã xác nhận đơn luôn và trả qrUrl = null. Không được gán null vào
+      // thẻ ảnh (QR vỡ) rồi bảo khách "đang chờ thanh toán" — lấy kết quả về ngay.
+      if (data.mienPhi) {
+        orderCodeEl.textContent = data.orderCode;
+        await pollResult(data.orderCode);
+        return;
+      }
+
+      qrImg.src = data.qrUrl;
+      orderCodeEl.textContent = data.orderCode;
+      trangThaiEl.textContent = "Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)";
+      thanhToanEl.classList.remove("hidden");
+      thanhToanEl.scrollIntoView({ behavior: "smooth", block: "start" });
+
+      pollTimer = setInterval(() => pollResult(data.orderCode), 3000);
+    } catch {
+      loiEl.textContent = "Không tạo được đơn hàng. Vui lòng thử lại.";
+      loiEl.classList.remove("hidden");
+    }
+  });
+</script>

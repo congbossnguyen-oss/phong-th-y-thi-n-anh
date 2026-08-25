@@ -1,0 +1,21 @@
+---
+// Ban in-app cua dich vu VIP "Ngày Giờ Ký Kết Hợp Đồng – Bản Cao Cấp" — TU CHUA trong app Quan Su (App Store, khong link ra web).
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
+import VipQuyenBanner from "../../components/quan-su/VipQuyenBanner.astro";
+import NgayKyHopDongCaoCap from "../../components/tools/NgayKyHopDongCaoCap.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout title="Ngày Giờ Ký Kết Hợp Đồng – Bản Cao Cấp — Quân Sư Thiên Anh" description="Ngày Giờ Ký Kết Hợp Đồng – Bản Cao Cấp trong app Quân Sư." appShell>
+  <PageHero
+    eyebrow="Dịch vụ VIP"
+    title="Ngày Giờ Ký Kết Hợp Đồng – Bản Cao Cấp"
+    breadcrumbs={[{ label: "Quân Sư", href: "/quan-su" }, { label: "Dịch vụ VIP", href: "/quan-su/dich-vu-vip" }, { label: "Ngày Giờ Ký Kết Hợp Đồng – Bản Cao Cấp" }]}
+  />
+  <VipQuyenBanner />
+  <NgayKyHopDongCaoCap />
+  <BottomNav />
+</BaseLayout>

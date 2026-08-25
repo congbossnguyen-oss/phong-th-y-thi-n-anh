@@ -1,0 +1,28 @@
+import type { APIRoute } from "astro";
+import { getOrderByCode } from "../../../../lib/db/orders";
+import { jsonResponse, TOOL_SLUG } from "./_chung";
+import { checkRateLimit } from "../../../../lib/rate-limit";
+
+export const prerender = false;
+
+/**
+ * Endpoint POLL trạng thái đơn (nhẹ) cho trang thanh toán — chỉ trả pending/confirmed/cancelled.
+ * Kết quả (luận giải chi tiết) do TRANG server-render khi khách vào lại với ?orderCode=… (đã
+ * confirmed) — xem src/pages/dai-cat-loi/ky-mon-menh-chi-tiet.astro.
+ */
+export const GET: APIRoute = async ({ url, request, clientAddress }) => {
+  const limited = checkRateLimit({ request, clientAddress }, { key: "result-ky-mon-menh-chi-tiet", max: 60, windowMs: 60_000 });
+  if (limited) return limited;
+
+  const orderCode = url.searchParams.get("orderCode");
+  if (!orderCode) return jsonResponse({ ok: false, error: "Thiếu mã đơn hàng." }, 400);
+
+  const order = await getOrderByCode(orderCode);
+  if (!order || order.orderType !== "tool" || order.toolSlug !== TOOL_SLUG) {
+    return jsonResponse({ ok: false, error: "Không tìm thấy đơn hàng." }, 404);
+  }
+
+  if (order.status === "cancelled") return jsonResponse({ ok: true, status: "cancelled" }, 200);
+  if (order.status !== "confirmed") return jsonResponse({ ok: true, status: "pending" }, 200);
+  return jsonResponse({ ok: true, status: "confirmed" }, 200);
+};

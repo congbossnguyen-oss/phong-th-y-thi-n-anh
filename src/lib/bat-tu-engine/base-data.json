@@ -79,9 +79,9 @@
   ],
   "truongSinh_dacLenh_states": ["Trường Sinh", "Mộc Dục", "Quan Đới", "Lâm Quan", "Đế Vượng"],
 
-  "_moKho_note": "Mộ Khố (Tứ Mộ) của từng hành. Can Dương gặp Mộ khố của hành mình MỚI tính là có gốc (có căn); Can Âm gặp mộ khố coi như vô khí. Xem references/mo-kho.md.",
+  "_moKho_note": "Mộ Khố (Tứ Mộ) của từng hành. Can Dương gặp Mộ khố của hành mình MỚI tính là có gốc (có căn); Can Âm gặp mộ khố coi như vô khí. Xem references/mo-kho.md. Thổ dùng chung Mộ với Hỏa (Tuất) theo quy tắc 'Hỏa Thổ đồng cung' — CÙNG quy ước đã dùng cho vòng Trường Sinh của Mậu/Kỷ trong bat-tu.ts (TRUONG_SINH_START, khởi Dần như Bính). Trước 2026-08-25 ở đây ghi nhầm Thìn (không khớp quy ước đồng cung) — sửa lại Tuất cho nhất quán 1 nguồn duy nhất, phát hiện khi build module luan-giai-toan-dien (content/bat-tu/data/mo-kho.json xuất từ skill cũng ghi Thổ→Tuất, đối chiếu ra chỗ lệch này).",
   "moKho": {
-    "Mộc": "Mùi", "Hỏa": "Tuất", "Kim": "Sửu", "Thủy": "Thìn", "Thổ": "Thìn"
+    "Mộc": "Mùi", "Hỏa": "Tuất", "Kim": "Sửu", "Thủy": "Thìn", "Thổ": "Tuất"
   },
 
   "thienCan_hopHoa": {

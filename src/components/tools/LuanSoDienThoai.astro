@@ -1,0 +1,1137 @@
+---
+// Than cong cu tach dung chung cho web + in-app Quan Su (giu NGUYEN giao dien/logic).
+import Container from "../ui/Container.astro";
+import Button from "../ui/Button.astro";
+import { siteConfig } from "../../lib/site-config";
+import { NHOM_NGHE } from "@thien-anh/phone-energy-engine";
+
+export const prerender = true;
+
+const hotlineHref = `tel:${siteConfig.hotline.replace(/\s/g, "")}`;
+const namNay = new Date().getFullYear();
+---
+
+  <Container class="py-12">
+    <div class="mx-auto max-w-4xl">
+      <form
+        id="lsdt-form"
+        class="flex flex-col gap-4 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6"
+      >
+        <div>
+          <label for="lsdt-so" class="text-sm font-semibold text-(--color-ink-900)">
+            Số điện thoại cần luận <span class="text-(--color-danger-500)">*</span>
+          </label>
+          <input
+            id="lsdt-so"
+            type="tel"
+            inputmode="numeric"
+            required
+            autocomplete="off"
+            placeholder="Ví dụ: 0912 345 678"
+            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-400) bg-(--color-ivory-50) px-3 py-3 text-base font-semibold tracking-wide text-(--color-ink-900) placeholder:font-normal placeholder:text-(--color-ink-600)"
+          />
+        </div>
+
+        <div>
+          <label for="lsdt-nghe" class="text-sm font-semibold text-(--color-ink-900)">
+            Công việc hiện tại của anh/chị
+          </label>
+          <select
+            id="lsdt-nghe"
+            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-400) bg-(--color-ivory-50) px-3 py-3 text-base text-(--color-ink-900)"
+          >
+            <option value="">— Chưa chọn —</option>
+            {NHOM_NGHE.filter((n) => n.ma !== "khac").map((n) => (
+              <option value={n.ma}>{n.ten}</option>
+            ))}
+            <option value="khac">Ngành khác / chưa đi làm</option>
+          </select>
+          <p class="mt-1 text-xs text-(--color-ink-600)">
+            Chọn nghề thì phần tổng kết cuối bài sẽ nói rõ dãy số này có hợp với công việc anh/chị
+            đang làm hay không. Bỏ trống vẫn luận được, chỉ thiếu phần đối chiếu nghề.
+          </p>
+        </div>
+
+        <details class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3">
+          <summary class="cursor-pointer text-sm font-semibold text-(--color-ink-900)">
+            Thêm căn cước &amp; năm sinh để xem Đại vận (không bắt buộc)
+          </summary>
+          <div class="mt-3 grid gap-3">
+            <div>
+              <label for="lsdt-cccd" class="text-sm font-medium text-(--color-ink-800)">
+                Số căn cước công dân (12 số)
+              </label>
+              <input
+                id="lsdt-cccd"
+                type="text"
+                inputmode="numeric"
+                maxlength="12"
+                autocomplete="off"
+                placeholder="Mở khoá Đại vận trình và hướng hoá giải"
+                class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-400) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-900) placeholder:text-(--color-ink-600)"
+              />
+              <p class="mt-1 text-xs text-(--color-ink-600)">
+                Chỉ dùng để tính rồi trả kết quả ngay — hệ thống không lưu lại số căn cước.
+              </p>
+            </div>
+
+            <div class="grid grid-cols-3 gap-3">
+              <div>
+                <label for="lsdt-nam-sinh" class="text-sm font-medium text-(--color-ink-800)">Năm sinh</label>
+                <input
+                  id="lsdt-nam-sinh"
+                  type="number"
+                  inputmode="numeric"
+                  min="1900"
+                  max={namNay}
+                  placeholder="1984"
+                  class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-400) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-900) placeholder:text-(--color-ink-600)"
+                />
+              </div>
+              <div>
+                <label for="lsdt-gioi-tinh" class="text-sm font-medium text-(--color-ink-800)">Giới tính</label>
+                <select
+                  id="lsdt-gioi-tinh"
+                  class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-400) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-900)"
+                >
+                  <option value="">—</option>
+                  <option value="nam">Nam</option>
+                  <option value="nữ">Nữ</option>
+                </select>
+              </div>
+              <div>
+                <label for="lsdt-muc-dich" class="text-sm font-medium text-(--color-ink-800)">Quan tâm</label>
+                <select
+                  id="lsdt-muc-dich"
+                  class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-400) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-900)"
+                >
+                  <option value="tổng quát">Tổng quát</option>
+                  <option value="tài lộc">Tài lộc</option>
+                  <option value="hôn nhân">Hôn nhân</option>
+                  <option value="sự nghiệp">Sự nghiệp</option>
+                  <option value="sức khỏe">Sức khỏe</option>
+                  <option value="học hành">Học hành</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </details>
+
+        <Button type="submit" size="lg">Luận số này</Button>
+      </form>
+
+      <div id="lsdt-dang-chay" class="mt-4 hidden rounded-(--radius-card) border border-(--color-gold-500)/40 bg-(--color-gold-400)/10 p-4 text-sm font-medium text-(--color-ink-900)">
+        ⏳ Đang tách cặp và tra bảng năng lượng…
+      </div>
+
+      <div id="lsdt-loi" class="mt-4 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm font-semibold text-(--color-danger-500)"></div>
+
+      <div id="lsdt-ket-qua" class="mt-8 hidden"></div>
+
+      <div id="lsdt-cta" class="mt-8 hidden rounded-(--radius-card) border-2 border-(--color-gold-400) bg-(--color-gold-400)/10 p-6 text-center">
+        <p class="font-display text-xl font-bold text-(--color-ink-900)">Muốn tìm số hợp với mình?</p>
+        <p class="mx-auto mt-2 max-w-xl text-sm font-medium text-(--color-ink-800)">
+          Công cụ này chỉ luận số anh/chị đang dùng. Để <strong>chọn được một dãy số hợp mệnh</strong>
+          cần đối chiếu thêm lá số Bát Tự và Dụng Thần — việc này phải làm thủ công theo từng người.
+        </p>
+        <div class="mt-5 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <a
+            href={hotlineHref}
+            class="flex w-full items-center justify-center gap-2 rounded-(--radius-pill) bg-(--color-gold-400) px-6 py-3 text-sm font-bold text-(--color-on-accent) hover:bg-(--color-gold-300) sm:w-auto"
+          >
+            📞 Gọi chuyên gia: {siteConfig.hotline}
+          </a>
+          <a
+            href="/dai-cat-loi/sim-phong-thuy-khai-van"
+            class="flex w-full items-center justify-center gap-2 rounded-(--radius-pill) border-2 border-(--color-gold-400) px-6 py-3 text-sm font-bold text-(--color-gold-400) hover:bg-(--color-ivory-200) sm:w-auto"
+          >
+            Đặt dịch vụ tìm sim hợp mệnh
+          </a>
+        </div>
+      </div>
+    </div>
+  </Container>
+
+<script>
+  import { MO_TA_8_TINH, Y_NGHIA_TUNG_CAP } from "@thien-anh/phone-energy-engine";
+
+  const form = document.getElementById("lsdt-form") as HTMLFormElement;
+  const oDangChay = document.getElementById("lsdt-dang-chay")!;
+  const oLoi = document.getElementById("lsdt-loi")!;
+  const oKetQua = document.getElementById("lsdt-ket-qua")!;
+  const oCta = document.getElementById("lsdt-cta")!;
+
+  const esc = (s: string) =>
+    s.replace(/[&<>"']/g, (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!,
+    );
+
+  const TINH_CAT = ["Thiên Y", "Diên Niên", "Sinh Khí", "Phục Vị"];
+  const TINH_HUNG = ["Tuyệt Mệnh", "Ngũ Quỷ", "Lục Sát", "Họa Hại"];
+
+  /** Màu riêng cho từng Bát tinh — dùng thống nhất ở mọi biểu đồ để mắt nhận ra ngay. */
+  const MAU_TINH: Record<string, string> = {
+    "Thiên Y": "#10b981",
+    "Sinh Khí": "#22c55e",
+    "Diên Niên": "#14b8a6",
+    "Phục Vị": "#84cc16",
+    "Tuyệt Mệnh": "#dc2626",
+    "Ngũ Quỷ": "#f97316",
+    "Lục Sát": "#a855f7",
+    "Họa Hại": "#e11d48",
+  };
+
+  const MAU_NGU_HANH: Record<string, string> = {
+    Kim: "#94a3b8",
+    Mộc: "#22c55e",
+    Thủy: "#3b82f6",
+    Hỏa: "#ef4444",
+    Thổ: "#d97706",
+  };
+
+  const mauCuaTinh = (ten: string) => MAU_TINH[ten] ?? "#9ca3af";
+
+  function mauTheoDiem(diem: number): string {
+    if (diem >= 80) return "#10b981";
+    if (diem >= 65) return "#84cc16";
+    if (diem >= 50) return "#f59e0b";
+    if (diem >= 35) return "#f97316";
+    return "#ef4444";
+  }
+
+  /** Tô số và tên tinh trong câu văn. Chạy sau escape nên chuỗi vào đã an toàn. */
+  function noiBat(cauDaEscape: string): string {
+    let s = cauDaEscape;
+    for (const t of TINH_CAT) s = s.split(t).join(`<span class="font-semibold text-emerald-500">${t}</span>`);
+    for (const t of TINH_HUNG) s = s.split(t).join(`<span class="font-semibold text-red-500">${t}</span>`);
+    return s.replace(/(^|[^\w"=\-/])(\d{2,})(?![\w"])/g, (_m, truoc, so) =>
+      `${truoc}<b class="rounded bg-(--color-gold-400)/20 px-1 font-mono text-(--color-gold-300)">${so}</b>`,
+    );
+  }
+
+  const khung = (tieuDe: string, ruot: string, phu = "", noiBat = false) =>
+    noiBat
+      ? `
+    <section class="mt-8 rounded-(--radius-card) border-2 border-(--color-gold-400) bg-(--color-gold-400)/10 p-6 shadow-lg">
+      <h2 class="text-center font-display text-2xl font-black tracking-wide text-(--color-ink-900)">${tieuDe}</h2>
+      ${phu ? `<p class="mx-auto mt-1.5 max-w-xl text-center text-sm text-(--color-ink-700)">${phu}</p>` : ""}
+      <div class="mt-5">${ruot}</div>
+    </section>`
+      : `
+    <section class="mt-6 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-5">
+      <h2 class="font-display text-lg font-bold text-(--color-ink-900)">${tieuDe}</h2>
+      ${phu ? `<p class="mt-1 text-sm text-(--color-ink-600)">${phu}</p>` : ""}
+      <div class="mt-4">${ruot}</div>
+    </section>`;
+
+  // ---------------------------------------------------------------- biểu đồ
+
+  /** Vòng tròn điểm. Vẽ bằng SVG thuần, không dùng thư viện ngoài. */
+  function donut(phanTram: number, mau: string, giua: string, duoi: string, kichThuoc = 150): string {
+    const r = 54;
+    const chuVi = 2 * Math.PI * r;
+    const chay = (Math.max(0, Math.min(100, phanTram)) / 100) * chuVi;
+    return `
+      <div class="flex flex-col items-center">
+        <svg viewBox="0 0 140 140" style="width:${kichThuoc}px;height:${kichThuoc}px" role="img" aria-label="${esc(giua)}">
+          <circle cx="70" cy="70" r="${r}" fill="none" stroke="currentColor" stroke-width="13" class="text-(--color-ivory-300)" />
+          <circle cx="70" cy="70" r="${r}" fill="none" stroke="${mau}" stroke-width="13" stroke-linecap="round"
+                  stroke-dasharray="${chay} ${chuVi - chay}" transform="rotate(-90 70 70)" />
+          <text x="70" y="66" text-anchor="middle" font-size="26" font-weight="700" fill="${mau}">${esc(giua)}</text>
+          <text x="70" y="88" text-anchor="middle" font-size="11" fill="currentColor" class="text-(--color-ink-600)">${esc(duoi)}</text>
+        </svg>
+      </div>`;
+  }
+
+  /** Thanh tỷ trọng nhiều màu ghép liền nhau. */
+  function thanhTyTrong(muc: { nhan: string; tyLe: number; mau: string }[]): string {
+    const co = muc.filter((m) => m.tyLe > 0);
+    if (!co.length) return "";
+    const dai = co
+      .map((m) => `<div style="width:${m.tyLe}%;background:${m.mau}" title="${esc(m.nhan)} ${m.tyLe}%"></div>`)
+      .join("");
+    const chu = co
+      .map(
+        (m) =>
+          `<span class="inline-flex items-center gap-1 whitespace-nowrap">
+             <span class="inline-block size-2.5 rounded-sm" style="background:${m.mau}"></span>
+             <span class="font-medium text-(--color-ink-800)">${esc(m.nhan)}</span>
+             <span class="text-(--color-ink-600)">${m.tyLe}%</span>
+           </span>`,
+      )
+      .join("");
+    return `
+      <div class="flex h-4 w-full overflow-hidden rounded-full bg-(--color-ivory-300)">${dai}</div>
+      <div class="mt-2 flex flex-wrap gap-x-3 gap-y-1 text-xs">${chu}</div>`;
+  }
+
+  /** Biểu đồ cột cho 8 Bát tinh. */
+  function cotBatTinh(theoTinh: any[]): string {
+    const thuTu = [...TINH_CAT, ...TINH_HUNG];
+    const banDo = new Map(theoTinh.map((t: any) => [t.ten, t]));
+    const caoNhat = Math.max(1, ...theoTinh.map((t: any) => t.soLan));
+    const cot = thuTu
+      .map((ten) => {
+        const t = banDo.get(ten);
+        const soLan = t ? t.soLan : 0;
+        const caoPhanTram = (soLan / caoNhat) * 100;
+        return `
+          <div class="flex flex-1 flex-col items-center gap-1.5">
+            <span class="text-xs font-bold text-(--color-ink-900)">${soLan || ""}</span>
+            <div class="flex h-28 w-full items-end">
+              <div class="w-full rounded-t transition-all" style="height:${Math.max(caoPhanTram, soLan ? 6 : 2)}%;background:${soLan ? mauCuaTinh(ten) : "var(--color-ivory-300)"}"></div>
+            </div>
+            <span class="text-center text-[10px] leading-tight font-medium text-(--color-ink-700)">${esc(ten)}</span>
+          </div>`;
+      })
+      .join("");
+    return `<div class="flex items-end gap-1.5">${cot}</div>`;
+  }
+
+  /** Biểu đồ sóng năng lượng chạy dọc dãy số. */
+  function songNangLuong(song: any[]): string {
+    if (song.length < 2) return "";
+    const W = 640;
+    const H = 180;
+    const lePhai = 16;
+    const buoc = (W - lePhai * 2) / (song.length - 1);
+    const y = (v: number) => H / 2 - (v / 100) * (H / 2 - 22);
+    const diem = song.map((s: any, i: number) => [lePhai + i * buoc, y(s.giaTri)] as const);
+
+    // Nối bằng đường cong Bezier cho mượt, thay vì gấp khúc.
+    let d = `M ${diem[0]![0]} ${diem[0]![1]}`;
+    for (let i = 1; i < diem.length; i++) {
+      const [x0, y0] = diem[i - 1]!;
+      const [x1, y1] = diem[i]!;
+      const mx = (x0 + x1) / 2;
+      d += ` C ${mx} ${y0}, ${mx} ${y1}, ${x1} ${y1}`;
+    }
+    const vung = `${d} L ${diem[diem.length - 1]![0]} ${H / 2} L ${diem[0]![0]} ${H / 2} Z`;
+
+    const cham = song
+      .map((s: any, i: number) => {
+        const [x, yy] = diem[i]!;
+        return `<circle cx="${x}" cy="${yy}" r="4.5" fill="${mauCuaTinh(s.ten)}" stroke="var(--color-ivory-100)" stroke-width="2"><title>${esc(s.cap)} · ${esc(s.ten)}</title></circle>`;
+      })
+      .join("");
+    const nhan = song
+      .map((s: any, i: number) => {
+        const [x] = diem[i]!;
+        return `<text x="${x}" y="${H - 4}" text-anchor="middle" font-size="11" font-family="ui-monospace,monospace" fill="currentColor" class="text-(--color-ink-700)">${esc(s.cap)}</text>`;
+      })
+      .join("");
+
+    return `
+      <div class="overflow-x-auto">
+        <svg viewBox="0 0 ${W} ${H}" class="min-w-[560px] w-full" role="img" aria-label="Biểu đồ sóng năng lượng">
+          <line x1="0" y1="${H / 2}" x2="${W}" y2="${H / 2}" stroke="currentColor" stroke-width="1" class="text-(--color-ivory-300)" />
+          <path d="${vung}" fill="url(#lsdt-grad)" opacity="0.18" />
+          <defs>
+            <linearGradient id="lsdt-grad" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#10b981" />
+              <stop offset="50%" stop-color="#10b981" />
+              <stop offset="50%" stop-color="#ef4444" />
+              <stop offset="100%" stop-color="#ef4444" />
+            </linearGradient>
+          </defs>
+          <path d="${d}" fill="none" stroke="var(--color-gold-400)" stroke-width="2.5" />
+          ${cham}${nhan}
+        </svg>
+      </div>
+      <p class="mt-1 text-xs text-(--color-ink-600)">Trên vạch giữa là năng lượng tốt, dưới vạch là năng lượng cần lưu ý. Càng xa vạch thì càng mạnh.</p>`;
+  }
+
+  /** Bốn ô mức năng lượng — cấp 1 sáng 4 ô, cấp 4 sáng 1 ô. */
+  function mucNangLuong(capDo: number, mau: string): string {
+    const soO = 5 - capDo;
+    return [1, 2, 3, 4]
+      .map(
+        (i) =>
+          `<span class="inline-block h-2.5 w-5 rounded-sm" style="background:${i <= soO ? mau : "var(--color-ivory-300)"}"></span>`,
+      )
+      .join("");
+  }
+
+  /** Sơ đồ dải năng lượng: hàng chữ số, dưới là các cặp bắc ngang đúng hai chữ số của nó. */
+  function veSoDo(kq: any): string {
+    const so: string = kq.soDaChuanHoa;
+    const cot = so.length;
+    const oSo = so
+      .split("")
+      .map((d: string) => {
+        const dacBiet = d === "0" || d === "5";
+        return `<div class="flex h-10 items-center justify-center rounded font-mono text-lg font-bold ${
+          dacBiet
+            ? "bg-(--color-ink-800)/10 text-(--color-ink-700) ring-1 ring-(--color-ink-600)/30"
+            : "bg-(--color-gold-400)/20 text-(--color-gold-300)"
+        }">${d}</div>`;
+      })
+      .join("");
+
+    // Hai làn so le: cặp liền kề dùng chung một chữ số nên phải tách, cặp cách 2 bậc không đè nhau.
+    const lan: string[][] = [[], []];
+    kq.capGoc.forEach((c: any, i: number) => {
+      const mau = mauCuaTinh(c.ten);
+      lan[i % 2]!.push(
+        `<div class="flex items-center justify-center rounded px-1 py-1 text-[11px] font-bold text-white"
+              style="grid-column:${c.capGoc.viTriTrai + 1}/${c.capGoc.viTriPhai + 2};background:${mau}">
+           ${esc(c.ten)}${c.daHoaGiai ? " ✓" : ""}
+         </div>`,
+      );
+    });
+    const veLan = (ds: string[]) =>
+      ds.length
+        ? `<div class="mt-1.5 grid gap-1" style="grid-template-columns:repeat(${cot},minmax(0,1fr))">${ds.join("")}</div>`
+        : "";
+
+    return `
+      <div class="overflow-x-auto">
+        <div class="min-w-[320px]">
+          <div class="grid gap-1" style="grid-template-columns:repeat(${cot},minmax(0,1fr))">${oSo}</div>
+          ${veLan(lan[0]!)}
+          ${veLan(lan[1]!)}
+        </div>
+      </div>
+      <p class="mt-2 text-xs text-(--color-ink-600)">Ô xám là số 0 và số 5 — không tự tạo cặp, chỉ tác động lên cặp bên cạnh. Dấu ✓ là cặp đã được hoá giải.</p>`;
+  }
+
+  // ---------------------------------------------------------------- các khối
+
+  function khoiDiem(kq: any): string {
+    const mau = mauTheoDiem(kq.diem.diem);
+    const tk = kq.thongKe;
+    const vanHienTai = (kq.vanThe ?? []).find((g: any) => g.laHienTai);
+    const o = (nhan: string, giaTri: string) => `
+      <div class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3">
+        <p class="text-[11px] font-semibold uppercase tracking-wide text-(--color-ink-600)">${nhan}</p>
+        <p class="mt-1 text-base font-bold text-(--color-ink-900)">${giaTri}</p>
+      </div>`;
+
+    return `
+      <section class="rounded-(--radius-card) border-2 p-6" style="border-color:${mau}">
+        <div class="flex flex-col items-center gap-6 sm:flex-row sm:items-start">
+          ${donut(kq.diem.diem, mau, `${kq.diem.diem}%`, "tổng điểm", 168)}
+          <div class="flex-1 text-center sm:text-left">
+            <p class="font-mono text-lg font-bold tracking-widest text-(--color-ink-900)">${esc(kq.soDaChuanHoa)}</p>
+            <p class="mt-1 font-display text-2xl font-bold" style="color:${mau}">${esc(kq.diem.nhan)}</p>
+            ${
+              kq.diem.loiKhen
+                ? `<p class="mt-3 rounded-(--radius-control) border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm font-bold text-emerald-500">🎉 ${esc(kq.diem.loiKhen)}</p>`
+                : ""
+            }
+          </div>
+        </div>
+
+        <div class="mt-5 grid grid-cols-2 gap-3 lg:grid-cols-4">
+          ${o("Năng lượng chủ đạo", kq.tinhChuDao ? esc(kq.tinhChuDao.ten) : "—")}
+          ${o("Năng lượng kết", kq.ketCuc.capTrongDuoi.length ? esc(kq.ketCuc.capTrongDuoi[kq.ketCuc.capTrongDuoi.length - 1].ten) : "—")}
+          ${o("Cát / Trung tính / Hung", `${tk.tyLeCat}% · ${tk.tyLeTrungTinh}% · ${tk.tyLeHung}%`)}
+          ${o("Đại vận căn cước", vanHienTai ? `${esc(vanHienTai.ten)} (${esc(vanHienTai.cap)})` : "—")}
+        </div>
+      </section>`;
+  }
+
+  function khoiViSao(kq: any): string {
+    const the = kq.diem.thanhPhan
+      .map(
+        (t: any) => `
+        <div class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3">
+          <p class="text-xl font-bold ${t.diem > 0 ? "text-emerald-500" : t.diem < 0 ? "text-red-500" : "text-(--color-ink-700)"}">${t.diem > 0 ? "+" : ""}${t.diem}</p>
+          <p class="mt-0.5 text-sm font-semibold text-(--color-ink-900)">${esc(t.ten)}</p>
+          <p class="mt-0.5 text-xs text-(--color-ink-600)">${esc(t.ghiChu)}</p>
+        </div>`,
+      )
+      .join("");
+    return khung(
+      "Vì sao ra điểm này?",
+      `<div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">${the}</div>
+       <p class="mt-3 text-xs text-(--color-ink-600)">Thang điểm do Phong Thủy Thiên Anh thiết kế để tóm tắt nhanh, không có trong tài liệu gốc. Phần luận chi tiết mới là nội dung theo đúng phương pháp.</p>`,
+    );
+  }
+
+  function khoiSongTinh(kq: any): string {
+    const chip = kq.bo3So
+      .map((b: any) => {
+        // Bộ có số 0 hoặc 5 thì không ghép được hai cặp trái–phải, nên KHÔNG dán nhãn cát/hung —
+        // gọi nó là "hỗn hợp" là sai, ở đây đơn giản là chưa đủ dữ kiện để xếp loại.
+        const khongGhepDuoc = !b.capTrai || !b.capPhai;
+        const catCa2 = !khongGhepDuoc && b.capTrai.catHung === "cát" && b.capPhai.catHung === "cát";
+        const hungCa2 = !khongGhepDuoc && b.capTrai.catHung === "hung" && b.capPhai.catHung === "hung";
+        const nhan = khongGhepDuoc
+          ? `Có số ${b.bo.includes("5") ? "5" : "0"}`
+          : b.hoaGiaiNoiBo
+            ? "Hoá giải"
+            : catCa2
+              ? "Cát tinh"
+              : hungCa2
+                ? "Hung tinh"
+                : "Cát + Hung";
+        const mau = khongGhepDuoc
+          ? "border-(--color-ink-600)/40 bg-(--color-ink-800)/10 text-(--color-ink-700)"
+          : b.hoaGiaiNoiBo
+            ? "border-emerald-500 bg-emerald-500/15 text-emerald-500"
+            : catCa2
+              ? "border-emerald-500/60 bg-emerald-500/10 text-emerald-500"
+              : hungCa2
+                ? "border-red-500/60 bg-red-500/10 text-red-500"
+                : "border-(--color-gold-400)/60 bg-(--color-gold-400)/10 text-(--color-gold-300)";
+        return `<div class="rounded-(--radius-control) border-2 px-3 py-2 text-center ${mau}">
+                  <p class="font-mono text-base font-bold">${esc(b.bo)}</p>
+                  <p class="text-[10px] font-semibold uppercase">${nhan}</p>
+                </div>`;
+      })
+      .join("");
+
+    const chiTiet = kq.bo3So
+      .map((b: any) => {
+        const badge = (c: any) =>
+          c
+            ? `<span class="rounded-(--radius-pill) px-2 py-0.5 text-xs font-bold text-white" style="background:${mauCuaTinh(c.ten)}">${esc(c.ten)}</span>`
+            : "";
+        const muc = (c: any) =>
+          c
+            ? `<div class="flex items-center gap-2 text-xs">
+                 <span class="w-20 font-semibold text-(--color-ink-800)">${esc(c.ten)}</span>
+                 <span class="flex gap-0.5">${mucNangLuong(c.capDo, mauCuaTinh(c.ten))}</span>
+                 <span class="text-(--color-ink-600)">Ngũ hành: <b class="text-(--color-ink-800)">${esc(c.nguHanhTinh)}</b></span>
+               </div>`
+            : "";
+        // Tô đậm đúng đoạn 3 số đang xét bên trong cả dãy, phần còn lại để mờ.
+        const vt = kq.soDaChuanHoa.indexOf(b.bo);
+        const day =
+          vt >= 0
+            ? `<span class="text-(--color-ink-600)">${esc(kq.soDaChuanHoa.slice(0, vt))}</span><span class="font-bold text-(--color-gold-300)">${esc(b.bo)}</span><span class="text-(--color-ink-600)">${esc(kq.soDaChuanHoa.slice(vt + 3))}</span>`
+            : esc(kq.soDaChuanHoa);
+        return `
+          <div class="border-l-4 border-(--color-gold-400)/50 py-3 pl-3">
+            <p class="font-mono text-sm">${day} <span class="ml-1 text-(--color-ink-700)">(${esc(b.bo)})</span></p>
+            <div class="mt-1.5 flex flex-wrap items-center gap-1.5">${badge(b.capTrai)}${b.capTrai && b.capPhai ? '<span class="text-(--color-ink-600)">+</span>' : ""}${badge(b.capPhai)}</div>
+            ${b.capTrai || b.capPhai ? `<div class="mt-2 space-y-1">${muc(b.capTrai)}${muc(b.capPhai)}</div>` : ""}
+            <p class="mt-2 text-sm leading-relaxed text-(--color-ink-800)">${noiBat(esc(b.dienGiai))}</p>
+          </div>`;
+      })
+      .join("");
+
+    return khung(
+      "Song Tinh Hội Ứng",
+      `<div class="grid grid-cols-3 gap-2 sm:grid-cols-5 lg:grid-cols-7">${chip}</div>
+       <div class="mt-4 divide-y divide-(--color-ivory-300)">${chiTiet}</div>`,
+      "Hai năng lượng đứng kề nhau quyết định thành bại của dãy số: hung tinh gặp cát tinh đủ mạnh ở bên phải thì hoá hung thành cát.",
+    );
+  }
+
+  function khoiDoLuong(kq: any): string {
+    const tk = kq.thongKe;
+    const mucTinh = tk.theoTinh.map((t: any) => ({ nhan: t.ten, tyLe: t.tyLe, mau: mauCuaTinh(t.ten) }));
+    const mucCatHung = [
+      { nhan: "Cát", tyLe: tk.tyLeCat, mau: "#10b981" },
+      { nhan: "Trung tính (Phục Vị)", tyLe: tk.tyLeTrungTinh, mau: "#a3a3a3" },
+      { nhan: "Hung", tyLe: tk.tyLeHung, mau: "#ef4444" },
+    ];
+    const mucHanh = tk.theoNguHanh.map((h: any) => ({ nhan: h.hanh, tyLe: h.tyLe, mau: MAU_NGU_HANH[h.hanh]! }));
+    return khung(
+      "Đo &amp; so sánh năng lượng",
+      `<div class="grid gap-6 lg:grid-cols-[auto_1fr] lg:items-center">
+         ${donut(tk.tyLeCat, "#10b981", `${tk.tyLeCat}%`, "năng lượng tốt", 140)}
+         <div class="space-y-5">
+           <div>
+             <p class="mb-1.5 text-xs font-semibold uppercase tracking-wide text-(--color-ink-600)">Cát / Trung tính / Hung</p>
+             ${thanhTyTrong(mucCatHung)}
+             <p class="mt-1.5 text-xs text-(--color-ink-600)">Phục Vị được xếp riêng vào nhóm trung tính — bảng gốc ghi chủ đề của nó là "giữ nguyên trạng", không đẩy việc tiến lên cũng không kéo lùi.</p>
+           </div>
+           <div>
+             <p class="mb-1.5 text-xs font-semibold uppercase tracking-wide text-(--color-ink-600)">Tỷ trọng từng năng lượng</p>
+             ${thanhTyTrong(mucTinh)}
+           </div>
+           <div>
+             <p class="mb-1.5 text-xs font-semibold uppercase tracking-wide text-(--color-ink-600)">Tỷ trọng ngũ hành</p>
+             ${thanhTyTrong(mucHanh)}
+           </div>
+         </div>
+       </div>
+       <div class="mt-6">
+         <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-(--color-ink-600)">Số lần xuất hiện của 8 năng lượng</p>
+         ${cotBatTinh(tk.theoTinh)}
+       </div>
+       <div class="mt-6">
+         <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-(--color-ink-600)">Biểu đồ sóng năng lượng</p>
+         ${songNangLuong(tk.song)}
+       </div>`,
+    );
+  }
+
+  function khoiDaiVan(kq: any): string {
+    if (!kq.vanThe || !kq.vanThe.length) return "";
+    const hang = (nhan: string, o: string[]) =>
+      `<tr>
+         <th class="sticky left-0 z-10 bg-(--color-ivory-200) px-2 py-2 text-left text-xs font-bold text-(--color-ink-900)">${nhan}</th>
+         ${o.join("")}
+       </tr>`;
+    const cap = kq.vanThe.map(
+      (g: any) =>
+        `<td class="border-l border-(--color-ivory-300) px-2 py-2 text-center font-mono text-sm font-bold ${g.laHienTai ? "text-red-500" : "text-(--color-ink-900)"}">${esc(g.cap)}</td>`,
+    );
+    const tuoi = kq.vanThe.map(
+      (g: any) =>
+        `<td class="border-l border-(--color-ivory-300) px-2 py-2 text-center text-xs font-medium ${g.laHienTai ? "text-red-500" : "text-(--color-ink-700)"}">${g.tuoiTu}~${g.tuoiDen}</td>`,
+    );
+    const tinh = kq.vanThe.map(
+      (g: any) =>
+        `<td class="border-l border-(--color-ivory-300) px-2 py-2 text-center text-xs font-semibold" style="color:${g.ten ? mauCuaTinh(g.ten) : "inherit"}">${esc(g.ten ?? "—")}</td>`,
+    );
+    const muiTen = kq.vanThe.map(
+      (g: any) => `<td class="px-2 text-center text-red-500">${g.laHienTai ? "▼" : ""}</td>`,
+    );
+
+    return khung(
+      "Đại vận trình căn cước",
+      `<div class="overflow-x-auto">
+         <table class="w-full border-collapse text-sm">
+           <tbody>
+             <tr><th class="sticky left-0 bg-(--color-ivory-100)"></th>${muiTen.join("")}</tr>
+             ${hang("Số vận", cap)}
+             ${hang("Tuổi", tuoi)}
+             ${hang("Từ trường", tinh)}
+           </tbody>
+         </table>
+       </div>
+       ${kq.tuoiHienTai === null ? '<p class="mt-2 text-xs text-(--color-ink-600)">Nhập thêm năm sinh để hệ thống chỉ ra anh/chị đang ở giai đoạn vận nào.</p>' : ""}`,
+      "Mỗi cặp số trong căn cước cai quản một giai đoạn tuổi.",
+    );
+  }
+
+  /**
+   * Liệt kê từng số 0 / số 5 trong dãy và nó làm gì với cặp năng lượng đứng cạnh.
+   *
+   * Dữ liệu lấy nguyên từ engine (`capGoc[].hieuUng`), không tự suy thêm — mỗi dòng là một quan hệ
+   * đã được xác định giữa một chữ số và một cặp cụ thể.
+   */
+  function khoiSo05(kq: any): string {
+    const dong: string[] = [];
+    for (const c of kq.capGoc) {
+      for (const h of c.hieuUng) {
+        const la0 = h.so === 0;
+        // Số 0 luôn là chiều xấu (giảm cát tinh còn nửa, hoặc làm hung tinh nặng thêm); số 5 làm
+        // mạnh lên nên tốt với cát tinh, chỉ xấu khi làm mạnh hung tinh.
+        const xau = la0 || h.lamManhHungTinh;
+        const mauHieuUng = xau ? "text-red-500" : h.so === 5 ? "text-emerald-500" : "text-(--color-ink-700)";
+        dong.push(`
+          <tr class="border-t border-(--color-ivory-300)">
+            <td class="px-2 py-2.5 text-center">
+              <span class="inline-flex size-7 items-center justify-center rounded font-mono text-sm font-bold ${la0 ? "bg-red-500/15 text-red-500" : "bg-amber-500/15 text-amber-600"}">${h.so}</span>
+            </td>
+            <td class="px-2 py-2.5 text-center text-xs font-medium text-(--color-ink-700)">
+              ${esc(h.viTriTuongDoi)}${h.soLapLai !== undefined ? `<span class="mt-0.5 block font-mono text-[11px] font-bold text-(--color-gold-300)">= Phục Vị ${h.soLapLai}${h.soLapLai}</span>` : ""}
+            </td>
+            <td class="px-2 py-2.5">
+              <span class="font-mono text-sm font-bold text-(--color-gold-300)">${esc(c.capGoc.cap)}</span>
+              <span class="ml-1 text-xs font-semibold" style="color:${mauCuaTinh(c.ten)}">${esc(c.ten)}</span>
+            </td>
+            <td class="px-2 py-2.5 text-sm font-bold ${mauHieuUng}">${esc(h.hieuUng)}</td>
+            <td class="px-2 py-2.5 text-xs text-(--color-ink-800)">
+              ${esc(h.moTa)}${h.yNghiaLinhVuc ? `<span class="mt-0.5 block font-semibold text-red-500">→ ${esc(h.yNghiaLinhVuc)}</span>` : ""}
+            </td>
+          </tr>`);
+      }
+    }
+    if (!dong.length) {
+      return khung(
+        "Ảnh hưởng của số 0 và số 5",
+        `<p class="text-sm font-medium text-emerald-500">Dãy số không có số 0 hay số 5 nào — không có chữ số nào cắt mạch hay làm lệch năng lượng của các cặp.</p>`,
+      );
+    }
+    return khung(
+      "Ảnh hưởng của số 0 và số 5",
+      `<div class="overflow-x-auto">
+         <table class="w-full min-w-[520px] border-collapse text-left">
+           <thead>
+             <tr class="text-[11px] font-bold uppercase tracking-wide text-(--color-ink-600)">
+               <th class="px-2 pb-2 text-center">Số</th>
+               <th class="px-2 pb-2 text-center">Vị trí</th>
+               <th class="px-2 pb-2">Tác động lên</th>
+               <th class="px-2 pb-2">Kết quả</th>
+               <th class="px-2 pb-2">Ý nghĩa</th>
+             </tr>
+           </thead>
+           <tbody>${dong.join("")}</tbody>
+         </table>
+       </div>
+       <p class="mt-3 text-xs text-(--color-ink-600)">
+         Số 5 và số 0 không tự tạo cặp. Cả hai đều
+         <strong class="text-(--color-ink-800)">lặp lại chữ số đứng ngay trước nó</strong> để thành
+         một cặp Phục Vị — nên phải xem số đứng trước chúng là số mấy mới biết chúng tác động vào
+         đâu. Vì luôn bám sang trái, chúng không bao giờ ảnh hưởng tới cặp nằm bên phải mình; và
+         nếu đứng ngay đầu dãy thì không có gì để lặp, tức không liên quan cặp nào cả.
+         <br /><br />
+         Khác nhau ở chiều tác động. <strong class="text-(--color-ink-800)">Số 5 làm năng lượng
+         mạnh lên</strong>: đứng ngay sau một cặp thì kích phát cặp ấy bộc lộ rõ ra ngoài, nằm giữa
+         một cặp thì kéo dài cặp ấy thêm ra — gặp cát tinh là tốt, gặp hung tinh là nguy hiểm gấp
+         đôi. <strong class="text-(--color-ink-800)">Số 0 thì ngược lại</strong>: với cát tinh nó
+         làm <strong class="text-(--color-ink-800)">giảm còn khoảng một nửa lực</strong> — giảm chứ
+         không triệt tiêu hoàn toàn; với hung tinh thì lại làm mức xấu nặng thêm. Đây chính là hiện
+         tượng gãy trường khí.
+       </p>`,
+    );
+  }
+
+  function khoiCanhBao(kq: any): string {
+    if (!kq.canhBao.length) return "";
+    const ds = kq.canhBao
+      .map(
+        (c: any) => `
+        <li class="rounded-(--radius-control) border-l-4 ${c.mucDo === "nặng" ? "border-red-500 bg-red-500/10" : "border-amber-500 bg-amber-500/10"} p-3">
+          <p class="text-sm font-bold text-(--color-ink-900)">${esc(c.tieuDe)}</p>
+          <p class="mt-0.5 text-sm text-(--color-ink-800)">${esc(c.moTa)}</p>
+        </li>`,
+      )
+      .join("");
+    return khung("Cảnh báo cần lưu ý", `<ul class="space-y-2">${ds}</ul>`);
+  }
+
+  function khoiBaiLuan(kq: any): string {
+    const phan = kq.baiLuan
+      .map((d: any, i: number) => {
+        const [dan, ...muc] = d.noiDung as string[];
+        const cauDan = dan
+          ? `<p class="mt-2 text-sm leading-relaxed text-(--color-ink-800)">${noiBat(esc(dan))}</p>`
+          : "";
+        const ds = muc.length
+          ? `<ul class="mt-3 space-y-2">${muc
+              .map(
+                (p) =>
+                  `<li class="border-l-2 border-(--color-gold-400)/40 pl-3 text-sm leading-relaxed text-(--color-ink-800)">${noiBat(esc(p))}</li>`,
+              )
+              .join("")}</ul>`
+          : "";
+        return `
+          <details class="border-b border-(--color-ivory-300) py-3 last:border-0" ${i === 0 ? "open" : ""}>
+            <summary class="flex cursor-pointer items-center gap-2 font-display text-base font-bold text-(--color-ink-900)">
+              <span class="inline-flex size-6 shrink-0 items-center justify-center rounded-full bg-(--color-gold-400) text-xs font-bold text-(--color-on-accent)">${i + 1}</span>
+              ${esc(d.tieuDe)}
+            </summary>
+            ${cauDan}${ds}
+          </details>`;
+      })
+      .join("");
+    return khung("Luận giải chi tiết", phan, "Bấm vào từng mục để mở rộng.");
+  }
+
+  /**
+   * Bảng tổng kết — khối chốt cuối bài. Trọng tâm là BA SỐ CUỐI, các cặp còn lại chỉ phụ trợ.
+   *
+   * Toàn bộ nội dung lấy nguyên từ `kq.tongKet` của engine; ở đây chỉ lo trình bày.
+   */
+  function khoiTongKet(kq: any): string {
+    const tk = kq.tongKet;
+    if (!tk) return "";
+
+    const mauLoai: Record<string, { vien: string; nen: string; chu: string; nhan: string }> = {
+      "tốt": { vien: "border-emerald-500", nen: "bg-emerald-500/10", chu: "text-emerald-600", nhan: "ĐIỂM MẠNH" },
+      "hai mặt": { vien: "border-amber-500", nen: "bg-amber-500/10", chu: "text-amber-600", nhan: "HAI MẶT" },
+      "cần lưu ý": { vien: "border-red-500", nen: "bg-red-500/10", chu: "text-red-500", nhan: "CẦN LƯU Ý" },
+    };
+
+    const duoi = tk.tinhODuoi.length
+      ? [...new Set(tk.tinhODuoi as string[])]
+          .map(
+            (t) =>
+              `<span class="rounded-full px-2.5 py-1 text-xs font-bold" style="background:${mauCuaTinh(t)}22;color:${mauCuaTinh(t)}">${esc(t)}</span>`,
+          )
+          .join(" ")
+      : `<span class="text-sm text-(--color-ink-600)">Không tạo được cặp năng lượng nào</span>`;
+
+    const oDuoi = `
+      <div class="rounded-(--radius-control) border-2 border-(--color-gold-400) bg-(--color-gold-400)/10 p-4">
+        <p class="text-[11px] font-bold tracking-wider text-(--color-ink-700)">BA SỐ CUỐI — CHỖ QUYẾT ĐỊNH KẾT CỤC</p>
+        <p class="mt-1 font-mono text-3xl font-black tracking-widest text-(--color-ink-900)">${esc(tk.baSoDuoi)}</p>
+        <div class="mt-2 flex flex-wrap gap-1.5">${duoi}</div>
+        <p class="mt-2 text-xs text-(--color-ink-700)">
+          Các cặp còn lại trong dãy chỉ đóng vai phụ trợ cho phần này.
+        </p>
+      </div>`;
+
+    const dsCachCuc = tk.cachCuc.length
+      ? tk.cachCuc
+          .map((c: any) => {
+            const m = mauLoai[c.loai] ?? mauLoai["hai mặt"];
+            return `
+            <li class="rounded-(--radius-control) border-l-4 ${m.vien} ${m.nen} p-3.5">
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="text-[10px] font-bold tracking-wider ${m.chu}">${m.nhan}</span>
+                <span class="font-display text-base font-bold text-(--color-ink-900)">${esc(c.ten)}</span>
+              </div>
+              <p class="mt-1.5 text-sm leading-relaxed text-(--color-ink-800)">${noiBat(esc(c.dienGiai))}</p>
+            </li>`;
+          })
+          .join("")
+      : `<li class="rounded-(--radius-control) border border-(--color-ivory-300) p-3.5 text-sm text-(--color-ink-800)">
+           Dãy số không rơi vào cách cục đặc thù nào — ở mức bình thường, không có điểm bật hẳn lên
+           cũng không có khuyết điểm nặng.
+         </li>`;
+
+    let oNghe = "";
+    if (tk.doiChieuNghe) {
+      const n = tk.doiChieuNghe;
+      const mauMuc: Record<string, string> = {
+        "rất phù hợp": "border-emerald-500 bg-emerald-500/10 text-emerald-600",
+        "phù hợp": "border-emerald-500/60 bg-emerald-500/5 text-emerald-600",
+        "tạm được": "border-amber-500 bg-amber-500/10 text-amber-600",
+        "chưa phù hợp": "border-red-500 bg-red-500/10 text-red-500",
+      };
+      const the = (nhan: string, ds: string[], mau: string) =>
+        ds.length
+          ? `<p class="mt-1.5 text-xs text-(--color-ink-800)"><span class="font-bold ${mau}">${nhan}:</span> ${esc(ds.join(", "))}</p>`
+          : "";
+      oNghe = `
+        <div class="mt-4 rounded-(--radius-control) border-2 ${mauMuc[n.mucDo] ?? "border-(--color-ivory-300)"} p-4">
+          <p class="text-[11px] font-bold tracking-wider text-(--color-ink-700)">SO VỚI CÔNG VIỆC HIỆN TẠI</p>
+          <p class="mt-1 font-display text-lg font-bold text-(--color-ink-900)">
+            ${esc(n.nhom)} — <span class="uppercase">${esc(n.mucDo)}</span>
+          </p>
+          ${the("Đang đỡ cho nghề", n.dangHoTro, "text-emerald-600")}
+          ${the("Đang kéo lại", n.dangCanTro, "text-red-500")}
+          <p class="mt-2 text-sm leading-relaxed text-(--color-ink-800)">${noiBat(esc(n.dienGiai))}</p>
+        </div>`;
+    } else {
+      oNghe = `
+        <p class="mt-4 rounded-(--radius-control) border border-dashed border-(--color-ivory-300) p-3 text-xs text-(--color-ink-700)">
+          Chọn thêm mục <strong class="text-(--color-ink-900)">Công việc hiện tại</strong> ở phần
+          nhập liệu để xem dãy số này có hợp với nghề anh/chị đang làm hay không.
+        </p>`;
+    }
+
+    // Năm mặt đời sống — thanh ngang hai chiều, gốc ở giữa: phải là được, trái là cần lưu ý.
+    const MAU_MUC: Record<string, string> = {
+      "rất tốt": "#10b981",
+      "tốt": "#84cc16",
+      "trung bình": "#f59e0b",
+      "cần lưu ý": "#ef4444",
+    };
+    const oNamMat = (tk.namMat ?? [])
+      .map((m: any) => {
+        const mau = MAU_MUC[m.mucDo] ?? "#9ca3af";
+        const rong = Math.min(50, Math.abs(m.diem) / 2);
+        const thanh =
+          m.diem >= 0
+            ? `<div class="absolute inset-y-0 left-1/2" style="width:${rong}%;background:${mau}"></div>`
+            : `<div class="absolute inset-y-0" style="right:50%;width:${rong}%;background:${mau}"></div>`;
+        const keNguon = (nhan: string, ds: string[], mauChu: string) =>
+          ds.length
+            ? `<p class="mt-1 text-[11px] text-(--color-ink-700)"><span class="font-bold ${mauChu}">${nhan}:</span> ${esc(ds.join(", "))}</p>`
+            : "";
+        return `
+        <li class="rounded-(--radius-control) border border-(--color-ivory-300) p-3">
+          <div class="flex items-baseline justify-between gap-2">
+            <span class="font-display text-base font-bold text-(--color-ink-900)">${esc(m.ten)}</span>
+            <span class="text-xs font-bold uppercase" style="color:${mau}">${esc(m.mucDo)}</span>
+          </div>
+          <div class="relative mt-2 h-2.5 w-full overflow-hidden rounded-full bg-(--color-ivory-300)">
+            ${thanh}
+            <div class="absolute inset-y-0 left-1/2 w-px bg-(--color-ink-900)/40"></div>
+          </div>
+          <p class="mt-2 text-sm leading-relaxed text-(--color-ink-800)">${noiBat(esc(m.dienGiai))}</p>
+          ${keNguon("Nhờ", m.dangDayLen, "text-emerald-600")}
+          ${keNguon("Bị kéo bởi", m.dangKeoXuong, "text-red-500")}
+        </li>`;
+      })
+      .join("");
+
+    return khung(
+      "Tổng kết về số này",
+      `${oDuoi}
+       <p class="mt-5 text-[11px] font-bold tracking-wider text-(--color-ink-700)">NĂM MẶT CỦA SỐ NÀY</p>
+       <ul class="mt-2 grid gap-2.5">${oNamMat}</ul>
+       <p class="mt-2 text-xs text-(--color-ink-600)">
+         Vạch dọc ở giữa là mốc trung tính — thanh lệch phải là mặt được, lệch trái là mặt cần lưu ý.
+         Năng lượng nằm ở ba số cuối được tính nặng gấp ba lần năng lượng giữa dãy.
+       </p>
+       <p class="mt-5 text-[11px] font-bold tracking-wider text-(--color-ink-700)">CÁCH CỤC CỦA SỐ NÀY</p>
+       <ul class="mt-2 space-y-2.5">${dsCachCuc}</ul>
+       ${oNghe}
+       <p class="mt-4 rounded-(--radius-control) bg-(--color-ivory-200) p-3.5 text-sm font-medium leading-relaxed text-(--color-ink-900)">
+         ${noiBat(esc(tk.ketLuan))}
+       </p>`,
+      "Luận chính từ ba số cuối — chỗ quyết định kết cục của cả dãy.",
+      true,
+    );
+  }
+
+  /**
+   * Hồ sơ TỪNG năng lượng có mặt trong dãy — không chỉ riêng tinh chủ đạo.
+   *
+   * Trước đây bài luận chỉ mở đủ 9 mặt cho tinh chủ đạo, nên một dãy có Ngũ Quỷ mà chủ đạo là tinh
+   * khác thì khách không bao giờ đọc được cảnh báo tim mạch của Ngũ Quỷ — dữ liệu có sẵn trong
+   * `MO_TA_8_TINH` mà không đưa ra. Khối này sửa đúng chỗ đó.
+   */
+  function khoiTungTinh(kq: any): string {
+    const ds = (kq.thongKe?.theoTinh ?? []) as any[];
+    if (!ds.length) return "";
+
+    const the = (nhan: string, noiDung: string) =>
+      `<div class="mt-2">
+         <span class="text-[10px] font-bold tracking-wider text-(--color-ink-600)">${nhan}</span>
+         <p class="text-sm leading-relaxed text-(--color-ink-800)">${noiBat(esc(noiDung))}</p>
+       </div>`;
+
+    const muc = ds
+      .map((t: any, i: number) => {
+        const mt = (MO_TA_8_TINH as any)[t.ten];
+        if (!mt) return "";
+        const mau = mauCuaTinh(t.ten);
+        return `
+        <details class="border-b border-(--color-ivory-300) py-3 last:border-0" ${i === 0 ? "open" : ""}>
+          <summary class="flex cursor-pointer flex-wrap items-center gap-2">
+            <span class="inline-block size-3 shrink-0 rounded-full" style="background:${mau}"></span>
+            <span class="font-display text-base font-bold" style="color:${mau}">${esc(t.ten)}</span>
+            <span class="rounded-full bg-(--color-ivory-200) px-2 py-0.5 text-[11px] font-bold text-(--color-ink-700)">
+              ${t.soLan} cặp · ${t.tyLe}%
+            </span>
+            <span class="text-[11px] font-semibold ${t.catHung === "cát" ? "text-emerald-600" : "text-red-500"}">
+              ${t.catHung === "cát" ? "CÁT TINH" : "HUNG TINH"}
+            </span>
+            <span class="text-xs text-(--color-ink-600)">sao ${esc(mt.saoTuongUng)}</span>
+          </summary>
+          <div class="mt-1 pl-5">
+            ${the("MẶT MẠNH", mt.uuDiem)}
+            ${the("MẶT CẦN LƯU Ý", mt.khuyetDiem)}
+            ${the("TÍNH CÁCH", mt.nhanCach)}
+            ${the("TIỀN TÀI", mt.taiVan)}
+            ${the("CÔNG VIỆC", mt.suNghiep)}
+            ${the("TÌNH CẢM", mt.tinhCam)}
+            ${the("SỨC KHOẺ", mt.sucKhoe)}
+            ${the("QUÝ NHÂN", mt.quyNhan)}
+            ${mt.dacThu ? the("LƯU Ý RIÊNG", mt.dacThu) : ""}
+          </div>
+        </details>`;
+      })
+      .join("");
+
+    return khung(
+      "Từng năng lượng trong số này",
+      muc,
+      "Mọi năng lượng có mặt trong dãy đều được mở đủ, không chỉ riêng năng lượng chủ đạo. Xếp theo tỷ trọng giảm dần.",
+    );
+  }
+
+  /**
+   * Gom riêng phần sức khoẻ của mọi năng lượng có trong dãy thành một chỗ.
+   *
+   * Tài liệu gán cho mỗi tinh một nhóm bệnh riêng; nằm rải rác thì khách khó nhìn ra. Hung tinh
+   * được đánh dấu đậm hơn vì tài liệu nói rõ năng lượng hung càng lớn thì biểu hiện càng nặng.
+   */
+  function khoiSucKhoe(kq: any): string {
+    const ds = (kq.thongKe?.theoTinh ?? []) as any[];
+    if (!ds.length) return "";
+
+    const dong = ds
+      .map((t: any) => {
+        const mt = (MO_TA_8_TINH as any)[t.ten];
+        if (!mt) return "";
+        const hung = t.catHung === "hung";
+        return `
+        <li class="flex gap-3 rounded-(--radius-control) border-l-4 ${hung ? "border-red-500 bg-red-500/5" : "border-emerald-500/50 bg-emerald-500/5"} p-3">
+          <span class="mt-0.5 inline-block size-3 shrink-0 rounded-full" style="background:${mauCuaTinh(t.ten)}"></span>
+          <div>
+            <p class="text-sm font-bold" style="color:${mauCuaTinh(t.ten)}">${esc(t.ten)}
+              <span class="ml-1 text-[11px] font-medium text-(--color-ink-600)">${t.soLan} cặp · ${t.tyLe}%</span>
+            </p>
+            <p class="mt-0.5 text-sm leading-relaxed ${hung ? "font-medium text-(--color-ink-900)" : "text-(--color-ink-800)"}">${noiBat(esc(mt.sucKhoe))}</p>
+          </div>
+        </li>`;
+      })
+      .join("");
+
+    return khung(
+      "Sức khoẻ cần lưu ý",
+      `<ul class="space-y-2">${dong}</ul>
+       <p class="mt-3 text-xs text-(--color-ink-700)">
+         Đây là xu hướng thể trạng gắn với từng năng lượng trong dãy số, không phải chẩn đoán y khoa.
+         Năng lượng hung chiếm tỷ trọng càng lớn thì biểu hiện càng rõ. Có vấn đề sức khoẻ thật thì
+         phải đi khám, không thay thế bằng phong thuỷ.
+       </p>`,
+      "Gộp từ mọi năng lượng có mặt trong dãy.",
+    );
+  }
+
+  /**
+   * Ý nghĩa RIÊNG của từng cặp số trong dãy, theo 8 mặt — số hoá từ Chương 2 "Sim Nói Gì Về Bạn".
+   *
+   * Đây là tầng chi tiết nhất: 18 khác 81, 13 khác 31. Chỉ hiện cặp nào có trong bảng 63 cặp; cặp
+   * 69 và vài mục lẻ mà nguồn khuyết thì bỏ qua, không hiện dòng trống.
+   */
+  function khoiTungCap(kq: any): string {
+    const MUC: [string, string][] = [
+      ["tinhCach", "Tính cách"],
+      ["taiVan", "Tài vận"],
+      ["suNghiep", "Sự nghiệp"],
+      ["nhanDuyen", "Nhân duyên"],
+      ["sucKhoe", "Sức khoẻ"],
+      ["hocTap", "Học tập"],
+      ["camXuc", "Cảm xúc"],
+      ["honNhan", "Hôn nhân"],
+    ];
+    const daHien = new Set<string>();
+    const muc: string[] = [];
+    let i = 0;
+    for (const c of kq.capGoc) {
+      const cap = c.capGoc.cap as string;
+      if (daHien.has(cap)) continue;
+      const y = (Y_NGHIA_TUNG_CAP as any)[cap];
+      if (!y) continue;
+      daHien.add(cap);
+      const mau = mauCuaTinh(c.ten);
+      const hang = MUC.filter(([k]) => y[k]).map(
+        ([k, ten]) => `
+        <div class="mt-2">
+          <span class="text-[10px] font-bold tracking-wider text-(--color-ink-600)">${ten.toUpperCase()}</span>
+          <p class="text-sm leading-relaxed text-(--color-ink-800)">${noiBat(esc(y[k]))}</p>
+        </div>`,
+      );
+      muc.push(`
+        <details class="border-b border-(--color-ivory-300) py-3 last:border-0" ${i === 0 ? "open" : ""}>
+          <summary class="flex cursor-pointer flex-wrap items-center gap-2">
+            <span class="font-mono text-lg font-black tracking-wider" style="color:${mau}">${esc(cap)}</span>
+            <span class="font-display text-base font-bold" style="color:${mau}">${esc(c.ten)}</span>
+            <span class="rounded-full bg-(--color-ivory-200) px-2 py-0.5 text-[11px] font-bold text-(--color-ink-700)">cấp ${c.capDo}</span>
+          </summary>
+          <div class="mt-1 pl-1">${hang.join("")}</div>
+        </details>`);
+      i++;
+    }
+    if (muc.length === 0) return "";
+    return khung(
+      "Ý nghĩa chi tiết từng cặp số",
+      muc.join(""),
+      "Từng cặp số có nội dung riêng theo 8 mặt — trích từ Chương 2 sách “Sim Nói Gì Về Bạn”. Mỗi cặp chỉ hiện một lần dù lặp lại trong dãy.",
+    );
+  }
+
+  /**
+   * Khởi – Diễn – Kết: đọc dãy số theo trục đời người, kèm cảnh báo điểm gãy giữa dãy.
+   * Ba khối nằm cạnh nhau như dòng thời gian, có mũi tên chỉ chiều đi lên hay đi xuống.
+   */
+  function khoiKhoiDienKet(kq: any): string {
+    const k = kq.khoiDienKet;
+    if (!k) return "";
+    const MAU: Record<string, string> = {
+      "tốt": "#10b981",
+      "trung bình": "#f59e0b",
+      "cần lưu ý": "#ef4444",
+    };
+    const cot = k.giaiDoan
+      .map((g: any) => {
+        const mau = MAU[g.mucDo] ?? "#9ca3af";
+        return `
+        <div class="flex-1 rounded-(--radius-control) border-t-4 p-3" style="border-color:${mau};background:${mau}14">
+          <p class="text-[11px] font-bold tracking-wider text-(--color-ink-700)">${esc(g.ten.toUpperCase())}</p>
+          <p class="mt-0.5 font-mono text-xl font-black tracking-widest text-(--color-ink-900)">${esc(g.chuSo || "—")}</p>
+          <p class="mt-1 text-[11px] font-bold uppercase" style="color:${mau}">${esc(g.mucDo)}</p>
+          <p class="mt-1 text-xs text-(--color-ink-700)">${esc(g.yNghia)}</p>
+          ${g.tinh.length ? `<p class="mt-1 text-[11px] text-(--color-ink-600)">${g.tinh.map((t: string) => esc(t)).join(" · ")}</p>` : ""}
+        </div>`;
+      })
+      .join(`<div class="flex items-center px-1 text-(--color-ink-500)">→</div>`);
+
+    const muiTen: Record<string, string> = {
+      "đi lên": "↗ đi lên",
+      "đi xuống": "↘ đi xuống",
+      "trồi sụt": "↕ trồi sụt",
+      "giữ đều": "→ giữ đều",
+    };
+    const bang = k.diemGay
+      ? `<span class="rounded-full bg-red-500/15 px-2.5 py-1 text-xs font-bold text-red-500">⚠ Điểm gãy giữa dãy</span>`
+      : `<span class="rounded-full bg-(--color-ivory-200) px-2.5 py-1 text-xs font-bold text-(--color-ink-800)">${esc(muiTen[k.xuHuong] ?? k.xuHuong)}</span>`;
+
+    return khung(
+      "Khởi – Diễn – Kết (đọc theo đời người)",
+      `<div class="mb-3">${bang}</div>
+       <div class="flex items-stretch gap-1">${cot}</div>
+       <p class="mt-3 rounded-(--radius-control) bg-(--color-ivory-200) p-3 text-sm leading-relaxed text-(--color-ink-900)">${noiBat(esc(k.nhanDinh))}</p>`,
+      "Ba số đầu là gốc rễ (Khởi), mấy số giữa là diễn biến (Diễn), bốn số cuối là kết quả (Kết).",
+    );
+  }
+
+  // CTA remarketing xen giữa kết quả (kết quả dài — "thỉnh thoảng 1 dòng" để khách dễ bấm đăng ký tư vấn).
+  function veCtaDong(i: number): string {
+    const ds = [
+      "🎯 Muốn chọn hẳn một dãy số <strong>hợp mệnh</strong>? Đặt lịch tư vấn với chuyên gia →",
+      "📞 Cần luận sâu cả <strong>Bát Tự – Dụng Thần</strong> để chọn số chuẩn nhất? Đăng ký ngay →",
+    ];
+    return `<a href="/lien-he" class="my-4 flex items-center justify-between gap-3 rounded-(--radius-card) border-2 border-(--color-gold-400) bg-(--color-gold-400)/10 px-4 py-3 text-sm font-bold text-(--color-ink-900) transition hover:bg-(--color-gold-400)/20">
+      <span>${ds[i] ?? ds[0]}</span>
+      <span class="shrink-0 text-lg text-(--color-gold-400)">›</span>
+    </a>`;
+  }
+
+  function veKetQua(kq: any): string {
+    const khoi = [
+      khoiDiem(kq),
+      khung("Sơ đồ dải năng lượng", veSoDo(kq)),
+      khoiKhoiDienKet(kq),
+      khoiViSao(kq),
+      khoiDoLuong(kq),
+      khoiSo05(kq),
+      khoiSongTinh(kq),
+      khoiTungCap(kq),
+      khoiTungTinh(kq),
+      khoiSucKhoe(kq),
+      khoiDaiVan(kq),
+      khoiCanhBao(kq),
+      khoiBaiLuan(kq),
+      khoiTongKet(kq),
+    ];
+    // Chèn CTA sau khối thứ 5 và thứ 10 — thỉnh thoảng một dòng, không dày đặc gây khó chịu.
+    const out: string[] = [];
+    khoi.forEach((s, i) => {
+      out.push(s);
+      if (i === 4) out.push(veCtaDong(0));
+      if (i === 9) out.push(veCtaDong(1));
+    });
+    return out.join("");
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    oLoi.classList.add("hidden");
+    oKetQua.classList.add("hidden");
+    oCta.classList.add("hidden");
+    oDangChay.classList.remove("hidden");
+
+    const namSinhRaw = (document.getElementById("lsdt-nam-sinh") as HTMLInputElement).value;
+    const payload = {
+      soDienThoai: (document.getElementById("lsdt-so") as HTMLInputElement).value,
+      cccd: (document.getElementById("lsdt-cccd") as HTMLInputElement).value,
+      gioiTinh: (document.getElementById("lsdt-gioi-tinh") as HTMLSelectElement).value,
+      mucDich: (document.getElementById("lsdt-muc-dich") as HTMLSelectElement).value,
+      namSinh: namSinhRaw ? Number(namSinhRaw) : undefined,
+      ngheNghiep: (document.getElementById("lsdt-nghe") as HTMLSelectElement).value,
+    };
+
+    try {
+      // Gửi bằng fetch/JSON: form HTML gốc bị chặn CSRF trong trình duyệt Zalo/Facebook, và số điện
+      // thoại không nên nằm trên thanh địa chỉ.
+      const res = await fetch("/api/luan-so-dien-thoai", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      oDangChay.classList.add("hidden");
+
+      if (!res.ok || !data.ok) {
+        oLoi.textContent = data.error ?? "Có lỗi xảy ra, vui lòng thử lại.";
+        oLoi.classList.remove("hidden");
+        return;
+      }
+
+      oKetQua.innerHTML = veKetQua(data.ketQua);
+      oKetQua.classList.remove("hidden");
+      oCta.classList.remove("hidden");
+      oKetQua.scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch {
+      oDangChay.classList.add("hidden");
+      oLoi.textContent = "Không kết nối được tới máy chủ. Vui lòng thử lại.";
+      oLoi.classList.remove("hidden");
+    }
+  });
+</script>
