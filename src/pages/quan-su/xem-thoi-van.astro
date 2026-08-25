@@ -15,6 +15,8 @@ import BottomNav from "../../components/quan-su/BottomNav.astro";
 import "../../styles/quan-su.css";
 import { coQuyenTruyCap } from "../../lib/subscriptions/access";
 import { tinhVanKhi, type VanKhiOutput, type DiemLinhVuc, type LinhVucKey, type LuuNienKhi } from "../../lib/quan-su/luan-van-khi";
+import { tinhBatTu, THAP_THAN_ABBR } from "../../lib/bat-tu";
+import { hanhCan, hanhChi } from "../../lib/bat-tu-engine/engine";
 
 export const prerender = false;
 
@@ -39,6 +41,27 @@ if (coQuyen && hs) {
     loi = err instanceof Error ? err.message : "Không tính được vận khí từ hồ sơ ngày sinh.";
   }
 }
+
+// Lá số đầy đủ (TÁI DÙNG module lập lá số, không dựng song song) — để vẽ Tứ Trụ có Thập Thần + tàng
+// can và tô màu theo ngũ hành. Giờ sinh thiếu → 12h mặc định (khớp luan-van-khi, chỉ dùng để hiển thị).
+let laSoChart: ReturnType<typeof tinhBatTu> | null = null;
+if (coQuyen && hs) {
+  try {
+    laSoChart = tinhBatTu({ day: hs.day, month: hs.month, year: hs.year, hour: hs.hour ?? 12, gender: hs.gender });
+  } catch {
+    laSoChart = null;
+  }
+}
+// Màu ngũ hành cho Can/Chi — tông hợp với palette navy/vàng của Quân Sư (đã dùng #7fb8a0/#8fb3e0 sẵn).
+const HANH_HEX: Record<string, string> = { Kim: "#ead591", "Mộc": "#7fbf8f", "Thủy": "#8fb3e0", "Hỏa": "#e0857f", "Thổ": "#d9a24b" };
+const truCotDef = laSoChart
+  ? [
+      { nhan: "Năm", p: laSoChart.year, day: false },
+      { nhan: "Tháng", p: laSoChart.month, day: false },
+      { nhan: "Ngày", p: laSoChart.day, day: true },
+      { nhan: "Giờ", p: laSoChart.hour, day: false },
+    ]
+  : [];
 
 // Nhãn 0-10 → màu hex thật cho SVG (thang_nhan trong config-linh-vuc.json chỉ ghi tên màu tiếng Việt).
 const MAU_SAC_HEX: Record<string, string> = {
@@ -117,6 +140,41 @@ const namHienTai = new Date().getFullYear();
 const luuNienNoiBat = dvChiTiet?.luuNien.find((ln) => ln.nam === namHienTai) ?? dvChiTiet?.luuNien[0] ?? null;
 const bieuDoCot = dvChiTiet ? veBieuDoCotNhieuChuoi(dvChiTiet.luuNien) : null;
 const bieuDoTron = dvChiTiet ? veBieuDoTron(dvChiTiet.tongQuan) : null;
+
+// --- Biểu đồ 4 lĩnh vực XUYÊN SUỐT CẢ ĐỜI: mỗi lĩnh vực 1 sparkline theo danh sách Đại Vận (điểm nền
+// tongQuan). Tách 4 dòng riêng để dễ phân biệt (small-multiples), khác biểu đồ cột 10 năm ở trên. ---
+function veCaDoiRows(ds: VanKhiOutput["danhSachDaiVan"], idx: number) {
+  const n = ds.length || 1;
+  const xs = ds.map((_, i) => (n === 1 ? 50 : 6 + (88 * i) / (n - 1)));
+  const rows = LINH_VUC_THU_TU.map((lv) => {
+    const pts = ds.map((dv, i) => {
+      const d = dv.tongQuan.find((x) => x.linhVuc === lv)!;
+      return { x: xs[i], y: 22 - (d.diem / 10) * 20, cur: i === idx };
+    });
+    return { name: TEN_LINH_VUC[lv], color: MAU_LINH_VUC[lv], poly: pts.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ") };
+  });
+  return { rows, axis: ds.map((dv, i) => ({ tuoi: dv.tuoiBatDau, cur: i === idx })), curX: xs[idx] ?? null };
+}
+
+// --- Biểu đồ Trợ lực Dụng·Hỷ Thần theo Đại Vận (cột 2 chiều): mỗi Đại Vận cộng điểm ưu (Dụng +2, Hỷ
+// +1.5) / kỵ (Kỵ -2, Cừu -1) của Can+Chi so với Dụng Thần nguyên cục — thấy chặng nào "đúng thuốc". ---
+function veTroLuc(ds: VanKhiOutput["danhSachDaiVan"], dt: VanKhiOutput["dungThanGoc"], idx: number) {
+  const n = ds.length || 1;
+  const slot = 100 / n;
+  const bw = slot * 0.56;
+  const sc = (el: string) => (el === dt.dungThan ? 2 : el === dt.hyThan ? 1.5 : el === dt.kyThan ? -2 : el === dt.cuuThan ? -1 : 0);
+  const maxAbs = 4, unit = 22 / maxAbs, zeroY = 30;
+  return ds.map((dv, i) => {
+    const [can, chi] = dv.canChi.split(/\s+/);
+    const v = sc(hanhCan(can)) + sc(hanhChi(chi));
+    const h = Math.max(Math.min(Math.abs(v), maxAbs) * unit, 0.6);
+    const up = v >= 0;
+    return { x: i * slot + (slot - bw) / 2, w: bw, y: up ? zeroY - h : zeroY, h, v, tuoi: dv.tuoiBatDau, cur: i === idx };
+  });
+}
+
+const bieuDoCaDoi = ketQua ? veCaDoiRows(ketQua.danhSachDaiVan, ketQua.chiTietDaiVanIndex) : null;
+const troLuc = ketQua ? veTroLuc(ketQua.danhSachDaiVan, ketQua.dungThanGoc, ketQua.chiTietDaiVanIndex) : null;
 ---
 
 <BaseLayout title="Xem Thời Vận — Phong Thủy Thiên Anh" description="Luận vận khí Đại Vận và Lưu Niên theo Bát Tự đầy đủ — chấm điểm 4 lĩnh vực kèm biểu đồ và lời luận ngắn gọn." appShell>
@@ -176,6 +234,27 @@ const bieuDoTron = dvChiTiet ? veBieuDoTron(dvChiTiet.tongQuan) : null;
               </div>
               {!ketQua.laSo.gioSinhKnown && <p style="margin-top:0.6rem;color:var(--qs-muted);font-size:0.82rem;">⚙ Không có giờ sinh — trụ Giờ và vận khí mang tính ước lượng (dùng 12h mặc định).</p>}
 
+              {/* --- Tứ Trụ 4 cột: Can/Chi tô màu ngũ hành + Thập Thần + tàng can (tái dùng tinhBatTu) --- */}
+              {truCotDef.length > 0 && (
+                <div class="qs-luck" style="margin-top:1rem;">
+                  <h3>Tứ Trụ Mệnh Cục</h3>
+                  <div class="qs-tutru">
+                    {truCotDef.map((t) => (
+                      <div class={`qs-tru${t.day ? " day" : ""}`}>
+                        <span class="lb">{t.nhan}{t.day ? " ★" : ""}</span>
+                        <span class="can" style={`color:${HANH_HEX[hanhCan(t.p.can)] ?? "var(--qs-ivory)"}`}>{t.p.can}</span>
+                        <span class="chi" style={`color:${HANH_HEX[hanhChi(t.p.chi)] ?? "var(--qs-ivory)"}`}>{t.p.chi}</span>
+                        <span class="tt">{t.day ? "Nhật Chủ" : (THAP_THAN_ABBR[t.p.thapThan] ?? t.p.thapThan)}</span>
+                        <span class="tang">
+                          {t.p.tangCan.map((tc) => <em style={`color:${HANH_HEX[hanhCan(tc.can)] ?? "var(--qs-muted)"}`}>{tc.can}</em>)}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                  <p style="margin-top:0.4rem;color:var(--qs-muted);font-size:0.68rem;">Màu theo ngũ hành: <span style="color:#ead591;">Kim</span> · <span style="color:#7fbf8f;">Mộc</span> · <span style="color:#8fb3e0;">Thủy</span> · <span style="color:#e0857f;">Hỏa</span> · <span style="color:#d9a24b;">Thổ</span>. Dòng dưới mỗi trụ là tàng can (Thập Thần rút gọn ở giữa).</p>
+                </div>
+              )}
+
               {/* --- Dải 10 Đại Vận — mỗi thẻ là 1 tổng quan (điểm nền 10 năm), bấm để xem chi tiết --- */}
               <div class="qs-luck" style="margin-top:1rem;overflow-x:auto;">
                 <h3>10 Đại Vận</h3>
@@ -229,6 +308,49 @@ const bieuDoTron = dvChiTiet ? veBieuDoTron(dvChiTiet.tongQuan) : null;
                       <span style="font-size:0.72rem;color:var(--qs-muted);"><span class="dot" style={`background:${MAU_LINH_VUC[lv]};display:inline-block;width:8px;height:8px;border-radius:999px;margin-right:0.3rem;`}></span>{TEN_LINH_VUC[lv]}</span>
                     ))}
                   </div>
+                </div>
+              )}
+
+              {/* --- 4 lĩnh vực xuyên suốt cả đời (small-multiples theo Đại Vận) --- */}
+              {bieuDoCaDoi && (
+                <div class="qs-luck" style="margin-top:1rem;">
+                  <h3>4 lĩnh vực xuyên suốt cả đời</h3>
+                  <div class="qs-cadoi">
+                    {bieuDoCaDoi.rows.map((r) => (
+                      <div class="qs-cadoi-row">
+                        <span class="ten" style={`color:${r.color}`}>{r.name}</span>
+                        <svg viewBox="0 0 100 24" preserveAspectRatio="none" class="spark">
+                          <line x1="0" y1="12" x2="100" y2="12" stroke="rgba(255,255,255,0.06)" stroke-width="0.5" />
+                          {bieuDoCaDoi.curX != null && <line x1={bieuDoCaDoi.curX} y1="1" x2={bieuDoCaDoi.curX} y2="23" stroke="var(--qs-gold)" stroke-width="0.6" stroke-dasharray="1.5 1.5" opacity="0.65" />}
+                          <polyline points={r.poly} fill="none" stroke={r.color} stroke-width="1.4" stroke-linejoin="round" stroke-linecap="round" />
+                        </svg>
+                      </div>
+                    ))}
+                  </div>
+                  <div class="qs-cot-nhan">
+                    {bieuDoCaDoi.axis.map((a) => <span style={a.cur ? "color:var(--qs-gold);font-weight:700;" : ""}>{a.tuoi}t</span>)}
+                  </div>
+                  <p style="margin-top:0.3rem;color:var(--qs-muted);font-size:0.68rem;">Mỗi dòng một lĩnh vực; trục ngang là các Đại Vận (ghi tuổi bắt đầu). Vạch vàng = Đại Vận đang xem.</p>
+                </div>
+              )}
+
+              {/* --- Trợ lực Dụng · Hỷ Thần theo Đại Vận (cột 2 chiều) --- */}
+              {troLuc && (
+                <div class="qs-luck" style="margin-top:1rem;">
+                  <h3>Trợ lực Dụng · Hỷ Thần theo Đại Vận</h3>
+                  <svg viewBox="0 0 100 60" preserveAspectRatio="none" style="width:100%;height:110px;">
+                    <line x1="0" y1="30" x2="100" y2="30" stroke="rgba(255,255,255,0.16)" stroke-width="0.5" />
+                    {troLuc.map((b) => (
+                      <rect x={b.x} y={b.y} width={b.w} height={b.h} rx="0.6"
+                        fill={b.v > 0.2 ? "#7fb8a0" : b.v < -0.2 ? "#e0857f" : "#d9a24b"}
+                        opacity={b.cur ? 1 : 0.82}
+                        stroke={b.cur ? "var(--qs-gold)" : "none"} stroke-width={b.cur ? 0.8 : 0} />
+                    ))}
+                  </svg>
+                  <div class="qs-cot-nhan">
+                    {troLuc.map((b) => <span style={b.cur ? "color:var(--qs-gold);font-weight:700;" : ""}>{b.tuoi}t</span>)}
+                  </div>
+                  <p style="margin-top:0.3rem;color:var(--qs-muted);font-size:0.68rem;">Cột <span style="color:#7fb8a0;">xanh</span> = Đại Vận mang Dụng·Hỷ Thần (nuôi thân) → thuận; cột <span style="color:#e0857f;">đỏ</span> = mang Kỵ Thần → cần giữ mình. Viền vàng = Đại Vận đang xem.</p>
                 </div>
               )}
 
@@ -344,4 +466,23 @@ const bieuDoTron = dvChiTiet ? veBieuDoTron(dvChiTiet.tongQuan) : null;
   .qs-gauge-card .ten { font-weight: 600; margin-top: 0.2rem; font-size: 0.85rem; }
   .qs-gauge-card .nhan { font-size: 0.72rem; margin-bottom: 0.4rem; }
   .qs-gauge-card .loi-luan { font-size: 0.76rem; color: var(--qs-muted); line-height: 1.5; text-align: left; margin: 0; }
+
+  /* Tứ Trụ 4 cột — Can/Chi tô màu ngũ hành, trụ Ngày (Nhật Chủ) nổi bật viền vàng. */
+  .qs-tutru { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin-top: 0.6rem; }
+  .qs-tru {
+    background: var(--qs-navy-2); border: 1px solid rgba(241, 200, 90, 0.14); border-radius: 10px;
+    padding: 0.55rem 0.35rem; text-align: center; display: flex; flex-direction: column; align-items: center; gap: 0.1rem;
+  }
+  .qs-tru.day { border-color: var(--qs-gold); background: rgba(241, 200, 90, 0.08); }
+  .qs-tru .lb { font-size: 0.6rem; letter-spacing: 0.06em; text-transform: uppercase; color: var(--qs-muted); font-weight: 700; }
+  .qs-tru .can, .qs-tru .chi { font-family: "Cormorant Garamond", Georgia, serif; font-weight: 700; font-size: 1.3rem; line-height: 1.05; }
+  .qs-tru .tt { font-size: 0.64rem; color: var(--qs-gold); margin-top: 0.15rem; }
+  .qs-tru .tang { display: flex; gap: 0.25rem; flex-wrap: wrap; justify-content: center; margin-top: 0.1rem; }
+  .qs-tru .tang em { font-style: normal; font-size: 0.6rem; opacity: 0.85; }
+
+  /* 4 lĩnh vực cả đời — small-multiples: tên trái, sparkline phải. */
+  .qs-cadoi { display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.5rem; }
+  .qs-cadoi-row { display: grid; grid-template-columns: 78px 1fr; align-items: center; gap: 0.5rem; }
+  .qs-cadoi-row .ten { font-size: 0.74rem; font-weight: 700; }
+  .qs-cadoi-row .spark { width: 100%; height: 30px; }
 </style>
