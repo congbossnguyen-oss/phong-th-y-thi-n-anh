@@ -23,17 +23,15 @@
   // wrangler) thay vì để wrangler tự tạo namespace mới — namespace mới bị trùng tên nên deploy lỗi.
   "kv_namespaces": [{ "binding": "SESSION", "id": "6d7b9d11decd4f7dacd97ede5deab9d2" }],
   // Thay Render Cron Job cũ gọi /api/thong-bao/gui-nhac-ngay-le qua HTTP (xem comment gốc trong file
-  // đó + src/worker-entry.ts). Giữ NGUYÊN 2 mốc giờ UTC y hệt lịch Render trước đây — 04:00 và 23:00.
+  // đó + src/worker-entry.ts).
   //
-  // ⚠️ CHƯA XÁC ĐỊNH: module ngay-le-am-lich.ts ghi rõ 2 mốc này ứng với 2 KIỂU nhắc khác nhau
-  // ("bao-truoc" lúc 04:00 UTC, "dung-hom-do" lúc 23:00 UTC) và code CHỈ đọc MỘT kiểu đang bật qua
-  // biến môi trường KIEU_NHAC_NGAY_LE — comment gốc mô tả đây là "có 2 phương án, chỉ đổi cấu hình"
-  // (tức thiết kế để CHỈ 1 kiểu hoạt động thật, không phải cả 2 cùng lúc). Không rõ trước đây Render
-  // có thật sự bật CẢ 2 Cron Job song song hay chỉ 1 cái đang dùng — KHÔNG tự đoán, khai đủ cả 2 mốc
-  // giờ y hệt những gì đã xác nhận là lịch Render cũ, giữ đúng KIEU_NHAC_NGAY_LE hiện có (không đổi).
-  // Nếu thực tế chỉ cần 1 mốc, xoá bớt dòng cron còn lại trong mảng dưới đây.
+  // CHỈ 1 mốc — 04:00 UTC (= 11 giờ trưa VN), ứng với kiểu nhắc "bao-truoc" (nhắc trước ngày lễ 1
+  // hôm). Đã kiểm lại lịch sử dự án (2026-08-25): ghi chú gốc lúc xây tính năng này (2026-08-23) nói
+  // rõ chỉ "tạo Cron Job" (số ít) trên Render, và "bao-truoc" là "ý ban đầu" còn "dung-hom-do" (mốc
+  // 23:00 UTC, nhắc đúng sáng ngày lễ) chỉ là phương án dự phòng "nếu khó" — không có bằng chứng nào
+  // cho thấy Render từng bật cả 2 Cron Job song song. Bỏ mốc 23:00 UTC theo đúng kết luận đó.
   "triggers": {
-    "crons": ["0 4 * * *", "0 23 * * *"]
+    "crons": ["0 4 * * *"]
   },
   "observability": {
     "enabled": true
