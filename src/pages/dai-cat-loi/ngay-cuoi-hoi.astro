@@ -6,6 +6,7 @@ import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
 import MaKhuyenMai from "../../components/ui/MaKhuyenMai.astro";
 import { GIA_CONG_CU, dinhDangTien } from "../../lib/payments/gia-cong-cu";
+import VipQuyenBanner from "../../components/quan-su/VipQuyenBanner.astro";
 
 // Render phía máy chủ để đọc phiên đăng nhập — cần cho việc chỉ CHO QUẢN TRỊ dùng lúc thử nghiệm.
 // Prerender thì `Astro.locals.user` luôn rỗng lúc build.
@@ -43,6 +44,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
       { label: "Xem Ngày Cưới Hỏi" },
     ]}
   />
+  <VipQuyenBanner />
 
   <Container class="py-16">
     <div class="mx-auto max-w-2xl">

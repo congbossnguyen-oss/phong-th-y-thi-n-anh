@@ -7,6 +7,7 @@ import Button from "../../components/ui/Button.astro";
 import DateSelect from "../../components/ui/DateSelect.astro";
 import MaKhuyenMai from "../../components/ui/MaKhuyenMai.astro";
 import { GIA_CONG_CU, dinhDangTien } from "../../lib/payments/gia-cong-cu";
+import VipQuyenBanner from "../../components/quan-su/VipQuyenBanner.astro";
 
 // ⚠️ KHÔNG bắt đăng nhập (chủ dự án chốt 2026-08-16) — đồng bộ với 2 module thu phí còn lại.
 // Nhờ vậy trang quay lại được dạng tĩnh (prerender), tải nhanh hơn và Google index thoải mái.
@@ -47,6 +48,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
       { label: "Xem Ngày Cao Cấp" },
     ]}
   />
+  <VipQuyenBanner />
 
   <Container class="py-16">
     <div class="mx-auto max-w-2xl">

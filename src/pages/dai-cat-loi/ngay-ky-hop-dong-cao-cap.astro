@@ -7,6 +7,7 @@ import Button from "../../components/ui/Button.astro";
 import DateSelect from "../../components/ui/DateSelect.astro";
 import MaKhuyenMai from "../../components/ui/MaKhuyenMai.astro";
 import { GIA_CONG_CU, dinhDangTien } from "../../lib/payments/gia-cong-cu";
+import VipQuyenBanner from "../../components/quan-su/VipQuyenBanner.astro";
 
 // Module này KHÔNG bắt đăng nhập (giống bản miễn phí đang chạy): ký hợp đồng là việc thường ngày,
 // rào tài khoản chỉ làm mất khách. Kết quả truy cập bằng orderCode làm "vé".
@@ -41,6 +42,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
       { label: "Ngày Giờ Ký Kết" },
     ]}
   />
+  <VipQuyenBanner />
 
   <Container class="py-16">
     <div class="mx-auto max-w-2xl">

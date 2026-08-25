@@ -19,6 +19,7 @@ import TabTuVi from "../../components/trach-nhat-sinh-no/TabTuVi.astro";
 import TongQuanKetQua from "../../components/trach-nhat-sinh-no/TongQuanKetQua.astro";
 import BangSoSanhPhuongAn from "../../components/trach-nhat-sinh-no/BangSoSanhPhuongAn.astro";
 import { siteConfig } from "../../lib/site-config";
+import VipQuyenBanner from "../../components/quan-su/VipQuyenBanner.astro";
 
 export const prerender = false;
 
@@ -78,6 +79,7 @@ const UU_TIEN = [
       { label: "Chọn Ngày Giờ Sinh Cho Bé" },
     ]}
   />
+  <VipQuyenBanner />
 
   <Container class="py-12">
     <div class="mx-auto max-w-4xl">

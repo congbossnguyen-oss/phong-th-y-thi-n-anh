@@ -7,6 +7,7 @@ import Button from "../../components/ui/Button.astro";
 import MaKhuyenMai from "../../components/ui/MaKhuyenMai.astro";
 import { siteConfig } from "../../lib/site-config";
 import { dinhDangTien, GIA_CONG_CU } from "../../lib/payments/gia-cong-cu";
+import VipQuyenBanner from "../../components/quan-su/VipQuyenBanner.astro";
 
 // Render phía máy chủ (không prerender) để đọc được phiên đăng nhập — cần nhận diện tài khoản
 // QUẢN TRỊ (test 0đ trọn luồng thật). Prerender thì Astro.locals.user luôn rỗng lúc build.
@@ -40,6 +41,7 @@ const laQuanTri = Astro.locals.user?.isAdmin === true;
       { label: "Đặt Tên Cho Con" },
     ]}
   />
+  <VipQuyenBanner />
 
   <Container class="py-12">
     <div class="mx-auto max-w-4xl">

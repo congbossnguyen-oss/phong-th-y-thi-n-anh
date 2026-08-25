@@ -8,6 +8,7 @@ import DateSelect from "../../components/ui/DateSelect.astro";
 import MaKhuyenMai from "../../components/ui/MaKhuyenMai.astro";
 import { siteConfig } from "../../lib/site-config";
 import { dinhDangTien, GIA_CONG_CU } from "../../lib/payments/gia-cong-cu";
+import VipQuyenBanner from "../../components/quan-su/VipQuyenBanner.astro";
 
 export const prerender = false;
 
@@ -35,6 +36,7 @@ const namNay = new Date().getFullYear();
       { label: "Khai Trương Cao Cấp" },
     ]}
   />
+  <VipQuyenBanner />
 
   <Container class="py-12">
     <div class="mx-auto max-w-3xl">
