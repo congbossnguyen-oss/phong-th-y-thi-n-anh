@@ -12,21 +12,7 @@ import { getSepayQrUrl } from "./sepay";
 import { kiemMaKhuyenMai, chuanHoaMa } from "./promo";
 import { GIA_CONG_CU, type ToolSlug } from "./gia-cong-cu";
 import { coQuyenTruyCap } from "../subscriptions/access";
-
-// Các dịch vụ VIP "trạch cát cao cấp" ĐI KÈM gói Cao Cấp: khách có gói Cao Cấp (hoặc đang dùng thử
-// 7 ngày — trial cũng hưởng hạng Cao Cấp) dùng MIỄN PHÍ, không qua QR. CỐ Ý loại `sim-phong-thuy-
-// khai-van` (dịch vụ thủ công riêng) và `dinh-huong-nghe-nghiep` (không thuộc nhóm VIP này). Chủ dự
-// án chốt 2026-08-25: "gói Nâng Cao (cao_cap) được dùng miễn phí các dịch vụ VIP này".
-const VIP_SLUG_THEO_GOI: ReadonlySet<ToolSlug> = new Set([
-  "gio-liem-ha-huyet",
-  "xem-ngay-cao-cap",
-  "ngay-ky-hop-dong-cao-cap",
-  "ngay-cuoi-hoi",
-  "dat-ten-cho-con",
-  "nhan-chuc",
-  "ngay-khai-truong-cao-cap",
-  "trach-nhat-sinh-no",
-]);
+import { VIP_SLUG_THEO_GOI } from "./vip-slugs";
 
 export interface KetQuaTaoDon {
   ok: true;

@@ -15,13 +15,29 @@ const SO_NGAY_DUNG_THU = 7;
 // Chống lạm dụng mức "Vừa": mỗi THIẾT BỊ chỉ 1 lượt trial; mỗi IP tối đa IP_TRIAL_TOI_DA lượt trong
 // IP_CUA_SO_NGAY ngày (nới để không chặn nhầm gia đình/công ty dùng chung 1 IP). Xem docs quyết định
 // của chủ dự án 2026-08-25.
-const IP_TRIAL_TOI_DA = 3;
-const IP_CUA_SO_NGAY = 90;
+export const IP_TRIAL_TOI_DA = 3;
+export const IP_CUA_SO_NGAY = 90;
 
 /** Ngữ cảnh thiết bị để chống lạm dụng — endpoint truyền vào (device id từ cookie + IP client). */
 export interface TrialDeviceContext {
   deviceId: string;
   ip: string;
+}
+
+/**
+ * Quyết định chặn trial theo thiết bị/IP (mức "Vừa") — HÀM THUẦN, không đụng DB, để test được.
+ * Trả về thông báo lỗi (hiển thị thẳng cho khách) nếu phải chặn, hoặc null nếu cho phép.
+ * @param thietBiDaThu  thiết bị (deviceId) này đã từng dùng thử chưa
+ * @param soLuotIp      số lượt trial đã cấp cho IP này trong IP_CUA_SO_NGAY ngày
+ */
+export function lyDoChanTrialTheoThietBi(input: { thietBiDaThu: boolean; soLuotIp: number }): string | null {
+  if (input.thietBiDaThu) {
+    return "Thiết bị này đã dùng thử rồi — mỗi thiết bị chỉ dùng thử được 1 lần. Vui lòng nâng gói để tiếp tục.";
+  }
+  if (input.soLuotIp >= IP_TRIAL_TOI_DA) {
+    return "Mạng của bạn đã có nhiều lượt dùng thử gần đây. Vui lòng nâng gói để tiếp tục sử dụng.";
+  }
+  return null;
 }
 
 export async function daTungDungThu(userId: string): Promise<boolean> {
@@ -51,25 +67,22 @@ export async function batDauDungThu(userId: string, device?: TrialDeviceContext)
     throw new Error("Tài khoản đã dùng thử rồi, mỗi tài khoản chỉ dùng thử được 1 lần.");
   }
 
-  // --- Chống lạm dụng mức "Vừa" (theo thiết bị + IP) ---
+  // --- Chống lạm dụng mức "Vừa" (theo thiết bị + IP): đọc DB rồi để hàm thuần quyết định ---
   if (device) {
-    const [thietBiDaThu] = await db
+    const [thietBi] = await db
       .select({ id: trialDevices.id })
       .from(trialDevices)
       .where(eq(trialDevices.deviceId, device.deviceId))
       .limit(1);
-    if (thietBiDaThu) {
-      throw new Error("Thiết bị này đã dùng thử rồi — mỗi thiết bị chỉ dùng thử được 1 lần. Vui lòng nâng gói để tiếp tục.");
-    }
 
     const tuNgay = new Date(Date.now() - IP_CUA_SO_NGAY * 24 * 60 * 60 * 1000);
     const luotCungIp = await db
       .select({ id: trialDevices.id })
       .from(trialDevices)
       .where(and(eq(trialDevices.ip, device.ip), gte(trialDevices.createdAt, tuNgay)));
-    if (luotCungIp.length >= IP_TRIAL_TOI_DA) {
-      throw new Error("Mạng của bạn đã có nhiều lượt dùng thử gần đây. Vui lòng nâng gói để tiếp tục sử dụng.");
-    }
+
+    const loi = lyDoChanTrialTheoThietBi({ thietBiDaThu: !!thietBi, soLuotIp: luotCungIp.length });
+    if (loi) throw new Error(loi);
   }
 
   const startedAt = new Date();
