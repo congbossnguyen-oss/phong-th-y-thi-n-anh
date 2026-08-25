@@ -22,9 +22,13 @@ export function laSoVaPhanTich(input: BatTuInput): { chart: BatTuChart; analysis
   return { chart, analysis };
 }
 
+const TEN_TRU_TIENG_VIET: Record<"year" | "month" | "day" | "hour", string> = {
+  year: "Năm", month: "Tháng", day: "Ngày", hour: "Giờ",
+};
+
 export function laSoHienThi(chart: BatTuChart, analysis: BatTuAnalysis): LaSoHienThi {
   return {
-    tuTru: (["year", "month", "day", "hour"] as const).map((k) => ({ tru: k, can: chart[k].can, chi: chart[k].chi })),
+    tuTru: (["year", "month", "day", "hour"] as const).map((k) => ({ tru: TEN_TRU_TIENG_VIET[k], can: chart[k].can, chi: chart[k].chi })),
     nhatChu: `${chart.day.can} (${chart.nhatChu.nguHanh}, ${chart.nhatChu.amDuong})`,
     capDoVuongSuy: analysis.vuongSuy.capDo,
     dungThan: analysis.dungThan.dungThan,
