@@ -313,3 +313,35 @@ export function trachNhatSinhNoPdfEmail(params: {
     }),
   };
 }
+
+export function kyMonMenhPdfEmail(params: {
+  orderCode: string;
+  customerName: string;
+}): { subject: string; html: string } {
+  const bodyHtml = `
+    <p>Kính gửi ${escapeHtml(params.customerName)},</p>
+    <p>
+      Bảng Luận Giải Kỳ Môn Mệnh chi tiết được đính kèm dưới dạng PDF trong email này, gồm: luận giải
+      từng lĩnh vực (tiền bạc, công việc, gia đình, sức khỏe...), người thân xung quanh, 4 giai đoạn
+      cuộc đời (thời thơ ấu, trưởng thành, hiện tại, hậu vận), và các cách cục nổi bật tại những vị trí
+      quan trọng trên lá bàn.
+    </p>
+    <table role="presentation" width="100%" style="margin-top:16px;border-top:1px solid #e8dfcd;padding-top:12px;">
+      ${infoRow("Mã đơn hàng", params.orderCode)}
+    </table>
+    <p style="margin-top:20px;">
+      <strong>Lưu ý quan trọng:</strong> đây là công cụ tham khảo theo phương pháp truyền thống Kỳ Môn
+      Độn Giáp, không thay thế tư vấn trực tiếp hoặc quyết định y tế/pháp lý/tài chính quan trọng. Cần
+      trao đổi thêm, xin liên hệ hotline ${siteConfig.hotline}.
+    </p>
+  `;
+
+  return {
+    subject: `Luận Giải Kỳ Môn Mệnh chi tiết — đơn ${params.orderCode}`,
+    html: layout({
+      previewText: "Bảng luận giải Kỳ Môn Mệnh chi tiết được đính kèm trong email này.",
+      title: "Luận Giải Kỳ Môn Mệnh",
+      bodyHtml,
+    }),
+  };
+}

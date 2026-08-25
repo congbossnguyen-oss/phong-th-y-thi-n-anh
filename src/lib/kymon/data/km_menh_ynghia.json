@@ -1,0 +1,262 @@
+{
+ "cuu_tinh": {
+  "Thiên Bồng": {
+   "loai": "Đại hung",
+   "nguhanh": "Thủy",
+   "nghe_nghiep": [
+    "tội phạm",
+    "xã hội đen",
+    "người liều lĩnh",
+    "nuôi trồng thủy sản"
+   ],
+   "y_nghia_doi_thuong": "khôn khéo, liều lĩnh, dễ dính dáng chuyện mờ ám hoặc mạo hiểm quá mức",
+   "tinh_cach": "lanh trí, gan lì, thích mạo hiểm"
+  },
+  "Thiên Nhuế": {
+   "loai": "Đại hung",
+   "nguhanh": "Thổ",
+   "nghe_nghiep": [
+    "chăm sóc người bệnh",
+    "nông dân",
+    "giáo viên (dạy học)"
+   ],
+   "y_nghia_doi_thuong": "cần chú ý sức khỏe/bệnh tật, hợp việc chăm sóc/dạy dỗ hơn kinh doanh",
+   "tinh_cach": "trầm, đôi khi u ám, tham"
+  },
+  "Thiên Xung": {
+   "loai": "Thứ cát",
+   "nguhanh": "Mộc",
+   "nghe_nghiep": [
+    "quân nhân",
+    "bộ đội",
+    "cảnh sát vũ trang",
+    "nông nghiệp"
+   ],
+   "y_nghia_doi_thuong": "nhanh nhẹn, có chí tiến thủ, hợp môi trường kỷ luật/tốc độ",
+   "tinh_cach": "nhanh nhẹn, nóng nảy, dám xông pha"
+  },
+  "Thiên Phụ": {
+   "loai": "Đại cát",
+   "nguhanh": "Mộc",
+   "nghe_nghiep": [
+    "giáo dục",
+    "giảng dạy",
+    "văn hóa",
+    "đào tạo"
+   ],
+   "y_nghia_doi_thuong": "có duyên học hành/dạy dỗ, được người có học giúp đỡ, việc thuận lợi hài hòa",
+   "tinh_cach": "nho nhã, khiêm tốn, hiền hậu"
+  },
+  "Thiên Cầm": {
+   "loai": "Đại cát",
+   "nguhanh": "Thổ (trung cung)",
+   "nghe_nghiep": [
+    "đa năng, làm được nhiều việc"
+   ],
+   "y_nghia_doi_thuong": "đáng tin cậy, giữ lời hứa, việc gì cũng làm được",
+   "tinh_cach": "trung thành, đáng tin"
+  },
+  "Thiên Tâm": {
+   "loai": "Cát",
+   "nguhanh": "Kim",
+   "nghe_nghiep": [
+    "lãnh đạo",
+    "quản lý",
+    "bác sĩ",
+    "y khoa"
+   ],
+   "y_nghia_doi_thuong": "có khả năng chữa lành, tổ chức, lãnh đạo tốt, lên kế hoạch chặt chẽ",
+   "tinh_cach": "điềm tĩnh, có tài lãnh đạo"
+  },
+  "Thiên Trụ": {
+   "loai": "Thứ hung",
+   "nguhanh": "Kim",
+   "nghe_nghiep": [
+    "kỹ sư trưởng",
+    "luật sư",
+    "ca sĩ",
+    "người giải trí"
+   ],
+   "y_nghia_doi_thuong": "giỏi ăn nói/hùng biện, xoay chuyển tình thế tốt, nhưng dễ vướng thị phi, không hợp kinh doanh/đi xa",
+   "tinh_cach": "xảo miệng, giỏi biện luận, dễ phá cách cũ"
+  },
+  "Thiên Nhậm": {
+   "loai": "Thứ cát",
+   "nguhanh": "Thổ",
+   "nghe_nghiep": [
+    "nông dân",
+    "trồng trọt"
+   ],
+   "y_nghia_doi_thuong": "thật thà, chậm mà chắc, không hợp đầu tư mạo hiểm/kinh doanh lớn",
+   "tinh_cach": "trung hậu, thật thà, chậm rãi"
+  },
+  "Thiên Anh": {
+   "loai": "Thứ hung",
+   "nguhanh": "Hỏa",
+   "nghe_nghiep": [
+    "nghệ thuật",
+    "quảng cáo",
+    "tổ chức sự kiện"
+   ],
+   "y_nghia_doi_thuong": "có duyên ăn nói/thu hút chú ý, nhưng tính nóng, dễ liên quan va chạm/tai nạn",
+   "tinh_cach": "nóng nảy, mạnh mẽ, nói to rõ"
+  }
+ },
+ "bat_mon": {
+  "Khai": {
+   "loai": "Đại cát",
+   "nguhanh": "Kim",
+   "nghe_nghiep": [
+    "công nhân",
+    "công chức",
+    "lãnh đạo",
+    "chủ doanh nghiệp",
+    "tòa án"
+   ],
+   "y_nghia_doi_thuong": "cửa tốt nhất — thuận lợi cho khởi đầu, kinh doanh, mọi việc trăm sự như ý"
+  },
+  "Hưu": {
+   "loai": "Cát",
+   "nguhanh": "Thủy",
+   "nghe_nghiep": [
+    "người về hưu, nhàn hạ",
+    "làm đẹp/trang sức"
+   ],
+   "y_nghia_doi_thuong": "nơi nghỉ ngơi, có quý nhân giúp đỡ, tốt cho việc tìm người giúp/nhận chức, nhưng không hợp việc cần gấp"
+  },
+  "Sinh": {
+   "loai": "Đại cát",
+   "nguhanh": "Thổ",
+   "nghe_nghiep": [
+    "người làm ăn",
+    "kinh doanh",
+    "nông nghiệp",
+    "bất động sản"
+   ],
+   "y_nghia_doi_thuong": "cửa may mắn nhất về tiền tài — lợi nhuận, sức sống, hy vọng, tốt cho đầu tư/xây dựng"
+  },
+  "Thương": {
+   "loai": "Hung",
+   "nguhanh": "Mộc",
+   "nghe_nghiep": [
+    "công an bắt cướp",
+    "đòi nợ",
+    "đối thủ cạnh tranh",
+    "lái xe"
+   ],
+   "y_nghia_doi_thuong": "dễ gặp trắc trở, tai nạn, tổn thương; không hợp kinh doanh/khởi sự mới"
+  },
+  "Đỗ": {
+   "loai": "Tiểu hung",
+   "nguhanh": "Mộc",
+   "nghe_nghiep": [
+    "quân nhân",
+    "bộ đội",
+    "kỹ thuật",
+    "người tu luyện",
+    "việc bí mật"
+   ],
+   "y_nghia_doi_thuong": "sự nghiệp có trở ngại/tắc nghẽn, hợp việc mang tính kỹ thuật hoặc kín đáo"
+  },
+  "Cảnh": {
+   "loai": "Tiểu cát",
+   "nguhanh": "Hỏa",
+   "nghe_nghiep": [
+    "giải trí",
+    "truyền hình",
+    "ca sĩ",
+    "nhà hàng khách sạn",
+    "giấy tờ/đơn từ"
+   ],
+   "y_nghia_doi_thuong": "liên quan giấy tờ, truyền thông, giải trí; người xinh đẹp, hoạt ngôn"
+  },
+  "Tử": {
+   "loai": "Hung",
+   "nguhanh": "Thổ",
+   "nghe_nghiep": [
+    "luật/tư pháp",
+    "tang lễ"
+   ],
+   "y_nghia_doi_thuong": "không lợi việc vui (cưới hỏi, nhập trạch), liên quan đất đai/tài sản cố định, cần cẩn trọng"
+  },
+  "Kinh": {
+   "loai": "Hung",
+   "nguhanh": "Kim",
+   "nghe_nghiep": [
+    "bán hàng",
+    "luật sư",
+    "giáo sư/diễn giả",
+    "công an",
+    "tòa án"
+   ],
+   "y_nghia_doi_thuong": "dễ vướng tranh chấp, thị phi, khẩu thiệt; hợp việc liên quan nói trước công chúng/pháp lý"
+  }
+ },
+ "bat_than": {
+  "Trực Phù": {
+   "loai": "Cát (đứng đầu)",
+   "y_nghia_doi_thuong": "đức cao, uy tín, thường là người đứng đầu/chủ — mọi việc gặp yếu tố này đều tốt",
+   "nghe_nghiep": [
+    "lãnh đạo",
+    "chủ tịch",
+    "giám đốc"
+   ]
+  },
+  "Đằng Xà": {
+   "loai": "Trung tính, hơi hung",
+   "y_nghia_doi_thuong": "dễ vướng thị phi/lời qua tiếng lại, cần cẩn thận bị lừa dối, nói vòng vo",
+   "nghe_nghiep": [
+    "nhà thư pháp",
+    "người giảo hoạt (nếu xấu)"
+   ]
+  },
+  "Thái Âm": {
+   "loai": "Cát",
+   "y_nghia_doi_thuong": "kín đáo, giỏi giữ bí mật/lên kế hoạch, có quý nhân âm thầm giúp đỡ",
+   "nghe_nghiep": [
+    "người lập kế hoạch",
+    "ẩn sĩ văn nhân"
+   ]
+  },
+  "Lục Hợp": {
+   "loai": "Cát",
+   "y_nghia_doi_thuong": "dễ được hòa hợp, hôn nhân/hợp tác thuận lợi, tính tình cởi mở",
+   "nghe_nghiep": [
+    "người mai mối",
+    "đại lý/phân phối"
+   ]
+  },
+  "Bạch Hổ": {
+   "loai": "Hung (sát thần)",
+   "y_nghia_doi_thuong": "mạnh mẽ, quyết đoán, có uy quyền, nhưng dễ va chạm/tai nạn/tranh chấp",
+   "nghe_nghiep": [
+    "quân nhân",
+    "cảnh sát vũ trang",
+    "người có quyền thế"
+   ]
+  },
+  "Huyền Vũ": {
+   "loai": "Hung",
+   "y_nghia_doi_thuong": "cần cẩn thận chuyện không rõ ràng, dễ bị lừa/mất trộm vặt, thiếu minh bạch",
+   "nghe_nghiep": [
+    "-"
+   ]
+  },
+  "Cửu Địa": {
+   "loai": "Trung tính, thiên cát",
+   "y_nghia_doi_thuong": "ổn định, chắc chắn nhưng chậm; kiên nhẫn, bao dung",
+   "nghe_nghiep": [
+    "nông dân",
+    "người lớn tuổi"
+   ]
+  },
+  "Cửu Thiên": {
+   "loai": "Cát",
+   "y_nghia_doi_thuong": "có tham vọng lớn, thích vươn cao/bay xa, năng động",
+   "nghe_nghiep": [
+    "lãnh đạo cấp cao",
+    "phi công"
+   ]
+  }
+ }
+}

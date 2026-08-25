@@ -12,12 +12,15 @@ import {
   sendHoSoTangLeEmail,
   sendNghePdfEmail,
   sendTrachNhatSinhNoPdfEmail,
+  sendKyMonMenhPdfEmail,
 } from "../email/send";
 import { taoHoSoTangLe, type DauVaoHoSo } from "../dai-cat-loi/tao-ho-so-tang-le";
 import { taoHoSoNghe, type NgheInput } from "../nghe-nghiep/tao-ho-so-nghe";
 import { generateNghePdf } from "../dai-cat-loi/nghe-nghiep-pdf";
 import { phanTichTrachNhatSinhNo, type BirthSelectionInput } from "../trach-nhat-sinh-no";
 import { generateTrachNhatSinhNoPdf } from "../dai-cat-loi/trach-nhat-sinh-no-pdf";
+import { lapLaBan, luanGiaiMenh, luanGiaiMenhChiTiet } from "../kymon";
+import { generateKyMonMenhPdf } from "../dai-cat-loi/ky-mon-menh-pdf";
 import { apDungMaKhiThanhToan } from "../payments/promo";
 import { ghiDonThuPhiLenSheet, TEN_CONG_CU_HIEN_THI } from "../google-sheets-don-thu-phi";
 import { ghiDonSimPhongThuyLenSheet } from "../google-sheets-sim-phong-thuy";
@@ -466,6 +469,27 @@ export async function markOrderPaidAndFulfill(orderId: string) {
         });
       } catch (err) {
         console.error(`[trach-nhat-sinh-no] Lỗi dựng/gửi PDF cho đơn ${order.orderCode}:`, err);
+      }
+    }
+
+    // Luận Giải Kỳ Môn Mệnh (chi tiết): thuần công thức (không AI) — dựng PDF rồi gửi kèm email
+    // khách. Bọc try/catch riêng cùng lý do các module khác: hỏng khâu này đơn vẫn ghi nhận đã
+    // thanh toán, khách còn xem lại kết quả trên trang bằng mã đơn.
+    if (order.toolSlug === "ky-mon-menh-chi-tiet" && order.customerEmail && order.toolInputSnapshot) {
+      try {
+        const input = JSON.parse(order.toolInputSnapshot) as { nam: number; thang: number; ngay: number; gio: number; phut: number };
+        const laBan = lapLaBan({ cheDo: "menh", ...input });
+        const free = luanGiaiMenh(laBan);
+        const chiTiet = luanGiaiMenhChiTiet(laBan);
+        const pdf = await generateKyMonMenhPdf(free, chiTiet, order.customerName);
+        await sendKyMonMenhPdfEmail({
+          to: order.customerEmail,
+          orderCode: order.orderCode,
+          customerName: order.customerName,
+          pdfBytes: pdf,
+        });
+      } catch (err) {
+        console.error(`[ky-mon-menh-chi-tiet] Lỗi dựng/gửi PDF cho đơn ${order.orderCode}:`, err);
       }
     }
   }

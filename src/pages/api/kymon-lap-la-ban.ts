@@ -1,6 +1,18 @@
 import type { APIRoute } from "astro";
 import { lapLaBan } from "../../lib/kymon";
 import { quetTamThang } from "../../lib/kymon/tamThang";
+import { luanGiaiMenh } from "../../lib/kymon/luanGiaiMenh";
+import type { LapLaBanResult } from "../../lib/kymon";
+
+// Chế độ Mệnh: kèm luận giải đời thường (SPEC_luan_giai_menh.md) — tính 1 lần ở server, client
+// chỉ hiện, không tự suy diễn thêm.
+function ketQua(laBan: LapLaBanResult, cheDo: string) {
+  return {
+    laBan,
+    tamThang: quetTamThang(laBan),
+    luanGiai: cheDo === "menh" ? luanGiaiMenh(laBan) : null,
+  };
+}
 
 export const prerender = false;
 
@@ -33,7 +45,7 @@ export const GET: APIRoute = async ({ url }) => {
         return jsonResponse({ error: 'amDuong phải là "+" hoặc "-".' }, 400);
       }
       const laBan = lapLaBan({ cheDo: "1080", soCuc, amDuong: amDuongRaw, hoaGiap });
-      return jsonResponse({ laBan, tamThang: quetTamThang(laBan) }, 200);
+      return jsonResponse(ketQua(laBan, "1080"), 200);
     }
 
     if (cheDo !== "gio" && cheDo !== "menh") {
@@ -61,7 +73,7 @@ export const GET: APIRoute = async ({ url }) => {
     }
 
     const laBan = lapLaBan({ cheDo, nam, thang, ngay, gio, phut });
-    return jsonResponse({ laBan, tamThang: quetTamThang(laBan) }, 200);
+    return jsonResponse(ketQua(laBan, cheDo), 200);
   } catch (err) {
     const message = err instanceof Error ? err.message : "Lỗi không xác định.";
     return jsonResponse({ error: message }, 400);

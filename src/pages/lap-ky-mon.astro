@@ -197,6 +197,20 @@ export const prerender = true;
           </div>
 
           <div id="km-subtab-menh" class="km-subtab-panel mt-4">
+            <!-- Luận Giải Kỳ Môn Mệnh — sinh tự động từ lá bàn, ngôn ngữ đời thường. -->
+            <div id="km-luan-giai-wrap" class="mb-6 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-4">
+              <p class="mb-2 flex items-center gap-1.5 text-base font-semibold text-(--color-cinnabar-400)">☯ Luận Giải Kỳ Môn Mệnh</p>
+              <p id="km-luan-giai-modau" class="text-sm leading-relaxed text-(--color-ink-800)"></p>
+              <div id="km-luan-giai-the" class="mt-4 space-y-3"></div>
+              <a
+                id="km-luan-giai-chi-tiet-link"
+                href="#"
+                class="mt-4 inline-flex items-center gap-1.5 rounded-(--radius-control) bg-(--color-cinnabar-400) px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90"
+              >
+                ⭐ Xem luận giải chi tiết (Người thân, Giai đoạn cuộc đời, Cách cục nổi bật) — 299.000đ
+              </a>
+            </div>
+
             <p class="mb-2 flex items-center gap-1.5 text-base font-semibold text-(--color-cinnabar-400)">☯ Mệnh Cung</p>
             <div class="km-table-frame overflow-x-auto">
               <table class="km-app-table">
@@ -549,6 +563,37 @@ export const prerender = true;
   .km-arr { font-size: 1.35rem; font-weight: 700; color: #4a4a4a; line-height: 1; }
   .km-luuy-red { color: #c0261e; font-weight: 700; }
 
+  /* Luận Giải Kỳ Môn Mệnh — thẻ accordion mỗi lĩnh vực, chi tiết kỹ thuật ẩn mặc định. */
+  .km-luan-giai-the-item {
+    border-radius: var(--radius-control);
+    border: 1px solid var(--color-ivory-300);
+    background: var(--color-ivory-50);
+    padding: 0.6rem 0.8rem;
+  }
+  .km-luan-giai-the-item + .km-luan-giai-the-item { margin-top: 0; }
+  .km-luan-giai-the-item summary {
+    cursor: pointer;
+    font-weight: 700;
+    color: var(--color-cinnabar-400);
+    list-style: none;
+  }
+  .km-luan-giai-the-item summary::-webkit-details-marker { display: none; }
+  .km-luan-giai-the-item summary::before { content: "▸ "; }
+  .km-luan-giai-the-item[open] summary::before { content: "▾ "; }
+  .km-luan-giai-noidung {
+    margin-top: 0.4rem;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: var(--color-ink-800);
+  }
+  .km-luan-giai-chitiet {
+    margin-top: 0.4rem;
+    padding-top: 0.4rem;
+    border-top: 1px dashed var(--color-ivory-300);
+    font-size: 0.76rem;
+    color: var(--color-ink-500);
+  }
+
   /* ---- Bảng dạng app (Tam Thắng, Cách Cục, Lịch): header đỏ, thân nền hồng nhạt ---- */
   .km-app-table {
     width: 100%;
@@ -669,9 +714,22 @@ export const prerender = true;
     soCung: number;
   }
 
+  interface TheLinhVuc {
+    key: string;
+    tieuDe: string;
+    noiDung: string;
+    chiTiet: string;
+  }
+  interface KetQuaLuanGiaiMenh {
+    hopLe: boolean;
+    moDau: string;
+    theLinhVuc: TheLinhVuc[];
+  }
+
   interface LapLaBanApiResponse {
     laBan?: LapLaBanResult;
     tamThang?: HangTamThang[];
+    luanGiai?: KetQuaLuanGiaiMenh | null;
     error?: string;
   }
 
@@ -920,8 +978,15 @@ export const prerender = true;
 
   populateSelect(ngaySel, Array.from({ length: 31 }, (_, i) => [i + 1, String(i + 1).padStart(2, "0")]));
   populateSelect(thangSel, Array.from({ length: 12 }, (_, i) => [i + 1, `Tháng ${i + 1}`]));
+  // Năm: 1930 → năm hiện tại (tự tính lại mỗi lần tải trang, không chốt cứng mốc tương lai) —
+  // đủ rộng cho chế độ Mệnh (nhập năm SINH của khách, có thể sinh từ lâu), không chỉ quanh "hiện
+  // tại" như trước (trước đây chỉ có ±10 năm, quá hẹp cho năm sinh).
   const nowYear = new Date().getFullYear();
-  populateSelect(namSel, Array.from({ length: 21 }, (_, i) => nowYear - 10 + i).map((y) => [y, String(y)]));
+  const NAM_SINH_TOI_THIEU = 1930;
+  populateSelect(
+    namSel,
+    Array.from({ length: nowYear - NAM_SINH_TOI_THIEU + 1 }, (_, i) => NAM_SINH_TOI_THIEU + i).map((y) => [y, String(y)]),
+  );
   populateSelect(gioSel, Array.from({ length: 24 }, (_, i) => [i, `${String(i).padStart(2, "0")}h`]));
   populateSelect(phutSel, Array.from({ length: 60 }, (_, i) => [i, String(i).padStart(2, "0")]));
 
@@ -1006,11 +1071,11 @@ export const prerender = true;
       ketQuaEl.classList.add("hidden");
       return;
     }
-    renderLaBan(res.laBan, res.tamThang ?? [], la1080);
+    renderLaBan(res.laBan, res.tamThang ?? [], la1080, res.luanGiai ?? null);
     ketQuaEl.classList.remove("hidden");
   }
 
-  function renderLaBan(laBan: LapLaBanResult, tamThang: HangTamThang[], la1080: boolean) {
+  function renderLaBan(laBan: LapLaBanResult, tamThang: HangTamThang[], la1080: boolean, luanGiai: KetQuaLuanGiaiMenh | null = null) {
     document.getElementById("km-tu-tru-wrap")!.classList.toggle("hidden", la1080);
     const hoaGiapLine = document.getElementById("km-hoa-giap-line")!;
     if (la1080) {
@@ -1167,7 +1232,7 @@ export const prerender = true;
       : '<tr><td colspan="3" style="padding:0.75rem;color:#7a6a5a">Không có thắng cách nào trên lá bàn này.</td></tr>';
 
     // Bảng Mệnh Cung (chỉ chế độ Mệnh) — dùng bảng dụng thần Công đã cung cấp trong TEST.
-    if (laBan.cheDo === "menh") renderMenh(laBan);
+    if (laBan.cheDo === "menh") renderMenh(laBan, luanGiai);
   }
 
   // Nhãn 12 cung Mệnh theo Môn / Sao (bảng dụng thần NHÁNH PHỤ 2 — Công cung cấp, khớp ảnh app).
@@ -1188,10 +1253,60 @@ export const prerender = true;
   };
   const duongNhan = (can: string, diaChi: string[]): boolean => diaChi.includes(DUONG_NHAN_CHI[can] ?? "");
 
-  function renderMenh(laBan: LapLaBanResult) {
+  /**
+   * Tìm cung mà 1 CAN đang "đóng" trên thiên bàn (dùng để định vị Mệnh Cung). Xử lý đủ 2 trường
+   * hợp can không khớp trực tiếp bất kỳ thienBanCan nào (suy trực tiếp từ cơ chế engine):
+   *  1. Can = Giáp — luôn ẩn dưới Phù Đầu (xem engine.ts mục X65) → mượn vị trí Phù Đầu.
+   *  2. Can = địa bàn can RIÊNG của Trung cung — vì 8 sao chỉ "bay" tới 8 cung ngoài (home mỗi
+   *     sao không bao giờ trỏ vào cung 5), nên can gốc của Trung cung không bao giờ được chọn
+   *     làm thienBanCan cho cung nào khác → coi như can đó "đóng" tại chính Trung cung.
+   * (Giống hệt hàm timCungTheoCan trong src/lib/kymon/luanGiaiMenh.ts — copy riêng vì file này
+   * chạy độc lập ở client, không import module server-side.)
+   */
+  function timCungTheoCan(laBan: LapLaBanResult, can: string): CungInfo | undefined {
+    if (can === "Giáp") return laBan.cungList.find((c) => c.thienBanCan === laBan.phuDau);
+    const khopTrucTiep = laBan.cungList.find((c) => c.thienBanCan === can);
+    if (khopTrucTiep) return khopTrucTiep;
+    const trungCung = laBan.cungList.find((c) => c.soCung === 5);
+    return trungCung && trungCung.diaBanCan === can ? trungCung : undefined;
+  }
+
+  function renderMenh(laBan: LapLaBanResult, luanGiai: KetQuaLuanGiaiMenh | null) {
+    const modauEl = document.getElementById("km-luan-giai-modau")!;
+    const theEl = document.getElementById("km-luan-giai-the")!;
+    if (luanGiai?.hopLe) {
+      modauEl.textContent = luanGiai.moDau;
+      theEl.innerHTML = luanGiai.theLinhVuc
+        .map(
+          (t) => `
+        <details class="km-luan-giai-the-item">
+          <summary>${t.tieuDe}</summary>
+          <p class="km-luan-giai-noidung">${t.noiDung}</p>
+          <p class="km-luan-giai-chitiet">Chi tiết kỹ thuật: ${t.chiTiet}</p>
+        </details>`,
+        )
+        .join("");
+    } else {
+      modauEl.textContent = "Không xác định được Mệnh Cung để luận giải lá bàn này.";
+      theEl.innerHTML = "";
+    }
+
+    // Nút "Xem chi tiết" mang theo đúng ngày giờ sinh đang xem — trang kia không hỏi lại.
+    const chiTietLink = document.getElementById("km-luan-giai-chi-tiet-link") as HTMLAnchorElement | null;
+    if (chiTietLink) {
+      if (luanGiai?.hopLe) {
+        const qs = new URLSearchParams({
+          nam: namSel.value, thang: thangSel.value, ngay: ngaySel.value, gio: gioSel.value, phut: phutSel.value,
+        });
+        chiTietLink.href = `/dai-cat-loi/ky-mon-menh-chi-tiet?${qs.toString()}`;
+        chiTietLink.classList.remove("hidden");
+      } else {
+        chiTietLink.classList.add("hidden");
+      }
+    }
+
     const canNgaySinh = laBan.tuTru.ngay?.can ?? "";
-    // Mệnh cung = cung có thiên bàn can trùng CAN NGÀY SINH (đã đối chiếu khớp ảnh app).
-    const menhCung = laBan.cungList.find((c) => c.thienBanCan === canNgaySinh);
+    const menhCung = timCungTheoCan(laBan, canNgaySinh);
     const mcBody = document.getElementById("km-menh-cung-body")!;
     if (menhCung) {
       mcBody.innerHTML = `<tr>
