@@ -42,22 +42,25 @@ export async function taoBaoCaoCoBan(input: BatTuInput): Promise<BaoCaoCoBan> {
   const findingsList = taoFindingsCoBan(chart, analysis);
   const laSo = laSoHienThi(chart, analysis);
 
-  // A, B, C, G, H, J độc lập nhau — chạy song song để rút ngắn thời gian chờ (6 lệnh AI cùng lúc).
+  // A, B, C, G, H, J, L chạy SONG SONG cả 7 — L (Kết luận) chỉ cần `findingsList` (đã tính xong bằng
+  // code phía trên, KHÔNG phải chờ AI viết xong 6 giai đoạn kia mới có), nên không có lý do kỹ thuật
+  // nào bắt L phải chạy tuần tự sau — trước đây làm tuần tự khiến tổng thời gian tải trang gần gấp
+  // đôi (~46-48s đo thực tế, gây cảm giác trang bị treo/lỗi). Gộp cả 7 vào 1 Promise.all giảm gần một
+  // nửa thời gian chờ.
   const thuTuMa = ["A", "B", "C", "G", "H", "J"] as const;
-  const ketQuaSongSong = await Promise.all(
-    thuTuMa.map((ma) => {
+  const findingsRongL = { maGiaiDoan: "L" as const, tenGiaiDoan: "Kết luận", ketQua: {}, canCu: [] };
+  const cfgL = GIAI_DOAN_CO_BAN.find((c) => c.ma === "L")!;
+
+  const ketQuaSongSong = await Promise.all([
+    ...thuTuMa.map((ma) => {
       const cfg = GIAI_DOAN_CO_BAN.find((c) => c.ma === ma)!;
       const findings = findingsList.find((f) => f.maGiaiDoan === ma)!;
       return taoNoiDungGiaiDoanAnToan(cfg, laSo, findings);
     }),
-  );
+    taoNoiDungGiaiDoanAnToan(cfgL, laSo, findingsRongL, findingsList),
+  ]);
 
-  // L (Kết luận) PHẢI chạy SAU — cần tổng hợp findings của cả 6 giai đoạn trên.
-  const cfgL = GIAI_DOAN_CO_BAN.find((c) => c.ma === "L")!;
-  const findingsRong = { maGiaiDoan: "L" as const, tenGiaiDoan: "Kết luận", ketQua: {}, canCu: [] };
-  const noiDungL = await taoNoiDungGiaiDoanAnToan(cfgL, laSo, findingsRong, findingsList);
-
-  const giaiDoan = [...ketQuaSongSong, noiDungL].filter((x): x is NonNullable<typeof x> => x !== null);
+  const giaiDoan = ketQuaSongSong.filter((x): x is NonNullable<typeof x> => x !== null);
 
   const safety = layContentSafety();
   return {
