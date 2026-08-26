@@ -52,13 +52,16 @@ const preNgay = soTuQuery("ngay");
 const preGio = soTuQuery("gio");
 const prePhut = soTuQuery("phut");
 
-// Gộp thành 1 ô ngày + 1 ô giờ cho dễ hiểu (thay vì 5 ô số rời không nhãn).
 const hai = (n: number) => String(n).padStart(2, "0");
-const preNgaySinh =
-  preNam !== null && preThang !== null && preNgay !== null
-    ? `${preNam}-${hai(preThang)}-${hai(preNgay)}`
-    : "";
 const preGioSinh = preGio !== null && prePhut !== null ? `${hai(preGio)}:${hai(prePhut)}` : "";
+
+// Ngày sinh dùng 3 ô chọn Ngày → Tháng → Năm thay vì <input type="date">: ô date gốc hiển thị
+// theo locale của TRÌNH DUYỆT (máy đặt tiếng Anh sẽ ra tháng/ngày/năm), HTML không ép được thứ
+// tự — mà người Việt đọc ngày trước tháng sau. Dùng select thì thứ tự luôn đúng và có nhãn rõ.
+const DS_NGAY = Array.from({ length: 31 }, (_, i) => i + 1);
+const DS_THANG = Array.from({ length: 12 }, (_, i) => i + 1);
+const namHienTai = new Date().getFullYear();
+const DS_NAM = Array.from({ length: namHienTai - 1920 + 1 }, (_, i) => namHienTai - i);
 let order: Awaited<ReturnType<typeof getOrderByCode>> | null = null;
 let kq: KetQuaTrachCat | null = null;
 if (orderCode) {
@@ -238,30 +241,31 @@ function ngayVN(iso: string): string {
                 trưởng nam/người chống gậy khi an táng. Cần <strong>ngày giờ sinh dương lịch</strong> của người đó, vì phương pháp
                 lập riêng lá bàn Kỳ Môn Mệnh của họ làm gốc để chọn ngày.
               </p>
-              <div class="mt-3 grid gap-3 sm:grid-cols-2">
-                <div>
-                  <label for="tc-ngay-sinh" class="block text-xs font-medium text-(--color-ink-700)">Ngày sinh (dương lịch)</label>
-                  <input
-                    type="date"
-                    id="tc-ngay-sinh"
-                    value={preNgaySinh}
-                    min="1901-01-01"
-                    max="2100-12-31"
-                    required
-                    class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm"
-                  />
-                </div>
-                <div>
-                  <label for="tc-gio-sinh" class="block text-xs font-medium text-(--color-ink-700)">Giờ sinh</label>
-                  <input
-                    type="time"
-                    id="tc-gio-sinh"
-                    value={preGioSinh}
-                    required
-                    class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm"
-                  />
-                  <p class="mt-1 text-xs text-(--color-ink-500)">Càng sát giờ sinh thật càng chính xác. Không nhớ chính xác thì lấy giờ ghi trên giấy khai sinh.</p>
-                </div>
+              <p class="mt-3 block text-xs font-medium text-(--color-ink-700)">Ngày sinh (dương lịch)</p>
+              <div class="mt-1 grid grid-cols-3 gap-2">
+                <select id="tc-ngay-sinh" required class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm">
+                  <option value="">Ngày</option>
+                  {DS_NGAY.map((n) => <option value={n} selected={preNgay === n}>{n}</option>)}
+                </select>
+                <select id="tc-thang-sinh" required class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm">
+                  <option value="">Tháng</option>
+                  {DS_THANG.map((n) => <option value={n} selected={preThang === n}>Tháng {n}</option>)}
+                </select>
+                <select id="tc-nam-sinh" required class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm">
+                  <option value="">Năm</option>
+                  {DS_NAM.map((n) => <option value={n} selected={preNam === n}>{n}</option>)}
+                </select>
+              </div>
+              <div class="mt-3">
+                <label for="tc-gio-sinh" class="block text-xs font-medium text-(--color-ink-700)">Giờ sinh</label>
+                <input
+                  type="time"
+                  id="tc-gio-sinh"
+                  value={preGioSinh}
+                  required
+                  class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm sm:max-w-[12rem]"
+                />
+                <p class="mt-1 text-xs text-(--color-ink-500)">Càng sát giờ sinh thật càng chính xác. Không nhớ chính xác thì lấy giờ ghi trên giấy khai sinh.</p>
               </div>
             </div>
 
@@ -283,15 +287,24 @@ function ngayVN(iso: string): string {
               <p class="mt-0.5 text-xs text-(--color-ink-500)">
                 Việc cưới hỏi cần lá bàn của <strong>cả hai người</strong> để tìm cung tương giao. Ô số 1 ở trên điền của <strong>cô dâu</strong> (nguồn lấy bên nữ làm chủ), ô dưới đây điền của <strong>chú rể</strong>.
               </p>
-              <div class="mt-2 grid gap-3 sm:grid-cols-2">
-                <div>
-                  <label for="tc-ngay-sinh-2" class="block text-xs font-medium text-(--color-ink-700)">Ngày sinh chú rể</label>
-                  <input type="date" id="tc-ngay-sinh-2" min="1901-01-01" max="2100-12-31" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm" />
-                </div>
-                <div>
-                  <label for="tc-gio-sinh-2" class="block text-xs font-medium text-(--color-ink-700)">Giờ sinh chú rể</label>
-                  <input type="time" id="tc-gio-sinh-2" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm" />
-                </div>
+              <p class="mt-2 block text-xs font-medium text-(--color-ink-700)">Ngày sinh chú rể (dương lịch)</p>
+              <div class="mt-1 grid grid-cols-3 gap-2">
+                <select id="tc-ngay-sinh-2" class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm">
+                  <option value="">Ngày</option>
+                  {DS_NGAY.map((n) => <option value={n}>{n}</option>)}
+                </select>
+                <select id="tc-thang-sinh-2" class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm">
+                  <option value="">Tháng</option>
+                  {DS_THANG.map((n) => <option value={n}>Tháng {n}</option>)}
+                </select>
+                <select id="tc-nam-sinh-2" class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm">
+                  <option value="">Năm</option>
+                  {DS_NAM.map((n) => <option value={n}>{n}</option>)}
+                </select>
+              </div>
+              <div class="mt-3">
+                <label for="tc-gio-sinh-2" class="block text-xs font-medium text-(--color-ink-700)">Giờ sinh chú rể</label>
+                <input type="time" id="tc-gio-sinh-2" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm sm:max-w-[12rem]" />
               </div>
             </div>
 
@@ -315,9 +328,20 @@ function ngayVN(iso: string): string {
             <div>
               <p class="text-sm font-medium text-(--color-ink-800)">Khoảng ngày cần lọc</p>
               <p class="mt-0.5 text-xs text-(--color-ink-500)">Tối đa 120 ngày. Khoảng càng rộng thì càng dễ tìm được ngày đẹp.</p>
+              {/* Giữ ô lịch (bấm chọn tiện hơn hẳn 3 select cho khoảng dài), nhưng ô lịch hiển thị
+                  theo locale trình duyệt nên có thể ra tháng/ngày/năm — thêm dòng nhắc lại bên dưới
+                  theo đúng kiểu ngày/tháng/năm để khách không đọc nhầm. */}
               <div class="mt-2 grid grid-cols-2 gap-3">
-                <input type="date" id="tc-tu-ngay" value={macDinhTu} required class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm" />
-                <input type="date" id="tc-den-ngay" value={macDinhDen} required class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm" />
+                <div>
+                  <label for="tc-tu-ngay" class="block text-xs font-medium text-(--color-ink-700)">Từ ngày</label>
+                  <input type="date" id="tc-tu-ngay" value={macDinhTu} required class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm" />
+                  <p id="tc-tu-ngay-vn" class="mt-1 text-xs font-medium text-(--color-cinnabar-400)"></p>
+                </div>
+                <div>
+                  <label for="tc-den-ngay" class="block text-xs font-medium text-(--color-ink-700)">Đến ngày</label>
+                  <input type="date" id="tc-den-ngay" value={macDinhDen} required class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm" />
+                  <p id="tc-den-ngay-vn" class="mt-1 text-xs font-medium text-(--color-cinnabar-400)"></p>
+                </div>
               </div>
             </div>
 
@@ -402,13 +426,15 @@ function ngayVN(iso: string): string {
 
       // Kết hôn: mở khối nhập ngày giờ sinh người thứ hai.
       const khuNguoi2 = document.getElementById("tc-khu-nguoi-2");
-      const ng2Ngay = document.getElementById("tc-ngay-sinh-2");
-      const ng2Gio = document.getElementById("tc-gio-sinh-2");
+      const oNguoi2 = ["tc-ngay-sinh-2", "tc-thang-sinh-2", "tc-nam-sinh-2", "tc-gio-sinh-2"].map((id) =>
+        document.getElementById(id),
+      );
       const canHai = !!v?.canHaiNguoi;
       khuNguoi2.classList.toggle("hidden", !canHai);
-      ng2Ngay.required = canHai;
-      ng2Gio.required = canHai;
-      if (!canHai) { ng2Ngay.value = ""; ng2Gio.value = ""; }
+      for (const o of oNguoi2) {
+        o.required = canHai;
+        if (!canHai) o.value = "";
+      }
 
       // Cúng thần: nạp danh sách vị thần tương ứng.
       const khuPhu = document.getElementById("tc-khu-lua-chon-phu");
@@ -429,6 +455,23 @@ function ngayVN(iso: string): string {
         khuPhu.classList.add("hidden");
       }
     });
+  }
+
+  // Nhắc lại ngày đã chọn theo kiểu ngày/tháng/năm — ô lịch gốc hiển thị theo locale trình duyệt.
+  for (const [oId, echoId] of [["tc-tu-ngay", "tc-tu-ngay-vn"], ["tc-den-ngay", "tc-den-ngay-vn"]]) {
+    const o = document.getElementById(oId);
+    const echo = document.getElementById(echoId);
+    if (!o || !echo) continue;
+    const capNhat = () => {
+      if (!o.value) {
+        echo.textContent = "";
+        return;
+      }
+      const [y, m, d] = o.value.split("-");
+      echo.textContent = `→ ngày ${d}/${m}/${y}`;
+    };
+    o.addEventListener("change", capNhat);
+    capNhat();
   }
 
   const form = document.getElementById("tc-form");
@@ -489,8 +532,11 @@ function ngayVN(iso: string): string {
       if (ID_CAN_TOA_SON.includes(val("tc-viec")) && !val("tc-toa-son")) {
         return baoLoi("Việc này bắt buộc phải chọn toạ sơn của công trình / mộ phần.");
       }
-      if (viecDangChon?.canHaiNguoi && (!val("tc-ngay-sinh-2") || !val("tc-gio-sinh-2"))) {
-        return baoLoi("Việc cưới hỏi cần đủ ngày giờ sinh của cả hai người.");
+      if (
+        viecDangChon?.canHaiNguoi &&
+        (!val("tc-ngay-sinh-2") || !val("tc-thang-sinh-2") || !val("tc-nam-sinh-2") || !val("tc-gio-sinh-2"))
+      ) {
+        return baoLoi("Việc cưới hỏi cần đủ ngày, tháng, năm và giờ sinh của cả hai người.");
       }
       if (viecDangChon?.luaChonPhu && !val("tc-lua-chon-phu")) {
         return baoLoi(`Vui lòng chọn ${viecDangChon.luaChonPhu.nhan.toLowerCase()}.`);
@@ -499,10 +545,13 @@ function ngayVN(iso: string): string {
         return baoLoi("Vui lòng nhập đầy đủ họ tên, số điện thoại và email.");
       }
 
-      const ngaySinhRaw = val("tc-ngay-sinh");
+      const nsD = Number(val("tc-ngay-sinh"));
+      const nsM = Number(val("tc-thang-sinh"));
+      const nsY = Number(val("tc-nam-sinh"));
       const gioSinhRaw = val("tc-gio-sinh");
-      if (!ngaySinhRaw || !gioSinhRaw) return baoLoi("Vui lòng nhập đủ ngày sinh và giờ sinh của chủ sự.");
-      const [nsY, nsM, nsD] = ngaySinhRaw.split("-").map(Number);
+      if (!nsD || !nsM || !nsY || !gioSinhRaw) {
+        return baoLoi("Vui lòng chọn đủ ngày, tháng, năm và giờ sinh của chủ sự.");
+      }
       const [gsH, gsMin] = gioSinhRaw.split(":").map(Number);
 
       const payload = {
@@ -521,9 +570,14 @@ function ngayVN(iso: string): string {
       if (val("tc-toa-son")) payload.toaSonCung = Number(val("tc-toa-son"));
       if (val("tc-lua-chon-phu")) payload.luaChonPhuId = val("tc-lua-chon-phu");
       if (viecDangChon?.canHaiNguoi) {
-        const [y2, m2, d2] = val("tc-ngay-sinh-2").split("-").map(Number);
         const [h2, min2] = val("tc-gio-sinh-2").split(":").map(Number);
-        payload.nguoiThuHai = { namSinh: y2, thangSinh: m2, ngaySinh: d2, gioSinh: h2, phutSinh: min2 };
+        payload.nguoiThuHai = {
+          namSinh: Number(val("tc-nam-sinh-2")),
+          thangSinh: Number(val("tc-thang-sinh-2")),
+          ngaySinh: Number(val("tc-ngay-sinh-2")),
+          gioSinh: h2,
+          phutSinh: min2,
+        };
       }
       if (val("tc-ma-input")) payload.maKhuyenMai = val("tc-ma-input");
 
