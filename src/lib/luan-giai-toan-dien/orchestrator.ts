@@ -79,10 +79,15 @@ export async function taoBaoCaoNangCao(input: BatTuInput): Promise<BaoCaoNangCao
   const findingsList = taoFindingsNangCao(chart, analysis);
   const laSo = laSoHienThi(chart, analysis);
 
-  // D, E, F, I, K (văn xuôi) + 2 lệnh chấm điểm đồ hình (Đại Vận, Lưu Niên 10 năm) — TẤT CẢ chạy
-  // song song trong cùng 1 Promise.all, không có phụ thuộc dữ liệu giữa các mục.
+  // D, E, F, I, K (văn xuôi) chạy song song với nhóm chấm điểm đồ hình.
+  //
+  // ⚠️ Hai lệnh chấm điểm chạy NỐI TIẾP nhau (không phải song song) là CỐ Ý: chúng dùng chung một
+  // khối tri thức ~35k token đặt ở đầu prompt. Chạy nối tiếp thì lệnh Lưu Niên đọc lại được cache
+  // của lệnh Đại Vận (0,1x) thay vì phải ghi cache mới (1,25x) — rẻ hơn hơn 10 lần cho phần đó.
+  // Chạy song song sẽ khiến cả hai cùng trượt cache. Tổng thời gian gần như không đổi vì cặp này
+  // vẫn chạy song song với 5 lệnh văn xuôi vốn đã tốn ngần ấy thời gian.
   const thuTuMa = ["D", "E", "F", "I", "K"] as const;
-  const [ketQuaGiaiDoan, daiVanBieuDo, luuNienBieuDo] = await Promise.all([
+  const [ketQuaGiaiDoan, bieuDo] = await Promise.all([
     Promise.all(
       thuTuMa.map((ma) => {
         const cfg = GIAI_DOAN_NANG_CAO.find((c) => c.ma === ma)!;
@@ -90,9 +95,13 @@ export async function taoBaoCaoNangCao(input: BatTuInput): Promise<BaoCaoNangCao
         return taoNoiDungGiaiDoanAnToan(cfg, laSo, findings);
       }),
     ),
-    taoBieuDoDaiVan(chart, tt, laSo),
-    taoBieuDoLuuNien(chart, tt, laSo, input.year),
+    (async () => {
+      const daiVan = await taoBieuDoDaiVan(chart, tt, laSo);
+      const luuNien = await taoBieuDoLuuNien(chart, tt, laSo, input.year);
+      return { daiVan, luuNien };
+    })(),
   ]);
+  const { daiVan: daiVanBieuDo, luuNien: luuNienBieuDo } = bieuDo;
 
   const giaiDoan = ketQuaGiaiDoan.filter((x): x is NonNullable<typeof x> => x !== null);
   const safety = layContentSafety();
