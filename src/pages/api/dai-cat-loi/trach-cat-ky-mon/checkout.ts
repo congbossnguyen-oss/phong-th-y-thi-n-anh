@@ -9,17 +9,12 @@ export const prerender = false;
 /**
  * Tạo đơn cho module Trạch Cát Kỳ Môn — chọn ngày giờ tốt theo bàn Kỳ Môn Mệnh của chính chủ sự.
  *
- * ⏸️ GIAI ĐOẠN THỬ NGHIỆM NỘI BỘ: engine đã dựng lại đúng ví dụ mẫu trong nguồn, nhưng phần định
- * giá và câu chữ tư vấn còn cần Công duyệt trước khi mở bán. Vì vậy chặn ở server y hệt các module
- * mới khác: chỉ tài khoản quản trị được tạo đơn. Gỡ khối chặn này khi Công đã chốt.
+ * ✅ ĐÃ MỞ BÁN cho khách từ 26/8/2026 (anh Công duyệt). Tài khoản quản trị vẫn được taoDonCongCu
+ * tạo đơn ở mức 0đ + tự xác nhận để test trọn luồng — xem cờ `laQuanTri` bên dưới.
  */
 export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
   const limited = checkRateLimit({ request, clientAddress }, { key: "checkout-trach-cat-ky-mon", max: 10, windowMs: 60_000 });
   if (limited) return limited;
-
-  if (locals.user?.isAdmin !== true) {
-    return jsonResponse({ ok: false, error: "Dịch vụ đang trong giai đoạn thử nghiệm nội bộ, chưa mở bán." }, 403);
-  }
 
   const body = await request.json().catch(() => null);
   const doc = docInput(body);
