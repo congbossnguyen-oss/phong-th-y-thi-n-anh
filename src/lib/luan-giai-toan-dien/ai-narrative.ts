@@ -9,6 +9,7 @@ import {
   tuDienThayTheDangText,
   quyTacDienDatChungDangText,
   quyTacRiengGiaiDoan,
+  xoaTheLaConSot,
 } from "./content-safety";
 import type { GiaiDoanFindings, MaGiaiDoan } from "./types";
 import { ANTHROPIC_MESSAGES_URL as ANTHROPIC_API_URL, anthropicHeaders } from "../anthropic-gateway";
@@ -95,9 +96,12 @@ function buildSystemPrompt(cfg: GiaiDoanConfig, laSoJSON: string, findingsJSON: 
     "",
     "## Yêu cầu định dạng",
     "- Viết văn xuôi tiếng Việt tự nhiên, giọng điềm đạm, ấm áp, không giáo điều.",
-    `- Độ dài: ${cfg.doDaiGoiY} (điều chỉnh theo lượng findings thực có — findings ít thì viết ngắn, không độn chữ).`,
-    "- Không dùng gạch đầu dòng liệt kê khô khan — viết thành đoạn văn liền mạch.",
-    "- Không lặp lại nguyên văn thuật ngữ Hán Việt (Thất Sát, Kiếp Tài...) quá nhiều lần liên tiếp — xen kẽ diễn giải bằng ngôn ngữ đời thường.",
+    `- Độ dài: ${cfg.doDaiGoiY} (điều chỉnh theo lượng findings thực có, findings ít thì viết ngắn, không độn chữ).`,
+    "- Không dùng gạch đầu dòng liệt kê khô khan, viết thành đoạn văn liền mạch.",
+    "- Không lặp lại nguyên văn thuật ngữ Hán Việt (Thất Sát, Kiếp Tài...) quá nhiều lần liên tiếp, xen kẽ diễn giải bằng ngôn ngữ đời thường.",
+    "- TUYỆT ĐỐI KHÔNG dùng dấu gạch ngang \"-\" hay chấm phẩy \";\" để nối câu (đây là lỗi văn phong lộ rõ là AI viết) — thay bằng dấu phẩy, chấm câu, hoặc viết lại thành 2 câu riêng.",
+    "- TUYỆT ĐỐI KHÔNG chèn bất kỳ thẻ/ký hiệu nào giống code hoặc XML (vd </noi_dung>, <invoke>, **, ##) vào NỘI DUNG văn xuôi — chỉ viết văn xuôi thuần tuý tiếng Việt, không có ký hiệu định dạng nào khác ngoài dấu câu thông thường.",
+    "- KHÔNG viết các câu sáo rỗng kiểu AI tự nhận xét về dữ liệu (vd \"dữ liệu chưa đủ căn cứ để xác định rõ\", \"không có đủ thông tin để phân tích sâu hơn\") — nếu 1 khía cạnh không đủ căn cứ, ĐƠN GIẢN LÀ BỎ QUA khía cạnh đó, không nhắc tới việc thiếu dữ liệu.",
   ].join("\n");
 }
 
@@ -158,7 +162,7 @@ export async function viecGiaiDoan(cfg: GiaiDoanConfig, laSo: unknown, findings:
   const model = (typeof process !== "undefined" ? process.env?.ANTHROPIC_MODEL : undefined) || DEFAULT_MODEL;
   ghiLogChiPhi(`Luận giải Bát Tự — Giai đoạn ${cfg.ma}`, model, usage);
   if (!input) return null;
-  const noiDung = typeof input.noi_dung === "string" ? input.noi_dung.trim() : "";
+  const noiDung = typeof input.noi_dung === "string" ? xoaTheLaConSot(input.noi_dung.trim()) : "";
   return noiDung.length > 0 ? noiDung : null;
 }
 
@@ -187,6 +191,6 @@ export async function kiemDuyetDoanVan(doanVan: string): Promise<string> {
   const model = (typeof process !== "undefined" ? process.env?.ANTHROPIC_MODEL : undefined) || DEFAULT_MODEL;
   ghiLogChiPhi("Luận giải Bát Tự — Kiểm duyệt F/I", model, usage);
   if (!input) return doanVan; // AI lỗi → giữ nguyên bản gốc thay vì mất nội dung.
-  const noiDung = typeof input.noi_dung === "string" ? input.noi_dung.trim() : "";
+  const noiDung = typeof input.noi_dung === "string" ? xoaTheLaConSot(input.noi_dung.trim()) : "";
   return noiDung.length > 0 ? noiDung : doanVan;
 }
