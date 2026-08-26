@@ -39,7 +39,9 @@ export const GET: APIRoute = async ({ url, request, clientAddress }) => {
         ok: true,
         status: "confirmed",
         dangCapNhat: false,
-        viec: { nhan: kq.viec?.nhan, moTa: kq.viec?.moTa, luuY: kq.viec?.luuY, nguon: kq.viec?.nguon },
+        // nguon (tên video/tài liệu nội bộ) CỐ Ý không đưa vào response — khách không cần biết,
+        // trước đây trang từng hiện thẳng dòng "Nguồn phương pháp: ..." (đã bỏ).
+        viec: { nhan: kq.viec?.nhan, moTa: kq.viec?.moTa, luuY: kq.viec?.luuY },
         chiThangSinh: kq.chiThangSinh,
         chiNamSinh: kq.chiNamSinh,
         banMenh: kq.banMenh,

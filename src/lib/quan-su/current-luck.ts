@@ -203,7 +203,10 @@ export function tinhVanTrinhHienTai(input: LuckInput): LuckContext {
         tuVi = {
           daiVanCung: cung.cungName,
           chinhTinh: cung.chinhTinh.map((s) => s.name),
-          ghiChu: "Lớp phụ — chỉ để đối chiếu định tính, KHÔNG quyết định điểm số. Tử Vi engine có 3 lỗi đã biết (xem TUVI_ENGINE_AUDIT.md).",
+          // Câu này CÓ THỂ lộ ra ngoài qua response /api/quan-su/luan (field vanTrinh.tuVi.ghiChu)
+          // — KHÔNG được nhắc chi tiết kỹ thuật nội bộ (tên file audit, số lỗi đã biết...), khách
+          // không cần biết và không hiểu (2026-08-27, cùng nguyên tắc đã áp cho Hỏi Đáp Kỳ Môn).
+          ghiChu: "Lớp phụ — chỉ để đối chiếu định tính, không quyết định điểm số chính.",
         };
       }
     } catch {
