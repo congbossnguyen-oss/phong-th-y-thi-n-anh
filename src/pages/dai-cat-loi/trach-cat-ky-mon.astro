@@ -1,0 +1,588 @@
+---
+// TRANG DỊCH VỤ VIP "Trạch Cát Kỳ Môn" — chọn ngày giờ tốt theo bàn Kỳ Môn Mệnh của chính chủ sự.
+//
+// Khác các công cụ chọn ngày khác trên site (vốn dùng hoàng đạo/Đổng Công chung cho mọi người):
+// module này lập bàn Kỳ Môn Mệnh riêng của khách làm "mẫu cục", nên hai người khác tuổi hỏi cùng
+// một việc sẽ ra hai bộ ngày khác nhau.
+//
+// Luồng:
+//  - Chưa có ?orderCode → FORM (ngày giờ sinh + việc dụng sự + khoảng ngày + toạ sơn nếu cần) →
+//    thanh toán QR → poll.
+//  - Có ?orderCode đã confirmed → server tính lại từ snapshot, hiện danh sách ngày đã xếp hạng.
+//    Bấm vào một ngày → gọi /gio để lấy tử cục + giờ tốt của đúng ngày đó.
+//
+// ⏸️ THỬ NGHIỆM NỘI BỘ: chỉ tài khoản quản trị dùng được (khối chặn nằm ở checkout.ts + điều kiện
+// laQuanTri bên dưới). Gỡ cả hai khi Công duyệt mở bán và chốt giá.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import Container from "../../components/ui/Container.astro";
+import Button from "../../components/ui/Button.astro";
+import MaKhuyenMai from "../../components/ui/MaKhuyenMai.astro";
+import VipQuyenBanner from "../../components/quan-su/VipQuyenBanner.astro";
+import { GIA_CONG_CU, GIA_GOC_HIEN_THI, dinhDangTien } from "../../lib/payments/gia-cong-cu";
+import { getOrderByCode } from "../../lib/db/orders";
+import { trachCat, type KetQuaTrachCat } from "../../lib/kymon/trachCat";
+import { DANH_MUC_VIEC_TRACH_CAT, DANH_SACH_TOA_SON } from "../../lib/kymon/trachCat/danhMucViec";
+
+export const prerender = false;
+
+const laQuanTri = Astro.locals.user?.isAdmin === true;
+const TOOL_SLUG = "trach-cat-ky-mon";
+const TOOL_PRICE = GIA_CONG_CU[TOOL_SLUG];
+const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
+const GIA_GOC = GIA_GOC_HIEN_THI[TOOL_SLUG];
+const GIA_GOC_LABEL = GIA_GOC ? dinhDangTien(GIA_GOC) : null;
+
+const q = Astro.url.searchParams;
+const orderCode = q.get("orderCode");
+let order: Awaited<ReturnType<typeof getOrderByCode>> | null = null;
+let kq: KetQuaTrachCat | null = null;
+if (orderCode) {
+  order = await getOrderByCode(orderCode);
+  if (order && order.orderType === "tool" && order.toolSlug === TOOL_SLUG && order.status === "confirmed" && order.toolInputSnapshot) {
+    try {
+      kq = await trachCat(JSON.parse(order.toolInputSnapshot));
+    } catch {
+      kq = null;
+    }
+  }
+}
+
+// Nhóm việc để select có optgroup — danh sách đang 10 việc, chia 4 nhóm cho dễ tìm.
+const nhomViec = [...new Set(DANH_MUC_VIEC_TRACH_CAT.map((v) => v.nhom))].map((n) => ({
+  nhom: n,
+  ds: DANH_MUC_VIEC_TRACH_CAT.filter((v) => v.nhom === n),
+}));
+const idViecCanToaSon = DANH_MUC_VIEC_TRACH_CAT.filter((v) => v.canToaSon).map((v) => v.id);
+
+const homNay = new Date();
+const macDinhTu = homNay.toISOString().slice(0, 10);
+const macDinhDen = new Date(homNay.getTime() + 44 * 86400000).toISOString().slice(0, 10);
+
+const MAU_XU_HUONG: Record<string, string> = {
+  rat_tot: "border-emerald-500/50 bg-emerald-500/10 text-emerald-700",
+  tot: "border-(--color-gold-400)/50 bg-(--color-gold-400)/10 text-(--color-gold-600)",
+  dung_duoc: "border-(--color-ivory-300) bg-(--color-ivory-100) text-(--color-ink-700)",
+  khong_nen: "border-(--color-danger-500)/40 bg-(--color-danger-500)/10 text-(--color-danger-500)",
+};
+const NHAN_XU_HUONG: Record<string, string> = {
+  rat_tot: "Rất tốt",
+  tot: "Tốt",
+  dung_duoc: "Dùng được",
+  khong_nen: "Không nên",
+};
+
+function ngayVN(iso: string): string {
+  const [y, m, d] = iso.split("-");
+  return `${d}/${m}/${y}`;
+}
+---
+
+<BaseLayout
+  title="Trạch Cát Kỳ Môn — Chọn ngày giờ tốt theo bàn mệnh"
+  description="Chọn ngày giờ tốt bằng Kỳ Môn Độn Giáp, tính riêng trên lá bàn Kỳ Môn Mệnh của chính bạn: động thổ, nhập trạch, khai trương, xuất hành, an táng và nhiều việc khác."
+  appShell
+>
+  <PageHero
+    eyebrow="⭐ Dịch vụ VIP"
+    title="Trạch Cát Kỳ Môn"
+    description="Chọn ngày giờ tốt theo phương pháp Kỳ Môn Mệnh Trạch Nhật — lập bàn Kỳ Môn Mệnh của chính bạn làm mẫu cục, lọc Kỳ Môn Tứ Hại, đối chiếu dụng thần riêng của từng việc, rồi mới xét 12 Kiến Tinh và 12 Trực Thần."
+    breadcrumbs={[
+      { label: "Trang chủ", href: "/" },
+      { label: "Đại Cát Lợi", href: "/dai-cat-loi" },
+      { label: "Dịch vụ VIP", href: "/dai-cat-loi/dich-vu-thu-phi" },
+      { label: "Trạch Cát Kỳ Môn" },
+    ]}
+  />
+  <VipQuyenBanner />
+
+  <Container class="py-10">
+    <div class="mx-auto max-w-3xl">
+      {order?.status === "confirmed" && kq?.hopLe ? (
+        <div class="space-y-8">
+          <div class="rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-4 text-sm text-(--color-ink-700)">
+            ✅ Đã thanh toán — mã đơn <strong>{order.orderCode}</strong>.
+          </div>
+
+          <section class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-4">
+            <h2 class="font-display text-lg font-bold text-(--color-ink-950)">{kq.viec?.nhan}</h2>
+            <p class="mt-1 text-sm text-(--color-ink-700)">{kq.viec?.moTa}</p>
+            <p class="mt-3 text-xs text-(--color-ink-500)">
+              Bàn mệnh: {kq.banMenh?.amDuong === "+" ? "Dương" : "Âm"} {kq.banMenh?.cuc} cục · tháng sinh chi <strong>{kq.chiThangSinh}</strong> (dùng an 12 Kiến Tinh / 12 Trực Thần) · tuổi chi <strong>{kq.chiNamSinh}</strong> (dùng đối chiếu hình xung khắc hại).
+            </p>
+          </section>
+
+          {(kq.canhBao ?? []).length > 0 && (
+            <div class="rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm text-(--color-danger-500)">
+              {(kq.canhBao ?? []).map((c) => <p class="mt-1 first:mt-0">⚠️ {c}</p>)}
+            </div>
+          )}
+
+          <section>
+            <h2 class="font-display text-xl font-bold text-(--color-ink-950)">
+              Ngày tốt trong khoảng đã chọn ({(kq.danhSachNgay ?? []).length} ngày)
+            </h2>
+            <p class="mt-1 text-sm text-(--color-ink-600)">Bấm vào một ngày để xem lá bàn tử cục và các khung giờ tốt trong ngày đó.</p>
+            <div class="mt-4 space-y-2">
+              {(kq.danhSachNgay ?? []).map((d) => (
+                <button
+                  type="button"
+                  class:list={["tc-ngay w-full rounded-(--radius-control) border p-3 text-left transition hover:shadow-md", MAU_XU_HUONG[d.xuHuong]]}
+                  data-ngay={d.ngay}
+                >
+                  <div class="flex flex-wrap items-center justify-between gap-2">
+                    <span class="font-semibold">
+                      {ngayVN(d.ngay)} — ngày {d.canNgay} {d.chiNgay}
+                    </span>
+                    <span class="rounded-full bg-white/60 px-2 py-0.5 text-xs font-bold">
+                      {NHAN_XU_HUONG[d.xuHuong]} · {d.diemTong}/100
+                    </span>
+                  </div>
+                  <p class="mt-1 text-xs opacity-80">
+                    Cung {d.huong} · 12 Kiến Tinh: {d.kienTinh} · 12 Trực Thần: {d.trucThan}
+                  </p>
+                  <ul class="mt-2 list-inside list-disc text-xs opacity-90">
+                    {d.diemCong.map((c) => <li>{c}</li>)}
+                    {d.diemTru.map((c) => <li class="opacity-70">{c}</li>)}
+                  </ul>
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <section id="tc-khu-gio" class="hidden">
+            <h2 class="font-display text-xl font-bold text-(--color-ink-950)">
+              Giờ tốt ngày <span id="tc-gio-tieu-de"></span>
+            </h2>
+            <p id="tc-gio-mo-ta" class="mt-1 text-sm text-(--color-ink-600)"></p>
+            <div id="tc-gio-canh-bao" class="mt-3 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-3 text-sm text-(--color-danger-500)"></div>
+            <div class="mt-4 overflow-x-auto">
+              <div id="tc-luoi" class="tc-grid-9"></div>
+            </div>
+            <div id="tc-gio-ds" class="mt-4 space-y-2"></div>
+          </section>
+
+          <details class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4">
+            <summary class="cursor-pointer font-semibold text-(--color-cinnabar-400)">
+              Vì sao các ngày khác bị loại? (phân tích đủ 12 địa chi trên bàn mệnh)
+            </summary>
+            <div class="mt-3 space-y-2">
+              {(kq.phanTichChi ?? []).map((p) => (
+                <div class="rounded-(--radius-control) border border-(--color-ivory-300) bg-white p-2.5 text-sm">
+                  <p class="font-semibold text-(--color-ink-900)">
+                    Ngày {p.chi} — cung {p.huong}
+                    {p.biLoai ? <span class="ml-2 text-xs font-normal text-(--color-danger-500)">bị loại</span> : <span class="ml-2 text-xs font-normal text-(--color-ink-500)">{p.diemTong}/100</span>}
+                  </p>
+                  {p.biLoai ? (
+                    <ul class="mt-1 list-inside list-disc text-xs text-(--color-danger-500)">
+                      {p.lyDoLoai.map((l) => <li>{l}</li>)}
+                    </ul>
+                  ) : (
+                    <ul class="mt-1 list-inside list-disc text-xs text-(--color-ink-600)">
+                      {p.diemCong.map((l) => <li>{l}</li>)}
+                    </ul>
+                  )}
+                </div>
+              ))}
+            </div>
+          </details>
+
+          {kq.viec?.luuY && (
+            <section class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4 text-sm text-(--color-ink-700)">
+              <p class="font-semibold text-(--color-ink-900)">Lưu ý về việc này</p>
+              <p class="mt-1 leading-relaxed">{kq.viec.luuY}</p>
+              <p class="mt-2 text-xs text-(--color-ink-500)">Nguồn phương pháp: {kq.viec.nguon}</p>
+            </section>
+          )}
+        </div>
+      ) : orderCode ? (
+        <div class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6 text-center">
+          <p class="font-medium text-(--color-ink-800)">Đơn hàng chưa xác nhận hoặc không tồn tại.</p>
+          <p class="mt-1 text-sm text-(--color-ink-500)">Nếu bạn vừa chuyển khoản, vui lòng đợi vài giây rồi tải lại trang.</p>
+        </div>
+      ) : laQuanTri ? (
+        <>
+          <div class="mb-4 rounded-(--radius-card) border-2 border-(--color-gold-400) bg-(--color-gold-400)/10 p-4 text-sm font-medium text-(--color-gold-600)">
+            🔒 CHẾ ĐỘ QUẢN TRỊ — dịch vụ đang thử nghiệm nội bộ. Đơn của bạn được tạo ở mức 0đ và tự xác nhận để test trọn luồng ({TOOL_PRICE_LABEL}/lượt khi mở bán).
+          </div>
+
+          <form id="tc-form" class="flex flex-col gap-5 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
+            <div>
+              <p class="text-sm font-medium text-(--color-ink-800)">1. Ngày giờ sinh của chủ sự (người đứng ra làm việc)</p>
+              <p class="mt-0.5 text-xs text-(--color-ink-500)">Bắt buộc — phương pháp lập bàn Kỳ Môn Mệnh riêng của người này làm mẫu cục.</p>
+              <div class="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-5">
+                <input type="number" id="tc-ngay-sinh" placeholder="Ngày" min="1" max="31" required class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm" />
+                <input type="number" id="tc-thang-sinh" placeholder="Tháng" min="1" max="12" required class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm" />
+                <input type="number" id="tc-nam-sinh" placeholder="Năm" min="1901" max="2100" required class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm" />
+                <input type="number" id="tc-gio-sinh" placeholder="Giờ" min="0" max="23" required class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm" />
+                <input type="number" id="tc-phut-sinh" placeholder="Phút" min="0" max="59" required class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm" />
+              </div>
+            </div>
+
+            <div>
+              <label for="tc-viec" class="text-sm font-medium text-(--color-ink-800)">2. Việc cần chọn ngày</label>
+              <select id="tc-viec" required class="mt-2 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm">
+                <option value="">— Chọn việc dụng sự —</option>
+                {nhomViec.map((n) => (
+                  <optgroup label={n.nhom}>
+                    {n.ds.map((v) => <option value={v.id}>{v.nhan}</option>)}
+                  </optgroup>
+                ))}
+              </select>
+              <p id="tc-viec-mo-ta" class="mt-2 hidden text-xs leading-relaxed text-(--color-ink-600)"></p>
+            </div>
+
+            <div id="tc-khu-toa-son" class="hidden">
+              <label for="tc-toa-son" class="text-sm font-medium text-(--color-ink-800)">3. Toạ sơn của công trình / mộ phần</label>
+              <p id="tc-toa-son-ghi-chu" class="mt-0.5 text-xs text-(--color-ink-500)"></p>
+              <select id="tc-toa-son" class="mt-2 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm">
+                <option value="">— Chọn toạ sơn —</option>
+                {DANH_SACH_TOA_SON.map((t) => <option value={t.id}>{t.nhan}</option>)}
+              </select>
+            </div>
+
+            <div>
+              <p class="text-sm font-medium text-(--color-ink-800)">Khoảng ngày cần lọc</p>
+              <p class="mt-0.5 text-xs text-(--color-ink-500)">Tối đa 120 ngày. Khoảng càng rộng thì càng dễ tìm được ngày đẹp.</p>
+              <div class="mt-2 grid grid-cols-2 gap-3">
+                <input type="date" id="tc-tu-ngay" value={macDinhTu} required class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm" />
+                <input type="date" id="tc-den-ngay" value={macDinhDen} required class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm" />
+              </div>
+            </div>
+
+            <div>
+              <p class="text-sm font-medium text-(--color-ink-800)">Thông tin liên hệ</p>
+              <div class="mt-2 grid gap-3">
+                <input type="text" id="tc-ten" placeholder="Họ tên" required class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm" />
+                <input type="tel" id="tc-sdt" placeholder="Số điện thoại" required class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm" />
+                <input type="email" id="tc-email" placeholder="Email (để nhận kết quả)" required class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm" />
+              </div>
+            </div>
+
+            <MaKhuyenMai idPrefix="tc-ma" toolSlug={TOOL_SLUG} giaGoc={TOOL_PRICE} />
+
+            <div class="flex items-baseline gap-2">
+              {GIA_GOC_LABEL && <span class="text-sm text-(--color-ink-500) line-through">{GIA_GOC_LABEL}</span>}
+              <span class="font-display text-xl font-bold text-(--color-cinnabar-400)">{TOOL_PRICE_LABEL}</span>
+              {GIA_GOC_LABEL && <span class="rounded-full bg-(--color-cinnabar-400) px-2 py-0.5 text-xs font-bold text-white">-50%</span>}
+            </div>
+
+            <Button type="submit" size="lg">Xem ngày giờ tốt — {TOOL_PRICE_LABEL}</Button>
+          </form>
+
+          <div id="tc-dang-chay" class="mt-4 hidden rounded-(--radius-card) border border-(--color-gold-500)/40 bg-(--color-gold-400)/10 p-4 text-sm text-(--color-ink-700)">
+            <p class="font-medium text-(--color-ink-900)">⏳ Đang tính toán và tạo đơn hàng…</p>
+          </div>
+          <div id="tc-loi" class="mt-4 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm text-(--color-danger-500)"></div>
+
+          <div id="tc-thanh-toan" class="mt-6 hidden space-y-4 rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-center text-(--color-ink-950) shadow-lg">
+            <p class="font-display text-lg font-bold">Quét mã QR để thanh toán <span id="tc-so-tien">{TOOL_PRICE_LABEL}</span></p>
+            <img id="tc-qr" src="" alt="Mã QR thanh toán" class="mx-auto h-64 w-64 rounded-xl border border-(--color-ivory-300)" />
+            <p class="text-sm text-(--color-ink-600)">Mã đơn hàng: <strong id="tc-order-code"></strong></p>
+            <p id="tc-trang-thai" class="text-sm font-medium text-(--color-gold-400)">Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)</p>
+          </div>
+        </>
+      ) : (
+        <div class="mx-auto max-w-xl rounded-(--radius-card) border-2 border-(--color-gold-400)/50 bg-(--color-ivory-100) p-8 text-center">
+          <p class="text-3xl">🚧</p>
+          <p class="mt-3 font-display text-lg font-bold text-(--color-ink-900)">Dịch vụ đang trong giai đoạn thử nghiệm nội bộ</p>
+          <p class="mt-2 text-sm text-(--color-ink-600)">Chúng tôi đang hoàn thiện trước khi mở bán chính thức. Vui lòng quay lại sau, hoặc liên hệ hotline để được thông báo ngay khi ra mắt.</p>
+        </div>
+      )}
+    </div>
+  </Container>
+</BaseLayout>
+
+<script
+  define:vars={{
+    DS_VIEC: DANH_MUC_VIEC_TRACH_CAT.map((v) => ({ id: v.id, moTa: v.moTa, luuY: v.luuY, ghiChuToaSon: v.ghiChuToaSon })),
+    ID_CAN_TOA_SON: idViecCanToaSon,
+    ORDER_CODE: orderCode,
+  }}
+>
+  // ---- Phần FORM: hiện mô tả việc + bật/tắt ô toạ sơn theo việc đang chọn ----
+  const selViec = document.getElementById("tc-viec");
+  if (selViec) {
+    const moTaEl = document.getElementById("tc-viec-mo-ta");
+    const khuToaSon = document.getElementById("tc-khu-toa-son");
+    const ghiChuToaSon = document.getElementById("tc-toa-son-ghi-chu");
+    const selToaSon = document.getElementById("tc-toa-son");
+
+    selViec.addEventListener("change", () => {
+      const v = DS_VIEC.find((x) => x.id === selViec.value);
+      if (v) {
+        moTaEl.textContent = v.luuY ? `${v.moTa} — ${v.luuY}` : v.moTa;
+        moTaEl.classList.remove("hidden");
+      } else {
+        moTaEl.classList.add("hidden");
+      }
+      const can = ID_CAN_TOA_SON.includes(selViec.value);
+      khuToaSon.classList.toggle("hidden", !can);
+      selToaSon.required = can;
+      if (!can) selToaSon.value = "";
+      if (can && v?.ghiChuToaSon) ghiChuToaSon.textContent = v.ghiChuToaSon;
+    });
+  }
+
+  const form = document.getElementById("tc-form");
+  if (form) {
+    const loiEl = document.getElementById("tc-loi");
+    const dangChayEl = document.getElementById("tc-dang-chay");
+    const thanhToanEl = document.getElementById("tc-thanh-toan");
+    const qrImg = document.getElementById("tc-qr");
+    const orderCodeEl = document.getElementById("tc-order-code");
+    const trangThaiEl = document.getElementById("tc-trang-thai");
+    const soTienEl = document.getElementById("tc-so-tien");
+    const nutSubmit = form.querySelector('button[type="submit"]');
+
+    let pollTimer = null;
+    let dangHoi = false;
+    const val = (id) => document.getElementById(id)?.value.trim() ?? "";
+
+    const tatDangChay = () => {
+      dangChayEl.classList.add("hidden");
+      if (nutSubmit) nutSubmit.disabled = false;
+    };
+    const baoLoi = (msg) => {
+      tatDangChay();
+      loiEl.textContent = msg;
+      loiEl.classList.remove("hidden");
+    };
+
+    async function kiemTra(oc) {
+      if (dangHoi) return;
+      dangHoi = true;
+      try {
+        const res = await fetch(`/api/dai-cat-loi/trach-cat-ky-mon/result?orderCode=${encodeURIComponent(oc)}`);
+        const data = await res.json();
+        if (!data.ok) return;
+        if (data.status === "cancelled") {
+          if (pollTimer) clearInterval(pollTimer);
+          trangThaiEl.textContent = "Đơn hàng đã bị hủy.";
+          return;
+        }
+        if (data.status !== "confirmed") return;
+        if (pollTimer) clearInterval(pollTimer);
+        const url = new URL(window.location.href);
+        url.searchParams.set("orderCode", oc);
+        window.location.href = url.toString();
+      } catch {
+        // mạng chập chờn — nhịp sau thử lại
+      } finally {
+        dangHoi = false;
+      }
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      loiEl.classList.add("hidden");
+
+      if (!val("tc-viec")) return baoLoi("Vui lòng chọn việc cần xem ngày.");
+      if (ID_CAN_TOA_SON.includes(val("tc-viec")) && !val("tc-toa-son")) {
+        return baoLoi("Việc này bắt buộc phải chọn toạ sơn của công trình / mộ phần.");
+      }
+      if (!val("tc-ten") || !val("tc-sdt") || !val("tc-email")) {
+        return baoLoi("Vui lòng nhập đầy đủ họ tên, số điện thoại và email.");
+      }
+
+      const payload = {
+        namSinh: Number(val("tc-nam-sinh")),
+        thangSinh: Number(val("tc-thang-sinh")),
+        ngaySinh: Number(val("tc-ngay-sinh")),
+        gioSinh: Number(val("tc-gio-sinh")),
+        phutSinh: Number(val("tc-phut-sinh")),
+        viecId: val("tc-viec"),
+        tuNgay: val("tc-tu-ngay"),
+        denNgay: val("tc-den-ngay"),
+        customerName: val("tc-ten"),
+        customerPhone: val("tc-sdt"),
+        customerEmail: val("tc-email"),
+      };
+      if (val("tc-toa-son")) payload.toaSonCung = Number(val("tc-toa-son"));
+      if (val("tc-ma-input")) payload.maKhuyenMai = val("tc-ma-input");
+
+      dangChayEl.classList.remove("hidden");
+      if (nutSubmit) nutSubmit.disabled = true;
+      try {
+        const res = await fetch("/api/dai-cat-loi/trach-cat-ky-mon/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) return baoLoi(data.error ?? "Không tạo được đơn hàng.");
+        tatDangChay();
+        orderCodeEl.textContent = data.orderCode;
+
+        if (data.mienPhi) {
+          dangChayEl.classList.remove("hidden");
+          await kiemTra(data.orderCode);
+          return;
+        }
+
+        soTienEl.textContent = `${Number(data.totalAmount).toLocaleString("vi-VN")}đ`;
+        qrImg.src = data.qrUrl;
+        thanhToanEl.classList.remove("hidden");
+        thanhToanEl.scrollIntoView({ behavior: "smooth", block: "start" });
+        pollTimer = setInterval(() => kiemTra(data.orderCode), 3000);
+      } catch {
+        baoLoi("Có lỗi xảy ra. Vui lòng thử lại.");
+      }
+    });
+  }
+
+  // ---- Phần KẾT QUẢ: bấm 1 ngày → lấy tử cục + giờ tốt của ngày đó ----
+  const nutNgay = document.querySelectorAll(".tc-ngay");
+  if (nutNgay.length > 0 && ORDER_CODE) {
+    const khuGio = document.getElementById("tc-khu-gio");
+    const tieuDe = document.getElementById("tc-gio-tieu-de");
+    const moTa = document.getElementById("tc-gio-mo-ta");
+    const canhBaoEl = document.getElementById("tc-gio-canh-bao");
+    const luoiEl = document.getElementById("tc-luoi");
+    const dsEl = document.getElementById("tc-gio-ds");
+
+    const LUOI_THU_TU = [4, 9, 2, 3, 5, 7, 8, 1, 6];
+    const TEN_SAO = { "T.Bồng": "Thiên Bồng", "T.Nhuế": "Thiên Nhuế", "T.Xung": "Thiên Xung", "T.Phò": "Thiên Phụ", "T.Tâm": "Thiên Tâm", "T.Trụ": "Thiên Trụ", "T.Nhậm": "Thiên Nhậm", "T.Anh": "Thiên Anh", "T.Cầm": "Thiên Cầm" };
+    const TEN_MON = { HƯU: "Hưu", TỬ: "Tử", THƯƠNG: "Thương", ĐỖ: "Đỗ", CẢNH: "Cảnh", SINH: "Sinh", KINH: "Kinh", KHAI: "Khai" };
+    const TEN_THAN = { "T.Phù": "Trực Phù", "Đ.Xà": "Đằng Xà", "T.Âm": "Thái Âm", "L.Hợp": "Lục Hợp", "B.Hổ": "Bạch Hổ", "H.Vũ": "Huyền Vũ", "C.Địa": "Cửu Địa", "C.Thiên": "Cửu Thiên" };
+    const MAU = { rat_tot: "#059669", tot: "#b8860b", dung_duoc: "#6b7280", khong_nen: "#b91c1c" };
+    const NHAN = { rat_tot: "Rất tốt", tot: "Tốt", dung_duoc: "Dùng được", khong_nen: "Không nên" };
+
+    function veLuoi(tuCuc, gioTheoCung) {
+      const cungMap = new Map(tuCuc.cungList.map((c) => [c.soCung, c]));
+      luoiEl.innerHTML = LUOI_THU_TU.map((so) => {
+        const c = cungMap.get(so);
+        if (!c) return '<div class="tc-cung"></div>';
+        if (so === 5) {
+          return `<div class="tc-cung tc-cung-trung"><div class="tc-huong">Trung cung</div><div class="tc-noi-dung">${c.thienBanCan} / ${c.diaBanCan}</div></div>`;
+        }
+        const gio = gioTheoCung.get(so) ?? [];
+        const gioHtml = gio
+          .map((g) => {
+            const mau = g.biLoai ? MAU.khong_nen : MAU[g.xuHuong];
+            const nhan = g.biLoai ? "loại" : `${g.diemTong}`;
+            return `<div class="tc-gio-chip" style="border-color:${mau};color:${mau}">${g.chiGio} · ${g.khungGio} · ${nhan}</div>`;
+          })
+          .join("");
+        return `<div class="tc-cung">
+          <div class="tc-huong">${c.huong}${c.KV ? ' <span class="tc-kv">KV</span>' : ""}</div>
+          <div class="tc-noi-dung">
+            <div><strong>${TEN_SAO[c.saoThienBan] ?? c.saoThienBan}</strong></div>
+            <div>${TEN_MON[c.mon] ?? c.mon} Môn · ${TEN_THAN[c.than] ?? c.than}</div>
+            <div class="tc-can">${c.thienBanCan} <span>/</span> ${c.diaBanCan}</div>
+          </div>
+          ${gioHtml}
+        </div>`;
+      }).join("");
+    }
+
+    async function xemGio(ngay) {
+      dsEl.innerHTML = '<p class="text-sm text-(--color-ink-500)">Đang tính giờ…</p>';
+      khuGio.classList.remove("hidden");
+      khuGio.scrollIntoView({ behavior: "smooth", block: "start" });
+      try {
+        const res = await fetch(`/api/dai-cat-loi/trach-cat-ky-mon/gio?orderCode=${encodeURIComponent(ORDER_CODE)}&ngay=${encodeURIComponent(ngay)}`);
+        const data = await res.json();
+        if (!data.ok) {
+          dsEl.innerHTML = `<p class="text-sm text-(--color-danger-500)">${data.error ?? "Không tính được giờ."}</p>`;
+          return;
+        }
+        const [y, m, d] = ngay.split("-");
+        tieuDe.textContent = `${d}/${m}/${y}`;
+        moTa.textContent = `Tử cục lập theo ngũ thử độn: hoa giáp ${data.hoaGiapTuCuc}, giữ nguyên ${data.tuCuc.amDuong === "+" ? "dương" : "âm"} ${data.tuCuc.cuc} cục của bàn mệnh.`;
+
+        if ((data.canhBao ?? []).length > 0) {
+          canhBaoEl.innerHTML = data.canhBao.map((c) => `<p class="mt-1 first:mt-0">⚠️ ${c}</p>`).join("");
+          canhBaoEl.classList.remove("hidden");
+        } else {
+          canhBaoEl.classList.add("hidden");
+        }
+
+        const theoCung = new Map();
+        for (const g of data.danhSachGio) {
+          if (!theoCung.has(g.soCung)) theoCung.set(g.soCung, []);
+          theoCung.get(g.soCung).push(g);
+        }
+        veLuoi(data.tuCuc, theoCung);
+
+        const dung = data.danhSachGio.filter((g) => !g.biLoai);
+        const loai = data.danhSachGio.filter((g) => g.biLoai);
+        dsEl.innerHTML =
+          (dung.length === 0
+            ? '<p class="rounded-(--radius-control) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-3 text-sm text-(--color-danger-500)">Ngày này không có khung giờ nào qua được bộ lọc. Nên chọn ngày khác trong danh sách.</p>'
+            : dung
+                .map(
+                  (g) => `<div class="rounded-(--radius-control) border p-3 text-sm" style="border-color:${MAU[g.xuHuong]}40;background:${MAU[g.xuHuong]}12">
+                    <div class="flex flex-wrap items-center justify-between gap-2">
+                      <span class="font-semibold" style="color:${MAU[g.xuHuong]}">Giờ ${g.chiGio} (${g.khungGio})${g.ngoaiGioThongThuong ? " 🌙" : ""}</span>
+                      <span class="text-xs font-bold" style="color:${MAU[g.xuHuong]}">${NHAN[g.xuHuong]} · ${g.diemTong}/100</span>
+                    </div>
+                    <p class="mt-1 text-xs text-(--color-ink-600)">Cung ${g.huong} · ${g.kienTinh} / ${g.trucThan}</p>
+                    <ul class="mt-1 list-inside list-disc text-xs text-(--color-ink-700)">${g.diemCong.map((c) => `<li>${c}</li>`).join("")}${g.diemTru.map((c) => `<li class="opacity-70">${c}</li>`).join("")}</ul>
+                  </div>`,
+                )
+                .join("")) +
+          (loai.length > 0
+            ? `<details class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3">
+                 <summary class="cursor-pointer text-sm font-semibold text-(--color-cinnabar-400)">Các giờ bị loại (${loai.length})</summary>
+                 <div class="mt-2 space-y-1 text-xs text-(--color-ink-600)">
+                   ${loai.map((g) => `<p><strong>Giờ ${g.chiGio}</strong> (${g.khungGio}): ${g.lyDoLoai.join("; ")}</p>`).join("")}
+                 </div>
+               </details>`
+            : "");
+      } catch {
+        dsEl.innerHTML = '<p class="text-sm text-(--color-danger-500)">Có lỗi khi tải giờ. Vui lòng thử lại.</p>';
+      }
+    }
+
+    nutNgay.forEach((b) => b.addEventListener("click", () => xemGio(b.dataset.ngay)));
+  }
+</script>
+
+<style>
+  .tc-grid-9 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    background: #b6a480;
+    border-radius: 8px;
+    overflow: hidden;
+    min-width: 460px;
+  }
+  .tc-cung {
+    background: #fff;
+    min-height: 118px;
+    padding: 6px;
+    font-size: 0.72rem;
+    line-height: 1.35;
+    color: #1f120e;
+  }
+  .tc-cung-trung { background: #f4efe3; }
+  .tc-huong {
+    font-weight: 700;
+    font-size: 0.66rem;
+    color: #8a6d3b;
+    border-bottom: 1px solid #eee3cd;
+    padding-bottom: 3px;
+    margin-bottom: 4px;
+  }
+  .tc-kv {
+    display: inline-block;
+    background: #b91c1c;
+    color: #fff;
+    border-radius: 3px;
+    padding: 0 3px;
+    font-size: 0.58rem;
+  }
+  .tc-can { color: #8a3324; font-weight: 600; }
+  .tc-can span { color: #b6a480; font-weight: 400; }
+  .tc-gio-chip {
+    margin-top: 3px;
+    border: 1px solid;
+    border-radius: 4px;
+    padding: 1px 4px;
+    font-size: 0.62rem;
+    font-weight: 600;
+    text-align: center;
+  }
+</style>
