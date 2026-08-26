@@ -52,6 +52,7 @@ export type DuLieuLaSoTuVi = {
   tuoiHienTai: number | null;
   namHienTai: number | null;
   cung: CungDuLieu[];
+  radar6LinhVuc: Record<string, number>;
   daiHanHienTai?: { tenCung: string; tuoiTu: number; tuoiDen: number; chi: string; diem: number };
   tieuHanNamNay?: MocHan;
   tieuHanNamSau?: MocHan;
@@ -152,6 +153,7 @@ export function dungDuLieuLaSo(chart: TuViChart, cham: KetQuaChamDiem, hoTen: st
     tuoiHienTai: chart.tuoiNamXem,
     namHienTai: chart.input.viewingYear ?? null,
     cung: cungDuLieu,
+    radar6LinhVuc: cham.radar6LinhVuc,
     daiHanHienTai,
     tieuHanNamNay: lamMocHan(tuoiTieuHan, tieuHanNayChiIndex),
     tieuHanNamSau: tuoiTieuHan !== null ? lamMocHan(tuoiTieuHan + 1, tieuHanSauChiIndex) : undefined,

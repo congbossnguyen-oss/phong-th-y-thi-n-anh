@@ -23,6 +23,7 @@ import { getConfirmedToolOrderForUser } from "../../lib/db/orders";
 import { taoLuanGiaiTuVi, type LuanGiaiTuViInput } from "../../lib/tu-vi/luan-giai/taoLuanGiaiTuVi";
 import { TEN_CUNG_HIEN_THI, TEN_CUNG_SNAKE } from "../../lib/tu-vi/luan-giai/aiCoBan";
 import { nhanDiem } from "../../lib/tu-vi/luan-giai/chamDiem";
+import { mauTheoDiem, veRadarSvg } from "../../lib/tu-vi/luan-giai/bieuDo";
 
 export const prerender = false;
 
@@ -87,6 +88,11 @@ if (user) {
 
 const daMuaCoBan = coDonCoBanChuaHienThi;
 const daMuaNangCao = coDonNangCaoChuaHienThi;
+
+/** % vị trí trên thanh tiến trình tuổi 0-90 — dùng cho thanh Đại Hạn trực quan. */
+function phanTramTuoi(tuoi: number): number {
+  return Math.min(100, Math.max(0, (tuoi / 90) * 100));
+}
 ---
 
 <BaseLayout
@@ -144,9 +150,15 @@ const daMuaNangCao = coDonNangCaoChuaHienThi;
                 {" "}{baoCaoCoBan.duLieu.banMenhNapAm} · {baoCaoCoBan.duLieu.cucName}
               </p>
 
-              <div class="mt-4 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4">
-                <p class="text-sm font-semibold text-(--color-ink-900)">Luận Thiên Bàn</p>
-                <p class="mt-1.5 whitespace-pre-line text-sm leading-relaxed text-(--color-ink-800)">{baoCaoCoBan.coBan.luanThienBan}</p>
+              <div class="mt-4 grid gap-4 sm:grid-cols-[minmax(0,1fr)_260px]">
+                <div class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4">
+                  <p class="text-sm font-semibold text-(--color-ink-900)">Luận Thiên Bàn</p>
+                  <p class="mt-1.5 whitespace-pre-line text-sm leading-relaxed text-(--color-ink-800)">{baoCaoCoBan.coBan.luanThienBan}</p>
+                </div>
+                <div class="flex flex-col items-center justify-center rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3">
+                  <p class="mb-1 text-xs font-semibold text-(--color-ink-900)">Radar 6 lĩnh vực</p>
+                  <Fragment set:html={veRadarSvg(baoCaoCoBan.duLieu.radar6LinhVuc)} />
+                </div>
               </div>
 
               <div class="mt-4 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4">
@@ -171,11 +183,14 @@ const daMuaNangCao = coDonNangCaoChuaHienThi;
 
               <div class="mt-4">
                 <p class="mb-2 text-sm font-semibold text-(--color-ink-900)">Bánh xe Cát – Hung 12 cung</p>
-                <div class="grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-3">
+                <div class="grid gap-x-6 gap-y-2 sm:grid-cols-2">
                   {[...baoCaoCoBan.duLieu.cung].sort((a, b) => b.diem - a.diem).map((c) => (
-                    <div class="flex items-center justify-between text-sm">
-                      <span class="text-(--color-ink-700)">{c.ten}</span>
-                      <span class="font-semibold text-(--color-gold-600)" title={c.nhanDiem}>{"●".repeat(c.diem)}{"○".repeat(5 - c.diem)}</span>
+                    <div class="flex items-center gap-2 text-sm" title={c.nhanDiem}>
+                      <span class="w-24 flex-shrink-0 truncate text-(--color-ink-700)">{c.ten}</span>
+                      <span class="h-2.5 flex-1 overflow-hidden rounded-full bg-(--color-ivory-300)">
+                        <span class="block h-full rounded-full" style={`width:${(c.diem / 5) * 100}%;background:${mauTheoDiem(c.diem)};`} />
+                      </span>
+                      <span class="w-6 flex-shrink-0 text-right text-xs font-bold" style={`color:${mauTheoDiem(c.diem)};`}>{c.diem}/5</span>
                     </div>
                   ))}
                 </div>
@@ -225,6 +240,32 @@ const daMuaNangCao = coDonNangCaoChuaHienThi;
           {baoCaoNangCao?.nangCao && baoCaoNangCao.duLieu && (
             <section class="mb-8 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
               <h2 class="font-display text-2xl font-bold text-(--color-ink-950)">Luận Nâng Cao</h2>
+
+              {baoCaoNangCao.duLieu.daiHanHienTai && (
+                <div class="mt-4 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4">
+                  <p class="text-sm font-semibold text-(--color-ink-900)">Vị trí Đại Hạn trên hành trình tuổi tác</p>
+                  <div class="relative mt-4 h-2.5 rounded-full bg-(--color-ivory-300)">
+                    <span
+                      class="absolute top-0 h-full rounded-full"
+                      style={`left:${phanTramTuoi(baoCaoNangCao.duLieu.daiHanHienTai.tuoiTu)}%;width:${phanTramTuoi(baoCaoNangCao.duLieu.daiHanHienTai.tuoiDen) - phanTramTuoi(baoCaoNangCao.duLieu.daiHanHienTai.tuoiTu)}%;background:${mauTheoDiem(baoCaoNangCao.duLieu.daiHanHienTai.diem)};`}
+                    />
+                    {baoCaoNangCao.duLieu.tuoiHienTai !== null && (
+                      <span
+                        class="absolute -top-1.5 h-5 w-0.5 -translate-x-1/2 bg-(--color-ink-950)"
+                        style={`left:${phanTramTuoi(baoCaoNangCao.duLieu.tuoiHienTai)}%;`}
+                        title={`Tuổi hiện tại: ${baoCaoNangCao.duLieu.tuoiHienTai}`}
+                      />
+                    )}
+                  </div>
+                  <div class="mt-1 flex justify-between text-[10px] text-(--color-ink-500)">
+                    <span>0 tuổi</span><span>45</span><span>90 tuổi</span>
+                  </div>
+                  <p class="mt-2 text-xs text-(--color-ink-600)">
+                    Đại Hạn {baoCaoNangCao.duLieu.daiHanHienTai.tuoiTu}-{baoCaoNangCao.duLieu.daiHanHienTai.tuoiDen} tuổi tại cung <strong>{baoCaoNangCao.duLieu.daiHanHienTai.tenCung}</strong>
+                    {" "}— <strong style={`color:${mauTheoDiem(baoCaoNangCao.duLieu.daiHanHienTai.diem)};`}>{nhanDiem(baoCaoNangCao.duLieu.daiHanHienTai.diem)} ({baoCaoNangCao.duLieu.daiHanHienTai.diem}/5)</strong>.
+                  </p>
+                </div>
+              )}
 
               {[
                 { tieu: `Đại Hạn hiện tại${baoCaoNangCao.duLieu.daiHanHienTai ? ` (${baoCaoNangCao.duLieu.daiHanHienTai.tuoiTu}-${baoCaoNangCao.duLieu.daiHanHienTai.tuoiDen} tuổi)` : ""}`, h: baoCaoNangCao.nangCao.daiHan },
