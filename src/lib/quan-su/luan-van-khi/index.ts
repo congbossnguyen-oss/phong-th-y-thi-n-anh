@@ -17,8 +17,8 @@ import { phanTichBatTu, type Hanh, type TuTruInput } from "../../bat-tu-engine/e
 import { chamDiem4LinhVuc } from "./cham-diem";
 import { tinhTrangThaiThoiDiem } from "./tang-dong";
 import { DISCLAIMER_BAT_BUOC, hauKiemLoiLuan, mauCauAnToan } from "./an-toan-noi-dung";
-import { goiLoiLuanVanKhi } from "./llm";
-import { systemPromptQuyTac, systemPromptTriThuc, userPrompt } from "./prompt";
+import { goiLoiLuanVanKhi, type LoiLuan4LinhVuc } from "./llm";
+import { systemPromptQuyTac, systemPromptTriThuc, userPromptBatch, type DiemLinhVucChoAI } from "./prompt";
 import { LINH_VUC_KEYS, type DaiVanKhi, type DiemLinhVuc, type LinhVucKey, type LuuNienKhi, type VanKhiOutput } from "./types";
 
 export type {
@@ -39,55 +39,112 @@ export interface VanKhiInput {
   nowYear?: number;
   /** Index (0-9) Đại Vận muốn xem chi tiết 10 Lưu Niên + AI. Mặc định: Đại Vận chứa tuổi hiện tại. */
   chiTietDaiVanIndex?: number;
+  /**
+   * CACHE LƯU NIÊN (tuỳ chọn) — module này KHÔNG tự biết DB, tầng gọi (trang xem-thoi-van.astro)
+   * tự quyết định lưu ở đâu (vd bảng van_khi_cache theo user+daiVanIndex) rồi truyền vào đây. Kết
+   * quả cho 1 (ngày sinh, Đại Vận) là CỐ ĐỊNH mãi mãi (Can/Chi từng năm không đổi theo "hôm nay"),
+   * nên cache không cần hết hạn. Không truyền thì luôn tính mới — giữ nguyên hành vi cũ (test hiện
+   * có gọi `tinhVanKhi()` trực tiếp không qua DB vẫn chạy đúng).
+   */
+  layLuuNienCache?: (chiTietDaiVanIndex: number) => LuuNienKhi[] | null | Promise<LuuNienKhi[] | null>;
+  luuLuuNienCache?: (chiTietDaiVanIndex: number, luuNien: LuuNienKhi[]) => void | Promise<void>;
 }
 
-async function vietLoiLuanChoMoc(
-  diem4: DiemLinhVuc[],
-  boiCanh: { daiVanCanChi: string; namLuuNien: number; tuoi: number; gioiTinh: "Nam" | "Nữ" },
-): Promise<{ loiLuan: Record<LinhVucKey, string>; tuAI: boolean }> {
-  const diemTheoLinhVuc = new Map(diem4.map((d) => [d.linhVuc, d.diem]));
-  const layDiem = (lv: LinhVucKey) => diemTheoLinhVuc.get(lv) ?? 5;
+interface MocNam {
+  chiSo: number;
+  diem4: DiemLinhVuc[];
+  daiVanCanChi: string;
+  namLuuNien: number;
+  tuoi: number;
+}
+
+/**
+ * Viết lời luận cho CẢ danh sách năm trong 1 LẦN GỌI AI DUY NHẤT (không phải N lệnh riêng như bản
+ * cũ) — trang Xem Thời Vận luôn hiển thị đủ 10 năm 1 lúc nên gộp lại vừa rẻ hơn vừa nhanh hơn nhiều
+ * lần so với 10 lệnh tuần tự. Việc GỌI LẠI mỗi lần khách xem trang (chưa cache theo tài khoản) là
+ * việc khác, xử lý ở tầng gọi (index.ts ngoài hàm này / trang xem-thoi-van.astro).
+ */
+async function vietLoiLuanChoDanhSachNam(
+  danhSachMoc: MocNam[],
+  gioiTinh: "Nam" | "Nữ",
+): Promise<Map<number, { loiLuan: Record<LinhVucKey, string>; tuAI: boolean }>> {
+  const layDiem = (diem4: DiemLinhVuc[], lv: LinhVucKey) => diem4.find((d) => d.linhVuc === lv)?.diem ?? 5;
+  const mauCaBang = (): Map<number, { loiLuan: Record<LinhVucKey, string>; tuAI: boolean }> =>
+    new Map(
+      danhSachMoc.map((m) => [
+        m.chiSo,
+        {
+          loiLuan: Object.fromEntries(LINH_VUC_KEYS.map((lv) => [lv, mauCauAnToan(lv, layDiem(m.diem4, lv))])) as Record<
+            LinhVucKey,
+            string
+          >,
+          tuAI: false,
+        },
+      ]),
+    );
 
   const triThuc = systemPromptTriThuc();
-  const quyTac = systemPromptQuyTac(boiCanh.gioiTinh);
-  const nguoiDung = userPrompt({
-    daiVanCanChi: boiCanh.daiVanCanChi, namLuuNien: boiCanh.namLuuNien, tuoi: boiCanh.tuoi,
-    gioiTinh: boiCanh.gioiTinh, diem4LinhVuc: diem4,
-  });
+  const quyTac = systemPromptQuyTac(gioiTinh);
+  const dauVao: DiemLinhVucChoAI[] = danhSachMoc.map((m) => ({
+    chiSo: m.chiSo, daiVanCanChi: m.daiVanCanChi, namLuuNien: m.namLuuNien, tuoi: m.tuoi, diem4LinhVuc: m.diem4,
+  }));
+  const nguoiDung = userPromptBatch(gioiTinh, dauVao);
 
   const ket = await goiLoiLuanVanKhi(triThuc, quyTac, nguoiDung);
   if (!ket.ok) {
-    // Không gọi được AI (thiếu API key / lỗi mạng) → toàn bộ dùng câu mẫu an toàn. Đây CHÍNH LÀ
-    // đường chạy khi test (không có ANTHROPIC_API_KEY trong môi trường CI) — nên câu mẫu phải sạch
-    // tuyệt đối, xem an-toan-noi-dung.ts.
-    const mau = Object.fromEntries(LINH_VUC_KEYS.map((lv) => [lv, mauCauAnToan(lv, layDiem(lv))])) as Record<LinhVucKey, string>;
-    return { loiLuan: mau, tuAI: false };
+    // Không gọi được AI (thiếu API key / lỗi mạng) → toàn bộ dùng câu mẫu an toàn cho MỌI năm. Đây
+    // CHÍNH LÀ đường chạy khi test (không có ANTHROPIC_API_KEY trong môi trường CI) — câu mẫu phải
+    // sạch tuyệt đối, xem an-toan-noi-dung.ts.
+    return mauCaBang();
   }
 
-  // Hậu kiểm tầng 2 (SPEC §4, BẮT BUỘC) — quét từng lĩnh vực AI vừa trả.
-  const ketQua: Record<LinhVucKey, string> = { ...ket.loiLuan };
-  const biChanLanDau = LINH_VUC_KEYS.filter((lv) => hauKiemLoiLuan(ketQua[lv], lv, layDiem(lv)).biChan);
+  // Hậu kiểm tầng 2 (SPEC §4, BẮT BUỘC) — quét từng lĩnh vực của TỪNG năm AI vừa trả.
+  const ketQua = mauCaBang();
+  const bienDaChan: { chiSo: number; lv: LinhVucKey }[] = [];
+  for (const m of danhSachMoc) {
+    const doAI = ket.loiLuan.get(m.chiSo);
+    if (!doAI) continue; // model bỏ sót năm này — giữ câu mẫu đã có sẵn trong mauCaBang().
+    const hienTai: Record<LinhVucKey, string> = { ...ketQua.get(m.chiSo)!.loiLuan };
+    let coTuAI = true;
+    for (const lv of LINH_VUC_KEYS) {
+      const hk = hauKiemLoiLuan(doAI[lv], lv, layDiem(m.diem4, lv));
+      hienTai[lv] = hk.vanBan;
+      if (hk.biChan) { bienDaChan.push({ chiSo: m.chiSo, lv }); coTuAI = false; }
+    }
+    ketQua.set(m.chiSo, { loiLuan: hienTai, tuAI: coTuAI });
+  }
 
-  let tuAI = true;
-  if (biChanLanDau.length > 0) {
-    // Thử lại ĐÚNG 1 LẦN với cảnh báo mạnh hơn (SPEC §4: "yêu cầu AI viết lại hoặc thay bằng câu mẫu").
+  if (bienDaChan.length > 0) {
+    // Thử lại ĐÚNG 1 LẦN cho CẢ DANH SÁCH với cảnh báo mạnh hơn (SPEC §4: "yêu cầu AI viết lại hoặc
+    // thay bằng câu mẫu") — không thử lại riêng từng năm để tránh nổ số lệnh gọi trở lại như bản cũ.
+    const theoNam = new Map<number, LinhVucKey[]>();
+    for (const b of bienDaChan) theoNam.set(b.chiSo, [...(theoNam.get(b.chiSo) ?? []), b.lv]);
+    const moTaViPham = [...theoNam.entries()].map(([cs, lvs]) => `năm chi_so=${cs} (${lvs.join(", ")})`).join("; ");
     const quyTacManhHon = [
       quyTac, "",
-      `CẢNH BÁO: câu trả lời gần nhất của bạn VI PHẠM từ khóa cấm ở lĩnh vực: ${biChanLanDau.join(", ")}.`,
-      "Viết lại TOÀN BỘ 4 lĩnh vực, đọc kỹ lại danh sách từ cấm ở trên và tuyệt đối không lặp lại.",
+      `CẢNH BÁO: câu trả lời gần nhất của bạn VI PHẠM từ khóa cấm ở: ${moTaViPham}.`,
+      "Viết lại TOÀN BỘ danh sách, đọc kỹ lại danh sách từ cấm ở trên và tuyệt đối không lặp lại.",
     ].join("\n");
     const ketLai = await goiLoiLuanVanKhi(triThuc, quyTacManhHon, nguoiDung);
     if (ketLai.ok) {
-      for (const lv of biChanLanDau) {
-        const hk = hauKiemLoiLuan(ketLai.loiLuan[lv], lv, layDiem(lv));
-        ketQua[lv] = hk.vanBan; // hauKiemLoiLuan tự trả câu mẫu nếu VẪN dính từ cấm sau khi thử lại.
-        if (hk.biChan) tuAI = false;
+      for (const [chiSo, cacLv] of theoNam) {
+        const doAI = ketLai.loiLuan.get(chiSo);
+        const m = danhSachMoc.find((x) => x.chiSo === chiSo)!;
+        const hienTai: Record<LinhVucKey, string> = { ...ketQua.get(chiSo)!.loiLuan };
+        let tuAI = ketQua.get(chiSo)!.tuAI;
+        for (const lv of cacLv) {
+          // hauKiemLoiLuan tự trả câu mẫu nếu VẪN dính từ cấm sau khi thử lại; không có doAI thì cũng vậy.
+          const hk = hauKiemLoiLuan(doAI?.[lv] ?? "", lv, layDiem(m.diem4, lv));
+          hienTai[lv] = hk.vanBan;
+          if (!hk.biChan) tuAI = true;
+        }
+        ketQua.set(chiSo, { loiLuan: hienTai, tuAI });
       }
-    } else {
-      for (const lv of biChanLanDau) { ketQua[lv] = mauCauAnToan(lv, layDiem(lv)); tuAI = false; }
     }
+    // ketLai.ok === false: giữ nguyên câu mẫu đã gán ở vòng hậu kiểm lần đầu, không cần làm gì thêm.
   }
-  return { loiLuan: ketQua, tuAI };
+
+  return ketQua;
 }
 
 /** Chuyển 1 Đại Vận (từ tinhBatTu) thành TrangThaiThoiDiem + 4 điểm — dùng cho cả tổng quan lẫn khi
@@ -139,20 +196,34 @@ export async function tinhVanKhi(input: VanKhiInput): Promise<VanKhiOutput> {
 
     let luuNien: LuuNienKhi[] = [];
     if (i === chiTietDaiVanIndex) {
-      const danhSachNam = tinhLuuNien(dv.startDate.y, input.year, 10);
-      luuNien = await Promise.all(
-        danhSachNam.map(async (ln): Promise<LuuNienKhi> => {
+      const daCache = await input.layLuuNienCache?.(i);
+      if (daCache && daCache.length === 10) {
+        // Trúng cache — Can/Chi từng năm Lưu Niên không đổi theo thời gian nên khỏi tính/gọi AI lại.
+        luuNien = daCache;
+      } else {
+        const danhSachNam = tinhLuuNien(dv.startDate.y, input.year, 10);
+        // Tính điểm 4 lĩnh vực cho CẢ 10 năm bằng code (không AI, không tốn gì) TRƯỚC, rồi mới gọi AI
+        // đúng 1 lần cho cả danh sách — thay vì 10 lệnh AI riêng biệt như bản cũ.
+        const mocTheoNam = danhSachNam.map((ln, chiSo) => {
           const trangThaiLN = tinhTrangThaiThoiDiem({
             tt, vsGoc, dtGoc, loai: "LuuNien", canChi: { can: ln.can, chi: ln.chi }, nam: ln.year,
             canChiDaiVanChua: { can: dv.can, chi: dv.chi },
           });
           const diem4 = chamDiem4LinhVuc({ tt, trangThai: trangThaiLN, capDoGoc: vsGoc.capDo, gioiTinh: input.gender });
-          const { loiLuan, tuAI } = await vietLoiLuanChoMoc(diem4, {
-            daiVanCanChi: `${dv.can} ${dv.chi}`, namLuuNien: ln.year, tuoi: ln.tuoi, gioiTinh: input.gender,
-          });
-          return { nam: ln.year, tuoi: ln.tuoi, canChi: `${ln.can} ${ln.chi}`, diemCacLinhVuc: diem4, loiLuan, loiLuanTuAI: tuAI };
-        }),
-      );
+          return { chiSo, diem4, daiVanCanChi: `${dv.can} ${dv.chi}`, namLuuNien: ln.year, tuoi: ln.tuoi, ln };
+        });
+        const loiLuanTheoNam = await vietLoiLuanChoDanhSachNam(mocTheoNam, input.gender);
+        luuNien = mocTheoNam.map((m) => {
+          const kq = loiLuanTheoNam.get(m.chiSo)!;
+          return {
+            nam: m.ln.year, tuoi: m.ln.tuoi, canChi: `${m.ln.can} ${m.ln.chi}`,
+            diemCacLinhVuc: m.diem4, loiLuan: kq.loiLuan, loiLuanTuAI: kq.tuAI,
+          };
+        });
+        // Chỉ lưu cache khi lời luận thật sự đến từ AI — kết quả toàn câu mẫu (thiếu key/lỗi mạng)
+        // không đáng lưu, để lần sau có cơ hội thử gọi AI lại.
+        if (luuNien.some((ln) => ln.loiLuanTuAI)) await input.luuLuuNienCache?.(i, luuNien);
+      }
     }
 
     danhSachDaiVan.push({

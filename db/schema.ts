@@ -7,6 +7,7 @@ import {
   integer,
   numeric,
   pgEnum,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 
 // --- Tài khoản & phiên đăng nhập (khu học viên) ---
@@ -251,3 +252,24 @@ export const pushSubscriptions = pgTable("push_subscriptions", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   lastSentAt: timestamp("last_sent_at", { withTimezone: true }),
 });
+
+// --- Cache lời luận AI của Luận Vận Khí (Quân Sư, trang Xem Thời Vận) ---
+//
+// Kết quả cho 1 (ngày sinh, Đại Vận) là CỐ ĐỊNH mãi mãi — Can/Chi từng năm Lưu Niên không đổi theo
+// "hôm nay". Không cache thì mỗi lần khách mở lại trang lại tốn 1 lượt gọi AI cho cả 10 năm, dù nội
+// dung ra y hệt lần trước. Xem src/lib/quan-su/luan-van-khi/index.ts (layLuuNienCache/luuLuuNienCache).
+export const vanKhiCache = pgTable(
+  "van_khi_cache",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    // Index (0-9) của Đại Vận đã tính — 1 user có thể xem chi tiết nhiều Đại Vận khác nhau qua thời
+    // gian (query ?daiVan=N) nên cache theo từng Đại Vận riêng, không phải 1 dòng/user.
+    daiVanIndex: integer("dai_van_index").notNull(),
+    // Toàn bộ mảng LuuNienKhi[] (10 năm, đã gồm điểm số + lời luận AI) dạng JSON — đọc lại là dùng
+    // được ngay, không cần tính toán gì thêm.
+    luuNienJson: text("luu_nien_json").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("van_khi_cache_user_dai_van_idx").on(t.userId, t.daiVanIndex)],
+);

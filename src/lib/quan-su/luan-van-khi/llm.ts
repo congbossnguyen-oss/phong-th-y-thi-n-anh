@@ -10,7 +10,8 @@ import { ANTHROPIC_MESSAGES_URL as ANTHROPIC_API_URL, anthropicHeaders } from ".
 
 const ANTHROPIC_VERSION = "2023-06-01";
 const DEFAULT_MODEL = "claude-sonnet-5";
-const MAX_TOKENS = 1500;
+// 10 năm × 4 lĩnh vực trong 1 lệnh — rộng rãi hơn nhiều lần mức 1500 cũ (khi đó là 1 năm/lệnh).
+const MAX_TOKENS = 6000;
 const TOOL_NAME = "tra_ve_loi_luan_van_khi";
 
 export interface LoiLuan4LinhVuc {
@@ -21,20 +22,32 @@ export interface LoiLuan4LinhVuc {
 }
 
 export type KetQuaLlmVanKhi =
-  | { ok: true; loiLuan: LoiLuan4LinhVuc }
+  | { ok: true; loiLuan: Map<number, LoiLuan4LinhVuc> }
   | { ok: false; ly_do: "khong_co_api_key" | "loi_goi_api" | "phan_hoi_khong_hop_le"; chi_tiet: string };
 
 const INPUT_SCHEMA = {
   type: "object",
   properties: {
-    tai_van: { type: "string", description: "Lời luận Tài vận, 2-4 câu, viết từ canCu được cung cấp." },
-    quan_van: { type: "string", description: "Lời luận Quan vận/Sự nghiệp, 2-4 câu." },
-    suc_khoe: { type: "string", description: "Lời luận Sức khỏe, 2-4 câu, không nêu bệnh danh cụ thể." },
-    tinh_duyen: { type: "string", description: "Lời luận Tình duyên/Hôn nhân, 2-4 câu, không nói ly hôn/chia tay/mất người." },
+    danh_sach: {
+      type: "array",
+      description: "Đúng 1 phần tử cho MỖI năm trong danh sách đầu vào, theo đúng thứ tự chi_so — không bỏ sót, không thêm năm lạ.",
+      items: {
+        type: "object",
+        properties: {
+          chi_so: { type: "integer", description: "Số thứ tự của năm trong danh sách đầu vào, bắt đầu từ 0." },
+          tai_van: { type: "string", description: "Lời luận Tài vận, 2-4 câu, viết từ canCu được cung cấp." },
+          quan_van: { type: "string", description: "Lời luận Quan vận/Sự nghiệp, 2-4 câu." },
+          suc_khoe: { type: "string", description: "Lời luận Sức khỏe, 2-4 câu, không nêu bệnh danh cụ thể." },
+          tinh_duyen: { type: "string", description: "Lời luận Tình duyên/Hôn nhân, 2-4 câu, không nói ly hôn/chia tay/mất người." },
+        },
+        required: ["chi_so", "tai_van", "quan_van", "suc_khoe", "tinh_duyen"],
+      },
+    },
   },
-  required: ["tai_van", "quan_van", "suc_khoe", "tinh_duyen"],
+  required: ["danh_sach"],
 } as const;
 
+/** Gọi AI 1 LẦN DUY NHẤT cho cả danh sách năm (không phải N lệnh riêng — xem index.ts để hiểu lý do). */
 export async function goiLoiLuanVanKhi(
   promptTriThuc: string,
   promptQuyTac: string,
@@ -59,7 +72,7 @@ export async function goiLoiLuanVanKhi(
       { type: "text", text: promptQuyTac, cache_control: { type: "ephemeral" } },
     ],
     messages: [{ role: "user", content: promptNguoiDung }],
-    tools: [{ name: TOOL_NAME, description: "Trả về lời luận Vận Khí đúng cấu trúc 4 lĩnh vực.", input_schema: INPUT_SCHEMA }],
+    tools: [{ name: TOOL_NAME, description: "Trả về lời luận Vận Khí cho từng năm trong danh sách.", input_schema: INPUT_SCHEMA }],
     tool_choice: { type: "tool", name: TOOL_NAME },
   });
 
@@ -97,15 +110,26 @@ export async function goiLoiLuanVanKhi(
   }
 
   const inp = toolUse.input as Record<string, unknown>;
+  const danhSach = Array.isArray(inp.danh_sach) ? (inp.danh_sach as Record<string, unknown>[]) : [];
+  if (danhSach.length === 0) {
+    return { ok: false, ly_do: "phan_hoi_khong_hop_le", chi_tiet: "Model không trả danh_sach hoặc danh_sach rỗng." };
+  }
+
   const chuoi = (v: unknown): string => (typeof v === "string" ? v.trim() : "");
-  const loiLuan: LoiLuan4LinhVuc = {
-    tai_van: chuoi(inp.tai_van),
-    quan_van: chuoi(inp.quan_van),
-    suc_khoe: chuoi(inp.suc_khoe),
-    tinh_duyen: chuoi(inp.tinh_duyen),
-  };
-  if (!loiLuan.tai_van || !loiLuan.quan_van || !loiLuan.suc_khoe || !loiLuan.tinh_duyen) {
-    return { ok: false, ly_do: "phan_hoi_khong_hop_le", chi_tiet: "Model trả thiếu 1 trong 4 lĩnh vực." };
+  const loiLuan = new Map<number, LoiLuan4LinhVuc>();
+  for (const d of danhSach) {
+    const chiSo = Number(d.chi_so);
+    if (!Number.isInteger(chiSo)) continue;
+    const item: LoiLuan4LinhVuc = {
+      tai_van: chuoi(d.tai_van),
+      quan_van: chuoi(d.quan_van),
+      suc_khoe: chuoi(d.suc_khoe),
+      tinh_duyen: chuoi(d.tinh_duyen),
+    };
+    if (item.tai_van && item.quan_van && item.suc_khoe && item.tinh_duyen) loiLuan.set(chiSo, item);
+  }
+  if (loiLuan.size === 0) {
+    return { ok: false, ly_do: "phan_hoi_khong_hop_le", chi_tiet: "Không có mục nào đủ 4 lĩnh vực hợp lệ." };
   }
   return { ok: true, loiLuan };
 }

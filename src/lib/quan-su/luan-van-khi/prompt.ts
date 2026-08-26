@@ -36,25 +36,29 @@ export function systemPromptQuyTac(gioiTinh?: "Nam" | "Nữ"): string {
 }
 
 export interface DiemLinhVucChoAI {
+  chiSo: number;
   daiVanCanChi: string;
   namLuuNien: number;
   tuoi: number;
-  gioiTinh: "Nam" | "Nữ";
   diem4LinhVuc: DiemLinhVuc[];
 }
 
-export function userPrompt(input: DiemLinhVucChoAI): string {
-  const x = xungHo(input.gioiTinh);
+/** Dựng prompt cho CẢ danh sách năm trong 1 lệnh — xem index.ts/llm.ts để hiểu lý do gộp. */
+export function userPromptBatch(gioiTinh: "Nam" | "Nữ", danhSach: DiemLinhVucChoAI[]): string {
+  const x = xungHo(gioiTinh);
+  const dsJSON = danhSach.map((n) => ({
+    chi_so: n.chiSo,
+    dai_van: n.daiVanCanChi,
+    nam: n.namLuuNien,
+    tuoi: n.tuoi,
+    diem_so: Object.fromEntries(n.diem4LinhVuc.map((d) => [d.linhVuc, { diem: d.diem, nhan: d.nhan, canCu: d.canCu }])),
+  }));
   return [
-    `Người hỏi (gọi là "${x}") đang ở Đại Vận ${input.daiVanCanChi}, Lưu Niên năm ${input.namLuuNien} (${input.tuoi} tuổi).`,
+    `Người hỏi (gọi là "${x}") cần lời luận Vận Khí cho ${danhSach.length} năm Lưu Niên liên tiếp, liệt kê dưới đây.`,
     "",
-    "DỮ LIỆU ĐIỂM SỐ (do engine tính, là nguồn sự thật duy nhất — viết lời luận TỪ đây):",
-    JSON.stringify(
-      Object.fromEntries(input.diem4LinhVuc.map((d) => [d.linhVuc, { diem: d.diem, nhan: d.nhan, canCu: d.canCu }])),
-      null,
-      1,
-    ),
+    "DỮ LIỆU ĐIỂM SỐ TỪNG NĂM (do engine tính, là nguồn sự thật duy nhất — viết lời luận TỪ đây):",
+    JSON.stringify(dsJSON, null, 1),
     "",
-    "Hãy viết lời luận qua công cụ đã cho, đủ 4 lĩnh vực.",
+    `Hãy viết lời luận qua công cụ đã cho, đủ 4 lĩnh vực cho ĐÚNG ĐỦ cả ${danhSach.length} năm, giữ đúng chi_so tương ứng.`,
   ].join("\n");
 }
