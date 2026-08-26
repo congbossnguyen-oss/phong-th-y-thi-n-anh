@@ -1,4 +1,4 @@
-// Danh sách 17 công cụ con của "Đại Cát Lợi" — tách ra file .ts riêng (thay vì khai báo trong
+// Danh sách 15 công cụ con của "Đại Cát Lợi" — tách ra file .ts riêng (thay vì khai báo trong
 // dai-cat-loi/index.astro) để api/search.ts (endpoint .ts thuần, không qua Astro compiler) import được an
 // toàn, tránh lỗi resolve module khi import trực tiếp từ file .astro.
 export type DaiCatLoiTool = { href: string; icon: string; title: string; desc: string };
@@ -21,12 +21,6 @@ export const daiCatLoiTools: DaiCatLoiTool[] = [
     icon: "🌟",
     title: "Ngày Đại Cát Cá Nhân",
     desc: "Quét cả tháng, tìm 3-5 ngày tốt nhất dành riêng cho tuổi của bạn.",
-  },
-  {
-    href: "/dai-cat-loi/van-may-trong-ngay",
-    icon: "🍀",
-    title: "Vận May Trong Ngày",
-    desc: "Đánh giá mức độ cát hung của 1 ngày cụ thể đối với riêng bạn.",
   },
   {
     href: "/dai-cat-loi/ngay-ky-hop-dong",
@@ -63,12 +57,6 @@ export const daiCatLoiTools: DaiCatLoiTool[] = [
     icon: "🏚️",
     title: "Hoàng Ốc – Kim Lâu – Tam Tai",
     desc: "Tính Hoàng Ốc, Kim Lâu, Tam Tai theo tuổi — tham khảo khi định xây/sửa nhà, việc lớn.",
-  },
-  {
-    href: "/dai-cat-loi/con-so-may-man",
-    icon: "🔢",
-    title: "Con Số May Mắn 00–99",
-    desc: "Quét cả 100 số, chấm điểm theo bản mệnh, cấu trúc cặp số và ngày, trả về 3 số tốt nhất.",
   },
   {
     href: "/dai-cat-loi/chon-tuoi-ket-hon",
