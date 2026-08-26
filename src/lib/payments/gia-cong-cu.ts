@@ -18,7 +18,17 @@ export const GIA_CONG_CU = {
   "luan-giai-bat-tu-co-ban": 299000,
   "luan-giai-bat-tu-nang-cao": 499000,
   "ky-mon-menh-chi-tiet": 299000,
+  "ky-mon-hoi-dap": 199000,
 } as const;
+
+/**
+ * Giá "gốc" hiển thị gạch ngang cạnh giá thật để tạo hiệu ứng đã giảm giá — THUẦN QUẢNG CÁO,
+ * không dùng để tính tiền (tiền luôn lấy từ GIA_CONG_CU). Chỉ thêm slug nào Công yêu cầu hiệu ứng
+ * này (Kỳ Môn Hỏi Đáp: 199k thật, hiện kèm 399k gạch ngang -50%, theo yêu cầu 2026-08-25).
+ */
+export const GIA_GOC_HIEN_THI: Partial<Record<ToolSlug, number>> = {
+  "ky-mon-hoi-dap": 399000,
+};
 
 export type ToolSlug = keyof typeof GIA_CONG_CU;
 

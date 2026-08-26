@@ -14,7 +14,7 @@ export const prerender = true;
   <PageHero
     eyebrow="Công cụ"
     title="Lập Kỳ Môn Độn Giáp"
-    description="Chọn chế độ Giờ (thời điểm hiện tại), Mệnh (giờ sinh) hoặc 1080 (nhập tay cục + hoa giáp) để lập lá bàn 9 cung."
+    description="Chọn chế độ Thời Gian (thời điểm hiện tại), Mệnh (giờ sinh) hoặc Bốc Độn (nhập tay cục + hoa giáp) để lập lá bàn 9 cung."
     breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Lập Kỳ Môn Độn Giáp" }]}
   />
 
@@ -22,9 +22,9 @@ export const prerender = true;
     <div class="mx-auto max-w-4xl">
       <!-- Chọn chế độ -->
       <div class="flex flex-wrap gap-2" role="tablist" aria-label="Chế độ lập bàn">
-        <button type="button" data-mode="gio" class="km-mode-btn" aria-selected="true">Giờ</button>
+        <button type="button" data-mode="gio" class="km-mode-btn" aria-selected="true">Thời Gian</button>
         <button type="button" data-mode="menh" class="km-mode-btn" aria-selected="false">Mệnh</button>
-        <button type="button" data-mode="1080" class="km-mode-btn" aria-selected="false">1080</button>
+        <button type="button" data-mode="1080" class="km-mode-btn" aria-selected="false">Bốc Độn</button>
       </div>
       <p id="km-mode-note" class="mt-2 text-xs text-(--color-ink-500)"></p>
 
@@ -264,6 +264,84 @@ export const prerender = true;
             </div>
             <p class="mt-2 text-xs text-(--color-ink-500)">Mỗi ô: can-chi ngày · Kiến Trừ / Nhị Thập Bát Tú.</p>
           </div>
+        </div>
+
+        <!-- Hỏi 1 việc cụ thể — chỉ chế độ Thời Gian / Bốc Độn (Mệnh không dùng, vì Mệnh luận cả
+             cuộc đời chứ không luận 1 sự việc). Lá bàn dùng để hỏi = lá bàn vừa lập ở trên, không
+             lập lại. Nội dung câu trả lời TỰ ĐỘNG chưa có (mới xong danh mục + luồng thanh toán) —
+             sau khi xác nhận thanh toán chỉ hiện thông báo đang cập nhật, xem SPEC_danh_muc_cau_hoi. -->
+        <div id="km-hoidap-wrap" class="mt-8 hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-4">
+          <p class="mb-1 flex items-center gap-1.5 text-base font-semibold text-(--color-cinnabar-400)">🔮 Hỏi 1 việc cụ thể</p>
+          <p class="mb-3 text-xs text-(--color-ink-500)">Dùng đúng lá bàn vừa lập ở trên — chọn chủ đề gần nhất với việc bạn muốn hỏi.</p>
+
+          <div class="grid gap-3 sm:grid-cols-2">
+            <div>
+              <label for="km-hd-chude" class="text-sm font-medium text-(--color-ink-800)">Chủ đề</label>
+              <select id="km-hd-chude" class="km-select mt-1"></select>
+            </div>
+            <div>
+              <label for="km-hd-tinhhuong" class="text-sm font-medium text-(--color-ink-800)">Tình huống</label>
+              <select id="km-hd-tinhhuong" class="km-select mt-1"></select>
+            </div>
+          </div>
+
+          <div class="mt-3">
+            <label for="km-hd-quanhe" class="text-sm font-medium text-(--color-ink-800)">Bạn hỏi cho ai?</label>
+            <select id="km-hd-quanhe" class="km-select mt-1"></select>
+          </div>
+
+          <div class="mt-3">
+            <label for="km-hd-cauhoi" class="text-sm font-medium text-(--color-ink-800)">Câu hỏi của bạn</label>
+            <textarea id="km-hd-cauhoi" rows="2" class="km-select mt-1"></textarea>
+          </div>
+
+          <div class="mt-3">
+            <label for="km-hd-bosung" class="text-sm font-medium text-(--color-ink-800)">Thông tin bổ sung (nếu tình huống cần, không bắt buộc)</label>
+            <textarea id="km-hd-bosung" rows="2" class="km-select mt-1"></textarea>
+          </div>
+
+          <div class="mt-4 flex flex-wrap items-center gap-3 rounded-(--radius-control) border border-dashed border-(--color-gold-500)/50 bg-(--color-gold-400)/5 p-3">
+            <div>
+              <span class="font-display text-lg font-bold text-(--color-cinnabar-400)">199.000đ</span>
+              <span class="ml-2 text-sm text-(--color-ink-500) line-through">399.000đ</span>
+              <span class="ml-1.5 rounded-full bg-(--color-cinnabar-400) px-2 py-0.5 align-middle text-[11px] font-bold text-white">-50%</span>
+            </div>
+            <p class="text-xs text-(--color-ink-500)">/lượt hỏi — mỗi lần gieo quẻ nhận 1 câu trả lời</p>
+          </div>
+
+          <button
+            type="button"
+            id="km-hd-xemgia-btn"
+            class="mt-3 inline-flex items-center gap-1.5 rounded-(--radius-control) bg-(--color-cinnabar-400) px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90"
+          >
+            ⭐ Xem câu trả lời — 199.000đ
+          </button>
+
+          <div id="km-hd-thanhtoan-form-wrap" class="mt-4 hidden space-y-3 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4">
+            <p class="text-sm font-medium text-(--color-ink-800)">Thông tin liên hệ (để nhận kết quả)</p>
+            <input type="text" id="km-hd-ten" placeholder="Họ tên" class="km-select" />
+            <input type="tel" id="km-hd-sdt" placeholder="Số điện thoại" class="km-select" />
+            <input type="email" id="km-hd-email" placeholder="Email" class="km-select" />
+            <button
+              type="button"
+              id="km-hd-thanhtoan-btn"
+              class="inline-flex items-center gap-1.5 rounded-(--radius-control) bg-(--color-cinnabar-400) px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90"
+            >
+              Thanh toán 199.000đ
+            </button>
+          </div>
+
+          <div id="km-hd-dangchay" class="mt-3 hidden text-sm text-(--color-ink-700)">⏳ Đang tạo đơn hàng…</div>
+          <div id="km-hd-loi" class="mt-3 hidden rounded-(--radius-control) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-3 text-sm text-(--color-danger-500)"></div>
+
+          <div id="km-hd-qr-wrap" class="mt-4 hidden space-y-3 rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-center">
+            <p class="font-display text-lg font-bold">Quét mã QR để thanh toán <span id="km-hd-sotien">199.000đ</span></p>
+            <img id="km-hd-qr" src="" alt="Mã QR thanh toán" class="mx-auto h-56 w-56 rounded-xl border border-(--color-ivory-300)" />
+            <p class="text-sm text-(--color-ink-600)">Mã đơn hàng: <strong id="km-hd-ordercode"></strong></p>
+            <p id="km-hd-trangthai" class="text-sm font-medium text-(--color-gold-400)">Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)</p>
+          </div>
+
+          <div id="km-hd-ketqua" class="mt-4 hidden rounded-(--radius-control) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-4 text-sm leading-relaxed text-(--color-ink-800)"></div>
         </div>
       </div>
     </div>
@@ -676,6 +754,8 @@ export const prerender = true;
 </style>
 
 <script>
+  import { DANH_MUC_CAU_HOI, QUAN_HE_LABELS, type QuanHeCauHoi } from "../lib/kymon/danhMucCauHoi";
+
   interface CungInfo {
     soCung: number;
     huong: string;
@@ -732,6 +812,12 @@ export const prerender = true;
     luanGiai?: KetQuaLuanGiaiMenh | null;
     error?: string;
   }
+
+  // Lá bàn dùng cho mục "Hỏi 1 việc cụ thể" — khớp LaBanChoHoi phía server
+  // (src/pages/api/dai-cat-loi/ky-mon-hoi-dap/_chung.ts).
+  type LaBanChoHoi =
+    | { cheDo: "gio"; nam: number; thang: number; ngay: number; gio: number; phut: number }
+    | { cheDo: "1080"; soCuc: number; amDuong: "+" | "-"; hoaGiap: string };
 
   interface NgayLichKyMon {
     ngayDuong: number;
@@ -944,7 +1030,7 @@ export const prerender = true;
 
   const MODE_NOTE: Record<string, string> = {
     gio: "Lập bàn theo thời điểm nhập (mặc định giờ hiện tại).",
-    menh: "Lập bàn theo giờ SINH — bàn 9 cung tính y hệt chế độ Giờ, chỉ khác ý nghĩa thời điểm nhập.",
+    menh: "Lập bàn theo giờ SINH — bàn 9 cung tính y hệt chế độ Thời Gian, chỉ khác ý nghĩa thời điểm nhập.",
     "1080": "Nhập tay số Cục, Âm/Dương và 1 trong 60 Hoa Giáp — bỏ qua tra lịch, dùng cho bốc thẻ hoa giáp.",
   };
 
@@ -1035,13 +1121,21 @@ export const prerender = true;
   const loiEl = document.getElementById("km-loi")!;
   const ketQuaEl = document.getElementById("km-ket-qua")!;
 
+  // Lá bàn để "Hỏi 1 việc cụ thể" dùng — chỉ set khi chế độ Thời Gian/Bốc Độn (không phải Mệnh).
+  let laBanHoiDap: LaBanChoHoi | null = null;
+
   async function layBanLich() {
     const d = docTuForm();
     const qs = `cheDo=${cheDoHienTai}&nam=${d.getFullYear()}&thang=${d.getMonth() + 1}&ngay=${d.getDate()}&gio=${d.getHours()}&phut=${d.getMinutes()}`;
+    laBanHoiDap =
+      cheDoHienTai === "gio"
+        ? { cheDo: "gio", nam: d.getFullYear(), thang: d.getMonth() + 1, ngay: d.getDate(), gio: d.getHours(), phut: d.getMinutes() }
+        : null;
     await goiVaVe(qs, false);
   }
   async function layBan1080() {
     const qs = `cheDo=1080&soCuc=${soCucSel.value}&amDuong=${encodeURIComponent(amDuongSel.value)}&hoaGiap=${encodeURIComponent(hoaGiapSel.value)}`;
+    laBanHoiDap = { cheDo: "1080", soCuc: Number(soCucSel.value), amDuong: amDuongSel.value as "+" | "-", hoaGiap: hoaGiapSel.value };
     await goiVaVe(qs, true);
   }
 
@@ -1077,6 +1171,10 @@ export const prerender = true;
 
   function renderLaBan(laBan: LapLaBanResult, tamThang: HangTamThang[], la1080: boolean, luanGiai: KetQuaLuanGiaiMenh | null = null) {
     document.getElementById("km-tu-tru-wrap")!.classList.toggle("hidden", la1080);
+    // "Hỏi 1 việc cụ thể" chỉ áp dụng chế độ Thời Gian/Bốc Độn — lá bàn vừa đổi thì reset luôn
+    // widget hỏi đáp (đơn hàng cũ gắn với lá bàn cũ, không còn hợp lệ cho lá bàn mới).
+    document.getElementById("km-hoidap-wrap")!.classList.toggle("hidden", laBan.cheDo === "menh");
+    if (laBan.cheDo !== "menh") resetHoiDapWidget();
     const hoaGiapLine = document.getElementById("km-hoa-giap-line")!;
     if (la1080) {
       hoaGiapLine.textContent = `Hoa giáp: ${hoaGiapSel.value} · Cục ${laBan.cuc} ${laBan.amDuong === "-" ? "Âm" : "Dương"}`;
@@ -1412,6 +1510,199 @@ export const prerender = true;
     const m = lichThang === 12 ? 1 : lichThang + 1;
     const y = lichThang === 12 ? lichNam + 1 : lichNam;
     taiLichThang(y, m);
+  });
+
+  // ---------- Hỏi 1 việc cụ thể (Hỏi Đáp Kỳ Môn — chế độ Thời Gian/Bốc Độn, 199.000đ/lượt) ----------
+  // Luồng thanh toán chạy INLINE ngay trên trang này (không có trang riêng): chọn chủ đề/câu hỏi
+  // → xem giá → thanh toán QR → câu trả lời hiện ngay bên dưới sau khi xác nhận. PHẦN TỰ SINH CÂU
+  // TRẢ LỜI theo chủ đề CHƯA CÓ (xem SPEC_danh_muc_cau_hoi_ky_mon.md) — result.ts trả về thông báo
+  // "đang cập nhật" thay vì nội dung luận giải thật, làm sau theo từng chủ đề.
+  const hdChuDeSel = document.getElementById("km-hd-chude") as HTMLSelectElement;
+  const hdTinhHuongSel = document.getElementById("km-hd-tinhhuong") as HTMLSelectElement;
+  const hdQuanHeSel = document.getElementById("km-hd-quanhe") as HTMLSelectElement;
+  const hdCauHoiEl = document.getElementById("km-hd-cauhoi") as HTMLTextAreaElement;
+  const hdBoSungEl = document.getElementById("km-hd-bosung") as HTMLTextAreaElement;
+  const hdXemGiaBtn = document.getElementById("km-hd-xemgia-btn") as HTMLButtonElement;
+  const hdFormWrap = document.getElementById("km-hd-thanhtoan-form-wrap")!;
+  const hdTenEl = document.getElementById("km-hd-ten") as HTMLInputElement;
+  const hdSdtEl = document.getElementById("km-hd-sdt") as HTMLInputElement;
+  const hdEmailEl = document.getElementById("km-hd-email") as HTMLInputElement;
+  const hdThanhToanBtn = document.getElementById("km-hd-thanhtoan-btn") as HTMLButtonElement;
+  const hdDangChayEl = document.getElementById("km-hd-dangchay")!;
+  const hdLoiEl = document.getElementById("km-hd-loi")!;
+  const hdQrWrap = document.getElementById("km-hd-qr-wrap")!;
+  const hdQrImg = document.getElementById("km-hd-qr") as HTMLImageElement;
+  const hdOrderCodeEl = document.getElementById("km-hd-ordercode")!;
+  const hdTrangThaiEl = document.getElementById("km-hd-trangthai")!;
+  const hdSoTienEl = document.getElementById("km-hd-sotien")!;
+  const hdKetQuaEl = document.getElementById("km-hd-ketqua")!;
+
+  populateSelect(hdChuDeSel, DANH_MUC_CAU_HOI.map((c) => [c.id, c.nhan]));
+  populateSelect(hdQuanHeSel, (Object.keys(QUAN_HE_LABELS) as QuanHeCauHoi[]).map((k) => [k, QUAN_HE_LABELS[k]]));
+
+  function hdCapNhatGoiY() {
+    const chuDe = DANH_MUC_CAU_HOI.find((c) => c.id === hdChuDeSel.value);
+    const tinhHuong = chuDe?.tinhHuong.find((t) => t.id === hdTinhHuongSel.value);
+    hdCauHoiEl.placeholder = tinhHuong?.cauHoiMau ?? "";
+    hdBoSungEl.placeholder = tinhHuong?.inputThem ?? "Vd: giới tính, năm sinh người liên quan...";
+  }
+  function hdCapNhatTinhHuong() {
+    const chuDe = DANH_MUC_CAU_HOI.find((c) => c.id === hdChuDeSel.value);
+    populateSelect(hdTinhHuongSel, (chuDe?.tinhHuong ?? []).map((t) => [t.id, t.nhan]));
+    hdCapNhatGoiY();
+  }
+  hdChuDeSel.addEventListener("change", hdCapNhatTinhHuong);
+  hdTinhHuongSel.addEventListener("change", hdCapNhatGoiY);
+  hdCapNhatTinhHuong();
+
+  let hdPollTimer: ReturnType<typeof setInterval> | null = null;
+  function hdDungCho() {
+    if (hdPollTimer) {
+      clearInterval(hdPollTimer);
+      hdPollTimer = null;
+    }
+  }
+
+  // Gọi lại mỗi khi lập bàn mới (renderLaBan) — đơn/QR cũ (nếu có) gắn với lá bàn cũ, không còn hợp lệ.
+  function resetHoiDapWidget() {
+    hdDungCho();
+    hdFormWrap.classList.add("hidden");
+    hdDangChayEl.classList.add("hidden");
+    hdLoiEl.classList.add("hidden");
+    hdQrWrap.classList.add("hidden");
+    hdKetQuaEl.classList.add("hidden");
+    hdKetQuaEl.innerHTML = "";
+    hdThanhToanBtn.disabled = false;
+    hdXemGiaBtn.classList.remove("hidden");
+  }
+
+  hdXemGiaBtn.addEventListener("click", () => {
+    hdLoiEl.classList.add("hidden");
+    if (!hdCauHoiEl.value.trim()) {
+      hdLoiEl.textContent = "Vui lòng nhập câu hỏi của bạn.";
+      hdLoiEl.classList.remove("hidden");
+      hdCauHoiEl.focus();
+      return;
+    }
+    hdFormWrap.classList.remove("hidden");
+    hdFormWrap.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  async function hdKiemTra(orderCode: string) {
+    try {
+      const res = await fetch(`/api/dai-cat-loi/ky-mon-hoi-dap/result?orderCode=${encodeURIComponent(orderCode)}`);
+      const data = await res.json();
+      if (!data.ok) return;
+      if (data.status === "cancelled") {
+        hdDungCho();
+        hdTrangThaiEl.textContent = "Đơn hàng đã bị hủy.";
+        return;
+      }
+      if (data.status !== "confirmed") return;
+      hdDungCho();
+      hdQrWrap.classList.add("hidden");
+      hdKetQuaEl.classList.remove("hidden");
+      const echo = data.echo as { chuDe: string; tinhHuong: string; quanHe: string; cauHoi: string } | null;
+      const echoHtml = echo
+        ? `<p class="mt-2"><strong>Chủ đề:</strong> ${echo.chuDe} — ${echo.tinhHuong}</p>
+           <p><strong>Bạn hỏi cho:</strong> ${echo.quanHe}</p>
+           <p><strong>Câu hỏi:</strong> ${echo.cauHoi}</p>`
+        : "";
+
+      const ketQuaLuan = data.ketQuaLuan as { xuHuong: string; vanBan: string; chiTiet: string } | undefined;
+      if (ketQuaLuan) {
+        const XU_HUONG_NHAN: Record<string, string> = {
+          thuan_loi: "🟢 Thuận lợi",
+          can_luu_y: "🟡 Cần lưu ý",
+          khong_thuan: "🔴 Không thuận",
+        };
+        hdKetQuaEl.innerHTML = `
+          <p class="font-semibold text-(--color-cinnabar-400)">✅ Đã thanh toán — Câu trả lời</p>
+          ${echoHtml}
+          <p class="mt-3 font-semibold">${XU_HUONG_NHAN[ketQuaLuan.xuHuong] ?? ""}</p>
+          <p class="mt-1">${ketQuaLuan.vanBan}</p>
+          <details class="mt-2">
+            <summary class="cursor-pointer text-xs text-(--color-ink-500)">Chi tiết kỹ thuật</summary>
+            <p class="mt-1 text-xs text-(--color-ink-500)">${ketQuaLuan.chiTiet}</p>
+          </details>
+        `;
+        return;
+      }
+
+      hdKetQuaEl.innerHTML = `
+        <p class="font-semibold text-(--color-cinnabar-400)">✅ Đã thanh toán</p>
+        ${echoHtml}
+        <p class="mt-3">Đội ngũ Thiên Anh đang hoàn thiện phần luận giải tự động cho chủ đề này — câu trả lời chi tiết sẽ được gửi tới liên hệ bạn đã cung cấp sớm nhất.</p>
+      `;
+    } catch {
+      // mạng chập chờn — nhịp sau thử lại
+    }
+  }
+
+  hdThanhToanBtn.addEventListener("click", async () => {
+    hdLoiEl.classList.add("hidden");
+    if (!laBanHoiDap) {
+      hdLoiEl.textContent = "Vui lòng lập lá bàn trước.";
+      hdLoiEl.classList.remove("hidden");
+      return;
+    }
+    if (!hdTenEl.value.trim() || !hdSdtEl.value.trim() || !hdEmailEl.value.trim()) {
+      hdLoiEl.textContent = "Vui lòng nhập đầy đủ họ tên, số điện thoại và email.";
+      hdLoiEl.classList.remove("hidden");
+      return;
+    }
+
+    const payload: Record<string, unknown> = {
+      ...laBanHoiDap,
+      chuDeId: hdChuDeSel.value,
+      tinhHuongId: hdTinhHuongSel.value,
+      quanHe: hdQuanHeSel.value,
+      cauHoi: hdCauHoiEl.value.trim(),
+      thongTinBoSung: hdBoSungEl.value.trim(),
+      customerName: hdTenEl.value.trim(),
+      customerPhone: hdSdtEl.value.trim(),
+      customerEmail: hdEmailEl.value.trim(),
+    };
+
+    hdDangChayEl.classList.remove("hidden");
+    hdThanhToanBtn.disabled = true;
+    try {
+      const res = await fetch("/api/dai-cat-loi/ky-mon-hoi-dap/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      hdDangChayEl.classList.add("hidden");
+      hdThanhToanBtn.disabled = false;
+      if (!res.ok || !data.ok) {
+        hdLoiEl.textContent = data.error ?? "Không tạo được đơn hàng.";
+        hdLoiEl.classList.remove("hidden");
+        return;
+      }
+      hdOrderCodeEl.textContent = data.orderCode;
+
+      if (data.mienPhi) {
+        hdDangChayEl.classList.remove("hidden");
+        await hdKiemTra(data.orderCode);
+        hdDangChayEl.classList.add("hidden");
+        return;
+      }
+
+      hdSoTienEl.textContent = `${Number(data.totalAmount).toLocaleString("vi-VN")}đ`;
+      hdQrImg.src = data.qrUrl;
+      hdTrangThaiEl.textContent = "Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)";
+      hdFormWrap.classList.add("hidden");
+      hdXemGiaBtn.classList.add("hidden");
+      hdQrWrap.classList.remove("hidden");
+      hdQrWrap.scrollIntoView({ behavior: "smooth", block: "start" });
+      hdPollTimer = setInterval(() => hdKiemTra(data.orderCode), 3000);
+    } catch {
+      hdDangChayEl.classList.add("hidden");
+      hdThanhToanBtn.disabled = false;
+      hdLoiEl.textContent = "Có lỗi xảy ra. Vui lòng thử lại.";
+      hdLoiEl.classList.remove("hidden");
+    }
   });
 
   // ---------- Submit form ----------

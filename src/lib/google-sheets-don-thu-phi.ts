@@ -19,6 +19,7 @@ export const TEN_CONG_CU_HIEN_THI: Record<string, string> = {
   "dinh-huong-nghe-nghiep": "Định Hướng Nghề Nghiệp (Bát Tự × Tử Vi)",
   "trach-nhat-sinh-no": "Trạch Nhật Sinh Nở (Chọn Ngày Giờ Sinh Cho Bé)",
   "ky-mon-menh-chi-tiet": "Luận Giải Kỳ Môn Mệnh (chi tiết)",
+  "ky-mon-hoi-dap": "Hỏi Đáp Kỳ Môn (1 sự việc cụ thể)",
   "sim-phong-thuy-khai-van": "Sim Phong Thủy Khai Vận Khí",
 };
 
