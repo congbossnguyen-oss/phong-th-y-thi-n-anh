@@ -4,7 +4,6 @@
 //  - Có ?orderCode đã confirmed → server tính kết quả (taoHoSoNghe) và hiện 3 tab dashboard.
 // Kết quả tính lại từ input đã lưu; phần AI có cache theo hash lá số nên không gọi lặp.
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import BottomNav from "../../components/quan-su/BottomNav.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
@@ -62,7 +61,6 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
 <BaseLayout
   title="Định Hướng Nghề Nghiệp — Bát Tự × Tử Vi"
   description="Định hướng nghề nghiệp kết hợp hai hệ Bát Tự và Tử Vi: 5 trục năng lực, xu hướng Quan Lộc/Kinh Doanh, nhóm ngành nên theo, các giai đoạn vận và mức đồng thuận giữa hai hệ. Dịch vụ VIP, trả kết quả kèm PDF về email."
-  appShell
 >
   <PageHero
     eyebrow="⭐ Dịch vụ VIP"
@@ -265,7 +263,6 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
       )}
     </div>
   </Container>
-  <BottomNav />
 </BaseLayout>
 
 <style>

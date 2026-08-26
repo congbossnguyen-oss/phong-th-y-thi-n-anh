@@ -2,7 +2,7 @@
  * PHIẾU PDF — Định Hướng Nghề Nghiệp (Bát Tự × Tử Vi). Dựng từ `NgheKetQua` (đã tính sẵn), dùng
  * khung PDF chung `pdf-khung.ts`. Bản khách nhận qua email sau khi thanh toán — TRẢ ĐỦ TẤT CẢ MỤC.
  */
-import { taoTaiLieuPdf, veDauTrang, veLuuYVaLienHe, veChanTrang, MAU, LE, type But, type Fonts } from "./pdf-khung";
+import { taoTaiLieuPdf, veDauTrang, veLuuYVaLienHe, veChanTrang, MAU, LE, hex, type But, type Fonts } from "./pdf-khung";
 import type { NgheKetQua } from "../nghe-nghiep/tao-ho-so-nghe";
 import type { DashboardVM } from "../nghe-nghiep/view-model";
 
@@ -41,24 +41,32 @@ function veNhomNganh(b: But, f: Fonts, vm: DashboardVM): void {
     b.doan(vm.domainDetail || "Chưa đủ dữ liệu để chấm điểm ngành.", { size: 9, font: f.nghieng, mau: MAU.mucNhat, x: LE + 12 });
     return;
   }
-  const nhom = (nhan: string, ds: { label: string; majors: { name: string }[] }[]) => {
+  const nhom = (nhan: string, mau: import("pdf-lib").RGB, ds: { label: string; majors: { name: string }[] }[]) => {
     if (ds.length === 0) return;
-    b.dong(nhan, { size: 9.5, font: f.vua, x: LE + 12 });
+    b.xuong(3);
+    b.nhan(nhan, LE + 12, b.y - 3, { mau, size: 8 });
+    b.xuong(17);
     for (const d of ds) {
       const majors = d.majors.slice(0, 3).map((m) => m.name).join(", ");
       b.doan(`• ${d.label}${majors ? ` — ${majors}` : ""}`, { size: 9, x: LE + 24 });
     }
   };
-  nhom("Nên ưu tiên:", vm.priority);
-  nhom("Phù hợp:", vm.suitable);
-  nhom("Có thể cân nhắc:", vm.possible);
+  nhom("Nên ưu tiên", MAU.luc, vm.priority);
+  nhom("Phù hợp", MAU.lam, vm.suitable);
+  nhom("Có thể cân nhắc", MAU.vang, vm.possible);
 }
 
 function veTimeline(b: But, f: Fonts, vm: DashboardVM): void {
   if (vm.timeline.length === 0) return;
   b.dong(vm.timelineTitle, { size: 9.5, font: f.vua, x: LE + 12 });
   for (const seg of vm.timeline) {
-    b.doan(`• ${seg.tuTuoi}–${seg.denTuoi} tuổi (${seg.top}): ${seg.chuDe}${seg.badge?.label ? ` [${seg.badge.label}]` : ""}`, { size: 9, x: LE + 24 });
+    b.chua(14);
+    let x = LE + 24;
+    if (seg.badge?.label) {
+      const w = b.nhan(seg.badge.label, x, b.y - 2.5, { mau: hex(seg.badge.bg), size: 7.5 });
+      x += w + 6;
+    }
+    b.dong(`${seg.tuTuoi}–${seg.denTuoi} tuổi (${seg.top}): ${seg.chuDe}`, { size: 9, x, dan: 3 });
   }
 }
 
@@ -105,8 +113,13 @@ export async function generateNghePdf(kq: NgheKetQua, customerName: string): Pro
   if (kh.insufficient) {
     b.doan(kh.ketLuanNgan, { size: 9.5 });
   } else {
-    b.dong(`Đồng thuận: ${kh.agreement}% — ${kh.bac === "cao" ? "CAO (hai hệ hội tụ)" : kh.bac === "trung" ? "TRUNG BÌNH (đồng thuận một phần)" : "THẤP (hai hệ phân kỳ)"}`, { size: 11, font: f.dam, mau: MAU.son });
-    b.doan(kh.ketLuanNgan, { size: 9.5 });
+    const moc = b.danhDau();
+    const mauMuc = kh.bac === "cao" ? MAU.luc : kh.bac === "trung" ? MAU.vang : MAU.son;
+    const nhanMuc = kh.bac === "cao" ? "CAO — hai hệ hội tụ" : kh.bac === "trung" ? "TRUNG BÌNH — đồng thuận một phần" : "THẤP — hai hệ phân kỳ";
+    b.chua(20);
+    const w = b.nhan(nhanMuc, LE + 12, b.y - 4, { mau: mauMuc, size: 9 });
+    b.dong(`Đồng thuận ${kh.agreement}%`, { size: 13, font: f.dam, mau: MAU.muc, x: LE + 12 + w + 10, dan: 4 });
+    b.doan(kh.ketLuanNgan, { size: 9.5, x: LE + 12 });
     b.dong(`Trùng 5 trục: ${kh.thanhPhan.trung5Truc}%  ·  Trùng hướng: ${kh.thanhPhan.trungHuongQK}%  ·  Trùng ngành: ${kh.thanhPhan.trungNganh}%`, { size: 9, mau: MAU.mucNhat, x: LE + 12 });
     if (kh.nganhHopNhat.length > 0) {
       b.doan(`Ngành cả hai hệ cùng đề xuất: ${kh.nganhHopNhat.map((d) => DOMAIN_LABEL[d] ?? d).join(", ")}`, { size: 9.5, font: f.vua, x: LE + 12 });
@@ -118,6 +131,7 @@ export async function generateNghePdf(kq: NgheKetQua, customerName: string): Pro
       b.doan(`Tử Vi — ${kh.docTheoTang.tuVi}`, { size: 9, x: LE + 24 });
       b.doan(`Lộ trình bắc cầu: ${kh.docTheoTang.loTrinh}`, { size: 9.5, font: f.vua, x: LE + 24 });
     }
+    b.thanhNhan(moc, mauMuc);
   }
 
   veLuuYVaLienHe(

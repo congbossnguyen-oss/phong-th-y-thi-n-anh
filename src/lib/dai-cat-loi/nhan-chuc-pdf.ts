@@ -18,16 +18,23 @@ const HANG = ["TOP 1", "TOP 2", "TOP 3", "TOP 4", "TOP 5"];
 
 function veMotNgay(b: But, f: Fonts, n: NhanChucNgay, i: number): void {
   b.xuong(6);
-  b.chua(40);
+  b.chua(46);
   const hang = HANG[i] ?? `TOP ${i + 1}`;
   const mau = mauTheoStatus(n.status);
+  const moc = b.danhDau();
 
-  // Dòng đầu: TOP · ngày dương · điểm/xếp hạng
-  b.dong(`${hang}   ·   ${n.solarDate.day}/${n.solarDate.month}/${n.solarDate.year} — ngày ${n.canChiNgay}`, {
+  // Dòng đầu: nhãn TOP + ngày dương — ngày Can Chi
+  const wHang = b.nhan(hang, LE + 12, b.y - 3.5, { mau: MAU.muc, size: 9 });
+  b.dong(`${n.solarDate.day}/${n.solarDate.month}/${n.solarDate.year} — ngày ${n.canChiNgay}`, {
     size: 11,
     font: f.dam,
+    x: LE + 12 + wHang + 8,
+    dan: 2,
   });
-  b.dong(`Đánh giá: ${n.diem}/10 — ${n.status}`, { size: 10, font: f.vua, mau, x: LE + 12, dan: 2 });
+
+  // Dòng nhãn đánh giá, màu theo mức xếp hạng
+  b.nhan(`${n.diem}/10 · ${n.status}`, LE + 12, b.y - 3.5, { mau, size: 9 });
+  b.xuong(20);
 
   const am = `Âm lịch ${n.lunarDate.day}/${n.lunarDate.month}${n.lunarDate.isLeapMonth ? " (nhuận)" : ""}`;
   const tt = n.thapThan ? `   ·   Thập Thần: ${n.thapThan}` : "";
@@ -52,6 +59,8 @@ function veMotNgay(b: But, f: Fonts, n: NhanChucNgay, i: number): void {
     b.doan(`• ${y.ten}  (${y.diem})`, { size: 8.5, x: LE + 12, mau: MAU.muc });
     if (ghi) b.doan(ghi, { size: 8, x: LE + 24, font: f.nghieng, mau: MAU.mucNhat });
   }
+
+  b.thanhNhan(moc, mau);
 }
 
 export async function generateNhanChucPdf(result: NhanChucResult): Promise<Uint8Array> {
