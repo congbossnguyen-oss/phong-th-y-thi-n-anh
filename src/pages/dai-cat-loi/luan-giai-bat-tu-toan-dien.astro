@@ -71,6 +71,13 @@ if (user) {
 }
 
 const gioOptions = Array.from({ length: 24 }, (_, i) => i);
+
+/** Màu ô đồ hình MỒI (Cơ Bản) theo điểm thô -1..1 — dùng chung cách tô màu với dải Lưu Niên bên tầng Free. */
+function mauTheoDiemMoi(diem: number): string {
+  if (diem > 0) return "#16a34a";
+  if (diem < 0) return "#c0392b";
+  return "#8a8270";
+}
 ---
 
 <BaseLayout
@@ -125,6 +132,39 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
             <p class="mt-1"><span class="font-bold text-(--color-ink-900)">Dụng Thần:</span> {baoCaoCoBan.laSo.dungThan} · <span class="font-bold text-(--color-ink-900)">Hỷ Thần:</span> {baoCaoCoBan.laSo.hyThan} · <span class="font-bold text-(--color-ink-900)">Kỵ Thần:</span> {baoCaoCoBan.laSo.kyThan}</p>
             {baoCaoCoBan.laSo.dieuHauNote && <p class="mt-1 text-(--color-gold-700)">🌡️ Điều Hậu: {baoCaoCoBan.laSo.dieuHauNote}</p>}
           </div>
+
+          {(baoCaoCoBan.moiDaiVan.length > 0 || baoCaoCoBan.moiLuuNien.length > 0) && (
+            <div class="mt-3 rounded-(--radius-control) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-4">
+              <p class="text-sm font-bold text-(--color-ink-900)">Xem trước: Đại Vận & Lưu Niên</p>
+              <p class="mt-1 text-xs text-(--color-ink-600)">Ước tính thô 1 chỉ số theo Dụng/Hỷ/Kỵ Thần nguyên cục — bản Nâng Cao tính lại Dụng Thần theo từng Đại Vận, tách 4 khía cạnh (Sức khỏe/Công việc/Tài lộc/Lục thân) và luận chi tiết từng năm bằng AI.</p>
+              {baoCaoCoBan.moiDaiVan.length > 0 && (
+                <div class="mt-3">
+                  <p class="text-xs font-medium text-(--color-ink-600)">Đại Vận trọn đời</p>
+                  <div class="mt-1 flex gap-1">
+                    {baoCaoCoBan.moiDaiVan.map((m) => (
+                      <div class="flex-1 rounded-sm py-2 text-center" style={`background-color:${mauTheoDiemMoi(m.diem)}22`} title={`${m.nhan} — ${m.canChi}`}>
+                        <p class="text-[9px] leading-tight text-(--color-ink-600)">{m.nhan}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {baoCaoCoBan.moiLuuNien.length > 0 && (
+                <div class="mt-3">
+                  <p class="text-xs font-medium text-(--color-ink-600)">Lưu Niên {baoCaoCoBan.moiLuuNien.length} năm tới</p>
+                  <div class="mt-1 flex gap-2">
+                    {baoCaoCoBan.moiLuuNien.map((m) => (
+                      <div class="flex-1 rounded-(--radius-control) border border-(--color-ivory-300) bg-white px-2 py-2 text-center">
+                        <p class="text-xs font-medium text-(--color-ink-600)">{m.nhan}</p>
+                        <p class="mt-0.5 text-sm font-bold" style={`color:${mauTheoDiemMoi(m.diem)}`}>{m.canChi}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           <div class="mt-6 space-y-6" id="ldbtd-cobantoanbo">
             {baoCaoCoBan.giaiDoan.length === 0 && (
               <p class="text-sm text-(--color-ink-600)">⚠️ Phần luận AI chưa chạy được (chưa cấu hình khoá AI trên máy chủ).</p>

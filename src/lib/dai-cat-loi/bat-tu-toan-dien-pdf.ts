@@ -5,7 +5,7 @@
  */
 import { rgb } from "pdf-lib";
 import { taoTaiLieuPdf, veDauTrang, veLuuYVaLienHe, veChanTrang, catVua, LE, A4, MAU, type Fonts, type But } from "./pdf-khung";
-import type { BaoCaoCoBan, BaoCaoNangCao, LaSoHienThi, DiemGiaiDoanVan } from "../luan-giai-toan-dien/types";
+import type { BaoCaoCoBan, BaoCaoNangCao, LaSoHienThi, DiemGiaiDoanVan, MocDoHinhMoi } from "../luan-giai-toan-dien/types";
 
 function veLaSo(b: But, f: Fonts, laSo: LaSoHienThi): void {
   b.muc("Lá số");
@@ -77,6 +77,48 @@ function veBieuDoGiaiDoan(b: But, f: Fonts, tieuDe: string, moTa: string, danhSa
   b.xuong(4);
 }
 
+/** Đồ hình MỒI — 1 hàng điểm thô (không tách 4 khía cạnh như bản Nâng Cao thật) cho Cơ Bản, mời nâng
+ *  cấp. Dùng chung style với `veBieuDoGiaiDoan` nhưng đơn giản hơn hẳn — cố ý, để phân biệt rõ với
+ *  đồ hình AI thật của Nâng Cao. */
+function veDoHinhMoi(b: But, f: Fonts, tieuDe: string, danhSach: MocDoHinhMoi[]): void {
+  if (danhSach.length === 0) return;
+  const NHAN_RONG = 0;
+  const caoO = 13;
+  const rongCot = (A4.w - LE * 2 - NHAN_RONG) / danhSach.length;
+
+  b.chua(14 + 4 + caoO * 2 + 6);
+  b.dong(tieuDe, { size: 8.5, font: f.dam, mau: MAU.muc, dan: 2 });
+
+  let x = LE + NHAN_RONG;
+  for (const d of danhSach) {
+    b.page.drawText(catVua(d.nhan, f.dam, 6, rongCot - 2), { x, y: b.y, size: 6, font: f.dam, color: MAU.mucNhat });
+    x += rongCot;
+  }
+  b.y -= caoO;
+
+  let x2 = LE + NHAN_RONG;
+  for (const d of danhSach) {
+    b.page.drawRectangle({ x: x2, y: b.y - 2, width: rongCot - 2, height: caoO - 3, color: mauTheoDiem(d.diem) });
+    x2 += rongCot;
+  }
+  b.y -= caoO;
+  b.xuong(6);
+}
+
+function veMoiNangCap(b: But, f: Fonts, moiDaiVan: MocDoHinhMoi[], moiLuuNien: MocDoHinhMoi[]): void {
+  if (moiDaiVan.length === 0 && moiLuuNien.length === 0) return;
+  b.muc("Xem trước: Đại Vận & Lưu Niên");
+  b.doan(
+    "Ước tính thô 1 chỉ số theo Dụng/Hỷ/Kỵ Thần nguyên cục — chưa tính lại Dụng Thần theo từng Đại Vận, chưa tách 4 khía cạnh (Sức khỏe/Công việc/Tài lộc/Lục thân), chưa có luận chi tiết từng năm bằng AI. Bản Nâng Cao có đầy đủ.",
+    { size: 8, mau: MAU.mucNhat },
+  );
+  b.xuong(4);
+  veDoHinhMoi(b, f, "Đại Vận trọn đời", moiDaiVan);
+  veDoHinhMoi(b, f, `Lưu Niên ${moiLuuNien.length} năm tới`, moiLuuNien);
+  b.doan("👉 Nâng cấp lên bản Nâng Cao để xem đầy đủ 4 khía cạnh từng giai đoạn + luận chi tiết từng năm.", { size: 8.5, font: f.dam, mau: MAU.son });
+  b.xuong(6);
+}
+
 function veGiaiDoan(b: But, f: Fonts, tieuDe: string, noiDung: string): void {
   b.dong(tieuDe, { size: 11, font: f.dam, mau: MAU.son, dan: 4 });
   b.doan(noiDung, { size: 9.5 });
@@ -96,6 +138,8 @@ export async function generateBatTuCoBanPdf(baoCao: BaoCaoCoBan, customerName: s
   veLaSo(b, f, baoCao.laSo);
   b.doan(baoCao.disclaimerDauBai, { size: 8.5, font: f.nghieng, mau: MAU.mucNhat });
   b.xuong(6);
+
+  veMoiNangCap(b, f, baoCao.moiDaiVan, baoCao.moiLuuNien);
 
   b.muc("Luận giải chi tiết");
   for (const gd of baoCao.giaiDoan) veGiaiDoan(b, f, gd.tieuDe, gd.noiDung);
