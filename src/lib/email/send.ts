@@ -10,6 +10,8 @@ import {
   nghePdfEmail,
   trachNhatSinhNoPdfEmail,
   kyMonMenhPdfEmail,
+  batTuToanDienCoBanPdfEmail,
+  batTuToanDienNangCaoPdfEmail,
 } from "./templates";
 
 // Gửi email không được phép làm sập luồng nghiệp vụ chính (vd webhook thanh toán phải trả 200
@@ -160,5 +162,31 @@ export async function sendKyMonMenhPdfEmail(params: {
   const { subject, html } = kyMonMenhPdfEmail(params);
   await safeSend(params.to, subject, html, [
     { filename: `ky-mon-menh-${params.orderCode}.pdf`, content: Buffer.from(params.pdfBytes) },
+  ]);
+}
+
+/** Gửi PDF Luận Giải Bát Tự Toàn Diện — Cơ Bản kèm email. Dùng safeSend — lỗi chỉ log. */
+export async function sendBatTuToanDienCoBanPdfEmail(params: {
+  to: string;
+  orderCode: string;
+  customerName: string;
+  pdfBytes: Uint8Array;
+}) {
+  const { subject, html } = batTuToanDienCoBanPdfEmail(params);
+  await safeSend(params.to, subject, html, [
+    { filename: `luan-giai-bat-tu-co-ban-${params.orderCode}.pdf`, content: Buffer.from(params.pdfBytes) },
+  ]);
+}
+
+/** Gửi PDF Luận Giải Bát Tự Toàn Diện — Nâng Cao kèm email. Dùng safeSend — lỗi chỉ log. */
+export async function sendBatTuToanDienNangCaoPdfEmail(params: {
+  to: string;
+  orderCode: string;
+  customerName: string;
+  pdfBytes: Uint8Array;
+}) {
+  const { subject, html } = batTuToanDienNangCaoPdfEmail(params);
+  await safeSend(params.to, subject, html, [
+    { filename: `luan-giai-bat-tu-nang-cao-${params.orderCode}.pdf`, content: Buffer.from(params.pdfBytes) },
   ]);
 }

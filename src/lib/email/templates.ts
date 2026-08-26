@@ -345,3 +345,62 @@ export function kyMonMenhPdfEmail(params: {
     }),
   };
 }
+
+export function batTuToanDienCoBanPdfEmail(params: {
+  orderCode: string;
+  customerName: string;
+}): { subject: string; html: string } {
+  const bodyHtml = `
+    <p>Kính gửi ${escapeHtml(params.customerName)},</p>
+    <p>
+      Bản Luận Giải Bát Tự Toàn Diện — Cơ Bản được đính kèm dưới dạng PDF trong email này, gồm: nền tảng
+      lá số, tính cách, Thập Thần theo cung, nghề nghiệp - tài - quan, hôn nhân, ngũ hành thực hành, và
+      kết luận tổng hợp.
+    </p>
+    <table role="presentation" width="100%" style="margin-top:16px;border-top:1px solid #e8dfcd;padding-top:12px;">
+      ${infoRow("Mã đơn hàng", params.orderCode)}
+    </table>
+    <p style="margin-top:20px;">
+      Kết quả cần chuyên gia đối chiếu thêm về Dụng Thần, vượng suy, cách cục trước khi kết luận cát hung.
+      Cần trao đổi thêm, xin liên hệ hotline ${siteConfig.hotline}.
+    </p>
+  `;
+
+  return {
+    subject: `Luận Giải Bát Tự Toàn Diện — Cơ Bản — đơn ${params.orderCode}`,
+    html: layout({
+      previewText: "Bản Luận Giải Bát Tự Toàn Diện — Cơ Bản được đính kèm trong email này.",
+      title: "Luận Giải Bát Tự Toàn Diện — Cơ Bản",
+      bodyHtml,
+    }),
+  };
+}
+
+export function batTuToanDienNangCaoPdfEmail(params: {
+  orderCode: string;
+  customerName: string;
+}): { subject: string; html: string } {
+  const bodyHtml = `
+    <p>Kính gửi ${escapeHtml(params.customerName)},</p>
+    <p>
+      Bản Luận Giải Bát Tự Toàn Diện — Nâng Cao được đính kèm dưới dạng PDF trong email này, gồm: Thần Sát,
+      Mộ Khố, gia đình - lục thân, sức khỏe, và trọn vẹn các giai đoạn Đại Vận từ nhỏ đến già.
+    </p>
+    <table role="presentation" width="100%" style="margin-top:16px;border-top:1px solid #e8dfcd;padding-top:12px;">
+      ${infoRow("Mã đơn hàng", params.orderCode)}
+    </table>
+    <p style="margin-top:20px;">
+      Kết quả cần chuyên gia đối chiếu thêm về Dụng Thần, vượng suy, cách cục trước khi kết luận cát hung.
+      Cần trao đổi thêm, xin liên hệ hotline ${siteConfig.hotline}.
+    </p>
+  `;
+
+  return {
+    subject: `Luận Giải Bát Tự Toàn Diện — Nâng Cao — đơn ${params.orderCode}`,
+    html: layout({
+      previewText: "Bản Luận Giải Bát Tự Toàn Diện — Nâng Cao được đính kèm trong email này.",
+      title: "Luận Giải Bát Tự Toàn Diện — Nâng Cao",
+      bodyHtml,
+    }),
+  };
+}
