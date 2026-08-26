@@ -62,9 +62,21 @@ function mauTheoDiem(diem: number): string {
       <span class="flex items-center gap-1"><span class="inline-block size-2.5 rounded" style="background:#16803d"></span>Rất thuận lợi</span>
     </div>
 
-    <div class="mt-3 space-y-1 border-t border-(--color-ivory-300) pt-3">
+    <div class="mt-3 space-y-2.5 border-t border-(--color-ivory-300) pt-3">
       {danhSach.map((d) => (
-        <p class="text-[11px] leading-relaxed text-(--color-ink-700)"><span class="font-bold text-(--color-ink-900)">{d.nhan} ({d.canChi}):</span> {d.tomTat}</p>
+        <div>
+          <p class="text-[11px] leading-relaxed text-(--color-ink-700)">
+            <span class="font-bold text-(--color-ink-900)">{d.nhan} ({d.canChi}):</span> {d.tomTat}
+            {d.dungThanVan && (
+              <span class="ml-1 text-(--color-ink-500)">
+                · Dụng Thần {d.dungThanVan}{d.dungThanDoi && <span class="font-bold text-(--color-gold-700)"> (đổi so với nguyên cục)</span>}
+              </span>
+            )}
+          </p>
+          {d.chiTiet && (
+            <p class="mt-0.5 whitespace-pre-line pl-2 text-xs leading-relaxed text-(--color-ink-800)">{d.chiTiet}</p>
+          )}
+        </div>
       ))}
     </div>
   </div>

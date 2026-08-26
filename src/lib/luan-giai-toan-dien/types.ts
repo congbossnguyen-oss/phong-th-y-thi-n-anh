@@ -35,6 +35,12 @@ export interface DiemGiaiDoanVan {
   taiLoc: number;
   lucThan: number;
   tomTat: string;
+  /** Dụng Thần TÍNH RIÊNG cho vận này (Đại Vận nhập cục như trụ thứ 5) — có thể khác Dụng Thần nguyên cục. */
+  dungThanVan: string;
+  /** true = Dụng Thần vận này khác nguyên cục (đáng lưu ý khi luận). */
+  dungThanDoi: boolean;
+  /** Luận chi tiết riêng cho mục này — hiện chỉ dùng cho Lưu Niên (đồ hình chỉ là tổng quan). */
+  chiTiet?: string;
 }
 
 export interface BaoCaoNangCao {

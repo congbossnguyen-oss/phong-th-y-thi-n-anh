@@ -66,9 +66,13 @@ function veBieuDoGiaiDoan(b: But, f: Fonts, tieuDe: string, moTa: string, danhSa
   b.xuong(8);
 
   for (const d of danhSach) {
-    b.dong(`${d.nhan} (${d.canChi})`, { size: 8, font: f.vua, dan: 2 });
+    const nhanDungThan = d.dungThanVan
+      ? `  ·  Dụng Thần ${d.dungThanVan}${d.dungThanDoi ? " (đổi so với nguyên cục)" : ""}`
+      : "";
+    b.dong(`${d.nhan} (${d.canChi})${nhanDungThan}`, { size: 8, font: f.vua, dan: 2 });
     b.doan(d.tomTat, { size: 7.5, x: LE + 8, mau: MAU.mucNhat });
-    b.xuong(2);
+    if (d.chiTiet) b.doan(d.chiTiet, { size: 8, x: LE + 8 });
+    b.xuong(d.chiTiet ? 5 : 2);
   }
   b.xuong(4);
 }
