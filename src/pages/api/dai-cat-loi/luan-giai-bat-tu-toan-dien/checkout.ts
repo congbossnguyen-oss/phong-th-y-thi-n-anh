@@ -36,8 +36,6 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
 
   const customerName = locals.user.name;
   const customerEmail = locals.user.email;
-  const customerPhone = typeof b.customerPhone === "string" ? b.customerPhone.trim() : "";
-  if (!customerPhone) return jsonResponse({ ok: false, error: "Vui lòng nhập số điện thoại liên hệ." }, 400);
 
   try {
     const kq = await taoDonCongCu({
@@ -46,7 +44,7 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
       toolInput: docKq.input,
       userId: locals.user.id,
       customerName,
-      customerPhone,
+      customerPhone: "", // đã đăng nhập (biết email) nên không bắt nhập lại số điện thoại.
       customerEmail,
       maKhuyenMai: typeof b.maKhuyenMai === "string" ? b.maKhuyenMai : "",
     });
