@@ -105,15 +105,31 @@ function buildSystemPrompt(cfg: GiaiDoanConfig, laSoJSON: string, findingsJSON: 
   ].join("\n");
 }
 
-export async function goiClaudeToolUse(system: string, userMessage: string, toolName: string, schema: object, maxTokens: number): Promise<{ input: Record<string, unknown> | null; usage?: UsageAnthropic }> {
+/**
+ * `system` nhận 1 chuỗi, HOẶC `[phầnCốĐịnh, phầnThayĐổi]`.
+ *
+ * Dạng 2 phần dùng cho prompt caching giữa NHIỀU lệnh gọi khác nhau: Anthropic khớp cache theo TIỀN
+ * TỐ (tools → system → messages), nên khối tri thức lớn phải nằm TRƯỚC dữ liệu riêng của từng lệnh
+ * thì lệnh sau mới đọc lại được cache (0,1x) thay vì ghi cache mới (1,25x). Chỉ đánh dấu
+ * `cache_control` ở phần cố định; phần thay đổi nằm sau breakpoint nên không phá cache.
+ * ⚠️ Muốn cache dùng chung được thì `tools` (render TRƯỚC system) cũng phải giống hệt nhau.
+ */
+export async function goiClaudeToolUse(system: string | [string, string], userMessage: string, toolName: string, schema: object, maxTokens: number): Promise<{ input: Record<string, unknown> | null; usage?: UsageAnthropic }> {
   const apiKey = layAnthropicApiKey();
   if (!apiKey) return { input: null };
   const model = (typeof process !== "undefined" ? process.env?.ANTHROPIC_MODEL : undefined) || DEFAULT_MODEL;
 
+  const systemBlocks = Array.isArray(system)
+    ? [
+        { type: "text", text: system[0], cache_control: { type: "ephemeral" } },
+        { type: "text", text: system[1] },
+      ]
+    : [{ type: "text", text: system, cache_control: { type: "ephemeral" } }];
+
   const body = JSON.stringify({
     model,
     max_tokens: maxTokens,
-    system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
+    system: systemBlocks,
     messages: [{ role: "user", content: userMessage }],
     tools: [{ name: toolName, description: "Trả về kết quả đã yêu cầu.", input_schema: schema }],
     tool_choice: { type: "tool", name: toolName },

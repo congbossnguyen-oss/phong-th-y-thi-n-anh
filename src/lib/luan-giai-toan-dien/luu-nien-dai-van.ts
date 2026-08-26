@@ -20,36 +20,37 @@ import type { DiemGiaiDoanVan } from "./types";
 const KNOWLEDGE_FILES = ["ung-ky.md", "benh-tat.md", "tai-van.md", "quan-van.md", "cong-danh.md", "luc-than.md"];
 const TOM_TAT_KHONG_QUA = "Giai đoạn này cần tham khảo thêm cùng chuyên gia.";
 
-function schemaDiem(coChiTiet: boolean) {
-  const props: Record<string, unknown> = {
-    chi_so: { type: "integer", description: "Số thứ tự trong danh sách đầu vào, bắt đầu từ 0." },
-    suc_khoe: { type: "integer", description: "-2 (rất bất lợi) đến 2 (rất thuận lợi)." },
-    cong_viec: { type: "integer", description: "-2 đến 2, ảnh hưởng tới công việc/sự nghiệp." },
-    tai_loc: { type: "integer", description: "-2 đến 2, ảnh hưởng tới tài chính/tiền bạc." },
-    luc_than: { type: "integer", description: "-2 đến 2, ảnh hưởng tới quan hệ gia đình/người thân." },
-    tom_tat: { type: "string", description: "1 câu ngắn (tối đa ~25 chữ) nêu điểm nổi bật nhất." },
-  };
-  const required = ["chi_so", "suc_khoe", "cong_viec", "tai_loc", "luc_than", "tom_tat"];
-  if (coChiTiet) {
-    props.chi_tiet = {
-      type: "string",
-      description:
-        "Đoạn luận CHI TIẾT riêng cho năm này, 90-140 chữ, văn xuôi liền mạch. Nói cụ thể từng mặt: sức khỏe, công việc, tài lộc, quan hệ gia đình — mặt nào nổi bật thì nói kỹ hơn, mặt nào bình thường thì nhắc gọn. Nêu rõ nên làm gì / nên thận trọng điều gì trong năm đó.",
-    };
-    required.push("chi_tiet");
-  }
-  return {
-    type: "object",
-    properties: {
-      danh_sach: {
-        type: "array",
-        description: "Đúng 1 phần tử cho MỖI mục trong danh sách đầu vào, theo đúng thứ tự chi_so.",
-        items: { type: "object", properties: props, required },
+// ⚠️ Schema GIỐNG HỆT NHAU cho cả Đại Vận lẫn Lưu Niên — cố ý. `tools` được render TRƯỚC `system`
+// khi Anthropic khớp cache theo tiền tố, nên chỉ cần schema khác nhau là toàn bộ khối tri thức phía
+// sau mất cache. `chi_tiet` luôn có mặt; lệnh Đại Vận được dặn trả chuỗi rỗng (gần như không tốn
+// token đầu ra), lệnh Lưu Niên mới viết thật.
+const SCHEMA_DIEM = {
+  type: "object",
+  properties: {
+    danh_sach: {
+      type: "array",
+      description: "Đúng 1 phần tử cho MỖI mục trong danh sách đầu vào, theo đúng thứ tự chi_so.",
+      items: {
+        type: "object",
+        properties: {
+          chi_so: { type: "integer", description: "Số thứ tự trong danh sách đầu vào, bắt đầu từ 0." },
+          suc_khoe: { type: "integer", description: "-2 (rất bất lợi) đến 2 (rất thuận lợi)." },
+          cong_viec: { type: "integer", description: "-2 đến 2, ảnh hưởng tới công việc/sự nghiệp." },
+          tai_loc: { type: "integer", description: "-2 đến 2, ảnh hưởng tới tài chính/tiền bạc." },
+          luc_than: { type: "integer", description: "-2 đến 2, ảnh hưởng tới quan hệ gia đình/người thân." },
+          tom_tat: { type: "string", description: "1 câu ngắn (tối đa ~25 chữ) nêu điểm nổi bật nhất." },
+          chi_tiet: {
+            type: "string",
+            description:
+              "Đoạn luận CHI TIẾT cho mục này, 90-140 chữ, văn xuôi liền mạch: sức khỏe, công việc, tài lộc, quan hệ gia đình — mặt nào nổi bật thì nói kỹ hơn, nêu rõ nên làm gì / nên thận trọng điều gì. CHỈ viết khi phần hướng dẫn yêu cầu; nếu được dặn bỏ qua thì trả về chuỗi rỗng.",
+          },
+        },
+        required: ["chi_so", "suc_khoe", "cong_viec", "tai_loc", "luc_than", "tom_tat", "chi_tiet"],
       },
     },
-    required: ["danh_sach"],
-  } as const;
-}
+  },
+  required: ["danh_sach"],
+} as const;
 
 interface MucCanCham {
   chiSo: number;
@@ -66,26 +67,29 @@ interface MucCanCham {
   thuocDaiVan?: string;
 }
 
-function buildSystemPrompt(laSoJSON: string, dsJSON: string, tenLoai: string, coChiTiet: boolean): string {
-  return [
-    `Bạn là trợ lý phân tích vận trình Bát Tự cho website phongthuythienanh.com. Nhiệm vụ: với MỖI mục trong danh sách ${tenLoai} dưới đây, chấm điểm 4 khía cạnh (sức khỏe, công việc, tài lộc, lục thân) trên thang -2 đến 2, viết 1 câu tóm tắt ngắn${coChiTiet ? ", VÀ viết 1 đoạn luận chi tiết riêng cho từng năm" : ""}.`,
-    "",
-    "## Lá số đang luận (nguyên cục tĩnh)",
-    laSoJSON,
-    "",
-    `## Danh sách ${tenLoai} cần phân tích`,
-    dsJSON,
-    "",
-    "### Cách đọc dữ liệu đã tính sẵn",
-    "- dungThanVan/hyThanVan/kyThanVan: Dụng/Hỷ/Kỵ Thần đã được TÍNH LẠI RIÊNG cho vận đó (Đại Vận nhập cục như trụ thứ 5), CÓ THỂ khác Dụng Thần nguyên cục. Luôn dùng bộ này làm chuẩn cho vận đó.",
-    "- dungThanDoi = true: Dụng Thần vận này ĐÃ ĐỔI so với nguyên cục — đây là điểm chuyển đáng lưu ý, nên nhắc tới khi luận (cách sống/ưu tiên cần điều chỉnh so với giai đoạn trước).",
-    "- hyKyCan/hyKyChi: quan hệ của Can/Chi vận đó với Dụng Thần CỦA CHÍNH VẬN ĐÓ. \"dung_than\"/\"hy_than\" là thuận lợi, \"ky_than\"/\"cuu_than\" là bất lợi, \"trung_tinh\" là trung tính.",
-    ...(coChiTiet ? ["- thuocDaiVan: Đại Vận mà năm đó nằm trong. Lưu Niên ở tầng cao hơn Đại Vận, nhưng bối cảnh 10 năm của Đại Vận vẫn là nền — có thể nhắc khi thấy năm đó thuận/nghịch rõ so với nền chung."] : []),
+/**
+ * Trả về `[phầnCốĐịnh, phầnThayĐổi]`.
+ *
+ * Phần CỐ ĐỊNH (khối tri thức ~35k token + quy tắc an toàn + văn phong) GIỐNG HỆT nhau giữa lệnh
+ * Đại Vận và lệnh Lưu Niên, và được đặt LÊN TRƯỚC để lệnh thứ hai đọc lại được cache (0,1x) thay vì
+ * ghi cache mới (1,25x). Trước đây khối này nằm ở CUỐI, sau dữ liệu riêng từng lệnh, nên cache không
+ * bao giờ dùng chung được — cả 2 lệnh đều phải ghi cache mới, tốn gấp hơn 10 lần phần lẽ ra chỉ phải
+ * trả 1 lần.
+ */
+function buildSystemPrompt(laSoJSON: string, dsJSON: string, tenLoai: string, coChiTiet: boolean): [string, string] {
+  const coDinh = [
+    "Bạn là trợ lý phân tích vận trình Bát Tự cho website phongthuythienanh.com. Nhiệm vụ: với MỖI mục trong danh sách được giao, chấm điểm 4 khía cạnh (sức khỏe, công việc, tài lộc, lục thân) trên thang -2 đến 2 và viết tóm tắt.",
     "",
     "## Nguyên tắc chấm điểm",
     "- Dựa CHÍNH vào hyKyCan/hyKyChi đã cho. Cả Can lẫn Chi đều dung_than/hy_than thì điểm cao (1 đến 2), cả 2 đều ky_than/cuu_than thì điểm thấp (-2 đến -1), pha trộn thì điểm quanh 0.",
     "- 4 khía cạnh KHÔNG bắt buộc điểm giống nhau. Dùng tài liệu tham khảo bên dưới để tinh chỉnh riêng từng khía cạnh khi có căn cứ.",
     "- KHÔNG bịa sự kiện cụ thể (bệnh gì, mất tiền vì việc gì). Chỉ nêu XU HƯỚNG chung, đúng tinh thần tham khảo.",
+    "",
+    "### Cách đọc dữ liệu đã tính sẵn",
+    "- dungThanVan/hyThanVan/kyThanVan: Dụng/Hỷ/Kỵ Thần đã được TÍNH LẠI RIÊNG cho vận đó (Đại Vận nhập cục như trụ thứ 5), CÓ THỂ khác Dụng Thần nguyên cục. Luôn dùng bộ này làm chuẩn cho vận đó.",
+    "- dungThanDoi = true: Dụng Thần vận này ĐÃ ĐỔI so với nguyên cục — đây là điểm chuyển đáng lưu ý, nên nhắc tới khi luận (cách sống/ưu tiên cần điều chỉnh so với giai đoạn trước).",
+    "- hyKyCan/hyKyChi: quan hệ của Can/Chi vận đó với Dụng Thần CỦA CHÍNH VẬN ĐÓ. \"dung_than\"/\"hy_than\" là thuận lợi, \"ky_than\"/\"cuu_than\" là bất lợi, \"trung_tinh\" là trung tính.",
+    "- thuocDaiVan (nếu có): Đại Vận mà năm đó nằm trong. Lưu Niên ở tầng cao hơn Đại Vận, nhưng bối cảnh 10 năm của Đại Vận vẫn là nền — có thể nhắc khi thấy năm đó thuận/nghịch rõ so với nền chung.",
     "",
     "## Tài liệu tham khảo",
     docNhieuKnowledge(KNOWLEDGE_FILES),
@@ -100,8 +104,23 @@ function buildSystemPrompt(laSoJSON: string, dsJSON: string, tenLoai: string, co
     "- TUYỆT ĐỐI KHÔNG chèn thẻ hoặc ký hiệu giống code/XML (vd </noi_dung>, <invoke>, **, ##) vào nội dung. Chỉ viết văn xuôi thuần tuý tiếng Việt.",
     "- KHÔNG viết câu sáo rỗng kiểu AI tự nhận xét thiếu dữ liệu (vd \"chưa đủ căn cứ để xác định rõ\"). Nêu thẳng xu hướng, không rào đón.",
     "",
-    "Trả về ĐÚNG ĐỦ 1 phần tử cho MỖI mục trong danh sách đầu vào (không bỏ sót, không thêm mục lạ), giữ đúng chi_so tương ứng.",
+    "Luôn trả ĐÚNG ĐỦ 1 phần tử cho MỖI mục trong danh sách đầu vào (không bỏ sót, không thêm mục lạ), giữ đúng chi_so tương ứng.",
   ].join("\n");
+
+  const thayDoi = [
+    `## Loại đang phân tích: ${tenLoai}`,
+    coChiTiet
+      ? "Với loại này, BẮT BUỘC viết `chi_tiet` đầy đủ 90-140 chữ cho TỪNG mục (đây là phần khách đọc kỹ nhất)."
+      : "Với loại này, phần chi tiết đã có đồ hình riêng thể hiện, nên trả `chi_tiet` là CHUỖI RỖNG \"\" cho mọi mục. Chỉ cần điểm số và `tom_tat` 1 câu.",
+    "",
+    "## Lá số đang luận (nguyên cục tĩnh)",
+    laSoJSON,
+    "",
+    `## Danh sách ${tenLoai} cần phân tích`,
+    dsJSON,
+  ].join("\n");
+
+  return [coDinh, thayDoi];
 }
 
 async function chamDiemDanhSach(laSo: unknown, muc: MucCanCham[], tenLoai: string, coChiTiet: boolean): Promise<DiemGiaiDoanVan[]> {
@@ -119,7 +138,7 @@ async function chamDiemDanhSach(laSo: unknown, muc: MucCanCham[], tenLoai: strin
   const system = buildSystemPrompt(laSoJSON, dsJSON, tenLoai, coChiTiet);
   const userMessage = `Hãy phân tích đúng đủ ${muc.length} mục trong danh sách ${tenLoai} theo đúng dữ liệu và nguyên tắc đã nêu.`;
 
-  const { input, usage } = await goiClaudeToolUse(system, userMessage, "tra_ve_diem_so", schemaDiem(coChiTiet), coChiTiet ? 8000 : 3000);
+  const { input, usage } = await goiClaudeToolUse(system, userMessage, "tra_ve_diem_so", SCHEMA_DIEM, coChiTiet ? 8000 : 3000);
   const model = (typeof process !== "undefined" ? process.env?.ANTHROPIC_MODEL : undefined) || "claude-sonnet-5";
   ghiLogChiPhi(`Luận giải Bát Tự — ${tenLoai}`, model, usage);
 
