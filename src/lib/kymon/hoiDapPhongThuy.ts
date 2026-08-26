@@ -15,6 +15,7 @@
 // trí biểu tượng — không đủ để trả lời "nên đặt hướng nào", không đoán thêm.
 
 import type { CungInfo, LapLaBanResult } from "./types";
+import { chiTietDayDu } from "./moTaChiTiet";
 
 type NguHanh = "Mộc" | "Hỏa" | "Thổ" | "Kim" | "Thủy";
 const NGU_HANH_CUNG: Record<number, NguHanh> = {
@@ -63,6 +64,10 @@ function luanXemNhaDat(laBan: LapLaBanResult): KetQuaHoiDapPhongThuy {
   const cn = laBan.tuTru.ngay?.can ? timCungTheoCan(laBan, laBan.tuTru.ngay.can) : undefined;
   const cg = laBan.tuTru.gio?.can ? timCungTheoCan(laBan, laBan.tuTru.gio.can) : undefined;
   if (!cn || !cg) return khongXacDinh("Không xác định được cung Can Ngày hoặc Can Giờ.");
+  const dtGoc = [
+    { nhan: "Can Ngày (người ở/mua)", cung: cn },
+    { nhan: "Can Giờ", cung: cg },
+  ];
 
   const monTichCuc = ["SINH", "KHAI", "HƯU"]
     .map((m) => timMonCung(laBan, m))
@@ -72,24 +77,31 @@ function luanXemNhaDat(laBan: LapLaBanResult): KetQuaHoiDapPhongThuy {
     .filter((c): c is CungInfo => !!c && c.soCung === cg.soCung && quanHeCung(c.soCung, cn.soCung) === "khac");
 
   if (monTichCuc.length > 0 && monTieuCuc.length === 0) {
+    const dt = [...dtGoc, ...monTichCuc.map((c) => ({ nhan: `${c.mon} Môn (cách cục tích cực)`, cung: c }))];
     return ketQua(
       "thuan_loi",
       "Căn nhà/mảnh đất này có dấu hiệu khá hợp — nguồn khí và năng lượng tổng thể thuận với người ở/mua.",
-      `${monTichCuc.map((c) => c.mon).join("/")} Môn đồng cung với Can Ngày — cách cục tích cực (ky-mon-phong-thuy-chanminhmetaphysics.md).`,
+      chiTietDayDu(dt, `${monTichCuc.map((c) => c.mon).join("/")} Môn đồng cung với Can Ngày — cách cục tích cực`, "ky-mon-phong-thuy-chanminhmetaphysics.md"),
     );
   }
   if (monTieuCuc.length > 0 && monTichCuc.length === 0) {
+    const dt = [...dtGoc, ...monTieuCuc.map((c) => ({ nhan: `${c.mon} Môn (cách cục tiêu cực)`, cung: c }))];
     return ketQua(
       "khong_thuan",
       "Căn nhà/mảnh đất này có dấu hiệu chưa thực sự hợp — nên cân nhắc kỹ hoặc xem thêm phương án khác trước khi quyết định.",
-      `${monTieuCuc.map((c) => c.mon).join("/")} Môn đồng cung với Can Giờ và khắc Can Ngày — cách cục tiêu cực (ky-mon-phong-thuy-chanminhmetaphysics.md).`,
+      chiTietDayDu(dt, `${monTieuCuc.map((c) => c.mon).join("/")} Môn đồng cung với Can Giờ và khắc Can Ngày — cách cục tiêu cực`, "ky-mon-phong-thuy-chanminhmetaphysics.md"),
     );
   }
   if (monTichCuc.length > 0 && monTieuCuc.length > 0) {
+    const dt = [
+      ...dtGoc,
+      ...monTichCuc.map((c) => ({ nhan: `${c.mon} Môn (cách cục tích cực)`, cung: c })),
+      ...monTieuCuc.map((c) => ({ nhan: `${c.mon} Môn (cách cục tiêu cực)`, cung: c })),
+    ];
     return ketQua(
       "can_luu_y",
       "Căn nhà/mảnh đất này có cả tín hiệu tốt lẫn tín hiệu cần lưu ý — không xấu hẳn nhưng cũng chưa thuận trọn vẹn, nên cân nhắc thêm các yếu tố thực tế khác (giá cả, vị trí, nhu cầu sử dụng).",
-      "Vừa có Môn thuộc nhóm tích cực đồng cung Can Ngày, vừa có Môn thuộc nhóm tiêu cực đồng cung Can Giờ và khắc Can Ngày (ky-mon-phong-thuy-chanminhmetaphysics.md).",
+      chiTietDayDu(dt, "Vừa có Môn thuộc nhóm tích cực đồng cung Can Ngày, vừa có Môn thuộc nhóm tiêu cực đồng cung Can Giờ và khắc Can Ngày", "ky-mon-phong-thuy-chanminhmetaphysics.md"),
     );
   }
 
@@ -97,21 +109,23 @@ function luanXemNhaDat(laBan: LapLaBanResult): KetQuaHoiDapPhongThuy {
   // lượng bên trong) và Sinh Môn (nguồn khí) so với Can Ngày.
   const huuMon = timMonCung(laBan, "HƯU");
   const sinhMon = timMonCung(laBan, "SINH");
+  const dt = [...dtGoc, { nhan: "Hưu Môn (năng lượng bên trong nhà)", cung: huuMon }, { nhan: "Sinh Môn (nguồn khí)", cung: sinhMon }];
+  const nguonKhongDu = "ky-mon-phong-thuy-chanminhmetaphysics.md, mục 'Dự đoán khi không đủ thông tin'";
   const qhHuu = huuMon ? quanHeCung(huuMon.soCung, cn.soCung) : undefined;
   const qhSinh = sinhMon ? quanHeCung(sinhMon.soCung, cn.soCung) : undefined;
   const tot = qhHuu === "sinh" || qhSinh === "sinh";
   const xau = qhHuu === "khac" || qhSinh === "khac";
 
   if (tot && !xau) {
-    return ketQua("thuan_loi", "Căn nhà/mảnh đất này nhìn chung ổn, năng lượng bên trong và nguồn khí đều có dấu hiệu thuận.", "Hưu Môn hoặc Sinh Môn sinh cho Can Ngày (ky-mon-phong-thuy-chanminhmetaphysics.md, mục 'Dự đoán khi không đủ thông tin').");
+    return ketQua("thuan_loi", "Căn nhà/mảnh đất này nhìn chung ổn, năng lượng bên trong và nguồn khí đều có dấu hiệu thuận.", chiTietDayDu(dt, "Hưu Môn hoặc Sinh Môn sinh cho Can Ngày", nguonKhongDu));
   }
   if (xau && !tot) {
-    return ketQua("khong_thuan", "Căn nhà/mảnh đất này có vài điểm cần cân nhắc về năng lượng/nguồn khí — nên xem thêm thực địa trước khi quyết định.", "Hưu Môn hoặc Sinh Môn khắc Can Ngày (ky-mon-phong-thuy-chanminhmetaphysics.md, mục 'Dự đoán khi không đủ thông tin').");
+    return ketQua("khong_thuan", "Căn nhà/mảnh đất này có vài điểm cần cân nhắc về năng lượng/nguồn khí — nên xem thêm thực địa trước khi quyết định.", chiTietDayDu(dt, "Hưu Môn hoặc Sinh Môn khắc Can Ngày", nguonKhongDu));
   }
   return ketQua(
     "can_luu_y",
     "Chưa có tín hiệu rõ ràng theo hướng thuận hay không thuận — nên xem thêm thực địa và các yếu tố thực tế khác trước khi quyết định.",
-    "Hưu Môn và Sinh Môn chưa rơi vào nhóm quy tắc rõ ràng so với Can Ngày.",
+    chiTietDayDu(dt, "Hưu Môn và Sinh Môn chưa rơi vào nhóm quy tắc rõ ràng so với Can Ngày", nguonKhongDu),
   );
 }
 

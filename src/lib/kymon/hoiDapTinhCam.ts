@@ -9,6 +9,7 @@
 // sinh...").
 
 import type { CungInfo, LapLaBanResult } from "./types";
+import { chiTietDayDu } from "./moTaChiTiet";
 
 type NguHanh = "Mộc" | "Hỏa" | "Thổ" | "Kim" | "Thủy";
 
@@ -104,25 +105,32 @@ function luanHopKhongHop(laBan: LapLaBanResult): KetQuaHoiDapTinhCam {
   const x = xetQuanHeAtCanh(laBan);
   if (!x) return khongXacDinh("Không xác định được cung của Ất (Nữ) hoặc Canh (Nam).");
   const { at, canh, qh } = x;
+  const lh = lucHopCung(laBan);
+  const dt = [
+    { nhan: "Ất (người nữ)", cung: at },
+    { nhan: "Canh (người nam)", cung: canh },
+    { nhan: "Lục Hợp (mai mối)", cung: lh },
+  ];
+  const nguon = "a3-luan-doan-hon-nhan-ket-hon-ly-hon.md, mục 1";
 
   if (qh === undefined) {
     return ketQua(
       "thuan_loi",
       "Hai người đã khá gắn bó, mối quan hệ đang ở giai đoạn gần gũi, thân thiết như đã là một cặp thực sự.",
-      "Ất và Canh đồng cung — đã ở với nhau rồi (a3-luan-doan-hon-nhan-ket-hon-ly-hon.md, mục 1).",
+      chiTietDayDu(dt, "Ất và Canh đồng cung — đã ở với nhau rồi", nguon),
     );
   }
   if (qh === "khac" || qh === "bịKhac") {
     return ketQua(
       "khong_thuan",
       `Hai người chưa thực sự hợp nhau, dễ nảy sinh bất đồng, khó tiến xa nếu không có sự nhường nhịn từ cả hai phía.${ghiChuMaiMoi(laBan, at, canh)}`,
-      "Ất và Canh tương khắc (a3-luan-doan-hon-nhan-ket-hon-ly-hon.md, mục 1).",
+      chiTietDayDu(dt, "Ất và Canh tương khắc", nguon),
     );
   }
   return ketQua(
     "thuan_loi",
     `Hai người khá hợp nhau, có nền tảng để xây dựng mối quan hệ lâu dài, hòa hợp.${ghiChuMaiMoi(laBan, at, canh)}`,
-    "Ất và Canh tương sinh hoặc tỉ hòa (a3-luan-doan-hon-nhan-ket-hon-ly-hon.md, mục 1).",
+    chiTietDayDu(dt, "Ất và Canh tương sinh hoặc tỉ hòa", nguon),
   );
 }
 
@@ -133,26 +141,31 @@ function luanHopKhongHop(laBan: LapLaBanResult): KetQuaHoiDapTinhCam {
 function luanTinhTrangHonNhan(laBan: LapLaBanResult): KetQuaHoiDapTinhCam {
   const x = xetQuanHeAtCanh(laBan);
   if (!x) return khongXacDinh("Không xác định được cung của Ất (Nữ) hoặc Canh (Nam).");
-  const { qh } = x;
+  const { at, canh, qh } = x;
+  const dt = [
+    { nhan: "Ất (vợ)", cung: at },
+    { nhan: "Canh (chồng)", cung: canh },
+  ];
+  const nguon = "a3-luan-doan-hon-nhan-ket-hon-ly-hon.md, mục 2";
 
   if (qh === undefined) {
     return ketQua(
       "thuan_loi",
       "Vợ chồng hiện đang khá gắn bó, gần gũi, ít khoảng cách với nhau ở giai đoạn này.",
-      "Ất và Canh đồng cung (a3-luan-doan-hon-nhan-ket-hon-ly-hon.md, mục 2).",
+      chiTietDayDu(dt, "Ất và Canh đồng cung", nguon),
     );
   }
   if (qh === "khac" || qh === "bịKhac") {
     return ketQua(
       "khong_thuan",
       "Vợ chồng dạo này có phần căng thẳng, dễ xảy ra bất đồng, cãi vã hơn bình thường — nên chủ động lắng nghe và nhường nhịn nhau hơn giai đoạn này.",
-      "Ất và Canh tương khắc (a3-luan-doan-hon-nhan-ket-hon-ly-hon.md, mục 2).",
+      chiTietDayDu(dt, "Ất và Canh tương khắc", nguon),
     );
   }
   return ketQua(
     "thuan_loi",
     "Vợ chồng dạo này khá hòa hợp, dễ tìm được tiếng nói chung, hỗ trợ nhau tốt trong cuộc sống.",
-    "Ất và Canh tương sinh hoặc tỉ hòa (a3-luan-doan-hon-nhan-ket-hon-ly-hon.md, mục 2).",
+    chiTietDayDu(dt, "Ất và Canh tương sinh hoặc tỉ hòa", nguon),
   );
 }
 
@@ -177,32 +190,39 @@ function luanNghiNgoaiTinh(laBan: LapLaBanResult): KetQuaHoiDapTinhCam {
   const binh = binhCung(laBan);
   const chongCoBo = xetNguoiThuBa(canh, dinh);
   const voCoBo = xetNguoiThuBa(at, binh);
+  const dt = [
+    { nhan: "Canh (chồng)", cung: canh },
+    { nhan: "Đinh kỳ (bồ của chồng)", cung: dinh },
+    { nhan: "Ất (vợ)", cung: at },
+    { nhan: "Bính kỳ (bồ của vợ)", cung: binh },
+  ];
+  const nguon = "a3-luan-doan-hon-nhan-ket-hon-ly-hon.md, mục 3";
 
   if (chongCoBo && voCoBo) {
     return ketQua(
       "khong_thuan",
       "Lá bàn cho thấy dấu hiệu không rõ ràng ở cả hai phía — nên bình tĩnh xác minh kỹ thông tin thực tế trước khi kết luận, tránh nghi oan.",
-      "Cả Đinh kỳ (liên quan Canh/chồng) và Bính kỳ (liên quan Ất/vợ) đều thỏa điều kiện (a3-luan-doan-hon-nhan-ket-hon-ly-hon.md, mục 3).",
+      chiTietDayDu(dt, "Cả Đinh kỳ (liên quan Canh/chồng) và Bính kỳ (liên quan Ất/vợ) đều thỏa điều kiện", nguon),
     );
   }
   if (chongCoBo) {
     return ketQua(
       "khong_thuan",
       "Lá bàn có dấu hiệu người chồng đang có mối quan hệ ngoài luồng. Nên bình tĩnh quan sát thêm, xác minh kỹ trước khi có hành động lớn.",
-      "Đinh kỳ sinh cho Canh, hoặc Canh sinh Đinh kỳ, hoặc Đinh là Địa Bàn Can của cung Canh (a3-luan-doan-hon-nhan-ket-hon-ly-hon.md, mục 3).",
+      chiTietDayDu(dt, "Đinh kỳ sinh cho Canh, hoặc Canh sinh Đinh kỳ, hoặc Đinh là Địa Bàn Can của cung Canh", nguon),
     );
   }
   if (voCoBo) {
     return ketQua(
       "khong_thuan",
       "Lá bàn có dấu hiệu người vợ đang có mối quan hệ ngoài luồng. Nên bình tĩnh quan sát thêm, xác minh kỹ trước khi có hành động lớn.",
-      "Bính kỳ sinh cho Ất, hoặc Ất sinh Bính kỳ, hoặc Bính là Địa Bàn Can của cung Ất (a3-luan-doan-hon-nhan-ket-hon-ly-hon.md, mục 3).",
+      chiTietDayDu(dt, "Bính kỳ sinh cho Ất, hoặc Ất sinh Bính kỳ, hoặc Bính là Địa Bàn Can của cung Ất", nguon),
     );
   }
   return ketQua(
     "thuan_loi",
     "Lá bàn không cho thấy dấu hiệu rõ ràng của việc ngoại tình ở cả hai phía — nghi ngờ hiện tại nhiều khả năng chỉ là hiểu lầm hoặc chưa có cơ sở chắc chắn.",
-    "Không thỏa điều kiện Đinh kỳ/Bính kỳ ở cả hai phía (a3-luan-doan-hon-nhan-ket-hon-ly-hon.md, mục 3).",
+    chiTietDayDu(dt, "Không thỏa điều kiện Đinh kỳ/Bính kỳ ở cả hai phía", nguon),
   );
 }
 
@@ -217,13 +237,19 @@ function luanNenCuoiKhong(laBan: LapLaBanResult): KetQuaHoiDapTinhCam {
   if (!x) return khongXacDinh("Không xác định được cung của Ất (Nữ) hoặc Canh (Nam).");
   const { at, canh, qh } = x;
   const lh = lucHopCung(laBan);
+  const dt = [
+    { nhan: "Ất (người nữ)", cung: at },
+    { nhan: "Canh (người nam)", cung: canh },
+    { nhan: "Lục Hợp (mai mối)", cung: lh },
+  ];
+  const nguon = "a3-luan-doan-hon-nhan-ket-hon-ly-hon.md, mục 1";
 
   const atCanhTot = qh === undefined || qh === "sinh" || qh === "duocSinh" || qh === "hoa";
   if (!atCanhTot) {
     return ketQua(
       "khong_thuan",
       "Thời điểm này chưa thật sự thuận để tiến tới hôn nhân — nền tảng giữa hai người còn chưa vững, nên dành thêm thời gian tìm hiểu và giải quyết bất đồng trước khi quyết định.",
-      "Ất và Canh tương khắc (a3-luan-doan-hon-nhan-ket-hon-ly-hon.md, mục 1).",
+      chiTietDayDu(dt, "Ất và Canh tương khắc", nguon),
     );
   }
 
@@ -233,7 +259,7 @@ function luanNenCuoiKhong(laBan: LapLaBanResult): KetQuaHoiDapTinhCam {
       return ketQua(
         "thuan_loi",
         "Đây là thời điểm khá thuận để tiến tới hôn nhân — nền tảng giữa hai người tốt, lại có thêm sự ủng hộ từ người thân/bạn bè xung quanh.",
-        "Ất-Canh tương sinh/tỉ hòa/đồng cung, đồng thời Lục Hợp sinh cho một trong hai bên (a3-luan-doan-hon-nhan-ket-hon-ly-hon.md, mục 1).",
+        chiTietDayDu(dt, "Ất-Canh tương sinh/tỉ hòa/đồng cung, đồng thời Lục Hợp sinh cho một trong hai bên", nguon),
       );
     }
   }
@@ -241,13 +267,13 @@ function luanNenCuoiKhong(laBan: LapLaBanResult): KetQuaHoiDapTinhCam {
     return ketQua(
       "can_luu_y",
       "Nền tảng giữa hai người khá tốt, nhưng nên cẩn thận với các yếu tố bên ngoài (người mai mối, lời khuyên từ người khác) có thể không đáng tin cậy lúc này — tự mình quyết định là chính.",
-      "Ất-Canh tương sinh/tỉ hòa/đồng cung, nhưng Lục Hợp Không Vong (a3-luan-doan-hon-nhan-ket-hon-ly-hon.md, mục 1).",
+      chiTietDayDu(dt, "Ất-Canh tương sinh/tỉ hòa/đồng cung, nhưng Lục Hợp Không Vong", nguon),
     );
   }
   return ketQua(
     "thuan_loi",
     "Nền tảng giữa hai người khá tốt, có thể cân nhắc tiến tới hôn nhân khi cả hai đã sẵn sàng.",
-    "Ất và Canh tương sinh, tỉ hòa, hoặc đồng cung (a3-luan-doan-hon-nhan-ket-hon-ly-hon.md, mục 1).",
+    chiTietDayDu(dt, "Ất và Canh tương sinh, tỉ hòa, hoặc đồng cung", nguon),
   );
 }
 

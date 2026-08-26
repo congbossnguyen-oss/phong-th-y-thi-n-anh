@@ -9,6 +9,7 @@
 
 import type { CungInfo, LapLaBanResult } from "./types";
 import { traCachCuc } from "./cachCuc";
+import { chiTietDayDu } from "./moTaChiTiet";
 
 type NguHanh = "Mộc" | "Hỏa" | "Thổ" | "Kim" | "Thủy";
 const NGU_HANH_CUNG: Record<number, NguHanh> = {
@@ -62,21 +63,26 @@ function luanChung(laBan: LapLaBanResult, tenViec: string): KetQuaHoiDapPhapLy {
   const cn = laBan.tuTru.ngay?.can ? timCungTheoCan(laBan, laBan.tuTru.ngay.can) : undefined;
   const cg = laBan.tuTru.gio?.can ? timCungTheoCan(laBan, laBan.tuTru.gio.can) : undefined;
   if (!cn || !cg) return khongXacDinh("Không xác định được cung Can Ngày hoặc Can Giờ.");
+  const dt = [
+    { nhan: "Can Ngày (mình)", cung: cn },
+    { nhan: "Can Giờ (đối phương)", cung: cg },
+  ];
+  const nguon = "suy luận nhất quán từ a5-cau-tai-hop-tac-kinh-doanh.md, mục I/VI";
 
   const cc = traCachCuc(cg.thienBanCan, cg.diaBanCan);
   const canhBaoHung = cc && CACH_CUC_KIEN_TUNG_HUNG.has(cc.ten) ? ` Lưu ý: cách cục tại vị trí đối phương (${cc.ten}) cho thấy cần đặc biệt thận trọng, không nên hành động vội vàng hoặc chủ động khiêu khích trước.` : "";
 
   const qh = quanHeCung(cn.soCung, cg.soCung); // Can Ngày (mình) → Can Giờ (đối phương)
   if (qh === "khac") {
-    return ketQua("thuan_loi", `${tenViec} này, phần thắng thế/chủ động đang nghiêng về phía bạn.${canhBaoHung}`, "Can Ngày (mình) khắc Can Giờ (đối phương).");
+    return ketQua("thuan_loi", `${tenViec} này, phần thắng thế/chủ động đang nghiêng về phía bạn.${canhBaoHung}`, chiTietDayDu(dt, "Can Ngày (mình) khắc Can Giờ (đối phương)", nguon));
   }
   if (qh === "bịKhac") {
-    return ketQua("khong_thuan", `${tenViec} này, đối phương đang chiếm ưu thế hơn — nên cẩn trọng, chuẩn bị lý lẽ/bằng chứng thật chắc chắn trước khi tiến hành.${canhBaoHung}`, "Can Giờ (đối phương) khắc Can Ngày (mình).");
+    return ketQua("khong_thuan", `${tenViec} này, đối phương đang chiếm ưu thế hơn — nên cẩn trọng, chuẩn bị lý lẽ/bằng chứng thật chắc chắn trước khi tiến hành.${canhBaoHung}`, chiTietDayDu(dt, "Can Giờ (đối phương) khắc Can Ngày (mình)", nguon));
   }
   if (qh === "hoa") {
-    return ketQua("can_luu_y", `${tenViec} này, hai bên đang khá cân bằng, chưa rõ ai chiếm ưu thế — kết quả phụ thuộc nhiều vào cách xử lý cụ thể.${canhBaoHung}`, "Can Ngày và Can Giờ tỉ hòa.");
+    return ketQua("can_luu_y", `${tenViec} này, hai bên đang khá cân bằng, chưa rõ ai chiếm ưu thế — kết quả phụ thuộc nhiều vào cách xử lý cụ thể.${canhBaoHung}`, chiTietDayDu(dt, "Can Ngày và Can Giờ tỉ hòa", nguon));
   }
-  return ketQua("can_luu_y", `${tenViec} này chưa có tín hiệu rõ ràng theo hướng thuận hay khó — nên thận trọng, không nên chủ quan.${canhBaoHung}`, "Can Ngày và Can Giờ chưa rơi vào nhóm quy tắc rõ ràng.");
+  return ketQua("can_luu_y", `${tenViec} này chưa có tín hiệu rõ ràng theo hướng thuận hay khó — nên thận trọng, không nên chủ quan.${canhBaoHung}`, chiTietDayDu(dt, "Can Ngày và Can Giờ chưa rơi vào nhóm quy tắc rõ ràng", nguon));
 }
 
 const BANG_LUAN: Record<string, (laBan: LapLaBanResult) => KetQuaHoiDapPhapLy> = {

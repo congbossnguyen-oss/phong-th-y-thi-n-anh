@@ -3,6 +3,7 @@
 
 import type { CungInfo, LapLaBanResult } from "./types";
 import type { QuanHeCauHoi } from "./danhMucCauHoi";
+import { chiTietDayDu } from "./moTaChiTiet";
 
 type NguHanh = "Mộc" | "Hỏa" | "Thổ" | "Kim" | "Thủy";
 const NGU_HANH_CUNG: Record<number, NguHanh> = {
@@ -57,24 +58,29 @@ function luanTimDoVat(laBan: LapLaBanResult): KetQuaHoiDapTimKiem {
   const cn = laBan.tuTru.ngay?.can ? timCungTheoCan(laBan, laBan.tuTru.ngay.can) : undefined;
   const cg = laBan.tuTru.gio?.can ? timCungTheoCan(laBan, laBan.tuTru.gio.can) : undefined;
   if (!cn || !cg) return khongXacDinh("Không xác định được cung Can Ngày hoặc Can Giờ.");
+  const dt = [
+    { nhan: "Can Ngày (người mất đồ)", cung: cn },
+    { nhan: "Can Giờ (đồ vật)", cung: cg },
+  ];
+  const nguon = "a4-luan-tim-do-that-lac.md, mục 3";
 
   if (cn.soCung === cg.soCung) {
-    return ketQua("thuan_loi", "Đồ vật này không thực sự mất — nhiều khả năng vẫn ở gần đâu đó, tìm lại được.", "Can Ngày và Can Giờ đồng cung — không bị mất, sẽ tìm lại được (a4-luan-tim-do-that-lac.md, mục 3).");
+    return ketQua("thuan_loi", "Đồ vật này không thực sự mất — nhiều khả năng vẫn ở gần đâu đó, tìm lại được.", chiTietDayDu(dt, "Can Ngày và Can Giờ đồng cung — không bị mất, sẽ tìm lại được", nguon));
   }
   if (cg.KV || laNhapMo(cg)) {
-    return ketQua("khong_thuan", "Khả năng tìm lại được đồ vật này khá thấp trong giai đoạn hiện tại.", "Can Giờ (đồ vật) Không Vong hoặc Nhập Mộ — tìm không ra (a4-luan-tim-do-that-lac.md, mục 3).");
+    return ketQua("khong_thuan", "Khả năng tìm lại được đồ vật này khá thấp trong giai đoạn hiện tại.", chiTietDayDu(dt, "Can Giờ (đồ vật) Không Vong hoặc Nhập Mộ — tìm không ra", nguon));
   }
   const qh = quanHeCung(cg.soCung, cn.soCung); // Can Giờ (đồ vật) → Can Ngày (người mất)
   if (qh === "sinh") {
-    return ketQua("thuan_loi", "Có khả năng tìm lại được đồ vật này.", "Can Giờ (đồ vật) sinh cho Can Ngày — tìm lại được (a4-luan-tim-do-that-lac.md, mục 3).");
+    return ketQua("thuan_loi", "Có khả năng tìm lại được đồ vật này.", chiTietDayDu(dt, "Can Giờ (đồ vật) sinh cho Can Ngày — tìm lại được", nguon));
   }
   if (qh === "khac" || qh === "bịKhac") {
-    return ketQua("khong_thuan", "Khả năng tìm lại được đồ vật này khá thấp.", "Can Ngày và Can Giờ tương khắc — tìm không ra (a4-luan-tim-do-that-lac.md, mục 3).");
+    return ketQua("khong_thuan", "Khả năng tìm lại được đồ vật này khá thấp.", chiTietDayDu(dt, "Can Ngày và Can Giờ tương khắc — tìm không ra", nguon));
   }
   return ketQua(
     "can_luu_y",
     "Chưa có tín hiệu rõ ràng — có thể thử tìm thêm ở những nơi gần với sinh hoạt thường ngày.",
-    "Can Ngày và Can Giờ chưa rơi vào nhóm quy tắc rõ ràng (a4-luan-tim-do-that-lac.md, mục 3).",
+    chiTietDayDu(dt, "Can Ngày và Can Giờ chưa rơi vào nhóm quy tắc rõ ràng", nguon),
   );
 }
 
@@ -96,6 +102,12 @@ function luanTimNguoi(laBan: LapLaBanResult, quanHe: QuanHeCauHoi): KetQuaHoiDap
   const cn = laBan.tuTru.ngay?.can ? timCungTheoCan(laBan, laBan.tuTru.ngay.can) : undefined;
   const cg = laBan.tuTru.gio?.can ? timCungTheoCan(laBan, laBan.tuTru.gio.can) : undefined;
   if (!dungThan || !cn || !cg) return khongXacDinh("Không xác định được cung dụng thần theo quan hệ, Can Ngày hoặc Can Giờ.");
+  const dt = [
+    { nhan: "Can Ngày", cung: cn },
+    { nhan: "Can Giờ", cung: cg },
+    { nhan: "Dụng thần theo quan hệ (người mất tích)", cung: dungThan },
+  ];
+  const nguon = "a4-luan-doan-tim-nguoi-that-lac.md, mục 1, 3, 4";
 
   // An nguy (mục 3, rút gọn — chỉ dùng KV/Nhập Mộ vì chưa có bảng vượng suy theo tháng).
   const anNguyXau = dungThan.KV || laNhapMo(dungThan);
@@ -112,34 +124,34 @@ function luanTimNguoi(laBan: LapLaBanResult, quanHe: QuanHeCauHoi): KetQuaHoiDap
     return ketQua(
       "thuan_loi",
       "Nhiều khả năng sẽ tìm được hoặc người này tự quay về trong thời gian tới — tình hình chung không đáng lo ngại.",
-      "Can Ngày/Can Giờ đồng cung hoặc Can Giờ sinh Can Ngày; dụng thần không phạm Không Vong/Nhập Mộ (a4-luan-doan-tim-nguoi-that-lac.md, mục 1, 3, 4).",
+      chiTietDayDu(dt, "Can Ngày/Can Giờ đồng cung hoặc Can Giờ sinh Can Ngày; dụng thần không phạm Không Vong/Nhập Mộ", nguon),
     );
   }
   if (timDuoc && anNguyXau) {
     return ketQua(
       "can_luu_y",
       "Có khả năng tìm được hoặc tự về, nhưng nên lưu tâm về sự an toàn của người này trong giai đoạn hiện tại — không nên chủ quan.",
-      "Can Ngày/Can Giờ cho tín hiệu tìm được, nhưng dụng thần phạm Không Vong/Nhập Mộ (a4-luan-doan-tim-nguoi-that-lac.md, mục 1, 3, 4).",
+      chiTietDayDu(dt, "Can Ngày/Can Giờ cho tín hiệu tìm được, nhưng dụng thần phạm Không Vong/Nhập Mộ", nguon),
     );
   }
   if (khoTim && anNguyXau) {
     return ketQua(
       "khong_thuan",
       "Tình hình đáng lo ngại — vừa khó tìm được trong thời gian ngắn, vừa có dấu hiệu bất an. Nên trình báo cơ quan chức năng và tìm kiếm khẩn trương nếu chưa làm.",
-      "Can Ngày sinh Can Giờ, hoặc Can Ngày/Can Giờ khắc nhau; đồng thời dụng thần phạm Không Vong/Nhập Mộ (a4-luan-doan-tim-nguoi-that-lac.md, mục 1, 3, 4).",
+      chiTietDayDu(dt, "Can Ngày sinh Can Giờ, hoặc Can Ngày/Can Giờ khắc nhau; đồng thời dụng thần phạm Không Vong/Nhập Mộ", nguon),
     );
   }
   if (khoTim) {
     return ketQua(
       "can_luu_y",
       "Giai đoạn này khó tìm được ngay hoặc người này chưa tự về — cần kiên trì tìm kiếm thêm.",
-      "Can Ngày sinh Can Giờ, hoặc Can Ngày/Can Giờ khắc nhau (a4-luan-doan-tim-nguoi-that-lac.md, mục 4).",
+      chiTietDayDu(dt, "Can Ngày sinh Can Giờ, hoặc Can Ngày/Can Giờ khắc nhau", "a4-luan-doan-tim-nguoi-that-lac.md, mục 4"),
     );
   }
   return ketQua(
     "can_luu_y",
     "Chưa có tín hiệu rõ ràng theo hướng thuận hay khó — nên tiếp tục tìm kiếm và theo dõi thêm.",
-    "Tổ hợp Can Ngày/Can Giờ/dụng thần chưa rơi vào nhóm quy tắc rõ ràng (a4-luan-doan-tim-nguoi-that-lac.md).",
+    chiTietDayDu(dt, "Tổ hợp Can Ngày/Can Giờ/dụng thần chưa rơi vào nhóm quy tắc rõ ràng", "a4-luan-doan-tim-nguoi-that-lac.md"),
   );
 }
 
