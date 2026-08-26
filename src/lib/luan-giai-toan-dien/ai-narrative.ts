@@ -46,7 +46,8 @@ export const GIAI_DOAN_NANG_CAO: GiaiDoanConfig[] = [
   { ma: "E", ten: "Mộ Khố", tang: "nang_cao", knowledgeFiles: ["mo-kho.md"], doDaiGoiY: "100-150 chữ (bỏ qua nếu không có Mộ Khố nào)", quyTacRieng: "E" },
   { ma: "F", ten: "Lục Thân", tang: "nang_cao", knowledgeFiles: ["luc-than.md"], doDaiGoiY: "400-600 chữ", quyTacRieng: "F", canKiemDuyet: true },
   { ma: "I", ten: "Sức khỏe", tang: "nang_cao", knowledgeFiles: ["benh-tat.md"], doDaiGoiY: "250-350 chữ", canKiemDuyet: true },
-  { ma: "K", ten: "Đại Vận trọn đời", tang: "nang_cao", knowledgeFiles: ["ung-ky.md", "quan-he-can-chi.md"], doDaiGoiY: "500-800 chữ (dài nhất)" },
+  { ma: "K", ten: "Đại Vận trọn đời", tang: "nang_cao", knowledgeFiles: ["ung-ky.md", "quan-he-can-chi.md"], doDaiGoiY: "80-120 chữ",
+    huongDanRieng: "Chỉ viết đoạn GIỚI THIỆU ngắn cho phần Đại Vận trọn đời — nêu quy luật chung 1-2 câu (Đại Vận nào hành trùng/sinh Dụng-Hỷ Thần thì thuận, trùng/sinh Kỵ-Cừu Thần thì cần thận trọng hơn). KHÔNG liệt kê chi tiết từng giai đoạn — phần chi tiết từng giai đoạn (điểm số sức khỏe/công việc/tài lộc/lục thân) đã có đồ hình riêng ngay bên dưới đoạn này, không cần lặp lại bằng văn xuôi." },
 ];
 
 const SCHEMA = {
@@ -100,7 +101,7 @@ function buildSystemPrompt(cfg: GiaiDoanConfig, laSoJSON: string, findingsJSON: 
   ].join("\n");
 }
 
-async function goiClaudeToolUse(system: string, userMessage: string, toolName: string, schema: object, maxTokens: number): Promise<{ input: Record<string, unknown> | null; usage?: UsageAnthropic }> {
+export async function goiClaudeToolUse(system: string, userMessage: string, toolName: string, schema: object, maxTokens: number): Promise<{ input: Record<string, unknown> | null; usage?: UsageAnthropic }> {
   const apiKey = layAnthropicApiKey();
   if (!apiKey) return { input: null };
   const model = (typeof process !== "undefined" ? process.env?.ANTHROPIC_MODEL : undefined) || DEFAULT_MODEL;
