@@ -1,6 +1,7 @@
 // Tầng Free — KHÔNG gọi AI, thuần code điền vào câu mẫu cố định (xem content/bat-tu/prompts/free-template.md).
 // Mở tự do, không cần đăng nhập, không giới hạn số lần, chi phí ~0.
 import type { BatTuChart } from "../bat-tu";
+import { tinhLuuNien } from "../bat-tu";
 import type { BatTuAnalysis, Hanh, CapDo } from "../bat-tu-engine/engine";
 import { hanhCan, hanhChi } from "../bat-tu-engine/engine";
 import { docData } from "./content-loader";
@@ -80,12 +81,24 @@ export interface DoHinhDaiVanDiem {
   diem: number;
 }
 
+export interface DoHinhLuuNienDiem {
+  year: number;
+  tuoi: number;
+  can: string;
+  chi: string;
+  /** -1..1: điểm thô như daiVan, so hành Can/Chi năm với Dụng/Hỷ/Kỵ/Cừu Thần NGUYÊN CỤC — bản đầy đủ tính lại theo đúng Đại Vận của từng năm. */
+  diem: number;
+}
+
 export interface DoHinhFree {
   tuTru: DoHinhTuTru[];
   nguHanhPhanBo: Record<Hanh, number>;
   diemVuongSuy: number;
   daiVan: DoHinhDaiVanDiem[];
+  luuNien: DoHinhLuuNienDiem[];
 }
+
+const SO_NAM_LUU_NIEN_FREE = 5;
 
 const TEN_TRU: Record<"year" | "month" | "day" | "hour", string> = {
   year: "Năm", month: "Tháng", day: "Ngày", hour: "Giờ",
@@ -98,8 +111,8 @@ function diemHanhTheoDungThan(hanh: Hanh, dungThan: BatTuAnalysis["dungThan"]): 
   return 0;
 }
 
-/** Dữ liệu cho 3 đồ hình ở tầng Free: donut Ngũ Hành, gauge Vượng Suy, đường sóng Đại Vận. Thuần code, không gọi AI. */
-export function taoDuLieuDoHinhFree(chart: BatTuChart, analysis: BatTuAnalysis): DoHinhFree {
+/** Dữ liệu cho các đồ hình ở tầng Free: donut Ngũ Hành, gauge Vượng Suy, đường sóng Đại Vận, dải Lưu Niên. Thuần code, không gọi AI (nguyên tắc: free không tốn chi phí AI). */
+export function taoDuLieuDoHinhFree(chart: BatTuChart, analysis: BatTuAnalysis, namSinh: number): DoHinhFree {
   const tuTru: DoHinhTuTru[] = (["year", "month", "day", "hour"] as const).map((k) => ({
     tru: TEN_TRU[k], can: chart[k].can, chi: chart[k].chi,
     hanhCan: hanhCan(chart[k].can), hanhChi: hanhChi(chart[k].chi),
@@ -113,5 +126,14 @@ export function taoDuLieuDoHinhFree(chart: BatTuChart, analysis: BatTuAnalysis):
     return { can: v.can, chi: v.chi, startAge: v.startAge, endAge: v.endAge, diem };
   });
 
-  return { tuTru, nguHanhPhanBo, diemVuongSuy: analysis.vuongSuy.diem, daiVan };
+  const namNay = new Date().getFullYear();
+  const luuNien: DoHinhLuuNienDiem[] = tinhLuuNien(namNay, namSinh, SO_NAM_LUU_NIEN_FREE).map((n) => ({
+    year: n.year,
+    tuoi: n.tuoi,
+    can: n.can,
+    chi: n.chi,
+    diem: (diemHanhTheoDungThan(hanhCan(n.can), analysis.dungThan) + diemHanhTheoDungThan(hanhChi(n.chi), analysis.dungThan)) / 2,
+  }));
+
+  return { tuTru, nguHanhPhanBo, diemVuongSuy: analysis.vuongSuy.diem, daiVan, luuNien };
 }
