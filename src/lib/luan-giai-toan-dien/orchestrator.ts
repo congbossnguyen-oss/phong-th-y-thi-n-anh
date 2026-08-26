@@ -8,6 +8,7 @@ import { GIAI_DOAN_CO_BAN, GIAI_DOAN_NANG_CAO } from "./ai-narrative";
 import { taoNoiDungGiaiDoanAnToan } from "./hau-kiem";
 import { layContentSafety } from "./content-safety";
 import { taoBieuDoDaiVan, taoBieuDoLuuNien } from "./luu-nien-dai-van";
+import { taoDuLieuDoHinhFree } from "./free-template";
 import type { BaoCaoCoBan, BaoCaoNangCao, LaSoHienThi } from "./types";
 
 export function laSoVaPhanTich(input: BatTuInput): { chart: BatTuChart; analysis: BatTuAnalysis; tt: TuTruInput } {
@@ -64,6 +65,13 @@ export async function taoBaoCaoCoBan(input: BatTuInput): Promise<BaoCaoCoBan> {
 
   const giaiDoan = ketQuaSongSong.filter((x): x is NonNullable<typeof x> => x !== null);
 
+  // Đồ hình MỒI mời nâng cấp Nâng Cao — TÁI DÙNG heuristic thuần code của tầng Free (không gọi AI
+  // thêm, đúng nguyên tắc "free/mồi thì không tốn chi phí AI"). Khác Nâng Cao thật: chỉ 1 điểm thô
+  // (không tách 4 khía cạnh), Dụng Thần cố định theo nguyên cục (không tính lại theo từng Đại Vận).
+  const doHinhMoi = taoDuLieuDoHinhFree(chart, analysis, input.year);
+  const moiDaiVan = doHinhMoi.daiVan.map((v) => ({ nhan: `${v.startAge}-${v.endAge} tuổi`, canChi: `${v.can} ${v.chi}`, diem: v.diem }));
+  const moiLuuNien = doHinhMoi.luuNien.map((v) => ({ nhan: String(v.year), canChi: `${v.can} ${v.chi}`, diem: v.diem }));
+
   const safety = layContentSafety();
   return {
     laSo,
@@ -71,6 +79,8 @@ export async function taoBaoCaoCoBan(input: BatTuInput): Promise<BaoCaoCoBan> {
     giaiDoan,
     disclaimerCuoiBai: safety.disclaimer_bat_buoc,
     ctaNangCao: "Bản Luận Nâng Cao sẽ đi sâu vào Thần Sát, gia đình - lục thân, sức khỏe, và trọn vẹn các giai đoạn vận trình từ nhỏ đến già.",
+    moiDaiVan,
+    moiLuuNien,
   };
 }
 

@@ -17,12 +17,25 @@ export interface GiaiDoanNoiDung {
   noiDung: string;
 }
 
+/** 1 mốc trong đồ hình MỒI (Đại Vận trọn đời hoặc Lưu Niên vài năm) — điểm thô 1 chiều, KHÔNG phải
+ *  4 khía cạnh AI như bản Nâng Cao, chỉ để gợi mở. Dùng chung hình dạng cho cả Đại Vận lẫn Lưu Niên. */
+export interface MocDoHinhMoi {
+  nhan: string; // "4-13 tuổi" (Đại Vận) hoặc "2026" (Lưu Niên)
+  canChi: string; // "Ất Dậu"
+  /** -1..1: điểm thô so Dụng/Hỷ (+) hay Kỵ/Cừu (-) Thần NGUYÊN CỤC — thuần code, không gọi AI. */
+  diem: number;
+}
+
 export interface BaoCaoCoBan {
   laSo: LaSoHienThi;
   disclaimerDauBai: string;
   giaiDoan: GiaiDoanNoiDung[];
   disclaimerCuoiBai: string;
   ctaNangCao: string;
+  /** Đồ hình MỒI — ước tính thô thuần code, KHÔNG gọi AI, mời nâng cấp Nâng Cao (xem lại Dụng Thần
+   *  đúng theo Đại Vận + chấm điểm AI 4 khía cạnh + luận chi tiết từng năm). */
+  moiDaiVan: MocDoHinhMoi[];
+  moiLuuNien: MocDoHinhMoi[];
 }
 
 /** 1 giai đoạn/năm được AI chấm điểm 4 khía cạnh (thang -2..2) + 1 câu tóm tắt ngắn — dùng vẽ đồ hình. */
