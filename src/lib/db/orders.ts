@@ -483,7 +483,10 @@ export async function markOrderPaidAndFulfill(orderId: string) {
     if (order.toolSlug === "ky-mon-menh-chi-tiet" && order.customerEmail && order.toolInputSnapshot) {
       try {
         const input = JSON.parse(order.toolInputSnapshot) as { nam: number; thang: number; ngay: number; gio: number; phut: number };
-        const laBan = lapLaBan({ cheDo: "menh", ...input });
+        // PHẢI await: trên nhánh Cloudflare lapLaBan() là async (đọc km_data qua Static Assets vì
+        // Worker không có filesystem). Thiếu await thì luanGiaiMenh() nhận vào Promise, ném lỗi,
+        // bị try/catch nuốt mất → khách trả tiền mà không bao giờ nhận được email PDF.
+        const laBan = await lapLaBan({ cheDo: "menh", ...input });
         const free = luanGiaiMenh(laBan);
         const chiTiet = luanGiaiMenhChiTiet(laBan);
         const pdf = await generateKyMonMenhPdf(free, chiTiet, order.customerName);
