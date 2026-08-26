@@ -203,12 +203,30 @@ export interface VuongSuyResult {
 
 const AN_STRONG = new Set(TS_DAC_LENH);
 
-export function tinhVuongSuy(tt: TuTruInput): VuongSuyResult {
+/**
+ * Tính vượng suy Nhật Chủ.
+ *
+ * `truThem` (tùy chọn) = Can Chi của ĐẠI VẬN đang xét, coi như "trụ thứ 5" tạm thời nhập cục
+ * (vuong-suy.md mục 6.1: "xác định vượng suy trên nguyên mệnh cục tĩnh TRƯỚC, sau đó xét lại khi
+ * tiến nhập Đại Vận/Lưu Niên cụ thể").
+ *
+ * ⚠️ CÓ CHỦ Ý: Đại Vận KHÔNG thay thế nguyệt lệnh khi xét ĐẮC LỆNH — `vuong-suy.md` mục A định nghĩa
+ * đắc lệnh theo Chi THÁNG, và `quan-he-can-chi.md` mục 4 nêu rõ Nguyệt Chi giữ nguyên bản chất ngũ
+ * hành kể cả khi tầng trên (Đại Vận/Lưu Niên) tác động. Đại Vận chỉ tham gia: đắc địa, được sinh,
+ * được trợ, và cán cân so lực — với TRỌNG SỐ NGANG 1 trụ nguyên cục (can thấu ×2, tàng chi 2/1/0.5).
+ * Trọng số này là GIẢ ĐỊNH MÔ HÌNH: tài liệu nêu Đại Vận ở "tầng" cao hơn mệnh cục khi tranh
+ * xung/hợp/khắc, nhưng KHÔNG cho con số trọng số vượng suy cụ thể — nên chọn mức ngang bằng (không
+ * thổi phồng) thay vì đoán liều (vuong-suy.md mục 6.3).
+ *
+ * Hợp hóa Thiên Can vẫn chỉ xét trong nguyên cục — hợp hóa cần tính "liền kề", không áp dụng gọn cho
+ * 1 trụ ảo nằm ngoài tứ trụ.
+ */
+export function tinhVuongSuy(tt: TuTruInput, truThem?: CanChi): VuongSuyResult {
   const dg: string[] = [];
   const nhatChu = tt.ngay.can;
   const hanhNC = hanhCan(nhatChu);
-  const cacChi = [tt.nam.chi, tt.thang.chi, tt.ngay.chi, tt.gio.chi];
-  const canKhac = [tt.nam.can, tt.thang.can, tt.gio.can]; // 3 thiên can (trừ Nhật Chủ)
+  const cacChi = [tt.nam.chi, tt.thang.chi, tt.ngay.chi, tt.gio.chi, ...(truThem ? [truThem.chi] : [])];
+  const canKhac = [tt.nam.can, tt.thang.can, tt.gio.can, ...(truThem ? [truThem.can] : [])]; // thiên can (trừ Nhật Chủ)
 
   // A. Đắc lệnh — trạng thái Trường Sinh tại Chi tháng.
   const ttThang = trangThaiTruongSinh(nhatChu, tt.thang.chi);
@@ -228,6 +246,7 @@ export function tinhVuongSuy(tt: TuTruInput): VuongSuyResult {
   // B. Đắc địa — Nhật Chủ có gốc ở 3 chi (nam/ngày/giờ): tàng can cùng hành, có xét Mộ khố + xung.
   const chiXet: { ten: string; chi: string }[] = [
     { ten: "năm", chi: tt.nam.chi }, { ten: "ngày", chi: tt.ngay.chi }, { ten: "giờ", chi: tt.gio.chi },
+    ...(truThem ? [{ ten: "đại vận", chi: truThem.chi }] : []),
   ];
   let soCanGoc = 0; let gocManh = false;
   for (const { ten, chi } of chiXet) {
@@ -350,12 +369,12 @@ export interface DungThanResult {
 const MUA_DONG = ["Hợi", "Tý", "Sửu"];
 const MUA_HE = ["Tị", "Ngọ", "Mùi"];
 
-/** Đếm "lực" mỗi phe trong toàn cục (thấu can =2, tàng =1). */
-function demPhe(tt: TuTruInput): Record<Phe, number> {
+/** Đếm "lực" mỗi phe trong toàn cục (thấu can =2, tàng =1). `truThem` = Đại Vận nhập cục (xem tinhVuongSuy). */
+function demPhe(tt: TuTruInput, truThem?: CanChi): Record<Phe, number> {
   const hanhNC = hanhCan(tt.ngay.can);
   const d: Record<Phe, number> = { ty_kiep: 0, an: 0, thuc_thuong: 0, tai: 0, quan_sat: 0 };
-  for (const c of [tt.nam.can, tt.thang.can, tt.gio.can]) d[pheCua(hanhCan(c), hanhNC)] += 2;
-  for (const chi of [tt.nam.chi, tt.thang.chi, tt.ngay.chi, tt.gio.chi]) for (const c of TANG[chiChuan(chi)] ?? []) d[pheCua(hanhCan(c), hanhNC)] += 1;
+  for (const c of [tt.nam.can, tt.thang.can, tt.gio.can, ...(truThem ? [truThem.can] : [])]) d[pheCua(hanhCan(c), hanhNC)] += 2;
+  for (const chi of [tt.nam.chi, tt.thang.chi, tt.ngay.chi, tt.gio.chi, ...(truThem ? [truThem.chi] : [])]) for (const c of TANG[chiChuan(chi)] ?? []) d[pheCua(hanhCan(c), hanhNC)] += 1;
   return d;
 }
 
@@ -378,10 +397,10 @@ function suyHyKyCuu(dung: Hanh): { hyThan: Hanh; kyThan: Hanh; cuuThan: Hanh } {
   return { hyThan, kyThan, cuuThan };
 }
 
-export function chonDungThan(tt: TuTruInput, vs: VuongSuyResult): DungThanResult {
+export function chonDungThan(tt: TuTruInput, vs: VuongSuyResult, truThem?: CanChi): DungThanResult {
   const dg: string[] = [];
   const nhatChu = hanhCan(tt.ngay.can);
-  const phe = demPhe(tt);
+  const phe = demPhe(tt, truThem);
   const luucDongDang = phe.ty_kiep + phe.an; // phe Nhật Chủ
   const luucDiDang = phe.thuc_thuong + phe.tai + phe.quan_sat;
 
@@ -476,4 +495,45 @@ export function phanTichBatTu(tt: TuTruInput): BatTuAnalysis {
   const vuongSuy = tinhVuongSuy(tt);
   const dungThan = chonDungThan(tt, vuongSuy);
   return { vuongSuy, dungThan };
+}
+
+export interface PhanTichTaiDaiVan extends BatTuAnalysis {
+  /** Dụng Thần tại vận này có KHÁC Dụng Thần nguyên cục không. */
+  dungThanDoi: boolean;
+  /** Cấp độ vượng suy tại vận này có khác nguyên cục không. */
+  vuongSuyDoi: boolean;
+  /** true = giữ nguyên nguyên cục vì Nhóm 3 (Tòng cách), không tính lại theo vận. */
+  giuNguyenVietNhom3: boolean;
+  goc: BatTuAnalysis;
+}
+
+/**
+ * Tính lại vượng suy + Dụng Thần khi Nhật Chủ tiến nhập 1 ĐẠI VẬN cụ thể (coi Đại Vận là trụ thứ 5).
+ *
+ * Căn cứ `vuong-suy.md` mục 5 — 3 nhóm quyết định mức "linh hoạt" của Dụng Thần theo Đại Vận:
+ *   Nhóm 1 (Thiên nhược/Trung hòa/Thiên vượng): Dụng Thần RẤT DỄ đổi theo vận.
+ *   Nhóm 2 (Nhược/Vượng): CÓ THỂ đổi, nhất là khi Đại Vận "song thể" (Can Chi 2 hành khác nhau).
+ *   Nhóm 3 (Cực nhược/Cực vượng): "rất khó đổi — về cơ bản phải GIỮ NGUYÊN hướng Thuận thế/Tòng cách
+ *   xuyên suốt đời, trừ khi cấu trúc mệnh cục bị phá vỡ hoàn toàn (hiếm)".
+ *
+ * → Nhóm 3 CHẶN CỨNG: trả nguyên kết quả gốc, KHÔNG tính lại. Đây là chốt an toàn quan trọng nhất —
+ * lá số Tòng cách mà bị lật Dụng Thần giữa chừng sẽ cho kết luận sai ngược hoàn toàn.
+ */
+export function phanTichBatTuTaiDaiVan(tt: TuTruInput, daiVan: CanChi): PhanTichTaiDaiVan {
+  const goc = phanTichBatTu(tt);
+
+  if (goc.vuongSuy.nhom === 3) {
+    return { ...goc, goc, dungThanDoi: false, vuongSuyDoi: false, giuNguyenVietNhom3: true };
+  }
+
+  const vuongSuy = tinhVuongSuy(tt, daiVan);
+  const dungThan = chonDungThan(tt, vuongSuy, daiVan);
+  return {
+    vuongSuy,
+    dungThan,
+    goc,
+    dungThanDoi: dungThan.dungThan !== goc.dungThan.dungThan,
+    vuongSuyDoi: vuongSuy.capDo !== goc.vuongSuy.capDo,
+    giuNguyenVietNhom3: false,
+  };
 }
