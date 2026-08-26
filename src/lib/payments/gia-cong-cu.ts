@@ -19,6 +19,7 @@ export const GIA_CONG_CU = {
   "luan-giai-bat-tu-nang-cao": 499000,
   "ky-mon-menh-chi-tiet": 299000,
   "ky-mon-hoi-dap": 199000,
+  "trach-cat-ky-mon": 499000,
 } as const;
 
 /**
@@ -28,6 +29,7 @@ export const GIA_CONG_CU = {
  */
 export const GIA_GOC_HIEN_THI: Partial<Record<ToolSlug, number>> = {
   "ky-mon-hoi-dap": 399000,
+  "trach-cat-ky-mon": 999000,
 };
 
 export type ToolSlug = keyof typeof GIA_CONG_CU;
