@@ -23,6 +23,11 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
     return jsonResponse({ ok: false, error: "Vui lòng đăng nhập để mua bản luận giải này.", canDangNhap: true }, 401);
   }
 
+  // Đang khoá thử nghiệm nội bộ — chỉ tài khoản quản trị được mua/xem thật (theo yêu cầu 26/8/2026).
+  if (locals.user.isAdmin !== true) {
+    return jsonResponse({ ok: false, error: "Dịch vụ đang trong giai đoạn thử nghiệm nội bộ, chưa mở bán." }, 403);
+  }
+
   const body = await request.json().catch(() => null);
   if (!body || typeof body !== "object") return jsonResponse({ ok: false, error: "Dữ liệu gửi lên không hợp lệ." }, 400);
   const b = body as Record<string, unknown>;
