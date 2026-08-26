@@ -123,32 +123,79 @@ export class But {
     }
   }
 
-  /** Tiêu đề mục, có gạch chân vàng. */
+  /** Tiêu đề mục — chip vuông màu + chữ hoa, gạch chân đôi (vàng chính + son điểm nhấn ngắn). */
   muc(text: string): void {
-    this.chua(34);
-    this.y -= 10;
-    this.dong(text.toUpperCase(), { size: 11, font: this.f.dam, mau: MAU.vang, dan: 5 });
+    this.chua(36);
+    this.y -= 12;
+    const size = 11;
+    const chip = 8;
+    this.page.drawRectangle({ x: LE, y: this.y + (size - chip) / 2, width: chip, height: chip, color: MAU.son });
+    this.dong(text.toUpperCase(), { size, font: this.f.dam, mau: MAU.vang, x: LE + chip + 8, dan: 6 });
     this.page.drawLine({
       start: { x: LE, y: this.y + 4 },
       end: { x: A4.w - LE, y: this.y + 4 },
       thickness: 0.8,
       color: MAU.vangNhat,
     });
+    this.page.drawLine({
+      start: { x: LE, y: this.y + 4 },
+      end: { x: LE + 26, y: this.y + 4 },
+      thickness: 1.6,
+      color: MAU.son,
+    });
     this.y -= 8;
   }
 
-  /** Khung nền bo góc cho một khối (vd 1 ngày đề xuất). Trả về y đỉnh để vẽ nội dung lên trên. */
+  /** Khung nổi bật (callout) nền màu nhạt + viền — dùng cho khối "Lưu ý" hoặc số liệu tổng quan. */
   khoi(cao: number, mauVien: RGB = MAU.vangNhat): void {
     this.chua(cao + 6);
+    const yDay = this.y - cao;
+    this.page.drawRectangle({ x: LE, y: yDay, width: A4.w - LE * 2, height: cao, color: mauVien, opacity: 0.07 });
     this.page.drawRectangle({
       x: LE,
-      y: this.y - cao,
+      y: yDay,
       width: A4.w - LE * 2,
       height: cao,
-      color: rgb(1, 1, 1),
       borderColor: mauVien,
       borderWidth: 0.8,
     });
+  }
+
+  /** Nhãn dạng viên thuốc (pill) nền màu đậm, chữ trắng — cho xếp hạng/mức độ ("TOP 1", "TỐT"…).
+   *  Vẽ tại toạ độ tuyệt đối (x, yDay = mép dưới), không đụng con trỏ dòng. Trả về bề rộng đã vẽ. */
+  nhan(text: string, x: number, yDay: number, o: { mau: RGB; font?: PDFFont; size?: number } ): number {
+    const font = o.font ?? this.f.dam;
+    const size = o.size ?? 8;
+    const padX = 7;
+    const h = size + 7;
+    const r = h / 2;
+    const w = Math.max(h, font.widthOfTextAtSize(text, size) + padX * 2);
+    this.page.drawEllipse({ x: x + r, y: yDay + r, xScale: r, yScale: r, color: o.mau });
+    this.page.drawEllipse({ x: x + w - r, y: yDay + r, xScale: r, yScale: r, color: o.mau });
+    if (w > h) this.page.drawRectangle({ x: x + r, y: yDay, width: w - h, height: h, color: o.mau });
+    this.page.drawText(text, {
+      x: x + (w - font.widthOfTextAtSize(text, size)) / 2,
+      y: yDay + (h - size) / 2 + 1,
+      size,
+      font,
+      color: rgb(1, 1, 1),
+    });
+    return w;
+  }
+
+  /** Ghi lại vị trí hiện tại — dùng với `thanhNhan()` để vẽ thanh màu bên trái SAU khi đã vẽ xong
+   *  nội dung 1 khối (tránh phải đo trước chiều cao khi số dòng thay đổi tuỳ dữ liệu). */
+  danhDau(): { page: PDFPage; y: number } {
+    return { page: this.page, y: this.y };
+  }
+
+  /** Vẽ thanh nhấn màu dọc bên trái từ mốc `danhDau()` tới vị trí hiện tại. Bỏ qua nếu khối đã
+   *  tràn sang trang mới (hiếm, và không đáng để trang trí phức tạp thêm). */
+  thanhNhan(moc: { page: PDFPage; y: number }, mau: RGB): void {
+    if (moc.page !== this.page) return;
+    const cao = moc.y - this.y;
+    if (cao <= 0) return;
+    this.page.drawRectangle({ x: LE - 10, y: this.y, width: 3, height: cao, color: mau });
   }
 
   get tongTrang(): number {
@@ -180,6 +227,15 @@ export function ngatDong(text: string, font: PDFFont, size: number, rong: number
   return ra;
 }
 
+/** Đổi màu hex ("#166534") sang RGB pdf-lib — để tái dùng đúng màu badge đã tính sẵn trên web. */
+export function hex(ma: string): RGB {
+  const s = ma.replace("#", "");
+  const r = parseInt(s.slice(0, 2), 16) / 255;
+  const g = parseInt(s.slice(2, 4), 16) / 255;
+  const bl = parseInt(s.slice(4, 6), 16) / 255;
+  return rgb(r, g, bl);
+}
+
 export function ngayVN(d: { day: number; month: number; year: number }): string {
   return `${String(d.day).padStart(2, "0")}/${String(d.month).padStart(2, "0")}/${d.year}`;
 }
@@ -198,7 +254,7 @@ export async function taoTaiLieuPdf(): Promise<{ doc: PDFDocument; f: Fonts; b: 
   return { doc, f, b: new But(doc, f) };
 }
 
-/** Vẽ đầu phiếu: logo góc trái + tiêu đề/phụ đề căn giữa + tên & khẩu hiệu công ty. */
+/** Vẽ đầu phiếu: dải nền màu ngà + logo góc trái + tiêu đề/phụ đề căn giữa + tên & khẩu hiệu công ty. */
 export async function veDauTrang(
   doc: PDFDocument,
   b: But,
@@ -208,6 +264,8 @@ export async function veDauTrang(
   const logo = await doc.embedPng(Buffer.from(LogoThienAnhBase64, "base64"));
   const LOGO_RONG = 62;
   const logoCao = (logo.height / logo.width) * LOGO_RONG;
+  const BAND_CAO = 132;
+  b.page.drawRectangle({ x: 0, y: A4.h - BAND_CAO, width: A4.w, height: BAND_CAO, color: MAU.vangNhat, opacity: 0.14 });
   b.anh(logo, LE, A4.h - 46 - logoCao, LOGO_RONG);
 
   b.y = A4.h - 58;
@@ -215,7 +273,15 @@ export async function veDauTrang(
   if (o.phuDe) b.dongGiua(o.phuDe, { size: 10, font: f.vua, mau: MAU.vang, dan: 6 });
   b.dongGiua(siteConfig.name.toUpperCase(), { size: 9, font: f.vua, mau: MAU.mucNhat, dan: 2 });
   b.dongGiua(siteConfig.tagline, { size: 8, font: f.nghieng, mau: MAU.mucNhat, dan: 8 });
-  b.y = Math.min(b.y, A4.h - 46 - logoCao - 14);
+  b.y = Math.min(b.y, A4.h - BAND_CAO - 4);
+  b.page.drawLine({ start: { x: LE, y: b.y + 4 }, end: { x: A4.w - LE, y: b.y + 4 }, thickness: 1.2, color: MAU.vang });
+  b.page.drawLine({
+    start: { x: A4.w / 2 - 16, y: b.y },
+    end: { x: A4.w / 2 + 16, y: b.y },
+    thickness: 1.6,
+    color: MAU.son,
+  });
+  b.y -= 14;
 }
 
 /** Khối "Lưu ý & liên hệ" chuẩn ở cuối phiếu. */
@@ -237,6 +303,12 @@ export function veChanTrang(doc: PDFDocument, f: Fonts, maDon?: string): void {
   const ngayXuat = new Date().toLocaleDateString("vi-VN");
   const trangs = doc.getPages();
   trangs.forEach((page, i) => {
+    page.drawLine({
+      start: { x: LE, y: 44 },
+      end: { x: A4.w - LE, y: 44 },
+      thickness: 0.6,
+      color: MAU.vangNhat,
+    });
     const trai = `${siteConfig.name} — lập ngày ${ngayXuat}${maDon ? ` · đơn ${maDon}` : ""}`;
     page.drawText(catVua(trai, f.thuong, 7.5, A4.w - LE * 2 - 60), {
       x: LE,

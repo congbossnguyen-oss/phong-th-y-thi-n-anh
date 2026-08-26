@@ -1,6 +1,5 @@
 ---
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import BottomNav from "../../components/quan-su/BottomNav.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
@@ -26,7 +25,6 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
 <BaseLayout
   title="Sim Phong Thủy Khai Vận Khí"
   description="Đặt dịch vụ tìm sim hợp mệnh theo Bát Tự: cân bằng Âm Dương, tương sinh Ngũ Hành, hỗ trợ năng lượng bản mệnh — chuyên gia chọn tay dãy số phù hợp mục đích, mạng và ngân sách của bạn."
-  appShell
 >
   <PageHero
     eyebrow="⭐ Dịch vụ VIP"
@@ -267,7 +265,6 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
       <div id="spt-ket-qua" class="mt-6 hidden"></div>
     </div>
   </Container>
-  <BottomNav />
 </BaseLayout>
 
 <script>

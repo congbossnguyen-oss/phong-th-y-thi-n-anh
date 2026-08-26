@@ -6,7 +6,6 @@
 // ⚠️ CHƯA PUBLISH: trang KHÔNG được gắn link ở bất kỳ menu/nav nào — chỉ truy cập qua URL trực tiếp
 // để anh Công test. Khi test xong, gỡ dòng này và thêm vào /dai-cat-loi + menu Công cụ.
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import BottomNav from "../../components/quan-su/BottomNav.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
@@ -76,7 +75,6 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
 <BaseLayout
   title="Luận Giải Bát Tự Toàn Diện"
   description="Báo cáo luận giải Bát Tự toàn diện theo 12 giai đoạn: nền tảng, tính cách, Thập Thần, Thần Sát, Mộ Khố, Lục Thân, nghề nghiệp - tài - quan, hôn nhân, sức khỏe, ngũ hành thực hành, Đại Vận trọn đời và kết luận."
-  appShell
   noIndex
 >
   <PageHero
@@ -275,7 +273,6 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
       </section>
     </div>
   </Container>
-  <BottomNav />
 </BaseLayout>
 
 <script define:vars={{ daDangNhap: !!user }}>
