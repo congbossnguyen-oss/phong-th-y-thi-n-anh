@@ -22,7 +22,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   try {
     const { chart, analysis } = laSoVaPhanTich(docKq.input);
     const goiMo = taoGoiMoFree(chart, analysis);
-    const doHinh = taoDuLieuDoHinhFree(chart, analysis);
+    const doHinh = taoDuLieuDoHinhFree(chart, analysis, docKq.input.year);
     return jsonResponse({
       ok: true,
       goiMo,
@@ -31,6 +31,9 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
         nhatChu: `${chart.day.can} (${chart.nhatChu.nguHanh}, ${chart.nhatChu.amDuong})`,
         capDoVuongSuy: analysis.vuongSuy.capDo,
         dungThan: analysis.dungThan.dungThan,
+        hyThan: analysis.dungThan.hyThan,
+        kyThan: analysis.dungThan.kyThan,
+        dieuHauNote: analysis.dungThan.dieuHauNote ?? null,
       },
       doHinh,
     }, 200);
