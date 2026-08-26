@@ -173,8 +173,16 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
         <div id="ldbtd-loi" class="mt-4 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm text-(--color-danger-500)"></div>
 
         <div id="ldbtd-free-result" class="mt-6 hidden rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-5">
-          <p id="ldbtd-free-latu" class="text-xs font-medium text-(--color-ink-600)"></p>
-          <p id="ldbtd-free-text" class="mt-2 whitespace-pre-line text-sm leading-relaxed text-(--color-ink-800)"></p>
+          <div id="ldbtd-free-tutru" class="grid grid-cols-4 gap-2"></div>
+
+          <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div id="ldbtd-free-nguhanh" class="flex items-center gap-4 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3"></div>
+            <div id="ldbtd-free-gauge" class="flex flex-col items-center justify-center rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3"></div>
+          </div>
+
+          <div id="ldbtd-free-daivan" class="mt-4 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3"></div>
+
+          <p id="ldbtd-free-text" class="mt-4 whitespace-pre-line text-sm leading-relaxed text-(--color-ink-800)"></p>
 
           <div class="mt-5 border-t border-(--color-gold-400)/30 pt-4">
             {user ? (
@@ -222,8 +230,91 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
     const loiEl = document.getElementById("ldbtd-loi")!;
     const dangChayEl = document.getElementById("ldbtd-dang-chay")!;
     const freeResultEl = document.getElementById("ldbtd-free-result")!;
-    const freeLaTuEl = document.getElementById("ldbtd-free-latu")!;
     const freeTextEl = document.getElementById("ldbtd-free-text")!;
+
+    const NGU_HANH_COLOR: Record<string, string> = { Mộc: "#16a34a", Hỏa: "#dc2626", Thổ: "#8b5a2b", Kim: "#64748b", Thủy: "#2563eb" };
+    const MAU_VANG = "#ad8843";
+
+    function renderTuTru(tuTru: { tru: string; can: string; chi: string; hanhCan: string; hanhChi: string }[]) {
+      const el = document.getElementById("ldbtd-free-tutru");
+      if (!el) return;
+      el.innerHTML = tuTru.map((t) => `
+        <div class="rounded-lg border p-2 text-center" style="border-color:${NGU_HANH_COLOR[t.hanhCan]}55;background:${NGU_HANH_COLOR[t.hanhCan]}12;">
+          <p class="text-[10px] font-medium text-(--color-ink-500)">${t.tru}</p>
+          <p class="text-sm font-bold" style="color:${NGU_HANH_COLOR[t.hanhCan]}">${t.can}</p>
+          <p class="text-sm font-bold" style="color:${NGU_HANH_COLOR[t.hanhChi]}">${t.chi}</p>
+        </div>
+      `).join("");
+    }
+
+    function renderNguHanhDonut(phanBo: Record<string, number>) {
+      const el = document.getElementById("ldbtd-free-nguhanh");
+      if (!el) return;
+      const order = ["Mộc", "Hỏa", "Thổ", "Kim", "Thủy"];
+      const total = order.reduce((s, h) => s + (phanBo[h] || 0), 0) || 1;
+      let acc = 0;
+      const stops = order.map((h) => {
+        const start = (acc / total) * 100;
+        acc += phanBo[h] || 0;
+        const end = (acc / total) * 100;
+        return `${NGU_HANH_COLOR[h]} ${start}% ${end}%`;
+      }).join(", ");
+      el.innerHTML = `
+        <div class="relative size-20 shrink-0 rounded-full" style="background: conic-gradient(${stops});">
+          <div class="absolute inset-[18%] flex items-center justify-center rounded-full bg-(--color-ivory-50) text-center text-[9px] font-semibold leading-tight text-(--color-ink-700)">Ngũ<br/>Hành</div>
+        </div>
+        <div class="flex flex-col gap-1 text-xs">
+          ${order.map((h) => `<div class="flex items-center gap-1.5"><span class="inline-block size-2.5 rounded-full" style="background:${NGU_HANH_COLOR[h]}"></span><span class="text-(--color-ink-700)">${h}: ${phanBo[h] || 0}</span></div>`).join("")}
+        </div>
+      `;
+    }
+
+    function renderGauge(diem: number, capDo: string) {
+      const el = document.getElementById("ldbtd-free-gauge");
+      if (!el) return;
+      const clamped = Math.max(0, Math.min(100, diem));
+      const circumference = Math.PI * 50;
+      const offset = circumference * (1 - clamped / 100);
+      el.innerHTML = `
+        <svg viewBox="0 0 120 68" class="w-36">
+          <path d="M10,60 A50,50 0 0 1 110,60" fill="none" stroke="#e7ddc9" stroke-width="10" stroke-linecap="round"/>
+          <path d="M10,60 A50,50 0 0 1 110,60" fill="none" stroke="${MAU_VANG}" stroke-width="10" stroke-linecap="round"
+                stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"/>
+        </svg>
+        <p class="-mt-3 text-center text-lg font-bold text-(--color-ink-900)">${clamped}%</p>
+        <p class="text-center text-xs text-(--color-ink-600)">Vượng Suy: ${capDo}</p>
+      `;
+    }
+
+    function renderDaiVanSong(daiVan: { can: string; chi: string; startAge: number; endAge: number; diem: number }[]) {
+      const el = document.getElementById("ldbtd-free-daivan");
+      if (!el || !daiVan.length) return;
+      const w = 600, h = 130, padX = 24, padY = 18;
+      const n = daiVan.length;
+      const xStep = n > 1 ? (w - padX * 2) / (n - 1) : 0;
+      const yMid = h / 2;
+      const yScale = h / 2 - padY;
+      const pts = daiVan.map((v, i) => ({ x: padX + i * xStep, y: yMid - v.diem * yScale, v }));
+      let path = `M ${pts[0].x},${pts[0].y}`;
+      for (let i = 1; i < pts.length; i++) {
+        const p0 = pts[i - 1], p1 = pts[i];
+        const cx = (p0.x + p1.x) / 2;
+        path += ` C ${cx},${p0.y} ${cx},${p1.y} ${p1.x},${p1.y}`;
+      }
+      const areaPath = `${path} L ${pts[pts.length - 1].x},${yMid} L ${pts[0].x},${yMid} Z`;
+      const dots = pts.map((p) => `<circle cx="${p.x}" cy="${p.y}" r="3" fill="${p.v.diem >= 0 ? "#16a34a" : "#c0392b"}"/>`).join("");
+      const labels = pts.map((p) => `<text x="${p.x}" y="${h - 2}" font-size="9" text-anchor="middle" fill="#8a8270">${p.v.startAge}</text>`).join("");
+      el.innerHTML = `
+        <p class="mb-1 text-xs font-medium text-(--color-ink-600)">Xu hướng Đại Vận theo tuổi (ước tính thô theo Dụng/Hỷ/Kỵ Thần — bản luận đầy đủ sẽ phân tích chi tiết từng vận)</p>
+        <svg viewBox="0 0 ${w} ${h}" class="w-full">
+          <line x1="${padX}" y1="${yMid}" x2="${w - padX}" y2="${yMid}" stroke="#d8cdb4" stroke-width="1"/>
+          <path d="${areaPath}" fill="${MAU_VANG}22" stroke="none"/>
+          <path d="${path}" fill="none" stroke="${MAU_VANG}" stroke-width="2"/>
+          ${dots}
+          ${labels}
+        </svg>
+      `;
+    }
     const thanhToanEl = document.getElementById("ldbtd-thanh-toan")!;
     const qrImg = document.getElementById("ldbtd-qr") as HTMLImageElement;
     const orderCodeEl = document.getElementById("ldbtd-order-code")!;
@@ -326,8 +417,13 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
         dangChayEl.classList.add("hidden");
         if (!res.ok || !data.ok) return baoLoi(data.error ?? "Không lập được lá số.");
 
-        freeLaTuEl.textContent = `Tứ Trụ: ${data.laSo.tuTru.join(" / ")} — Nhật Chủ ${data.laSo.nhatChu} — ${data.laSo.capDoVuongSuy} — Dụng Thần ${data.laSo.dungThan}`;
-        freeTextEl.textContent = data.goiMo;
+        freeTextEl.textContent = `Nhật Chủ ${data.laSo.nhatChu} — Dụng Thần ${data.laSo.dungThan}\n\n${data.goiMo}`;
+        if (data.doHinh) {
+          renderTuTru(data.doHinh.tuTru);
+          renderNguHanhDonut(data.doHinh.nguHanhPhanBo);
+          renderGauge(data.doHinh.diemVuongSuy, data.laSo.capDoVuongSuy);
+          renderDaiVanSong(data.doHinh.daiVan);
+        }
         freeResultEl.classList.remove("hidden");
         freeResultEl.scrollIntoView({ behavior: "smooth", block: "start" });
       } catch {

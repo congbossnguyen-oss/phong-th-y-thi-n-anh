@@ -11,8 +11,8 @@ import {
   quyTacRiengGiaiDoan,
 } from "./content-safety";
 import type { GiaiDoanFindings, MaGiaiDoan } from "./types";
+import { ANTHROPIC_MESSAGES_URL as ANTHROPIC_API_URL } from "../anthropic-gateway";
 
-const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
 const ANTHROPIC_VERSION = "2023-06-01";
 const DEFAULT_MODEL = "claude-sonnet-5";
 const TOOL_NAME = "tra_ve_doan_van";

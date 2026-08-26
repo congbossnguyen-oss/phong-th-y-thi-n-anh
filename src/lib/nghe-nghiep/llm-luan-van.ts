@@ -19,8 +19,8 @@
 import { layAnthropicApiKey } from "../chart-profile/api-key";
 import { ghiLogChiPhi, type UsageAnthropic } from "../chart-profile/ghi-log-chi-phi";
 import type { DashboardVM } from "./view-model";
+import { ANTHROPIC_MESSAGES_URL as ANTHROPIC_API_URL } from "../anthropic-gateway";
 
-const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
 const ANTHROPIC_VERSION = "2023-06-01";
 const DEFAULT_MODEL = "claude-sonnet-5";
 const MAX_TOKENS = 3000;

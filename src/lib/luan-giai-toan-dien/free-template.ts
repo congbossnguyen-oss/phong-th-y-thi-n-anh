@@ -2,6 +2,7 @@
 // Mở tự do, không cần đăng nhập, không giới hạn số lần, chi phí ~0.
 import type { BatTuChart } from "../bat-tu";
 import type { BatTuAnalysis, Hanh, CapDo } from "../bat-tu-engine/engine";
+import { hanhCan, hanhChi } from "../bat-tu-engine/engine";
 import { docData } from "./content-loader";
 
 interface DungThanData {
@@ -60,4 +61,57 @@ export function taoGoiMoFree(chart: BatTuChart, analysis: BatTuAnalysis): string
     "",
     `Đây mới là phần mở đầu. Bản luận giải đầy đủ sẽ đi sâu vào 12 khía cạnh: tính cách, thần sát, gia đình - lục thân, sự nghiệp - tài vận, hôn nhân, sức khỏe, và trọn vẹn các giai đoạn vận trình từ nhỏ đến già — ${cauKeuGoiNangCap}`,
   ].join("\n");
+}
+
+export interface DoHinhTuTru {
+  tru: string;
+  can: string;
+  chi: string;
+  hanhCan: Hanh;
+  hanhChi: Hanh;
+}
+
+export interface DoHinhDaiVanDiem {
+  can: string;
+  chi: string;
+  startAge: number;
+  endAge: number;
+  /** -1..1: điểm thô theo hành Can/Chi vận so với Dụng/Hỷ (+) hay Kỵ/Cừu (-) Thần — heuristic thuần code, không phải luận giải AI. */
+  diem: number;
+}
+
+export interface DoHinhFree {
+  tuTru: DoHinhTuTru[];
+  nguHanhPhanBo: Record<Hanh, number>;
+  diemVuongSuy: number;
+  daiVan: DoHinhDaiVanDiem[];
+}
+
+const TEN_TRU: Record<"year" | "month" | "day" | "hour", string> = {
+  year: "Năm", month: "Tháng", day: "Ngày", hour: "Giờ",
+};
+
+/** Điểm thô 1 hành so với Dụng/Hỷ/Kỵ/Cừu Thần — dùng riêng cho đồ hình free, không thay thế luận giải AI. */
+function diemHanhTheoDungThan(hanh: Hanh, dungThan: BatTuAnalysis["dungThan"]): number {
+  if (hanh === dungThan.dungThan || hanh === dungThan.hyThan) return 1;
+  if (hanh === dungThan.kyThan || hanh === dungThan.cuuThan) return -1;
+  return 0;
+}
+
+/** Dữ liệu cho 3 đồ hình ở tầng Free: donut Ngũ Hành, gauge Vượng Suy, đường sóng Đại Vận. Thuần code, không gọi AI. */
+export function taoDuLieuDoHinhFree(chart: BatTuChart, analysis: BatTuAnalysis): DoHinhFree {
+  const tuTru: DoHinhTuTru[] = (["year", "month", "day", "hour"] as const).map((k) => ({
+    tru: TEN_TRU[k], can: chart[k].can, chi: chart[k].chi,
+    hanhCan: hanhCan(chart[k].can), hanhChi: hanhChi(chart[k].chi),
+  }));
+
+  const nguHanhPhanBo: Record<Hanh, number> = { Kim: 0, Mộc: 0, Thủy: 0, Hỏa: 0, Thổ: 0 };
+  for (const t of tuTru) { nguHanhPhanBo[t.hanhCan]++; nguHanhPhanBo[t.hanhChi]++; }
+
+  const daiVan: DoHinhDaiVanDiem[] = chart.daiVan.map((v) => {
+    const diem = (diemHanhTheoDungThan(hanhCan(v.can), analysis.dungThan) + diemHanhTheoDungThan(hanhChi(v.chi), analysis.dungThan)) / 2;
+    return { can: v.can, chi: v.chi, startAge: v.startAge, endAge: v.endAge, diem };
+  });
+
+  return { tuTru, nguHanhPhanBo, diemVuongSuy: analysis.vuongSuy.diem, daiVan };
 }
