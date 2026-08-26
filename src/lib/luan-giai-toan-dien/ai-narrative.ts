@@ -1,7 +1,6 @@
 // TẦNG 2 — AI NARRATIVE. Gọi Claude API THEO TỪNG GIAI ĐOẠN (không gộp), đúng khung prompt trong
 // content/bat-tu/prompts/khung-chung.md + giai-doan-A-L.md. Cùng hạ tầng gọi AI với
 // `nghe-nghiep/llm-luan-van.ts` (retry 429/5xx, cache_control ephemeral, log chi phí).
-import { layAnthropicApiKey } from "../chart-profile/api-key";
 import { ghiLogChiPhi, type UsageAnthropic } from "../chart-profile/ghi-log-chi-phi";
 import { docNhieuKnowledge } from "./content-loader";
 import {
@@ -12,9 +11,8 @@ import {
   xoaTheLaConSot,
 } from "./content-safety";
 import type { GiaiDoanFindings, MaGiaiDoan } from "./types";
-import { ANTHROPIC_MESSAGES_URL as ANTHROPIC_API_URL, anthropicHeaders } from "../anthropic-gateway";
+import { goiAiToolUse, type TinhNangAi } from "../ai/goi-ai";
 
-const ANTHROPIC_VERSION = "2023-06-01";
 const DEFAULT_MODEL = "claude-sonnet-5";
 const TOOL_NAME = "tra_ve_doan_van";
 
@@ -114,52 +112,24 @@ function buildSystemPrompt(cfg: GiaiDoanConfig, laSoJSON: string, findingsJSON: 
  * `cache_control` ở phần cố định; phần thay đổi nằm sau breakpoint nên không phá cache.
  * ⚠️ Muốn cache dùng chung được thì `tools` (render TRƯỚC system) cũng phải giống hệt nhau.
  */
-export async function goiClaudeToolUse(system: string | [string, string], userMessage: string, toolName: string, schema: object, maxTokens: number): Promise<{ input: Record<string, unknown> | null; usage?: UsageAnthropic }> {
-  const apiKey = layAnthropicApiKey();
-  if (!apiKey) return { input: null };
-  const model = (typeof process !== "undefined" ? process.env?.ANTHROPIC_MODEL : undefined) || DEFAULT_MODEL;
-
-  const systemBlocks = Array.isArray(system)
-    ? [
-        { type: "text", text: system[0], cache_control: { type: "ephemeral" } },
-        { type: "text", text: system[1] },
-      ]
-    : [{ type: "text", text: system, cache_control: { type: "ephemeral" } }];
-
-  const body = JSON.stringify({
-    model,
-    max_tokens: maxTokens,
-    system: systemBlocks,
-    messages: [{ role: "user", content: userMessage }],
-    tools: [{ name: toolName, description: "Trả về kết quả đã yêu cầu.", input_schema: schema }],
-    tool_choice: { type: "tool", name: toolName },
-  });
-
-  const RETRYABLE = new Set([429, 500, 502, 503, 504, 529]);
-  let res: Response | null = null;
-  for (let lan = 1; lan <= 3; lan++) {
-    try {
-      res = await fetch(ANTHROPIC_API_URL, {
-        method: "POST",
-        headers: anthropicHeaders(apiKey, ANTHROPIC_VERSION),
-        body,
-      });
-    } catch {
-      res = null;
-    }
-    if (res && res.ok) break;
-    if (res && !RETRYABLE.has(res.status)) break;
-    if (lan < 3) await new Promise((r) => setTimeout(r, 800 * lan));
-  }
-  if (!res || !res.ok) {
-    console.error(`[luan-giai-toan-dien] Gọi AI thất bại: ${res ? `HTTP ${res.status}` : "lỗi mạng"}`);
-    return { input: null };
-  }
-
-  const data = (await res.json()) as { content?: { type: string; input?: unknown }[]; usage?: UsageAnthropic };
-  const toolUse = data.content?.find((c) => c.type === "tool_use");
-  if (!toolUse || typeof toolUse.input !== "object" || toolUse.input === null) return { input: null, usage: data.usage };
-  return { input: toolUse.input as Record<string, unknown>, usage: data.usage };
+/**
+ * `system` nhận 1 chuỗi, HOẶC `[phầnCốĐịnh, phầnThayĐổi]` để bật prompt caching dùng chung giữa
+ * nhiều lệnh (xem ghi chú ở `luu-nien-dai-van.ts`).
+ *
+ * Nay uỷ quyền cho `goiAiToolUse` — lớp dùng chung tự chọn nhà cung cấp (Anthropic / OpenAI tương
+ * thích) theo BẢNG trong `src/lib/ai/goi-ai.ts`, nên đổi nhà cung cấp không phải sửa file này.
+ */
+export async function goiClaudeToolUse(
+  system: string | [string, string],
+  userMessage: string,
+  toolName: string,
+  schema: object,
+  maxTokens: number,
+  tinhNang: TinhNangAi = "bat-tu-giai-doan",
+): Promise<{ input: Record<string, unknown> | null; usage?: UsageAnthropic; model?: string }> {
+  const [systemCoDinh, systemThayDoi] = Array.isArray(system) ? system : [system, undefined];
+  const kq = await goiAiToolUse({ tinhNang, systemCoDinh, systemThayDoi, userMessage, toolName, schema, maxTokens });
+  return { input: kq.input, usage: kq.usage, model: kq.model };
 }
 
 /**
@@ -174,9 +144,8 @@ export async function viecGiaiDoan(cfg: GiaiDoanConfig, laSo: unknown, findings:
   const system = buildSystemPrompt(cfg, laSoJSON, findingsJSON);
   const userMessage = `Hãy viết đoạn văn cho giai đoạn "${cfg.ten}" (${cfg.ma}) theo đúng dữ liệu và nguyên tắc đã nêu ở system prompt.`;
 
-  const { input, usage } = await goiClaudeToolUse(system, userMessage, TOOL_NAME, SCHEMA, 2000);
-  const model = (typeof process !== "undefined" ? process.env?.ANTHROPIC_MODEL : undefined) || DEFAULT_MODEL;
-  ghiLogChiPhi(`Luận giải Bát Tự — Giai đoạn ${cfg.ma}`, model, usage);
+  const { input, usage, model } = await goiClaudeToolUse(system, userMessage, TOOL_NAME, SCHEMA, 2000);
+  ghiLogChiPhi(`Luận giải Bát Tự — Giai đoạn ${cfg.ma}`, model ?? DEFAULT_MODEL, usage);
   if (!input) return null;
   const noiDung = typeof input.noi_dung === "string" ? xoaTheLaConSot(input.noi_dung.trim()) : "";
   return noiDung.length > 0 ? noiDung : null;
@@ -203,9 +172,8 @@ export async function kiemDuyetDoanVan(doanVan: string): Promise<string> {
   ].join("\n");
   const userMessage = `Đoạn văn cần kiểm tra:\n${doanVan}`;
 
-  const { input, usage } = await goiClaudeToolUse(system, userMessage, "tra_ve_doan_van_da_kiem_duyet", SCHEMA_KIEM_DUYET, 2000);
-  const model = (typeof process !== "undefined" ? process.env?.ANTHROPIC_MODEL : undefined) || DEFAULT_MODEL;
-  ghiLogChiPhi("Luận giải Bát Tự — Kiểm duyệt F/I", model, usage);
+  const { input, usage, model } = await goiClaudeToolUse(system, userMessage, "tra_ve_doan_van_da_kiem_duyet", SCHEMA_KIEM_DUYET, 2000, "bat-tu-kiem-duyet");
+  ghiLogChiPhi("Luận giải Bát Tự — Kiểm duyệt F/I", model ?? DEFAULT_MODEL, usage);
   if (!input) return doanVan; // AI lỗi → giữ nguyên bản gốc thay vì mất nội dung.
   const noiDung = typeof input.noi_dung === "string" ? xoaTheLaConSot(input.noi_dung.trim()) : "";
   return noiDung.length > 0 ? noiDung : doanVan;
