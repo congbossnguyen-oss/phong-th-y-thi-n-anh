@@ -13,7 +13,7 @@ import VipQuyenBanner from "../../components/quan-su/VipQuyenBanner.astro";
 export const prerender = false;
 
 // GIAI ĐOẠN THỬ NGHIỆM (Công yêu cầu): CHỈ tài khoản quản trị mới thấy & dùng công cụ; khách vào
-// thấy màn "sắp ra mắt". Khi phát hành chính thức: bỏ khoá này, thêm lại thẻ ở dai-cat-loi-tools.ts
+// ✅ Đã mở bán cho khách (thẻ đã có ở dai-cat-loi-tools.ts). laQuanTri giờ chỉ dùng cho nhãn nhắc.
 // và đổi TEST_MODE thành false để thu phí thật.
 const laQuanTri = Astro.locals.user?.isAdmin === true;
 

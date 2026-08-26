@@ -14,12 +14,8 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
   const limited = checkRateLimit({ request, clientAddress }, { key: "checkout-trach-nhat-sinh-no", max: 10, windowMs: 60_000 });
   if (limited) return limited;
 
-  // GIAI ĐOẠN THỬ NGHIỆM NỘI BỘ (module mới, chưa kiểm chứng nhiều ca thật + quyết định giờ sinh mổ
-  // có rủi ro cao): chỉ tài khoản quản trị được tạo đơn. Chặn ở server, không chỉ ẩn form ở UI.
-  // Xóa khối này khi anh Công duyệt mở bán.
-  if (locals.user?.isAdmin !== true) {
-    return jsonResponse({ ok: false, error: "Dịch vụ đang trong giai đoạn thử nghiệm nội bộ, chưa mở bán." }, 403);
-  }
+  // ✅ ĐÃ MỞ BÁN cho khách (26/8/2026, anh Công duyệt "mở hết tất cả"). Admin vẫn được
+  // taoDonCongCu tạo đơn 0đ + tự xác nhận để test — xem cờ laQuanTri bên dưới.
 
   const body = await request.json().catch(() => null);
   const doc = docInput(body);
