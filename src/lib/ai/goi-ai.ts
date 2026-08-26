@@ -32,7 +32,9 @@ export type TinhNangAi =
   | "quan-su-van-khi"
   | "chart-profile-bat-tu"
   | "chart-profile-tu-vi"
-  | "nghe-nghiep-luan-van";
+  | "nghe-nghiep-luan-van"
+  | "luan-giai-tu-vi-co-ban"
+  | "luan-giai-tu-vi-nang-cao";
 
 /**
  * BẢNG CHỌN NHÀ CUNG CẤP CHO TỪNG TÍNH NĂNG — chỗ duy nhất cần sửa khi muốn đổi.
@@ -53,6 +55,9 @@ const BANG_NHA_CUNG_CAP: Record<TinhNangAi, NhaCungCap> = {
   "chart-profile-bat-tu": "anthropic",
   "chart-profile-tu-vi": "anthropic",
   "nghe-nghiep-luan-van": "anthropic",
+  // Gói 149k/299k, khách đọc kỹ và trả tiền cao — giữ Anthropic cho chắc chất lượng.
+  "luan-giai-tu-vi-co-ban": "anthropic",
+  "luan-giai-tu-vi-nang-cao": "anthropic",
 };
 
 /**

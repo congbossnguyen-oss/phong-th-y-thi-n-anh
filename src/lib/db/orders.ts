@@ -15,6 +15,8 @@ import {
   sendKyMonMenhPdfEmail,
   sendBatTuToanDienCoBanPdfEmail,
   sendBatTuToanDienNangCaoPdfEmail,
+  sendLuanGiaiTuViCoBanPdfEmail,
+  sendLuanGiaiTuViNangCaoPdfEmail,
 } from "../email/send";
 import { taoHoSoTangLe, type DauVaoHoSo } from "../dai-cat-loi/tao-ho-so-tang-le";
 import { taoHoSoNghe, type NgheInput } from "../nghe-nghiep/tao-ho-so-nghe";
@@ -26,6 +28,8 @@ import { generateKyMonMenhPdf } from "../dai-cat-loi/ky-mon-menh-pdf";
 import { taoBaoCaoCoBan, taoBaoCaoNangCao } from "../luan-giai-toan-dien/orchestrator";
 import { generateBatTuCoBanPdf, generateBatTuNangCaoPdf } from "../dai-cat-loi/bat-tu-toan-dien-pdf";
 import type { BatTuInput } from "../bat-tu";
+import { taoLuanGiaiTuVi, type LuanGiaiTuViInput } from "../tu-vi/luan-giai/taoLuanGiaiTuVi";
+import { generateTuViCoBanPdf, generateTuViNangCaoPdf } from "../tu-vi/luan-giai/pdf";
 import { apDungMaKhiThanhToan } from "../payments/promo";
 import { ghiDonThuPhiLenSheet, TEN_CONG_CU_HIEN_THI } from "../google-sheets-don-thu-phi";
 import { ghiDonSimPhongThuyLenSheet } from "../google-sheets-sim-phong-thuy";
@@ -534,6 +538,51 @@ export async function markOrderPaidAndFulfill(orderId: string) {
         });
       } catch (err) {
         console.error(`[luan-giai-bat-tu-nang-cao] Lỗi dựng/gửi PDF cho đơn ${order.orderCode}:`, err);
+      }
+    }
+
+    // Luận Giải Tử Vi — Cơ Bản: gọi AI dựng luận giải đủ 12 cung rồi xuất PDF gửi kèm email khách.
+    // Cùng lý do bọc try/catch: hỏng khâu này đơn vẫn ghi nhận đã thanh toán, khách xem lại được
+    // trên trang (admin) hoặc chờ email (khách thường) — kết quả tính lại/lấy từ cache theo hash lá số.
+    if (order.toolSlug === "luan-giai-tu-vi-co-ban" && order.customerEmail && order.toolInputSnapshot) {
+      try {
+        const input = JSON.parse(order.toolInputSnapshot) as Omit<LuanGiaiTuViInput, "goi">;
+        const kq = await taoLuanGiaiTuVi({ ...input, goi: "co_ban" });
+        if (kq.hopLe && kq.coBan && kq.duLieu) {
+          const pdf = await generateTuViCoBanPdf(kq.coBan, kq.duLieu, order.customerName);
+          await sendLuanGiaiTuViCoBanPdfEmail({
+            to: order.customerEmail,
+            orderCode: order.orderCode,
+            customerName: order.customerName,
+            pdfBytes: pdf,
+          });
+        } else {
+          console.error(`[luan-giai-tu-vi-co-ban] Không tính được luận giải cho đơn ${order.orderCode}: ${kq.loi ?? "AI chưa trả kết quả"}`);
+        }
+      } catch (err) {
+        console.error(`[luan-giai-tu-vi-co-ban] Lỗi dựng/gửi PDF cho đơn ${order.orderCode}:`, err);
+      }
+    }
+
+    // Luận Giải Tử Vi — Nâng Cao: taoLuanGiaiTuVi() tự đảm bảo Cơ Bản đã tính (cache hoặc gọi mới)
+    // trước khi ghép Nâng Cao — PDF xuất ra là "Cơ Bản đầy đủ + Nâng Cao nối tiếp" trong 1 file.
+    if (order.toolSlug === "luan-giai-tu-vi-nang-cao" && order.customerEmail && order.toolInputSnapshot) {
+      try {
+        const input = JSON.parse(order.toolInputSnapshot) as Omit<LuanGiaiTuViInput, "goi">;
+        const kq = await taoLuanGiaiTuVi({ ...input, goi: "nang_cao" });
+        if (kq.hopLe && kq.coBan && kq.nangCao && kq.duLieu) {
+          const pdf = await generateTuViNangCaoPdf(kq.coBan, kq.nangCao, kq.duLieu, order.customerName);
+          await sendLuanGiaiTuViNangCaoPdfEmail({
+            to: order.customerEmail,
+            orderCode: order.orderCode,
+            customerName: order.customerName,
+            pdfBytes: pdf,
+          });
+        } else {
+          console.error(`[luan-giai-tu-vi-nang-cao] Không tính được luận giải cho đơn ${order.orderCode}: ${kq.loi ?? "AI chưa trả kết quả"}`);
+        }
+      } catch (err) {
+        console.error(`[luan-giai-tu-vi-nang-cao] Lỗi dựng/gửi PDF cho đơn ${order.orderCode}:`, err);
       }
     }
   }
