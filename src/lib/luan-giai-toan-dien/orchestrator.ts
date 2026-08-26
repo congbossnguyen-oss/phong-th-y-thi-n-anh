@@ -10,7 +10,7 @@ import { layContentSafety } from "./content-safety";
 import { taoBieuDoDaiVan, taoBieuDoLuuNien } from "./luu-nien-dai-van";
 import type { BaoCaoCoBan, BaoCaoNangCao, LaSoHienThi } from "./types";
 
-export function laSoVaPhanTich(input: BatTuInput): { chart: BatTuChart; analysis: BatTuAnalysis } {
+export function laSoVaPhanTich(input: BatTuInput): { chart: BatTuChart; analysis: BatTuAnalysis; tt: TuTruInput } {
   const chart = tinhBatTu(input);
   const tt: TuTruInput = {
     nam: { can: chart.year.can, chi: chart.year.chi },
@@ -20,7 +20,7 @@ export function laSoVaPhanTich(input: BatTuInput): { chart: BatTuChart; analysis
     gioiTinh: input.gender,
   };
   const analysis = phanTichBatTu(tt);
-  return { chart, analysis };
+  return { chart, analysis, tt };
 }
 
 const TEN_TRU_TIENG_VIET: Record<"year" | "month" | "day" | "hour", string> = {
@@ -75,7 +75,7 @@ export async function taoBaoCaoCoBan(input: BatTuInput): Promise<BaoCaoCoBan> {
 }
 
 export async function taoBaoCaoNangCao(input: BatTuInput): Promise<BaoCaoNangCao> {
-  const { chart, analysis } = laSoVaPhanTich(input);
+  const { chart, analysis, tt } = laSoVaPhanTich(input);
   const findingsList = taoFindingsNangCao(chart, analysis);
   const laSo = laSoHienThi(chart, analysis);
 
@@ -90,8 +90,8 @@ export async function taoBaoCaoNangCao(input: BatTuInput): Promise<BaoCaoNangCao
         return taoNoiDungGiaiDoanAnToan(cfg, laSo, findings);
       }),
     ),
-    taoBieuDoDaiVan(chart, analysis, laSo),
-    taoBieuDoLuuNien(chart, analysis, laSo, input.year),
+    taoBieuDoDaiVan(chart, tt, laSo),
+    taoBieuDoLuuNien(chart, tt, laSo, input.year),
   ]);
 
   const giaiDoan = ketQuaGiaiDoan.filter((x): x is NonNullable<typeof x> => x !== null);
