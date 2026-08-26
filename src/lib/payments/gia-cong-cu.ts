@@ -20,6 +20,8 @@ export const GIA_CONG_CU = {
   "ky-mon-menh-chi-tiet": 299000,
   "ky-mon-hoi-dap": 199000,
   "trach-cat-ky-mon": 499000,
+  "luan-giai-tu-vi-co-ban": 149000,
+  "luan-giai-tu-vi-nang-cao": 299000,
 } as const;
 
 /**
