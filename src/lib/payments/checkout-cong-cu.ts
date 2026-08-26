@@ -13,6 +13,7 @@ import { kiemMaKhuyenMai, chuanHoaMa } from "./promo";
 import { GIA_CONG_CU, type ToolSlug } from "./gia-cong-cu";
 import { coQuyenTruyCap } from "../subscriptions/access";
 import { VIP_SLUG_THEO_GOI } from "./vip-slugs";
+import { boiLoiHeThong } from "../loi-an-toan";
 
 export interface KetQuaTaoDon {
   ok: true;
@@ -34,7 +35,7 @@ export interface LoiTaoDon {
   loiMaKhuyenMai?: boolean;
 }
 
-export async function taoDonCongCu(params: {
+async function _taoDonCongCuNoiBo(params: {
   toolSlug: ToolSlug;
   toolInput: unknown;
   userId: string | null;
@@ -136,4 +137,13 @@ export async function taoDonCongCu(params: {
     qrUrl: getSepayQrUrl({ amount: totalAmount, orderCode }),
     ...(moTaGiam ? { moTaGiam } : {}),
   };
+}
+
+/** Tạo đơn công cụ trả phí — bọc lỗi hệ thống (DB...) không cho lộ chi tiết ra client. Lỗi mã
+ * khuyến mãi không hợp lệ vẫn trả về `{ok:false,...}` bình thường (không phải throw, không bị
+ * đụng tới bởi lớp bọc này). */
+export function taoDonCongCu(params: Parameters<typeof _taoDonCongCuNoiBo>[0]): Promise<KetQuaTaoDon | LoiTaoDon> {
+  return boiLoiHeThong("taoDonCongCu", "Không tạo được đơn hàng, vui lòng thử lại sau.", () =>
+    _taoDonCongCuNoiBo(params)
+  );
 }
