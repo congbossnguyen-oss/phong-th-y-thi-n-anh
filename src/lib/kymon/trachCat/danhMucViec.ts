@@ -37,17 +37,33 @@ export type DungThanViec = {
   trucThanKy?: string[];
 };
 
+/** Lựa chọn phụ bên trong một việc — hiện chỉ dùng cho Cúng Thần (mỗi vị thần một hệ tượng riêng). */
+export type LuaChonPhu = {
+  id: string;
+  nhan: string;
+  dungThan: DungThanViec;
+};
+
 export type ViecTrachCat = {
   id: string;
   nhan: string;
   moTa: string;
-  nhom: "Nhà cửa - Xây dựng" | "Kinh doanh - Công việc" | "Đời sống - Di chuyển" | "Tang lễ";
+  nhom: "Nhà cửa - Xây dựng" | "Kinh doanh - Công việc" | "Đời sống - Di chuyển" | "Tang lễ" | "Hôn nhân - Tín ngưỡng";
   /** Việc gắn với 1 vị trí cố định trong không gian → cần biết toạ sơn của công trình/mộ. */
   canToaSon: boolean;
   ghiChuToaSon?: string;
   dungThan: DungThanViec;
   /** Quy tắc đặc thù xử lý riêng trong engine. */
   quyTacRieng?: ("tranh_phuong_thai_tue" | "tu_mon_khong_tuong_khac")[];
+  /** Việc cần bát tự CẢ HAI người (hiện chỉ Kết Hôn) — engine dùng thuật toán cung tương giao riêng. */
+  canHaiNguoi?: boolean;
+  /** Lựa chọn phụ bắt buộc bên trong việc (Cúng Thần: chọn vị thần). */
+  luaChonPhu?: { nhan: string; moTa: string; ds: LuaChonPhu[] };
+  /**
+   * Không loại cung vì Không Vong. Chỉ Cúng Thần dùng — nguồn nói thẳng:
+   * "quái tượng hơn thần sát, cúng thần nếu gặp không vong cũng không sao".
+   */
+  boQuaKhongVong?: boolean;
   luuY?: string;
   nguon: string;
 };
@@ -222,6 +238,55 @@ export const DANH_MUC_VIEC_TRACH_CAT: ViecTrachCat[] = [
     luuY:
       "Mã Tinh, Bạch Hổ và Canh kim đều là tượng của xe. Cảnh báo quan trọng từ nguồn: các dụng thần này TUYỆT ĐỐI không được gặp kích hình hay nhập mộ — nếu gặp thì chính là tượng tai nạn xe.",
     nguon: "zhicong-11.md, Video 17",
+  },
+
+  // ==========================================================================================
+  // HÔN NHÂN - TÍN NGƯỠNG
+  // ==========================================================================================
+  {
+    id: "ket_hon",
+    nhan: "Kết hôn - Cưới hỏi",
+    moTa: "Chọn ngày cưới, ăn hỏi, đăng ký kết hôn — cần ngày giờ sinh của CẢ HAI người.",
+    nhom: "Hôn nhân - Tín ngưỡng",
+    canToaSon: false,
+    canHaiNguoi: true,
+    dungThan: {
+      than: ["L.Hợp"],
+      hopCan: true,
+      monPhu: ["HƯU", "SINH", "KHAI"],
+    },
+    luuY:
+      "Việc duy nhất phải lập HAI lá bàn. Nguồn lấy bên nữ làm chủ, bên nam làm phụ, rồi tìm các cung TƯƠNG GIAO giữa hai bàn: mệnh cung (vị trí can ngày), hôn nhân cung (vị trí Lục Hợp), phu cung / thê cung (vị trí can hợp với can ngày của người kia). Ngày chọn ra còn phải không xung năm sinh và ngày sinh của cả hai.",
+    nguon: "zhicong-11.md, Video 19",
+  },
+  {
+    id: "cung_than",
+    nhan: "Cúng thần - Bái Phật",
+    moTa: "Chọn ngày dâng lễ, cúng bái — mỗi vị thần/Phật có hệ tượng Kỳ Môn riêng nên phải chọn đúng vị cần cúng.",
+    nhom: "Hôn nhân - Tín ngưỡng",
+    canToaSon: false,
+    boQuaKhongVong: true,
+    dungThan: {},
+    luaChonPhu: {
+      nhan: "Vị thần / Phật cần cúng",
+      moTa: "Mỗi vị ứng với một tổ hợp can - tinh - môn - thần riêng trong Kỳ Môn, nên ngày tốt cũng khác nhau.",
+      ds: [
+        { id: "tho_dia", nhan: "Thổ Địa", dungThan: { than: ["C.Địa"] } },
+        { id: "to_tien", nhan: "Gia tiên (bài vị tổ tiên)", dungThan: { than: ["T.Âm", "C.Địa"] } },
+        { id: "dia_tang", nhan: "Địa Tạng Vương Bồ Tát", dungThan: { than: ["T.Âm"] } },
+        { id: "quan_am", nhan: "Quan Âm Bồ Tát", dungThan: { sao: ["T.Nhuế"] } },
+        { id: "phat_to", nhan: "Phật Tổ / Đại Nhật Như Lai", dungThan: { than: ["T.Phù"], can: ["Bính"] } },
+        { id: "di_lac", nhan: "Phật Di Lặc", dungThan: { sao: ["T.Tâm"] } },
+        { id: "tien_gia", nhan: "Tiên gia", dungThan: { than: ["Đ.Xà"] } },
+        { id: "van_tai_than", nhan: "Văn Tài Thần", dungThan: { monChinh: ["SINH"], can: ["Mậu"] } },
+        { id: "vo_tai_than", nhan: "Võ Tài Thần", dungThan: { monChinh: ["SINH"], than: ["B.Hổ"], can: ["Mậu", "Canh"] } },
+        { id: "van_xuong", nhan: "Văn Xương Đế Quân / Khổng Tử", dungThan: { sao: ["T.Phò", "T.Nhuế"] } },
+        { id: "nguyet_lao", nhan: "Nguyệt Lão / Phúc Lộc Thọ", dungThan: { than: ["L.Hợp"] } },
+      ],
+    },
+    luuY:
+      "Nguồn nhấn mạnh với việc cúng thần thì QUÁI TƯỢNG quan trọng hơn thần sát, và gặp Không Vong cũng không sao — nên hệ thống không loại ngày vì Không Vong ở việc này (khác toàn bộ các việc còn lại).",
+    nguon: "zhicong-11.md, Video 12",
   },
 
   // ==========================================================================================

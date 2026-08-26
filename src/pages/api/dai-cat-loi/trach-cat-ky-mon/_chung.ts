@@ -21,6 +21,14 @@ export type TrachCatToolInput = {
   tuNgay: string;
   denNgay: string;
   toaSonCung?: number;
+  nguoiThuHai?: {
+    namSinh: number;
+    thangSinh: number;
+    ngaySinh: number;
+    gioSinh: number;
+    phutSinh: number;
+  };
+  luaChonPhuId?: string;
 };
 
 const CUNG_HOP_LE = new Set([1, 2, 3, 4, 6, 7, 8, 9]);
@@ -90,8 +98,36 @@ export function docInput(body: unknown): DocKetQua {
     };
   }
 
+  // Kết hôn: bắt buộc có ngày giờ sinh người thứ hai.
+  let nguoiThuHai: TrachCatToolInput["nguoiThuHai"];
+  if (viec.canHaiNguoi) {
+    const n2 = (b.nguoiThuHai ?? {}) as Record<string, unknown>;
+    const n2Nam = laSoTrong(n2.namSinh, 1901, 2100);
+    const n2Thang = laSoTrong(n2.thangSinh, 1, 12);
+    const n2Ngay = laSoTrong(n2.ngaySinh, 1, 31);
+    const n2Gio = laSoTrong(n2.gioSinh, 0, 23);
+    const n2Phut = laSoTrong(n2.phutSinh, 0, 59);
+    if (n2Nam === null || n2Thang === null || n2Ngay === null || n2Gio === null || n2Phut === null) {
+      return { ok: false, error: `Việc "${viec.nhan}" cần ngày giờ sinh hợp lệ của cả hai người.` };
+    }
+    nguoiThuHai = { namSinh: n2Nam, thangSinh: n2Thang, ngaySinh: n2Ngay, gioSinh: n2Gio, phutSinh: n2Phut };
+  }
+
+  // Cúng thần: bắt buộc chọn đúng một vị trong danh sách của việc đó.
+  let luaChonPhuId: string | undefined;
+  if (viec.luaChonPhu) {
+    const id = typeof b.luaChonPhuId === "string" ? b.luaChonPhuId.trim() : "";
+    if (!viec.luaChonPhu.ds.some((x) => x.id === id)) {
+      return { ok: false, error: `Vui lòng chọn ${viec.luaChonPhu.nhan.toLowerCase()}.` };
+    }
+    luaChonPhuId = id;
+  }
+
   return {
     ok: true,
-    input: { namSinh, thangSinh, ngaySinh, gioSinh, phutSinh, viecId, tuNgay, denNgay, toaSonCung },
+    input: {
+      namSinh, thangSinh, ngaySinh, gioSinh, phutSinh, viecId, tuNgay, denNgay, toaSonCung,
+      nguoiThuHai, luaChonPhuId,
+    },
   };
 }

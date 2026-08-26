@@ -31,6 +31,7 @@ import {
 } from "./thanSat";
 import { chiKhongVong, kiemTraTuHai, type ViPhamTuHai } from "./tuHai";
 import { traViec, type DungThanViec, type ViecTrachCat } from "./danhMucViec";
+import { quetNgayKetHon, trachCatKetHon } from "./honNhan";
 
 const MUI_GIO = "Asia/Ho_Chi_Minh";
 
@@ -240,6 +241,16 @@ export type TrachCatInput = {
   denNgay: string;
   /** Số cung toạ sơn của công trình/mộ (bắt buộc với việc canToaSon). */
   toaSonCung?: number;
+  /** Ngày giờ sinh người thứ hai — bắt buộc với việc canHaiNguoi (Kết Hôn). Chủ sự chính là NỮ. */
+  nguoiThuHai?: {
+    namSinh: number;
+    thangSinh: number;
+    ngaySinh: number;
+    gioSinh: number;
+    phutSinh: number;
+  };
+  /** Id lựa chọn phụ — bắt buộc với việc có luaChonPhu (Cúng Thần: chọn vị thần). */
+  luaChonPhuId?: string;
 };
 
 /** Số ngày tối đa được quét trong một lần — chặn tải nặng, đủ cho nhu cầu thực tế. */
@@ -259,6 +270,13 @@ export async function trachCat(input: TrachCatInput): Promise<KetQuaTrachCat> {
   const viec = traViec(input.viecId);
   if (!viec) return { hopLe: false, loi: "Không tìm thấy việc dụng sự này." };
 
+  if (viec.canHaiNguoi && !input.nguoiThuHai) {
+    return { hopLe: false, loi: `Việc "${viec.nhan}" cần ngày giờ sinh của cả hai người.` };
+  }
+  if (viec.luaChonPhu && !viec.luaChonPhu.ds.some((x) => x.id === input.luaChonPhuId)) {
+    return { hopLe: false, loi: `Vui lòng chọn ${viec.luaChonPhu.nhan.toLowerCase()}.` };
+  }
+
   if (viec.canToaSon && !input.toaSonCung) {
     return {
       hopLe: false,
@@ -276,6 +294,51 @@ export async function trachCat(input: TrachCatInput): Promise<KetQuaTrachCat> {
   const soNgay = Math.round((mocDen - mocTu) / 86400000) + 1;
   if (soNgay > SO_NGAY_QUET_TOI_DA) {
     return { hopLe: false, loi: `Khoảng ngày tối đa là ${SO_NGAY_QUET_TOI_DA} ngày.` };
+  }
+
+  // Kết hôn đi nhánh riêng: hai lá bàn, tìm cung tương giao (xem honNhan.ts).
+  if (viec.canHaiNguoi && input.nguoiThuHai) {
+    const n2 = input.nguoiThuHai;
+    const kqHN = await trachCatKetHon(
+      { nam: n2.namSinh, thang: n2.thangSinh, ngay: n2.ngaySinh, gio: n2.gioSinh, phut: n2.phutSinh },
+      { nam: input.namSinh, thang: input.thangSinh, ngay: input.ngaySinh, gio: input.gioSinh, phut: input.phutSinh },
+    );
+    const dsNgay = quetNgayKetHon(kqHN.phanTichChi, mocTu, soNgay)
+      .map((r) => ({
+        ngay: r.ngay,
+        canNgay: r.canNgay,
+        chiNgay: r.chiNgay,
+        soCung: r.uv.soCung,
+        huong: r.uv.huong,
+        diemTong: r.uv.diemTong,
+        xuHuong: r.uv.xuHuong,
+        kienTinh: r.uv.kienTinh,
+        trucThan: r.uv.trucThan,
+        diemCong: r.uv.diemCong,
+        diemTru: r.uv.diemTru,
+      }))
+      .sort((a, b) => b.diemTong - a.diemTong || a.ngay.localeCompare(b.ngay));
+
+    const cb = [...kqHN.canhBao];
+    if (dsNgay.length === 0) {
+      // Phân biệt 2 trường hợp: nới rộng khoảng ngày CHỈ có ích khi vẫn còn địa chi dùng được.
+      const conChiDung = kqHN.phanTichChi.some((p) => !p.biLoai);
+      cb.push(
+        conChiDung
+          ? "Vẫn có địa chi ngày dùng được nhưng không rơi vào khoảng đã chọn — nới rộng khoảng ngày sẽ tìm được."
+          : "Với hai lá bàn này, không địa chi nào qua được bộ lọc, nên nới rộng khoảng ngày cũng không đổi kết quả. Hôn sự đòi hỏi cung tương giao giữa hai bàn nên khắt khe hơn hẳn các việc khác — trường hợp này cần thầy xem tay để cân nhắc phương án linh hoạt hơn.",
+      );
+    }
+    return {
+      hopLe: true,
+      viec,
+      banMenh: kqHN.banNu,
+      chiThangSinh: kqHN.chiThangSinhNu,
+      chiNamSinh: undefined,
+      phanTichChi: kqHN.phanTichChi.map((p) => ({ ...p, diemKyMon: 0, diemThanSat: 0 })),
+      danhSachNgay: dsNgay,
+      canhBao: cb,
+    };
   }
 
   // Bàn Kỳ Môn Mệnh của chủ sự — đóng vai trò "mẫu cục" của toàn bộ phương pháp.
@@ -304,6 +367,12 @@ export async function trachCat(input: TrachCatInput): Promise<KetQuaTrachCat> {
   const kvSet = chiKhongVong(banMenh);
   const canhBao: string[] = [];
 
+  // Việc có lựa chọn phụ (Cúng Thần) dùng dụng thần của đúng vị đã chọn, gộp lên dụng thần nền.
+  const luaChon = viec.luaChonPhu?.ds.find((x) => x.id === input.luaChonPhuId);
+  const dungThan: DungThanViec = luaChon
+    ? { ...viec.dungThan, ...luaChon.dungThan }
+    : viec.dungThan;
+
   // Thái Tuế của năm dụng sự (lấy theo năm của ngày bắt đầu khoảng quét).
   const chiThaiTue = getGanzhiYear({ year: tu.nam, month: tu.thang, day: tu.ngay, timeZone: MUI_GIO }).chi;
   const cungThaiTue = Number(
@@ -329,12 +398,15 @@ export async function trachCat(input: TrachCatInput): Promise<KetQuaTrachCat> {
     for (const chi of dsChi) {
       const lyDoLoai: string[] = [];
 
-      // Bước 1 — Kỳ Môn Tứ Hại.
-      const viPham: ViPhamTuHai[] = kiemTraTuHai(banMenh, cung, chi, kvSet);
+      // Bước 1 — Kỳ Môn Tứ Hại. Riêng Cúng Thần bỏ qua Không Vong (nguồn: "cúng thần nếu gặp
+      // không vong cũng không sao"), 3 hại còn lại vẫn xét bình thường.
+      const viPham: ViPhamTuHai[] = kiemTraTuHai(banMenh, cung, chi, kvSet).filter(
+        (v) => !(viec.boQuaKhongVong && v.loai === "khong_vong"),
+      );
       for (const v of viPham) lyDoLoai.push(v.moTa);
 
       // Bước 2 — môn kỵ của việc dụng sự.
-      if (viec.dungThan.monKy?.includes(cung.mon)) {
+      if (dungThan.monKy?.includes(cung.mon)) {
         lyDoLoai.push(`${cung.mon} Môn kỵ với việc "${viec.nhan}"`);
       }
 
@@ -378,7 +450,7 @@ export async function trachCat(input: TrachCatInput): Promise<KetQuaTrachCat> {
         continue;
       }
 
-      const qt = chamDiemQuaiTuong(cung, viec.dungThan, banMenh.trucPhuCung, coMaTinh);
+      const qt = chamDiemQuaiTuong(cung, dungThan, banMenh.trucPhuCung, coMaTinh);
       const diemThanSat = chamDiemThanSat(kienTinh, trucThan);
       const diemTong = Math.round(qt.diem * 0.7 + diemThanSat * 0.3);
 
@@ -442,8 +514,13 @@ export async function trachCat(input: TrachCatInput): Promise<KetQuaTrachCat> {
   danhSachNgay.sort((a, b) => (b.diemTong - a.diemTong) || a.ngay.localeCompare(b.ngay));
 
   if (danhSachNgay.length === 0) {
+    // Bộ lọc chạy trên 12 ĐỊA CHI chứ không trên từng ngày, nên nếu không địa chi nào qua được
+    // thì kéo dài khoảng ngày hoàn toàn vô ích — phải nói đúng để khách khỏi thử lại vô vọng.
+    const conChiDung = phanTichChi.some((p) => !p.biLoai);
     canhBao.push(
-      "Không có ngày nào trong khoảng đã chọn qua được bộ lọc. Nên nới rộng khoảng ngày hoặc cân nhắc lại yêu cầu.",
+      conChiDung
+        ? "Vẫn có địa chi ngày dùng được nhưng không rơi vào khoảng đã chọn — nới rộng khoảng ngày sẽ tìm được."
+        : "Với lá bàn mệnh này, không địa chi nào qua được bộ lọc cho việc đã chọn, nên nới rộng khoảng ngày cũng không đổi kết quả. Nên cân nhắc đổi việc dụng sự hoặc liên hệ để được xem tay.",
     );
   }
 
@@ -521,6 +598,7 @@ export type ChonGioInput = {
   /** Ngày đã chọn ở bước trước, dạng "YYYY-MM-DD". */
   ngayChon: string;
   toaSonCung?: number;
+  luaChonPhuId?: string;
 };
 
 export async function chonGioTrongNgay(input: ChonGioInput): Promise<KetQuaChonGio> {
@@ -568,6 +646,10 @@ export async function chonGioTrongNgay(input: ChonGioInput): Promise<KetQuaChonG
   const kvSet = chiKhongVong(tuCuc);
   const canhBao: string[] = [];
   const chiToaSon = input.toaSonCung ? (CHI_CUNG[input.toaSonCung] ?? []) : [];
+  const luaChonGio = viec.luaChonPhu?.ds.find((x) => x.id === input.luaChonPhuId);
+  const dungThanGio: DungThanViec = luaChonGio
+    ? { ...viec.dungThan, ...luaChonGio.dungThan }
+    : viec.dungThan;
 
   // Quy tắc toạ sơn xét trên chính cục của ngày giờ đã chọn (Trương Chí Xuân, Nguyên tắc 3).
   if (input.toaSonCung) {
@@ -610,8 +692,11 @@ export async function chonGioTrongNgay(input: ChonGioInput): Promise<KetQuaChonG
 
     for (const chi of dsChi) {
       const lyDoLoai: string[] = [];
-      for (const v of kiemTraTuHai(tuCuc, cung, chi, kvSet, "giờ")) lyDoLoai.push(v.moTa);
-      if (viec.dungThan.monKy?.includes(cung.mon)) {
+      for (const v of kiemTraTuHai(tuCuc, cung, chi, kvSet, "giờ")) {
+        if (viec.boQuaKhongVong && v.loai === "khong_vong") continue;
+        lyDoLoai.push(v.moTa);
+      }
+      if (dungThanGio.monKy?.includes(cung.mon)) {
         lyDoLoai.push(`${cung.mon} Môn kỵ với việc "${viec.nhan}"`);
       }
       // Giờ không được xung ngày đã chọn, cũng không xung tuổi chủ sự (nguồn loại giờ Thân vì
@@ -636,7 +721,7 @@ export async function chonGioTrongNgay(input: ChonGioInput): Promise<KetQuaChonG
         continue;
       }
 
-      const qt = chamDiemQuaiTuong(cung, viec.dungThan, tuCuc.trucPhuCung, cung.Ma);
+      const qt = chamDiemQuaiTuong(cung, dungThanGio, tuCuc.trucPhuCung, cung.Ma);
       const diemThanSat = chamDiemThanSat(kienTinh, trucThan);
       const diemTong = Math.round(qt.diem * 0.7 + diemThanSat * 0.3);
       const cong = [...qt.cong];

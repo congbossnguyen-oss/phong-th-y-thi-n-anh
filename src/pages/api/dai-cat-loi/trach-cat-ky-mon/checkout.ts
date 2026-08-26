@@ -42,11 +42,13 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
     const thu = await trachCat({ ...doc.input, viecId: doc.input.viecId });
     if (!thu.hopLe) return jsonResponse({ ok: false, error: thu.loi ?? "Không tính được kết quả." }, 400);
     if ((thu.danhSachNgay?.length ?? 0) === 0) {
+      // Dùng đúng cảnh báo engine sinh ra — nó đã phân biệt "nới rộng khoảng ngày sẽ ra" với
+      // "không địa chi nào qua được, nới rộng cũng vô ích".
+      const lyDo = (thu.canhBao ?? []).at(-1);
       return jsonResponse(
         {
           ok: false,
-          error:
-            "Trong khoảng ngày này không có ngày nào qua được bộ lọc Kỳ Môn cho việc đã chọn. Vui lòng nới rộng khoảng ngày rồi thử lại.",
+          error: lyDo ?? "Trong khoảng ngày này không có ngày nào qua được bộ lọc Kỳ Môn cho việc đã chọn.",
         },
         400,
       );
