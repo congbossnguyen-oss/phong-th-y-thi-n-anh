@@ -37,15 +37,28 @@ const q = Astro.url.searchParams;
 const orderCode = q.get("orderCode");
 
 // Ngày giờ sinh có thể mang sang từ /lap-ky-mon (chế độ Mệnh) — điền sẵn để khách khỏi nhập lại.
-const soTuQuery = (ten: string): string => {
-  const n = Number(q.get(ten));
-  return Number.isInteger(n) ? String(n) : "";
+// ⚠️ Phải kiểm tra chuỗi rỗng TRƯỚC khi Number(): q.get() trả null khi thiếu tham số, mà
+// Number(null) === 0 và Number.isInteger(0) === true → thiếu tham số lại điền "0" vào ô, che mất
+// placeholder và làm khách tưởng đó là giá trị thật.
+const soTuQuery = (ten: string): number | null => {
+  const raw = q.get(ten);
+  if (raw === null || raw.trim() === "") return null;
+  const n = Number(raw);
+  return Number.isInteger(n) ? n : null;
 };
 const preNam = soTuQuery("nam");
 const preThang = soTuQuery("thang");
 const preNgay = soTuQuery("ngay");
 const preGio = soTuQuery("gio");
 const prePhut = soTuQuery("phut");
+
+// Gộp thành 1 ô ngày + 1 ô giờ cho dễ hiểu (thay vì 5 ô số rời không nhãn).
+const hai = (n: number) => String(n).padStart(2, "0");
+const preNgaySinh =
+  preNam !== null && preThang !== null && preNgay !== null
+    ? `${preNam}-${hai(preThang)}-${hai(preNgay)}`
+    : "";
+const preGioSinh = preGio !== null && prePhut !== null ? `${hai(preGio)}:${hai(prePhut)}` : "";
 let order: Awaited<ReturnType<typeof getOrderByCode>> | null = null;
 let kq: KetQuaTrachCat | null = null;
 if (orderCode) {
@@ -219,14 +232,36 @@ function ngayVN(iso: string): string {
 
           <form id="tc-form" class="flex flex-col gap-5 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
             <div>
-              <p class="text-sm font-medium text-(--color-ink-800)">1. Ngày giờ sinh của chủ sự (người đứng ra làm việc)</p>
-              <p class="mt-0.5 text-xs text-(--color-ink-500)">Bắt buộc — phương pháp lập bàn Kỳ Môn Mệnh riêng của người này làm mẫu cục.</p>
-              <div class="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-5">
-                <input type="number" id="tc-ngay-sinh" value={preNgay} placeholder="Ngày" min="1" max="31" required class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm" />
-                <input type="number" id="tc-thang-sinh" value={preThang} placeholder="Tháng" min="1" max="12" required class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm" />
-                <input type="number" id="tc-nam-sinh" value={preNam} placeholder="Năm" min="1901" max="2100" required class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm" />
-                <input type="number" id="tc-gio-sinh" value={preGio} placeholder="Giờ" min="0" max="23" required class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm" />
-                <input type="number" id="tc-phut-sinh" value={prePhut} placeholder="Phút" min="0" max="59" required class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm" />
+              <p class="text-sm font-medium text-(--color-ink-800)">1. Ngày giờ sinh của chủ sự</p>
+              <p class="mt-0.5 text-xs text-(--color-ink-500)">
+                "Chủ sự" là người đứng tên làm việc này — chủ nhà khi động thổ/nhập trạch, chủ doanh nghiệp khi khai trương,
+                trưởng nam/người chống gậy khi an táng. Cần <strong>ngày giờ sinh dương lịch</strong> của người đó, vì phương pháp
+                lập riêng lá bàn Kỳ Môn Mệnh của họ làm gốc để chọn ngày.
+              </p>
+              <div class="mt-3 grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label for="tc-ngay-sinh" class="block text-xs font-medium text-(--color-ink-700)">Ngày sinh (dương lịch)</label>
+                  <input
+                    type="date"
+                    id="tc-ngay-sinh"
+                    value={preNgaySinh}
+                    min="1901-01-01"
+                    max="2100-12-31"
+                    required
+                    class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm"
+                  />
+                </div>
+                <div>
+                  <label for="tc-gio-sinh" class="block text-xs font-medium text-(--color-ink-700)">Giờ sinh</label>
+                  <input
+                    type="time"
+                    id="tc-gio-sinh"
+                    value={preGioSinh}
+                    required
+                    class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm"
+                  />
+                  <p class="mt-1 text-xs text-(--color-ink-500)">Càng sát giờ sinh thật càng chính xác. Không nhớ chính xác thì lấy giờ ghi trên giấy khai sinh.</p>
+                </div>
               </div>
             </div>
 
@@ -241,6 +276,31 @@ function ngayVN(iso: string): string {
                 ))}
               </select>
               <p id="tc-viec-mo-ta" class="mt-2 hidden text-xs leading-relaxed text-(--color-ink-600)"></p>
+            </div>
+
+            <div id="tc-khu-nguoi-2" class="hidden rounded-(--radius-control) border border-(--color-cinnabar-400)/30 bg-(--color-cinnabar-400)/5 p-3">
+              <p class="text-sm font-medium text-(--color-ink-800)">Ngày giờ sinh người còn lại</p>
+              <p class="mt-0.5 text-xs text-(--color-ink-500)">
+                Việc cưới hỏi cần lá bàn của <strong>cả hai người</strong> để tìm cung tương giao. Ô số 1 ở trên điền của <strong>cô dâu</strong> (nguồn lấy bên nữ làm chủ), ô dưới đây điền của <strong>chú rể</strong>.
+              </p>
+              <div class="mt-2 grid gap-3 sm:grid-cols-2">
+                <div>
+                  <label for="tc-ngay-sinh-2" class="block text-xs font-medium text-(--color-ink-700)">Ngày sinh chú rể</label>
+                  <input type="date" id="tc-ngay-sinh-2" min="1901-01-01" max="2100-12-31" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm" />
+                </div>
+                <div>
+                  <label for="tc-gio-sinh-2" class="block text-xs font-medium text-(--color-ink-700)">Giờ sinh chú rể</label>
+                  <input type="time" id="tc-gio-sinh-2" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm" />
+                </div>
+              </div>
+            </div>
+
+            <div id="tc-khu-lua-chon-phu" class="hidden">
+              <label id="tc-lua-chon-phu-nhan" for="tc-lua-chon-phu" class="text-sm font-medium text-(--color-ink-800)"></label>
+              <p id="tc-lua-chon-phu-mo-ta" class="mt-0.5 text-xs text-(--color-ink-500)"></p>
+              <select id="tc-lua-chon-phu" class="mt-2 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm">
+                <option value="">— Chọn —</option>
+              </select>
             </div>
 
             <div id="tc-khu-toa-son" class="hidden">
@@ -306,7 +366,14 @@ function ngayVN(iso: string): string {
 
 <script
   define:vars={{
-    DS_VIEC: DANH_MUC_VIEC_TRACH_CAT.map((v) => ({ id: v.id, moTa: v.moTa, luuY: v.luuY, ghiChuToaSon: v.ghiChuToaSon })),
+    DS_VIEC: DANH_MUC_VIEC_TRACH_CAT.map((v) => ({
+      id: v.id,
+      moTa: v.moTa,
+      luuY: v.luuY,
+      ghiChuToaSon: v.ghiChuToaSon,
+      canHaiNguoi: v.canHaiNguoi ?? false,
+      luaChonPhu: v.luaChonPhu ? { nhan: v.luaChonPhu.nhan, moTa: v.luaChonPhu.moTa, ds: v.luaChonPhu.ds.map((x) => ({ id: x.id, nhan: x.nhan })) } : null,
+    })),
     ID_CAN_TOA_SON: idViecCanToaSon,
     ORDER_CODE: orderCode,
   }}
@@ -332,6 +399,35 @@ function ngayVN(iso: string): string {
       selToaSon.required = can;
       if (!can) selToaSon.value = "";
       if (can && v?.ghiChuToaSon) ghiChuToaSon.textContent = v.ghiChuToaSon;
+
+      // Kết hôn: mở khối nhập ngày giờ sinh người thứ hai.
+      const khuNguoi2 = document.getElementById("tc-khu-nguoi-2");
+      const ng2Ngay = document.getElementById("tc-ngay-sinh-2");
+      const ng2Gio = document.getElementById("tc-gio-sinh-2");
+      const canHai = !!v?.canHaiNguoi;
+      khuNguoi2.classList.toggle("hidden", !canHai);
+      ng2Ngay.required = canHai;
+      ng2Gio.required = canHai;
+      if (!canHai) { ng2Ngay.value = ""; ng2Gio.value = ""; }
+
+      // Cúng thần: nạp danh sách vị thần tương ứng.
+      const khuPhu = document.getElementById("tc-khu-lua-chon-phu");
+      const selPhu = document.getElementById("tc-lua-chon-phu");
+      const nhanPhu = document.getElementById("tc-lua-chon-phu-nhan");
+      const moTaPhu = document.getElementById("tc-lua-chon-phu-mo-ta");
+      if (v?.luaChonPhu) {
+        nhanPhu.textContent = v.luaChonPhu.nhan;
+        moTaPhu.textContent = v.luaChonPhu.moTa;
+        selPhu.innerHTML =
+          '<option value="">— Chọn —</option>' +
+          v.luaChonPhu.ds.map((x) => `<option value="${x.id}">${x.nhan}</option>`).join("");
+        selPhu.required = true;
+        khuPhu.classList.remove("hidden");
+      } else {
+        selPhu.innerHTML = '<option value="">— Chọn —</option>';
+        selPhu.required = false;
+        khuPhu.classList.add("hidden");
+      }
     });
   }
 
@@ -389,19 +485,32 @@ function ngayVN(iso: string): string {
       loiEl.classList.add("hidden");
 
       if (!val("tc-viec")) return baoLoi("Vui lòng chọn việc cần xem ngày.");
+      const viecDangChon = DS_VIEC.find((x) => x.id === val("tc-viec"));
       if (ID_CAN_TOA_SON.includes(val("tc-viec")) && !val("tc-toa-son")) {
         return baoLoi("Việc này bắt buộc phải chọn toạ sơn của công trình / mộ phần.");
+      }
+      if (viecDangChon?.canHaiNguoi && (!val("tc-ngay-sinh-2") || !val("tc-gio-sinh-2"))) {
+        return baoLoi("Việc cưới hỏi cần đủ ngày giờ sinh của cả hai người.");
+      }
+      if (viecDangChon?.luaChonPhu && !val("tc-lua-chon-phu")) {
+        return baoLoi(`Vui lòng chọn ${viecDangChon.luaChonPhu.nhan.toLowerCase()}.`);
       }
       if (!val("tc-ten") || !val("tc-sdt") || !val("tc-email")) {
         return baoLoi("Vui lòng nhập đầy đủ họ tên, số điện thoại và email.");
       }
 
+      const ngaySinhRaw = val("tc-ngay-sinh");
+      const gioSinhRaw = val("tc-gio-sinh");
+      if (!ngaySinhRaw || !gioSinhRaw) return baoLoi("Vui lòng nhập đủ ngày sinh và giờ sinh của chủ sự.");
+      const [nsY, nsM, nsD] = ngaySinhRaw.split("-").map(Number);
+      const [gsH, gsMin] = gioSinhRaw.split(":").map(Number);
+
       const payload = {
-        namSinh: Number(val("tc-nam-sinh")),
-        thangSinh: Number(val("tc-thang-sinh")),
-        ngaySinh: Number(val("tc-ngay-sinh")),
-        gioSinh: Number(val("tc-gio-sinh")),
-        phutSinh: Number(val("tc-phut-sinh")),
+        namSinh: nsY,
+        thangSinh: nsM,
+        ngaySinh: nsD,
+        gioSinh: gsH,
+        phutSinh: gsMin,
         viecId: val("tc-viec"),
         tuNgay: val("tc-tu-ngay"),
         denNgay: val("tc-den-ngay"),
@@ -410,6 +519,12 @@ function ngayVN(iso: string): string {
         customerEmail: val("tc-email"),
       };
       if (val("tc-toa-son")) payload.toaSonCung = Number(val("tc-toa-son"));
+      if (val("tc-lua-chon-phu")) payload.luaChonPhuId = val("tc-lua-chon-phu");
+      if (viecDangChon?.canHaiNguoi) {
+        const [y2, m2, d2] = val("tc-ngay-sinh-2").split("-").map(Number);
+        const [h2, min2] = val("tc-gio-sinh-2").split(":").map(Number);
+        payload.nguoiThuHai = { namSinh: y2, thangSinh: m2, ngaySinh: d2, gioSinh: h2, phutSinh: min2 };
+      }
       if (val("tc-ma-input")) payload.maKhuyenMai = val("tc-ma-input");
 
       dangChayEl.classList.remove("hidden");
