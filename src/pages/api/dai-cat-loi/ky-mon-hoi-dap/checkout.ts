@@ -41,7 +41,7 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
 
   // "Tính thử" trước khi tạo đơn — chặn lá bàn không lập được (vd ngoài phạm vi dữ liệu) trước khi thu tiền.
   try {
-    lapLaBan(doc.input.laBan);
+    await lapLaBan(doc.input.laBan);
   } catch (err) {
     return jsonResponse({ ok: false, error: err instanceof Error ? err.message : "Không lập được lá bàn với dữ liệu này." }, 400);
   }

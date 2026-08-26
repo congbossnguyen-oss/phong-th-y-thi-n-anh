@@ -82,7 +82,7 @@ export const GET: APIRoute = async ({ url, request, clientAddress }) => {
       }
       const luanChuDe = LUAN_THEO_CHU_DE[input.chuDeId];
       if (luanChuDe) {
-        const laBan = lapLaBan(input.laBan);
+        const laBan = await lapLaBan(input.laBan);
         const kq = luanChuDe(laBan, input.tinhHuongId, input.quanHe, input.thongTinBoSung ?? "");
         if (kq?.hopLe) ketQuaLuan = { xuHuong: kq.xuHuong, vanBan: kq.vanBan, chiTiet: kq.chiTiet };
       }
