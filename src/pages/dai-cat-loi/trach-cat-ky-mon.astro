@@ -35,6 +35,17 @@ const GIA_GOC_LABEL = GIA_GOC ? dinhDangTien(GIA_GOC) : null;
 
 const q = Astro.url.searchParams;
 const orderCode = q.get("orderCode");
+
+// Ngày giờ sinh có thể mang sang từ /lap-ky-mon (chế độ Mệnh) — điền sẵn để khách khỏi nhập lại.
+const soTuQuery = (ten: string): string => {
+  const n = Number(q.get(ten));
+  return Number.isInteger(n) ? String(n) : "";
+};
+const preNam = soTuQuery("nam");
+const preThang = soTuQuery("thang");
+const preNgay = soTuQuery("ngay");
+const preGio = soTuQuery("gio");
+const prePhut = soTuQuery("phut");
 let order: Awaited<ReturnType<typeof getOrderByCode>> | null = null;
 let kq: KetQuaTrachCat | null = null;
 if (orderCode) {
@@ -211,11 +222,11 @@ function ngayVN(iso: string): string {
               <p class="text-sm font-medium text-(--color-ink-800)">1. Ngày giờ sinh của chủ sự (người đứng ra làm việc)</p>
               <p class="mt-0.5 text-xs text-(--color-ink-500)">Bắt buộc — phương pháp lập bàn Kỳ Môn Mệnh riêng của người này làm mẫu cục.</p>
               <div class="mt-2 grid grid-cols-2 gap-3 sm:grid-cols-5">
-                <input type="number" id="tc-ngay-sinh" placeholder="Ngày" min="1" max="31" required class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm" />
-                <input type="number" id="tc-thang-sinh" placeholder="Tháng" min="1" max="12" required class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm" />
-                <input type="number" id="tc-nam-sinh" placeholder="Năm" min="1901" max="2100" required class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm" />
-                <input type="number" id="tc-gio-sinh" placeholder="Giờ" min="0" max="23" required class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm" />
-                <input type="number" id="tc-phut-sinh" placeholder="Phút" min="0" max="59" required class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm" />
+                <input type="number" id="tc-ngay-sinh" value={preNgay} placeholder="Ngày" min="1" max="31" required class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm" />
+                <input type="number" id="tc-thang-sinh" value={preThang} placeholder="Tháng" min="1" max="12" required class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm" />
+                <input type="number" id="tc-nam-sinh" value={preNam} placeholder="Năm" min="1901" max="2100" required class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm" />
+                <input type="number" id="tc-gio-sinh" value={preGio} placeholder="Giờ" min="0" max="23" required class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm" />
+                <input type="number" id="tc-phut-sinh" value={prePhut} placeholder="Phút" min="0" max="59" required class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm" />
               </div>
             </div>
 
