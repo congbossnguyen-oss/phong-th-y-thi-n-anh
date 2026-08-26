@@ -198,7 +198,11 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
 
           <div id="ldbtd-free-daivan" class="mt-4 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3"></div>
 
-          <p id="ldbtd-free-text" class="mt-4 whitespace-pre-line text-sm leading-relaxed text-(--color-ink-800)"></p>
+          <div class="mt-4 flex items-center justify-between gap-2">
+            <p class="text-xs font-medium text-(--color-ink-600)">Gợi mở miễn phí</p>
+            <button type="button" class="ldbtd-tts-btn shrink-0 rounded-full border border-(--color-gold-400)/50 bg-(--color-gold-400)/10 px-3 py-1.5 text-xs font-medium text-(--color-gold-700)" data-tts-target="ldbtd-free-text">🔊 Nghe thử</button>
+          </div>
+          <p id="ldbtd-free-text" class="mt-1.5 whitespace-pre-line text-sm leading-relaxed text-(--color-ink-800)"></p>
 
           <div class="mt-5 border-t border-(--color-gold-400)/30 pt-4">
             {user ? (
