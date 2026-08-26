@@ -53,18 +53,24 @@ export async function daTungDungThu(userId: string): Promise<boolean> {
  * Kích hoạt dùng thử. Ném lỗi (message tiếng Việt, hiển thị thẳng cho khách) nếu không đủ điều
  * kiện — KHÔNG âm thầm bỏ qua, để tránh lộ ra bug "bấm mà không thấy gì xảy ra".
  */
-export async function batDauDungThu(userId: string, device?: TrialDeviceContext): Promise<{ expiresAt: Date }> {
+/** Lỗi AN TOÀN để hiển thị thẳng cho khách — chỉ dùng cho các trường hợp nghiệp vụ đã biết trước
+ * (không bao giờ chứa chi tiết kỹ thuật/SQL). Bất kỳ lỗi nào khác (driver DB, network...) đều bị
+ * chặn lại và đổi thành thông báo chung ở dưới — không để lộ ra ngoài (vd "Failed query: select...
+ * params: ..." lộ tên bảng/cột/tham số thật, dễ bị dò để tấn công). */
+class LoiNghiepVuDungThu extends Error {}
+
+async function _batDauDungThuNoiBo(userId: string, device?: TrialDeviceContext): Promise<{ expiresAt: Date }> {
   const [dangHoatDong] = await db
     .select({ id: subscriptions.id })
     .from(subscriptions)
     .where(and(eq(subscriptions.userId, userId), eq(subscriptions.status, "active")))
     .limit(1);
   if (dangHoatDong) {
-    throw new Error("Tài khoản đang có gói hoạt động, không cần dùng thử.");
+    throw new LoiNghiepVuDungThu("Tài khoản đang có gói hoạt động, không cần dùng thử.");
   }
 
   if (await daTungDungThu(userId)) {
-    throw new Error("Tài khoản đã dùng thử rồi, mỗi tài khoản chỉ dùng thử được 1 lần.");
+    throw new LoiNghiepVuDungThu("Tài khoản đã dùng thử rồi, mỗi tài khoản chỉ dùng thử được 1 lần.");
   }
 
   // --- Chống lạm dụng mức "Vừa" (theo thiết bị + IP): đọc DB rồi để hàm thuần quyết định ---
@@ -82,7 +88,7 @@ export async function batDauDungThu(userId: string, device?: TrialDeviceContext)
       .where(and(eq(trialDevices.ip, device.ip), gte(trialDevices.createdAt, tuNgay)));
 
     const loi = lyDoChanTrialTheoThietBi({ thietBiDaThu: !!thietBi, soLuotIp: luotCungIp.length });
-    if (loi) throw new Error(loi);
+    if (loi) throw new LoiNghiepVuDungThu(loi);
   }
 
   const startedAt = new Date();
@@ -106,4 +112,18 @@ export async function batDauDungThu(userId: string, device?: TrialDeviceContext)
   }
 
   return { expiresAt };
+}
+
+/** Bọc ngoài `_batDauDungThuNoiBo` — chặn MỌI lỗi không phải nghiệp vụ đã biết trước (vd lỗi driver
+ * DB, mất kết nối...), ghi log đầy đủ ở server (console.error, không lộ ra ngoài), chỉ trả về câu
+ * chung chung cho khách. Lỗi nghiệp vụ (LoiNghiepVuDungThu) vẫn hiển thị nguyên văn vì đã soạn sẵn
+ * bằng tiếng Việt, an toàn để khách đọc. */
+export async function batDauDungThu(userId: string, device?: TrialDeviceContext): Promise<{ expiresAt: Date }> {
+  try {
+    return await _batDauDungThuNoiBo(userId, device);
+  } catch (err) {
+    if (err instanceof LoiNghiepVuDungThu) throw err;
+    console.error("[dung-thu] Lỗi hệ thống khi kích hoạt dùng thử:", err);
+    throw new LoiNghiepVuDungThu("Có lỗi hệ thống, vui lòng thử lại sau.");
+  }
 }
