@@ -72,7 +72,7 @@ export function veRadarSvg(diem: Record<string, number>, opt: { size?: number } 
   }).join("");
 
   const MAU_KHOI = "#ad8843"; // --color-gold-500 — màu khối dữ liệu, tách khỏi màu từng đỉnh (theo điểm)
-  return `<svg viewBox="0 0 ${size} ${size}" width="100%" height="auto" style="max-width:${size}px;color:var(--color-ink-600,#7a5f45);overflow:visible;">
+  return `<svg viewBox="0 0 ${size} ${size}" width="100%" style="max-width:${size}px;height:auto;color:var(--color-ink-600,#7a5f45);overflow:visible;">
     ${luoi}${truc}
     <polygon points="${polyPoints}" fill="${MAU_KHOI}" fill-opacity="0.22" stroke="${MAU_KHOI}" stroke-width="2" />
     ${cham}
