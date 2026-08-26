@@ -2,46 +2,11 @@ import type { APIRoute } from "astro";
 import { getOrderByCode } from "../../../../lib/db/orders";
 import { jsonResponse, TOOL_SLUG, type KyMonHoiDapInput } from "./_chung";
 import { checkRateLimit } from "../../../../lib/rate-limit";
-import { traTinhHuong, QUAN_HE_LABELS, type QuanHeCauHoi } from "../../../../lib/kymon/danhMucCauHoi";
+import { traTinhHuong, QUAN_HE_LABELS } from "../../../../lib/kymon/danhMucCauHoi";
 import { lapLaBan } from "../../../../lib/kymon";
-import type { LapLaBanResult } from "../../../../lib/kymon";
-import { luanHoiDapTaiChinh } from "../../../../lib/kymon/hoiDapTaiChinh";
-import { luanHoiDapTinhCam } from "../../../../lib/kymon/hoiDapTinhCam";
-import { luanHoiDapCongViec } from "../../../../lib/kymon/hoiDapCongViec";
-import { luanHoiDapHocHanh } from "../../../../lib/kymon/hoiDapHocHanh";
-import { luanHoiDapDiLai } from "../../../../lib/kymon/hoiDapDiLai";
-import { luanHoiDapTimKiem } from "../../../../lib/kymon/hoiDapTimKiem";
-import { luanHoiDapThoiTiet } from "../../../../lib/kymon/hoiDapThoiTiet";
-import { luanHoiDapPhapLy } from "../../../../lib/kymon/hoiDapPhapLy";
-import { luanHoiDapSucKhoe } from "../../../../lib/kymon/hoiDapSucKhoe";
-import { luanHoiDapPhongThuy } from "../../../../lib/kymon/hoiDapPhongThuy";
+import { luanHoiDap } from "../../../../lib/kymon/hoiDap";
 
 export const prerender = false;
-
-/** Kết quả luận chung cho mọi chủ đề Hỏi Đáp đã có luật — mỗi module chủ đề tự định nghĩa kiểu
- * riêng nhưng luôn cùng 1 shape {hopLe, xuHuong, vanBan, chiTiet} nên gộp được vào đây. */
-type KetQuaChung = { hopLe: boolean; xuHuong: string; vanBan: string; chiTiet: string };
-
-/** Đăng ký hàm luận theo chủ đề — thêm 1 dòng khi có luật mới cho chủ đề khác. Chữ ký chung nhận
- * cả quanHe (dùng cho Học Hành/Tìm Kiếm — "hỏi cho ai") và thongTinBoSung (dùng cho Đi Lại —
- * nhận diện phương tiện) dù không phải hàm nào cũng dùng hết — JS bỏ qua tham số thừa. Tất cả
- * 10/10 chủ đề đã có ít nhất 1 tình huống có luật (Phong Thủy chỉ 1/2 — "chọn hướng đặt vật" vẫn
- * chưa đủ nguồn rõ ràng, hàm trả null cho tình huống đó, tự rơi về "đang cập nhật").*/
-const LUAN_THEO_CHU_DE: Record<
-  string,
-  (laBan: LapLaBanResult, tinhHuongId: string, quanHe: QuanHeCauHoi, thongTinBoSung: string) => KetQuaChung | null
-> = {
-  tai_chinh: luanHoiDapTaiChinh,
-  tinh_cam: luanHoiDapTinhCam,
-  cong_viec: luanHoiDapCongViec,
-  hoc_hanh: luanHoiDapHocHanh,
-  di_lai: luanHoiDapDiLai,
-  tim_kiem: luanHoiDapTimKiem,
-  thoi_tiet: luanHoiDapThoiTiet,
-  phap_ly: luanHoiDapPhapLy,
-  suc_khoe: luanHoiDapSucKhoe,
-  phong_thuy: luanHoiDapPhongThuy,
-};
 
 /**
  * Endpoint POLL trạng thái đơn cho luồng thanh toán INLINE ngay trên /lap-ky-mon (không có trang
@@ -80,12 +45,9 @@ export const GET: APIRoute = async ({ url, request, clientAddress }) => {
           cauHoi: input.cauHoi,
         };
       }
-      const luanChuDe = LUAN_THEO_CHU_DE[input.chuDeId];
-      if (luanChuDe) {
-        const laBan = lapLaBan(input.laBan);
-        const kq = luanChuDe(laBan, input.tinhHuongId, input.quanHe, input.thongTinBoSung ?? "");
-        if (kq?.hopLe) ketQuaLuan = { xuHuong: kq.xuHuong, vanBan: kq.vanBan, chiTiet: kq.chiTiet };
-      }
+      const laBan = await lapLaBan(input.laBan);
+      const kq = luanHoiDap(laBan, input.chuDeId, input.tinhHuongId, input.quanHe, input.thongTinBoSung ?? "");
+      if (kq) ketQuaLuan = { xuHuong: kq.xuHuong, vanBan: kq.vanBan, chiTiet: kq.chiTiet };
     } catch (err) {
       console.error(`[ky-mon-hoi-dap] Lỗi dựng kết quả cho đơn ${orderCode}:`, err);
     }
