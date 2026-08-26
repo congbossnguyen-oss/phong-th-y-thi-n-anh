@@ -13,6 +13,8 @@ import {
   sendNghePdfEmail,
   sendTrachNhatSinhNoPdfEmail,
   sendKyMonMenhPdfEmail,
+  sendBatTuToanDienCoBanPdfEmail,
+  sendBatTuToanDienNangCaoPdfEmail,
 } from "../email/send";
 import { taoHoSoTangLe, type DauVaoHoSo } from "../dai-cat-loi/tao-ho-so-tang-le";
 import { taoHoSoNghe, type NgheInput } from "../nghe-nghiep/tao-ho-so-nghe";
@@ -21,6 +23,9 @@ import { phanTichTrachNhatSinhNo, type BirthSelectionInput } from "../trach-nhat
 import { generateTrachNhatSinhNoPdf } from "../dai-cat-loi/trach-nhat-sinh-no-pdf";
 import { lapLaBan, luanGiaiMenh, luanGiaiMenhChiTiet } from "../kymon";
 import { generateKyMonMenhPdf } from "../dai-cat-loi/ky-mon-menh-pdf";
+import { taoBaoCaoCoBan, taoBaoCaoNangCao } from "../luan-giai-toan-dien/orchestrator";
+import { generateBatTuCoBanPdf, generateBatTuNangCaoPdf } from "../dai-cat-loi/bat-tu-toan-dien-pdf";
+import type { BatTuInput } from "../bat-tu";
 import { apDungMaKhiThanhToan } from "../payments/promo";
 import { ghiDonThuPhiLenSheet, TEN_CONG_CU_HIEN_THI } from "../google-sheets-don-thu-phi";
 import { ghiDonSimPhongThuyLenSheet } from "../google-sheets-sim-phong-thuy";
@@ -478,7 +483,7 @@ export async function markOrderPaidAndFulfill(orderId: string) {
     if (order.toolSlug === "ky-mon-menh-chi-tiet" && order.customerEmail && order.toolInputSnapshot) {
       try {
         const input = JSON.parse(order.toolInputSnapshot) as { nam: number; thang: number; ngay: number; gio: number; phut: number };
-        const laBan = await lapLaBan({ cheDo: "menh", ...input });
+        const laBan = lapLaBan({ cheDo: "menh", ...input });
         const free = luanGiaiMenh(laBan);
         const chiTiet = luanGiaiMenhChiTiet(laBan);
         const pdf = await generateKyMonMenhPdf(free, chiTiet, order.customerName);
@@ -490,6 +495,42 @@ export async function markOrderPaidAndFulfill(orderId: string) {
         });
       } catch (err) {
         console.error(`[ky-mon-menh-chi-tiet] Lỗi dựng/gửi PDF cho đơn ${order.orderCode}:`, err);
+      }
+    }
+
+    // Luận Giải Bát Tự Toàn Diện — Cơ Bản: gọi AI dựng báo cáo rồi xuất PDF gửi kèm email khách.
+    // Bọc try/catch riêng cùng lý do các module khác: hỏng khâu này đơn vẫn ghi nhận đã thanh toán,
+    // khách còn xem lại trên trang kết quả (báo cáo tính lại/lấy từ cache theo hash lá số).
+    if (order.toolSlug === "luan-giai-bat-tu-co-ban" && order.customerEmail && order.toolInputSnapshot) {
+      try {
+        const input = JSON.parse(order.toolInputSnapshot) as BatTuInput;
+        const baoCao = await taoBaoCaoCoBan(input);
+        const pdf = await generateBatTuCoBanPdf(baoCao, order.customerName);
+        await sendBatTuToanDienCoBanPdfEmail({
+          to: order.customerEmail,
+          orderCode: order.orderCode,
+          customerName: order.customerName,
+          pdfBytes: pdf,
+        });
+      } catch (err) {
+        console.error(`[luan-giai-bat-tu-co-ban] Lỗi dựng/gửi PDF cho đơn ${order.orderCode}:`, err);
+      }
+    }
+
+    // Luận Giải Bát Tự Toàn Diện — Nâng Cao: cùng logic như Cơ Bản ở trên.
+    if (order.toolSlug === "luan-giai-bat-tu-nang-cao" && order.customerEmail && order.toolInputSnapshot) {
+      try {
+        const input = JSON.parse(order.toolInputSnapshot) as BatTuInput;
+        const baoCao = await taoBaoCaoNangCao(input);
+        const pdf = await generateBatTuNangCaoPdf(baoCao, order.customerName);
+        await sendBatTuToanDienNangCaoPdfEmail({
+          to: order.customerEmail,
+          orderCode: order.orderCode,
+          customerName: order.customerName,
+          pdfBytes: pdf,
+        });
+      } catch (err) {
+        console.error(`[luan-giai-bat-tu-nang-cao] Lỗi dựng/gửi PDF cho đơn ${order.orderCode}:`, err);
       }
     }
   }
