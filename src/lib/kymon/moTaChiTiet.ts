@@ -45,20 +45,24 @@ export function moTaCungDay(cung: CungInfo): string {
 
 /**
  * Dựng field "chiTiet" đầy đủ cho 1 kết luận Hỏi Đáp: liệt kê chi tiết TỪNG dụng thần đã dùng để
- * suy luận (có nhãn, vd "Trực Phù", "Can Ngày"), sau đó nêu kết luận quan hệ + trích dẫn nguồn.
+ * suy luận (có nhãn, vd "Trực Phù", "Can Ngày"), sau đó nêu kết luận quan hệ.
  *
  * @param dungThan Danh sách dụng thần đã xét, mỗi mục {nhan, cung}. Bỏ qua mục có cung undefined.
  * @param ketLuanQuanHe Câu kết luận quan hệ ngắn gọn (vd "Trực Phù khắc Trực Sử — dấu hiệu vay được").
- * @param nguon Trích dẫn nguồn (tên file + mục, vd "a4-vay-va-cho-muon-tien.md, mục I").
+ * @param nguon Trích dẫn nguồn nội bộ (tên file + mục) — CHỈ để truy vết trong code, KHÔNG hiển thị
+ *   cho khách (2026-08-26, Thầy Công: khách không cần biết và không hiểu trích dẫn tên file nội bộ
+ *   kiểu "a5-cau-tai-hop-tac-kinh-doanh.md, mục II/IV"). Vẫn nhận tham số này ở mọi nơi gọi hàm để
+ *   không phải sửa lại ~40 chỗ gọi — chỉ không đưa vào chuỗi trả về nữa.
  */
 export function chiTietDayDu(
   dungThan: { nhan: string; cung: CungInfo | undefined }[],
   ketLuanQuanHe: string,
   nguon: string,
 ): string {
+  void nguon;
   const phan = dungThan
     .filter((d): d is { nhan: string; cung: CungInfo } => !!d.cung)
     .map(({ nhan, cung }) => `${nhan}: ${moTaCungDay(cung)}`)
     .join(". ");
-  return `${phan}. → ${ketLuanQuanHe} (${nguon}).`;
+  return `${phan}. → ${ketLuanQuanHe}.`;
 }

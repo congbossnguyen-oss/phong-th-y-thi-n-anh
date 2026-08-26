@@ -20,6 +20,7 @@
 
 import type { CungInfo, LapLaBanResult } from "./types";
 import { chiTietDayDu } from "./moTaChiTiet";
+import { traCachCuc } from "./cachCuc";
 
 type NguHanh = "Mộc" | "Hỏa" | "Thổ" | "Kim" | "Thủy";
 
@@ -119,6 +120,30 @@ function khongXacDinh(ly: string): KetQuaHoiDapTaiChinh {
   return { hopLe: false, xuHuong: "can_luu_y", vanBan: "Chưa đủ dữ liệu trên lá bàn để luận rõ tình huống này.", chiTiet: ly };
 }
 
+/**
+ * Làm SÂU câu trả lời chính bằng 2 dữ liệu engine đã tính sẵn nhưng trước đây chỉ nằm trong
+ * "chi tiết kỹ thuật" (Thầy Công 2026-08-26: "trả lời cụt lủn quá, đây là mục có phí cần sâu hơn"):
+ *   - Nhập Mộ tại cung dụng thần chính (Sinh Môn = tài lộc) — dấu hiệu "tiền bị chôn/ứ đọng".
+ *   - Cách Cục (bảng 81 tổ hợp Can/Can, nguồn a2-cau-truc-tran-ky-mon.md) tại đúng cung đó — mỗi
+ *     lá bàn ra 1 cách cục cụ thể, không phải câu chung chung.
+ * CHỈ bổ sung câu — KHÔNG đổi xuHuong (màu badge) đã quyết theo quan hệ Sinh Môn/Can Ngày, đúng
+ * nguyên tắc "không dùng Cách Cục làm điều kiện cứng" đã ghi ở đầu file.
+ */
+function boSungSau(cungDungThan: CungInfo, nhanDungThan: string): string {
+  const phan: string[] = [];
+  if (laNhapMo(cungDungThan)) {
+    phan.push(`${nhanDungThan} đang Nhập Mộ — tài lộc có xu hướng bị "chôn"/ứ đọng, chưa phát huy được ngay, cần thời gian hoặc chờ vận xung Mộ mới bung ra.`);
+  }
+  const cachCuc = cungDungThan.soCung !== 5 ? traCachCuc(cungDungThan.thienBanCan, cungDungThan.diaBanCan) : undefined;
+  if (cachCuc) {
+    // Cách Cục (81 tổ hợp) mang ý nghĩa TỔNG QUÁT dùng chung cho mọi loại việc (tình cảm, kiện
+    // tụng, sức khỏe...), không riêng tài chính — nên luôn dẫn rõ đây là lớp THAM KHẢO THÊM, tránh
+    // khách hiểu nhầm câu này là trọng tâm trả lời cho câu hỏi tài chính của họ (Thầy Công 2026-08-26).
+    phan.push(`Ngoài ra, cấu trúc lá bàn tại cung ${nhanDungThan} còn cho thấy (tham khảo thêm, không phải trọng tâm tài chính) — cách cục "${cachCuc.ten}": ${cachCuc.yNghia}`);
+  }
+  return phan.length ? ` ${phan.join(" ")}` : "";
+}
+
 // ============================================================================================
 // 1. TÀI VẬN CHUNG — không có mục riêng trong nguồn; suy nhất quán từ CHÍNH dụng thần Sinh Môn
 // (= tài lộc, dùng xuyên suốt cả chủ đề) so với Can Ngày (= bản thân người hỏi) — cùng cách đọc
@@ -134,11 +159,14 @@ function luanTaiVanChung(laBan: LapLaBanResult): KetQuaHoiDapTaiChinh {
     { nhan: "Can Ngày (bản thân)", cung: canNgay },
   ];
   const nguon = "suy luận nhất quán từ a5-cau-tai-hop-tac-kinh-doanh.md, mục II/IV";
+  // Làm sâu câu trả lời chính bằng Nhập Mộ + Cách Cục tại đúng cung Sinh Môn (tài lộc) — xem
+  // boSungSau(). Không đổi xuHuong/badge, chỉ thêm câu.
+  const sau = boSungSau(sinhMon, "Sinh Môn");
 
   if (laKV(sinhMon)) {
     return ketQua(
       "khong_thuan",
-      "Tài vận giai đoạn này không ổn định — tiền vào rồi lại ra, khó tích lũy. Không nên đầu tư/chi tiêu lớn lúc này, ưu tiên giữ tiền mặt và chờ thời điểm rõ ràng hơn.",
+      `Tài vận giai đoạn này không ổn định — tiền vào rồi lại ra, khó tích lũy. Không nên đầu tư/chi tiêu lớn lúc này, ưu tiên giữ tiền mặt và chờ thời điểm rõ ràng hơn.${sau}`,
       chiTietDayDu(dt, "Sinh Môn (dụng thần Tài) Không Vong", nguon),
     );
   }
@@ -147,34 +175,34 @@ function luanTaiVanChung(laBan: LapLaBanResult): KetQuaHoiDapTaiChinh {
   if (qh === "sinh") {
     return ketQua(
       "thuan_loi",
-      "Tài vận đang thuận, tiền bạc có xu hướng tự tìm đến, dễ có thêm nguồn thu hoặc cơ hội kiếm tiền mới trong thời gian tới.",
+      `Tài vận đang thuận, tiền bạc có xu hướng tự tìm đến, dễ có thêm nguồn thu hoặc cơ hội kiếm tiền mới trong thời gian tới.${sau}`,
       chiTietDayDu(dt, "Sinh Môn sinh cho cung Can Ngày", nguon),
     );
   }
   if (qh === "khac") {
     return ketQua(
       "can_luu_y",
-      "Tài vận kiếm được nhưng khó giữ, dễ có khoản chi phát sinh ngoài dự tính. Nên lập kế hoạch chi tiêu rõ ràng, tránh mua sắm/đầu tư theo cảm tính giai đoạn này.",
+      `Tài vận kiếm được nhưng khó giữ, dễ có khoản chi phát sinh ngoài dự tính. Nên lập kế hoạch chi tiêu rõ ràng, tránh mua sắm/đầu tư theo cảm tính giai đoạn này.${sau}`,
       chiTietDayDu(dt, "Sinh Môn khắc cung Can Ngày", nguon),
     );
   }
   if (qh === "duocSinh") {
     return ketQua(
       "can_luu_y",
-      "Bản thân đang phải chủ động bỏ công sức/vốn liếng ra trước mới có tiền vào — tài vận không tự đến mà cần tạo ra bằng hành động cụ thể.",
+      `Bản thân đang phải chủ động bỏ công sức/vốn liếng ra trước mới có tiền vào — tài vận không tự đến mà cần tạo ra bằng hành động cụ thể.${sau}`,
       chiTietDayDu(dt, "Cung Can Ngày sinh cho Sinh Môn", nguon),
     );
   }
   if (qh === "bịKhac") {
     return ketQua(
       "khong_thuan",
-      "Giai đoạn này tài vận gặp cản trở, dễ hao hụt tiền bạc ngoài ý muốn. Không nên mạo hiểm, ưu tiên phòng thủ, giữ những gì đang có.",
+      `Giai đoạn này tài vận gặp cản trở, dễ hao hụt tiền bạc ngoài ý muốn. Không nên mạo hiểm, ưu tiên phòng thủ, giữ những gì đang có.${sau}`,
       chiTietDayDu(dt, "Cung Can Ngày bị Sinh Môn khắc chế ngược", nguon),
     );
   }
   return ketQua(
     "can_luu_y",
-    "Tài vận ở mức bình thường, không có dấu hiệu đột biến rõ rệt — cứ theo kế hoạch đã định, không cần vội vàng.",
+    `Tài vận ở mức bình thường, không có dấu hiệu đột biến rõ rệt — cứ theo kế hoạch đã định, không cần vội vàng.${sau}`,
     chiTietDayDu(dt, "Sinh Môn và cung Can Ngày cùng hành/tỉ hòa", nguon),
   );
 }
