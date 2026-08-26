@@ -20,7 +20,7 @@ import { getCanChi, getGanzhiDay } from "@thien-anh/calendar-core";
 import { lapLaBan } from "../engine";
 import { CHI_CUNG } from "../constants";
 import type { CungInfo, LapLaBanResult } from "../types";
-import { an12KienTinh, an12TrucThan, quanHeChi, xetKienTinh, xetTrucThan } from "./thanSat";
+import { an12KienTinh, an12TrucThan, quanHeChi, xetKienTinh, xetTrucThan, type KienTinh, type TrucThan } from "./thanSat";
 import { chiKhongVong, kiemTraTuHai } from "./tuHai";
 
 const MUI_GIO = "Asia/Ho_Chi_Minh";
@@ -92,8 +92,8 @@ export type ChiKetHon = {
   huong: string;
   biLoai: boolean;
   lyDoLoai: string[];
-  kienTinh?: string;
-  trucThan?: string;
+  kienTinh?: KienTinh;
+  trucThan?: TrucThan;
   diemTong: number;
   xuHuong: "rat_tot" | "tot" | "dung_duoc" | "khong_nen";
   diemCong: string[];
