@@ -123,7 +123,34 @@ function buildSystemPrompt(laSoJSON: string, dsJSON: string, tenLoai: string, co
   return [coDinh, thayDoi];
 }
 
+/**
+ * Số mục tối đa cho MỘT lệnh khi có `chi_tiet`.
+ *
+ * Đo thật 26/8/2026 với `deepseek-v4-flash`: 10 mục kèm chi_tiet sinh ~14.000 token đầu ra, mất
+ * 97-125 giây — chạm đúng trần ~100 giây của Cloudflare đứng trước nhà cung cấp, nên lúc được lúc
+ * hỏng (HTTP 524). Cắt còn 5 mục/lệnh thì mỗi lệnh chỉ còn ~50 giây, an toàn. Bản không có chi_tiet
+ * (đầu ra ngắn) chạy 20-50 giây nên để nguyên 1 lệnh.
+ */
+const TOI_DA_MOI_LENH_CO_CHI_TIET = 5;
+
 async function chamDiemDanhSach(laSo: unknown, muc: MucCanCham[], tenLoai: string, coChiTiet: boolean): Promise<DiemGiaiDoanVan[]> {
+  // Chia lô khi đầu ra dài để không chạm trần thời gian của nhà cung cấp.
+  if (coChiTiet && muc.length > TOI_DA_MOI_LENH_CO_CHI_TIET) {
+    const lo: MucCanCham[][] = [];
+    for (let i = 0; i < muc.length; i += TOI_DA_MOI_LENH_CO_CHI_TIET) {
+      lo.push(muc.slice(i, i + TOI_DA_MOI_LENH_CO_CHI_TIET));
+    }
+    // Nối tiếp (không song song) để lô sau còn đọc lại được cache tiền tố của lô trước.
+    const ketQua: DiemGiaiDoanVan[] = [];
+    for (let i = 0; i < lo.length; i++) {
+      ketQua.push(...(await chamDiemMotLo(laSo, lo[i], `${tenLoai} (lô ${i + 1}/${lo.length})`, coChiTiet)));
+    }
+    return ketQua;
+  }
+  return chamDiemMotLo(laSo, muc, tenLoai, coChiTiet);
+}
+
+async function chamDiemMotLo(laSo: unknown, muc: MucCanCham[], tenLoai: string, coChiTiet: boolean): Promise<DiemGiaiDoanVan[]> {
   const laSoJSON = JSON.stringify(laSo, null, 2);
   const dsJSON = JSON.stringify(
     muc.map((m) => ({
@@ -138,9 +165,8 @@ async function chamDiemDanhSach(laSo: unknown, muc: MucCanCham[], tenLoai: strin
   const system = buildSystemPrompt(laSoJSON, dsJSON, tenLoai, coChiTiet);
   const userMessage = `Hãy phân tích đúng đủ ${muc.length} mục trong danh sách ${tenLoai} theo đúng dữ liệu và nguyên tắc đã nêu.`;
 
-  const { input, usage } = await goiClaudeToolUse(system, userMessage, "tra_ve_diem_so", SCHEMA_DIEM, coChiTiet ? 8000 : 3000);
-  const model = (typeof process !== "undefined" ? process.env?.ANTHROPIC_MODEL : undefined) || "claude-sonnet-5";
-  ghiLogChiPhi(`Luận giải Bát Tự — ${tenLoai}`, model, usage);
+  const { input, usage, model } = await goiClaudeToolUse(system, userMessage, "tra_ve_diem_so", SCHEMA_DIEM, coChiTiet ? 8000 : 3000, "bat-tu-cham-diem");
+  ghiLogChiPhi(`Luận giải Bát Tự — ${tenLoai}`, model ?? "claude-sonnet-5", usage);
 
   const danhSach = Array.isArray(input?.danh_sach) ? (input!.danh_sach as Record<string, unknown>[]) : [];
   const theoChiSo = new Map(danhSach.map((d) => [Number(d.chi_so), d]));
