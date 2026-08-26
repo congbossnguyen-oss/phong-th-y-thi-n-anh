@@ -59,12 +59,39 @@ interface MocNam {
 }
 
 /**
- * Viết lời luận cho CẢ danh sách năm trong 1 LẦN GỌI AI DUY NHẤT (không phải N lệnh riêng như bản
- * cũ) — trang Xem Thời Vận luôn hiển thị đủ 10 năm 1 lúc nên gộp lại vừa rẻ hơn vừa nhanh hơn nhiều
- * lần so với 10 lệnh tuần tự. Việc GỌI LẠI mỗi lần khách xem trang (chưa cache theo tài khoản) là
- * việc khác, xử lý ở tầng gọi (index.ts ngoài hàm này / trang xem-thoi-van.astro).
+ * Số năm tối đa cho MỘT lệnh AI.
+ *
+ * Đo thật 26/8/2026 (ghi chú gốc ở luu-nien-dai-van.ts, module chị em cùng cơ chế): 10 mục kèm văn
+ * xuôi chi tiết sinh ~14.000 token đầu ra qua `deepseek-v4-flash`, mất 97-125 giây — chạm đúng trần
+ * ~100 giây của Cloudflare đứng trước tom.qnt.world, nên lúc được lúc hỏng (HTTP 524). Cắt còn 5
+ * năm/lệnh thì mỗi lệnh chỉ còn ~50 giây, an toàn cho cả DeepSeek lẫn Anthropic.
+ */
+const SO_NAM_TOI_DA_MOI_LENH = 5;
+
+/**
+ * Viết lời luận cho CẢ danh sách năm — CHIA LÔ tối đa `SO_NAM_TOI_DA_MOI_LENH` năm/lệnh AI (không
+ * phải 1 lệnh/năm như bản cũ trước 26/8/2026) — trang Xem Thời Vận luôn hiển thị đủ 10 năm 1 lúc nên
+ * gộp lại vừa rẻ hơn vừa nhanh hơn nhiều lần so với 10 lệnh tuần tự, trong khi vẫn tránh trần thời
+ * gian của nhà cung cấp. Các lô gọi NỐI TIẾP (không song song) để lô sau đọc lại được cache tiền tố
+ * của lô trước. Việc GỌI LẠI mỗi lần khách xem trang (chưa cache theo tài khoản) là việc khác, xử lý
+ * ở tầng gọi (index.ts ngoài hàm này / trang xem-thoi-van.astro).
  */
 async function vietLoiLuanChoDanhSachNam(
+  danhSachMoc: MocNam[],
+  gioiTinh: "Nam" | "Nữ",
+): Promise<Map<number, { loiLuan: Record<LinhVucKey, string>; tuAI: boolean }>> {
+  if (danhSachMoc.length <= SO_NAM_TOI_DA_MOI_LENH) return vietLoiLuanMotLo(danhSachMoc, gioiTinh);
+
+  const ketQua = new Map<number, { loiLuan: Record<LinhVucKey, string>; tuAI: boolean }>();
+  for (let i = 0; i < danhSachMoc.length; i += SO_NAM_TOI_DA_MOI_LENH) {
+    const lo = danhSachMoc.slice(i, i + SO_NAM_TOI_DA_MOI_LENH);
+    const ketLo = await vietLoiLuanMotLo(lo, gioiTinh);
+    for (const [k, v] of ketLo) ketQua.set(k, v);
+  }
+  return ketQua;
+}
+
+async function vietLoiLuanMotLo(
   danhSachMoc: MocNam[],
   gioiTinh: "Nam" | "Nữ",
 ): Promise<Map<number, { loiLuan: Record<LinhVucKey, string>; tuAI: boolean }>> {

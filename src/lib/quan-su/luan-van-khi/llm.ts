@@ -1,17 +1,16 @@
 /**
- * Gọi Claude để viết lời luận Vận Khí — CHỈ tầng gọi mạng + ép JSON đúng khuôn, không tính toán gì.
+ * Gọi AI để viết lời luận Vận Khí — CHỈ tầng gọi mạng + ép JSON đúng khuôn, không tính toán gì.
  *
- * Theo đúng quy ước dự án (giống quan-su/luan-giai/llm.ts, chart-profile/llm.ts): gọi thẳng REST
- * bằng fetch, không thêm SDK; dùng tool-use để ép JSON; bật prompt caching cho khối tri thức tĩnh.
+ * Đi qua lớp gọi AI dùng chung (`lib/ai/goi-ai.ts`) — tinhNang "quan-su-van-khi" hiện chọn DeepSeek
+ * (rẻ hơn Anthropic). ⚠️ Bên gọi (index.ts) PHẢI chia danh sách năm thành lô tối đa 5/lệnh khi qua
+ * DeepSeek — xem SO_NAM_TOI_DA_MOI_LENH ở index.ts và ghi chú đo thật trong luu-nien-dai-van.ts
+ * (10 mục kèm văn xuôi dài mất 97-125s, chạm trần ~100s của Cloudflare trước tom.qnt.world).
  */
-import { layAnthropicApiKey } from "../../chart-profile/api-key";
-import { ghiLogChiPhi, type UsageAnthropic } from "../../chart-profile/ghi-log-chi-phi";
-import { ANTHROPIC_MESSAGES_URL as ANTHROPIC_API_URL, anthropicHeaders } from "../../anthropic-gateway";
+import { goiAiToolUse } from "../../ai/goi-ai";
+import { ghiLogChiPhi } from "../../chart-profile/ghi-log-chi-phi";
 
-const ANTHROPIC_VERSION = "2023-06-01";
-const DEFAULT_MODEL = "claude-sonnet-5";
-// 10 năm × 4 lĩnh vực trong 1 lệnh — rộng rãi hơn nhiều lần mức 1500 cũ (khi đó là 1 năm/lệnh).
-const MAX_TOKENS = 6000;
+// 5 năm × 4 lĩnh vực trong 1 lệnh — an toàn cho cả Anthropic lẫn DeepSeek (xem ghi chú ở trên).
+const MAX_TOKENS = 3500;
 const TOOL_NAME = "tra_ve_loi_luan_van_khi";
 
 export interface LoiLuan4LinhVuc {
@@ -53,64 +52,26 @@ export async function goiLoiLuanVanKhi(
   promptQuyTac: string,
   promptNguoiDung: string,
 ): Promise<KetQuaLlmVanKhi> {
-  const apiKey = layAnthropicApiKey();
-  if (!apiKey) {
+  const ket = await goiAiToolUse({
+    tinhNang: "quan-su-van-khi",
+    systemCoDinh: promptTriThuc,
+    systemThayDoi: promptQuyTac,
+    userMessage: promptNguoiDung,
+    toolName: TOOL_NAME,
+    schema: INPUT_SCHEMA,
+    maxTokens: MAX_TOKENS,
+  });
+  ghiLogChiPhi("Vận Khí", ket.model, ket.usage);
+
+  if (!ket.input) {
     return {
       ok: false,
-      ly_do: "khong_co_api_key",
-      chi_tiet: "Chưa cấu hình ANTHROPIC_API_KEY. Điểm số vẫn tính được (thuần code), dùng câu mẫu an toàn thay lời luận AI.",
+      ly_do: "loi_goi_api",
+      chi_tiet: "Chưa cấu hình khóa API hoặc gọi AI thất bại. Điểm số vẫn tính được (thuần code), dùng câu mẫu an toàn thay lời luận AI.",
     };
   }
 
-  const model = (typeof process !== "undefined" ? process.env?.ANTHROPIC_MODEL : undefined) || DEFAULT_MODEL;
-
-  const reqBody = JSON.stringify({
-    model,
-    max_tokens: MAX_TOKENS,
-    system: [
-      { type: "text", text: promptTriThuc, cache_control: { type: "ephemeral" } },
-      { type: "text", text: promptQuyTac, cache_control: { type: "ephemeral" } },
-    ],
-    messages: [{ role: "user", content: promptNguoiDung }],
-    tools: [{ name: TOOL_NAME, description: "Trả về lời luận Vận Khí cho từng năm trong danh sách.", input_schema: INPUT_SCHEMA }],
-    tool_choice: { type: "tool", name: TOOL_NAME },
-  });
-
-  const RETRYABLE = new Set([429, 500, 502, 503, 504, 529]);
-  let res: Response | null = null;
-  let loiCuoi = "";
-  for (let lan = 1; lan <= 3; lan++) {
-    try {
-      res = await fetch(ANTHROPIC_API_URL, {
-        method: "POST",
-        headers: anthropicHeaders(apiKey, ANTHROPIC_VERSION),
-        body: reqBody,
-      });
-    } catch (err) {
-      loiCuoi = err instanceof Error ? err.message : "Lỗi mạng khi gọi Anthropic API.";
-      res = null;
-    }
-    if (res && res.ok) break;
-    if (res && !RETRYABLE.has(res.status)) break;
-    if (lan < 3) await new Promise((r) => setTimeout(r, 800 * lan));
-  }
-
-  if (!res) return { ok: false, ly_do: "loi_goi_api", chi_tiet: loiCuoi || "Lỗi mạng khi gọi Anthropic API." };
-  if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    return { ok: false, ly_do: "loi_goi_api", chi_tiet: `Anthropic API trả HTTP ${res.status}: ${body.slice(0, 500)}` };
-  }
-
-  const data = (await res.json()) as { content?: { type: string; input?: unknown }[]; usage?: UsageAnthropic };
-  ghiLogChiPhi("Vận Khí", model, data.usage);
-
-  const toolUse = data.content?.find((c) => c.type === "tool_use");
-  if (!toolUse || typeof toolUse.input !== "object" || toolUse.input === null) {
-    return { ok: false, ly_do: "phan_hoi_khong_hop_le", chi_tiet: "Model không trả tool_use hợp lệ." };
-  }
-
-  const inp = toolUse.input as Record<string, unknown>;
-  const danhSach = Array.isArray(inp.danh_sach) ? (inp.danh_sach as Record<string, unknown>[]) : [];
+  const danhSach = Array.isArray(ket.input.danh_sach) ? (ket.input.danh_sach as Record<string, unknown>[]) : [];
   if (danhSach.length === 0) {
     return { ok: false, ly_do: "phan_hoi_khong_hop_le", chi_tiet: "Model không trả danh_sach hoặc danh_sach rỗng." };
   }
