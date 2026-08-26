@@ -83,6 +83,16 @@ export interface CanhBaoHauKiem {
   viTri: number;
 }
 
+// Model đôi khi lẫn cú pháp giống thẻ function-calling (vd "</noi_dung>", "</invoke>") vào NỘI DUNG
+// văn xuôi/tóm tắt — phát hiện thật trên production (Công báo cáo 26/8/2026). Dọn sạch bằng regex
+// trước khi hiển thị, phòng khi lỡ lọt qua dù đã ép tool_choice + schema.
+const RE_THE_LA = /<\/?[a-zA-Z_][\w-]*(?:\s+[^<>]*)?\/?>/g;
+
+/** Xoá thẻ kiểu XML/HTML còn sót lại trong văn bản AI viết (an toàn hiển thị, không phải kiểm duyệt nội dung). */
+export function xoaTheLaConSot(vanBan: string): string {
+  return vanBan.replace(RE_THE_LA, "").replace(/[ \t]{2,}/g, " ").replace(/\n{3,}/g, "\n\n").trim();
+}
+
 /** Quét đầy đủ Bước 1 + Bước 2 của Tầng 3. Trả về danh sách cảnh báo (rỗng = qua được). */
 export function quetHauKiem(vanBan: string): CanhBaoHauKiem[] {
   const canhBao: CanhBaoHauKiem[] = [];

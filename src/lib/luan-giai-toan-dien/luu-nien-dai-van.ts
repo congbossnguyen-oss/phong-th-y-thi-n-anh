@@ -8,7 +8,7 @@ import { hanhCan, hanhChi, type BatTuAnalysis } from "../bat-tu-engine/engine";
 import { hyKyCuaHanh } from "./findings-co-ban";
 import { goiClaudeToolUse } from "./ai-narrative";
 import { docNhieuKnowledge } from "./content-loader";
-import { tuKhoaCamTuyetDoiDangText, tuDienThayTheDangText, quyTacDienDatChungDangText, quetHauKiem } from "./content-safety";
+import { tuKhoaCamTuyetDoiDangText, tuDienThayTheDangText, quyTacDienDatChungDangText, quetHauKiem, xoaTheLaConSot } from "./content-safety";
 import { ghiLogChiPhi } from "../chart-profile/ghi-log-chi-phi";
 import type { DiemGiaiDoanVan } from "./types";
 
@@ -72,6 +72,11 @@ function buildSystemPrompt(laSoJSON: string, dsJSON: string, tenLoai: string): s
     quyTacDienDatChungDangText(),
     "",
     "Trả về ĐÚNG ĐỦ 1 phần tử cho MỖI mục trong danh sách đầu vào (không bỏ sót, không thêm mục lạ), giữ đúng chi_so tương ứng.",
+    "",
+    "## Yêu cầu văn phong cho tom_tat",
+    "- TUYỆT ĐỐI KHÔNG dùng dấu gạch ngang \"-\" hay chấm phẩy \";\" để nối câu (lỗi văn phong lộ rõ là AI viết) — dùng dấu phẩy hoặc tách thành câu ngắn.",
+    "- TUYỆT ĐỐI KHÔNG chèn thẻ/ký hiệu giống code hoặc XML (vd </noi_dung>, <invoke>, **, ##) vào tom_tat — chỉ viết văn xuôi thuần tuý.",
+    "- KHÔNG viết câu sáo rỗng kiểu AI tự nhận xét thiếu dữ liệu (vd \"chưa đủ căn cứ để xác định rõ\") — nêu thẳng xu hướng, không rào đón.",
   ].join("\n");
 }
 
@@ -98,7 +103,7 @@ async function chamDiemDanhSach(laSo: unknown, muc: MucCanCham[], tenLoai: strin
       const n = Number(v);
       return Number.isFinite(n) ? Math.max(-2, Math.min(2, Math.round(n))) : 0;
     };
-    let tomTat = typeof d?.tom_tat === "string" ? d.tom_tat.trim() : "";
+    let tomTat = typeof d?.tom_tat === "string" ? xoaTheLaConSot(d.tom_tat.trim()) : "";
     if (tomTat && quetHauKiem(tomTat).length > 0) tomTat = TOM_TAT_KHONG_QUA;
     if (!tomTat) tomTat = TOM_TAT_KHONG_QUA;
 
