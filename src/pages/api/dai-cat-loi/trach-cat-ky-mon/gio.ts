@@ -46,6 +46,7 @@ export const GET: APIRoute = async ({ url, request, clientAddress }) => {
       viecId: input.viecId,
       ngayChon,
       toaSonCung: input.toaSonCung,
+      luaChonPhuId: input.luaChonPhuId,
     });
     if (!kq.hopLe) return jsonResponse({ ok: false, error: kq.loi ?? "Không tính được giờ." }, 400);
 
