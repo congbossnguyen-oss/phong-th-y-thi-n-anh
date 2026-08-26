@@ -15,6 +15,7 @@ import BottomNav from "../../components/quan-su/BottomNav.astro";
 import "../../styles/quan-su.css";
 import { coQuyenTruyCap } from "../../lib/subscriptions/access";
 import { tinhVanKhi, type VanKhiOutput, type DiemLinhVuc, type LinhVucKey, type LuuNienKhi } from "../../lib/quan-su/luan-van-khi";
+import { getVanKhiCache, saveVanKhiCache } from "../../lib/db/van-khi-cache";
 import { tinhBatTu, THAP_THAN_ABBR } from "../../lib/bat-tu";
 import { hanhCan, hanhChi } from "../../lib/bat-tu-engine/engine";
 
@@ -36,6 +37,10 @@ if (coQuyen && hs) {
     ketQua = await tinhVanKhi({
       day: hs.day, month: hs.month, year: hs.year, gender: hs.gender, hour: hs.hour ?? undefined,
       chiTietDaiVanIndex: daiVanIndexYeuCau,
+      // Kết quả 1 Đại Vận là cố định mãi mãi — cache theo tài khoản để khỏi gọi AI lại mỗi lần xem
+      // trang (xem ghi chú trong luan-van-khi/index.ts).
+      layLuuNienCache: (i) => getVanKhiCache(user!.id, i),
+      luuLuuNienCache: (i, luuNien) => saveVanKhiCache(user!.id, i, luuNien),
     });
   } catch (err) {
     loi = err instanceof Error ? err.message : "Không tính được vận khí từ hồ sơ ngày sinh.";
