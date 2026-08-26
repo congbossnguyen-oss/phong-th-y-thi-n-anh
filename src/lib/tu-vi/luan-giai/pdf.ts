@@ -7,6 +7,7 @@ import type { KetQuaCoBan, LuanCung } from "./aiCoBan";
 import { TEN_CUNG_HIEN_THI, TEN_CUNG_SNAKE } from "./aiCoBan";
 import type { KetQuaNangCao, LuanHan } from "./aiNangCao";
 import type { DuLieuLaSoTuVi } from "./adapter";
+import { veRadarPdf, veThanhDaiHanPdf, veThanhDiem12CungPdf } from "./bieuDoPdf";
 
 function veCungLuan(b: But, f: Fonts, ten: string, diem: number, l: LuanCung): void {
   b.chua(60);
@@ -42,6 +43,10 @@ function veCoBan(b: But, f: Fonts, coBan: KetQuaCoBan, duLieu: DuLieuLaSoTuVi): 
   b.doan(coBan.luanThienBan, { size: 9.5 });
   b.xuong(4);
 
+  b.muc("Radar 6 lĩnh vực");
+  veRadarPdf(b, f, duLieu.radar6LinhVuc);
+  b.xuong(4);
+
   b.muc("Các chủ đề chính");
   const cd = coBan.chuDe;
   const dsChuDe: [string, string][] = [
@@ -54,6 +59,10 @@ function veCoBan(b: But, f: Fonts, coBan: KetQuaCoBan, duLieu: DuLieuLaSoTuVi): 
     b.doan(noiDung, { size: 9 });
     b.xuong(2);
   }
+  b.xuong(4);
+
+  b.muc("Bánh xe Cát – Hung 12 cung");
+  veThanhDiem12CungPdf(b, f, duLieu.cung.map((c) => ({ ten: c.ten, diem: c.diem })));
   b.xuong(4);
 
   b.muc("Luận đủ 12 cung");
@@ -151,6 +160,11 @@ export async function generateTuViNangCaoPdf(
   b.dongGiua(`Kính gửi: ${customerName}`, { size: 12, font: f.dam });
   b.xuong(6);
   veCoBan(b, f, coBan, duLieu);
+  if (duLieu.daiHanHienTai) {
+    b.chua(60);
+    b.muc("Vị trí Đại Hạn trên hành trình tuổi tác");
+    veThanhDaiHanPdf(b, f, duLieu.daiHanHienTai, duLieu.tuoiHienTai);
+  }
   veHan(b, f, `Đại Hạn hiện tại${duLieu.daiHanHienTai ? ` (${duLieu.daiHanHienTai.tuoiTu}-${duLieu.daiHanHienTai.tuoiDen} tuổi)` : ""}`, nangCao.daiHan);
   veHan(b, f, `Tiểu Hạn năm nay${duLieu.tieuHanNamNay ? ` (${duLieu.namHienTai}, ${duLieu.tieuHanNamNay.tuoi} tuổi)` : ""}`, nangCao.tieuHanNamNay);
   veHan(b, f, `Tiểu Hạn năm sau${duLieu.tieuHanNamSau ? ` (${(duLieu.namHienTai ?? 0) + 1}, ${duLieu.tieuHanNamSau.tuoi} tuổi)` : ""}`, nangCao.tieuHanNamSau);
