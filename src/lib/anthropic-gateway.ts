@@ -1,11 +1,26 @@
-// Gọi Anthropic API trực tiếp từ Cloudflare Worker bị chặn 403 "Request not allowed" — Anthropic/WAF
-// chặn traffic có nguồn gốc mạng Cloudflare Workers (phát hiện 25/8/2026, xem memory
-// project_ptta_deploy_render.md). Khắc phục: đi qua Cloudflare AI Gateway (đã tạo sẵn trên dashboard,
-// tên "phongthuythienanh") thay vì gọi thẳng api.anthropic.com — Gateway forward request sang Anthropic
-// bằng chính x-api-key của mình, không cần thêm xác thực Cloudflare nào khác.
-const CLOUDFLARE_ACCOUNT_ID = "29cda6fc04f7fe86e130db6e2872eed3";
-// Cloudflare tự đổi tên Gateway "phongthuythienanh" thành slug này (tách từng ký tự bằng "-") — lấy
-// đúng theo URL thật trên dashboard (AI Gateway → Gateways → ...), không phải tên gốc đã nhập.
-const AI_GATEWAY_NAME = "p-h-o-n-g-t-h-u-y-t-h-i-e-n-a-n-h";
+// Gọi Anthropic API trực tiếp (kể cả qua Cloudflare AI Gateway) từ Cloudflare Worker đều bị 403
+// "Request not allowed" — xác nhận 26/8/2026 đây là chặn diện rộng theo dải IP/mạng Cloudflare nói
+// chung (không riêng Workers, không do key), khớp với báo cáo của nhiều người dùng khác trên chính
+// diễn đàn Cloudflare Community. Xem chi tiết trong memory project_ptta_deploy_render.md.
+//
+// Khắc phục: route qua 1 relay Node.js chạy trên Vercel (hạ tầng AWS Lambda thật, khác hẳn dải mạng
+// Cloudflare) — relay chỉ chuyển tiếp nguyên request sang api.anthropic.com, không lưu API key thật.
+// Code repo relay: xem thư mục ptta-anthropic-relay (project Vercel riêng, không nằm trong repo này).
+const RELAY_URL = "https://ptta-anthropic-relay.vercel.app/api/anthropic-relay";
 
-export const ANTHROPIC_MESSAGES_URL = `https://gateway.ai.cloudflare.com/v1/${CLOUDFLARE_ACCOUNT_ID}/${AI_GATEWAY_NAME}/anthropic/v1/messages`;
+export const ANTHROPIC_MESSAGES_URL = RELAY_URL;
+
+function layRelaySharedSecret(): string {
+  const tuRuntime = typeof process !== "undefined" ? process.env?.RELAY_SHARED_SECRET : undefined;
+  return (tuRuntime || "").trim();
+}
+
+/** Headers chuẩn cho mọi lệnh gọi Anthropic — thêm x-relay-secret vì URL đích giờ là relay Vercel, không phải api.anthropic.com trực tiếp. */
+export function anthropicHeaders(apiKey: string, anthropicVersion: string): Record<string, string> {
+  return {
+    "Content-Type": "application/json",
+    "x-api-key": apiKey,
+    "anthropic-version": anthropicVersion,
+    "x-relay-secret": layRelaySharedSecret(),
+  };
+}

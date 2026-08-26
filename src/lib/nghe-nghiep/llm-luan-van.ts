@@ -19,7 +19,7 @@
 import { layAnthropicApiKey } from "../chart-profile/api-key";
 import { ghiLogChiPhi, type UsageAnthropic } from "../chart-profile/ghi-log-chi-phi";
 import type { DashboardVM } from "./view-model";
-import { ANTHROPIC_MESSAGES_URL as ANTHROPIC_API_URL } from "../anthropic-gateway";
+import { ANTHROPIC_MESSAGES_URL as ANTHROPIC_API_URL, anthropicHeaders } from "../anthropic-gateway";
 
 const ANTHROPIC_VERSION = "2023-06-01";
 const DEFAULT_MODEL = "claude-sonnet-5";
@@ -134,7 +134,7 @@ export async function luanVanNghe(vm: DashboardVM, hoTen?: string): Promise<Luan
     try {
       res = await fetch(ANTHROPIC_API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": ANTHROPIC_VERSION },
+        headers: anthropicHeaders(apiKey, ANTHROPIC_VERSION),
         body,
       });
     } catch {
