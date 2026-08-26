@@ -11,6 +11,9 @@ import type { BirthCandidate, CandidateSummaryCard } from "../trach-nhat-sinh-no
 const BAND_NHAN: Record<string, string> = {
   rat_thuan: "Rất thuận", thuan: "Thuận", trung_binh: "Trung bình", thu_thach: "Có thử thách", nghich: "Nghịch",
 };
+const BAND_MAU: Record<string, import("pdf-lib").RGB> = {
+  rat_thuan: MAU.luc, thuan: MAU.luc, trung_binh: MAU.vang, thu_thach: MAU.vang, nghich: MAU.son,
+};
 
 function timUngVien(all: BirthCandidate[], id: string | undefined): BirthCandidate | undefined {
   return id ? all.find((c) => c.id === id) : undefined;
@@ -18,6 +21,7 @@ function timUngVien(all: BirthCandidate[], id: string | undefined): BirthCandida
 
 function vePhuongAn(b: But, f: Fonts, tieuDe: string, card: CandidateSummaryCard, candidate: BirthCandidate | undefined): void {
   b.muc(tieuDe);
+  const moc = b.danhDau();
   b.dong(`Ngày: ${card.ngayDuongLich}  ·  Khung giờ: ${card.khungGio}`, { size: 10.5, font: f.dam });
   b.dong(`Tứ trụ: ${card.tuTru}`, { size: 9.5, font: f.vua });
   b.dong(`Nhật Chủ vượng suy: ${card.vuongSuy}  ·  Dụng Thần: ${card.dungThan}`, { size: 9.5 });
@@ -30,7 +34,12 @@ function vePhuongAn(b: But, f: Fonts, tieuDe: string, card: CandidateSummaryCard
     if (bt.daiVan.length > 0) {
       b.dong("Chuỗi Đại Vận Bát Tự:", { size: 9, font: f.vua, x: LE + 4 });
       for (const v of bt.daiVan) {
-        b.doan(`• ${v.canChi} (${v.tuTuoi}–${v.denTuoi} tuổi, ~${v.namDuongLich}): ${BAND_NHAN[v.band] ?? v.band}${v.xungNguyetChi ? " — xung nguyệt chi" : ""}${v.xungNhatChi ? " — xung nhật chi" : ""}`, { size: 8.5, x: LE + 16 });
+        b.chua(13);
+        const w = b.nhan(BAND_NHAN[v.band] ?? v.band, LE + 16, b.y - 2.5, { mau: BAND_MAU[v.band] ?? MAU.mucNhat, size: 7.5 });
+        b.dong(
+          `${v.canChi} (${v.tuTuoi}–${v.denTuoi} tuổi, ~${v.namDuongLich})${v.xungNguyetChi ? " — xung nguyệt chi" : ""}${v.xungNhatChi ? " — xung nhật chi" : ""}`,
+          { size: 8.5, x: LE + 16 + w + 6, dan: 3 },
+        );
       }
     }
   }
@@ -52,6 +61,8 @@ function vePhuongAn(b: But, f: Fonts, tieuDe: string, card: CandidateSummaryCard
   }
   b.dong("Khuyết điểm cần lưu ý (không gỡ được):", { size: 9, font: f.vua, mau: MAU.son, x: LE + 4 });
   for (const d of card.diemCanLuuY) b.doan(`△ ${d}`, { size: 8.5, x: LE + 16, mau: MAU.son });
+
+  b.thanhNhan(moc, MAU.vangNhat);
 }
 
 export async function generateTrachNhatSinhNoPdf(kq: PhanTichTrachNhatKetQua, customerName: string): Promise<Uint8Array> {

@@ -6,7 +6,7 @@
  * Bản chi tiết ĐƯỢC PHÉP nêu tên cách cục kỹ thuật (khác bản miễn phí trên web luôn giấu thuật
  * ngữ Kỳ Môn) — đây là nội dung chuyên sâu khách đã trả phí để xem.
  */
-import { taoTaiLieuPdf, veDauTrang, veLuuYVaLienHe, veChanTrang, MAU, type Fonts, type But } from "./pdf-khung";
+import { taoTaiLieuPdf, veDauTrang, veLuuYVaLienHe, veChanTrang, MAU, LE, type Fonts, type But } from "./pdf-khung";
 import type { KetQuaLuanGiaiMenh, KetQuaLuanGiaiChiTiet } from "../kymon";
 
 function veTheLinhVuc(b: But, f: Fonts, tieuDe: string, noiDung: string): void {
@@ -43,16 +43,26 @@ export async function generateKyMonMenhPdf(
 
   if (chiTiet.giaiDoanCuocDoi.length > 0) {
     b.muc("4 giai đoạn cuộc đời");
-    for (const gd of chiTiet.giaiDoanCuocDoi) veTheLinhVuc(b, f, gd.giaiDoan, gd.noiDung);
+    chiTiet.giaiDoanCuocDoi.forEach((gd, i) => {
+      b.chua(16);
+      const w = b.nhan(`${i + 1}`, LE, b.y - 3, { mau: MAU.vang, size: 9 });
+      b.dong(gd.giaiDoan, { size: 10, font: f.vua, x: LE + w + 8, dan: 3 });
+      b.doan(gd.noiDung, { size: 9, x: LE + w + 8 });
+      b.xuong(4);
+    });
   }
 
   if (chiTiet.cachCucNoiBat.length > 0) {
     b.muc("Cách cục nổi bật (chuyên sâu)");
+    const moc = b.danhDau();
     for (const cc of chiTiet.cachCucNoiBat) {
-      b.dong(`• ${cc.viTri} — ${cc.ten}`, { size: 10, font: f.dam, mau: MAU.son, dan: 3 });
-      b.doan(cc.yNghia, { size: 9, x: 60 });
+      b.chua(15);
+      const w = b.nhan(cc.viTri, LE, b.y - 2.5, { mau: MAU.son, size: 8 });
+      b.dong(cc.ten, { size: 10, font: f.dam, mau: MAU.son, x: LE + w + 8, dan: 3 });
+      b.doan(cc.yNghia, { size: 9, x: LE + w + 8 });
       b.xuong(4);
     }
+    b.thanhNhan(moc, MAU.son);
   }
 
   veLuuYVaLienHe(

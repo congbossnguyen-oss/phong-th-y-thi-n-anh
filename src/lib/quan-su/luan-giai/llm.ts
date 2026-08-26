@@ -1,16 +1,13 @@
 /**
- * Gọi Claude để luận quẻ — CHỈ tầng gọi mạng + ép JSON đúng khuôn. Không luận gì ở đây.
+ * Gọi AI để luận quẻ — CHỈ tầng gọi mạng + ép JSON đúng khuôn. Không luận gì ở đây.
  *
- * Theo đúng quy ước dự án (giống chart-profile/llm.ts): gọi thẳng REST bằng fetch, không thêm SDK;
- * dùng tool-use để ép JSON thay vì xin JSON dạng văn bản rồi tự parse; bật prompt caching cho khối
- * tri thức vì nó giống hệt nhau ở mọi lượt gọi.
+ * Đi qua lớp gọi AI dùng chung (`lib/ai/goi-ai.ts`) — nhà cung cấp (Anthropic hay DeepSeek qua
+ * tom.qnt.world) chọn theo bảng BANG_NHA_CUNG_CAP ở đó bằng tinhNang "quan-su-kinh-dich", không
+ * hard-code Anthropic ở đây nữa.
  */
-import { layAnthropicApiKey } from "../../chart-profile/api-key";
-import { ghiLogChiPhi, type UsageAnthropic } from "../../chart-profile/ghi-log-chi-phi";
-import { ANTHROPIC_MESSAGES_URL as ANTHROPIC_API_URL, anthropicHeaders } from "../../anthropic-gateway";
+import { goiAiToolUse } from "../../ai/goi-ai";
+import { ghiLogChiPhi } from "../../chart-profile/ghi-log-chi-phi";
 
-const ANTHROPIC_VERSION = "2023-06-01";
-const DEFAULT_MODEL = "claude-sonnet-5";
 const MAX_TOKENS = 3000;
 const TOOL_NAME = "tra_ve_luan_giai_kinh_dich";
 
@@ -59,65 +56,26 @@ export async function goiLuanGiaiKinhDich(
   promptQuyTac: string,
   promptNguoiDung: string,
 ): Promise<KetQuaLlm> {
-  const apiKey = layAnthropicApiKey();
-  if (!apiKey) {
+  const ket = await goiAiToolUse({
+    tinhNang: "quan-su-kinh-dich",
+    systemCoDinh: promptTriThuc,
+    systemThayDoi: promptQuyTac,
+    userMessage: promptNguoiDung,
+    toolName: TOOL_NAME,
+    schema: INPUT_SCHEMA,
+    maxTokens: MAX_TOKENS,
+  });
+  ghiLogChiPhi("Kinh Dịch", ket.model, ket.usage);
+
+  if (!ket.input) {
     return {
       ok: false,
-      ly_do: "khong_co_api_key",
-      chi_tiet: "Chưa cấu hình ANTHROPIC_API_KEY. Quẻ vẫn lập được (thuần code), chỉ chưa luận sâu được.",
+      ly_do: "loi_goi_api",
+      chi_tiet: "Chưa cấu hình khóa API hoặc gọi AI thất bại. Quẻ vẫn lập được (thuần code), chỉ chưa luận sâu được.",
     };
   }
 
-  const model = (typeof process !== "undefined" ? process.env?.ANTHROPIC_MODEL : undefined) || DEFAULT_MODEL;
-
-  const reqBody = JSON.stringify({
-    model,
-    max_tokens: MAX_TOKENS,
-    // Khối tri thức giống hệt nhau ở mọi khách → đánh dấu cache, các lượt sau đọc lại rẻ hơn nhiều.
-    // Khối quy tắc đặt SAU breakpoint vì nó đổi theo giới tính/mức nhạy cảm của từng câu.
-    system: [
-      { type: "text", text: promptTriThuc, cache_control: { type: "ephemeral" } },
-      { type: "text", text: promptQuyTac },
-    ],
-    messages: [{ role: "user", content: promptNguoiDung }],
-    tools: [{ name: TOOL_NAME, description: "Trả về bài luận quẻ Kinh Dịch đúng cấu trúc.", input_schema: INPUT_SCHEMA }],
-    tool_choice: { type: "tool", name: TOOL_NAME },
-  });
-
-  const RETRYABLE = new Set([429, 500, 502, 503, 504, 529]);
-  let res: Response | null = null;
-  let loiCuoi = "";
-  for (let lan = 1; lan <= 3; lan++) {
-    try {
-      res = await fetch(ANTHROPIC_API_URL, {
-        method: "POST",
-        headers: anthropicHeaders(apiKey, ANTHROPIC_VERSION),
-        body: reqBody,
-      });
-    } catch (err) {
-      loiCuoi = err instanceof Error ? err.message : "Lỗi mạng khi gọi Anthropic API.";
-      res = null;
-    }
-    if (res && res.ok) break;
-    if (res && !RETRYABLE.has(res.status)) break;
-    if (lan < 3) await new Promise((r) => setTimeout(r, 800 * lan));
-  }
-
-  if (!res) return { ok: false, ly_do: "loi_goi_api", chi_tiet: loiCuoi || "Lỗi mạng khi gọi Anthropic API." };
-  if (!res.ok) {
-    const body = await res.text().catch(() => "");
-    return { ok: false, ly_do: "loi_goi_api", chi_tiet: `Anthropic API trả HTTP ${res.status}: ${body.slice(0, 500)}` };
-  }
-
-  const data = (await res.json()) as { content?: { type: string; input?: unknown }[]; usage?: UsageAnthropic };
-  ghiLogChiPhi("Kinh Dịch", model, data.usage);
-
-  const toolUse = data.content?.find((c) => c.type === "tool_use");
-  if (!toolUse || typeof toolUse.input !== "object" || toolUse.input === null) {
-    return { ok: false, ly_do: "phan_hoi_khong_hop_le", chi_tiet: "Model không trả tool_use hợp lệ." };
-  }
-
-  const inp = toolUse.input as Record<string, unknown>;
+  const inp = ket.input;
   const mang = (v: unknown): string[] =>
     Array.isArray(v) ? v.filter((x) => typeof x === "string" && x.trim()).map((x) => (x as string).trim()) : [];
   const chuoi = (v: unknown): string => (typeof v === "string" ? v.trim() : "");

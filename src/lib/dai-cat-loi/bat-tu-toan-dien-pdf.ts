@@ -12,7 +12,17 @@ function veLaSo(b: But, f: Fonts, laSo: LaSoHienThi): void {
   const dongTuTru = laSo.tuTru.map((t) => `${t.tru}: ${t.can} ${t.chi}`).join("   ·   ");
   b.doan(dongTuTru, { size: 9.5, font: f.vua });
   b.doan(`Nhật Chủ: ${laSo.nhatChu}  ·  Vượng Suy: ${laSo.capDoVuongSuy}`, { size: 9.5 });
-  b.doan(`Dụng Thần: ${laSo.dungThan}  ·  Hỷ Thần: ${laSo.hyThan}  ·  Kỵ Thần: ${laSo.kyThan}`, { size: 9.5 });
+
+  b.chua(16);
+  let x = LE;
+  const nhanThan = (nhan: string, mau: import("pdf-lib").RGB) => {
+    x += b.nhan(nhan, x, b.y - 2.5, { mau, size: 8 }) + 6;
+  };
+  nhanThan(`Dụng Thần ${laSo.dungThan}`, MAU.luc);
+  nhanThan(`Hỷ Thần ${laSo.hyThan}`, MAU.lam);
+  nhanThan(`Kỵ Thần ${laSo.kyThan}`, MAU.son);
+  b.xuong(16);
+
   if (laSo.dieuHauNote) b.doan(`Điều Hậu: ${laSo.dieuHauNote}`, { size: 9.5, mau: MAU.vang });
   b.xuong(4);
 }
@@ -77,8 +87,10 @@ function veBieuDoGiaiDoan(b: But, f: Fonts, tieuDe: string, moTa: string, danhSa
   b.xuong(4);
 }
 
-function veGiaiDoan(b: But, f: Fonts, tieuDe: string, noiDung: string): void {
-  b.dong(tieuDe, { size: 11, font: f.dam, mau: MAU.son, dan: 4 });
+function veGiaiDoan(b: But, f: Fonts, ma: string, tieuDe: string, noiDung: string): void {
+  b.chua(15);
+  const w = b.nhan(ma, LE, b.y - 3, { mau: MAU.son, size: 9 });
+  b.dong(tieuDe, { size: 11, font: f.dam, mau: MAU.son, x: LE + w + 8, dan: 4 });
   b.doan(noiDung, { size: 9.5 });
   b.xuong(6);
 }
@@ -98,7 +110,7 @@ export async function generateBatTuCoBanPdf(baoCao: BaoCaoCoBan, customerName: s
   b.xuong(6);
 
   b.muc("Luận giải chi tiết");
-  for (const gd of baoCao.giaiDoan) veGiaiDoan(b, f, gd.tieuDe, gd.noiDung);
+  for (const gd of baoCao.giaiDoan) veGiaiDoan(b, f, gd.ma, gd.tieuDe, gd.noiDung);
 
   veLuuYVaLienHe(b, f, baoCao.disclaimerCuoiBai);
   veChanTrang(doc, f);
@@ -120,7 +132,7 @@ export async function generateBatTuNangCaoPdf(baoCao: BaoCaoNangCao, customerNam
 
   b.muc("Luận giải chi tiết");
   for (const gd of baoCao.giaiDoan) {
-    veGiaiDoan(b, f, gd.tieuDe, gd.noiDung);
+    veGiaiDoan(b, f, gd.ma, gd.tieuDe, gd.noiDung);
     if (gd.ma === "K") {
       veBieuDoGiaiDoan(
         b, f, "Đồ hình Đại Vận trọn đời",
