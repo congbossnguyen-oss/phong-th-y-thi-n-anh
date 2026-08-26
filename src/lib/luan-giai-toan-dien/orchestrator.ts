@@ -7,6 +7,7 @@ import { taoFindingsNangCao } from "./findings-nang-cao";
 import { GIAI_DOAN_CO_BAN, GIAI_DOAN_NANG_CAO } from "./ai-narrative";
 import { taoNoiDungGiaiDoanAnToan } from "./hau-kiem";
 import { layContentSafety } from "./content-safety";
+import { taoBieuDoDaiVan, taoBieuDoLuuNien } from "./luu-nien-dai-van";
 import type { BaoCaoCoBan, BaoCaoNangCao, LaSoHienThi } from "./types";
 
 export function laSoVaPhanTich(input: BatTuInput): { chart: BatTuChart; analysis: BatTuAnalysis } {
@@ -34,6 +35,7 @@ export function laSoHienThi(chart: BatTuChart, analysis: BatTuAnalysis): LaSoHie
     dungThan: analysis.dungThan.dungThan,
     hyThan: analysis.dungThan.hyThan,
     kyThan: analysis.dungThan.kyThan,
+    dieuHauNote: analysis.dungThan.dieuHauNote ?? null,
   };
 }
 
@@ -77,18 +79,22 @@ export async function taoBaoCaoNangCao(input: BatTuInput): Promise<BaoCaoNangCao
   const findingsList = taoFindingsNangCao(chart, analysis);
   const laSo = laSoHienThi(chart, analysis);
 
-  // D, E, I, K độc lập nhau, chạy song song. F cần thêm lượt kiểm duyệt riêng (canKiemDuyet) nên
-  // đã tự xử lý bên trong taoNoiDungGiaiDoanAnToan — vẫn chạy song song với các giai đoạn khác được.
+  // D, E, F, I, K (văn xuôi) + 2 lệnh chấm điểm đồ hình (Đại Vận, Lưu Niên 10 năm) — TẤT CẢ chạy
+  // song song trong cùng 1 Promise.all, không có phụ thuộc dữ liệu giữa các mục.
   const thuTuMa = ["D", "E", "F", "I", "K"] as const;
-  const ketQua = await Promise.all(
-    thuTuMa.map((ma) => {
-      const cfg = GIAI_DOAN_NANG_CAO.find((c) => c.ma === ma)!;
-      const findings = findingsList.find((f) => f.maGiaiDoan === ma)!;
-      return taoNoiDungGiaiDoanAnToan(cfg, laSo, findings);
-    }),
-  );
+  const [ketQuaGiaiDoan, daiVanBieuDo, luuNienBieuDo] = await Promise.all([
+    Promise.all(
+      thuTuMa.map((ma) => {
+        const cfg = GIAI_DOAN_NANG_CAO.find((c) => c.ma === ma)!;
+        const findings = findingsList.find((f) => f.maGiaiDoan === ma)!;
+        return taoNoiDungGiaiDoanAnToan(cfg, laSo, findings);
+      }),
+    ),
+    taoBieuDoDaiVan(chart, analysis, laSo),
+    taoBieuDoLuuNien(chart, analysis, laSo, input.year),
+  ]);
 
-  const giaiDoan = ketQua.filter((x): x is NonNullable<typeof x> => x !== null);
+  const giaiDoan = ketQuaGiaiDoan.filter((x): x is NonNullable<typeof x> => x !== null);
   const safety = layContentSafety();
-  return { laSo, giaiDoan, disclaimerCuoiBai: safety.disclaimer_bat_buoc };
+  return { laSo, giaiDoan, daiVanBieuDo, luuNienBieuDo, disclaimerCuoiBai: safety.disclaimer_bat_buoc };
 }
