@@ -53,7 +53,20 @@ export function tamPhuongTuChinh(chiIndex: number): number[] {
   return [chiIndex, (chiIndex + 4) % 12, (chiIndex + 6) % 12, (chiIndex + 8) % 12];
 }
 
-/** Đếm trung tinh cát/hung trên toàn bộ Tam Phương Tứ Chính của một cung. */
+/**
+ * Đếm trung tinh cát/hung trên toàn bộ Tam Phương Tứ Chính của một cung.
+ *
+ * ⚠️ TUẦN/TRIỆT CHỈ TÍNH TẠI BẢN CUNG, không tính khi nằm ở 3 cung chiếu (anh Công duyệt
+ * 26/8/2026). Lý do: Tuần/Triệt là cờ của cung chứ không phải sao đơn, và lá số nào cũng có, luôn
+ * phủ 4/12 cung — nếu tính cả Tam Phương thì mỗi lần quét 4 cung gần như chắc chắn dính 1-2 dấu
+ * hung "miễn phí", khiến điều kiện đạt 5★ (sạch bóng sao hung) gần như không thể xảy ra.
+ *
+ * Đo trên 2.400 cung của 200 lá số:
+ *   - Tính cả Tam Phương: 1★ 1% · 2★ 48% · 3★ 33% · 4★ 18% · 5★ 0%  ← thang 1-5 mất hẳn mức 5
+ *   - Chỉ tính tại bản cung: 1★ 1% · 2★ 40% · 3★ 28% · 4★ 30% · 5★ 2%
+ * Cách hiểu này cũng đúng thông lệ Tử Vi: Tuần/Triệt chặn chính cung nó đóng, ảnh hưởng lên cung
+ * chiếu nhẹ hơn nhiều, không ngang hàng Kình/Đà.
+ */
 function demTrungTinh(cungs: CungKetQua[], chiIndex: number): { soCat: number; soHung: number } {
   let soCat = 0;
   let soHung = 0;
@@ -70,8 +83,10 @@ function demTrungTinh(cungs: CungKetQua[], chiIndex: number): { soCat: number; s
       if (s.tuHoa === "Lộc" || s.tuHoa === "Quyền" || s.tuHoa === "Khoa") soCat += 1;
       if (s.tuHoa === "Kỵ") soHung += 1;
     }
-    if (c.tuan) soHung += 1;
-    if (c.triet) soHung += 1;
+    if (i === chiIndex) {
+      if (c.tuan) soHung += 1;
+      if (c.triet) soHung += 1;
+    }
   }
   return { soCat, soHung };
 }

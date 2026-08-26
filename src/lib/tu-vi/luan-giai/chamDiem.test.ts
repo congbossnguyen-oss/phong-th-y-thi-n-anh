@@ -53,6 +53,30 @@ describe("tamPhuongTuChinh", () => {
   });
 });
 
+describe("Tuần/Triệt chỉ tính tại bản cung", () => {
+  // Khoá lại quyết định 26/8/2026 (anh Công duyệt). Nếu ai đó đổi lại thành tính cả Tam Phương thì
+  // mức 5★ sẽ biến mất khỏi thang điểm — test này bắt được ngay.
+  it("thang điểm vẫn dùng được tới mức 5 trên tập lá số đủ lớn", () => {
+    const dem: Record<number, number> = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    let n = 0;
+    for (let y = 1960; y < 2010; y++) {
+      for (const h of [1, 9, 15, 21]) {
+        const ch = tinhTuVi({
+          day: ((y * 7) % 28) + 1, month: ((y * 5) % 12) + 1, year: y, hour: h,
+          gender: y % 2 ? "Nam" : "Nữ",
+        });
+        for (const d of Object.values(chamDiemLaSo(ch).diem12Cung)) { dem[d] += 1; n += 1; }
+      }
+    }
+    // 5★ phải thực sự xảy ra được (trước khi sửa là 0/2400).
+    expect(dem[5], "không cung nào đạt 5★ — nhiều khả năng Tuần/Triệt đang bị tính cả Tam Phương").toBeGreaterThan(0);
+    // Và không cung nào được chiếm quá nửa thang điểm.
+    for (const [d, c] of Object.entries(dem)) {
+      expect(c / n, `mức ${d}★ chiếm ${Math.round((c / n) * 100)}% — thang điểm lệch`).toBeLessThan(0.5);
+    }
+  });
+});
+
 describe("chamDiemLaSo — chạy trên lá số thật", () => {
   // Lá số mẫu trong gói tài liệu: Nam, 22/11/1984 (Giáp Tý).
   const chart = tinhTuVi({ day: 22, month: 11, year: 1984, hour: 10, gender: "Nam" });
