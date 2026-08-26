@@ -404,3 +404,63 @@ export function batTuToanDienNangCaoPdfEmail(params: {
     }),
   };
 }
+
+export function luanGiaiTuViCoBanPdfEmail(params: {
+  orderCode: string;
+  customerName: string;
+}): { subject: string; html: string } {
+  const bodyHtml = `
+    <p>Kính gửi ${escapeHtml(params.customerName)},</p>
+    <p>
+      Bản Luận Giải Tử Vi — Cơ Bản được đính kèm dưới dạng PDF trong email này, gồm: tổng quan lá số,
+      luận Thiên Bàn, các chủ đề chính (học vấn, nghề nghiệp, tài chính, hôn nhân, sức khỏe), và luận
+      đầy đủ 12 cung theo phương pháp Tử Vi Đẩu Số Nam Phái.
+    </p>
+    <table role="presentation" width="100%" style="margin-top:16px;border-top:1px solid #e8dfcd;padding-top:12px;">
+      ${infoRow("Mã đơn hàng", params.orderCode)}
+    </table>
+    <p style="margin-top:20px;">
+      Kết quả tham khảo theo phương pháp truyền thống, không thay thế tư vấn trực tiếp. Cần trao đổi
+      thêm, xin liên hệ hotline ${siteConfig.hotline}.
+    </p>
+  `;
+
+  return {
+    subject: `Luận Giải Tử Vi — Cơ Bản — đơn ${params.orderCode}`,
+    html: layout({
+      previewText: "Bản Luận Giải Tử Vi — Cơ Bản được đính kèm trong email này.",
+      title: "Luận Giải Tử Vi — Cơ Bản",
+      bodyHtml,
+    }),
+  };
+}
+
+export function luanGiaiTuViNangCaoPdfEmail(params: {
+  orderCode: string;
+  customerName: string;
+}): { subject: string; html: string } {
+  const bodyHtml = `
+    <p>Kính gửi ${escapeHtml(params.customerName)},</p>
+    <p>
+      Bản Luận Giải Tử Vi — Nâng Cao được đính kèm dưới dạng PDF trong email này, gồm trọn bộ nội dung
+      Cơ Bản (12 cung đầy đủ) cộng thêm: Đại Hạn hiện tại, Tiểu Hạn năm nay và năm sau, và Tổng kết
+      chiến lược sống dài hạn.
+    </p>
+    <table role="presentation" width="100%" style="margin-top:16px;border-top:1px solid #e8dfcd;padding-top:12px;">
+      ${infoRow("Mã đơn hàng", params.orderCode)}
+    </table>
+    <p style="margin-top:20px;">
+      Kết quả tham khảo theo phương pháp truyền thống, không thay thế tư vấn trực tiếp. Cần trao đổi
+      thêm, xin liên hệ hotline ${siteConfig.hotline}.
+    </p>
+  `;
+
+  return {
+    subject: `Luận Giải Tử Vi — Nâng Cao — đơn ${params.orderCode}`,
+    html: layout({
+      previewText: "Bản Luận Giải Tử Vi — Nâng Cao được đính kèm trong email này.",
+      title: "Luận Giải Tử Vi — Nâng Cao",
+      bodyHtml,
+    }),
+  };
+}

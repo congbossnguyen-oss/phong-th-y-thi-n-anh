@@ -1,0 +1,386 @@
+---
+// TRANG "Luận Giải Tử Vi" — 2 tầng trả phí: Cơ Bản 149k (đủ 12 cung) → Nâng Cao 299k (thêm Đại
+// Hạn/Tiểu Hạn/Tổng kết). Tầng Free (Mệnh/Thân/Cục sơ bộ) sống ở /lap-la-so-tu-vi — trang đó dẫn
+// khách sang đây kèm sẵn ngày giờ sinh qua query string, nên trang này KHÔNG có form nhập lại.
+//
+// Kiến trúc BẮT BUỘC đăng nhập, quyền gắn theo tài khoản (không theo orderCode) — cùng lý do và
+// đúng mẫu luan-giai-bat-tu-toan-dien.astro: AI tốn ~20-40s/lượt, cache theo hash lá số phải gắn
+// chắc vào 1 người để không bị lạm dụng.
+//
+// Admin xem trực tiếp kết quả trên trang (để tự kiểm tra chất lượng trước khi mở bán thật). Khách
+// thường KHÔNG đợi AI chạy trên trang — nhận đủ nội dung qua email (PDF) sau khi thanh toán, xem
+// orders.ts. Đây là quyết định UX đã áp dụng cho bat-tu-toan-dien vì ~30s/lần tải trang là chưa đạt.
+//
+// ⚠️ CHƯA PUBLISH: không gắn link ở ToolsShowcase/dai-cat-loi-tools — chỉ vào được qua CTA từ
+// /lap-la-so-tu-vi hoặc URL trực tiếp, để anh Công test trước khi mở rộng.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import Container from "../../components/ui/Container.astro";
+import Button from "../../components/ui/Button.astro";
+import MaKhuyenMai from "../../components/ui/MaKhuyenMai.astro";
+import { GIA_CONG_CU, dinhDangTien } from "../../lib/payments/gia-cong-cu";
+import { getConfirmedToolOrderForUser } from "../../lib/db/orders";
+import { taoLuanGiaiTuVi, type LuanGiaiTuViInput } from "../../lib/tu-vi/luan-giai/taoLuanGiaiTuVi";
+import { TEN_CUNG_HIEN_THI, TEN_CUNG_SNAKE } from "../../lib/tu-vi/luan-giai/aiCoBan";
+import { nhanDiem } from "../../lib/tu-vi/luan-giai/chamDiem";
+
+export const prerender = false;
+
+const TOOL_SLUG_CO_BAN = "luan-giai-tu-vi-co-ban" as const;
+const TOOL_SLUG_NANG_CAO = "luan-giai-tu-vi-nang-cao" as const;
+const GIA_CO_BAN = GIA_CONG_CU[TOOL_SLUG_CO_BAN];
+const GIA_NANG_CAO = GIA_CONG_CU[TOOL_SLUG_NANG_CAO];
+
+const user = Astro.locals.user;
+const q = Astro.url.searchParams;
+
+const soTuQuery = (ten: string): number | null => {
+  const raw = q.get(ten);
+  if (raw === null || raw.trim() === "") return null;
+  const n = Number(raw);
+  return Number.isInteger(n) ? n : null;
+};
+const ngay = soTuQuery("ngay");
+const thang = soTuQuery("thang");
+const nam = soTuQuery("nam");
+const gio = soTuQuery("gio");
+const gioiTinhRaw = q.get("gioiTinh");
+const gioiTinh: "Nam" | "Nữ" | null = gioiTinhRaw === "Nam" || gioiTinhRaw === "Nữ" ? gioiTinhRaw : null;
+const hoTen = q.get("ten") ?? "";
+const coDuLieuNgaySinh = ngay !== null && thang !== null && nam !== null && gio !== null && gioiTinh !== null;
+
+let inputDaMua: Omit<LuanGiaiTuViInput, "goi"> | null = null;
+if (coDuLieuNgaySinh) {
+  inputDaMua = { day: ngay!, month: thang!, year: nam!, hour: gio!, gender: gioiTinh!, hoTen };
+}
+
+let baoCaoCoBan: Awaited<ReturnType<typeof taoLuanGiaiTuVi>> | null = null;
+let baoCaoNangCao: Awaited<ReturnType<typeof taoLuanGiaiTuVi>> | null = null;
+let loiTinhBaoCao: string | null = null;
+let coDonCoBanChuaHienThi = false;
+let coDonNangCaoChuaHienThi = false;
+
+if (user) {
+  const donCoBan = await getConfirmedToolOrderForUser(user.id, TOOL_SLUG_CO_BAN);
+  const donNangCao = await getConfirmedToolOrderForUser(user.id, TOOL_SLUG_NANG_CAO);
+
+  if (donCoBan?.toolInputSnapshot) coDonCoBanChuaHienThi = true;
+  if (donNangCao?.toolInputSnapshot) coDonNangCaoChuaHienThi = true;
+
+  if (user.isAdmin) {
+    // taoLuanGiaiTuVi() tự kiểm tra cache theo hash lá số bên trong (cache.ts) — không cần dò
+    // cache thủ công ở đây, khác bat-tu-toan-dien vốn để trang tự quản cache.
+    try {
+      if (donCoBan?.toolInputSnapshot) {
+        const input = JSON.parse(donCoBan.toolInputSnapshot) as Omit<LuanGiaiTuViInput, "goi">;
+        baoCaoCoBan = await taoLuanGiaiTuVi({ ...input, goi: "co_ban" });
+      }
+      if (donNangCao?.toolInputSnapshot) {
+        const input = JSON.parse(donNangCao.toolInputSnapshot) as Omit<LuanGiaiTuViInput, "goi">;
+        baoCaoNangCao = await taoLuanGiaiTuVi({ ...input, goi: "nang_cao" });
+      }
+    } catch (err) {
+      loiTinhBaoCao = err instanceof Error ? err.message : "Không tính được báo cáo.";
+    }
+  }
+}
+
+const daMuaCoBan = coDonCoBanChuaHienThi;
+const daMuaNangCao = coDonNangCaoChuaHienThi;
+---
+
+<BaseLayout
+  title="Luận Giải Tử Vi"
+  description="Luận giải Tử Vi Đẩu Số đầy đủ theo phương pháp Nam Phái: đủ 12 cung, Đại Hạn, Tiểu Hạn và chiến lược sống dài hạn."
+  noIndex
+>
+  <PageHero
+    eyebrow="⭐ Dịch vụ VIP · Đang thử nghiệm"
+    title="Luận Giải Tử Vi"
+    description={`Luận Cơ Bản ${dinhDangTien(GIA_CO_BAN)} (đủ 12 cung) — Luận Nâng Cao ${dinhDangTien(GIA_NANG_CAO)} (thêm Đại Hạn, Tiểu Hạn, Tổng kết chiến lược). Mua thẳng Nâng Cao cũng được, không cần mua Cơ Bản trước.`}
+    breadcrumbs={[
+      { label: "Trang chủ", href: "/" },
+      { label: "Đại Cát Lợi", href: "/dai-cat-loi" },
+      { label: "Luận Giải Tử Vi" },
+    ]}
+  />
+
+  <Container class="py-12">
+    <div class="mx-auto max-w-4xl">
+      {loiTinhBaoCao && (
+        <div class="mb-5 rounded-(--radius-card) border-2 border-(--color-danger-500) bg-(--color-danger-500)/10 p-4 text-sm font-bold text-(--color-danger-500)">
+          ⚠️ Có lỗi khi tính báo cáo: {loiTinhBaoCao}
+        </div>
+      )}
+
+      {!user ? (
+        <div class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6 text-center">
+          <p class="font-medium text-(--color-ink-800)">Cần đăng nhập để mua bản luận giải này.</p>
+          <p class="mt-2 text-sm text-(--color-ink-600)">Báo cáo gắn theo tài khoản — xem lại sau này không mất phí.</p>
+          <a href="/hoc-vien/dang-nhap" class="mt-4 inline-flex items-center justify-center rounded-(--radius-control) bg-(--color-gold-500) px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90">Đăng nhập</a>
+        </div>
+      ) : !coDuLieuNgaySinh && !daMuaCoBan && !daMuaNangCao ? (
+        <div class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6 text-center">
+          <p class="font-medium text-(--color-ink-800)">Chưa có ngày giờ sinh để luận giải.</p>
+          <p class="mt-2 text-sm text-(--color-ink-600)">Vui lòng lập lá số Tử Vi trước, rồi bấm nút "Xem luận giải 12 cung" hoặc "Xem trọn vận trình" ở đó.</p>
+          <a href="/lap-la-so-tu-vi" class="mt-4 inline-flex items-center justify-center rounded-(--radius-control) bg-(--color-gold-500) px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90">Lập lá số Tử Vi</a>
+        </div>
+      ) : (
+        <>
+          {/* --- Đã mua Cơ Bản nhưng KHÔNG phải admin: không hiện trực tiếp, báo đã gửi qua email --- */}
+          {daMuaCoBan && !baoCaoCoBan?.coBan && (
+            <div class="mb-8 rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-6 text-sm text-(--color-ink-800)">
+              <p class="font-display text-lg font-bold text-(--color-ink-950)">✅ Đã mua Luận Cơ Bản</p>
+              <p class="mt-2">Bản luận giải đầy đủ (PDF) đã được gửi tới email tài khoản của bạn ngay sau khi thanh toán thành công (thường mất khoảng 30-60 giây để AI xử lý xong). Vui lòng kiểm tra hộp thư, kể cả mục Spam/Quảng cáo.</p>
+            </div>
+          )}
+
+          {/* --- Báo cáo Cơ Bản (chỉ admin xem trực tiếp) --- */}
+          {baoCaoCoBan?.coBan && baoCaoCoBan.duLieu && (
+            <section class="mb-8 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
+              <h2 class="font-display text-2xl font-bold text-(--color-ink-950)">Luận Cơ Bản</h2>
+              <p class="mt-1 text-xs text-(--color-ink-500)">
+                {baoCaoCoBan.duLieu.hoTen} · {baoCaoCoBan.duLieu.gioiTinh} · {baoCaoCoBan.duLieu.ngaySinhDuong} giờ {baoCaoCoBan.duLieu.gioSinh}h ·
+                {" "}{baoCaoCoBan.duLieu.banMenhNapAm} · {baoCaoCoBan.duLieu.cucName}
+              </p>
+
+              <div class="mt-4 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4">
+                <p class="text-sm font-semibold text-(--color-ink-900)">Luận Thiên Bàn</p>
+                <p class="mt-1.5 whitespace-pre-line text-sm leading-relaxed text-(--color-ink-800)">{baoCaoCoBan.coBan.luanThienBan}</p>
+              </div>
+
+              <div class="mt-4 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4">
+                <p class="text-sm font-semibold text-(--color-ink-900)">Các chủ đề chính</p>
+                <div class="mt-2 space-y-2">
+                  {[
+                    ["Học vấn - tư duy", baoCaoCoBan.coBan.chuDe.hocVan],
+                    ["Nghề nghiệp - công danh", baoCaoCoBan.coBan.chuDe.ngheNghiep],
+                    ["Tài chính", baoCaoCoBan.coBan.chuDe.taiChinh],
+                    ["Hôn nhân", baoCaoCoBan.coBan.chuDe.honNhan],
+                    ["Sức khỏe", baoCaoCoBan.coBan.chuDe.sucKhoe],
+                    ["Khó khăn - thử thách", baoCaoCoBan.coBan.chuDe.khoKhan],
+                    ["Định hướng phát triển", baoCaoCoBan.coBan.chuDe.dinhHuong],
+                  ].filter(([, v]) => v).map(([ten, noiDung]) => (
+                    <div>
+                      <p class="text-xs font-semibold text-(--color-cinnabar-400)">{ten}</p>
+                      <p class="text-sm leading-relaxed text-(--color-ink-800)">{noiDung}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div class="mt-4">
+                <p class="mb-2 text-sm font-semibold text-(--color-ink-900)">Bánh xe Cát – Hung 12 cung</p>
+                <div class="grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-3">
+                  {[...baoCaoCoBan.duLieu.cung].sort((a, b) => b.diem - a.diem).map((c) => (
+                    <div class="flex items-center justify-between text-sm">
+                      <span class="text-(--color-ink-700)">{c.ten}</span>
+                      <span class="font-semibold text-(--color-gold-600)" title={c.nhanDiem}>{"●".repeat(c.diem)}{"○".repeat(5 - c.diem)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div class="mt-5 space-y-4">
+                {TEN_CUNG_SNAKE.map((k) => {
+                  const l = baoCaoCoBan!.coBan!.cung[k];
+                  const diem = baoCaoCoBan!.duLieu!.cung.find((c) => c.ten === TEN_CUNG_HIEN_THI[k])?.diem ?? 3;
+                  return (
+                    <details class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3">
+                      <summary class="cursor-pointer font-semibold text-(--color-cinnabar-400)">
+                        {TEN_CUNG_HIEN_THI[k]} — {"★".repeat(diem)}{"☆".repeat(5 - diem)} ({nhanDiem(diem)})
+                      </summary>
+                      <div class="mt-2 space-y-2 text-sm leading-relaxed text-(--color-ink-800)">
+                        <p><strong>Kết luận nhanh:</strong> {l.ketLuanNhanh}</p>
+                        <p><strong>Phân tích cấu trúc:</strong> {l.phanTichCauTruc}</p>
+                        <p><strong>Điểm mạnh:</strong> {l.diemManh}</p>
+                        <p><strong>Điểm yếu:</strong> {l.diemYeu}</p>
+                        <p><strong>Nguyên nhân:</strong> {l.nguyenNhan}</p>
+                        <p><strong>Khả năng ứng nghiệm:</strong> {l.khaNangUngNghiem}</p>
+                        <p><strong>Khuyến nghị:</strong> {l.khuyenNghi}</p>
+                      </div>
+                    </details>
+                  );
+                })}
+              </div>
+
+              {!daMuaNangCao && (
+                <div class="mt-6 rounded-(--radius-control) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-4 text-sm text-(--color-ink-800)">
+                  <p>Muốn biết vận trình 10 năm tới đang thuận hay khó, và nên làm gì trong giai đoạn hiện tại?</p>
+                  <Button id="tvlg-mua-nang-cao" size="md" class="mt-3">Xem Luận Nâng Cao — {dinhDangTien(GIA_NANG_CAO)}</Button>
+                </div>
+              )}
+            </section>
+          )}
+
+          {/* --- Đã mua Nâng Cao nhưng KHÔNG phải admin --- */}
+          {daMuaNangCao && !baoCaoNangCao?.nangCao && (
+            <div class="mb-8 rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-6 text-sm text-(--color-ink-800)">
+              <p class="font-display text-lg font-bold text-(--color-ink-950)">✅ Đã mua Luận Nâng Cao</p>
+              <p class="mt-2">Bản luận giải đầy đủ (PDF, gồm cả phần Cơ Bản) đã được gửi tới email tài khoản của bạn ngay sau khi thanh toán thành công. Vui lòng kiểm tra hộp thư, kể cả mục Spam/Quảng cáo.</p>
+            </div>
+          )}
+
+          {/* --- Báo cáo Nâng Cao (chỉ admin) --- */}
+          {baoCaoNangCao?.nangCao && baoCaoNangCao.duLieu && (
+            <section class="mb-8 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
+              <h2 class="font-display text-2xl font-bold text-(--color-ink-950)">Luận Nâng Cao</h2>
+
+              {[
+                { tieu: `Đại Hạn hiện tại${baoCaoNangCao.duLieu.daiHanHienTai ? ` (${baoCaoNangCao.duLieu.daiHanHienTai.tuoiTu}-${baoCaoNangCao.duLieu.daiHanHienTai.tuoiDen} tuổi)` : ""}`, h: baoCaoNangCao.nangCao.daiHan },
+                { tieu: `Tiểu Hạn năm nay${baoCaoNangCao.duLieu.tieuHanNamNay ? ` (${baoCaoNangCao.duLieu.namHienTai}, ${baoCaoNangCao.duLieu.tieuHanNamNay.tuoi} tuổi)` : ""}`, h: baoCaoNangCao.nangCao.tieuHanNamNay },
+                { tieu: `Tiểu Hạn năm sau${baoCaoNangCao.duLieu.tieuHanNamSau ? ` (${(baoCaoNangCao.duLieu.namHienTai ?? 0) + 1}, ${baoCaoNangCao.duLieu.tieuHanNamSau.tuoi} tuổi)` : ""}`, h: baoCaoNangCao.nangCao.tieuHanNamSau },
+              ].map(({ tieu, h }) => (
+                <div class="mt-4 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4">
+                  <p class="text-sm font-semibold text-(--color-ink-900)">{tieu}</p>
+                  <p class="mt-1.5 text-sm leading-relaxed text-(--color-ink-800)">{h.doanMoDau}</p>
+                  <p class="mt-2 text-sm"><strong class="text-(--color-cinnabar-400)">Quan tâm nhiều nhất:</strong> {h.quanTamNhieuNhat}</p>
+                  {h.toXauSoVoiHanKhac && <p class="mt-1 text-sm"><strong class="text-(--color-cinnabar-400)">So với hạn khác:</strong> {h.toXauSoVoiHanKhac}</p>}
+                  {h.loiKhuyenNen.length > 0 && (
+                    <div class="mt-2">
+                      <p class="text-xs font-semibold text-emerald-700">✅ Nên</p>
+                      <ul class="list-inside list-disc text-sm text-(--color-ink-800)">{h.loiKhuyenNen.map((s) => <li>{s}</li>)}</ul>
+                    </div>
+                  )}
+                  {h.loiKhuyenKhongNen.length > 0 && (
+                    <div class="mt-2">
+                      <p class="text-xs font-semibold text-(--color-cinnabar-400)">⛔ Không nên</p>
+                      <ul class="list-inside list-disc text-sm text-(--color-ink-800)">{h.loiKhuyenKhongNen.map((s) => <li>{s}</li>)}</ul>
+                    </div>
+                  )}
+                  <p class="mt-2 text-sm italic text-(--color-ink-700)">Chốt lại của Thầy: {h.chotLai}</p>
+                </div>
+              ))}
+
+              <div class="mt-4 rounded-(--radius-control) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-4">
+                <p class="text-sm font-semibold text-(--color-ink-900)">Tổng kết toàn bộ lá số</p>
+                <p class="mt-2 text-xs font-semibold text-emerald-700">✨ 5 điểm mạnh nổi bật</p>
+                <ul class="list-inside list-disc text-sm text-(--color-ink-800)">{baoCaoNangCao.nangCao.tongKet.diemManh.map((s) => <li>{s}</li>)}</ul>
+                <p class="mt-2 text-xs font-semibold text-(--color-cinnabar-400)">⚠️ 5 điểm cần lưu ý</p>
+                <ul class="list-inside list-disc text-sm text-(--color-ink-800)">{baoCaoNangCao.nangCao.tongKet.diemYeu.map((s) => <li>{s}</li>)}</ul>
+                <p class="mt-2 text-sm"><strong>📈 Giai đoạn phát triển nhất:</strong> {baoCaoNangCao.nangCao.tongKet.giaiDoanPhatTrienNhat}</p>
+                <p class="mt-1 text-sm"><strong>🛡️ Giai đoạn cần cẩn trọng:</strong> {baoCaoNangCao.nangCao.tongKet.giaiDoanCanCanTrong}</p>
+                <p class="mt-1 text-sm"><strong>💼 Ngành nghề phù hợp:</strong> {baoCaoNangCao.nangCao.tongKet.nganhNghePhuHop}</p>
+                <p class="mt-1 text-sm"><strong>🚫 Điều nên tránh:</strong> {baoCaoNangCao.nangCao.tongKet.dieuNenTranh}</p>
+                <p class="mt-2 text-sm leading-relaxed text-(--color-ink-800)"><strong>🎯 Chiến lược dài hạn:</strong> {baoCaoNangCao.nangCao.tongKet.chienLuocDaiHan}</p>
+              </div>
+            </section>
+          )}
+
+          {/* --- Chưa mua gì: hiện 2 lựa chọn mua --- */}
+          {!daMuaCoBan && !daMuaNangCao && inputDaMua && (
+            <section class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
+              <p class="text-sm text-(--color-ink-600)">
+                Lá số của <strong class="text-(--color-ink-900)">{inputDaMua.hoTen || "bạn"}</strong> — {inputDaMua.day}/{inputDaMua.month}/{inputDaMua.year}, giờ {inputDaMua.hour}h, {inputDaMua.gender}.
+              </p>
+              <div class="mt-4 grid gap-4 sm:grid-cols-2">
+                <div class="flex flex-col rounded-(--radius-card) border-2 border-(--color-cinnabar-400)/40 bg-(--color-ivory-50) p-5">
+                  <p class="font-display text-lg font-bold text-(--color-cinnabar-400)">Luận Cơ Bản</p>
+                  <p class="mt-1 text-sm text-(--color-ink-700)">Luận đủ 12 cung, mỗi cung 7 phần: kết luận nhanh, phân tích, điểm mạnh/yếu, nguyên nhân, khả năng ứng nghiệm, khuyến nghị.</p>
+                  <p class="mt-3 font-display text-xl font-bold text-(--color-ink-950)">{dinhDangTien(GIA_CO_BAN)}</p>
+                  <Button id="tvlg-mua-co-ban" size="lg" class="mt-3">Mua Luận Cơ Bản</Button>
+                </div>
+                <div class="flex flex-col rounded-(--radius-card) border-2 border-(--color-gold-400)/60 bg-(--color-gold-400)/10 p-5">
+                  <p class="font-display text-lg font-bold text-(--color-gold-600)">Luận Nâng Cao</p>
+                  <p class="mt-1 text-sm text-(--color-ink-700)">Trọn gói Cơ Bản, cộng thêm Đại Hạn hiện tại, Tiểu Hạn năm nay và năm sau, Tổng kết chiến lược dài hạn.</p>
+                  <p class="mt-3 font-display text-xl font-bold text-(--color-ink-950)">{dinhDangTien(GIA_NANG_CAO)}</p>
+                  <Button id="tvlg-mua-nang-cao-thang" size="lg" class="mt-3">Mua Luận Nâng Cao</Button>
+                </div>
+              </div>
+              <div class="mt-4"><MaKhuyenMai idPrefix="tvlg-ma" toolSlug={TOOL_SLUG_CO_BAN} giaGoc={GIA_CO_BAN} /></div>
+            </section>
+          )}
+
+          <div id="tvlg-dang-chay" class="mt-4 hidden rounded-(--radius-card) border border-(--color-gold-500)/40 bg-(--color-gold-400)/10 p-4 text-sm text-(--color-ink-700)">
+            <p class="font-medium text-(--color-ink-900)">⏳ Đang tạo đơn hàng…</p>
+          </div>
+          <div id="tvlg-loi" class="mt-4 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm text-(--color-danger-500)"></div>
+          <div id="tvlg-thanh-toan" class="mt-6 hidden space-y-4 rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-center text-(--color-ink-950) shadow-lg">
+            <p class="font-display text-lg font-bold">Quét mã QR để thanh toán <span id="tvlg-so-tien"></span></p>
+            <img id="tvlg-qr" src="" alt="Mã QR thanh toán" class="mx-auto h-64 w-64 rounded-xl border border-(--color-ivory-300)" />
+            <p class="text-sm text-(--color-ink-600)">Mã đơn hàng: <strong id="tvlg-order-code"></strong></p>
+            <p id="tvlg-trang-thai" class="text-sm font-medium text-(--color-gold-400)">Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)</p>
+          </div>
+        </>
+      )}
+    </div>
+  </Container>
+</BaseLayout>
+
+<script define:vars={{ inputDaMua }}>
+  window.__tvlgInput = inputDaMua;
+</script>
+<script>
+  const dangChayEl = document.getElementById("tvlg-dang-chay");
+  const loiEl = document.getElementById("tvlg-loi");
+  const thanhToanEl = document.getElementById("tvlg-thanh-toan");
+  const qrImg = document.getElementById("tvlg-qr");
+  const orderCodeEl = document.getElementById("tvlg-order-code");
+  const trangThaiEl = document.getElementById("tvlg-trang-thai");
+  const soTienEl = document.getElementById("tvlg-so-tien");
+  const maInput = document.getElementById("tvlg-ma-input");
+
+  let pollTimer = null;
+  let dangHoi = false;
+
+  const baoLoi = (msg) => {
+    dangChayEl?.classList.add("hidden");
+    if (loiEl) { loiEl.textContent = msg; loiEl.classList.remove("hidden"); }
+  };
+  const dungCho = () => { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } };
+
+  async function kiemTra(orderCode) {
+    if (dangHoi) return;
+    dangHoi = true;
+    try {
+      const res = await fetch(`/api/dai-cat-loi/luan-giai-tu-vi/result?orderCode=${encodeURIComponent(orderCode)}`);
+      const data = await res.json();
+      if (!data.ok) return;
+      if (data.status === "cancelled") { dungCho(); if (trangThaiEl) trangThaiEl.textContent = "Đơn hàng đã bị hủy."; return; }
+      if (data.status !== "confirmed") return;
+      dungCho();
+      window.location.href = window.location.pathname + window.location.search;
+    } catch {
+      // mạng chập chờn — nhịp sau thử lại
+    } finally {
+      dangHoi = false;
+    }
+  }
+
+  async function muaTang(tang) {
+    const dauVao = window.__tvlgInput;
+    if (!dauVao) return baoLoi("Thiếu ngày giờ sinh — vui lòng lập lá số lại từ /lap-la-so-tu-vi.");
+
+    const payload = {
+      ngay: dauVao.day, thang: dauVao.month, nam: dauVao.year, gio: dauVao.hour, gioiTinh: dauVao.gender,
+      hoTen: dauVao.hoTen, tang, maKhuyenMai: maInput?.value?.trim() || undefined,
+    };
+    dangChayEl?.classList.remove("hidden");
+    loiEl?.classList.add("hidden");
+    try {
+      const res = await fetch("/api/dai-cat-loi/luan-giai-tu-vi/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) return baoLoi(data.error ?? "Không tạo được đơn hàng.");
+      dangChayEl?.classList.add("hidden");
+      if (orderCodeEl) orderCodeEl.textContent = data.orderCode;
+
+      if (data.mienPhi) { dangChayEl?.classList.remove("hidden"); await kiemTra(data.orderCode); return; }
+
+      if (soTienEl) soTienEl.textContent = `${Number(data.totalAmount).toLocaleString("vi-VN")}đ`;
+      if (qrImg) qrImg.src = data.qrUrl;
+      thanhToanEl?.classList.remove("hidden");
+      thanhToanEl?.scrollIntoView({ behavior: "smooth", block: "start" });
+      pollTimer = setInterval(() => kiemTra(data.orderCode), 3000);
+    } catch {
+      baoLoi("Có lỗi xảy ra. Vui lòng thử lại.");
+    }
+  }
+
+  document.getElementById("tvlg-mua-co-ban")?.addEventListener("click", () => muaTang("co_ban"));
+  document.getElementById("tvlg-mua-nang-cao")?.addEventListener("click", () => muaTang("nang_cao"));
+  document.getElementById("tvlg-mua-nang-cao-thang")?.addEventListener("click", () => muaTang("nang_cao"));
+</script>
