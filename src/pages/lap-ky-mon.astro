@@ -209,6 +209,13 @@ export const prerender = true;
               >
                 ⭐ Xem luận giải chi tiết (Người thân, Giai đoạn cuộc đời, Cách cục nổi bật) — 299.000đ
               </a>
+              <a
+                id="km-trach-cat-link"
+                href="#"
+                class="mt-2 inline-flex items-center gap-1.5 rounded-(--radius-control) border border-(--color-cinnabar-400) px-4 py-2.5 text-sm font-semibold text-(--color-cinnabar-400) hover:bg-(--color-cinnabar-400)/10"
+              >
+                🧿 Chọn ngày giờ tốt theo chính lá bàn này (động thổ, nhập trạch, khai trương…) — 499.000đ
+              </a>
             </div>
 
             <p class="mb-2 flex items-center gap-1.5 text-base font-semibold text-(--color-cinnabar-400)">☯ Mệnh Cung</p>
@@ -1400,6 +1407,20 @@ export const prerender = true;
         chiTietLink.classList.remove("hidden");
       } else {
         chiTietLink.classList.add("hidden");
+      }
+    }
+
+    // Trạch Cát Kỳ Môn dùng đúng bàn Mệnh đang xem làm mẫu cục — mang sẵn ngày giờ sinh sang.
+    const trachCatLink = document.getElementById("km-trach-cat-link") as HTMLAnchorElement | null;
+    if (trachCatLink) {
+      if (luanGiai?.hopLe) {
+        const qs = new URLSearchParams({
+          nam: namSel.value, thang: thangSel.value, ngay: ngaySel.value, gio: gioSel.value, phut: phutSel.value,
+        });
+        trachCatLink.href = `/dai-cat-loi/trach-cat-ky-mon?${qs.toString()}`;
+        trachCatLink.classList.remove("hidden");
+      } else {
+        trachCatLink.classList.add("hidden");
       }
     }
 

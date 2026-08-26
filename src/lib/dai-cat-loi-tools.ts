@@ -193,6 +193,15 @@ export const paidTools: PaidTool[] = [
     // ro cao) — trang tự hiện "đang thử nghiệm" cho khách, chỉ admin dùng được. Mở khi anh Công duyệt.
   },
   {
+    href: "/dai-cat-loi/trach-cat-ky-mon",
+    icon: "🧿",
+    title: "Trạch Cát Kỳ Môn (Chọn Ngày Giờ Theo Bàn Mệnh)",
+    desc: "Khác các công cụ chọn ngày dùng lịch chung: lập riêng bàn Kỳ Môn Mệnh của chính chủ sự làm mẫu cục, nên hai người khác tuổi hỏi cùng một việc sẽ ra hai bộ ngày khác nhau. Lọc Kỳ Môn Tứ Hại, đối chiếu dụng thần riêng của từng việc (động thổ, nhập trạch, khai trương, xuất hành, an táng…), rồi xét 12 Kiến Tinh và 12 Trực Thần. Bấm vào một ngày sẽ lập tử cục để chọn luôn khung giờ.",
+    priceLabel: "499.000đ / lượt",
+    // ⏸️ THỬ NGHIỆM NỘI BỘ (chờ anh Công duyệt giá + câu chữ) — trang tự hiện "đang thử nghiệm"
+    // cho khách, chỉ admin dùng được, giống ngay-cuoi-hoi và trach-nhat-sinh-no ở trên.
+  },
+  {
     href: "/dai-cat-loi/sim-phong-thuy-khai-van",
     icon: "📱",
     title: "Sim Phong Thủy Khai Vận Khí",
