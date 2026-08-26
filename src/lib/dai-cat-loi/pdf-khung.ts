@@ -180,6 +180,15 @@ export function ngatDong(text: string, font: PDFFont, size: number, rong: number
   return ra;
 }
 
+/** Đổi màu hex ("#166534") sang RGB pdf-lib — để tái dùng đúng màu badge đã tính sẵn trên web. */
+export function hex(ma: string): RGB {
+  const s = ma.replace("#", "");
+  const r = parseInt(s.slice(0, 2), 16) / 255;
+  const g = parseInt(s.slice(2, 4), 16) / 255;
+  const bl = parseInt(s.slice(4, 6), 16) / 255;
+  return rgb(r, g, bl);
+}
+
 export function ngayVN(d: { day: number; month: number; year: number }): string {
   return `${String(d.day).padStart(2, "0")}/${String(d.month).padStart(2, "0")}/${d.year}`;
 }
