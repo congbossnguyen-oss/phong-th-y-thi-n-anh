@@ -9,6 +9,7 @@
 
 import type { CungInfo, LapLaBanResult } from "./types";
 import { traCachCuc } from "./cachCuc";
+import { chiTietDayDu } from "./moTaChiTiet";
 
 type NguHanh = "Mộc" | "Hỏa" | "Thổ" | "Kim" | "Thủy";
 const NGU_HANH_CUNG: Record<number, NguHanh> = {
@@ -61,12 +62,17 @@ function luanNenDiKhong(laBan: LapLaBanResult): KetQuaHoiDapDiLai {
   const cn = laBan.tuTru.ngay?.can ? timCungTheoCan(laBan, laBan.tuTru.ngay.can) : undefined;
   const cg = laBan.tuTru.gio?.can ? timCungTheoCan(laBan, laBan.tuTru.gio.can) : undefined;
   if (!cn || !cg) return khongXacDinh("Không xác định được cung Can Ngày hoặc Can Giờ.");
+  const dt = [
+    { nhan: "Can Ngày (người đi)", cung: cn },
+    { nhan: "Can Giờ (sự thể chuyến đi)", cung: cg },
+  ];
+  const nguon = "a3-luan-doan-xuat-hanh-xuat-ngoai-du-lich.md, mục I";
 
   if (cn.KV) {
     return ketQua(
       "khong_thuan",
       "Chuyến đi này chưa thuận — có dấu hiệu chưa rõ ràng, chưa sẵn sàng. Nên cân nhắc dời lại nếu không thực sự cấp thiết.",
-      "Can Ngày (người đi) Không Vong (a3-luan-doan-xuat-hanh-xuat-ngoai-du-lich.md, mục I).",
+      chiTietDayDu(dt, "Can Ngày (người đi) Không Vong", nguon),
     );
   }
   const qh = quanHeCung(cn.soCung, cg.soCung);
@@ -74,13 +80,13 @@ function luanNenDiKhong(laBan: LapLaBanResult): KetQuaHoiDapDiLai {
     return ketQua(
       "khong_thuan",
       "Chuyến đi này không thuận lợi — nên cân nhắc dời lại nếu không thực sự cấp thiết.",
-      "Can Ngày và Can Giờ tương khắc (a3-luan-doan-xuat-hanh-xuat-ngoai-du-lich.md, mục I).",
+      chiTietDayDu(dt, "Can Ngày và Can Giờ tương khắc", nguon),
     );
   }
   return ketQua(
     "thuan_loi",
     "Chuyến đi này khá thuận lợi, có thể tiến hành theo kế hoạch.",
-    "Can Ngày và Can Giờ không tương khắc (a3-luan-doan-xuat-hanh-xuat-ngoai-du-lich.md, mục I).",
+    chiTietDayDu(dt, "Can Ngày và Can Giờ không tương khắc", nguon),
   );
 }
 
@@ -108,7 +114,7 @@ function luanPhuongTien(laBan: LapLaBanResult, thongTinBoSung: string): KetQuaHo
     return ketQua(
       "can_luu_y",
       `Đi máy bay lần này ${km.KV ? "có dấu hiệu chưa thuận, cần cẩn thận thêm" : "nhìn chung ổn"}.${cc ? ` Cách cục tại vị trí máy bay: ${cc.ten} — ${cc.yNghia}` : ""}`,
-      `Khai Môn (máy bay) tại ${km.huong}, thiên bàn ${km.thienBanCan}/địa bàn ${km.diaBanCan} (a3-luan-doan-xuat-hanh-xuat-ngoai-du-lich.md, mục II.3).`,
+      chiTietDayDu([{ nhan: "Khai Môn (máy bay)", cung: km }], `Cách cục ${cc?.ten ?? "chưa tra được"}`, "a3-luan-doan-xuat-hanh-xuat-ngoai-du-lich.md, mục II.3"),
     );
   }
 
@@ -120,7 +126,7 @@ function luanPhuongTien(laBan: LapLaBanResult, thongTinBoSung: string): KetQuaHo
     return ketQua(
       "can_luu_y",
       `Đi đường thủy lần này${canhBao || " nhìn chung không có dấu hiệu bất thường rõ rệt"}.`,
-      `Thương Môn (thuyền) tại ${tm.huong}, cách cục: ${cc?.ten ?? "—"} (a3-luan-doan-xuat-hanh-xuat-ngoai-du-lich.md, mục II.2).`,
+      chiTietDayDu([{ nhan: "Thương Môn (thuyền)", cung: tm }], `Cách cục ${cc?.ten ?? "chưa tra được"}`, "a3-luan-doan-xuat-hanh-xuat-ngoai-du-lich.md, mục II.2"),
     );
   }
 
@@ -129,16 +135,17 @@ function luanPhuongTien(laBan: LapLaBanResult, thongTinBoSung: string): KetQuaHo
   if (!tm) return khongXacDinh("Không xác định được cung Thương Môn.");
   const cc = traCachCuc(tm.thienBanCan, tm.diaBanCan);
   const canhBaoTrom = tm.saoThienBan === "T.Bồng" || tm.than === "H.Vũ" ? " Lưu ý thêm: cẩn thận mất cắp, thất lạc giấy tờ khi đi." : "";
+  const dtXe = [{ nhan: "Thương Môn (phương tiện)", cung: tm }];
   if (cc?.ten === "Tặc Tất Lai") {
-    return ketQua("can_luu_y", `Đi xe lần này dễ gặp trộm cắp — cần chú ý phương án đề phòng.${canhBaoTrom}`, `Thương Môn (phương tiện) có cách cục Tặc Tất Lai (a3-luan-doan-xuat-hanh-xuat-ngoai-du-lich.md, mục II.1).`);
+    return ketQua("can_luu_y", `Đi xe lần này dễ gặp trộm cắp — cần chú ý phương án đề phòng.${canhBaoTrom}`, chiTietDayDu(dtXe, "Cách cục Tặc Tất Lai", "a3-luan-doan-xuat-hanh-xuat-ngoai-du-lich.md, mục II.1"));
   }
   if (cc?.ten === "Tặc Tất Khứ") {
-    return ketQua("can_luu_y", `Đi xe lần này cần đề phòng cháy nổ, trục trặc kỹ thuật.${canhBaoTrom}`, `Thương Môn (phương tiện) có cách cục Tặc Tất Khứ (a3-luan-doan-xuat-hanh-xuat-ngoai-du-lich.md, mục II.1).`);
+    return ketQua("can_luu_y", `Đi xe lần này cần đề phòng cháy nổ, trục trặc kỹ thuật.${canhBaoTrom}`, chiTietDayDu(dtXe, "Cách cục Tặc Tất Khứ", "a3-luan-doan-xuat-hanh-xuat-ngoai-du-lich.md, mục II.1"));
   }
   return ketQua(
     "thuan_loi",
     `Đi xe lần này không có dấu hiệu bất thường rõ rệt.${canhBaoTrom}`,
-    `Thương Môn (phương tiện) tại ${tm.huong}, cách cục: ${cc?.ten ?? "—"} (a3-luan-doan-xuat-hanh-xuat-ngoai-du-lich.md, mục II.1).`,
+    chiTietDayDu(dtXe, `Cách cục ${cc?.ten ?? "chưa tra được"}`, "a3-luan-doan-xuat-hanh-xuat-ngoai-du-lich.md, mục II.1"),
   );
 }
 

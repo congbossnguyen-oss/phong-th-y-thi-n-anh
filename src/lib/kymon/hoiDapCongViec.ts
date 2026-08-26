@@ -15,6 +15,7 @@
 // chính Can Ngày, nhất quán với quy ước đã dùng xuyên suốt các chủ đề khác.
 
 import type { CungInfo, LapLaBanResult } from "./types";
+import { chiTietDayDu } from "./moTaChiTiet";
 
 type NguHanh = "Mộc" | "Hỏa" | "Thổ" | "Kim" | "Thủy";
 const NGU_HANH_CUNG: Record<number, NguHanh> = {
@@ -70,24 +71,30 @@ function luanKhaiMonVsCanNgay(laBan: LapLaBanResult, tenViec: string): KetQuaHoi
   const cn = laBan.tuTru.ngay?.can ? timCungTheoCan(laBan, laBan.tuTru.ngay.can) : undefined;
   const canNam = laBan.tuTru.nam?.can ? timCungTheoCan(laBan, laBan.tuTru.nam.can) : undefined; // Thái Tuế
   if (!km || !cn) return khongXacDinh("Không xác định được cung Khai Môn hoặc Can Ngày.");
+  const dt = [
+    { nhan: "Khai Môn (đơn vị)", cung: km },
+    { nhan: "Can Ngày (bản thân)", cung: cn },
+    { nhan: "Thái Tuế/Can Năm (lãnh đạo cấp cao)", cung: canNam },
+  ];
+  const nguon = "sach-cong-cu-ky-mon-don-giap-truc-doan-do-tan-hoi-vu-phac.md, mục 17";
 
   if (km.KV || laNhapMo(km)) {
-    return ketQua("khong_thuan", `${tenViec} lúc này chưa thuận — có dấu hiệu chưa rõ ràng, chưa chín muồi. Nên chờ thêm hoặc chuẩn bị kỹ hơn.`, "Khai Môn Không Vong hoặc Nhập Mộ.");
+    return ketQua("khong_thuan", `${tenViec} lúc này chưa thuận — có dấu hiệu chưa rõ ràng, chưa chín muồi. Nên chờ thêm hoặc chuẩn bị kỹ hơn.`, chiTietDayDu(dt, "Khai Môn Không Vong hoặc Nhập Mộ", nguon));
   }
 
   const qhKhaiMon = quanHeCung(km.soCung, cn.soCung); // Khai Môn (đơn vị) → Can Ngày (mình)
   const qhThaiTue = canNam ? quanHeCung(canNam.soCung, cn.soCung) : undefined; // Thái Tuế → Can Ngày
 
   if (qhKhaiMon === "sinh" && qhThaiTue === "sinh") {
-    return ketQua("thuan_loi", `${tenViec} lúc này rất thuận lợi — cả đơn vị lẫn cấp trên cao nhất đều có dấu hiệu ủng hộ.`, "Khai Môn sinh Can Ngày, đồng thời Thái Tuế (Can Năm) cũng sinh Can Ngày — cát nhất (sach-cong-cu-ky-mon-don-giap-truc-doan-do-tan-hoi-vu-phac.md, mục 17).");
+    return ketQua("thuan_loi", `${tenViec} lúc này rất thuận lợi — cả đơn vị lẫn cấp trên cao nhất đều có dấu hiệu ủng hộ.`, chiTietDayDu(dt, "Khai Môn sinh Can Ngày, đồng thời Thái Tuế (Can Năm) cũng sinh Can Ngày — cát nhất", nguon));
   }
   if (qhThaiTue === "khac") {
-    return ketQua("khong_thuan", `${tenViec} lúc này có dấu hiệu chưa thuận từ phía lãnh đạo cấp cao nhất — cần thận trọng, chuẩn bị kỹ hơn.`, "Thái Tuế (Can Năm) khắc Can Ngày (sach-cong-cu-ky-mon-don-giap-truc-doan-do-tan-hoi-vu-phac.md, mục 17).");
+    return ketQua("khong_thuan", `${tenViec} lúc này có dấu hiệu chưa thuận từ phía lãnh đạo cấp cao nhất — cần thận trọng, chuẩn bị kỹ hơn.`, chiTietDayDu(dt, "Thái Tuế (Can Năm) khắc Can Ngày", nguon));
   }
   if (qhKhaiMon === "sinh" || qhKhaiMon === "hoa") {
-    return ketQua("thuan_loi", `${tenViec} lúc này khá thuận lợi.`, "Khai Môn sinh cho Can Ngày, hoặc tỉ hòa (sach-cong-cu-ky-mon-don-giap-truc-doan-do-tan-hoi-vu-phac.md, mục 17).");
+    return ketQua("thuan_loi", `${tenViec} lúc này khá thuận lợi.`, chiTietDayDu(dt, "Khai Môn sinh cho Can Ngày, hoặc tỉ hòa", nguon));
   }
-  return ketQua("khong_thuan", `${tenViec} lúc này chưa thuận, cần chuẩn bị kỹ hơn hoặc chờ thời điểm tốt hơn.`, "Khai Môn khắc Can Ngày (sach-cong-cu-ky-mon-don-giap-truc-doan-do-tan-hoi-vu-phac.md, mục 17: 'bị Khai môn khắc, đơn vị không hoan nghênh').");
+  return ketQua("khong_thuan", `${tenViec} lúc này chưa thuận, cần chuẩn bị kỹ hơn hoặc chờ thời điểm tốt hơn.`, chiTietDayDu(dt, "Khai Môn khắc Can Ngày ('bị Khai môn khắc, đơn vị không hoan nghênh')", nguon));
 }
 
 // 1. XIN VIỆC — suy từ Khai Môn ("công ty") vs Can Ngày (người xin việc).
@@ -106,17 +113,18 @@ function luanThangChuc(laBan: LapLaBanResult): KetQuaHoiDapCongViec {
 function luanNhayViec(laBan: LapLaBanResult): KetQuaHoiDapCongViec {
   const cn = laBan.tuTru.ngay?.can ? timCungTheoCan(laBan, laBan.tuTru.ngay.can) : undefined;
   if (!cn) return khongXacDinh("Không xác định được cung Can Ngày.");
+  const dt = [{ nhan: "Can Ngày (bản thân)", cung: cn }];
   if (cn.KV || laNhapMo(cn)) {
     return ketQua(
       "khong_thuan",
       "Đây chưa phải thời điểm tốt để nhảy việc — bản thân đang ở trạng thái chưa rõ ràng, dễ đưa ra quyết định vội vàng. Nên cân nhắc kỹ hơn hoặc chờ thêm.",
-      "Can Ngày Không Vong hoặc Nhập Mộ.",
+      chiTietDayDu(dt, "Can Ngày Không Vong hoặc Nhập Mộ", "quy ước KV/Nhập Mộ = bất lợi, dùng nhất quán xuyên suốt các chủ đề"),
     );
   }
   return ketQua(
     "thuan_loi",
     "Không có dấu hiệu bất lợi rõ rệt — nếu đã có phương án tốt, đây là thời điểm có thể cân nhắc nhảy việc.",
-    "Can Ngày không phạm Không Vong/Nhập Mộ.",
+    chiTietDayDu(dt, "Can Ngày không phạm Không Vong/Nhập Mộ", "quy ước KV/Nhập Mộ = bất lợi, dùng nhất quán xuyên suốt các chủ đề"),
   );
 }
 
@@ -126,13 +134,18 @@ function luanHopTacCanhTranh(laBan: LapLaBanResult): KetQuaHoiDapCongViec {
   const cn = laBan.tuTru.ngay?.can ? timCungTheoCan(laBan, laBan.tuTru.ngay.can) : undefined;
   const cg = laBan.tuTru.gio?.can ? timCungTheoCan(laBan, laBan.tuTru.gio.can) : undefined;
   if (!cn || !cg) return khongXacDinh("Không xác định được cung Can Ngày hoặc Can Giờ.");
+  const dt = [
+    { nhan: "Can Ngày (mình)", cung: cn },
+    { nhan: "Can Giờ (đối phương)", cung: cg },
+  ];
+  const nguon = "suy luận nhất quán từ a5-cau-tai-hop-tac-kinh-doanh.md, mục VI";
 
   const qh = quanHeCung(cg.soCung, cn.soCung); // Can Giờ (đối phương) → Can Ngày (mình)
-  if (qh === "sinh") return ketQua("thuan_loi", "Trong mối quan hệ hợp tác/cạnh tranh này, phần thuận lợi đang nghiêng về phía bạn.", "Can Giờ (đối phương) sinh cho Can Ngày (mình).");
-  if (qh === "duocSinh") return ketQua("can_luu_y", "Trong mối quan hệ này, phần thuận lợi đang nghiêng về phía đối phương — nên cẩn thận hơn khi đưa ra quyết định.", "Can Ngày (mình) sinh cho Can Giờ (đối phương).");
-  if (qh === "hoa") return ketQua("thuan_loi", "Hai bên khá cân bằng, không ai chiếm ưu thế rõ rệt.", "Can Ngày và Can Giờ tỉ hòa.");
-  if (qh === "khac") return ketQua("khong_thuan", "Đối phương đang gây bất lợi cho bạn trong mối quan hệ này — nên cẩn trọng, chuẩn bị phương án ứng phó.", "Can Giờ (đối phương) khắc Can Ngày (mình).");
-  return ketQua("can_luu_y", "Bạn đang ở thế chủ động gây ảnh hưởng tới đối phương — nên cân nhắc mức độ, tránh đẩy đối phương vào thế quá bất lợi nếu muốn giữ quan hệ lâu dài.", "Can Ngày (mình) khắc Can Giờ (đối phương).");
+  if (qh === "sinh") return ketQua("thuan_loi", "Trong mối quan hệ hợp tác/cạnh tranh này, phần thuận lợi đang nghiêng về phía bạn.", chiTietDayDu(dt, "Can Giờ (đối phương) sinh cho Can Ngày (mình)", nguon));
+  if (qh === "duocSinh") return ketQua("can_luu_y", "Trong mối quan hệ này, phần thuận lợi đang nghiêng về phía đối phương — nên cẩn thận hơn khi đưa ra quyết định.", chiTietDayDu(dt, "Can Ngày (mình) sinh cho Can Giờ (đối phương)", nguon));
+  if (qh === "hoa") return ketQua("thuan_loi", "Hai bên khá cân bằng, không ai chiếm ưu thế rõ rệt.", chiTietDayDu(dt, "Can Ngày và Can Giờ tỉ hòa", nguon));
+  if (qh === "khac") return ketQua("khong_thuan", "Đối phương đang gây bất lợi cho bạn trong mối quan hệ này — nên cẩn trọng, chuẩn bị phương án ứng phó.", chiTietDayDu(dt, "Can Giờ (đối phương) khắc Can Ngày (mình)", nguon));
+  return ketQua("can_luu_y", "Bạn đang ở thế chủ động gây ảnh hưởng tới đối phương — nên cân nhắc mức độ, tránh đẩy đối phương vào thế quá bất lợi nếu muốn giữ quan hệ lâu dài.", chiTietDayDu(dt, "Can Ngày (mình) khắc Can Giờ (đối phương)", nguon));
 }
 
 const BANG_LUAN: Record<string, (laBan: LapLaBanResult) => KetQuaHoiDapCongViec> = {

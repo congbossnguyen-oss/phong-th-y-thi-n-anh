@@ -12,6 +12,7 @@
 // cụ tham khảo truyền thống, quyết định y tế phải theo chỉ định bác sĩ/cơ sở y tế thật.
 
 import type { CungInfo, LapLaBanResult } from "./types";
+import { chiTietDayDu } from "./moTaChiTiet";
 
 type NguHanh = "Mộc" | "Hỏa" | "Thổ" | "Kim" | "Thủy";
 const NGU_HANH_CUNG: Record<number, NguHanh> = {
@@ -81,6 +82,12 @@ function luanBenhTinhChung(laBan: LapLaBanResult): KetQuaHoiDapSucKhoe {
   const tam = timSaoCung(laBan, "T.Tâm");
   const at = timCungTheoCan(laBan, "Ất");
   if (!nhue || !tam || !at) return khongXacDinh("Không xác định được cung Thiên Nhuế, Thiên Tâm hoặc Ất.");
+  const dt = [
+    { nhan: "Thiên Nhuế Tinh (bệnh)", cung: nhue },
+    { nhan: "Thiên Tâm Tinh (bác sĩ)", cung: tam },
+    { nhan: "Ất kỳ (y dược)", cung: at },
+  ];
+  const nguon = "sach-cong-cu-ky-mon-don-giap-truc-doan-do-tan-hoi-vu-phac.md, mục 14";
 
   const chuaDuoc = quanHeCung(tam.soCung, nhue.soCung) === "khac" || quanHeCung(at.soCung, nhue.soCung) === "khac";
   const dauHieuPhu = danhSachDauHieuPhu(nhue);
@@ -90,13 +97,13 @@ function luanBenhTinhChung(laBan: LapLaBanResult): KetQuaHoiDapSucKhoe {
     return ketQua(
       "thuan_loi",
       `Sức khỏe giai đoạn này có dấu hiệu tích cực — nếu đang điều trị hoặc thăm khám, khả năng đáp ứng tốt khá cao.${canhBao}${LOI_NHAC}`,
-      "Thiên Tâm hoặc Ất (bác sĩ/y dược) khắc chế Thiên Nhuế (bệnh) — bệnh có thể chữa (sach-cong-cu-ky-mon-don-giap-truc-doan-do-tan-hoi-vu-phac.md, mục 14).",
+      chiTietDayDu(dt, "Thiên Tâm hoặc Ất (bác sĩ/y dược) khắc chế Thiên Nhuế (bệnh) — bệnh có thể chữa", nguon),
     );
   }
   return ketQua(
     "can_luu_y",
     `Sức khỏe giai đoạn này cần được quan tâm đúng mức — nên chủ động thăm khám sớm thay vì chủ quan chờ đợi.${canhBao}${LOI_NHAC}`,
-    "Thiên Tâm và Ất chưa khắc chế được Thiên Nhuế (sach-cong-cu-ky-mon-don-giap-truc-doan-do-tan-hoi-vu-phac.md, mục 14).",
+    chiTietDayDu(dt, "Thiên Tâm và Ất chưa khắc chế được Thiên Nhuế", nguon),
   );
 }
 
@@ -109,6 +116,7 @@ function luanBenhTinhChung(laBan: LapLaBanResult): KetQuaHoiDapSucKhoe {
 function luanCapCuu(laBan: LapLaBanResult): KetQuaHoiDapSucKhoe {
   const nhue = timSaoCung(laBan, "T.Nhuế");
   if (!nhue) return khongXacDinh("Không xác định được cung Thiên Nhuế.");
+  const dt = [{ nhan: "Thiên Nhuế Tinh (bệnh/người bệnh)", cung: nhue }];
 
   const dauHieuXau = nhue.KV || laNhapMo(nhue);
   const dauHieuPhu = danhSachDauHieuPhu(nhue);
@@ -118,13 +126,13 @@ function luanCapCuu(laBan: LapLaBanResult): KetQuaHoiDapSucKhoe {
     return ketQua(
       "khong_thuan",
       `Đây là tình huống cần đặc biệt theo dõi sát và tuân thủ hoàn toàn theo hướng dẫn của đội ngũ y tế đang trực tiếp điều trị — không nên chủ quan.${canhBao}${LOI_NHAC}`,
-      "Thiên Nhuế (bệnh/người bệnh) phạm Không Vong hoặc Nhập Mộ.",
+      chiTietDayDu(dt, "Thiên Nhuế (bệnh/người bệnh) phạm Không Vong hoặc Nhập Mộ", "mở rộng thận trọng, nhất quán từ dụng thần Thiên Nhuế ở mục 14"),
     );
   }
   return ketQua(
     "can_luu_y",
     `Không có dấu hiệu đặc biệt xấu theo lá bàn, nhưng đây vẫn là tình huống cần theo dõi sát và làm đúng theo hướng dẫn y tế.${canhBao}${LOI_NHAC}`,
-    "Thiên Nhuế (bệnh/người bệnh) không phạm Không Vong/Nhập Mộ.",
+    chiTietDayDu(dt, "Thiên Nhuế (bệnh/người bệnh) không phạm Không Vong/Nhập Mộ", "mở rộng thận trọng, nhất quán từ dụng thần Thiên Nhuế ở mục 14"),
   );
 }
 
