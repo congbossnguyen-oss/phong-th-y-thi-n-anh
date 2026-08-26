@@ -3,6 +3,7 @@
 // Luôn dùng lá bàn tại THỜI ĐIỂM hỏi (không hỗ trợ tra trước 1 ngày khác trong tương lai).
 
 import type { CungInfo, LapLaBanResult } from "./types";
+import { chiTietDayDu } from "./moTaChiTiet";
 
 function timSaoCung(laBan: LapLaBanResult, sao: string): CungInfo | undefined {
   return laBan.cungList.find((c) => c.saoThienBan === sao);
@@ -36,6 +37,11 @@ function luanMua(laBan: LapLaBanResult): KetQuaHoiDapThoiTiet {
   const truTinh = timSaoCung(laBan, "T.Trụ");
   const bongTinh = timSaoCung(laBan, "T.Bồng");
   if (!truTinh || !bongTinh) return khongXacDinh("Không xác định được cung Thiên Trụ hoặc Thiên Bồng.");
+  const dt = [
+    { nhan: "Thiên Trụ Tinh (thần mưa)", cung: truTinh },
+    { nhan: "Thiên Bồng Tinh (thần nước)", cung: bongTinh },
+  ];
+  const nguon = "a3-luan-doan-khi-hau-thoi-tiet.md, mục 1";
 
   const CUNG_MUA = new Set([1, 3, 6, 7]);
   for (const [ten, c] of [["Thiên Trụ", truTinh] as const, ["Thiên Bồng", bongTinh] as const]) {
@@ -45,14 +51,14 @@ function luanMua(laBan: LapLaBanResult): KetQuaHoiDapThoiTiet {
       return ketQua(
         "can_luu_y",
         `Thời điểm này có khả năng ${doTo}.`,
-        `${ten} có Can ${can} tại cung thuộc nhóm 1/3/6/7 (a3-luan-doan-khi-hau-thoi-tiet.md, mục 1).`,
+        chiTietDayDu(dt, `${ten} có Can ${can} tại cung thuộc nhóm 1/3/6/7`, nguon),
       );
     }
   }
   return ketQua(
     "thuan_loi",
     "Thời điểm này nhiều khả năng không mưa.",
-    "Thiên Trụ và Thiên Bồng không có Nhâm/Quý tại cung 1/3/6/7 (a3-luan-doan-khi-hau-thoi-tiet.md, mục 1).",
+    chiTietDayDu(dt, "Thiên Trụ và Thiên Bồng không có Nhâm/Quý tại cung 1/3/6/7", nguon),
   );
 }
 
@@ -63,6 +69,11 @@ function luanSamChop(laBan: LapLaBanResult): KetQuaHoiDapThoiTiet {
   const truTinh = timSaoCung(laBan, "T.Trụ");
   const bongTinh = timSaoCung(laBan, "T.Bồng");
   if (!truTinh || !bongTinh) return khongXacDinh("Không xác định được cung Thiên Trụ hoặc Thiên Bồng.");
+  const dt = [
+    { nhan: "Thiên Trụ Tinh", cung: truTinh },
+    { nhan: "Thiên Bồng Tinh", cung: bongTinh },
+  ];
+  const nguon = "a3-luan-doan-khi-hau-thoi-tiet.md, mục 1";
 
   for (const [ten, c] of [["Thiên Trụ", truTinh] as const, ["Thiên Bồng", bongTinh] as const]) {
     const can = coNhamQuy(c);
@@ -70,14 +81,14 @@ function luanSamChop(laBan: LapLaBanResult): KetQuaHoiDapThoiTiet {
       return ketQua(
         "can_luu_y",
         "Thời điểm này có khả năng có sấm chớp.",
-        `${ten} có Can ${can} tại cung Chấn (Đông) (a3-luan-doan-khi-hau-thoi-tiet.md, mục 1).`,
+        chiTietDayDu(dt, `${ten} có Can ${can} tại cung Chấn (Đông)`, nguon),
       );
     }
   }
   return ketQua(
     "thuan_loi",
     "Thời điểm này nhiều khả năng không có sấm chớp.",
-    "Thiên Trụ và Thiên Bồng không có Nhâm/Quý tại cung Chấn (a3-luan-doan-khi-hau-thoi-tiet.md, mục 1).",
+    chiTietDayDu(dt, "Thiên Trụ và Thiên Bồng không có Nhâm/Quý tại cung Chấn", nguon),
   );
 }
 
@@ -89,6 +100,11 @@ function luanTuyet(laBan: LapLaBanResult): KetQuaHoiDapThoiTiet {
   const tamTinh = timSaoCung(laBan, "T.Tâm");
   const truTinh = timSaoCung(laBan, "T.Trụ");
   if (!tamTinh || !truTinh) return khongXacDinh("Không xác định được cung Thiên Tâm hoặc Thiên Trụ.");
+  const dt = [
+    { nhan: "Thiên Tâm Tinh", cung: tamTinh },
+    { nhan: "Thiên Trụ Tinh", cung: truTinh },
+  ];
+  const nguon = "a3-luan-doan-khi-hau-thoi-tiet.md, mục 2";
 
   for (const [ten, c] of [["Thiên Tâm", tamTinh] as const, ["Thiên Trụ", truTinh] as const]) {
     const can = coNhamQuy(c);
@@ -96,14 +112,14 @@ function luanTuyet(laBan: LapLaBanResult): KetQuaHoiDapThoiTiet {
       return ketQua(
         "can_luu_y",
         "Thời điểm này có khả năng có tuyết rơi.",
-        `${ten} có Can ${can} tại cung Càn/Đoài (a3-luan-doan-khi-hau-thoi-tiet.md, mục 2).`,
+        chiTietDayDu(dt, `${ten} có Can ${can} tại cung Càn/Đoài`, nguon),
       );
     }
   }
   return ketQua(
     "thuan_loi",
     "Thời điểm này nhiều khả năng không có tuyết.",
-    "Thiên Tâm và Thiên Trụ không có Nhâm/Quý tại cung Càn/Đoài (a3-luan-doan-khi-hau-thoi-tiet.md, mục 2).",
+    chiTietDayDu(dt, "Thiên Tâm và Thiên Trụ không có Nhâm/Quý tại cung Càn/Đoài", nguon),
   );
 }
 
@@ -116,7 +132,7 @@ function luanGio(laBan: LapLaBanResult): KetQuaHoiDapThoiTiet {
   return ketQua(
     "can_luu_y",
     `Gió thời điểm này có xu hướng thổi theo hướng ${phuTinh.huong}. Độ mạnh/nhẹ chưa đủ dữ liệu để xác định chắc chắn.`,
-    `Thiên Phụ Tinh tại ${phuTinh.huong} (a3-luan-doan-khi-hau-thoi-tiet.md, mục 3).`,
+    chiTietDayDu([{ nhan: "Thiên Phụ Tinh (hướng gió)", cung: phuTinh }], "Gió thổi theo hướng của Thiên Phụ Tinh", "a3-luan-doan-khi-hau-thoi-tiet.md, mục 3"),
   );
 }
 

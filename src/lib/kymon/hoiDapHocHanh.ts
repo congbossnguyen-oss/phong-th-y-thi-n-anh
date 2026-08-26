@@ -3,6 +3,7 @@
 
 import type { CungInfo, LapLaBanResult } from "./types";
 import type { QuanHeCauHoi } from "./danhMucCauHoi";
+import { chiTietDayDu } from "./moTaChiTiet";
 
 type NguHanh = "Mộc" | "Hỏa" | "Thổ" | "Kim" | "Thủy";
 const NGU_HANH_CUNG: Record<number, NguHanh> = {
@@ -58,6 +59,14 @@ function luanThiCu(laBan: LapLaBanResult, quanHe: QuanHeCauHoi): KetQuaHoiDapHoc
   const canNam = laBan.tuTru.nam?.can ? timCungTheoCan(laBan, laBan.tuTru.nam.can) : undefined;
   const trucPhu = laBan.cungList.find((c) => c.soCung === laBan.trucPhuCung);
   if (!thiSinh || !canNam || !trucPhu) return khongXacDinh("Không xác định được cung Thí Sinh, Can Năm (trường) hoặc Trực Phù.");
+  const tp = timSaoCung(laBan, "T.Phò");
+  const dt = [
+    { nhan: "Thí Sinh", cung: thiSinh },
+    { nhan: "Can Năm (trường)", cung: canNam },
+    { nhan: "Trực Phù (hội đồng thi)", cung: trucPhu },
+    { nhan: "Thiên Phụ Tinh (trung tâm khảo thí)", cung: tp },
+  ];
+  const nguon = "a4-thi-cu-cau-thay-hoc-dao.md, mục I";
 
   // "Thí sinh lạc cung... khắc Can năm sinh thì được bài thi tốt (vào trường tốt)."
   const qhCanNam = quanHeCung(thiSinh.soCung, canNam.soCung);
@@ -65,12 +74,11 @@ function luanThiCu(laBan: LapLaBanResult, quanHe: QuanHeCauHoi): KetQuaHoiDapHoc
     return ketQua(
       "thuan_loi",
       "Kỳ thi này có triển vọng tốt, khả năng đạt kết quả cao và vào được nơi mong muốn.",
-      "Thí sinh khắc cho Can Năm (trường thi vào) (a4-thi-cu-cau-thay-hoc-dao.md, mục I).",
+      chiTietDayDu(dt, "Thí sinh khắc cho Can Năm (trường thi vào)", nguon),
     );
   }
 
   // "được Thiên phụ tinh, Trực phù, Can năm sinh cho thì kết quả thi không cao nhưng vẫn được nhận."
-  const tp = timSaoCung(laBan, "T.Phò");
   const duocSinhTuTp = tp ? quanHeCung(tp.soCung, thiSinh.soCung) === "sinh" : false;
   const duocSinhTuTrucPhu = quanHeCung(trucPhu.soCung, thiSinh.soCung) === "sinh";
   const duocSinhTuCanNam = qhCanNam === "duocSinh";
@@ -78,7 +86,7 @@ function luanThiCu(laBan: LapLaBanResult, quanHe: QuanHeCauHoi): KetQuaHoiDapHoc
     return ketQua(
       "can_luu_y",
       "Kỳ thi này nhiều khả năng vẫn đạt (được nhận/qua), nhưng kết quả không cao như kỳ vọng — nên cố gắng thêm để có điểm số tốt hơn.",
-      "Thiên Phụ Tinh, Trực Phù, hoặc Can Năm sinh cho Thí Sinh (a4-thi-cu-cau-thay-hoc-dao.md, mục I).",
+      chiTietDayDu(dt, "Thiên Phụ Tinh, Trực Phù, hoặc Can Năm sinh cho Thí Sinh", nguon),
     );
   }
 
@@ -89,14 +97,14 @@ function luanThiCu(laBan: LapLaBanResult, quanHe: QuanHeCauHoi): KetQuaHoiDapHoc
     return ketQua(
       "khong_thuan",
       "Kỳ thi này có nguy cơ không đạt kết quả như mong muốn — nên chuẩn bị thêm phương án dự phòng, đừng đặt hết kỳ vọng vào lần thi này.",
-      "Trực Phù hoặc Can Năm khắc Thí Sinh (a4-thi-cu-cau-thay-hoc-dao.md, mục I).",
+      chiTietDayDu(dt, "Trực Phù hoặc Can Năm khắc Thí Sinh", nguon),
     );
   }
 
   return ketQua(
     "can_luu_y",
     "Chưa có tín hiệu rõ ràng theo hướng thuận hay khó cho kỳ thi này — nên chuẩn bị kỹ càng như bình thường, không chủ quan cũng không quá lo lắng.",
-    "Tổ hợp Thí Sinh/Can Năm/Trực Phù chưa rơi vào nhóm quy tắc rõ ràng (a4-thi-cu-cau-thay-hoc-dao.md, mục I).",
+    chiTietDayDu(dt, "Tổ hợp Thí Sinh/Can Năm/Trực Phù chưa rơi vào nhóm quy tắc rõ ràng", nguon),
   );
 }
 
@@ -107,18 +115,23 @@ function luanTimThayHocDao(laBan: LapLaBanResult): KetQuaHoiDapHocHanh {
   const troTinh = timSaoCung(laBan, "T.Nhuế");
   const thayTinh = timSaoCung(laBan, "T.Phò");
   if (!troTinh || !thayTinh) return khongXacDinh("Không xác định được cung Thiên Nhuế (học trò) hoặc Thiên Phụ (thầy).");
+  const dt = [
+    { nhan: "Thiên Phụ Tinh (thầy)", cung: thayTinh },
+    { nhan: "Thiên Nhuế Tinh (học trò)", cung: troTinh },
+  ];
+  const nguon = "a4-thi-cu-cau-thay-hoc-dao.md, mục II";
 
   const qh = quanHeCung(thayTinh.soCung, troTinh.soCung); // Thầy → Trò
   if (qh === "sinh") {
-    return ketQua("thuan_loi", "Có duyên gặp được thầy giỏi và được nhận dạy — nên chủ động tìm hiểu, ngỏ lời trong giai đoạn này.", "Thiên Phụ (thầy) sinh cho Thiên Nhuế (học trò) (a4-thi-cu-cau-thay-hoc-dao.md, mục II).");
+    return ketQua("thuan_loi", "Có duyên gặp được thầy giỏi và được nhận dạy — nên chủ động tìm hiểu, ngỏ lời trong giai đoạn này.", chiTietDayDu(dt, "Thiên Phụ (thầy) sinh cho Thiên Nhuế (học trò)", nguon));
   }
   if (qh === "hoa") {
-    return ketQua("can_luu_y", "Có thể gặp được người thầy phù hợp, nhưng chưa chắc được nhận làm học trò chính thức ngay — cần kiên trì thêm.", "Thiên Phụ và Thiên Nhuế tỉ hòa (a4-thi-cu-cau-thay-hoc-dao.md, mục II).");
+    return ketQua("can_luu_y", "Có thể gặp được người thầy phù hợp, nhưng chưa chắc được nhận làm học trò chính thức ngay — cần kiên trì thêm.", chiTietDayDu(dt, "Thiên Phụ và Thiên Nhuế tỉ hòa", nguon));
   }
   return ketQua(
     "khong_thuan",
     "Giai đoạn này khó gặp được thầy phù hợp, hoặc có gặp cũng khó được nhận dạy — nên tạm gác lại, chờ thời điểm khác.",
-    "Thiên Phụ và Thiên Nhuế tương khắc (a4-thi-cu-cau-thay-hoc-dao.md, mục II).",
+    chiTietDayDu(dt, "Thiên Phụ và Thiên Nhuế tương khắc", nguon),
   );
 }
 
