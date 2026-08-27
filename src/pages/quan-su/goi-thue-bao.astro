@@ -8,7 +8,7 @@ import "../../styles/quan-su.css";
 import { layGoiDangHoatDong } from "../../lib/subscriptions/access";
 import { daTungDungThu } from "../../lib/subscriptions/trial";
 import { GIA_SUBSCRIPTION, SO_THANG_THEO_KY_HAN, dinhDangTien, type SubscriptionTier, type SubscriptionDuration } from "../../lib/payments/gia-subscription";
-import { HAN_MUC_LUOT_THEO_GOI } from "../../lib/subscriptions/usage";
+import { HAN_MUC_LUOT_THEO_GOI, HAN_MUC_LUOT_DUNG_THU } from "../../lib/subscriptions/usage";
 
 export const prerender = false;
 
@@ -92,7 +92,7 @@ const DURATIONS: SubscriptionDuration[] = ["1_thang", "3_thang", "6_thang", "1_n
           {coTheDungThu && (
             <div class="qs-card" style="margin-bottom:1.5rem;text-align:center;">
               <p class="qs-eyebrow" style="margin-top:0;">Chưa chắc chắn?</p>
-              <p style="margin:0.3rem 0 0.9rem;">Dùng thử <strong style="color:var(--qs-gold);">7 ngày miễn phí</strong>, trải nghiệm trọn gói Cao cấp — hết hạn thì chốt gói nào cũng được.</p>
+              <p style="margin:0.3rem 0 0.9rem;">Dùng thử <strong style="color:var(--qs-gold);">7 ngày miễn phí</strong>, trải nghiệm gói Cao cấp ({HAN_MUC_LUOT_DUNG_THU} lượt hỏi) — hết hạn thì chốt gói nào cũng được.</p>
               <button type="button" id="btn-dung-thu" class="qs-btn">Dùng thử 7 ngày miễn phí</button>
             </div>
           )}

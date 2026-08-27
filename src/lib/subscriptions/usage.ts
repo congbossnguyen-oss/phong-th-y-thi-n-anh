@@ -27,6 +27,14 @@ export const HAN_MUC_LUOT_THEO_GOI: Record<SubscriptionTier, number> = {
   cao_cap: 25,
 };
 
+/**
+ * Hạn mức RIÊNG cho tài khoản đang DÙNG THỬ (7 ngày, hưởng hạng Cao cấp — xem trial.ts) — THẤP HƠN
+ * HẲN hạn mức Cao cấp trả tiền (25/tháng). Khách chưa trả đồng nào không được "cày" gần hết hạn mức
+ * y hệt khách trả tiền — anh Công yêu cầu 27/8/2026: "bản dùng thử không được để tốn chi phí AI
+ * thoải mái như bản trả tiền". Đủ để thấy giá trị (vài câu hỏi thật) nhưng không đủ để lạm dụng.
+ */
+export const HAN_MUC_LUOT_DUNG_THU = 5;
+
 /** "yyyy-MM" theo giờ Việt Nam — cùng idiom `Intl.DateTimeFormat` đã dùng ở `divination.ts` (castInputNow). */
 export function thangHienTaiVN(now: Date = new Date()): string {
   const parts = new Intl.DateTimeFormat("en-CA", {
@@ -45,8 +53,18 @@ export interface TrangThaiHanMuc {
   hanMuc: number;
 }
 
-/** Kiểm tra còn lượt hỏi trong tháng này không — KHÔNG tự tăng đếm (chỉ đọc). */
-export async function conLuotHoiKhong(userId: string, tier: SubscriptionTier): Promise<TrangThaiHanMuc> {
+/**
+ * Kiểm tra còn lượt hỏi trong tháng này không — KHÔNG tự tăng đếm (chỉ đọc).
+ * @param isTrial true nếu gói đang dùng là bản dùng thử — dùng hạn mức thấp hơn hẳn (xem
+ *   `HAN_MUC_LUOT_DUNG_THU`), bất kể `tier` là gì (dùng thử luôn hưởng tier "cao_cap" nhưng KHÔNG
+ *   được dùng hạn mức Cao cấp trả tiền).
+ *
+ * ⚠️ Đếm theo THÁNG DƯƠNG LỊCH (giống gói trả tiền) — nếu 1 lượt dùng thử hiếm khi vắt qua ranh giới
+ * tháng (vd bắt đầu 29/1, hết hạn 5/2), bộ đếm sẽ "làm mới" đúng lúc sang tháng mới, cho thêm
+ * `HAN_MUC_LUOT_DUNG_THU` lượt nữa trong vài ngày còn lại — chấp nhận được vì hiếm và mức chênh nhỏ,
+ * không xây riêng cơ chế đếm "tổng cả đợt thử" cho trường hợp cạnh này.
+ */
+export async function conLuotHoiKhong(userId: string, tier: SubscriptionTier, isTrial = false): Promise<TrangThaiHanMuc> {
   const thang = thangHienTaiVN();
   const [row] = await db
     .select({ soLuot: quanSuUsage.soLuotDaDung })
@@ -54,7 +72,7 @@ export async function conLuotHoiKhong(userId: string, tier: SubscriptionTier): P
     .where(and(eq(quanSuUsage.userId, userId), eq(quanSuUsage.thangNam, thang)))
     .limit(1);
   const daDung = row?.soLuot ?? 0;
-  const hanMuc = HAN_MUC_LUOT_THEO_GOI[tier];
+  const hanMuc = isTrial ? HAN_MUC_LUOT_DUNG_THU : HAN_MUC_LUOT_THEO_GOI[tier];
   return { conLuot: daDung < hanMuc, daDung, hanMuc };
 }
 
