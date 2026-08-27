@@ -43,7 +43,7 @@
     "nguong_qua_thua_so_phan": 3
   },
   "ngu_hanh_luu_thong": {
-    "_warn": "⚠️ Cách hiểu tiêu chí 9 — xem 00 §4 câu 1: lưu thông là tiêu chí chính; sinh nhập/khắc xuất CHỌN MỘT theo vượng suy (thân nhược→sinh nhập tốt; thân vượng→khắc xuất tốt), không đòi cả hai cùng lúc."
+    "_note": "ĐÃ LÀM RÕ 27/8/2026 (không còn là câu hỏi mở). Cách hiểu tiêu chí 9 (sinh nhập/khắc xuất CHỌN MỘT theo vượng suy, thân nhược→sinh nhập, thân vượng→khắc xuất) ĐÃ được cài đúng — nhưng KHÔNG phải ở structural-bat-tu.ts's chamLuuThong() (hàm đó kiểm tra vòng ngũ hành đủ/đối xứng, một tiêu chí KHÁC), mà ở chonDungThan() (bat-tu-engine/engine.ts) qua nguyên tắc Phù Ức đã có sẵn và kiểm chứng từ trước, dùng qua trường dungThanChatLuong khi xếp hạng. Xem docstring chamLuuThong() để biết chi tiết phân biệt 2 tín hiệu."
   },
   "dai_van_trong_so": {
     "_warn": "⚠️ Trọng số 05-dai-van-dai-han.md §3 đề xuất, chưa đối chiếu án lệ — xem 00 §4 câu 5",
