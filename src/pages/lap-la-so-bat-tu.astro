@@ -208,7 +208,11 @@ export const prerender = true;
 
         <div id="battu-goi-mo" class="mt-6 hidden rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-5">
           <p class="font-display text-base font-bold text-(--color-ink-950)">✦ Gợi mở nhanh về lá số của bạn</p>
-          <p id="battu-goi-mo-noi-dung" class="mt-2 whitespace-pre-line text-sm leading-relaxed text-(--color-ink-800)"></p>
+          <div class="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div id="battu-goi-mo-nguhanh" class="flex items-center gap-4 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3"></div>
+            <div id="battu-goi-mo-gauge" class="flex flex-col items-center justify-center rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3"></div>
+          </div>
+          <p id="battu-goi-mo-noi-dung" class="mt-4 whitespace-pre-line text-sm leading-relaxed text-(--color-ink-800)"></p>
         </div>
 
         <p class="mt-6 text-sm leading-relaxed text-(--color-ink-600)">
@@ -622,12 +626,60 @@ export const prerender = true;
       if (phienNay !== goiMoDangTai) return; // khách đã lập lá số khác trong lúc chờ — bỏ kết quả cũ
       if (data?.ok && data.goiMo) {
         goiMoNoiDung.textContent = data.goiMo;
+        if (data.doHinh) {
+          renderGoiMoNguHanh(data.doHinh.nguHanhPhanBo);
+          renderGoiMoGauge(data.doHinh.diemVuongSuy, data.laSo?.capDoVuongSuy ?? "");
+        }
         goiMoWrap.classList.remove("hidden");
       }
     } catch {
       // Mồi là phần cộng thêm, không phải luồng chính — lỗi mạng thì âm thầm bỏ qua, khách vẫn xem
       // được lá số bình thường.
     }
+  }
+
+  // Donut Ngũ Hành + gauge Vượng Suy — anh Công nhớ đã thấy 2 đồ hình này ở bản mồi trước đây (chúng
+  // vốn có trên trang trả phí luan-giai-bat-tu-toan-dien.astro, đọc đúng `doHinh` mà endpoint
+  // xem-truoc đã trả về từ lâu). Cùng dữ liệu, cùng bảng màu Ngũ Hành với card lá số phía trên
+  // (NGU_HANH_CLASS) — chỉ port sang trang này để nhất quán 2 nơi cùng gọi 1 endpoint.
+  function renderGoiMoNguHanh(phanBo: Record<string, number>) {
+    const el = document.getElementById("battu-goi-mo-nguhanh");
+    if (!el) return;
+    const order: NguHanh[] = ["Mộc", "Hỏa", "Thổ", "Kim", "Thủy"];
+    const mauHex: Record<NguHanh, string> = { Mộc: "#16a34a", Hỏa: "#dc2626", Thổ: "#8b5a2b", Kim: "#64748b", Thủy: "#2563eb" };
+    const total = order.reduce((s, h) => s + (phanBo[h] || 0), 0) || 1;
+    let acc = 0;
+    const stops = order.map((h) => {
+      const start = (acc / total) * 100;
+      acc += phanBo[h] || 0;
+      const end = (acc / total) * 100;
+      return `${mauHex[h]} ${start}% ${end}%`;
+    }).join(", ");
+    el.innerHTML = `
+      <div class="relative size-20 shrink-0 rounded-full" style="background: conic-gradient(${stops});">
+        <div class="absolute inset-[18%] flex items-center justify-center rounded-full bg-(--color-ivory-50) text-center text-[9px] font-semibold leading-tight text-(--color-ink-700)">Ngũ<br/>Hành</div>
+      </div>
+      <div class="flex flex-col gap-1 text-xs">
+        ${order.map((h) => `<div class="flex items-center gap-1.5"><span class="inline-block size-2.5 rounded-full" style="background:${mauHex[h]}"></span><span class="text-(--color-ink-700)">${h}: ${phanBo[h] || 0}</span></div>`).join("")}
+      </div>
+    `;
+  }
+
+  function renderGoiMoGauge(diem: number, capDo: string) {
+    const el = document.getElementById("battu-goi-mo-gauge");
+    if (!el) return;
+    const clamped = Math.max(0, Math.min(100, diem));
+    const circumference = Math.PI * 50;
+    const offset = circumference * (1 - clamped / 100);
+    el.innerHTML = `
+      <svg viewBox="0 0 120 68" class="w-36">
+        <path d="M10,60 A50,50 0 0 1 110,60" fill="none" stroke="#e7ddc9" stroke-width="10" stroke-linecap="round"/>
+        <path d="M10,60 A50,50 0 0 1 110,60" fill="none" stroke="#ad8843" stroke-width="10" stroke-linecap="round"
+              stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"/>
+      </svg>
+      <p class="-mt-3 text-center text-lg font-bold text-(--color-ink-900)">${clamped}%</p>
+      <p class="text-center text-xs text-(--color-ink-600)">Vượng Suy: ${capDo}</p>
+    `;
   }
 
   // Dùng html-to-image (render qua SVG foreignObject + engine trình duyệt thật) thay vì html2canvas,
