@@ -9,12 +9,12 @@ export const prerender = true;
 
 <BaseLayout
   title="Lập Kỳ Môn Độn Giáp"
-  description="Lập lá bàn Kỳ Môn Độn Giáp 9 cung theo giờ hiện tại, giờ sinh (Mệnh) hoặc nhập tay hoa giáp (1080) — kèm Tam Thắng và lịch tháng Kỳ Môn."
+  description="Lập lá bàn Kỳ Môn Độn Giáp 9 cung theo giờ hiện tại hoặc giờ sinh (Mệnh) — kèm Tam Thắng và lịch tháng Kỳ Môn."
 >
   <PageHero
     eyebrow="Công cụ"
     title="Lập Kỳ Môn Độn Giáp"
-    description="Chọn chế độ Thời Gian (thời điểm hiện tại), Mệnh (giờ sinh) hoặc Bốc Độn (nhập tay cục + hoa giáp) để lập lá bàn 9 cung."
+    description="Chọn chế độ Thời Gian (thời điểm hiện tại) hoặc Mệnh (giờ sinh) để lập lá bàn 9 cung."
     breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Lập Kỳ Môn Độn Giáp" }]}
   />
 
@@ -24,7 +24,9 @@ export const prerender = true;
       <div class="flex flex-wrap gap-2" role="tablist" aria-label="Chế độ lập bàn">
         <button type="button" data-mode="gio" class="km-mode-btn" aria-selected="true">Thời Gian</button>
         <button type="button" data-mode="menh" class="km-mode-btn" aria-selected="false">Mệnh</button>
-        <button type="button" data-mode="1080" class="km-mode-btn" aria-selected="false">Bốc Độn</button>
+        {/* Bốc Độn (chế độ 1080) tạm ẩn — chưa đủ quy tắc để an ngày giờ đúng theo phương pháp
+            này, để tránh khách hiểu nhầm là công cụ đã hỗ trợ đầy đủ. Logic vẫn còn nguyên bên
+            dưới, chỉ ẩn khỏi UI. */}
       </div>
       <p id="km-mode-note" class="mt-2 text-xs text-(--color-ink-500)"></p>
 
