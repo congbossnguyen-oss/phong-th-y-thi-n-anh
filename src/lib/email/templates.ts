@@ -314,6 +314,37 @@ export function trachNhatSinhNoPdfEmail(params: {
   };
 }
 
+export function hopHonPdfEmail(params: {
+  orderCode: string;
+  customerName: string;
+}): { subject: string; html: string } {
+  const bodyHtml = `
+    <p>Kính gửi ${escapeHtml(params.customerName)},</p>
+    <p>
+      Bản đồ Hợp Hôn Bát Tự × Tử Vi được đính kèm dưới dạng PDF trong email này, gồm: tóm tắt hai lá số,
+      bản đồ 5 trục (bổ khuyết ngũ hành, Cung Phu Thê, tính cách qua Thập Thần, Tử Vi, đồng bộ vận trình),
+      mức đồng thuận giữa hai hệ, và điểm mạnh cùng điểm cần chủ động vun đắp.
+    </p>
+    <table role="presentation" width="100%" style="margin-top:16px;border-top:1px solid #e8dfcd;padding-top:12px;">
+      ${infoRow("Mã đơn hàng", params.orderCode)}
+    </table>
+    <p style="margin-top:20px;">
+      <strong>Lưu ý quan trọng:</strong> đây là bản đồ tham khảo theo mệnh lý cổ truyền, chỉ ra điểm mạnh
+      và điểm cần chủ động vun đắp — không phải phán quyết nên hay không nên kết hôn. Cần luận sâu thêm với
+      đầy đủ bối cảnh của hai bạn, xin liên hệ hotline ${siteConfig.hotline} để đặt lịch tư vấn trực tiếp.
+    </p>
+  `;
+
+  return {
+    subject: `Hợp Hôn Bát Tự × Tử Vi — đơn ${params.orderCode}`,
+    html: layout({
+      previewText: "Bản đồ hợp hôn của hai bạn được đính kèm trong email này.",
+      title: "Hợp Hôn Bát Tự × Tử Vi",
+      bodyHtml,
+    }),
+  };
+}
+
 export function kyMonMenhPdfEmail(params: {
   orderCode: string;
   customerName: string;
@@ -341,6 +372,125 @@ export function kyMonMenhPdfEmail(params: {
     html: layout({
       previewText: "Bảng luận giải Kỳ Môn Mệnh chi tiết được đính kèm trong email này.",
       title: "Luận Giải Kỳ Môn Mệnh",
+      bodyHtml,
+    }),
+  };
+}
+
+export function batTuToanDienCoBanPdfEmail(params: {
+  orderCode: string;
+  customerName: string;
+}): { subject: string; html: string } {
+  const bodyHtml = `
+    <p>Kính gửi ${escapeHtml(params.customerName)},</p>
+    <p>
+      Bản Luận Giải Bát Tự Toàn Diện — Cơ Bản được đính kèm dưới dạng PDF trong email này, gồm: nền tảng
+      lá số, tính cách, Thập Thần theo cung, nghề nghiệp - tài - quan, hôn nhân, ngũ hành thực hành, và
+      kết luận tổng hợp.
+    </p>
+    <table role="presentation" width="100%" style="margin-top:16px;border-top:1px solid #e8dfcd;padding-top:12px;">
+      ${infoRow("Mã đơn hàng", params.orderCode)}
+    </table>
+    <p style="margin-top:20px;">
+      Kết quả cần chuyên gia đối chiếu thêm về Dụng Thần, vượng suy, cách cục trước khi kết luận cát hung.
+      Cần trao đổi thêm, xin liên hệ hotline ${siteConfig.hotline}.
+    </p>
+  `;
+
+  return {
+    subject: `Luận Giải Bát Tự Toàn Diện — Cơ Bản — đơn ${params.orderCode}`,
+    html: layout({
+      previewText: "Bản Luận Giải Bát Tự Toàn Diện — Cơ Bản được đính kèm trong email này.",
+      title: "Luận Giải Bát Tự Toàn Diện — Cơ Bản",
+      bodyHtml,
+    }),
+  };
+}
+
+export function batTuToanDienNangCaoPdfEmail(params: {
+  orderCode: string;
+  customerName: string;
+}): { subject: string; html: string } {
+  const bodyHtml = `
+    <p>Kính gửi ${escapeHtml(params.customerName)},</p>
+    <p>
+      Bản Luận Giải Bát Tự Toàn Diện — Nâng Cao được đính kèm dưới dạng PDF trong email này, gồm: Thần Sát,
+      Mộ Khố, gia đình - lục thân, sức khỏe, và trọn vẹn các giai đoạn Đại Vận từ nhỏ đến già.
+    </p>
+    <table role="presentation" width="100%" style="margin-top:16px;border-top:1px solid #e8dfcd;padding-top:12px;">
+      ${infoRow("Mã đơn hàng", params.orderCode)}
+    </table>
+    <p style="margin-top:20px;">
+      Kết quả cần chuyên gia đối chiếu thêm về Dụng Thần, vượng suy, cách cục trước khi kết luận cát hung.
+      Cần trao đổi thêm, xin liên hệ hotline ${siteConfig.hotline}.
+    </p>
+  `;
+
+  return {
+    subject: `Luận Giải Bát Tự Toàn Diện — Nâng Cao — đơn ${params.orderCode}`,
+    html: layout({
+      previewText: "Bản Luận Giải Bát Tự Toàn Diện — Nâng Cao được đính kèm trong email này.",
+      title: "Luận Giải Bát Tự Toàn Diện — Nâng Cao",
+      bodyHtml,
+    }),
+  };
+}
+
+export function luanGiaiTuViCoBanPdfEmail(params: {
+  orderCode: string;
+  customerName: string;
+}): { subject: string; html: string } {
+  const bodyHtml = `
+    <p>Kính gửi ${escapeHtml(params.customerName)},</p>
+    <p>
+      Bản Luận Giải Tử Vi — Cơ Bản được đính kèm dưới dạng PDF trong email này, gồm: tổng quan lá số,
+      luận Thiên Bàn, các chủ đề chính (học vấn, nghề nghiệp, tài chính, hôn nhân, sức khỏe), và luận
+      đầy đủ 12 cung theo phương pháp Tử Vi Đẩu Số Nam Phái.
+    </p>
+    <table role="presentation" width="100%" style="margin-top:16px;border-top:1px solid #e8dfcd;padding-top:12px;">
+      ${infoRow("Mã đơn hàng", params.orderCode)}
+    </table>
+    <p style="margin-top:20px;">
+      Kết quả tham khảo theo phương pháp truyền thống, không thay thế tư vấn trực tiếp. Cần trao đổi
+      thêm, xin liên hệ hotline ${siteConfig.hotline}.
+    </p>
+  `;
+
+  return {
+    subject: `Luận Giải Tử Vi — Cơ Bản — đơn ${params.orderCode}`,
+    html: layout({
+      previewText: "Bản Luận Giải Tử Vi — Cơ Bản được đính kèm trong email này.",
+      title: "Luận Giải Tử Vi — Cơ Bản",
+      bodyHtml,
+    }),
+  };
+}
+
+export function luanGiaiTuViNangCaoPdfEmail(params: {
+  orderCode: string;
+  customerName: string;
+}): { subject: string; html: string } {
+  const bodyHtml = `
+    <p>Kính gửi ${escapeHtml(params.customerName)},</p>
+    <p>
+      Bản Luận Giải Tử Vi — Nâng Cao được đính kèm dưới dạng PDF trong email này, gồm trọn bộ nội dung
+      Cơ Bản (12 cung đầy đủ) cộng thêm: Đại Hạn hiện tại, Tiểu Hạn năm nay và năm sau, và Tổng kết
+      chiến lược sống dài hạn.
+    </p>
+    <table role="presentation" width="100%" style="margin-top:16px;border-top:1px solid #e8dfcd;padding-top:12px;">
+      ${infoRow("Mã đơn hàng", params.orderCode)}
+    </table>
+    <p style="margin-top:20px;">
+      Kết quả tham khảo theo phương pháp truyền thống, không thay thế tư vấn trực tiếp. Cần trao đổi
+      thêm, xin liên hệ hotline ${siteConfig.hotline}.
+    </p>
+  `;
+
+  return {
+    subject: `Luận Giải Tử Vi — Nâng Cao — đơn ${params.orderCode}`,
+    html: layout({
+      previewText: "Bản Luận Giải Tử Vi — Nâng Cao được đính kèm trong email này.",
+      title: "Luận Giải Tử Vi — Nâng Cao",
       bodyHtml,
     }),
   };
