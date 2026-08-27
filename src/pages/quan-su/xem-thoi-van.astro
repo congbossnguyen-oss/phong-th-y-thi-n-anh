@@ -13,7 +13,7 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import BottomNav from "../../components/quan-su/BottomNav.astro";
 import "../../styles/quan-su.css";
-import { coQuyenTruyCap } from "../../lib/subscriptions/access";
+import { coQuyenTruyCap, layGoiDangHoatDong } from "../../lib/subscriptions/access";
 import { tinhVanKhi, type VanKhiOutput, type DiemLinhVuc, type LinhVucKey, type LuuNienKhi } from "../../lib/quan-su/luan-van-khi";
 import { tinhBatTu, THAP_THAN_ABBR } from "../../lib/bat-tu";
 import { hanhCan, hanhChi } from "../../lib/bat-tu-engine/engine";
@@ -21,7 +21,14 @@ import { hanhCan, hanhChi } from "../../lib/bat-tu-engine/engine";
 export const prerender = false;
 
 const user = Astro.locals.user;
-const coQuyen = user ? await coQuyenTruyCap(user.id, "co_ban", user.isAdmin) : false;
+// DÙNG THỬ KHÔNG ĐƯỢC XEM THỜI VẬN (gọi AI thật, cùng nguyên tắc với luan.ts — anh Công quyết định
+// 27/8/2026): coQuyenTruyCap chỉ xét ĐỦ HẠNG, không phân biệt trial/trả tiền, nên phải tự kiểm thêm.
+const goiDangHoatDong = user && user.isAdmin !== true ? await layGoiDangHoatDong(user.id) : null;
+const coQuyen = user
+  ? user.isAdmin === true
+    ? true
+    : (await coQuyenTruyCap(user.id, "co_ban", false)) && goiDangHoatDong?.isTrial !== true
+  : false;
 const hs = user?.hoSoSinh ?? null;
 
 // Đại Vận muốn xem chi tiết — truyền qua ?daiVan=<0-9>, mặc định (không truyền) để module tự chọn
