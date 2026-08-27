@@ -7,7 +7,7 @@ import type { KetQuaCoBan, LuanCung } from "./aiCoBan";
 import { TEN_CUNG_HIEN_THI, TEN_CUNG_SNAKE } from "./aiCoBan";
 import type { KetQuaNangCao, LuanHan } from "./aiNangCao";
 import type { DuLieuLaSoTuVi } from "./adapter";
-import { veRadarPdf, veThanhDaiHanPdf, veThanhDiem12CungPdf } from "./bieuDoPdf";
+import { veRadarPdf, veThanhDaiHanPdf, veThanhDiem12CungPdf, veLaSoPdf } from "./bieuDoPdf";
 
 function veCungLuan(b: But, f: Fonts, ten: string, diem: number, l: LuanCung): void {
   b.chua(60);
@@ -38,6 +38,9 @@ function veCoBan(b: But, f: Fonts, coBan: KetQuaCoBan, duLieu: DuLieuLaSoTuVi): 
     { size: 9.5, font: f.vua },
   );
   b.xuong(4);
+
+  b.muc("Lá số Tử Vi");
+  veLaSoPdf(b, f, duLieu);
 
   b.muc("Luận Thiên Bàn");
   b.doan(coBan.luanThienBan, { size: 9.5 });

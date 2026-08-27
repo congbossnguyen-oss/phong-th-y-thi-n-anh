@@ -18,13 +18,13 @@ import type { CungKetQua, TuViChart } from "../engine";
  * 2★ và KHÔNG cung nào đạt 5★. Cả hai ví dụ thực hành trong chính tài liệu đó đều đếm chúng là cát
  * (VD1 kể "Lộc Tồn", VD2 kể "Thiên Mã"), nên đây là căn cứ chắc chắn chứ không phải suy diễn.
  */
-const TRUNG_TINH_CAT = new Set([
+export const TRUNG_TINH_CAT = new Set([
   "Thiên Khôi", "Thiên Việt", "Tả Phù", "Tả Phụ", "Hữu Bật", "Văn Xương", "Văn Khúc",
   "Lộc Tồn", "Thiên Mã",
 ]);
 
 /** Trung tinh HUNG. Tuần/Triệt xét riêng vì là cờ của cung, không nằm trong danh sách sao. */
-const TRUNG_TINH_HUNG = new Set([
+export const TRUNG_TINH_HUNG = new Set([
   "Kình Dương", "Đà La", "Linh Tinh", "Hỏa Tinh", "Địa Không", "Địa Kiếp",
 ]);
 
