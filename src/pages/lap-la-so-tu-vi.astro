@@ -3,6 +3,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import PageHero from "../components/ui/PageHero.astro";
 import Container from "../components/ui/Container.astro";
 import Button from "../components/ui/Button.astro";
+import { GIA_CONG_CU, dinhDangTien } from "../lib/payments/gia-cong-cu";
 
 export const prerender = true;
 
@@ -129,7 +130,7 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
               Luận đủ <strong>12 cung</strong> — mỗi cung có kết luận nhanh, phân tích cấu trúc, điểm mạnh,
               điểm yếu, nguyên nhân, khả năng ứng nghiệm và khuyến nghị. Kèm bánh xe Cát – Hung đầy đủ.
             </p>
-            <p class="mt-3 font-display text-xl font-bold text-(--color-ink-950)">149.000đ</p>
+            <p class="mt-3 font-display text-xl font-bold text-(--color-ink-950)">{dinhDangTien(GIA_CONG_CU["luan-giai-tu-vi-co-ban"])}</p>
             <a id="tv-cta-co-ban" href="/dai-cat-loi/luan-giai-tu-vi" class="mt-3 inline-flex items-center justify-center rounded-(--radius-control) bg-(--color-cinnabar-400) px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90">
               Xem luận giải 12 cung →
             </a>
@@ -141,7 +142,7 @@ const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
               Bao gồm trọn gói Cơ Bản, cộng thêm <strong>Đại Hạn hiện tại + Tiểu Hạn năm nay và năm sau</strong>,
               dòng thời gian Đại Vận, radar 6 lĩnh vực và tổng kết chiến lược dài hạn.
             </p>
-            <p class="mt-3 font-display text-xl font-bold text-(--color-ink-950)">299.000đ</p>
+            <p class="mt-3 font-display text-xl font-bold text-(--color-ink-950)">{dinhDangTien(GIA_CONG_CU["luan-giai-tu-vi-nang-cao"])}</p>
             <a id="tv-cta-nang-cao" href="/dai-cat-loi/luan-giai-tu-vi" class="mt-3 inline-flex items-center justify-center rounded-(--radius-control) bg-(--color-gold-500) px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90">
               Xem trọn vận trình →
             </a>
