@@ -5,7 +5,7 @@
  */
 import { tinhTuVi, type TuViChart, type CungKetQua } from "../tu-vi/engine";
 import { loadTrachNhatConfig } from "./config";
-import type { TuViAnalysis, TuViVetoResult, TuViDaiHanBandItem, RedFlag, CungTuViVM, LuanCung, LuanBoTamPhuong, SoSanhMenhThan } from "./types";
+import type { TuViAnalysis, TuViVetoResult, TuViDaiHanBandItem, RedFlag, CungTuViVM, LuanCung, LuanBoTamPhuong, SoSanhMenhThan, LinhVucKey } from "./types";
 import type { Gender } from "../bat-tu";
 
 const cuongNhuocLabel = (m: "cuong" | "trung_binh" | "nhuoc"): string =>
@@ -16,8 +16,31 @@ const THAN_CU_LABEL: Record<string, string> = {
   "Tài Bạch": "Tài Bạch", "Thiên Di": "Thiên Di", "Phu Thê": "Phu Thê",
 };
 
-/** Trung tinh CÁT dùng cho Tam Phương Tứ Chính — đúng danh sách Bước 4 `quy-trinh-chon-gio-sinh-mo-tu-vi.md`. */
-const TRUNG_TINH_CAT = ["Thiên Khôi", "Thiên Việt", "Tả Phù", "Hữu Bật", "Văn Xương", "Văn Khúc", "Lộc Tồn"];
+/**
+ * Trung tinh CÁT dùng cho Tam Phương Tứ Chính — đúng danh sách Bước 4 `quy-trinh-chon-gio-sinh-mo-tu-vi.md`.
+ *
+ * ⚠️ Bổ sung 27/8/2026 — THIÊN MÃ: `phuong-phap-luan-cung-vi.md` mục I liệt kê rõ "Lộc Tồn, Thiên Mã
+ * (Tiểu Tinh Cát)" trong nhóm sao CÁT, nhưng trước đây danh sách này chỉ có Lộc Tồn mà bỏ sót Thiên
+ * Mã — khiến mọi cung có Thiên Mã bị chấm thiếu điểm cát.
+ */
+const TRUNG_TINH_CAT = ["Thiên Khôi", "Thiên Việt", "Tả Phù", "Hữu Bật", "Văn Xương", "Văn Khúc", "Lộc Tồn", "Thiên Mã"];
+
+/**
+ * Cung đại diện cho từng lĩnh vực — theo `quy-trinh-luan-chi-tiet.md` Bước 4 (bảng "Chủ đề → Cung
+ * liên quan chính"): Sức khỏe → Tật Ách + Mệnh; Tài chính → Tài Bạch; Hôn nhân → Phu Thê. Gia đạo
+ * với TRẺ SƠ SINH lấy Phụ Mẫu (quan hệ với cha mẹ, nền tảng được nuôi dạy — `phuong-phap-luan-cung-vi.md`
+ * mục V).
+ *
+ * Mỗi lĩnh vực chấm bằng TRỌN BỘ Tam Phương Tứ Chính của cung đó, không chấm cung đơn lẻ — đúng
+ * nguyên tắc bắt buộc ở `quy-trinh-luan-chi-tiet.md` ("Không kết luận từ một sao đơn lẻ. Luôn xét Tam
+ * Phương Tứ Chính, đối cung và toàn cục").
+ */
+const CUNG_THEO_LINH_VUC: { linhVuc: LinhVucKey; cung: string; nhan: string }[] = [
+  { linhVuc: "suc_khoe", cung: "Tật Ách", nhan: "Sức khỏe" },
+  { linhVuc: "tai_van", cung: "Tài Bạch", nhan: "Tài vận" },
+  { linhVuc: "gia_dao", cung: "Phụ Mẫu", nhan: "Gia đạo" },
+  { linhVuc: "nhan_duyen", cung: "Phu Thê", nhan: "Nhân duyên" },
+];
 
 function timCung(chart: TuViChart, ten: string): CungKetQua | undefined {
   return chart.cungs.find((c) => c.cungName === ten);
@@ -279,6 +302,13 @@ export function chamLopTuVi(input: { day: number; month: number; year: number; h
   const boThan = luanBoTamPhuong(chart, chart.thanChiIndex, `Thân (cư ${thanCu})`, satTinhTen);
   const soSanhMenhThan = soSanhBoMenhThan(boMenh, boThan, thanCuMenh);
 
+  // Trọn bộ Tam Phương Tứ Chính cho cung đại diện từng lĩnh vực — nguyên liệu cho bon-linh-vuc.ts.
+  const boLinhVuc: Partial<Record<LinhVucKey, LuanBoTamPhuong>> = {};
+  for (const { linhVuc, cung, nhan } of CUNG_THEO_LINH_VUC) {
+    const c = timCung(chart, cung);
+    if (c) boLinhVuc[linhVuc] = luanBoTamPhuong(chart, c.chiIndex, nhan, satTinhTen);
+  }
+
   // 12 cung đầy đủ cho lá số trực quan.
   const cungsVM: CungTuViVM[] = chart.cungs.map((c) => ({
     chiIndex: c.chiIndex, chiName: c.chiName, canName: c.canName, cungName: c.cungName,
@@ -335,6 +365,7 @@ export function chamLopTuVi(input: { day: number; month: number; year: number; h
     soSanhMenhThan,
     cuongNhuocMenh: chamCuongNhuoc(menh),
     cuongNhuocThan: chamCuongNhuoc(than),
+    boLinhVuc,
     veto,
     daiHan,
     cungs: cungsVM,

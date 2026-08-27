@@ -4,7 +4,8 @@
  * đây CHỈ để SẮP XẾP thứ tự — không hiển thị số điểm "huyền bí" cho khách (đúng §38 spec gốc).
  */
 import { loadTrachNhatConfig } from "./config";
-import type { BirthCandidate, BaziAnalysis, TuViAnalysis, DiemPhuongAn } from "./types";
+import { diemTheoUuTien } from "./bon-linh-vuc";
+import type { BirthCandidate, BaziAnalysis, TuViAnalysis, DiemPhuongAn, BirthSelectionInput } from "./types";
 
 const VUONG_SUY_DIEM: Record<string, number> = {
   "Trung hòa": 3, "Vượng": 2, "Nhược": 2, "Cường vượng": 1, "Suy": 1,
@@ -128,8 +129,21 @@ export interface NgayXepHang {
   soGioConLai: number;
 }
 
-/** Bát Tự xếp hạng NGÀY (điểm cấu trúc cao nhất trong ngày làm đại diện) → Tử Vi chọn GIỜ trong từng ngày. */
-export function xepHangKhongCongDiemCheo(finalists: BirthCandidate[]): NgayXepHang[] {
+/**
+ * Bát Tự xếp hạng NGÀY → Tử Vi chọn GIỜ trong từng ngày (`06-phan-xu-ban-giao.md` §1, không cộng chéo).
+ *
+ * ⚠️ Nâng cấp 27/8/2026 — ĐƯA `uuTien` VÀO THẬT: trước đây `familyPriority` được thu ở form, validate
+ * ở API rồi... không dùng ở đâu cả, nên chọn "ưu tiên sức khỏe" hay "ưu tiên tài lộc" đều ra y hệt
+ * một kết quả. Nay mỗi bên dùng ĐÚNG phần điểm của mình trong 4 lĩnh vực:
+ *   • xếp NGÀY  → phần Bát Tự của 4 lĩnh vực, nhân trọng số ưu tiên (`diemTheoUuTien(..., "batTu")`)
+ *   • chọn GIỜ  → phần Tử Vi của 4 lĩnh vực, nhân trọng số ưu tiên (`diemTheoUuTien(..., "tuVi")`)
+ * Điểm cấu trúc/Tử Vi cũ vẫn giữ làm tiêu chí phụ để phá thế hòa, nên thứ hạng không đảo lộn đột ngột
+ * so với bản trước khi lá số không có khác biệt rõ giữa 4 lĩnh vực.
+ */
+export function xepHangKhongCongDiemCheo(
+  finalists: BirthCandidate[],
+  uuTien: BirthSelectionInput["familyPriority"] = "balanced",
+): NgayXepHang[] {
   const theoNgay = new Map<string, BirthCandidate[]>();
   for (const c of finalists) {
     const key = `${c.date.year}-${String(c.date.month).padStart(2, "0")}-${String(c.date.day).padStart(2, "0")}`;
@@ -137,17 +151,25 @@ export function xepHangKhongCongDiemCheo(finalists: BirthCandidate[]): NgayXepHa
     theoNgay.get(key)!.push(c);
   }
 
+  /** Điểm xếp NGÀY của 1 ứng viên: 4 lĩnh vực (phần Bát Tự) là chính, điểm cấu trúc cũ phá thế hòa. */
+  const diemNgayCuaUngVien = (uv: BirthCandidate): number => {
+    const nen = uv.baziAnalysis ? diemCauTrucBatTu(uv.baziAnalysis) : -Infinity;
+    if (!uv.bonLinhVuc) return nen;
+    return diemTheoUuTien(uv.bonLinhVuc, uuTien, "batTu") * 2 + nen * 0.2;
+  };
+
   const ketQua: NgayXepHang[] = [];
   for (const [ngay, ungViens] of theoNgay) {
-    // Điểm đại diện ngày = điểm Bát Tự cao nhất trong số các giờ còn sống sót của ngày đó.
+    // Điểm đại diện ngày = điểm cao nhất trong số các giờ còn sống sót của ngày đó.
     let diemDaiDien = -Infinity;
-    for (const uv of ungViens) if (uv.baziAnalysis) diemDaiDien = Math.max(diemDaiDien, diemCauTrucBatTu(uv.baziAnalysis));
+    for (const uv of ungViens) diemDaiDien = Math.max(diemDaiDien, diemNgayCuaUngVien(uv));
 
-    // Trong ngày đó, Tử Vi chọn giờ tốt nhất — KHÔNG so điểm Bát Tự giữa các giờ (đã dùng điểm đại
-    // diện chung cho cả ngày), chỉ so điểm Tử Vi để chọn GIỜ.
+    // Trong ngày đó, Tử Vi chọn giờ tốt nhất — chỉ dùng dữ liệu Tử Vi, không so lại Bát Tự.
     const gioTotNhat = [...ungViens].sort((a, b) => {
-      const da = a.tuViAnalysis ? diemChonGioTuVi(a.tuViAnalysis) : -Infinity;
-      const db = b.tuViAnalysis ? diemChonGioTuVi(b.tuViAnalysis) : -Infinity;
+      const nenA = a.tuViAnalysis ? diemChonGioTuVi(a.tuViAnalysis) : -Infinity;
+      const nenB = b.tuViAnalysis ? diemChonGioTuVi(b.tuViAnalysis) : -Infinity;
+      const da = a.bonLinhVuc ? diemTheoUuTien(a.bonLinhVuc, uuTien, "tuVi") * 2 + nenA * 0.2 : nenA;
+      const db = b.bonLinhVuc ? diemTheoUuTien(b.bonLinhVuc, uuTien, "tuVi") * 2 + nenB * 0.2 : nenB;
       return db - da;
     })[0]!;
 

@@ -54,10 +54,24 @@
     "khong_cong_diem_cheo": true,
     "phu_quyet_thang_xep_hang": true
   },
+  "bon_linh_vuc": {
+    "_note": "Thêm 27/8/2026 — chấm RIÊNG 4 mặt (sức khỏe/gia đạo/tài vận/nhân duyên) thay vì dùng 1 điểm tổng thiên về phú quý. Căn cứ bắt buộc: luan-giai-bat-tu-manh-phai/SKILL.md Bước 6 & 10 ('kết luận phú quý CHỈ nói về sự nghiệp/tiền bạc, KHÔNG suy ra sức khỏe/hạnh phúc/gia đình'). Code: src/lib/trach-nhat-sinh-no/bon-linh-vuc.ts.",
+    "_warn_trong_so": "⚠️ Trọng số số học của từng quy tắc (MANH 2.5 / VUA 1.5 / NHE 0.8) và bảng TRONG_SO_UU_TIEN là QUY ƯỚC của module — tài liệu gốc chỉ phân loại định tính tốt/xấu, không cho thang điểm. CHƯA calibrate trên ca thật.",
+    "nguon_tung_linh_vuc": {
+      "suc_khoe": "benh-tat.md §Nguyên tắc nền (3 cơ chế: hành quá vượng/khuyết, hai hành tương chiến, kinh mạch nghẽn) + Tử Vi bộ Tật Ách",
+      "tai_van": "tai-van.md §Nguyên tắc nền + §1 + §2 (Thân có gánh nổi Tài không) + Tử Vi bộ Tài Bạch",
+      "gia_dao": "luc-than.md §0 §1.1-1.4 (cung vị Trụ Năm/Tháng, Ấn = mẹ, Tỷ Kiếp = anh em) + Tử Vi bộ Phụ Mẫu",
+      "nhan_duyen": "hon-nhan.md §Nguyên tắc nền + §1 §2 §5 §6 (Cung Thê/Phu, Tài/Quan Sát theo giới tính) + Tử Vi bộ Phu Thê"
+    }
+  },
+  "uu_tien_gia_dinh": {
+    "_note": "familyPriority TRƯỚC 27/8/2026 được thu ở form + validate ở API nhưng KHÔNG dùng ở đâu cả — chọn ưu tiên nào cũng ra cùng kết quả. Nay điều khiển trọng số 4 lĩnh vực khi xếp hạng (TRONG_SO_UU_TIEN trong bon-linh-vuc.ts). Đã kiểm chứng: đổi health→wealth cho ra NGÀY đề xuất khác hẳn.",
+    "_warn": "⚠️ Bảng trọng số là quy ước, chưa calibrate. Mặc định 'balanced' đặt sức khỏe cao nhất vì đối tượng là trẻ sơ sinh (04-lop-tu-vi.md: 'Tật Ách quan trọng hàng đầu với trẻ sơ sinh')."
+  },
   "chua_tich_hop_giai_doan_1": [
-    "Thần sát (Thiên Ất Quý Nhân, Thiên/Nguyệt Đức, Văn Xương, Dương Nhận, Kiếp Sát, Cô Thần Quả Tú) — xem 00 §4 câu 4",
-    "Lục Hại, Lục Phá — tài liệu nguồn không cho bảng tra chính xác, không tự bịa",
+    "Thần sát (Thiên Ất Quý Nhân, Thiên/Nguyệt Đức, Văn Xương, Dương Nhận, Kiếp Sát, Cô Thần Quả Tú) — bảng tra ĐÃ CÓ ĐỦ ở content/bat-tu/knowledge/than-sat.md (đồng bộ 25/8/2026, tức SAU khi module này build 20-22/8 nên chưa ai đối chiếu lại). Chưa code thành hàm thuần — việc còn tồn, làm được ngay khi cần.",
+    "Lục Hại, Lục Phá — ghi chú cũ nói 'tài liệu nguồn không cho bảng tra' là SAI: bảng đủ 12 cặp đã có ở content/bat-tu/knowledge/quan-he-can-chi.md §1, VÀ đã có code thuần đã test ở src/lib/kymon/trachCat/thanSat.ts (module Trạch Cát Kỳ Môn). Tái dùng được ngay — việc còn tồn.",
     "Đối chiếu Bát Tự cha mẹ (family compatibility) — Giai đoạn 3",
-    "Tam Phương Tứ Chính Tử Vi chi tiết, Bát Pháp Tử Vi — chờ anh Công gửi thêm quy trình 8 bước (00 §5)"
+    "Bát Pháp Tử Vi (7 trường hợp) — bat-phap-va-phoi-hop-tinh-ly.md có đủ khung nhưng là phân loại ĐỊNH TÍNH cần suy luận theo tổ hợp sao cụ thể, khó code thuần công thức; hiện thay bằng Tam Phương Tứ Chính có chấm điểm (phuong-phap-luan-cung-vi.md §II-III) — đã áp dụng cho cả 4 lĩnh vực."
   ]
 }

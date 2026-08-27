@@ -66,6 +66,8 @@ export function dungTheCard(c: BirthCandidate): CandidateSummaryCard {
     cuc: tv.cuc,
     diemNoiBat,
     diemCanLuuY,
+    // Sắp theo điểm giảm dần để phụ huynh đọc là thấy ngay mặt nào mạnh nhất, mặt nào cần bù đắp.
+    bonLinhVuc: [...(c.bonLinhVuc ?? [])].sort((a, b) => b.diem - a.diem),
   };
 }
 
