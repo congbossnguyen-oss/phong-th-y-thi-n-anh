@@ -9,6 +9,7 @@ import { locCungL1L8 } from "./hard-filter-bat-tu";
 import { chamCauTrucBatTu } from "./structural-bat-tu";
 import { tinhDaiVanBand } from "./dai-van-band";
 import { chamLopTuVi } from "./tu-vi-layer";
+import { chamBonLinhVuc } from "./bon-linh-vuc";
 import { xepHangKhongCongDiemCheo, duoiNguongChatLuongGoc } from "./ranking";
 import { ketLuanCuoiCung } from "./decision-engine";
 import type { BirthSelectionInput, BirthCandidate, BuocPhezuLoc, FinalBirthRecommendation } from "./types";
@@ -73,12 +74,16 @@ export function phanTichTrachNhatSinhNo(input: BirthSelectionInput): PhanTichTra
       continue;
     }
 
+    // Chấm RIÊNG 4 mặt (Sức khỏe · Gia đạo · Tài vận · Nhân duyên) — bắt buộc tách riêng, không suy
+    // từ điểm phú quý (`luan-giai-bat-tu-manh-phai/SKILL.md` Bước 6 & 10).
+    c.bonLinhVuc = chamBonLinhVuc(baziAnalysis, tuViAnalysis, chart, input.babyGender);
+
     c.status = "FINALIST";
   }
 
   const finalists = tatCaUngVien.filter((c) => c.status === "FINALIST");
   finalists.forEach((c) => { c.status = "RANKED"; });
-  const xepHangNgay = xepHangKhongCongDiemCheo(finalists);
+  const xepHangNgay = xepHangKhongCongDiemCheo(finalists, input.familyPriority);
   if (xepHangNgay[0]) xepHangNgay[0].ungVienTotNhat.status = "RECOMMENDED";
 
   const medicalConstraintSummary =

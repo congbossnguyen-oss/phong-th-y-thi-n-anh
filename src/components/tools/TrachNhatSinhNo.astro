@@ -17,6 +17,7 @@ import TabBatTu from "../../components/trach-nhat-sinh-no/TabBatTu.astro";
 import TabTuVi from "../../components/trach-nhat-sinh-no/TabTuVi.astro";
 import TongQuanKetQua from "../../components/trach-nhat-sinh-no/TongQuanKetQua.astro";
 import BangSoSanhPhuongAn from "../../components/trach-nhat-sinh-no/BangSoSanhPhuongAn.astro";
+import BonLinhVuc from "../../components/trach-nhat-sinh-no/BonLinhVuc.astro";
 import { siteConfig } from "../../lib/site-config";
 
 export const prerender = false;
@@ -44,6 +45,18 @@ const r = ketQua?.recommendation ?? null;
 /** Tra ứng viên đầy đủ từ id trên thẻ tóm tắt — để vẽ đồ hình cho CẢ phương án chính lẫn dự phòng. */
 const timUngVien = (id: string | undefined) => (ketQua && id ? ketQua.tatCaUngVien.find((c) => c.id === id) ?? null : null);
 const primaryCandidate = timUngVien(r?.primary?.candidateId);
+
+/** Ưu tiên gia đình đã chọn — nay THỰC SỰ ảnh hưởng thứ hạng (xem `bon-linh-vuc.ts` §TRONG_SO_UU_TIEN). */
+const NHAN_UU_TIEN: Record<string, string> = {
+  health: "sức khỏe", wealth: "tài lộc", career: "sự nghiệp", academic: "học hành", balanced: "cân bằng cả bốn mặt",
+};
+let uuTienDaChon = "balanced";
+if (order?.toolInputSnapshot) {
+  try {
+    uuTienDaChon = (JSON.parse(order.toolInputSnapshot) as BirthSelectionInput).familyPriority ?? "balanced";
+  } catch { /* giữ mặc định */ }
+}
+
 const BAND_NHAN: Record<string, string> = {
   rat_thuan: "Rất thuận", thuan: "Thuận", trung_binh: "Trung bình", thu_thach: "Có thử thách", nghich: "Nghịch",
 };
@@ -157,6 +170,8 @@ const UU_TIEN = [
                       {r.primary.diemCanLuuY.map((d) => (<li class="text-sm font-semibold text-(--color-cinnabar-700)">△ {d}</li>))}
                     </ul>
                   </div>
+
+                  <BonLinhVuc danhSach={r.primary.bonLinhVuc} nhanUuTien={NHAN_UU_TIEN[uuTienDaChon] ?? undefined} />
                 </div>
               </div>
 
