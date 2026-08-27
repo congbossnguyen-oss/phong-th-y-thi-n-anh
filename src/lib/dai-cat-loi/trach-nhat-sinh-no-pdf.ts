@@ -48,10 +48,14 @@ function vePhuongAn(b: But, f: Fonts, tieuDe: string, card: CandidateSummaryCard
 
   if (card.diemNoiBat.length > 0) {
     b.dong("Điểm nổi bật:", { size: 9, font: f.vua, mau: MAU.luc, x: LE + 4 });
-    for (const d of card.diemNoiBat) b.doan(`✓ ${d}`, { size: 8.5, x: LE + 16, mau: MAU.luc });
+    // ⚠️ Không dùng ✓/△ trực tiếp — phát hiện 27/8/2026: font BeVietnamPro nhúng (pdf-lib/fontkit)
+    // KHÔNG có 2 glyph này (lỗi có sẵn từ trước, không liên quan việc rút gọn font đợt này), nên
+    // ký tự sẽ vẽ ra trống rỗng/không hiện trong PDF. Dùng "+ " / "- " (thuần ASCII, chắc chắn có
+    // trong mọi font Latin) kết hợp màu sắc để vẫn truyền tải đúng ý nghĩa.
+    for (const d of card.diemNoiBat) b.doan(`+ ${d}`, { size: 8.5, x: LE + 16, mau: MAU.luc });
   }
   b.dong("Khuyết điểm cần lưu ý (không gỡ được):", { size: 9, font: f.vua, mau: MAU.son, x: LE + 4 });
-  for (const d of card.diemCanLuuY) b.doan(`△ ${d}`, { size: 8.5, x: LE + 16, mau: MAU.son });
+  for (const d of card.diemCanLuuY) b.doan(`- ${d}`, { size: 8.5, x: LE + 16, mau: MAU.son });
 
   // Bốn mặt chấm riêng — không suy từ một điểm tổng (`luan-giai-bat-tu-manh-phai/SKILL.md` Bước 6 & 10).
   if (card.bonLinhVuc?.length) {
