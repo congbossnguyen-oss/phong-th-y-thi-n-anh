@@ -2,8 +2,8 @@
  * PHIẾU PDF — Hợp Hôn Bát Tự × Tử Vi (999.000đ). Dựng từ `HopHonKetQua` (đã tính sẵn), dùng khung
  * PDF chung `pdf-khung.ts`. Bản khách nhận qua email sau khi thanh toán.
  */
-import { taoTaiLieuPdf, veDauTrang, veLuuYVaLienHe, veChanTrang, MAU, LE, type But, type Fonts } from "./pdf-khung";
-import type { HopHonKetQua, TrucKetQua, MucTruc } from "../hop-hon";
+import { taoTaiLieuPdf, veDauTrang, veLuuYVaLienHe, veChanTrang, catVua, MAU, LE, A4, type But, type Fonts } from "./pdf-khung";
+import { diemRadarTheoTruc, diemVongTron, type HopHonKetQua, type TrucKetQua, type MucTruc } from "../hop-hon";
 import type { RGB } from "pdf-lib";
 
 const MAU_MUC: Record<MucTruc, RGB> = {
@@ -24,6 +24,59 @@ const MAU_DONG_THUAN: Record<string, RGB> = { cao: MAU.luc, trung: MAU.vang, tha
 const MAU_NHAN_TONG_QUAN: Record<HopHonKetQua["nhanTongQuan"], RGB> = {
   rat_thuan: MAU.luc, thuan: MAU.luc, can_chu_dong_dieu_chinh: MAU.vang, nen_gap_chuyen_gia: MAU.son,
 };
+
+const BAN_KINH_RADAR = 85;
+
+/**
+ * Radar ngũ giác "Bản đồ 5 trục" — dùng chung hình học `diemRadarTheoTruc`/`diemVongTron` với bản
+ * SVG trên trang web (hop-hon.astro) nên hai bản luôn khớp nhau. Vẽ VIỀN vùng dữ liệu bằng các đoạn
+ * thẳng nối tiếp thay vì tô nền — pdf-lib không có API tô đa giác tuỳ ý an toàn như canvas, còn
+ * `drawSvgPath` lại lật trục y kiểu SVG khác hẳn quy ước y-hướng-lên đang dùng xuyên suốt file này,
+ * dễ vẽ sai mà không lỗi rõ ràng để phát hiện.
+ */
+function veRadarPdf(b: But, f: Fonts, ketQua: HopHonKetQua): void {
+  const cao = BAN_KINH_RADAR * 2 + 50;
+  b.chua(cao);
+  b.xuong(6);
+  const cx = A4.w / 2;
+  const cy = b.y - 14 - BAN_KINH_RADAR;
+  const diems = diemRadarTheoTruc(ketQua.cacTruc);
+  const toaDo = (goc: number, tyLe: number) => {
+    const { dx, dy } = diemVongTron(goc, tyLe);
+    return { x: cx + dx * BAN_KINH_RADAR, y: cy + dy * BAN_KINH_RADAR };
+  };
+
+  for (const tyLe of [0.25, 0.5, 0.75, 1]) {
+    const pts = diems.map((d) => toaDo(d.goc, tyLe));
+    for (let i = 0; i < pts.length; i++) {
+      b.page.drawLine({ start: pts[i]!, end: pts[(i + 1) % pts.length]!, thickness: 0.6, color: MAU.vangNhat });
+    }
+  }
+  for (const d of diems) {
+    b.page.drawLine({ start: { x: cx, y: cy }, end: toaDo(d.goc, 1), thickness: 0.6, color: MAU.vangNhat });
+  }
+
+  const ptsDuLieu = diems.map((d) => toaDo(d.goc, d.tyLe));
+  for (let i = 0; i < ptsDuLieu.length; i++) {
+    b.page.drawLine({ start: ptsDuLieu[i]!, end: ptsDuLieu[(i + 1) % ptsDuLieu.length]!, thickness: 1.8, color: MAU.vang });
+  }
+  diems.forEach((d, i) => {
+    const p = ptsDuLieu[i]!;
+    b.page.drawEllipse({ x: p.x, y: p.y, xScale: 3.2, yScale: 3.2, color: MAU_MUC[d.muc] });
+  });
+
+  const size = 7.5;
+  for (const d of diems) {
+    const p = toaDo(d.goc, 1.22);
+    const chu = catVua(d.ten, f.vua, size, 92);
+    const w = f.vua.widthOfTextAtSize(chu, size);
+    const { dx } = diemVongTron(d.goc, 1);
+    const x = dx > 0.3 ? p.x : dx < -0.3 ? p.x - w : p.x - w / 2;
+    b.page.drawText(chu, { x, y: p.y - size / 2.6, size, font: f.vua, color: MAU.muc });
+  }
+
+  b.y = cy - BAN_KINH_RADAR - 26;
+}
 
 function veTruc(b: But, f: Fonts, t: TrucKetQua): void {
   const moc = b.danhDau();
@@ -79,6 +132,11 @@ export async function generateHopHonPdf(kq: HopHonKetQua, customerName: string):
 
   // --- 5 trục ---
   b.muc("Bản đồ 5 trục");
+  veRadarPdf(b, f, kq);
+  b.dongGiua("Càng ra ngoài rìa càng thuận; \"chưa đủ dữ liệu\" đặt ở giữa (trung tính), không phải điểm xấu.", {
+    size: 8, font: f.nghieng, mau: MAU.mucNhat,
+  });
+  b.xuong(6);
   for (const t of kq.cacTruc) veTruc(b, f, t);
 
   // --- Đồng thuận 2 hệ ---

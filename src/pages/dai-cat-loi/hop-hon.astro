@@ -12,7 +12,7 @@ import Button from "../../components/ui/Button.astro";
 import MaKhuyenMai from "../../components/ui/MaKhuyenMai.astro";
 import { GIA_CONG_CU, dinhDangTien } from "../../lib/payments/gia-cong-cu";
 import { getOrderByCode } from "../../lib/db/orders";
-import { tinhHopHon, type HopHonKetQua } from "../../lib/hop-hon";
+import { tinhHopHon, diemRadarTheoTruc, diemVongTron, type HopHonKetQua } from "../../lib/hop-hon";
 import type { DauVaoHopHon } from "../api/dai-cat-loi/hop-hon/checkout";
 
 export const prerender = false;
@@ -52,6 +52,53 @@ const DONG_THUAN_STYLE: Record<string, string> = {
 };
 const gioOptions = Array.from({ length: 24 }, (_, i) => i);
 const namNay = new Date().getFullYear();
+
+/**
+ * Dựng SVG radar ngũ giác "Bản đồ 5 trục" — server-render (không JS phía client), quy đổi từ đúng
+ * hình học dùng chung `diemRadarTheoTruc`/`diemVongTron` nên khớp 100% với bản trong PDF.
+ */
+function veRadarSvg(ketQua: HopHonKetQua): string {
+  const TAM = 165;
+  const BAN_KINH = 118;
+  const diems = diemRadarTheoTruc(ketQua.cacTruc);
+  // SVG trục y hướng XUỐNG — trừ dy để "lên" (ngược math convention của radar.ts).
+  const toaDo = (goc: number, tyLe: number) => {
+    const { dx, dy } = diemVongTron(goc, tyLe);
+    return { x: TAM + dx * BAN_KINH, y: TAM - dy * BAN_KINH };
+  };
+
+  const vongLuoi = [0.25, 0.5, 0.75, 1].map((tyLe) => {
+    const pts = diems.map((d) => toaDo(d.goc, tyLe)).map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
+    return `<polygon points="${pts}" fill="none" stroke="var(--color-ivory-300)" stroke-width="1" />`;
+  }).join("");
+
+  const truc = diems.map((d) => {
+    const ngoai = toaDo(d.goc, 1);
+    return `<line x1="${TAM}" y1="${TAM}" x2="${ngoai.x.toFixed(1)}" y2="${ngoai.y.toFixed(1)}" stroke="var(--color-ivory-300)" stroke-width="1" />`;
+  }).join("");
+
+  const duLieuPts = diems.map((d) => toaDo(d.goc, d.tyLe)).map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(" ");
+  const vungDuLieu = `<polygon points="${duLieuPts}" fill="var(--color-gold-400)" fill-opacity="0.16" stroke="var(--color-gold-400)" stroke-width="2" stroke-linejoin="round" />`;
+
+  const cham = diems.map((d) => {
+    const p = toaDo(d.goc, d.tyLe);
+    const mau = MUC_STYLE[d.muc].mau;
+    return `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="5" fill="${mau}" stroke="var(--color-ivory-50)" stroke-width="1.5" />`;
+  }).join("");
+
+  const nhan = diems.map((d) => {
+    const p = toaDo(d.goc, 1.24);
+    const { dx } = diemVongTron(d.goc, 1);
+    const canh = dx > 0.3 ? "start" : dx < -0.3 ? "end" : "middle";
+    return `<text x="${p.x.toFixed(1)}" y="${p.y.toFixed(1)}" text-anchor="${canh}" dominant-baseline="middle" font-size="11" font-weight="600" fill="var(--color-ink-800)">${escHtml(d.ten)}</text>`;
+  }).join("");
+
+  return `<svg viewBox="0 0 330 330" role="img" aria-label="Bản đồ 5 trục hợp hôn" style="width:100%;max-width:360px;margin:0 auto;display:block;">${vongLuoi}${truc}${vungDuLieu}${cham}${nhan}</svg>`;
+}
+function escHtml(s: string): string {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+const radarSvg = ketQua ? veRadarSvg(ketQua) : "";
 ---
 
 <BaseLayout
@@ -138,6 +185,10 @@ const namNay = new Date().getFullYear();
 
           {/* 5 trục */}
           <p class="mt-8 font-display text-2xl font-bold text-(--color-ink-950)">Bản đồ 5 trục</p>
+          <div class="mt-4 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-5" set:html={radarSvg} />
+          <p class="mt-2 text-center text-xs text-(--color-ink-500)">
+            Càng ra ngoài rìa càng thuận; "chưa đủ dữ liệu" đặt ở giữa (trung tính), không phải điểm xấu.
+          </p>
           <div class="mt-4 space-y-4">
             {ketQua.cacTruc.map((t) => (
               <div class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-5" style={`border-left:3px solid ${MUC_STYLE[t.muc].mau}`}>
