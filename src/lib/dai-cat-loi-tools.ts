@@ -214,6 +214,15 @@ export const paidTools: PaidTool[] = [
     // ✅ Đã mở bán cho khách từ 26/8/2026 (anh Công duyệt).
   },
   {
+    href: "/dai-cat-loi/hop-hon",
+    icon: "💍",
+    title: "Hợp Hôn Bát Tự × Tử Vi",
+    desc: "Tầng luận sâu cho việc kết hôn, chạy tiếp sau vòng xem tuổi theo năm sinh. Đối chiếu ĐỦ hai lá số qua 5 trục: ngũ hành hai bên có bù đúng chỗ thiếu của nhau không, Cung Phu Thê và sao phối ngẫu, tính cách qua Thập Thần, Cung Phu Thê cùng Tứ Hóa giao thoa bên Tử Vi, và mức đồng bộ vận trình 30 năm tới. Không chấm điểm phán quyết — trả bản đồ điểm mạnh và điểm cần chủ động vun đắp.",
+    priceLabel: "999.000đ / lượt",
+    // ⏸️ THỬ NGHIỆM NỘI BỘ — chủ đề nhạy cảm nhất trong bộ (kết luận sai ảnh hưởng cả đời người),
+    // cần anh Công kiểm chứng nhiều ca thật trước khi mở cho khách. Trang tự khóa admin.
+  },
+  {
     href: "/dai-cat-loi/sim-phong-thuy-khai-van",
     icon: "📱",
     title: "Sim Phong Thủy Khai Vận Khí",
