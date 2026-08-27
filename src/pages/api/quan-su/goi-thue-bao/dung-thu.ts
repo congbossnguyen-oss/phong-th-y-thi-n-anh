@@ -1,5 +1,5 @@
 import type { APIRoute } from "astro";
-import { batDauDungThu } from "../../../../lib/subscriptions/trial";
+import { batDauDungThu, LoiDungThu } from "../../../../lib/subscriptions/trial";
 import { checkRateLimit } from "../../../../lib/rate-limit";
 import { getClientIp } from "../../../../lib/auth/client-ip";
 import { layHoacTaoDeviceId } from "../../../../lib/auth/device-id";
@@ -34,6 +34,14 @@ export const POST: APIRoute = async ({ locals, clientAddress, request, cookies }
     const { expiresAt } = await batDauDungThu(locals.user.id, { deviceId, ip });
     return jsonResponse({ ok: true, expiresAt: expiresAt.toISOString() }, 200);
   } catch (err) {
-    return jsonResponse({ ok: false, error: err instanceof Error ? err.message : "Không kích hoạt được dùng thử." }, 400);
+    if (err instanceof LoiDungThu) {
+      return jsonResponse({ ok: false, error: err.message }, 400);
+    }
+    // Lỗi hệ thống bất ngờ (DB, mạng...) — KHÔNG hiện message kỹ thuật thô cho khách, chỉ log để tra sau.
+    console.error("[dung-thu] Lỗi không mong đợi khi kích hoạt dùng thử:", err);
+    return jsonResponse(
+      { ok: false, error: "Rất tiếc, hệ thống đang gặp trục trặc khi kích hoạt dùng thử. Bạn thử lại sau ít phút giúp mình nhé, hoặc liên hệ Thiên Anh nếu vẫn lỗi." },
+      500,
+    );
   }
 };
