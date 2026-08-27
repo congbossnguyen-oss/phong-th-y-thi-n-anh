@@ -1,0 +1,23 @@
+---
+// Bản in-app của "Luận Giải Kỳ Môn Mệnh chi tiết" — thuộc nhóm KỲ MÔN ĐỘN GIÁP trong app Quân Sư
+// (không phải nhóm Dịch vụ VIP), vào từ /quan-su/ky-mon.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
+import VipQuyenBanner from "../../components/quan-su/VipQuyenBanner.astro";
+import KyMonMenhChiTiet from "../../components/tools/KyMonMenhChiTiet.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout title="Luận Giải Kỳ Môn Mệnh chi tiết — Quân Sư Thiên Anh" description="Luận Giải Kỳ Môn Mệnh chi tiết trong app Quân Sư." appShell>
+  <PageHero
+    eyebrow="Kỳ Môn Độn Giáp"
+    title="Luận Giải Kỳ Môn Mệnh chi tiết"
+    breadcrumbs={[{ label: "Quân Sư", href: "/quan-su" }, { label: "Kỳ Môn Độn Giáp", href: "/quan-su/ky-mon" }, { label: "Luận Giải Mệnh chi tiết" }]}
+  />
+  <VipQuyenBanner />
+  {/* Thiếu ngày giờ sinh thì nhắc quay lại trang Lập Kỳ Môn TRONG APP, không đá ra bản web. */}
+  <KyMonMenhChiTiet hrefLapKyMon="/quan-su/lap-ky-mon" />
+  <BottomNav />
+</BaseLayout>

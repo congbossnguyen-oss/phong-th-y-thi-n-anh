@@ -164,6 +164,20 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
         </div>
       </a>
 
+      <!-- KỲ MÔN ĐỘN GIÁP — mục lớn RIÊNG (anh Công chốt 27/8/2026), không gộp vào Dịch vụ VIP.
+           Banner ảnh ngang bấm vào là sang hub /quan-su/ky-mon, gom đủ 4 phần: lập lá bàn, luận
+           giải Mệnh chi tiết, hỏi đáp theo việc, và trạch cát chọn ngày (chuyển từ nhóm VIP sang).
+           ⚠️ Ảnh đang dùng là ảnh TẠM để demo bố cục — thay bằng ảnh chính thức khi có. -->
+      <a href="/quan-su/ky-mon" class="qsh-km-card">
+        <img src="/images/quan-su/ky-mon-banner.jpg" alt="" class="qsh-km-bg" />
+        <div class="qsh-km-body">
+          <p class="qsh-km-tag">Đế vương chi học</p>
+          <h3>Kỳ Môn Độn Giáp</h3>
+          <p>Lập lá bàn · Luận giải Mệnh · Hỏi đáp theo việc · Trạch cát chọn ngày</p>
+          <span class="qsh-km-cta">Mở lá bàn →</span>
+        </div>
+      </a>
+
       <!-- Công cụ hữu ích — CHỈ 4/8 mục có trang thật tương ứng trên site (Can Chi/Ngũ Hành/Cung
            Hoàng Đạo/Phong Thủy Nhà chưa có công cụ tra cứu riêng — không đưa vào để tránh dẫn khách
            tới trang không tồn tại; bổ sung sau khi các công cụ đó được xây). -->
@@ -352,6 +366,34 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
   .qsh-vip-body h3 { font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.2rem; margin: 0 0 0.35rem; }
   .qsh-vip-body p { margin: 0 0 0.7rem; color: var(--qs-muted); font-size: 0.76rem; line-height: 1.4; }
   .qsh-vip-cta { color: var(--qs-gold); font-size: 0.82rem; font-weight: 700; }
+
+  /* Kỳ Môn Độn Giáp — banner ngang cao hơn thẻ VIP (ảnh là điểm nhấn chính, chữ đè lên đáy).
+     Ảnh gốc khổ ngang ~16:9 nên dùng aspect-ratio thay vì min-height cứng: không bị cắt mất
+     vòng bát quái ở giữa ảnh trên màn hình hẹp. */
+  .qsh-km-card {
+    position: relative; display: block; overflow: hidden; text-decoration: none; color: var(--qs-ivory);
+    border-radius: 18px; border: 1px solid rgba(241, 200, 90, 0.3);
+    aspect-ratio: 16 / 9; margin-bottom: 1.8rem;
+  }
+  .qsh-km-bg { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .qsh-km-card::before {
+    content: ""; position: absolute; inset: 0;
+    background: linear-gradient(0deg, rgba(7,6,5,0.94) 0%, rgba(7,6,5,0.55) 42%, rgba(7,6,5,0.12) 100%);
+  }
+  .qsh-km-body { position: absolute; inset: auto 0 0 0; z-index: 1; padding: 1rem 1.2rem 1.1rem; }
+  .qsh-km-tag {
+    margin: 0 0 0.15rem; color: var(--qs-gold); font-size: 0.64rem; font-weight: 800;
+    letter-spacing: 0.1em; text-transform: uppercase; text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+  }
+  .qsh-km-body h3 {
+    font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.45rem; margin: 0 0 0.3rem;
+    color: var(--qs-ivory); text-shadow: 0 2px 8px rgba(0,0,0,0.95);
+  }
+  .qsh-km-body p {
+    margin: 0 0 0.55rem; color: var(--qs-ivory); opacity: 0.86; font-size: 0.72rem; line-height: 1.45;
+    text-shadow: 0 1px 5px rgba(0,0,0,0.9);
+  }
+  .qsh-km-cta { color: var(--qs-gold); font-size: 0.82rem; font-weight: 700; text-shadow: 0 1px 4px rgba(0,0,0,0.9); }
 
   /* Công cụ hữu ích — chỉ 4 công cụ có trang thật (xem ghi chú trong markup), lưới 4 cột 1 hàng để
      không để trống ô thừa (mockup gốc 8 ô nhưng thiếu 4 trang tương ứng trên site). */

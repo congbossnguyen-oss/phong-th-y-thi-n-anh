@@ -1,0 +1,359 @@
+---
+// Thân dịch vụ VIP "Định Hướng Nghề Nghiệp (Bát Tự × Tử Vi)" tách dùng chung cho web + in-app
+// Quân Sư (giữ nguyên logic/giao diện) — cùng mẫu GioLiemHaHuyet.astro/TrachCatKyMon.astro.
+//
+//  - Chưa có ?orderCode → hiện FORM nhập ngày giờ sinh + thanh toán QR (poll trạng thái).
+//  - Có ?orderCode đã confirmed → server tính kết quả (taoHoSoNghe) và hiện 3 tab dashboard.
+// Kết quả tính lại từ input đã lưu; phần AI có cache theo hash lá số nên không gọi lặp.
+import Container from "../../components/ui/Container.astro";
+import Button from "../../components/ui/Button.astro";
+import DateSelect from "../../components/ui/DateSelect.astro";
+import MaKhuyenMai from "../../components/ui/MaKhuyenMai.astro";
+import NgheDashboard from "../../components/nghe/NgheDashboard.astro";
+import LuanVanNghe from "../../components/nghe/LuanVanNghe.astro";
+import { GIA_CONG_CU, dinhDangTien } from "../../lib/payments/gia-cong-cu";
+import { getOrderByCode } from "../../lib/db/orders";
+import { taoHoSoNghe, type NgheKetQua, type NgheInput } from "../../lib/nghe-nghiep/tao-ho-so-nghe";
+
+export const prerender = false;
+
+const laQuanTri = Astro.locals.user?.isAdmin === true;
+const TOOL_SLUG = "dinh-huong-nghe-nghiep";
+const TOOL_PRICE = GIA_CONG_CU[TOOL_SLUG];
+const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
+
+// Vào lại với ?orderCode đã thanh toán → tính & hiện kết quả.
+const orderCode = Astro.url.searchParams.get("orderCode");
+let ketQua: NgheKetQua | null = null;
+let order: Awaited<ReturnType<typeof getOrderByCode>> | null = null;
+if (orderCode) {
+  order = await getOrderByCode(orderCode);
+  if (order && order.orderType === "tool" && order.toolSlug === TOOL_SLUG && order.status === "confirmed" && order.toolInputSnapshot) {
+    try {
+      // Ghép họ tên từ đơn để phần AI luận xưng hô đúng người (tên không tham gia tính toán).
+      const snapshot = JSON.parse(order.toolInputSnapshot) as NgheInput;
+      ketQua = await taoHoSoNghe({ ...snapshot, hoTen: snapshot.hoTen ?? order.customerName ?? undefined });
+    } catch {
+      ketQua = null;
+    }
+  }
+}
+
+const DOMAIN_LABEL: Record<string, string> = {
+  economics_finance: "Kinh tế – Tài chính", management_business: "Quản trị – Kinh doanh",
+  technology_engineering: "Công nghệ – Kỹ thuật", science_research: "Khoa học – Nghiên cứu",
+  health_medicine: "Y – Dược – Sức khỏe", law_policy_social: "Luật – Chính sách – Xã hội",
+  media_language: "Truyền thông – Ngôn ngữ", education_consulting: "Giáo dục – Tư vấn",
+  arts_design: "Nghệ thuật – Thiết kế", real_estate_assets: "Bất động sản – Tài sản",
+};
+// mau/nen dùng var(--color-*) thay vì hex cứng — 2 biến này đã đăng ký trên :root trong global.css
+// nên tự đảo màu đúng theo theme sáng/tối giống mọi nơi khác trên trang (không phải giá trị mới).
+const BAC_STYLE: Record<string, { label: string; mau: string; nen: string }> = {
+  cao: { label: "CAO — hai hệ hội tụ", mau: "var(--color-success-500)", nen: "color-mix(in srgb, var(--color-success-500) 18%, transparent)" },
+  trung: { label: "TRUNG BÌNH — đồng thuận một phần", mau: "var(--color-gold-400)", nen: "color-mix(in srgb, var(--color-gold-400) 18%, transparent)" },
+  thap: { label: "THẤP — hai hệ phân kỳ", mau: "var(--color-cinnabar-500)", nen: "color-mix(in srgb, var(--color-cinnabar-500) 18%, transparent)" },
+};
+const ketHop = ketQua?.ketHop ?? null;
+const bacStyle = ketHop && !ketHop.insufficient && ketHop.bac ? BAC_STYLE[ketHop.bac] : null;
+const gioOptions = Array.from({ length: 24 }, (_, i) => i);
+---
+
+<Container class="py-12">
+  <div class="mx-auto max-w-4xl">
+    {ketQua ? (
+      <>
+        {!ketQua.batTuAiOk && (
+          <div class="mb-5 rounded-(--radius-card) border-2 border-(--color-gold-400) bg-(--color-gold-400)/10 p-4 text-sm font-bold text-(--color-gold-700)">
+            ⚠️ Phần luận AI Bát Tự chưa chạy được (chưa cấu hình khoá AI trên máy chủ). Các con số/lá số bên dưới là phần tính thuần; phần luận sâu sẽ đầy đủ khi khoá AI hoạt động.
+          </div>
+        )}
+
+        <p class="mb-5 text-center text-sm font-bold text-(--color-ink-800)">
+          Kết quả cho: <span class="text-(--color-gold-400)">{order?.customerName}</span> · Mã đơn: {orderCode}
+        </p>
+
+        <div class="nghe-tabs">
+          <input type="radio" name="nghe-tab" id="tab-bat-tu" checked />
+          <input type="radio" name="nghe-tab" id="tab-tu-vi" />
+          <input type="radio" name="nghe-tab" id="tab-ket-hop" />
+
+          <div class="mb-5 flex gap-2 rounded-full bg-(--color-ivory-200) p-1.5">
+            <label for="tab-bat-tu" class="lb flex-1 cursor-pointer rounded-full px-4 py-2.5 text-center text-sm font-extrabold text-(--color-ink-700)">🌿 Bát Tự</label>
+            <label for="tab-tu-vi" class="lb flex-1 cursor-pointer rounded-full px-4 py-2.5 text-center text-sm font-extrabold text-(--color-ink-700)">⭐ Tử Vi</label>
+            <label for="tab-ket-hop" class="lb flex-1 cursor-pointer rounded-full px-4 py-2.5 text-center text-sm font-extrabold text-(--color-ink-700)">🔗 Kết hợp</label>
+          </div>
+
+          <section class="pane pane-bat-tu"><LuanVanNghe luan={ketQua.luanVanBatTu} he="bat_tu" /><NgheDashboard vm={ketQua.batTuVM} /></section>
+          <section class="pane pane-tu-vi"><LuanVanNghe luan={ketQua.luanVanTuVi} he="tu_vi" /><NgheDashboard vm={ketQua.tuViVM} /></section>
+          <section class="pane pane-ket-hop">
+            <div class="overflow-hidden rounded-2xl border-2 border-(--color-gold-400)/60 bg-(--color-ivory-100) shadow-lg">
+              <div class="bg-gradient-to-r from-(--color-gold-400) to-(--color-gold-500) px-5 py-3">
+                <h3 class="font-display text-base font-extrabold uppercase tracking-wide text-(--color-on-accent)">Mức đồng thuận Bát Tự × Tử Vi</h3>
+              </div>
+              <div class="p-5">
+                {ketHop!.insufficient ? (
+                  <p class="text-sm font-semibold text-(--color-ink-700)">{ketHop!.ketLuanNgan}</p>
+                ) : (
+                  <>
+                    <div class="flex flex-col items-center gap-2 rounded-2xl p-5" style={`background:${bacStyle?.nen}`}>
+                      <p class="font-display text-6xl font-black" style={`color:${bacStyle?.mau}`}>{ketHop!.agreement}%</p>
+                      <p class="rounded-full px-4 py-1 text-sm font-extrabold text-(--color-on-accent)" style={`background:${bacStyle?.mau}`}>{bacStyle?.label}</p>
+                      <p class="mt-1 text-center text-sm font-bold text-(--color-ink-950)">{ketHop!.ketLuanNgan}</p>
+                    </div>
+
+                    <div class="mt-5 grid gap-3 sm:grid-cols-3">
+                      <div class="rounded-xl border-2 border-(--color-ivory-300) p-3 text-center">
+                        <p class="text-xs font-bold uppercase text-(--color-ink-600)">Trùng 5 trục</p>
+                        <p class="font-display text-2xl font-extrabold text-(--color-ink-950)">{ketHop!.thanhPhan.trung5Truc}%</p>
+                        <p class="text-[10px] font-semibold text-(--color-ink-500)">trọng số 40%</p>
+                      </div>
+                      <div class="rounded-xl border-2 border-(--color-ivory-300) p-3 text-center">
+                        <p class="text-xs font-bold uppercase text-(--color-ink-600)">Trùng hướng Q↔K</p>
+                        <p class="font-display text-2xl font-extrabold text-(--color-ink-950)">{ketHop!.thanhPhan.trungHuongQK}%</p>
+                        <p class="text-[10px] font-semibold text-(--color-ink-500)">trọng số 30%</p>
+                      </div>
+                      <div class="rounded-xl border-2 border-(--color-ivory-300) p-3 text-center">
+                        <p class="text-xs font-bold uppercase text-(--color-ink-600)">Trùng ngành</p>
+                        <p class="font-display text-2xl font-extrabold text-(--color-ink-950)">{ketHop!.thanhPhan.trungNganh}%</p>
+                        <p class="text-[10px] font-semibold text-(--color-ink-500)">trọng số 30%</p>
+                      </div>
+                    </div>
+
+                    {ketHop!.docTheoTang && (
+                      <div class="mt-5 overflow-hidden rounded-2xl border-2 border-(--color-gold-400)/50">
+                        <div class="bg-(--color-gold-400)/15 px-4 py-2.5">
+                          <p class="text-sm font-extrabold text-(--color-gold-700)">🧭 Hai hệ chỉ khác hướng — đọc theo TẦNG, không ép một câu trả lời</p>
+                        </div>
+                        <div class="grid gap-0 sm:grid-cols-2">
+                          <div class="border-b-2 border-(--color-ivory-300) p-4 sm:border-b-0 sm:border-r-2">
+                            <p class="mb-1 inline-block rounded-full px-2.5 py-0.5 text-xs font-black text-white" style="background:#1E8A45">🌿 BÁT TỰ</p>
+                            <p class="text-sm font-bold leading-relaxed text-(--color-ink-950)">{ketHop!.docTheoTang.batTu}</p>
+                          </div>
+                          <div class="p-4">
+                            <p class="mb-1 inline-block rounded-full px-2.5 py-0.5 text-xs font-black text-white" style="background:#1D5FB0">⭐ TỬ VI</p>
+                            <p class="text-sm font-bold leading-relaxed text-(--color-ink-950)">{ketHop!.docTheoTang.tuVi}</p>
+                          </div>
+                        </div>
+                        <div class="border-t-2 border-(--color-ivory-300) bg-(--color-gold-400)/10 p-4">
+                          <p class="mb-1 text-xs font-black uppercase tracking-wide text-(--color-gold-700)">→ Lộ trình bắc cầu gợi ý</p>
+                          <p class="text-sm font-bold leading-relaxed text-(--color-ink-950)">{ketHop!.docTheoTang.loTrinh}</p>
+                        </div>
+                      </div>
+                    )}
+
+                    <div class="mt-5">
+                      <p class="mb-2 text-sm font-extrabold text-(--color-ink-950)">Ngành CẢ HAI HỆ cùng đề xuất (đáng tin nhất):</p>
+                      {ketHop!.nganhHopNhat.length === 0 ? (
+                        <p class="text-sm font-semibold italic text-(--color-ink-600)">Chưa có ngành nào trùng ở Top-6 của cả hai hệ.</p>
+                      ) : (
+                        <div class="flex flex-wrap gap-2">
+                          {ketHop!.nganhHopNhat.map((d) => (
+                            <span class="rounded-full bg-(--color-gold-400)/15 px-3.5 py-1.5 text-sm font-extrabold text-(--color-gold-600) ring-2 ring-(--color-gold-400)/40">{DOMAIN_LABEL[d] ?? d}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+            <p class="mt-3 text-xs font-semibold text-(--color-ink-700)">Hai timeline (Đại Vận Bát Tự · Đại Hạn Tử Vi) tính RIÊNG ở từng tab — phần Kết hợp chỉ đo mức đồng thuận, không gộp thành một vận.</p>
+          </section>
+        </div>
+
+        <div class="mt-6 rounded-xl border border-(--color-gold-400)/40 bg-(--color-gold-400)/5 p-4 text-center text-sm font-semibold text-(--color-ink-800)">
+          📄 Bản đầy đủ (PDF) đã được gửi về email bạn đăng ký. Trang này bạn có thể lưu lại để xem sau bằng chính đường dẫn (có mã đơn).
+        </div>
+
+        <p class="mt-4 rounded-xl bg-(--color-ivory-100) p-4 text-center text-xs font-semibold italic text-(--color-ink-700)">
+          Đây là định hướng theo mô hình phân tích cấu trúc lá số — không phải lời tiên đoán hay sự sắp đặt chắc chắn của số mệnh.
+          Kết quả mang tính tham khảo, nên kết hợp với năng lực, sở thích và điều kiện thực tế của bản thân.
+        </p>
+      </>
+    ) : (
+      <>
+        {laQuanTri && (
+        <div class="mb-4 rounded-(--radius-card) border-2 border-(--color-gold-400) bg-(--color-gold-400)/10 p-4 text-sm font-medium text-(--color-gold-600)">
+          🔒 CHẾ ĐỘ QUẢN TRỊ — đơn của bạn được tạo ở mức 0đ và tự xác nhận để test trọn luồng (khách thật trả {TOOL_PRICE_LABEL}/lượt).
+        </div>
+        )}
+
+        <div class="mb-6 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-4 text-sm text-(--color-ink-600)">
+          <p class="font-medium text-(--color-ink-800)">Dịch vụ này cho bạn gì?</p>
+          <ul class="mt-1.5 list-disc space-y-1 pl-5">
+            <li><strong>5 trục năng lực nghề</strong> dựng từ lá số Bát Tự (cơ chế Manh Phái) và Tử Vi (mệnh cách chính tinh).</li>
+            <li><strong>Nhóm ngành nên theo</strong>, xu hướng <strong>Quan Lộc (làm tổ chức) ↔ Kinh Doanh (tự chủ)</strong>.</li>
+            <li><strong>Các giai đoạn vận</strong> (Đại Vận Bát Tự & Đại Hạn Tử Vi) theo dòng thời gian.</li>
+            <li><strong>Mức đồng thuận hai hệ</strong> — khi hai hệ khác hướng, có gợi ý lộ trình bắc cầu.</li>
+          </ul>
+          <p class="mt-2 text-xs text-(--color-ink-500)">Cần <strong>đủ ngày–tháng–năm–giờ sinh</strong> vì lá số an theo giờ. Kết quả kèm <strong>PDF gửi về email</strong>.</p>
+        </div>
+
+        <form id="dhn-form" class="flex flex-col gap-4 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
+          <DateSelect idPrefix="dhn-sinh" label="Ngày sinh (dương lịch)" required yearsBack={90} yearsForward={0} />
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label for="dhn-gio" class="text-xs font-medium text-(--color-ink-600)">Giờ sinh <span class="text-(--color-cinnabar-400)">*</span></label>
+              <select id="dhn-gio" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-2 py-2.5 text-sm text-(--color-ink-800)">
+                <option value="">Chọn giờ (0–23)</option>
+                {gioOptions.map((h) => <option value={h}>{`${h}h — ${h}:00–${h}:59`}</option>)}
+              </select>
+            </div>
+            <div>
+              <label for="dhn-phut" class="text-xs font-medium text-(--color-ink-600)">Phút (nếu nhớ)</label>
+              <input type="number" id="dhn-phut" min="0" max="59" placeholder="vd 20" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+            </div>
+          </div>
+
+          <div>
+            <span class="text-xs font-medium text-(--color-ink-600)">Giới tính <span class="text-(--color-cinnabar-400)">*</span></span>
+            <div class="mt-1.5 flex gap-3">
+              <label class="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm font-medium text-(--color-ink-800) has-[:checked]:border-(--color-gold-500) has-[:checked]:bg-(--color-gold-400)/15">
+                <input type="radio" name="dhn-gioi-tinh" value="Nam" /> Nam
+              </label>
+              <label class="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm font-medium text-(--color-ink-800) has-[:checked]:border-(--color-gold-500) has-[:checked]:bg-(--color-gold-400)/15">
+                <input type="radio" name="dhn-gioi-tinh" value="Nu" /> Nữ
+              </label>
+            </div>
+          </div>
+
+          <div class="border-t border-(--color-ivory-300) pt-4">
+            <p class="text-sm font-medium text-(--color-ink-800)">Thông tin liên hệ (để nhận kết quả & PDF sau khi thanh toán)</p>
+            <div class="mt-2 grid gap-3">
+              <input type="text" id="dhn-ten" placeholder="Họ tên" required class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+              <input type="tel" id="dhn-sdt" placeholder="Số điện thoại" required class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+              <input type="email" id="dhn-email" placeholder="Email (để nhận PDF)" class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+            </div>
+          </div>
+
+          <MaKhuyenMai idPrefix="dhn-ma" toolSlug={TOOL_SLUG} giaGoc={TOOL_PRICE} />
+
+          <Button type="submit" size="lg">Xem định hướng nghề nghiệp</Button>
+        </form>
+
+        <div id="dhn-dang-chay" class="mt-4 hidden rounded-(--radius-card) border border-(--color-gold-500)/40 bg-(--color-gold-400)/10 p-4 text-sm text-(--color-ink-700)">
+          <p class="font-medium text-(--color-ink-900)">⏳ Đang xử lý…</p>
+        </div>
+        <div id="dhn-loi" class="mt-4 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm text-(--color-danger-500)"></div>
+
+        <div id="dhn-thanh-toan" class="mt-6 hidden space-y-4 rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-center text-(--color-ink-950) shadow-lg">
+          <p class="font-display text-lg font-bold">Quét mã QR để thanh toán <span id="dhn-so-tien">{TOOL_PRICE_LABEL}</span></p>
+          <img id="dhn-qr" src="" alt="Mã QR thanh toán" class="mx-auto h-64 w-64 rounded-xl border border-(--color-ivory-300)" />
+          <p class="text-sm text-(--color-ink-600)">Mã đơn hàng: <strong id="dhn-order-code"></strong></p>
+          <p id="dhn-trang-thai" class="text-sm font-medium text-(--color-gold-400)">Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)</p>
+        </div>
+      </>
+    )}
+  </div>
+</Container>
+
+<style>
+  .nghe-tabs > input { position: absolute; opacity: 0; pointer-events: none; }
+  .pane { display: none; }
+  #tab-bat-tu:checked ~ .pane-bat-tu,
+  #tab-tu-vi:checked ~ .pane-tu-vi,
+  #tab-ket-hop:checked ~ .pane-ket-hop { display: block; }
+  #tab-bat-tu:checked ~ div label[for="tab-bat-tu"],
+  #tab-tu-vi:checked ~ div label[for="tab-tu-vi"],
+  #tab-ket-hop:checked ~ div label[for="tab-ket-hop"] {
+    background: var(--color-gold-400);
+    color: var(--color-on-accent);
+    box-shadow: 0 2px 8px rgba(0,0,0,.12);
+  }
+  .nghe-tabs .lb:hover { background: rgba(255,255,255,.6); }
+</style>
+
+<script>
+  import { readDateSelects } from "../../lib/date-select";
+
+  const form = document.getElementById("dhn-form") as HTMLFormElement | null;
+  if (form) {
+    const loiEl = document.getElementById("dhn-loi")!;
+    const dangChayEl = document.getElementById("dhn-dang-chay")!;
+    const thanhToanEl = document.getElementById("dhn-thanh-toan")!;
+    const qrImg = document.getElementById("dhn-qr") as HTMLImageElement;
+    const orderCodeEl = document.getElementById("dhn-order-code")!;
+    const trangThaiEl = document.getElementById("dhn-trang-thai")!;
+    const soTienEl = document.getElementById("dhn-so-tien")!;
+    const nutSubmit = form.querySelector('button[type="submit"]') as HTMLButtonElement | null;
+
+    let pollTimer: ReturnType<typeof setInterval> | null = null;
+    let dangHoi = false;
+    const doc = (id: string) => (document.getElementById(id) as HTMLInputElement | null)?.value.trim() ?? "";
+
+    const tatDangChay = () => { dangChayEl.classList.add("hidden"); if (nutSubmit) nutSubmit.disabled = false; };
+    const baoLoi = (msg: string) => { tatDangChay(); loiEl.textContent = msg; loiEl.classList.remove("hidden"); };
+    const dungCho = () => { if (pollTimer) { clearInterval(pollTimer); pollTimer = null; } };
+
+    async function kiemTra(orderCode: string) {
+      if (dangHoi) return;
+      dangHoi = true;
+      try {
+        const res = await fetch(`/api/dai-cat-loi/dinh-huong-nghe-nghiep/result?orderCode=${encodeURIComponent(orderCode)}`);
+        const data = await res.json();
+        if (!data.ok) return;
+        if (data.status === "cancelled") { dungCho(); trangThaiEl.textContent = "Đơn hàng đã bị hủy."; return; }
+        if (data.status !== "confirmed") return;
+        dungCho();
+        // Đã thanh toán → vào lại CHÍNH trang đang mở với mã đơn để server tính & hiện kết quả.
+        // Dùng pathname hiện tại (không hard-code /dai-cat-loi/...) vì component này dùng chung cho
+        // cả bản web lẫn bản in-app Quân Sư — hard-code sẽ đá khách trong app văng ra ngoài web.
+        window.location.href = `${window.location.pathname}?orderCode=${encodeURIComponent(orderCode)}`;
+      } catch {
+        // mạng chập chờn — nhịp sau thử lại
+      } finally {
+        dangHoi = false;
+      }
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      loiEl.classList.add("hidden");
+
+      const sinh = readDateSelects("dhn-sinh");
+      if (!sinh) return baoLoi("Vui lòng chọn đầy đủ ngày, tháng, năm sinh.");
+      const gio = doc("dhn-gio");
+      if (gio === "") return baoLoi("Vui lòng chọn giờ sinh.");
+      const gioiTinh = (document.querySelector('input[name="dhn-gioi-tinh"]:checked') as HTMLInputElement | null)?.value;
+      if (!gioiTinh) return baoLoi("Vui lòng chọn giới tính.");
+      if (!doc("dhn-ten") || !doc("dhn-sdt")) return baoLoi("Vui lòng nhập họ tên và số điện thoại.");
+
+      const payload: Record<string, unknown> = {
+        ngaySinh: { year: sinh.year, month: sinh.month, day: sinh.day },
+        gio: Number(gio),
+        ...(doc("dhn-phut") ? { phut: Number(doc("dhn-phut")) } : {}),
+        gioiTinh,
+        customerName: doc("dhn-ten"),
+        customerPhone: doc("dhn-sdt"),
+        ...(doc("dhn-email") ? { customerEmail: doc("dhn-email") } : {}),
+        ...(doc("dhn-ma-input") ? { maKhuyenMai: doc("dhn-ma-input") } : {}),
+      };
+
+      dangChayEl.classList.remove("hidden");
+      if (nutSubmit) nutSubmit.disabled = true;
+      try {
+        const res = await fetch("/api/dai-cat-loi/dinh-huong-nghe-nghiep/checkout", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) return baoLoi(data.error ?? "Không tạo được đơn hàng.");
+        tatDangChay();
+        orderCodeEl.textContent = data.orderCode;
+
+        if (data.mienPhi) { dangChayEl.classList.remove("hidden"); await kiemTra(data.orderCode); return; }
+
+        soTienEl.textContent = `${Number(data.totalAmount).toLocaleString("vi-VN")}đ`;
+        qrImg.src = data.qrUrl;
+        trangThaiEl.textContent = "Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)";
+        thanhToanEl.classList.remove("hidden");
+        thanhToanEl.scrollIntoView({ behavior: "smooth", block: "start" });
+        pollTimer = setInterval(() => kiemTra(data.orderCode), 3000);
+      } catch {
+        baoLoi("Có lỗi xảy ra. Vui lòng thử lại.");
+      }
+    });
+  }
+</script>
