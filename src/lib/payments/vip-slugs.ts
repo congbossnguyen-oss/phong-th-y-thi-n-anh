@@ -15,4 +15,13 @@ export const VIP_SLUG_THEO_GOI: ReadonlySet<ToolSlug> = new Set([
   "nhan-chuc",
   "ngay-khai-truong-cao-cap",
   "trach-nhat-sinh-no",
+  // --- Nhóm KỲ MÔN ĐỘN GIÁP (chủ dự án chốt 27/8/2026: "các mục trong kỳ môn độn giáp này vào
+  // gói") — thêm vào ĐỂ VIỆC ẨN GIÁ TRONG APP LÀ TRUNG THỰC: app Quân Sư không niêm yết giá lẻ
+  // (prop `anGia`), nên nếu không cho vào gói thì khách bấm xong vẫn bị thu tiền mà không thấy giá.
+  //
+  // Anh Công có nhắc tới ý tưởng hạng "Siêu Cấp" riêng cho nhóm này — CHƯA làm, để phát triển sau.
+  // Khi nào dựng hạng đó thì tách 3 slug này ra khỏi đây sang bộ riêng của hạng Siêu Cấp.
+  "ky-mon-hoi-dap",
+  "ky-mon-menh-chi-tiet",
+  "trach-cat-ky-mon",
 ]);
