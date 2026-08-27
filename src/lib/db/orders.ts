@@ -1,5 +1,6 @@
 import { and, desc, eq } from "drizzle-orm";
 import { db } from "./client";
+import { LoiNghiepVu } from "../errors";
 import { orders, orderItems, courseEnrollments, users, subscriptions } from "../../../db/schema";
 import { SO_THANG_THEO_KY_HAN, type SubscriptionTier, type SubscriptionDuration } from "../payments/gia-subscription";
 import { generateOrderCode } from "../payments/sepay";
@@ -64,7 +65,7 @@ export async function createProductOrder(params: {
     .filter((l): l is { product: (typeof products)[number]; qty: number } => l !== null);
 
   if (resolvedLines.length === 0) {
-    throw new Error("Giỏ hàng không hợp lệ hoặc trống.");
+    throw new LoiNghiepVu("Giỏ hàng không hợp lệ hoặc trống.");
   }
 
   const totalAmount = resolvedLines.reduce((sum, l) => sum + l.product.price * l.qty, 0);
@@ -113,7 +114,7 @@ export async function createCourseOrder(params: {
   const courseData = await getCourseBySlug(params.courseSlug);
   const course = courseData && courseData.format === "online" ? courseData : null;
   if (!course) {
-    throw new Error("Khóa học không hợp lệ.");
+    throw new LoiNghiepVu("Khóa học không hợp lệ.");
   }
 
   // Tránh tạo đơn trùng nếu học viên tải lại trang thanh toán nhiều lần — tái sử dụng
