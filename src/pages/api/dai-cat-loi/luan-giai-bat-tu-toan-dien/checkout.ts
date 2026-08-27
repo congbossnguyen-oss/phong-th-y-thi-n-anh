@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import { taoDonCongCu } from "../../../../lib/payments/checkout-cong-cu";
 import { checkRateLimit } from "../../../../lib/rate-limit";
 import { docInput, jsonResponse, TOOL_SLUG_CO_BAN, TOOL_SLUG_NANG_CAO } from "./_chung";
-import { LoiNghiepVu } from "../../../../lib/errors";
+import { thongBaoLoiAnToan } from "../../../../lib/loi-an-toan";
 
 export const prerender = false;
 
@@ -37,8 +37,6 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
 
   const customerName = locals.user.name;
   const customerEmail = locals.user.email;
-  const customerPhone = typeof b.customerPhone === "string" ? b.customerPhone.trim() : "";
-  if (!customerPhone) return jsonResponse({ ok: false, error: "Vui lòng nhập số điện thoại liên hệ." }, 400);
 
   try {
     const kq = await taoDonCongCu({
@@ -47,19 +45,15 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
       toolInput: docKq.input,
       userId: locals.user.id,
       customerName,
-      customerPhone,
+      customerPhone: "", // đã đăng nhập (biết email) nên không bắt nhập lại số điện thoại.
       customerEmail,
       maKhuyenMai: typeof b.maKhuyenMai === "string" ? b.maKhuyenMai : "",
     });
     return jsonResponse(kq, kq.ok ? 200 : 400);
   } catch (err) {
-    if (err instanceof LoiNghiepVu) {
-      return jsonResponse({ ok: false, error: err.message }, 400);
-    }
-    console.error("[luan-giai-bat-tu-toan-dien/checkout] Lỗi không mong đợi khi tạo đơn hàng:", err);
     return jsonResponse(
-      { ok: false, error: "Rất tiếc, hệ thống đang gặp trục trặc khi tạo đơn hàng. Bạn thử lại sau ít phút giúp mình nhé, hoặc liên hệ Thiên Anh nếu vẫn lỗi." },
-      500,
+      { ok: false, error: thongBaoLoiAnToan(err, "Không tạo được đơn hàng, vui lòng thử lại sau.") },
+      400,
     );
   }
 };

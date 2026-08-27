@@ -1,6 +1,5 @@
 import { and, desc, eq } from "drizzle-orm";
 import { db } from "./client";
-import { LoiNghiepVu } from "../errors";
 import { orders, orderItems, courseEnrollments, users, subscriptions } from "../../../db/schema";
 import { SO_THANG_THEO_KY_HAN, type SubscriptionTier, type SubscriptionDuration } from "../payments/gia-subscription";
 import { generateOrderCode } from "../payments/sepay";
@@ -14,6 +13,10 @@ import {
   sendNghePdfEmail,
   sendTrachNhatSinhNoPdfEmail,
   sendKyMonMenhPdfEmail,
+  sendBatTuToanDienCoBanPdfEmail,
+  sendBatTuToanDienNangCaoPdfEmail,
+  sendLuanGiaiTuViCoBanPdfEmail,
+  sendLuanGiaiTuViNangCaoPdfEmail,
 } from "../email/send";
 import { taoHoSoTangLe, type DauVaoHoSo } from "../dai-cat-loi/tao-ho-so-tang-le";
 import { taoHoSoNghe, type NgheInput } from "../nghe-nghiep/tao-ho-so-nghe";
@@ -22,11 +25,17 @@ import { phanTichTrachNhatSinhNo, type BirthSelectionInput } from "../trach-nhat
 import { generateTrachNhatSinhNoPdf } from "../dai-cat-loi/trach-nhat-sinh-no-pdf";
 import { lapLaBan, luanGiaiMenh, luanGiaiMenhChiTiet } from "../kymon";
 import { generateKyMonMenhPdf } from "../dai-cat-loi/ky-mon-menh-pdf";
+import { taoBaoCaoCoBan, taoBaoCaoNangCao } from "../luan-giai-toan-dien/orchestrator";
+import { generateBatTuCoBanPdf, generateBatTuNangCaoPdf } from "../dai-cat-loi/bat-tu-toan-dien-pdf";
+import type { BatTuInput } from "../bat-tu";
+import { taoLuanGiaiTuVi, type LuanGiaiTuViInput } from "../tu-vi/luan-giai/taoLuanGiaiTuVi";
+import { generateTuViCoBanPdf, generateTuViNangCaoPdf } from "../tu-vi/luan-giai/pdf";
 import { apDungMaKhiThanhToan } from "../payments/promo";
 import { ghiDonThuPhiLenSheet, TEN_CONG_CU_HIEN_THI } from "../google-sheets-don-thu-phi";
 import { ghiDonSimPhongThuyLenSheet } from "../google-sheets-sim-phong-thuy";
 import { NHAN_MONG_MUON, NHAN_MANG, NHAN_KHOANG_GIA, type SimPhongThuyInput } from "../sim-phong-thuy-khai-van/labels";
 import { Scoring } from "@thien-anh/rule-engine";
+import { LoiNguoiDung, boiLoiHeThong } from "../loi-an-toan";
 
 export interface CartLine {
   slug: string;
@@ -37,7 +46,7 @@ export interface CartLine {
  * Tạo đơn hàng vật phẩm — giá luôn lấy từ nguồn dữ liệu server (placeholder-data, sau này là
  * Sanity), KHÔNG bao giờ tin giá client gửi lên, để tránh khách hàng sửa giá qua devtools.
  */
-export async function createProductOrder(params: {
+async function _createProductOrderNoiBo(params: {
   userId: string | null;
   customerName: string;
   customerPhone: string;
@@ -56,7 +65,7 @@ export async function createProductOrder(params: {
     .filter((l): l is { product: (typeof products)[number]; qty: number } => l !== null);
 
   if (resolvedLines.length === 0) {
-    throw new LoiNghiepVu("Giỏ hàng không hợp lệ hoặc trống.");
+    throw new LoiNguoiDung("Giỏ hàng không hợp lệ hoặc trống.");
   }
 
   const totalAmount = resolvedLines.reduce((sum, l) => sum + l.product.price * l.qty, 0);
@@ -92,10 +101,18 @@ export async function createProductOrder(params: {
   return { orderId: order.id, orderCode: order.orderCode, totalAmount };
 }
 
+/** Tạo đơn hàng vật phẩm — bọc lỗi hệ thống (DB...) không cho lộ chi tiết ra client, chỉ lỗi
+ * nghiệp vụ (giỏ hàng trống...) mới hiển thị nguyên văn. */
+export function createProductOrder(params: Parameters<typeof _createProductOrderNoiBo>[0]) {
+  return boiLoiHeThong("createProductOrder", "Không tạo được đơn hàng, vui lòng thử lại sau.", () =>
+    _createProductOrderNoiBo(params)
+  );
+}
+
 /**
  * Tạo đơn hàng khóa học online — mỗi đơn ứng với đúng 1 khóa học, bắt buộc đăng nhập.
  */
-export async function createCourseOrder(params: {
+async function _createCourseOrderNoiBo(params: {
   userId: string;
   customerName: string;
   customerPhone: string;
@@ -105,7 +122,7 @@ export async function createCourseOrder(params: {
   const courseData = await getCourseBySlug(params.courseSlug);
   const course = courseData && courseData.format === "online" ? courseData : null;
   if (!course) {
-    throw new LoiNghiepVu("Khóa học không hợp lệ.");
+    throw new LoiNguoiDung("Khóa học không hợp lệ.");
   }
 
   // Tránh tạo đơn trùng nếu học viên tải lại trang thanh toán nhiều lần — tái sử dụng
@@ -148,13 +165,20 @@ export async function createCourseOrder(params: {
   return { orderId: order.id, orderCode: order.orderCode, totalAmount: course.price };
 }
 
+/** Tạo đơn hàng khóa học — bọc lỗi hệ thống, xem `createProductOrder`. */
+export function createCourseOrder(params: Parameters<typeof _createCourseOrderNoiBo>[0]) {
+  return boiLoiHeThong("createCourseOrder", "Không tạo được đơn hàng, vui lòng thử lại sau.", () =>
+    _createCourseOrderNoiBo(params)
+  );
+}
+
 /**
  * Tạo đơn hàng công cụ trả phí (vd "gio-liem-ha-huyet"). Có công cụ bắt đăng nhập, có công cụ
  * không (xem chú thích ở `userId`). `toolInput` lưu nguyên object input đã validate được
  * (JSON.stringify) để sau khi thanh toán xong, tầng API tính lại kết quả từ chính input này —
  * không lưu sẵn kết quả để tránh lệch dữ liệu nếu công thức tính được sửa sau khi đơn đã tạo.
  */
-export async function createToolOrder(params: {
+async function _createToolOrderNoiBo(params: {
   toolSlug: string;
   toolInput: unknown;
   // Gắn đơn vào tài khoản khi công cụ có bắt đăng nhập (vd Xem Ngày Cao Cấp) — để khách xem lại
@@ -197,12 +221,19 @@ export async function createToolOrder(params: {
   return { orderId: order.id, orderCode: order.orderCode, totalAmount: params.totalAmount };
 }
 
+/** Tạo đơn hàng công cụ trả phí — bọc lỗi hệ thống, xem `createProductOrder`. */
+export function createToolOrder(params: Parameters<typeof _createToolOrderNoiBo>[0]) {
+  return boiLoiHeThong("createToolOrder", "Không tạo được đơn hàng, vui lòng thử lại sau.", () =>
+    _createToolOrderNoiBo(params)
+  );
+}
+
 /**
  * Tạo đơn hàng gói thuê bao "Quân Sư" (Cơ bản / Cao cấp × 1-3-6-12 tháng). KHÁC `createToolOrder`:
  * BẮT BUỘC đăng nhập (`userId` không được null) — quyền truy cập gói tính theo tài khoản, không
  * theo orderCode của 1 lần mua, nên không có tài khoản thì không có gì để gắn quyền vào.
  */
-export async function createSubscriptionOrder(params: {
+async function _createSubscriptionOrderNoiBo(params: {
   userId: string;
   tier: SubscriptionTier;
   duration: SubscriptionDuration;
@@ -239,9 +270,18 @@ export async function createSubscriptionOrder(params: {
   return { orderId: order.id, orderCode: order.orderCode, totalAmount: params.totalAmount };
 }
 
-export async function getOrderByCode(orderCode: string) {
-  const [order] = await db.select().from(orders).where(eq(orders.orderCode, orderCode)).limit(1);
-  return order ?? null;
+/** Tạo đơn hàng gói thuê bao — bọc lỗi hệ thống, xem `createProductOrder`. */
+export function createSubscriptionOrder(params: Parameters<typeof _createSubscriptionOrderNoiBo>[0]) {
+  return boiLoiHeThong("createSubscriptionOrder", "Không tạo được đơn hàng, vui lòng thử lại sau.", () =>
+    _createSubscriptionOrderNoiBo(params)
+  );
+}
+
+export function getOrderByCode(orderCode: string) {
+  return boiLoiHeThong("getOrderByCode", "Có lỗi hệ thống, vui lòng thử lại sau.", async () => {
+    const [order] = await db.select().from(orders).where(eq(orders.orderCode, orderCode)).limit(1);
+    return order ?? null;
+  });
 }
 
 /**
@@ -250,21 +290,23 @@ export async function getOrderByCode(orderCode: string) {
  * (đã đóng tab lúc thanh toán, hoặc bookmark thẳng trang). Khác `getOrderByCode`: tra theo tài
  * khoản, không theo mã đơn cụ thể.
  */
-export async function getConfirmedToolOrderForUser(userId: string, toolSlug: string) {
-  const [order] = await db
-    .select()
-    .from(orders)
-    .where(and(eq(orders.userId, userId), eq(orders.toolSlug, toolSlug), eq(orders.status, "confirmed")))
-    .orderBy(desc(orders.createdAt))
-    .limit(1);
-  return order ?? null;
+export function getConfirmedToolOrderForUser(userId: string, toolSlug: string) {
+  return boiLoiHeThong("getConfirmedToolOrderForUser", "Có lỗi hệ thống, vui lòng thử lại sau.", async () => {
+    const [order] = await db
+      .select()
+      .from(orders)
+      .where(and(eq(orders.userId, userId), eq(orders.toolSlug, toolSlug), eq(orders.status, "confirmed")))
+      .orderBy(desc(orders.createdAt))
+      .limit(1);
+    return order ?? null;
+  });
 }
 
 /**
  * Đánh dấu đơn hàng đã thanh toán (gọi từ webhook SePay sau khi đối soát số tiền khớp) —
  * với đơn khóa học, tự động tạo lượt đăng ký (course_enrollments) và gửi email xác nhận.
  */
-export async function markOrderPaidAndFulfill(orderId: string) {
+async function _markOrderPaidAndFulfillNoiBo(orderId: string) {
   const [order] = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
   if (!order || order.status === "confirmed") return;
 
@@ -479,7 +521,10 @@ export async function markOrderPaidAndFulfill(orderId: string) {
     if (order.toolSlug === "ky-mon-menh-chi-tiet" && order.customerEmail && order.toolInputSnapshot) {
       try {
         const input = JSON.parse(order.toolInputSnapshot) as { nam: number; thang: number; ngay: number; gio: number; phut: number };
-        const laBan = lapLaBan({ cheDo: "menh", ...input });
+        // PHẢI await: trên nhánh Cloudflare lapLaBan() là async (đọc km_data qua Static Assets vì
+        // Worker không có filesystem). Thiếu await thì luanGiaiMenh() nhận vào Promise, ném lỗi,
+        // bị try/catch nuốt mất → khách trả tiền mà không bao giờ nhận được email PDF.
+        const laBan = await lapLaBan({ cheDo: "menh", ...input });
         const free = luanGiaiMenh(laBan);
         const chiTiet = luanGiaiMenhChiTiet(laBan);
         const pdf = await generateKyMonMenhPdf(free, chiTiet, order.customerName);
@@ -491,6 +536,87 @@ export async function markOrderPaidAndFulfill(orderId: string) {
         });
       } catch (err) {
         console.error(`[ky-mon-menh-chi-tiet] Lỗi dựng/gửi PDF cho đơn ${order.orderCode}:`, err);
+      }
+    }
+
+    // Luận Giải Bát Tự Toàn Diện — Cơ Bản: gọi AI dựng báo cáo rồi xuất PDF gửi kèm email khách.
+    // Bọc try/catch riêng cùng lý do các module khác: hỏng khâu này đơn vẫn ghi nhận đã thanh toán,
+    // khách còn xem lại trên trang kết quả (báo cáo tính lại/lấy từ cache theo hash lá số).
+    if (order.toolSlug === "luan-giai-bat-tu-co-ban" && order.customerEmail && order.toolInputSnapshot) {
+      try {
+        const input = JSON.parse(order.toolInputSnapshot) as BatTuInput;
+        const baoCao = await taoBaoCaoCoBan(input);
+        const pdf = await generateBatTuCoBanPdf(baoCao, order.customerName);
+        await sendBatTuToanDienCoBanPdfEmail({
+          to: order.customerEmail,
+          orderCode: order.orderCode,
+          customerName: order.customerName,
+          pdfBytes: pdf,
+        });
+      } catch (err) {
+        console.error(`[luan-giai-bat-tu-co-ban] Lỗi dựng/gửi PDF cho đơn ${order.orderCode}:`, err);
+      }
+    }
+
+    // Luận Giải Bát Tự Toàn Diện — Nâng Cao: cùng logic như Cơ Bản ở trên.
+    if (order.toolSlug === "luan-giai-bat-tu-nang-cao" && order.customerEmail && order.toolInputSnapshot) {
+      try {
+        const input = JSON.parse(order.toolInputSnapshot) as BatTuInput;
+        const baoCao = await taoBaoCaoNangCao(input);
+        const pdf = await generateBatTuNangCaoPdf(baoCao, order.customerName);
+        await sendBatTuToanDienNangCaoPdfEmail({
+          to: order.customerEmail,
+          orderCode: order.orderCode,
+          customerName: order.customerName,
+          pdfBytes: pdf,
+        });
+      } catch (err) {
+        console.error(`[luan-giai-bat-tu-nang-cao] Lỗi dựng/gửi PDF cho đơn ${order.orderCode}:`, err);
+      }
+    }
+
+    // Luận Giải Tử Vi — Cơ Bản: gọi AI dựng luận giải đủ 12 cung rồi xuất PDF gửi kèm email khách.
+    // Cùng lý do bọc try/catch: hỏng khâu này đơn vẫn ghi nhận đã thanh toán, khách xem lại được
+    // trên trang (admin) hoặc chờ email (khách thường) — kết quả tính lại/lấy từ cache theo hash lá số.
+    if (order.toolSlug === "luan-giai-tu-vi-co-ban" && order.customerEmail && order.toolInputSnapshot) {
+      try {
+        const input = JSON.parse(order.toolInputSnapshot) as Omit<LuanGiaiTuViInput, "goi">;
+        const kq = await taoLuanGiaiTuVi({ ...input, goi: "co_ban" });
+        if (kq.hopLe && kq.coBan && kq.duLieu) {
+          const pdf = await generateTuViCoBanPdf(kq.coBan, kq.duLieu, order.customerName);
+          await sendLuanGiaiTuViCoBanPdfEmail({
+            to: order.customerEmail,
+            orderCode: order.orderCode,
+            customerName: order.customerName,
+            pdfBytes: pdf,
+          });
+        } else {
+          console.error(`[luan-giai-tu-vi-co-ban] Không tính được luận giải cho đơn ${order.orderCode}: ${kq.loi ?? "AI chưa trả kết quả"}`);
+        }
+      } catch (err) {
+        console.error(`[luan-giai-tu-vi-co-ban] Lỗi dựng/gửi PDF cho đơn ${order.orderCode}:`, err);
+      }
+    }
+
+    // Luận Giải Tử Vi — Nâng Cao: taoLuanGiaiTuVi() tự đảm bảo Cơ Bản đã tính (cache hoặc gọi mới)
+    // trước khi ghép Nâng Cao — PDF xuất ra là "Cơ Bản đầy đủ + Nâng Cao nối tiếp" trong 1 file.
+    if (order.toolSlug === "luan-giai-tu-vi-nang-cao" && order.customerEmail && order.toolInputSnapshot) {
+      try {
+        const input = JSON.parse(order.toolInputSnapshot) as Omit<LuanGiaiTuViInput, "goi">;
+        const kq = await taoLuanGiaiTuVi({ ...input, goi: "nang_cao" });
+        if (kq.hopLe && kq.coBan && kq.nangCao && kq.duLieu) {
+          const pdf = await generateTuViNangCaoPdf(kq.coBan, kq.nangCao, kq.duLieu, order.customerName);
+          await sendLuanGiaiTuViNangCaoPdfEmail({
+            to: order.customerEmail,
+            orderCode: order.orderCode,
+            customerName: order.customerName,
+            pdfBytes: pdf,
+          });
+        } else {
+          console.error(`[luan-giai-tu-vi-nang-cao] Không tính được luận giải cho đơn ${order.orderCode}: ${kq.loi ?? "AI chưa trả kết quả"}`);
+        }
+      } catch (err) {
+        console.error(`[luan-giai-tu-vi-nang-cao] Lỗi dựng/gửi PDF cho đơn ${order.orderCode}:`, err);
       }
     }
   }
@@ -565,7 +691,18 @@ export async function markOrderPaidAndFulfill(orderId: string) {
   }
 }
 
-export async function getOrderById(orderId: string) {
-  const [order] = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
-  return order ?? null;
+/** Đánh dấu đơn đã thanh toán + fulfill — bọc lỗi hệ thống (DB...) không cho lộ chi tiết ra client
+ * (route webhook/checkout gọi hàm này trong try/catch của chúng). Các bước gửi email/PDF con bên
+ * trong ĐÃ tự bọc try/catch riêng từ trước (không rethrow), không bị ảnh hưởng bởi lớp bọc này. */
+export function markOrderPaidAndFulfill(orderId: string) {
+  return boiLoiHeThong("markOrderPaidAndFulfill", "Có lỗi hệ thống khi xác nhận đơn hàng, vui lòng liên hệ hỗ trợ.", () =>
+    _markOrderPaidAndFulfillNoiBo(orderId)
+  );
+}
+
+export function getOrderById(orderId: string) {
+  return boiLoiHeThong("getOrderById", "Có lỗi hệ thống, vui lòng thử lại sau.", async () => {
+    const [order] = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
+    return order ?? null;
+  });
 }
