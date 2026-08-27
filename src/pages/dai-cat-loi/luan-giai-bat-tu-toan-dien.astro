@@ -106,6 +106,14 @@ function mauTheoDiemMoi(diem: number): string {
         <div class="mb-10 rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-6 text-sm text-(--color-ink-800)">
           <p class="font-display text-lg font-bold text-(--color-ink-950)">✅ Đã mua Luận Cơ Bản</p>
           <p class="mt-2">Bản luận giải đầy đủ (PDF) đã được gửi tới email tài khoản của bạn ngay sau khi thanh toán thành công. Vui lòng kiểm tra hộp thư (kể cả mục Spam/Quảng cáo).</p>
+          {/* BUG đã sửa: nút mua Nâng Cao trước đây chỉ nằm trong khối báo cáo admin-only (baoCaoCoBan),
+              nên khách thường đã mua Cơ Bản không có cách nào bấm mua Nâng Cao trên trang. */}
+          {!coDonNangCaoChuaHienThi && (
+            <div class="mt-4 border-t border-(--color-gold-400)/30 pt-4">
+              <p>Bản Luận Nâng Cao sẽ đi sâu vào Thần Sát, gia đình - lục thân, sức khỏe, và trọn vẹn các giai đoạn vận trình từ nhỏ đến già.</p>
+              <Button id="ldbtd-mua-nang-cao" size="md" class="mt-3">Xem Luận Nâng Cao — {dinhDangTien(GIA_NANG_CAO)}</Button>
+            </div>
+          )}
         </div>
       )}
 
