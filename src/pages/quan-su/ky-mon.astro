@@ -12,9 +12,14 @@
 //   4. Trạch Cát Kỳ Môn                 → /quan-su/trach-cat-ky-mon (chuyển từ nhóm VIP sang đây)
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import BottomNav from "../../components/quan-su/BottomNav.astro";
+import SapRaMat from "../../components/quan-su/SapRaMat.astro";
 import "../../styles/quan-su.css";
 
 export const prerender = false;
+
+// SẮP RA MẮT (anh Công 27/8/2026: "anh cần hoàn thiện sâu hơn, chỉ admin test được bên trong").
+// Khách thấy banner + thông báo; quản trị thấy đủ 4 lối vào để kiểm thử.
+const laQuanTri = Astro.locals.user?.isAdmin === true;
 
 const MUC = [
   {
@@ -36,7 +41,8 @@ const MUC = [
     icon: "question",
     title: "Hỏi Đáp Kỳ Môn",
     desc: "Hỏi một việc cụ thể — lập bàn theo đúng thời điểm hỏi rồi luận theo dụng thần của việc đó.",
-    nhan: "Theo lượt hỏi",
+    // Nhãn mô tả CÁCH DÙNG, không phải giá — app không niêm yết giá lẻ (anh Công 27/8/2026).
+    nhan: "Hỏi 1 việc",
   },
   {
     href: "/quan-su/trach-cat-ky-mon",
@@ -58,18 +64,28 @@ const MUC = [
       <a class="qs-back" href="/quan-su">← Quân Sư</a>
 
       <div class="km-hero">
-        <img src="/images/quan-su/ky-mon-banner.jpg" alt="Kỳ Môn Độn Giáp" />
+        <img src="/images/quan-su/ky-mon-banner.webp" alt="Kỳ Môn Độn Giáp" />
         <div class="km-hero-overlay">
           <p class="km-hero-tag">Đế vương chi học</p>
           <h1 class="km-hero-title">Kỳ Môn Độn Giáp</h1>
         </div>
       </div>
 
+      {!laQuanTri && (
+        <SapRaMat
+          ten="Kỳ Môn Độn Giáp"
+          moTa="Lập lá bàn 9 cung, luận giải Mệnh chi tiết, hỏi đáp theo từng việc và trạch cát chọn ngày giờ theo bàn mệnh riêng."
+        />
+      )}
+
+      {laQuanTri && (
       <p class="qs-sub" style="margin-top:1rem;">
         Môn thuật số xưa dùng để định thời – định hướng – định việc. Bốn phần dưới đây dùng chung một
         engine lập bàn, khác nhau ở chỗ hỏi gì và luận theo dụng thần nào.
       </p>
+      )}
 
+      {laQuanTri && (
       <div class="km-grid">
         {MUC.map((m) => (
           <a href={m.href} class="km-item">
@@ -95,6 +111,7 @@ const MUC = [
           </a>
         ))}
       </div>
+      )}
     </div>
   </section>
 
@@ -102,7 +119,8 @@ const MUC = [
 </BaseLayout>
 
 <style>
-  /* Banner ngang mở đầu nhóm — ảnh tạm dùng để demo bố cục, thay bằng ảnh chính thức sau. */
+  /* Banner ngang mở đầu nhóm — ảnh chính thức anh Công cấp (kmdg.jpg), đã resize 1000px + nén
+     WebP còn ~110KB (bản gốc 1672px/563KB) để app tải nhanh trên 3G/4G. */
   .km-hero {
     position: relative; margin-top: 1rem; border-radius: 18px; overflow: hidden;
     border: 1px solid rgba(241, 200, 90, 0.3); aspect-ratio: 16 / 8;

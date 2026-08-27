@@ -22,8 +22,17 @@ interface Props {
    * để khách trong app không bị đá văng ra ngoài web.
    */
   hrefLapKyMon?: string;
+  /**
+   * true = KHÔNG hiện giá tiền từng lượt (dùng cho app Quân Sư — anh Công 27/8/2026: app sẽ tính
+   * giá trọn gói cho cả app, không niêm yết giá lẻ từng mục).
+   *
+   * ⚠️ Chỉ ẨN PHẦN HIỂN THỊ — luồng thanh toán phía sau VẪN thu tiền vì slug này chưa nằm trong
+   * VIP_SLUG_THEO_GOI (danh sách miễn phí cho gói Cao Cấp). App còn khoá admin-only nên chưa ảnh
+   * hưởng ai; TRƯỚC KHI mở cho khách phải chốt: thêm slug vào gói, hoặc hiện giá trở lại.
+   */
+  anGia?: boolean;
 }
-const { hrefLapKyMon = "/lap-ky-mon" } = Astro.props;
+const { hrefLapKyMon = "/lap-ky-mon", anGia = false } = Astro.props;
 
 const laQuanTri = Astro.locals.user?.isAdmin === true;
 const TOOL_SLUG = "ky-mon-menh-chi-tiet";
@@ -169,9 +178,9 @@ if (orderCode) {
                 </div>
               </div>
 
-              <MaKhuyenMai idPrefix="kmm-ma" toolSlug={TOOL_SLUG} giaGoc={TOOL_PRICE} />
+              {!anGia && <MaKhuyenMai idPrefix="kmm-ma" toolSlug={TOOL_SLUG} giaGoc={TOOL_PRICE} />}
 
-              <Button type="submit" size="lg">Xem luận giải chi tiết — {TOOL_PRICE_LABEL}</Button>
+              <Button type="submit" size="lg">{anGia ? "Xem luận giải chi tiết" : `Xem luận giải chi tiết — ${TOOL_PRICE_LABEL}`}</Button>
             </form>
 
             <div id="kmm-dang-chay" class="mt-4 hidden rounded-(--radius-card) border border-(--color-gold-500)/40 bg-(--color-gold-400)/10 p-4 text-sm text-(--color-ink-700)">
@@ -180,7 +189,7 @@ if (orderCode) {
             <div id="kmm-loi" class="mt-4 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm text-(--color-danger-500)"></div>
 
             <div id="kmm-thanh-toan" class="mt-6 hidden space-y-4 rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-center text-(--color-ink-950) shadow-lg">
-              <p class="font-display text-lg font-bold">Quét mã QR để thanh toán <span id="kmm-so-tien">{TOOL_PRICE_LABEL}</span></p>
+              <p class="font-display text-lg font-bold">Quét mã QR để thanh toán <span id="kmm-so-tien"></span></p>
               <img id="kmm-qr" src="" alt="Mã QR thanh toán" class="mx-auto h-64 w-64 rounded-xl border border-(--color-ivory-300)" />
               <p class="text-sm text-(--color-ink-600)">Mã đơn hàng: <strong id="kmm-order-code"></strong></p>
               <p id="kmm-trang-thai" class="text-sm font-medium text-(--color-gold-400)">Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)</p>

@@ -13,10 +13,21 @@ interface Props {
   hrefMenhChiTiet?: string;
   /** Trang "Trạch Cát Kỳ Môn" tương ứng (web hay in-app). */
   hrefTrachCat?: string;
+  /**
+   * true = KHÔNG hiện giá tiền từng lượt (dùng cho app Quân Sư — anh Công 27/8/2026: app sẽ tính
+   * giá trọn gói cho cả app, không niêm yết giá lẻ từng mục).
+   *
+   * ⚠️ Đây mới chỉ là ẨN PHẦN HIỂN THỊ. Luồng thanh toán phía sau VẪN thu 199.000đ/lượt vì
+   * "ky-mon-hoi-dap" chưa nằm trong VIP_SLUG_THEO_GOI (danh sách dịch vụ miễn phí cho gói Cao
+   * Cấp). Hiện app còn khoá admin-only nên chưa ảnh hưởng ai; TRƯỚC KHI mở app cho khách phải
+   * chốt: hoặc thêm slug này vào gói, hoặc hiện giá trở lại.
+   */
+  anGia?: boolean;
 }
 const {
   hrefMenhChiTiet = "/dai-cat-loi/ky-mon-menh-chi-tiet",
   hrefTrachCat = "/dai-cat-loi/trach-cat-ky-mon",
+  anGia = false,
 } = Astro.props;
 ---
 
@@ -322,21 +333,27 @@ const {
             <textarea id="km-hd-bosung" rows="2" class="km-select mt-1"></textarea>
           </div>
 
-          <div class="mt-4 flex flex-wrap items-center gap-3 rounded-(--radius-control) border border-dashed border-(--color-gold-500)/50 bg-(--color-gold-400)/5 p-3">
-            <div>
-              <span class="font-display text-lg font-bold text-(--color-cinnabar-400)">199.000đ</span>
-              <span class="ml-2 text-sm text-(--color-ink-500) line-through">399.000đ</span>
-              <span class="ml-1.5 rounded-full bg-(--color-cinnabar-400) px-2 py-0.5 align-middle text-[11px] font-bold text-white">-50%</span>
+          {anGia ? (
+            <div class="mt-4 rounded-(--radius-control) border border-dashed border-(--color-gold-500)/50 bg-(--color-gold-400)/5 p-3">
+              <p class="text-xs text-(--color-ink-500)">Mỗi lần gieo quẻ nhận 1 câu trả lời cho đúng việc đã chọn.</p>
             </div>
-            <p class="text-xs text-(--color-ink-500)">/lượt hỏi — mỗi lần gieo quẻ nhận 1 câu trả lời</p>
-          </div>
+          ) : (
+            <div class="mt-4 flex flex-wrap items-center gap-3 rounded-(--radius-control) border border-dashed border-(--color-gold-500)/50 bg-(--color-gold-400)/5 p-3">
+              <div>
+                <span class="font-display text-lg font-bold text-(--color-cinnabar-400)">199.000đ</span>
+                <span class="ml-2 text-sm text-(--color-ink-500) line-through">399.000đ</span>
+                <span class="ml-1.5 rounded-full bg-(--color-cinnabar-400) px-2 py-0.5 align-middle text-[11px] font-bold text-white">-50%</span>
+              </div>
+              <p class="text-xs text-(--color-ink-500)">/lượt hỏi — mỗi lần gieo quẻ nhận 1 câu trả lời</p>
+            </div>
+          )}
 
           <button
             type="button"
             id="km-hd-xemgia-btn"
             class="mt-3 inline-flex items-center gap-1.5 rounded-(--radius-control) bg-(--color-cinnabar-400) px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90"
           >
-            ⭐ Xem câu trả lời — 199.000đ
+            {anGia ? "⭐ Xem câu trả lời" : "⭐ Xem câu trả lời — 199.000đ"}
           </button>
 
           <div id="km-hd-thanhtoan-form-wrap" class="mt-4 hidden space-y-3 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4">
@@ -349,7 +366,7 @@ const {
               id="km-hd-thanhtoan-btn"
               class="inline-flex items-center gap-1.5 rounded-(--radius-control) bg-(--color-cinnabar-400) px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90"
             >
-              Thanh toán 199.000đ
+              {anGia ? "Xác nhận" : "Thanh toán 199.000đ"}
             </button>
           </div>
 
@@ -357,7 +374,10 @@ const {
           <div id="km-hd-loi" class="mt-3 hidden rounded-(--radius-control) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-3 text-sm text-(--color-danger-500)"></div>
 
           <div id="km-hd-qr-wrap" class="mt-4 hidden space-y-3 rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-center">
-            <p class="font-display text-lg font-bold">Quét mã QR để thanh toán <span id="km-hd-sotien">199.000đ</span></p>
+            {/* Số tiền để TRỐNG, do JS điền từ đúng số máy chủ trả về. Trước đây ghi cứng
+                "199.000đ" nên lỡ có mã giảm giá vẫn chớp lên con số sai trước khi JS ghi đè —
+                và ở app (ẩn giá) thì không được hiện giá lẻ trước khi biết số thật. */}
+            <p class="font-display text-lg font-bold">Quét mã QR để thanh toán <span id="km-hd-sotien"></span></p>
             <img id="km-hd-qr" src="" alt="Mã QR thanh toán" class="mx-auto h-56 w-56 rounded-xl border border-(--color-ivory-300)" />
             <p class="text-sm text-(--color-ink-600)">Mã đơn hàng: <strong id="km-hd-ordercode"></strong></p>
             <p id="km-hd-trangthai" class="text-sm font-medium text-(--color-gold-400)">Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)</p>
@@ -481,6 +501,9 @@ const {
         ở dải trên, nội dung trên nền trắng. Bảng dùng màu cố định (không theo theme site) —
         giống cách xem-ngay-tot-xau.astro render card kết quả nền trắng trên nền tối. ---- */
   .km-grid-9 {
+    /* Độ dày dải màu ngũ hành ở cạnh ngoài. JS đọc biến này khi dựng padding từng cung, nên đổi
+       ở đây (hoặc trong media query) là cả lưới đổi theo — xem hàm `vien()` trong script. */
+    --km-vien: 38px;
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     gap: 2px; /* 4 đường kẻ mảnh ngăn 9 ô */
@@ -512,10 +535,11 @@ const {
     text-overflow: ellipsis;
     z-index: 1;
   }
-  .km-lbl-t { top: 0; left: 4px; right: 4px; height: 38px; line-height: 38px; text-align: center; }
-  .km-lbl-b { bottom: 0; left: 4px; right: 4px; height: 38px; line-height: 38px; text-align: center; }
-  .km-lbl-l { left: 0; top: 4px; bottom: 4px; width: 38px; writing-mode: vertical-rl; transform: rotate(180deg); text-align: center; }
-  .km-lbl-r { right: 0; top: 4px; bottom: 4px; width: 38px; writing-mode: vertical-rl; text-align: center; }
+  /* Dùng chung biến --km-vien với padding do JS dựng, để nhãn luôn khớp đúng dải màu. */
+  .km-lbl-t { top: 0; left: 4px; right: 4px; height: var(--km-vien); line-height: var(--km-vien); text-align: center; }
+  .km-lbl-b { bottom: 0; left: 4px; right: 4px; height: var(--km-vien); line-height: var(--km-vien); text-align: center; }
+  .km-lbl-l { left: 0; top: 4px; bottom: 4px; width: var(--km-vien); writing-mode: vertical-rl; transform: rotate(180deg); text-align: center; }
+  .km-lbl-r { right: 0; top: 4px; bottom: 4px; width: var(--km-vien); writing-mode: vertical-rl; text-align: center; }
   /* Mã (🐴) — gắn trên viền màu ngoài, cạnh nhãn địa chi (không còn trong ô trắng). */
   .km-lbl-ma { display: inline-block; margin-left: 0.2em; font-size: 0.8rem; text-orientation: upright; }
   .km-cung > .km-badge-kv {
@@ -771,6 +795,43 @@ const {
     color: #b8322a;
     font-weight: 700;
     font-size: 0.6rem;
+  }
+
+  /* ---- MÀN HẸP (điện thoại): thu nhỏ lưới 9 cung cho VỪA KHÍT, không phải cuộn ngang ----
+     Trước đây `.km-grid-9` ghim `min-width: 460px`, mà điện thoại chỉ còn ~350-390px sau khi trừ
+     lề trang → lá bàn tràn sang phải, cột cuối bị cắt cụt ("Nh…", "Tr…") và phải kéo ngang mới
+     đọc được (anh Công báo 27/8/2026, có ảnh chụp).
+     Cách xử lý: bỏ min-width rồi hạ tỉ lệ mọi kích thước cố định xuống ~0,78 lần — vẫn đủ đọc,
+     và QUAN TRỌNG là không đụng gì tới bố cục màn rộng (mọi thứ nằm trong media query). */
+  @media (max-width: 540px) {
+    /* Viền màu mỏng lại (38 → 20px): đây mới là thứ ăn nhiều chỗ nhất — cung góc bị viền 2 cạnh,
+       giữ 38px thì ô trắng chỉ còn ~53px, không đủ cho tên Bát Thần. */
+    .km-grid-9 { min-width: 0; --km-vien: 20px; }
+    .km-cung { min-height: 152px; }
+
+    /* Dải nhãn hướng/địa chi bám theo --km-vien nên tự mỏng theo, chỉ cần hạ cỡ chữ. */
+    .km-lbl { font-size: 0.48rem; }
+    .km-lbl-ma { font-size: 0.6rem; }
+
+    /* Hàng trên vốn xếp [can | sao | thần] trên CÙNG 1 dòng — màn hẹp không đủ, tên Bát Thần dài
+       ("Huyền Vũ", "Cửu Thiên") bị cắt thành "Huyề…". Cho Bát Thần xuống dòng riêng, ăn trọn
+       chiều ngang ô thì hiện đủ chữ. */
+    .km-cung-r1 { grid-template-columns: auto 1fr; }
+    .cc-than { grid-column: 1 / -1; text-align: left; margin-top: 1px; }
+
+    .km-cung-inner { padding: 0.2rem 0.22rem; }
+    .cc-can, .cc-diacan { font-size: 0.6rem; }
+    .cc-sao { font-size: 0.82rem; }
+    .cc-than, .cc-mon { font-size: 0.76rem; }
+    .cc-so { font-size: 1.2rem; }
+    .km-mt { font-size: 0.85rem; }
+    .km-cung-so { font-size: 0.54rem; }
+    .km-cung-trung-note { font-size: 0.48rem; }
+
+    /* Nhãn Trực Phù/Trực Sử/Hình/Mộ… xếp chồng ở góc — nhỏ lại để không đè lên chữ chính. */
+    .km-badge { font-size: 0.46rem; padding: 0.02rem 0.24rem; }
+    .km-badge-ma { font-size: 0.72rem; }
+    .km-badge-mo { font-size: 0.7rem; }
   }
 </style>
 
@@ -1273,7 +1334,12 @@ const {
       const hdmyCol = hdmyList.length ? `<div class="km-cung-hdmy-col">${hdmyList.join("")}</div>` : "";
       // Khung màu chỉ cạnh ngoài + nhãn hướng/địa chi trên dải màu ngoài.
       const f = FRAME[soCung];
-      const padStyle = `padding:${f.pad[0]}px ${f.pad[1]}px ${f.pad[2]}px ${f.pad[3]}px`;
+      // Độ dày viền màu lấy từ biến CSS `--km-vien` (không ghi cứng px nữa) — nhờ vậy media query
+      // ở màn hẹp bóp viền lại được. Trước đây ghi cứng 38px: trên điện thoại mỗi cung chỉ ~99px
+      // mà viền ăn mất 38px ở cung góc → ô trắng còn ~53px, tên Bát Thần ("Huyền Vũ", "Cửu Địa")
+      // bị cắt cụt (anh Công báo 27/8/2026).
+      const vien = (n: number) => (n ? "var(--km-vien)" : "0px");
+      const padStyle = `padding:${vien(f.pad[0])} ${vien(f.pad[1])} ${vien(f.pad[2])} ${vien(f.pad[3])}`;
       const chiStr = (c.diaChi ?? []).join(" ");
       // Mã (🐴): đặt trên VIỀN NGOÀI (dải màu), gắn liền cạnh nhãn địa chi — không còn trong ô trắng.
       const maIcon = c.Ma ? '<span class="km-lbl-ma" title="Mã">🐴</span>' : "";
