@@ -170,7 +170,24 @@ function chamAnTinh(chart: BatTuChart, vuongSuyCapDo: string, cfg: ReturnType<ty
   return { muc, soPhan, coCan: anCoCan, hoaDuocQuanSat, dienGiai };
 }
 
-/** §5 — Ngũ hành lưu thông: dò chuỗi Mộc→Hỏa→Thổ→Kim→Thủy→Mộc, tìm mắt xích đứt/nghẽn. */
+/**
+ * §5 — Ngũ hành lưu thông: dò chuỗi Mộc→Hỏa→Thổ→Kim→Thủy→Mộc, tìm mắt xích đứt/nghẽn.
+ *
+ * ⚠️ LÀM RÕ VAI TRÒ (27/8/2026) — file config từng đánh dấu tiêu chí 9 ("Ngũ hành lưu thông — sinh
+ * nhập hoặc khắc xuất tùy vượng suy") là câu hỏi mở, và có ghi sẵn cách hiểu: "sinh nhập/khắc xuất
+ * CHỌN MỘT theo vượng suy (thân nhược→sinh nhập tốt; thân vượng→khắc xuất tốt), không đòi cả hai
+ * cùng lúc". Hàm NÀY không làm việc đó — nó kiểm tra vòng NGŨ HÀNH ĐỦ/ĐỐI XỨNG bất kể vượng suy, tức
+ * là MỘT TIÊU CHÍ KHÁC (ngũ hành đầy đủ nói chung), không phải tiêu chí 9.
+ *
+ * Việc "sinh nhập cho thân nhược, khắc xuất cho thân vượng" ĐÃ được cài đúng và kiểm chứng ở nơi
+ * khác: `chonDungThan()` (bat-tu-engine/engine.ts) chọn Dụng Thần theo đúng nguyên tắc Phù Ức
+ * (thân nhược → Dụng = Ấn/Tỷ để SINH thân; thân vượng → Dụng = Thực/Tài/Quan để thân KHẮC XUẤT) —
+ * xem `chamChatLuongDungThan()` bên dưới, dùng qua `dungThanChatLuong` trong xếp hạng
+ * (`ranking.ts` §4). Không viết lại thuật toán ở đây theo hướng "vượng suy" — vòng sinh (tuần tự
+ * kề nhau) và vòng khắc (cách 1 bước) là 2 cấu trúc khác nhau, tự suy diễn lại dễ sai tô-pô mà không
+ * có tài liệu gốc để đối chiếu (00-quy-uoc-va-cho-trong.md đã thất lạc từ phiên trước). Giữ nguyên
+ * hàm này làm tín hiệu ĐỘC LẬP về độ đầy đủ ngũ hành, KHÔNG trùng lặp/mâu thuẫn với dungThanChatLuong.
+ */
 function chamLuuThong(chart: BatTuChart): NguHanhLuuThongResult {
   const nhatChuHanh = hanhCan(chart.day.can);
   const chuoi = HANH_CHUOI.map((hanh) => {
