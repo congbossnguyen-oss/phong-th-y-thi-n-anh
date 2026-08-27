@@ -24,6 +24,7 @@ import type { LuckContext } from "./current-luck";
 import type { CategoryId, QuestionDefinition } from "./types";
 import { timHaoDungThan, tinhUngKy, type KetQuaUngKy } from "../luc-hao-ung-ky";
 import { tinhTienThoaiThan, type KetQuaTienThoai } from "../luc-hao-tien-thoai-than";
+import { tinhTamHopCuc, type KetQuaTamHopCuc } from "../luc-hao-tam-hop-cuc";
 
 // ---------------------------------------------------------------------------------------------
 // Dụng Thần gợi ý theo NHÓM câu hỏi — trích từ LUAN_QUE_LUC_HAO_SPEC.md mục 4.1 (Lớp 3, phần
@@ -183,6 +184,8 @@ export interface QuanSuInterpretationPayload {
   ung_ky: KetQuaUngKy | null;
   /** Danh sách hào tạo Tiến Thần / Thoái Thần (đà việc lên hay xuống). */
   tien_thoai_than: KetQuaTienThoai;
+  /** Tam Hợp cục hoá cục (nếu có) — đổi hẳn tính chất các hào tham gia sang ngũ hành của cục. */
+  tam_hop_cuc: KetQuaTamHopCuc;
   meta: {
     castAtISO: string;
     method: "luc-hao-tosses" | "luc-hao-random" | "mai-hoa" | "seri-tien";
@@ -218,6 +221,7 @@ export function buildInterpretationPayload(
     van_trinh: opts.vanTrinh ?? null,
     ung_ky: tinhUngKyTheoHint(cast, hint),
     tien_thoai_than: tinhTienThoaiThan(cast),
+    tam_hop_cuc: tinhTamHopCuc(cast),
     meta: {
       castAtISO: (opts.castAt ?? new Date()).toISOString(),
       method: opts.method,

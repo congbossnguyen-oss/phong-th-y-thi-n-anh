@@ -379,17 +379,24 @@ function elementalRelationsOf(lineNguHanh: NguHanh, targetNguHanh: NguHanh): ("S
   return out;
 }
 
-// TODO (Nhập Mộ — chưa implement, cần audit riêng): Chương IX "TÙY QUỶ NHẬP MỘ" chỉ mô tả Nhập Mộ
-// trong phạm vi hào Thế/Dụng Thần/Quan Quỷ (không phải mọi hào), và còn có sắc thái vượng/suy quyết
-// định mức ảnh hưởng ("Thế Dụng vượng tướng thì vô hại... suy tuyệt mới tạo ảnh hưởng xấu", dòng
-// 2087-2089 bản Gốc) — cần audit đầy đủ chương này (4 dạng: nhập mộ tại ngày/tháng, hóa mộ, nhập hào
-// mộ động, tùy quỷ nhập mộ) trước khi thiết kế `HaoRelationType` cho nó. KHÔNG dùng `growthDay`/
-// `growthMonth === "Mộ"` để tự sinh relation — dữ liệu Trường Sinh vẫn giữ nguyên, chỉ chưa surface
-// thành quan hệ ở đây (Quyết định C1, phương án A).
+// NHẬP MỘ (27/8/2026) — bản gốc "kinh dịch lục hào sơ cấp minh việt" (Chương IX "TÙY QUỶ NHẬP MỘ",
+// dòng 2087-2089) không lấy lại được (không còn trong repo/skill nào), anh Công duyệt phương án: cài
+// theo 3 dạng CHUẨN CỔ ĐIỂN CHUNG (nhất quán xuyên nhiều nguồn Lục Hào, không riêng Minh Việt), CHƯA
+// đối chiếu riêng bản Minh Việt — nếu sau này có lại bản gốc thì audit lại đúng theo TODO cũ:
+//   1. Nhật Mộ:  growthDay === "Mộ"   (hào lâm Mộ so với Chi Ngày — đã có sẵn, chỉ chưa surface)
+//   2. Nguyệt Mộ: growthMonth === "Mộ" (hào lâm Mộ so với Chi Tháng)
+//   3. Hóa Mộ:   hào ĐỘNG, Chi hào BIẾN đúng là Mộ khố của NGŨ HÀNH hào GỐC (tính ở finalizeCast, sau
+//      khi có cả chinh+bien — xem khối "Hóa Mộ" bên dưới, cùng chỗ tính fanYin/fuYin).
+// CHỦ Ý BỎ dạng "tùy quỷ nhập mộ" (Quan Quỷ kéo Dụng Thần nhập Mộ) — đây là mẫu hình phối hợp giữa
+// Nhập Mộ + vị trí Quan Quỷ, không phải 1 quan hệ hào<->Nhật/Nguyệt độc lập; để LLM tự kết hợp 2 dữ
+// kiện đã có (Nhập Mộ của Dụng Thần + Quan Quỷ động/vượng) thay vì hardcode 1 rule chưa có nguồn xác
+// nhận rõ. Sắc thái vượng/suy ("vượng tướng vô hại, suy tuyệt mới hại") KHÔNG bake vào relation — hào
+// đã có sẵn field `vuongSuy`, downstream (LLM) tự đối chiếu, giống cách Ám Động/Nhật Phá đang làm.
 export type HaoRelationType =
-  | "Sinh" | "Khắc" | "Hợp" | "Xung" | "Hại" // Sinh/Khắc/Hợp/Xung/Hại theo yêu cầu 7 loại quan hệ ban đầu (Mộ tạm hoãn, xem TODO trên)
+  | "Sinh" | "Khắc" | "Hợp" | "Xung" | "Hại"
   | "Nhật Phá" | "Nguyệt Phá" | "Ám Động" // Phá tách riêng Ngày/Tháng theo đúng nguồn (không gộp chung điều kiện)
-  | "Lâm Nhật" | "Lâm Nguyệt"; // hào có Chi trùng đúng Chi Ngày/Chi Tháng (đương lệnh/lâm Nhật Thần)
+  | "Lâm Nhật" | "Lâm Nguyệt" // hào có Chi trùng đúng Chi Ngày/Chi Tháng (đương lệnh/lâm Nhật Thần)
+  | "Nhập Mộ"; // xem khối chú thích "NHẬP MỘ" ngay trên — source DAY/MONTH/CHANGED_YAO ứng 3 dạng
 
 export type HaoRelationSource = "DAY" | "MONTH" | "YAO" | "CHANGED_YAO"; // YAO/CHANGED_YAO dành cho C2/C3 (Tam Hợp/Tam Hình), chưa dùng ở C1
 export type HaoRelationTarget = "HAO";
@@ -628,6 +635,9 @@ export function lapQueDayDu(
       relations: [
         ...getDayRelations(chiIndex, nguHanh, dayChiIndex, vuongSuy),
         ...getMonthRelations(chiIndex, nguHanh, monthChiIndex),
+        // Nhật Mộ / Nguyệt Mộ — xem khối chú thích "NHẬP MỘ" phía trên HaoRelationType.
+        ...(growthDay === "Mộ" ? [{ type: "Nhập Mộ" as const, source: "DAY" as const, target: "HAO" as const }] : []),
+        ...(growthMonth === "Mộ" ? [{ type: "Nhập Mộ" as const, source: "MONTH" as const, target: "HAO" as const }] : []),
       ],
       xunKong: voidChiIndices !== null && (chiIndex === voidChiIndices[0] || chiIndex === voidChiIndices[1]),
     };
@@ -797,6 +807,20 @@ function finalizeCast(
         chiIndex,
       )
     : null;
+
+  // Hóa Mộ — dạng 3/3 của Nhập Mộ (xem khối chú thích "NHẬP MỘ" phía trên HaoRelationType): hào ĐỘNG
+  // biến ra đúng Mộ khố của NGŨ HÀNH HÀO GỐC (không phải ngũ hành hào biến) — chỉ tính được sau khi có
+  // cả chinh lẫn bien, giống fanYin/fuYin bên dưới, nên KHÔNG thể làm trong lapQueDayDu (chỉ thấy 1 quẻ).
+  if (bien) {
+    for (const pos of dongPositions) {
+      const hg = chinh.hao[pos - 1];
+      const hb = bien.hao[pos - 1];
+      if (truongSinhLucHaoOf(hg.nguHanh, hb.chiIndex) === "Mộ") {
+        hg.relations.push({ type: "Nhập Mộ", source: "CHANGED_YAO", target: "HAO" });
+      }
+    }
+  }
+
   const tietKhi = getCurrentTietKhi24Name(input.day, input.month, input.year, input.hour);
   const canChiText = `giờ ${bt.hour.can} ${bt.hour.chi}, ngày ${bt.day.can} ${bt.day.chi}, tháng ${bt.month.can} ${bt.month.chi}, năm ${bt.year.can} ${bt.year.chi}`;
   const nhatThan = `${bt.day.chi}-${CHI_NGU_HANH[bt.day.chiIndex]}`;
