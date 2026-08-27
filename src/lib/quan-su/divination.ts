@@ -22,6 +22,8 @@ import {
 } from "../luc-hao";
 import type { LuckContext } from "./current-luck";
 import type { CategoryId, QuestionDefinition } from "./types";
+import { timHaoDungThan, tinhUngKy, type KetQuaUngKy } from "../luc-hao-ung-ky";
+import { tinhTienThoaiThan, type KetQuaTienThoai } from "../luc-hao-tien-thoai-than";
 
 // ---------------------------------------------------------------------------------------------
 // Dụng Thần gợi ý theo NHÓM câu hỏi — trích từ LUAN_QUE_LUC_HAO_SPEC.md mục 4.1 (Lớp 3, phần
@@ -173,6 +175,14 @@ export interface QuanSuInterpretationPayload {
   cast: FullCastResult;
   /** Vận trình hiện tại (Bát Tự/Tử Vi) — do current-luck.ts trích; null nếu câu hỏi không dùng / chưa có ngày sinh. */
   van_trinh: LuckContext | null;
+  /**
+   * ỨNG KỲ — mốc thời gian ứng nghiệm (spec §6, 8 quy luật). null khi không xác định được Dụng Thần
+   * theo nhóm việc (vd nhóm dùng khung Thế-Ứng chứ không phải 1 Lục Thân cố định) — lúc đó LLM tự
+   * luận thời điểm theo tài liệu, KHÔNG có mốc tính sẵn.
+   */
+  ung_ky: KetQuaUngKy | null;
+  /** Danh sách hào tạo Tiến Thần / Thoái Thần (đà việc lên hay xuống). */
+  tien_thoai_than: KetQuaTienThoai;
   meta: {
     castAtISO: string;
     method: "luc-hao-tosses" | "luc-hao-random" | "mai-hoa" | "seri-tien";
@@ -194,6 +204,7 @@ export function buildInterpretationPayload(
       `Câu hỏi "${question.question_id}" không dùng Kinh Dịch (divination_method=${question.divination_method}). Nhóm chọn ngày giờ đi theo trach-nhat, không qua đây.`,
     );
   }
+  const hint = dungThanHintFor(question.category);
   return {
     question: {
       question_id: question.question_id,
@@ -201,13 +212,47 @@ export function buildInterpretationPayload(
       title: question.title,
       output_type: question.output_type,
       safety_level: question.safety_level,
-      dung_than_hint: dungThanHintFor(question.category),
+      dung_than_hint: hint,
     },
     cast,
     van_trinh: opts.vanTrinh ?? null,
+    ung_ky: tinhUngKyTheoHint(cast, hint),
+    tien_thoai_than: tinhTienThoaiThan(cast),
     meta: {
       castAtISO: (opts.castAt ?? new Date()).toISOString(),
       method: opts.method,
     },
   };
+}
+
+/**
+ * Tính Ứng Kỳ khi gợi ý Dụng Thần là 1 Lục Thân xác định hoặc hào Thế. Trả null cho nhóm dùng
+ * "framework" (Thế-Ứng, 4 Dụng Thần đồng thời...) — những nhóm đó KHÔNG có 1 Dụng Thần duy nhất nên
+ * engine không tự chọn hộ; để LLM luận theo tài liệu, thà thiếu còn hơn chọn bừa rồi ra mốc sai.
+ *
+ * Trường hợp LƯỠNG HIỆN (Lục Thân xuất hiện ở nhiều hào): lấy hào ĐỘNG trước, không có thì lấy hào
+ * đầu tiên — và ghi chú rõ để lớp trên biết đây là lựa chọn máy móc, cần người kiểm lại.
+ */
+function tinhUngKyTheoHint(cast: FullCastResult, hint: DungThanHint): KetQuaUngKy | null {
+  let ungVien: { viTriHao: number; laPhucThan: boolean }[];
+
+  if (hint.kind === "luc-than") {
+    ungVien = timHaoDungThan(cast, hint.value);
+  } else if (hint.kind === "the-hao") {
+    ungVien = [{ viTriHao: cast.chinh.theHao, laPhucThan: false }];
+  } else {
+    return null; // framework — không có Dụng Thần đơn nhất
+  }
+  if (ungVien.length === 0) return null;
+
+  // Lưỡng hiện: ưu tiên hào đang động (hào động là hào "lên tiếng" trong quẻ).
+  const chon = ungVien.find((u) => !u.laPhucThan && cast.chinh.hao[u.viTriHao - 1]?.isDong) ?? ungVien[0];
+
+  const kq = tinhUngKy({ cast, viTriHao: chon.viTriHao, laPhucThan: chon.laPhucThan });
+  if (ungVien.length > 1) {
+    kq.ghiChu.push(
+      `Dụng Thần LƯỠNG HIỆN (có ở hào ${ungVien.map((u) => u.viTriHao).join(", ")}) — hệ thống tạm lấy hào ${chon.viTriHao}. Cần tự kiểm lại xem hào nào mới đúng là Dụng Thần của việc này.`,
+    );
+  }
+  return kq;
 }
