@@ -112,9 +112,29 @@ export function taoGoiMoFree(chart: BatTuChart, analysis: BatTuAnalysis): string
     }
   }
   const cauThanSat = catThanCoTrongLaSo.length > 0
-    ? `Lá số có ${catThanCoTrongLaSo.slice(0, 3).map((s) => `${s} (${CAT_THAN_DE_HIEU[s]})`).join("; ")}.`
-      + (catThanCoTrongLaSo.length > 3 ? ` Ngoài ra còn ${catThanCoTrongLaSo.length - 3} cát tinh khác nữa.` : "")
+    ? `Lá số có ${catThanCoTrongLaSo.slice(0, 4).map((s) => `${s} (${CAT_THAN_DE_HIEU[s]})`).join("; ")}.`
+      + (catThanCoTrongLaSo.length > 4 ? ` Ngoài ra còn ${catThanCoTrongLaSo.length - 4} cát tinh khác nữa.` : "")
     : "Phần Thần Sát của lá số này cần xét kỹ từng trụ mới kết luận được, có trong bản luận đầy đủ.";
+
+  // ─ Vận hiện tại — thuận hay cần thận trọng so với Dụng/Hỷ/Kỵ/Cừu Thần. Tái dùng đúng công thức
+  //   chấm điểm của đồ hình free (`diemHanhTheoDungThan`, định nghĩa bên dưới nhưng gọi được nhờ
+  //   hoisting) — KHÔNG thêm tri thức mới, chỉ diễn giải bằng lời một con số đã tính sẵn. Cố ý dùng
+  //   từ nhẹ ("cần thận trọng hơn") thay vì "xấu" cho vận điểm âm — tránh kết luận nặng nề khi bản
+  //   free chưa xét đủ Lưu Niên chồng lên Đại Vận (nguyên tắc như với Thần Sát: không nói nửa vời).
+  const namNay = new Date().getFullYear();
+  const vanHienTai = chart.daiVan.find((v, i) => {
+    const ketThuc = chart.daiVan[i + 1]?.startDate.y ?? Infinity;
+    return namNay >= v.startDate.y && namNay < ketThuc;
+  });
+  const cauVanHienTai = (() => {
+    if (!vanHienTai) return "";
+    const diem = (diemHanhTheoDungThan(hanhCan(vanHienTai.can), dungThan) + diemHanhTheoDungThan(hanhChi(vanHienTai.chi), dungThan)) / 2;
+    const nhanXet =
+      diem > 0 ? "đang thiên về chiều thuận với Dụng/Hỷ Thần — nhìn chung là giai đoạn dễ phát huy"
+      : diem < 0 ? "đang thiên về chiều Kỵ/Cừu Thần — không có nghĩa là xấu hẳn, nhưng nên cẩn trọng hơn ở giai đoạn này, cần xét thêm từng Lưu Niên mới rõ"
+      : "trung tính, không nghiêng hẳn về chiều nào";
+    return `\n\nVận hiện tại (${vanHienTai.can} ${vanHienTai.chi}, ${vanHienTai.startAge}-${vanHienTai.endAge} tuổi) ${nhanXet}. Bản luận giải đầy đủ đọc chi tiết từng Đại Vận và Lưu Niên từng năm trong giai đoạn này.`;
+  })();
 
   return [
     `Bản mệnh của bạn là ${banMenh}. Nhật Chủ — tức chính bản thân bạn trong lá số — là ${canNgay} (${hanhCanNgay}, ${amDuongCanNgay}), hiện ở mức ${nhanCapDoVuongSuy}.`,
@@ -126,6 +146,7 @@ export function taoGoiMoFree(chart: BatTuChart, analysis: BatTuAnalysis): string
     `Dụng Thần phù hợp với lá số này là hành ${tenDungThan} — ${cauGoiYNganTheoHanh}`,
     "",
     `✦ Sao tốt trong lá số: ${cauThanSat}`,
+    cauVanHienTai,
     "",
     `Đây mới là phần mở đầu. Bản luận giải đầy đủ sẽ đi sâu vào 12 khía cạnh: tính cách, thần sát, gia đình - lục thân, sự nghiệp - tài vận, hôn nhân, sức khỏe, và trọn vẹn các giai đoạn vận trình từ nhỏ đến già — ${cauKeuGoiNangCap}`,
   ].join("\n");
