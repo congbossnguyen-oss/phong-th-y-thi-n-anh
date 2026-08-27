@@ -64,10 +64,13 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
   if (locals.user.isAdmin !== true) {
     const goi = await layGoiDangHoatDong(locals.user.id);
     if (goi) {
-      const { conLuot, daDung, hanMuc } = await conLuotHoiKhong(locals.user.id, goi.tier);
+      const { conLuot, daDung, hanMuc } = await conLuotHoiKhong(locals.user.id, goi.tier, goi.isTrial);
       if (!conLuot) {
+        const goiYThem = goi.isTrial
+          ? "Đăng ký gói chính thức để có thêm lượt hỏi."
+          : "Hạn mức làm mới vào đầu tháng sau, hoặc nâng lên gói Cao cấp để có thêm lượt.";
         return json(
-          { error: `Bạn đã dùng hết ${hanMuc} lượt hỏi của gói tháng này (đã dùng ${daDung}/${hanMuc}). Hạn mức làm mới vào đầu tháng sau, hoặc nâng lên gói Cao cấp để có thêm lượt.` },
+          { error: `Bạn đã dùng hết ${hanMuc} lượt hỏi${goi.isTrial ? " của bản dùng thử" : " của gói tháng này"} (đã dùng ${daDung}/${hanMuc}). ${goiYThem}` },
           429,
         );
       }
