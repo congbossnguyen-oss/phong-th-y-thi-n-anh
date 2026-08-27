@@ -1,0 +1,24 @@
+---
+// Bản in-app của dịch vụ VIP "Trạch Cát Kỳ Môn" — tự chứa trong app Quân Sư (App Store, không link
+// ra web). Trước đây trang này CHƯA TỒN TẠI: nút "Trạch Cát Kỳ Môn" ở /quan-su/dich-vu-vip trỏ tới
+// /quan-su/trach-cat-ky-mon, rơi vào route bắt-tất [category].astro (dành cho nhóm câu hỏi Hỏi Đáp,
+// không phải danh mục dịch vụ VIP) rồi lặng lẽ redirect về /quan-su — khách bấm vào coi như vô hiệu.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
+import VipQuyenBanner from "../../components/quan-su/VipQuyenBanner.astro";
+import TrachCatKyMon from "../../components/tools/TrachCatKyMon.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout title="Trạch Cát Kỳ Môn — Quân Sư Thiên Anh" description="Trạch Cát Kỳ Môn trong app Quân Sư." appShell>
+  <PageHero
+    eyebrow="Dịch vụ VIP"
+    title="Trạch Cát Kỳ Môn"
+    breadcrumbs={[{ label: "Quân Sư", href: "/quan-su" }, { label: "Dịch vụ VIP", href: "/quan-su/dich-vu-vip" }, { label: "Trạch Cát Kỳ Môn" }]}
+  />
+  <VipQuyenBanner />
+  <TrachCatKyMon />
+  <BottomNav />
+</BaseLayout>
