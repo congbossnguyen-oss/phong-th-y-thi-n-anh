@@ -12,6 +12,7 @@ import {
   sendHoSoTangLeEmail,
   sendNghePdfEmail,
   sendTrachNhatSinhNoPdfEmail,
+  sendHopHonPdfEmail,
   sendKyMonMenhPdfEmail,
   sendBatTuToanDienCoBanPdfEmail,
   sendBatTuToanDienNangCaoPdfEmail,
@@ -23,6 +24,9 @@ import { taoHoSoNghe, type NgheInput } from "../nghe-nghiep/tao-ho-so-nghe";
 import { generateNghePdf } from "../dai-cat-loi/nghe-nghiep-pdf";
 import { phanTichTrachNhatSinhNo, type BirthSelectionInput } from "../trach-nhat-sinh-no";
 import { generateTrachNhatSinhNoPdf } from "../dai-cat-loi/trach-nhat-sinh-no-pdf";
+import { tinhHopHon } from "../hop-hon";
+import type { DauVaoHopHon } from "../../pages/api/dai-cat-loi/hop-hon/checkout";
+import { generateHopHonPdf } from "../dai-cat-loi/hop-hon-pdf";
 import { lapLaBan, luanGiaiMenh, luanGiaiMenhChiTiet } from "../kymon";
 import { generateKyMonMenhPdf } from "../dai-cat-loi/ky-mon-menh-pdf";
 import { taoBaoCaoCoBan, taoBaoCaoNangCao } from "../luan-giai-toan-dien/orchestrator";
@@ -512,6 +516,25 @@ async function _markOrderPaidAndFulfillNoiBo(orderId: string) {
         });
       } catch (err) {
         console.error(`[trach-nhat-sinh-no] Lỗi dựng/gửi PDF cho đơn ${order.orderCode}:`, err);
+      }
+    }
+
+    // Hợp Hôn Bát Tự × Tử Vi: thuần công thức (không AI) — dựng PDF rồi gửi kèm email khách. Bọc
+    // try/catch riêng cùng lý do các module khác: hỏng khâu này đơn vẫn ghi nhận đã thanh toán,
+    // khách còn xem lại kết quả trên trang bằng mã đơn.
+    if (order.toolSlug === "hop-hon" && order.customerEmail && order.toolInputSnapshot) {
+      try {
+        const input = JSON.parse(order.toolInputSnapshot) as DauVaoHopHon;
+        const ketQua = tinhHopHon(input);
+        const pdf = await generateHopHonPdf(ketQua, order.customerName);
+        await sendHopHonPdfEmail({
+          to: order.customerEmail,
+          orderCode: order.orderCode,
+          customerName: order.customerName,
+          pdfBytes: pdf,
+        });
+      } catch (err) {
+        console.error(`[hop-hon] Lỗi dựng/gửi PDF cho đơn ${order.orderCode}:`, err);
       }
     }
 

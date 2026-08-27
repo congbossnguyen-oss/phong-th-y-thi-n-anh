@@ -314,6 +314,37 @@ export function trachNhatSinhNoPdfEmail(params: {
   };
 }
 
+export function hopHonPdfEmail(params: {
+  orderCode: string;
+  customerName: string;
+}): { subject: string; html: string } {
+  const bodyHtml = `
+    <p>Kính gửi ${escapeHtml(params.customerName)},</p>
+    <p>
+      Bản đồ Hợp Hôn Bát Tự × Tử Vi được đính kèm dưới dạng PDF trong email này, gồm: tóm tắt hai lá số,
+      bản đồ 5 trục (bổ khuyết ngũ hành, Cung Phu Thê, tính cách qua Thập Thần, Tử Vi, đồng bộ vận trình),
+      mức đồng thuận giữa hai hệ, và điểm mạnh cùng điểm cần chủ động vun đắp.
+    </p>
+    <table role="presentation" width="100%" style="margin-top:16px;border-top:1px solid #e8dfcd;padding-top:12px;">
+      ${infoRow("Mã đơn hàng", params.orderCode)}
+    </table>
+    <p style="margin-top:20px;">
+      <strong>Lưu ý quan trọng:</strong> đây là bản đồ tham khảo theo mệnh lý cổ truyền, chỉ ra điểm mạnh
+      và điểm cần chủ động vun đắp — không phải phán quyết nên hay không nên kết hôn. Cần luận sâu thêm với
+      đầy đủ bối cảnh của hai bạn, xin liên hệ hotline ${siteConfig.hotline} để đặt lịch tư vấn trực tiếp.
+    </p>
+  `;
+
+  return {
+    subject: `Hợp Hôn Bát Tự × Tử Vi — đơn ${params.orderCode}`,
+    html: layout({
+      previewText: "Bản đồ hợp hôn của hai bạn được đính kèm trong email này.",
+      title: "Hợp Hôn Bát Tự × Tử Vi",
+      bodyHtml,
+    }),
+  };
+}
+
 export function kyMonMenhPdfEmail(params: {
   orderCode: string;
   customerName: string;

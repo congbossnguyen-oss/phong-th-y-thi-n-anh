@@ -9,6 +9,7 @@ import {
   hoSoTangLeEmail,
   nghePdfEmail,
   trachNhatSinhNoPdfEmail,
+  hopHonPdfEmail,
   kyMonMenhPdfEmail,
   batTuToanDienCoBanPdfEmail,
   batTuToanDienNangCaoPdfEmail,
@@ -151,6 +152,19 @@ export async function sendTrachNhatSinhNoPdfEmail(params: {
   const { subject, html } = trachNhatSinhNoPdfEmail(params);
   await safeSend(params.to, subject, html, [
     { filename: `trach-nhat-sinh-no-${params.orderCode}.pdf`, content: Buffer.from(params.pdfBytes) },
+  ]);
+}
+
+/** Gửi PDF Hợp Hôn Bát Tự × Tử Vi kèm email. Dùng safeSend — lỗi chỉ log. */
+export async function sendHopHonPdfEmail(params: {
+  to: string;
+  orderCode: string;
+  customerName: string;
+  pdfBytes: Uint8Array;
+}) {
+  const { subject, html } = hopHonPdfEmail(params);
+  await safeSend(params.to, subject, html, [
+    { filename: `hop-hon-${params.orderCode}.pdf`, content: Buffer.from(params.pdfBytes) },
   ]);
 }
 
