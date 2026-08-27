@@ -16,6 +16,7 @@ import { quanHeMenhCuc } from "./tongQuanFree";
 export type CungDuLieu = {
   ten: string;
   chi: string;
+  chiIndex: number;
   canThienBan: string;
   isMenh: boolean;
   isThan: boolean;
@@ -36,11 +37,21 @@ export type CungDuLieu = {
 
 export type MocHan = { tuoi: number; tenCung: string; chi: string; diem: number };
 
+/** Khung giờ (giờ địa phương) ứng với mỗi Chi — quy ước lịch cổ truyền cố định, không phụ thuộc lá số. */
+export const GIO_RANGE_THEO_CHI: Record<string, string> = {
+  "Tý": "23h-1h", "Sửu": "1h-3h", "Dần": "3h-5h", "Mão": "5h-7h",
+  "Thìn": "7h-9h", "Tỵ": "9h-11h", "Ngọ": "11h-13h", "Mùi": "13h-15h",
+  "Thân": "15h-17h", "Dậu": "17h-19h", "Tuất": "19h-21h", "Hợi": "21h-23h",
+};
+
 export type DuLieuLaSoTuVi = {
   hoTen: string;
   gioiTinh: "Nam" | "Nữ";
   ngaySinhDuong: string;
   gioSinh: number;
+  gioChiName: string;
+  tuTru: string;
+  tuoiKhoiHan: number;
   amDuongNam: string;
   banMenhNapAm: string;
   banMenhElement: string;
@@ -66,6 +77,7 @@ function chuyenDoiCung(chart: TuViChart, c: CungKetQua, ct: ChiTietChamDiem, coH
   return {
     ten: c.cungName,
     chi: c.chiName,
+    chiIndex: c.chiIndex,
     canThienBan: c.canName,
     isMenh: c.isMenh,
     isThan: c.isThan,
@@ -136,12 +148,16 @@ export function dungDuLieuLaSo(chart: TuViChart, cham: KetQuaChamDiem, hoTen: st
   };
 
   const pad = (n: number) => String(n).padStart(2, "0");
+  const tenTru = (p: { can: string; chi: string }) => `${p.can} ${p.chi}`;
 
   return {
     hoTen: hoTen || "quý khách",
     gioiTinh: chart.input.gender,
     ngaySinhDuong: `${pad(chart.input.day)}/${pad(chart.input.month)}/${chart.input.year}`,
     gioSinh: chart.input.hour,
+    gioChiName: chart.gioChiName,
+    tuTru: `${tenTru(chart.yearPillar)} · ${tenTru(chart.monthPillar)} · ${tenTru(chart.dayPillar)} · ${tenTru(chart.hourPillar)}`,
+    tuoiKhoiHan: chart.cucSo,
     amDuongNam: chart.amDuongNam,
     banMenhNapAm: chart.banMenhNapAm,
     banMenhElement: chart.banMenhElement,

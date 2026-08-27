@@ -97,6 +97,14 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
         <div class="mb-10 rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-6 text-sm text-(--color-ink-800)">
           <p class="font-display text-lg font-bold text-(--color-ink-950)">✅ Đã mua Luận Cơ Bản</p>
           <p class="mt-2">Bản luận giải đầy đủ (PDF) đã được gửi tới email tài khoản của bạn ngay sau khi thanh toán thành công. Vui lòng kiểm tra hộp thư (kể cả mục Spam/Quảng cáo).</p>
+          {/* BUG đã sửa: nút mua Nâng Cao trước đây chỉ nằm trong khối báo cáo admin-only (baoCaoCoBan),
+              nên khách thường đã mua Cơ Bản không có cách nào bấm mua Nâng Cao trên trang. */}
+          {!coDonNangCaoChuaHienThi && (
+            <div class="mt-4 border-t border-(--color-gold-400)/30 pt-4">
+              <p>Bản Luận Nâng Cao sẽ đi sâu vào Thần Sát, gia đình - lục thân, sức khỏe, và trọn vẹn các giai đoạn vận trình từ nhỏ đến già.</p>
+              <Button id="ldbtd-mua-nang-cao" size="md" class="mt-3">Xem Luận Nâng Cao — {dinhDangTien(GIA_NANG_CAO)}</Button>
+            </div>
+          )}
         </div>
       )}
 
@@ -242,6 +250,8 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
 
           <div id="ldbtd-free-daivan" class="mt-4 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3"></div>
 
+          <div id="ldbtd-free-luunien" class="mt-4 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3"></div>
+
           <div class="mt-4 flex items-center justify-between gap-2">
             <p class="text-xs font-medium text-(--color-ink-600)">Gợi mở miễn phí</p>
             <button type="button" class="ldbtd-tts-btn shrink-0 rounded-full border border-(--color-gold-400)/50 bg-(--color-gold-400)/10 px-3 py-1.5 text-xs font-medium text-(--color-gold-700)" data-tts-target="ldbtd-free-text">🔊 Nghe thử</button>
@@ -371,6 +381,22 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
         </svg>
       `;
     }
+    function renderLuuNienFree(luuNien: { year: number; tuoi: number; can: string; chi: string; diem: number }[]) {
+      const el = document.getElementById("ldbtd-free-luunien");
+      if (!el || !luuNien.length) return;
+      const the = luuNien.map((n) => {
+        const mau = n.diem > 0 ? "#16a34a" : n.diem < 0 ? "#c0392b" : "#8a8270";
+        return `
+          <div class="flex-1 rounded-(--radius-control) border border-(--color-ivory-300) bg-white px-2 py-2 text-center">
+            <p class="text-xs font-medium text-(--color-ink-600)">${n.year} (${n.tuoi}t)</p>
+            <p class="mt-0.5 text-sm font-bold" style="color:${mau}">${n.can} ${n.chi}</p>
+          </div>`;
+      }).join("");
+      el.innerHTML = `
+        <p class="mb-2 text-xs font-medium text-(--color-ink-600)">Lưu Niên ${luuNien.length} năm tới (ước tính thô so Dụng/Hỷ/Kỵ Thần nguyên cục — bản luận đầy đủ tính lại theo đúng Đại Vận từng năm, kèm luận chi tiết)</p>
+        <div class="flex gap-2">${the}</div>
+      `;
+    }
     const thanhToanEl = document.getElementById("ldbtd-thanh-toan")!;
     const qrImg = document.getElementById("ldbtd-qr") as HTMLImageElement;
     const orderCodeEl = document.getElementById("ldbtd-order-code")!;
@@ -471,12 +497,14 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
         dangChayEl.classList.add("hidden");
         if (!res.ok || !data.ok) return baoLoi(data.error ?? "Không lập được lá số.");
 
-        freeTextEl.textContent = `Nhật Chủ ${data.laSo.nhatChu} — Dụng Thần ${data.laSo.dungThan}\n\n${data.goiMo}`;
+        const dongDieuHau = data.laSo.dieuHauNote ? `\n${data.laSo.dieuHauNote}` : "";
+        freeTextEl.textContent = `Nhật Chủ ${data.laSo.nhatChu} — Dụng Thần ${data.laSo.dungThan} · Hỷ Thần ${data.laSo.hyThan} · Kỵ Thần ${data.laSo.kyThan}${dongDieuHau}\n\n${data.goiMo}`;
         if (data.doHinh) {
           renderTuTru(data.doHinh.tuTru);
           renderNguHanhDonut(data.doHinh.nguHanhPhanBo);
           renderGauge(data.doHinh.diemVuongSuy, data.laSo.capDoVuongSuy);
           renderDaiVanSong(data.doHinh.daiVan);
+          renderLuuNienFree(data.doHinh.luuNien);
         }
         freeResultEl.classList.remove("hidden");
         freeResultEl.scrollIntoView({ behavior: "smooth", block: "start" });
