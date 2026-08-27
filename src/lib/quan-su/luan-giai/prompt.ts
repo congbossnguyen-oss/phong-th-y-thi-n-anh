@@ -97,6 +97,15 @@ export function userPrompt(payload: QuanSuInterpretationPayload, moTa?: string):
     );
   }
 
+  if (payload.tam_hop_cuc.co) {
+    phan.push(
+      "",
+      "TAM HỢP CỤC (engine tính sẵn — các hào tham gia ĐỔI HẲN sang ngũ hành của cục):",
+      JSON.stringify(payload.tam_hop_cuc, null, 1),
+      "Cục hình thành là tốt hay xấu tùy hành của cục sinh/khắc gì với Dụng Thần — tự luận, KHÔNG mặc định cục là điềm lành.",
+    );
+  }
+
   if (payload.ung_ky) {
     phan.push(
       "",
