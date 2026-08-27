@@ -206,6 +206,11 @@ export const prerender = true;
           <Button id="battu-save-pdf" type="button" variant="secondary">Lưu PDF</Button>
         </div>
 
+        <div id="battu-goi-mo" class="mt-6 hidden rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-5">
+          <p class="font-display text-base font-bold text-(--color-ink-950)">✦ Gợi mở nhanh về lá số của bạn</p>
+          <p id="battu-goi-mo-noi-dung" class="mt-2 whitespace-pre-line text-sm leading-relaxed text-(--color-ink-800)"></p>
+        </div>
+
         <p class="mt-6 text-sm leading-relaxed text-(--color-ink-600)">
           <strong>Lưu ý:</strong> Đây là công cụ lập lá số tự động, không thay thế luận giải chuyên sâu. Ngày/tháng
           khởi Đại Vận là ước tính (độ chính xác trung bình); tuổi và Can Chi từng vận đã được đối chiếu chính xác.
@@ -585,10 +590,45 @@ export const prerender = true;
 
       resultEl.classList.remove("hidden");
       resultEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+
+      // Đoạn luận giải nhỏ để mồi ngay dưới lá số (anh Công yêu cầu 27/8/2026). Gọi lại đúng endpoint
+      // xem-truoc của bản luận giải đầy đủ (đã làm sâu buổi sáng cùng ngày) thay vì viết lại logic —
+      // hàm sinh câu (`taoGoiMoFree`) đọc dữ liệu qua fs nên chỉ chạy được ở server, không bundle được
+      // cho trình duyệt.
+      taiGoiMo({ day, month, year, hour, minute, gender });
     } catch (err) {
       alert("Không tính được lá số cho ngày giờ này, vui lòng kiểm tra lại thông tin nhập vào.");
     }
   });
+
+  const goiMoWrap = document.getElementById("battu-goi-mo")!;
+  const goiMoNoiDung = document.getElementById("battu-goi-mo-noi-dung")!;
+  let goiMoDangTai = 0;
+  async function taiGoiMo(dauVao: { day: number; month: number; year: number; hour: number; minute: number; gender: Gender }) {
+    const phienNay = ++goiMoDangTai;
+    goiMoWrap.classList.add("hidden");
+    try {
+      const res = await fetch("/api/dai-cat-loi/luan-giai-bat-tu-toan-dien/xem-truoc", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ngaySinh: { day: dauVao.day, month: dauVao.month, year: dauVao.year },
+          gio: dauVao.hour,
+          phut: dauVao.minute,
+          gioiTinh: dauVao.gender,
+        }),
+      });
+      const data = await res.json().catch(() => null);
+      if (phienNay !== goiMoDangTai) return; // khách đã lập lá số khác trong lúc chờ — bỏ kết quả cũ
+      if (data?.ok && data.goiMo) {
+        goiMoNoiDung.textContent = data.goiMo;
+        goiMoWrap.classList.remove("hidden");
+      }
+    } catch {
+      // Mồi là phần cộng thêm, không phải luồng chính — lỗi mạng thì âm thầm bỏ qua, khách vẫn xem
+      // được lá số bình thường.
+    }
+  }
 
   // Dùng html-to-image (render qua SVG foreignObject + engine trình duyệt thật) thay vì html2canvas,
   // vì html2canvas tự parse CSS và KHÔNG hỗ trợ oklch() — màu mặc định của Tailwind v4 — sẽ báo lỗi vỡ chức năng.
