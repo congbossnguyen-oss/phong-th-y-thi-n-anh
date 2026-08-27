@@ -16,7 +16,13 @@
   ],
   "hard_filters": {
     "L6_loai_gio_ty": true,
-    "_note_L6": "Giờ Tý (23–01h) loại mặc định — mốc đổi ngày nhạy cảm, bệnh viện gần như không mổ khung này. Có thể tắt qua config nếu gia đình có lý do."
+    "_note_L6": "Giờ Tý (23–01h) loại mặc định — mốc đổi ngày nhạy cảm. ⚠️ 27/8/2026 anh Công chốt 'tính dựa trên 12 canh giờ, không liên quan bác sỹ có làm hay không' → lý do 'bệnh viện không mổ' KHÔNG còn giá trị; nay chỉ còn lý do mệnh lý (mốc đổi ngày). Cân nhắc tắt.",
+
+    "L4_bat_buoc_du_5_hanh": false,
+    "_note_L4": "Anh Công chốt 27/8/2026: NỚI, về đúng câu chữ. Tiêu chí 2 ghi nguyên văn 'Tứ trụ gốc đủ cả 5 hành LÀ TỐT NHẤT' — mong muốn lý tưởng, KHÔNG phải điều kiện loại; trước đây dùng làm lọc cứng nên loại oan ~24% ứng viên. Nay hành khuyết chuyển thành TRỪ ĐIỂM ở lĩnh vực Sức khỏe (benh-tat.md §Nguyên tắc nền (a): hành quá suy/khuyết là 1 trong 3 cơ chế sinh bệnh). Đặt lại true nếu muốn siết như cũ.",
+
+    "L7_bat_buoc_an_co_can": false,
+    "_note_L7": "Anh Công chốt 27/8/2026: NỚI, về đúng câu chữ. Tiêu chí 8 ghi 'Phải có Ấn trong nhà (Ấn tinh CÓ MẶT ngay trong nguyên cục)' — chỉ yêu cầu CÓ MẶT; yêu cầu 'VÀ có căn' là module tự siết thêm, loại ~45% ứng viên (thủ phạm lớn nhất). Nay Ấn vắng mặt hẳn mới loại; Ấn có mặt mà không căn vẫn bị trừ điểm ở lĩnh vực Gia đạo (luc-than.md §0 'thiếu chỗ dựa'). Đặt lại true nếu muốn siết như cũ."
   },
   "L8_tong_cach_nghi_ngo": {
     "_warn": "⚠️ Ngưỡng chưa đối chiếu án lệ — xem 00-quy-uoc-va-cho-trong.md §3.2",

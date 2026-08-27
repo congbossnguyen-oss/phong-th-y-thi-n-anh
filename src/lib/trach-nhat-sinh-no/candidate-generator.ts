@@ -56,26 +56,43 @@ function trongKhungBenhVien(
   });
 }
 
+/**
+ * Sinh ứng viên trên ĐỦ 12 CANH GIỜ mỗi ngày.
+ *
+ * ⚠️ ĐỔI HƯỚNG 27/8/2026 (anh Công chốt): *"chúng ta sẽ tính dựa trên 12 canh giờ, không liên quan
+ * việc bác sỹ có làm hay không"*. Trước đây khung giờ bệnh viện là RÀNG BUỘC CỨNG, ứng viên ngoài
+ * khung bị loại thẳng (`MEDICAL_REJECTED`) — đo thật cho thấy với khung mổ 7h–17h thì **0/336** ứng
+ * viên sống sót, tức là ca dùng phổ biến nhất (mổ chủ động) gần như luôn trả về "không có phương án".
+ *
+ * Nay: luôn chấm đủ 12 canh giờ theo mệnh lý; khung giờ bệnh viện (nếu gia đình có khai) chỉ còn là
+ * GHI CHÚ tham khảo gắn kèm phương án, KHÔNG loại và KHÔNG trừ điểm. Việc thu xếp với bệnh viện là
+ * quyết định của gia đình, công cụ không thay họ cắt bớt lựa chọn.
+ */
 export function sinhTatCaUngVien(input: BirthSelectionInput): BirthCandidate[] {
   const out: BirthCandidate[] = [];
   for (const date of iterateDates(input.startDate, input.endDate)) {
     for (const gio of GIO_DIA_CHI) {
-      const medicalEligible =
-        input.deliveryMode === "scheduled_c_section"
-          ? trongKhungBenhVien(date, gio.hourRepr, input.hospitalTimeWindows)
-          : true; // sinh thường/chưa rõ: không giả định chọn được giờ, nhưng vẫn liệt kê để đánh giá NGÀY
+      // Chỉ để GẮN NHÃN cho gia đình dễ thu xếp — không ảnh hưởng lọc/xếp hạng.
+      const trongKhungGioBenhVien = trongKhungBenhVien(date, gio.hourRepr, input.hospitalTimeWindows);
       out.push({
         id: `${toDateKey(date)}-${gio.hourRepr}h${gio.chi}`,
         date,
         chiGio: gio.chi,
         khungGio: gio.khungGio,
         hourRepr: gio.hourRepr,
-        status: medicalEligible ? "GENERATED" : "MEDICAL_REJECTED",
-        medicalEligible,
+        status: "GENERATED",
+        medicalEligible: true, // luôn xét — xem ghi chú đổi hướng ở trên
+        ngoaiKhungGioBenhVien: !trongKhungGioBenhVien,
         hardFilterRejections: [],
-        redFlags: medicalEligible
+        redFlags: trongKhungGioBenhVien
           ? []
-          : [{ source: "medical", severity: "critical", code: "MEDICAL_OUT_OF_WINDOW", title: "Ngoài khung giờ bệnh viện cho phép", explanation: "Khung giờ này nằm ngoài thời gian bệnh viện cho phép mổ — y tế luôn là ràng buộc cứng, không dùng điểm mệnh lý để cứu." }],
+          : [{
+              source: "medical",
+              severity: "low",
+              code: "MEDICAL_OUT_OF_WINDOW",
+              title: "Ngoài khung giờ bệnh viện gia đình đã khai",
+              explanation: "Giờ này nằm ngoài khung mổ mà gia đình khai báo. Đây CHỈ là ghi chú để tiện thu xếp — công cụ vẫn chấm đủ 12 canh giờ theo mệnh lý, không loại giờ nào vì lý do lịch bệnh viện.",
+            }],
       });
     }
   }

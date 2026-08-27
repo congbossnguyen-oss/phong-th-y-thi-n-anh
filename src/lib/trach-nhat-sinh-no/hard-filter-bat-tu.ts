@@ -75,8 +75,11 @@ export function locCungL1L8(input: {
     reasons.push({ code: "L3", title: "Nhật Can vô căn", explanation: `Can ngày ${chart.day.can} (${hanhCan(chart.day.can)}) không có địa chi nào tàng chứa cùng hành.` });
   }
   // L4 — Không đủ 5 hành (kể cả tàng can).
+  // ⚠️ Tiêu chí 2 nguyên văn: "Tứ trụ gốc đủ cả 5 hành LÀ TỐT NHẤT" — là mong muốn lý tưởng, không
+  // phải điều kiện loại. Khi `L4_bat_buoc_du_5_hanh` = false thì không loại nữa; hành khuyết vẫn bị
+  // trừ điểm ở lĩnh vực Sức khỏe (benh-tat.md §Nguyên tắc nền (a)).
   const tapHanh = tapNguHanhCoMat(chart);
-  if (tapHanh.size < 5) {
+  if (tapHanh.size < 5 && (cfg.hard_filters.L4_bat_buoc_du_5_hanh ?? true)) {
     const thieu = HANH_5.filter((h) => !tapHanh.has(h));
     reasons.push({ code: "L4", title: "Tứ trụ không đủ 5 hành", explanation: `Thiếu hành: ${thieu.join(", ")} (tính cả tàng can).` });
   }
@@ -93,8 +96,13 @@ export function locCungL1L8(input: {
   const anHanh = hanhSinhCho(nhatChuHanh);
   const anCoMat = tapHanh.has(anHanh);
   const anCoCan = hanhCoCanBanKhi(anHanh, chart);
-  if (!anCoMat || !anCoCan) {
-    reasons.push({ code: "L7", title: "Không có Ấn tinh có căn trong nguyên cục", explanation: `Ấn (hành ${anHanh}) ${!anCoMat ? "không có mặt" : "có mặt nhưng không có căn (chỉ thấu can trơ trọi hoặc chỉ ở dư/trung khí)"} trong tứ trụ.` });
+  // ⚠️ Tiêu chí 8 nguyên văn: "Phải có Ấn trong nhà (Ấn tinh CÓ MẶT ngay trong nguyên cục)" — chỉ
+  // yêu cầu CÓ MẶT. Yêu cầu "và có căn" là diễn giải chặt thêm của module (thủ phạm loại nhiều nhất,
+  // ~45%). Khi `L7_bat_buoc_an_co_can` = false thì chỉ loại khi Ấn VẮNG MẶT hẳn; Ấn có mặt mà không
+  // căn vẫn bị trừ điểm ở lĩnh vực Gia đạo (luc-than.md §0 "Ấn tinh thiếu chỗ dựa").
+  const batBuocAnCoCan = cfg.hard_filters.L7_bat_buoc_an_co_can ?? true;
+  if (!anCoMat || (batBuocAnCoCan && !anCoCan)) {
+    reasons.push({ code: "L7", title: "Không có Ấn tinh trong nguyên cục", explanation: `Ấn (hành ${anHanh}) ${!anCoMat ? "không có mặt" : "có mặt nhưng không có căn (chỉ thấu can trơ trọi hoặc chỉ ở dư/trung khí)"} trong tứ trụ.` });
   }
   // L8 — Vùng nghi ngờ Tòng Cách, chạm 1 trong 4 dấu hiệu → loại.
   const w = trongSoNguHanh(chart, cfg.L8_tong_cach_nghi_ngo.trong_so_chinh_khi, cfg.L8_tong_cach_nghi_ngo.trong_so_du_trung_khi);

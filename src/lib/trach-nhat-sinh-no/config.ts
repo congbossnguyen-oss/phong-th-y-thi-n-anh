@@ -8,7 +8,13 @@ import { join } from "node:path";
 
 export interface TrachNhatConfig {
   chin_tieu_chi: string[];
-  hard_filters: { L6_loai_gio_ty: boolean };
+  hard_filters: {
+    L6_loai_gio_ty: boolean;
+    /** false → "đủ 5 hành" chỉ còn là điểm cộng/trừ, không loại (đúng câu chữ "là tốt nhất"). */
+    L4_bat_buoc_du_5_hanh?: boolean;
+    /** false → chỉ cần Ấn CÓ MẶT là qua (đúng câu chữ tiêu chí 8), không bắt thêm "có căn". */
+    L7_bat_buoc_an_co_can?: boolean;
+  };
   L8_tong_cach_nghi_ngo: { mot_hanh_chiem_toi_thieu_phan_tram: number; trong_so_chinh_khi: number; trong_so_du_trung_khi: number };
   chat_luong_goc: { nguong_toi_thieu_lop: "A" | "B" | "C" | "D"; nguong_toi_thieu_diem_thong_can: number };
   an_tinh: { nguong_qua_thua_so_phan: number };

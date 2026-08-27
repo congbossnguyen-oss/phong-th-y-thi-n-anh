@@ -133,9 +133,37 @@ function chamSucKhoe(bazi: BaziAnalysis, chart: BatTuChart): { diem: number; can
     d -= MANH;
     canCu.push({ thuanLoi: false, noiDung: `Hành ${hanhTroi} chiếm quá nửa mệnh cục — một hành quá vượng, dễ mất cân bằng tạng phủ.`, nguon: "benh-tat.md §Nguyên tắc nền (a)" });
   }
+  // Khuyết hành — NHƯNG phải xét Đại Vận có bổ khuyết vào không (anh Công 27/8/2026: "thiếu ngũ hành
+  // nhưng khi vào đại vận bổ khuyết cho thì vẫn chọn được, tất nhiên không hoàn hảo tuyệt đối").
+  // Căn cứ: `vuong-suy.md` §6.1 — "xác định vượng suy trên nguyên cục tĩnh TRƯỚC, sau đó XÉT LẠI khi
+  // tiến nhập Đại Vận/Lưu Niên". Thiếu mà được vận bù ≠ thiếu suốt đời không ai bù.
   if (hanhKhuyet.length > 0) {
-    d -= hanhKhuyet.length * NHE;
-    canCu.push({ thuanLoi: false, noiDung: `Khuyết hẳn hành ${hanhKhuyet.join(", ")} — vùng cơ thể ứng với hành này thiếu lực bẩm sinh.`, nguon: "benh-tat.md §Nguyên tắc nền (a)" });
+    const vanDauDoi = (chart.daiVan ?? []).slice(0, 4); // ~4 vận đầu, phủ tuổi thơ → lập nghiệp
+    const duocBo: string[] = [];
+    const conThieu: Hanh[] = [];
+    for (const h of hanhKhuyet) {
+      const van = vanDauDoi.find((v) => hanhCan(v.can) === h || hanhChi(v.chi) === h);
+      if (van) duocBo.push(`${h} (vận ${van.can} ${van.chi}, ${van.startAge}–${van.endAge} tuổi)`);
+      else conThieu.push(h);
+    }
+    // Được vận bù thì chỉ trừ một nửa — vẫn không bằng có sẵn trong nguyên cục, nhưng không còn là
+    // khuyết hãm suốt đời; giai đoạn có vận bù là giai đoạn được nâng đỡ thật.
+    if (duocBo.length > 0) {
+      d -= duocBo.length * (NHE / 2);
+      canCu.push({
+        thuanLoi: true,
+        noiDung: `Nguyên cục khuyết ${duocBo.join("; ")} nhưng Đại Vận đầu đời mang hành đó đến bù — không bằng có sẵn trong lá số, song đúng giai đoạn ấy vẫn được nâng đỡ.`,
+        nguon: "vuong-suy.md §6.1 (xét lại vượng suy khi nhập Đại Vận) + benh-tat.md §Nguyên tắc nền (a)",
+      });
+    }
+    if (conThieu.length > 0) {
+      d -= conThieu.length * NHE;
+      canCu.push({
+        thuanLoi: false,
+        noiDung: `Khuyết hẳn hành ${conThieu.join(", ")} và các Đại Vận đầu đời cũng KHÔNG bổ vào — vùng cơ thể ứng với hành này thiếu lực bẩm sinh, cần chú ý bồi dưỡng bằng ăn uống/sinh hoạt.`,
+        nguon: "benh-tat.md §Nguyên tắc nền (a)",
+      });
+    }
   }
 
   // (b) Hai hành tương chiến trực diện: cả hai cùng thấu Can và mạnh, không có hành thông quan đủ lực.
