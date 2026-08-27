@@ -55,22 +55,25 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
   const hangYeuCau = hangYeuCauTheoCauHoi(question.pricing_tier);
   if (!(await coQuyenTruyCap(locals.user.id, hangYeuCau, locals.user.isAdmin))) {
     const tenHang = hangYeuCau === "cao_cap" ? "Cao cấp" : "Cơ bản";
-    return json({ error: `Câu hỏi này cần gói ${tenHang} đang hoạt động. Hãy đăng ký gói hoặc dùng thử 7 ngày miễn phí.` }, 403);
+    return json({ error: `Câu hỏi này cần gói ${tenHang} đang hoạt động. Hãy đăng ký gói chính thức.` }, 403);
   }
 
-  // Hạn mức lượt hỏi/tháng — admin bỏ qua (cùng quy ước với coQuyenTruyCap ở trên, để test không bị
-  // chặn). Đọc GÓI THẬT của tài khoản (không phải hangYeuCau của câu hỏi) vì hạn mức tính theo gói
-  // đang có, không theo câu hỏi đang hỏi.
+  // DÙNG THỬ KHÔNG ĐƯỢC HỎI QUÂN SƯ (anh Công quyết định 27/8/2026, xem dung-thu.ts) — chặn ở đây
+  // là lớp phòng thủ thứ 2 (endpoint tạo trial đã ngưng cấp mới), phòng trường hợp còn bản ghi
+  // subscriptions isTrial=true cũ từ lúc trial còn hoạt động (test nội bộ trước 27/8/2026).
   if (locals.user.isAdmin !== true) {
     const goi = await layGoiDangHoatDong(locals.user.id);
+    if (goi?.isTrial) {
+      return json({ error: "Bản dùng thử không bao gồm tính năng hỏi Quân Sư (dùng AI thật) — vui lòng đăng ký gói chính thức." }, 403);
+    }
+
+    // Hạn mức lượt hỏi/tháng — admin bỏ qua. Đọc GÓI THẬT của tài khoản (không phải hangYeuCau của
+    // câu hỏi) vì hạn mức tính theo gói đang có, không theo câu hỏi đang hỏi.
     if (goi) {
-      const { conLuot, daDung, hanMuc } = await conLuotHoiKhong(locals.user.id, goi.tier, goi.isTrial);
+      const { conLuot, daDung, hanMuc } = await conLuotHoiKhong(locals.user.id, goi.tier, false);
       if (!conLuot) {
-        const goiYThem = goi.isTrial
-          ? "Đăng ký gói chính thức để có thêm lượt hỏi."
-          : "Hạn mức làm mới vào đầu tháng sau, hoặc nâng lên gói Cao cấp để có thêm lượt.";
         return json(
-          { error: `Bạn đã dùng hết ${hanMuc} lượt hỏi${goi.isTrial ? " của bản dùng thử" : " của gói tháng này"} (đã dùng ${daDung}/${hanMuc}). ${goiYThem}` },
+          { error: `Bạn đã dùng hết ${hanMuc} lượt hỏi của gói tháng này (đã dùng ${daDung}/${hanMuc}). Hạn mức làm mới vào đầu tháng sau, hoặc nâng lên gói Cao cấp để có thêm lượt.` },
           429,
         );
       }

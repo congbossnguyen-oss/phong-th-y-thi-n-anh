@@ -6,16 +6,13 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import BottomNav from "../../components/quan-su/BottomNav.astro";
 import "../../styles/quan-su.css";
 import { layGoiDangHoatDong } from "../../lib/subscriptions/access";
-import { daTungDungThu } from "../../lib/subscriptions/trial";
 import { GIA_SUBSCRIPTION, SO_THANG_THEO_KY_HAN, dinhDangTien, type SubscriptionTier, type SubscriptionDuration } from "../../lib/payments/gia-subscription";
-import { HAN_MUC_LUOT_THEO_GOI, HAN_MUC_LUOT_DUNG_THU } from "../../lib/subscriptions/usage";
+import { HAN_MUC_LUOT_THEO_GOI } from "../../lib/subscriptions/usage";
 
 export const prerender = false;
 
 const user = Astro.locals.user;
 const goiHienTai = user ? await layGoiDangHoatDong(user.id) : null;
-const daDungThu = user && !goiHienTai ? await daTungDungThu(user.id) : false;
-const coTheDungThu = !!user && !goiHienTai && !daDungThu;
 
 const TEN_HANG: Record<SubscriptionTier, string> = { co_ban: "Cơ bản", cao_cap: "Cao cấp" };
 const TEN_KY_HAN: Record<SubscriptionDuration, string> = { "1_thang": "1 tháng", "3_thang": "3 tháng", "6_thang": "6 tháng", "1_nam": "1 năm" };
@@ -89,17 +86,6 @@ const DURATIONS: SubscriptionDuration[] = ["1_thang", "3_thang", "6_thang", "1_n
             <p class="qs-sub">Anh {user.name} chưa có gói nào đang hoạt động.</p>
           )}
 
-          {coTheDungThu && (
-            <div class="qs-card" style="margin-bottom:1.5rem;text-align:center;">
-              <p class="qs-eyebrow" style="margin-top:0;">Chưa chắc chắn?</p>
-              <p style="margin:0.3rem 0 0.9rem;">Dùng thử <strong style="color:var(--qs-gold);">7 ngày miễn phí</strong>, trải nghiệm gói Cao cấp ({HAN_MUC_LUOT_DUNG_THU} lượt hỏi) — hết hạn thì chốt gói nào cũng được.</p>
-              <button type="button" id="btn-dung-thu" class="qs-btn">Dùng thử 7 ngày miễn phí</button>
-            </div>
-          )}
-          {daDungThu && !goiHienTai && (
-            <div class="qs-notice">Tài khoản đã dùng thử rồi — chọn 1 gói bên dưới để tiếp tục nhé.</div>
-          )}
-
           <div id="goi-grid" style="display:grid;grid-template-columns:1fr;gap:1rem;">
             {TIERS.map((tier) => (
               <div class="qs-card">
@@ -145,30 +131,9 @@ const DURATIONS: SubscriptionDuration[] = ["1_thang", "3_thang", "6_thang", "1_n
       const grid = document.getElementById("goi-grid");
       const phoneInput = document.getElementById("phone");
       const resultEl = document.getElementById("qs-sub-result");
-      const trialBtn = document.getElementById("btn-dung-thu");
       let pollTimer = null;
 
       function esc(s) { const d = document.createElement("div"); d.textContent = s == null ? "" : String(s); return d.innerHTML; }
-
-      trialBtn?.addEventListener("click", async () => {
-        trialBtn.disabled = true;
-        trialBtn.textContent = "Đang kích hoạt…";
-        try {
-          const res = await fetch("/api/quan-su/goi-thue-bao/dung-thu", { method: "POST" });
-          const data = await res.json();
-          if (!data.ok) {
-            alert(data.error || "Không kích hoạt được dùng thử.");
-            trialBtn.disabled = false;
-            trialBtn.textContent = "Dùng thử 7 ngày miễn phí";
-            return;
-          }
-          window.location.reload();
-        } catch (e) {
-          alert("Không kết nối được máy chủ, vui lòng thử lại.");
-          trialBtn.disabled = false;
-          trialBtn.textContent = "Dùng thử 7 ngày miễn phí";
-        }
-      });
 
       async function pollStatus(orderCode) {
         try {
