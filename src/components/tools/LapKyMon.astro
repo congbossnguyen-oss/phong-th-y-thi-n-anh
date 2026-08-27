@@ -539,13 +539,20 @@ const {
   .km-lbl-b { bottom: 0; left: 4px; right: 4px; height: var(--km-vien); line-height: var(--km-vien); text-align: center; }
   .km-lbl-l { left: 0; top: 4px; bottom: 4px; width: var(--km-vien); writing-mode: vertical-rl; transform: rotate(180deg); text-align: center; }
   .km-lbl-r { right: 0; top: 4px; bottom: 4px; width: var(--km-vien); writing-mode: vertical-rl; text-align: center; }
-  /* Mã (🐴) — gắn trên viền màu ngoài, cạnh nhãn địa chi (không còn trong ô trắng). */
-  .km-lbl-ma { display: inline-block; margin-left: 0.2em; font-size: 0.8rem; text-orientation: upright; }
-  .km-cung > .km-badge-kv {
-    position: absolute;
-    top: 1px;
-    left: 2px;
-    z-index: 2;
+  /* Mã (🐴) — gắn trên viền màu ngoài, cạnh nhãn địa chi (không còn trong ô trắng). writing-mode
+     ép RIÊNG (không ăn theo dải cha) để luôn đứng trục dọc dù rơi vào dải trên/dưới (nằm ngang)
+     hay dải trái/phải (đã dọc sẵn) — anh Công 28/8/2026: "mã tinh khi an vào cung nào em cũng
+     cho nó đứng thẳng theo trục dọc". */
+  .km-lbl-ma {
+    display: inline-block; writing-mode: vertical-rl; text-orientation: upright;
+    margin-left: 0.2em; font-size: 0.8rem; vertical-align: middle;
+  }
+  /* KV (Không Vong) — gắn ngay sau CHÍNH chi bị không vong trên viền ngoài (không còn nằm trong ô
+     trắng như trước). Cùng lý do ép writing-mode riêng như Mã ở trên. Cung góc có 2 chi (vd "Tuất
+     Hợi"): nếu cả 2 đều không vong thì mỗi chi có 1 chữ KV riêng — xem chiHtml trong script. */
+  .km-lbl-kv {
+    display: inline-block; writing-mode: vertical-rl; text-orientation: upright;
+    margin-left: 0.1em; font-size: 0.56rem; font-weight: 800; color: #ffd76a; vertical-align: middle;
   }
   .km-cung-so {
     flex: none;
@@ -564,7 +571,15 @@ const {
     grid-template-rows: auto 1fr auto;
     color: #2a1512;
   }
-  .km-cung-r1,
+  /* r1 giờ chỉ còn 2 cột [thiên can | Cửu Tinh] — Bát Thần (.cc-than) đã tách khỏi lưới này, neo
+     tuyệt đối vào góc trên-phải của .km-cung-inner (anh Công 28/8/2026: "bát thần cho sang góc
+     phải"), không còn chiếm chỗ chung dòng với can/sao nữa. */
+  .km-cung-r1 {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: start;
+    column-gap: 2px;
+  }
   .km-cung-r2 {
     display: grid;
     grid-template-columns: 1fr auto 1fr;
@@ -572,29 +587,33 @@ const {
     column-gap: 2px;
   }
   .cc-can { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.72rem; font-weight: 700; color: #3a2620; text-align: left; }
-  /* Cửu Tinh (sao): chữ đậm rõ — dùng font sans thay vì serif để đọc "đậm" hơn ở cỡ nhỏ. */
+  /* Cửu Tinh (sao): chữ đậm rõ — dùng font sans thay vì serif để đọc "đậm" hơn ở cỡ nhỏ. Cỡ chữ
+     hạ 1rem -> 0.84rem (anh Công 28/8/2026: "cửu tinh cho chính giữa chữ nhỏ đi"), vẫn giữ căn giữa. */
   .cc-sao {
     font-family: var(--font-sans);
     font-weight: 800;
-    font-size: 1rem;
+    font-size: 0.84rem;
     color: #1f120e;
     text-align: center;
     line-height: 1;
   }
-  /* min-width:0 bắt buộc trong grid 1fr — nếu không, tên thần dài (Huyền Vũ, Cửu Thiên...) ở
-     cung góc (inner box hẹp hơn do padding 2 cạnh) sẽ đẩy tràn ô thay vì co/ellipsis. */
-  /* Bát Thần: đậm + cỡ chữ ngang Cửu Tinh/Bát Môn (trước đây 0.62rem không đậm — nhỏ hơn hẳn). */
+  /* Bát Thần: chuyển sang GÓC TRÊN-PHẢI của ô (position:absolute, neo vào .km-cung-inner — ancestor
+     gần nhất có position:absolute), không còn nằm chung dòng với can/sao. Đồng thời đổi sang TÊN
+     VIẾT TẮT sẵn có trong dữ liệu gốc ("B.Hổ", "Đ.Xà"...) thay vì tên đầy đủ ("Bạch Hổ", "Đằng Xà")
+     — cỡ chữ hạ theo cho vừa góc, không cần ellipsis/overflow phòng tràn như trước nữa vì tên viết
+     tắt luôn ngắn (anh Công 28/8/2026: "bát thần... chữ bạch hổ ghi tắt là B.hồ... để cho đỡ dài"). */
   .cc-than {
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+    position: absolute;
+    top: 0.05rem;
+    right: 0.02rem;
+    z-index: 1;
     font-family: var(--font-sans);
     font-weight: 800;
-    font-size: 0.94rem;
+    font-size: 0.66rem;
     color: #b8322a;
     text-align: right;
     line-height: 1.05;
+    white-space: nowrap;
   }
   /* Băng giữa: nhãn TP/TS/Mộ/Hình ở góc trên-trái; H/D/M/Y ở GIỮA sát cạnh trái;
      MŨI TÊN + SỐ CUNG ở góc dưới-phải (số nằm dưới-phải, mũi tên ngay trên môn — như app). */
@@ -654,7 +673,6 @@ const {
     font-weight: 700;
     line-height: 1.35;
   }
-  .km-badge-kv { background: #6b5b4b; color: #fff; }
   .km-badge-ma { background: transparent; padding: 0; font-size: 0.9rem; line-height: 1; }
   .km-badge-tp { background: #c0261e; color: #fff; }
   .km-badge-ts { background: #e07b34; color: #fff; }
@@ -812,16 +830,13 @@ const {
     .km-lbl { font-size: 0.48rem; }
     .km-lbl-ma { font-size: 0.6rem; }
 
-    /* Hàng trên vốn xếp [can | sao | thần] trên CÙNG 1 dòng — màn hẹp không đủ, tên Bát Thần dài
-       ("Huyền Vũ", "Cửu Thiên") bị cắt thành "Huyề…". Cho Bát Thần xuống dòng riêng, ăn trọn
-       chiều ngang ô thì hiện đủ chữ. */
-    .km-cung-r1 { grid-template-columns: auto 1fr; }
-    .cc-than { grid-column: 1 / -1; text-align: left; margin-top: 1px; }
-
+    /* Bát Thần giờ neo góc trên-phải bằng tên viết tắt ngắn ("B.Hổ") thay vì tên đầy đủ ("Bạch
+       Hổ") nên không còn tràn/cần xuống dòng riêng như trước — chỉ hạ cỡ chữ thêm theo màn hẹp. */
     .km-cung-inner { padding: 0.2rem 0.22rem; }
     .cc-can, .cc-diacan { font-size: 0.6rem; }
-    .cc-sao { font-size: 0.82rem; }
-    .cc-than, .cc-mon { font-size: 0.76rem; }
+    .cc-sao { font-size: 0.72rem; }
+    .cc-than { font-size: 0.56rem; }
+    .cc-mon { font-size: 0.76rem; }
     .cc-so { font-size: 1.2rem; }
     .km-mt { font-size: 0.85rem; }
     .km-cung-so { font-size: 0.54rem; }
@@ -879,6 +894,8 @@ const {
     trucSu: string;
     trucSuCung: number;
     cungList: CungInfo[];
+    /** Cặp 2 chi Không Vong theo tuần của trụ Thời Thần — dùng để đánh dấu KV đúng vị trí từng chi. */
+    tuanKhongChi?: [string, string];
   }
 
   interface HangTamThang {
@@ -1310,9 +1327,7 @@ const {
       const c = cungMap.get(soCung);
       if (!c) return "";
       const trungCung = soCung === 5;
-      // KV đưa lên đầu cung (cạnh hướng) như app.
-      const kvHead = c.KV ? '<span class="km-badge km-badge-kv">KV</span>' : "";
-      // Nhãn giữa (cạnh số): Trực Phù / Trực Sử / Mộ / Hình. Mã chuyển ra viền ngoài (xem dưới).
+      // Nhãn giữa (cạnh số): Trực Phù / Trực Sử / Mộ / Hình. Mã và KV chuyển ra viền ngoài (xem dưới).
       // Nhập Mộ, Kích Hình xét theo THIÊN BÀN CAN (can "đóng" tại cung — cùng quy ước với cách
       // mô tả Trực Phù "đóng ở cung"). Giáp không bao giờ xuất hiện làm thienBanCan (luôn ẩn dưới
       // Phù Đầu — xem engine.ts) nên nhánh "Giáp" của bảng Nhập Mộ sẽ không khớp trực tiếp, đúng
@@ -1339,16 +1354,24 @@ const {
       // bị cắt cụt (anh Công báo 27/8/2026).
       const vien = (n: number) => (n ? "var(--km-vien)" : "0px");
       const padStyle = `padding:${vien(f.pad[0])} ${vien(f.pad[1])} ${vien(f.pad[2])} ${vien(f.pad[3])}`;
-      const chiStr = (c.diaChi ?? []).join(" ");
+      // Mỗi chi của cung dựng RIÊNG (không gộp thành 1 chuỗi nữa): cung góc có 2 chi (vd "Tuất
+      // Hợi") — nếu Không Vong rơi đúng cả 2 chi đó thì phải ra 2 chữ "KV" trên viền ngoài, một
+      // cái ngay sau MỖI chi, không phải 1 cái chung cho cả cung (anh Công báo 28/8/2026, kèm ảnh
+      // chụp KV cũ nằm lọt trong ô trắng, nằm ngang — xem thêm 2 CSS .km-lbl-kv/.km-lbl-ma bên
+      // dưới, ép writing-mode dọc RIÊNG chứ không ăn theo hướng dải (dải trên/dưới vốn nằm ngang).
+      const kv = laBan.tuanKhongChi ?? [];
+      const chiHtml = (c.diaChi ?? [])
+        .map((chi) => chi + (kv.includes(chi) ? '<span class="km-lbl-kv" title="Không Vong">KV</span>' : ""))
+        .join(" ");
       // Mã (🐴): đặt trên VIỀN NGOÀI (dải màu), gắn liền cạnh nhãn địa chi — không còn trong ô trắng.
       const maIcon = c.Ma ? '<span class="km-lbl-ma" title="Mã">🐴</span>' : "";
       let labels = "";
       if (f.dir) {
         if (f.dir === f.chi) {
-          labels = `<span class="km-lbl km-lbl-${f.dir}">${DIR_LABEL[soCung]}${chiStr ? " " + chiStr : ""}${maIcon}</span>`;
+          labels = `<span class="km-lbl km-lbl-${f.dir}">${DIR_LABEL[soCung]}${chiHtml ? " " + chiHtml : ""}${maIcon}</span>`;
         } else {
           labels = `<span class="km-lbl km-lbl-${f.dir}">${DIR_LABEL[soCung]}</span>`;
-          if (chiStr && f.chi) labels += `<span class="km-lbl km-lbl-${f.chi}">${chiStr}${maIcon}</span>`;
+          if (chiHtml && f.chi) labels += `<span class="km-lbl km-lbl-${f.chi}">${chiHtml}${maIcon}</span>`;
           else if (maIcon) labels += `<span class="km-lbl km-lbl-${f.dir}" style="top:auto;bottom:0">${maIcon}</span>`;
         }
       } else if (maIcon) {
@@ -1364,7 +1387,7 @@ const {
         : `<div class="km-cung-r1">
              <span class="cc-can">${c.thienBanCan}</span>
              <span class="cc-sao">${tenDayDu(SAO_NGAN, c.saoThienBan)}</span>
-             <span class="cc-than">${tenDayDu(TEN_THAN, c.than)}</span>
+             <span class="cc-than">${c.than}</span>
            </div>`;
       const botright = trungCung
         ? `<div class="km-cung-botright"><span class="cc-so">${soDiaBan(soCung, laBan.cuc)}</span></div>`
@@ -1377,7 +1400,6 @@ const {
            </div>`;
       return `
         <div class="km-cung" style="--nh:${NGU_HANH_CUNG[soCung]}; ${padStyle}">
-          ${kvHead}
           ${labels}
           <div class="km-cung-inner-wrap">
             <div class="km-cung-inner">
