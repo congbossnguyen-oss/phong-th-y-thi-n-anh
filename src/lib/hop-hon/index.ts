@@ -17,6 +17,7 @@ import {
 
 export type { TrucKetQua, MucTruc } from "./bat-tu-tang";
 export type { NhanTongQuan } from "./bang-luat";
+export { diemRadarTheoTruc, diemVongTron, type DiemRadar } from "./radar";
 
 export interface NguoiHopHon {
   ten?: string; // tên gọi hiển thị (tuỳ chọn) — không tham gia tính toán
