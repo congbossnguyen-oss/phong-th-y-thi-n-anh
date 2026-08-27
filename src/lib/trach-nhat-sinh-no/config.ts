@@ -14,6 +14,8 @@ export interface TrachNhatConfig {
     L4_bat_buoc_du_5_hanh?: boolean;
     /** false → chỉ cần Ấn CÓ MẶT là qua (đúng câu chữ tiêu chí 8), không bắt thêm "có căn". */
     L7_bat_buoc_an_co_can?: boolean;
+    /** false → "trụ giờ xung trụ tháng" không loại nữa, chỉ trừ điểm Gia đạo (không có trong 9 tiêu chí). */
+    L5_bat_buoc_khong_xung_gio_thang?: boolean;
   };
   L8_tong_cach_nghi_ngo: { mot_hanh_chiem_toi_thieu_phan_tram: number; trong_so_chinh_khi: number; trong_so_du_trung_khi: number };
   chat_luong_goc: { nguong_toi_thieu_lop: "A" | "B" | "C" | "D"; nguong_toi_thieu_diem_thong_can: number };

@@ -23,17 +23,30 @@ const dungInput = (d: Partial<BirthSelectionInput> = {}): BirthSelectionInput =>
 });
 
 /** Quét vài tháng để có mẫu đủ lớn mà vẫn chạy nhanh trong CI. */
+/**
+ * Mẫu diện rộng để khoá hành vi thang điểm.
+ *
+ * ⚠️ PHẢI trải qua NHIỀU NĂM, không chỉ nhiều tháng trong 1 năm (sửa 27/8/2026): Trụ Năm chi phối
+ * rất mạnh lĩnh vực Gia đạo, nên nếu mẫu chỉ lấy 1 năm thì cả mẫu thừa hưởng đúng một Trụ Năm và
+ * thang sẽ lệch theo năm đó — đo thật: gia đạo năm Đinh Mùi 2027 dương đều (+2,7 / +1,4 / +2,3),
+ * còn năm Bính Ngọ 2026 lại âm (−2,6). Lấy 3 năm liên tiếp cho cân.
+ */
 function mauDienRong(): BirthCandidate[] {
   const ra: BirthCandidate[] = [];
   for (const g of ["Nam", "Nữ"] as const) {
-    for (const m of [3, 6, 9, 12]) {
-      ra.push(
-        ...phanTichTrachNhatSinhNo(dungInput({
-          startDate: { year: 2027, month: m, day: 1 },
-          endDate: { year: 2027, month: m, day: 28 },
-          babyGender: g,
-        })).tatCaUngVien.filter((c) => c.bonLinhVuc),
-      );
+    // 2 năm có Trụ Năm TRÁI CHIỀU nhau về gia đạo (Bính Ngọ 2026 âm, Đinh Mùi 2027 dương) × đủ 4
+    // mùa (3=Xuân, 6=Hè, 9=Thu, 12=Đông) — cần cả hai chiều: nhiều năm để thang không lệch theo
+    // Trụ Năm, và đủ 4 mùa để còn dữ liệu kiểm Điều Hậu (chỉ phát sinh ở mùa Đông/Hè).
+    for (const y of [2026, 2027]) {
+      for (const m of [3, 6, 9, 12]) {
+        ra.push(
+          ...phanTichTrachNhatSinhNo(dungInput({
+            startDate: { year: y, month: m, day: 1 },
+            endDate: { year: y, month: m, day: 28 },
+            babyGender: g,
+          })).tatCaUngVien.filter((c) => c.bonLinhVuc),
+        );
+      }
     }
   }
   return ra;

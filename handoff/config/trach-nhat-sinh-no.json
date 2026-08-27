@@ -21,6 +21,9 @@
     "L4_bat_buoc_du_5_hanh": false,
     "_note_L4": "Anh Công chốt 27/8/2026: NỚI, về đúng câu chữ. Tiêu chí 2 ghi nguyên văn 'Tứ trụ gốc đủ cả 5 hành LÀ TỐT NHẤT' — mong muốn lý tưởng, KHÔNG phải điều kiện loại; trước đây dùng làm lọc cứng nên loại oan ~24% ứng viên. Nay hành khuyết chuyển thành TRỪ ĐIỂM ở lĩnh vực Sức khỏe (benh-tat.md §Nguyên tắc nền (a): hành quá suy/khuyết là 1 trong 3 cơ chế sinh bệnh). Đặt lại true nếu muốn siết như cũ.",
 
+    "L5_bat_buoc_khong_xung_gio_thang": false,
+    "_note_L5": "TẮT từ 27/8/2026, cùng lối xử lý L4/L7. Tiêu chí 6 nguyên văn chỉ nói 'TRỤ NGÀY không xung trụ giờ và trụ tháng' (= L1 + L2), KHÔNG hề nhắc 'trụ giờ xung trụ tháng'; chính config gốc cũng tự đánh ⚠️ 'quy ước, cùng lý L1'. Xung giờ–tháng không động trực tiếp tới Nhật Chủ nên không đủ nặng để loại (~8% ứng viên). Nay chuyển thành TRỪ ĐIỂM ở Gia đạo vì Trụ Tháng là cung cha mẹ/anh em (luc-than.md §0). Đặt true để siết lại như cũ.",
+
     "L7_bat_buoc_an_co_can": false,
     "_note_L7": "Anh Công chốt 27/8/2026: NỚI, về đúng câu chữ. Tiêu chí 8 ghi 'Phải có Ấn trong nhà (Ấn tinh CÓ MẶT ngay trong nguyên cục)' — chỉ yêu cầu CÓ MẶT; yêu cầu 'VÀ có căn' là module tự siết thêm, loại ~45% ứng viên (thủ phạm lớn nhất). Nay Ấn vắng mặt hẳn mới loại; Ấn có mặt mà không căn vẫn bị trừ điểm ở lĩnh vực Gia đạo (luc-than.md §0 'thiếu chỗ dựa'). Đặt lại true nếu muốn siết như cũ."
   },

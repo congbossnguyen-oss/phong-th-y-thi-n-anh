@@ -380,6 +380,14 @@ function chamGiaDao(bazi: BaziAnalysis, chart: BatTuChart, dem: DemThapThan): { 
     canCu.push({ thuanLoi: false, noiDung: "Tứ trụ đủ cả Thìn–Tuất–Sửu–Mùi — tài liệu gọi là \"cốt nhục chia lìa\", bất lợi cho sự sum vầy gia đình.", nguon: "luc-than.md §1.3" });
   }
 
+  // Trụ Giờ xung Trụ Tháng — trước 27/8/2026 đây là bộ lọc cứng L5, nhưng KHÔNG nằm trong 9 tiêu chí
+  // (tiêu chí 6 chỉ nói TRỤ NGÀY không xung trụ giờ/tháng). Nay hạ xuống thành điểm trừ, đặt ở Gia
+  // đạo vì Trụ Tháng là cung cha mẹ/anh em.
+  if (coLucXung(chart.hour.chi, [chart.month.chi])) {
+    d -= NHE;
+    canCu.push({ thuanLoi: false, noiDung: `Chi Giờ ${chart.hour.chi} xung Chi Tháng ${chart.month.chi} — trụ cha mẹ/anh em bị động, quan hệ trong nhà dễ có lúc căng thẳng (mức nhẹ: không động trực tiếp tới Nhật Chủ).`, nguon: "luc-than.md §0 (Trụ Tháng = cha mẹ/anh em)" });
+  }
+
   // Tỷ Kiếp trùng trùng → khắc cha; Tài nhiều → khắc mẹ (Tài khắc Ấn).
   if (dem.phan.ty_kiep >= 6) {
     d -= VUA;
@@ -400,6 +408,45 @@ function chamGiaDao(bazi: BaziAnalysis, chart: BatTuChart, dem: DemThapThan): { 
   } else if (bazi.anTinh.muc === "qua_thua") {
     d -= NHE;
     canCu.push({ thuanLoi: false, noiDung: "Ấn quá nhiều — dễ được bao bọc quá mức, mẹ can thiệp sâu, bé chậm tự lập.", nguon: "luc-than.md §0 (nguyên tắc vượng/suy lục thân)" });
+  }
+
+  // ── TỔ NGHIỆP HƯNG THỊNH (luc-than.md §1.4) ──────────────────────────────────────────────────
+  // ⚠️ Bổ sung 27/8/2026: trước đó lĩnh vực Gia đạo có 9 quy tắc TRỪ mà chỉ 4 quy tắc CỘNG, khiến
+  // thang lệch âm nặng (đo thật: trung bình −3,0 trong khi Sức khỏe +1,6, không lá nào vượt 1,3).
+  // Nguyên nhân là bỏ sót nguyên mục §1.4 "Dấu hiệu tổ nghiệp hưng thịnh" — đây là sửa cho ĐÚNG
+  // tài liệu, không phải hạ chuẩn cho dễ.
+  // ⚠️ Chỉ tính KHÍ LỘ (Thiên Can) và BẢN KHÍ của Chi — cố ý BỎ tàng phụ. Đây là dấu hiệu "tổ nghiệp
+  // hưng thịnh", tức phải thấy rõ ngoài mặt; tính cả tàng phụ thì hầu như lá nào cũng thoả (đo thật:
+  // trung vị gia đạo vọt lên +1,5 trong khi 3 lĩnh vực kia quanh 0,1–0,8 → điều kiện quá lỏng).
+  const pheCuaTru = (tru: { can: string; tangCan?: { can: string }[] }): Set<Phe> => {
+    const ra = new Set<Phe>();
+    ra.add(pheCua(hanhCan(tru.can), nhatChu));
+    const banKhi = (tru.tangCan ?? [])[0]?.can;
+    if (banKhi) ra.add(pheCua(hanhCan(banKhi), nhatChu));
+    return ra;
+  };
+  const pheNam = pheCuaTru(chart.year);
+  const pheThang = pheCuaTru(chart.month);
+  const pheNamThang = new Set([...pheNam, ...pheThang]);
+
+  // "Trụ Năm + Trụ Tháng có Tài, Thực (Thần) → tổ nghiệp hưng thịnh."
+  if (pheNamThang.has("tai") && pheNamThang.has("thuc_thuong")) {
+    d += VUA;
+    canCu.push({ thuanLoi: true, noiDung: "Trụ Năm và Trụ Tháng có đủ cả Tài lẫn Thực Thần — tài liệu xếp vào dấu hiệu tổ nghiệp hưng thịnh, nền nhà có của ăn của để.", nguon: "luc-than.md §1.4" });
+  }
+  // "Trụ Năm + Trụ Tháng đều có Tài-Quan-Ấn → ba đời giàu sang."
+  if (pheNamThang.has("tai") && pheNamThang.has("quan_sat") && pheNamThang.has("an")) {
+    d += VUA;
+    canCu.push({ thuanLoi: true, noiDung: "Trụ Năm và Trụ Tháng hội đủ Tài – Quan – Ấn — tài liệu gọi là cách \"ba đời giàu sang\", nền tảng gia đình rất vững.", nguon: "luc-than.md §1.4" });
+  }
+  // "Chi Năm là Lộc của Can Năm → cha mẹ giàu có, để lại nhiều của cải." (bảng Lộc: than-sat.md §Lộc Thần)
+  const LOC_CUA_CAN: Record<string, string> = {
+    Giáp: "Dần", Ất: "Mão", Bính: "Tị", Đinh: "Ngọ", Mậu: "Tị",
+    Kỷ: "Ngọ", Canh: "Thân", Tân: "Dậu", Nhâm: "Hợi", Quý: "Tý",
+  };
+  if (LOC_CUA_CAN[chart.year.can] === chiChuan(chart.year.chi)) {
+    d += NHE;
+    canCu.push({ thuanLoi: true, noiDung: `Chi Năm ${chart.year.chi} chính là Lộc của Can Năm ${chart.year.can} — tài liệu ghi dấu hiệu cha mẹ khá giả, có của để lại.`, nguon: "luc-than.md §1.1 + than-sat.md §Lộc Thần" });
   }
 
   // Cả Chính Ấn lẫn Thiên Ấn cùng có → tài liệu ghi dấu hiệu "hai mẹ".
@@ -532,6 +579,44 @@ function chamNhanDuyen(bazi: BaziAnalysis, chart: BatTuChart, dem: DemThapThan, 
   if (dhNd && !dhNd.duocDieuHoa) {
     d -= NHE;
     canCu.push({ thuanLoi: false, noiDung: `Mệnh cục thiên lệch về ${dhNd.tinhChat} (sinh mùa ${dhNd.mua} mà thiếu ${dhNd.hanhCan} điều hòa) — tài liệu ghi mệnh quá khô/quá nóng thì dù nam hay nữ cũng dễ thấy cô đơn, khó tìm người thấu hiểu.`, nguon: "hon-nhan.md §2 (chung cho cả 2 mệnh)" });
+  }
+
+  // ── DẤU HIỆU HÔN NHÂN TỐT (hon-nhan.md §1) ───────────────────────────────────────────────────
+  // ⚠️ Bổ sung 27/8/2026: lĩnh vực này có tới 17 quy tắc TRỪ mà chỉ 5 quy tắc CỘNG, nên đo trên 8
+  // khung thời gian khác nhau thì nhân duyên ÂM ở CẢ 8/8 (trong khi gia đạo/tài vận dao động quanh
+  // 0). Đó là dấu hiệu thang lệch chứ không phải mọi lá đều xấu duyên — nguyên nhân là bỏ sót §1.
+  // Đây là sửa cho ĐÚNG tài liệu, không phải nới tay.
+
+  // "Nhật Quý Cách": Trụ Ngày là Đinh Dậu/Đinh Hợi/Quý Tị/Quý Mão → hôn nhân tốt đẹp, vợ/chồng hỗ trợ.
+  const NHAT_QUY = new Set(["Đinh Dậu", "Đinh Hợi", "Quý Tị", "Quý Mão"]);
+  if (NHAT_QUY.has(`${chart.day.can} ${chiChuan(chart.day.chi)}`)) {
+    d += VUA;
+    canCu.push({ thuanLoi: true, noiDung: `Trụ Ngày ${chart.day.can} ${chart.day.chi} đạt "Nhật Quý Cách" — tài liệu xếp vào dấu hiệu hôn nhân tốt đẹp, bạn đời hỗ trợ được nhiều.`, nguon: "hon-nhan.md §1 (Nhật Quý Cách)" });
+  }
+
+  // "Nhị Hợp với Chi Ngày → hôn nhân hạnh phúc bền lâu" — Cung Thê/Phu được hợp, không bị xung phá.
+  const LUC_HOP_CHI: Record<string, string> = {
+    Tý: "Sửu", Sửu: "Tý", Dần: "Hợi", Hợi: "Dần", Mão: "Tuất", Tuất: "Mão",
+    Thìn: "Dậu", Dậu: "Thìn", Tị: "Thân", Thân: "Tị", Ngọ: "Mùi", Mùi: "Ngọ",
+  };
+  const chiNgayC = chiChuan(chart.day.chi);
+  const duocHop = [chart.year.chi, chart.month.chi, chart.hour.chi]
+    .map(chiChuan).some((c) => LUC_HOP_CHI[chiNgayC] === c);
+  if (duocHop) {
+    d += VUA;
+    canCu.push({ thuanLoi: true, noiDung: `${tenCung} (Chi Ngày ${chart.day.chi}) được một trụ khác lục hợp — tài liệu ghi dấu hiệu hôn nhân hạnh phúc bền lâu, có người nâng đỡ chuyện đôi lứa.`, nguon: "hon-nhan.md §1" });
+  }
+
+  // "Tài tinh tọa Trường Sinh → vợ sống lâu, bền" (áp dụng tương ứng cho sao bạn đời của cả 2 giới).
+  if (hanhBanDoi) {
+    const banDoiTruongSinh = [chart.year.chi, chart.month.chi, chart.day.chi, chart.hour.chi].some((chi) => {
+      const banKhi = TANG[chiChuan(chi)]?.[0];
+      return !!banKhi && hanhCan(banKhi) === hanhBanDoi && trangThaiTruongSinh(chart.day.can, chi) === "Trường Sinh";
+    });
+    if (banDoiTruongSinh) {
+      d += NHE;
+      canCu.push({ thuanLoi: true, noiDung: `${tenSao} tọa đất Trường Sinh — tài liệu ghi dấu hiệu bạn đời khỏe mạnh, quan hệ bền lâu.`, nguon: "hon-nhan.md §1" });
+    }
   }
 
   // Tỷ Kiếp nhiều → kết hôn muộn (nhẹ, không phải xấu tuyệt đối).
