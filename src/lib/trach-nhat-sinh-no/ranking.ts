@@ -105,6 +105,17 @@ export function diemChonGioTuVi(a: TuViAnalysis): number {
 const THANG_BAT_TU = { min: -1, max: 20 };
 const THANG_TU_VI = { min: -20, max: 7 };
 
+/**
+ * Chuẩn hóa điểm nền (Bát Tự hoặc Tử Vi) về thang −2…2, lấy giữa dải thực tế làm mốc 0.
+ * Dùng khi TRỘN điểm nền với điểm 4 lĩnh vực — nếu cộng thẳng thì thang to hơn sẽ nuốt thang nhỏ hơn
+ * (xem cảnh báo ở `xepHangKhongCongDiemCheo`). Dùng chung 2 biên p2–p98 đã đo ở dưới.
+ */
+function chuanHoaNen(raw: number, thang: { min: number; max: number }): number {
+  const giua = (thang.min + thang.max) / 2;
+  const nuaDai = (thang.max - thang.min) / 2 || 1;
+  return Math.max(-2, Math.min(2, ((raw - giua) / nuaDai) * 2));
+}
+
 function quyVe50(raw: number, thang: { min: number; max: number }): number {
   const t = (raw - thang.min) / (thang.max - thang.min);
   return Math.round(Math.max(0, Math.min(1, t)) * 50 * 10) / 10;
@@ -151,11 +162,21 @@ export function xepHangKhongCongDiemCheo(
     theoNgay.get(key)!.push(c);
   }
 
-  /** Điểm xếp NGÀY của 1 ứng viên: 4 lĩnh vực (phần Bát Tự) là chính, điểm cấu trúc cũ phá thế hòa. */
+  /**
+   * Điểm xếp NGÀY: 4 lĩnh vực (phần Bát Tự, đã nhân trọng số ưu tiên) là CHÍNH; điểm cấu trúc nền
+   * chỉ để phá thế hòa.
+   *
+   * ⚠️ SỬA LỖI 27/8/2026 — trước đây cộng thẳng `nen * 0.2`, tưởng là nhẹ nhưng HAI THANG KHÁC CỠ:
+   * `diemTheoUuTien` dải ≈ −3…4 còn `diemCauTrucBatTu` dải ≈ 0…20, nên `nen * 0.2` cho ra 2–4 điểm,
+   * ngang ngửa phần chính MÀ LẠI KHÔNG phụ thuộc ưu tiên → điểm nền lấn át, làm `familyPriority` gần
+   * như vô hiệu (đo thật: cả 5 ưu tiên đều trả về cùng một phương án dù thứ hạng theo 4 lĩnh vực
+   * khác nhau rõ rệt). Nay CHUẨN HÓA nền về cùng cỡ (−2…2) trước khi trộn, hệ số 0,5 → nền chỉ còn
+   * ±1 điểm, đúng vai trò phá thế hòa.
+   */
   const diemNgayCuaUngVien = (uv: BirthCandidate): number => {
     const nen = uv.baziAnalysis ? diemCauTrucBatTu(uv.baziAnalysis) : -Infinity;
-    if (!uv.bonLinhVuc) return nen;
-    return diemTheoUuTien(uv.bonLinhVuc, uuTien, "batTu") * 2 + nen * 0.2;
+    if (!uv.bonLinhVuc || nen === -Infinity) return nen;
+    return diemTheoUuTien(uv.bonLinhVuc, uuTien, "batTu") * 2 + chuanHoaNen(nen, THANG_BAT_TU) * 0.5;
   };
 
   const ketQua: NgayXepHang[] = [];
@@ -165,13 +186,13 @@ export function xepHangKhongCongDiemCheo(
     for (const uv of ungViens) diemDaiDien = Math.max(diemDaiDien, diemNgayCuaUngVien(uv));
 
     // Trong ngày đó, Tử Vi chọn giờ tốt nhất — chỉ dùng dữ liệu Tử Vi, không so lại Bát Tự.
-    const gioTotNhat = [...ungViens].sort((a, b) => {
-      const nenA = a.tuViAnalysis ? diemChonGioTuVi(a.tuViAnalysis) : -Infinity;
-      const nenB = b.tuViAnalysis ? diemChonGioTuVi(b.tuViAnalysis) : -Infinity;
-      const da = a.bonLinhVuc ? diemTheoUuTien(a.bonLinhVuc, uuTien, "tuVi") * 2 + nenA * 0.2 : nenA;
-      const db = b.bonLinhVuc ? diemTheoUuTien(b.bonLinhVuc, uuTien, "tuVi") * 2 + nenB * 0.2 : nenB;
-      return db - da;
-    })[0]!;
+    // Cùng cách chuẩn hóa nền như xếp NGÀY (thang Tử Vi cũng khác cỡ: ≈ −20…7).
+    const diemGio = (c: BirthCandidate): number => {
+      const nen = c.tuViAnalysis ? diemChonGioTuVi(c.tuViAnalysis) : -Infinity;
+      if (!c.bonLinhVuc || nen === -Infinity) return nen;
+      return diemTheoUuTien(c.bonLinhVuc, uuTien, "tuVi") * 2 + chuanHoaNen(nen, THANG_TU_VI) * 0.5;
+    };
+    const gioTotNhat = [...ungViens].sort((a, b) => diemGio(b) - diemGio(a))[0]!;
 
     ketQua.push({ ngay, diemDaiDien, ungVienTotNhat: gioTotNhat, soGioConLai: ungViens.length });
   }

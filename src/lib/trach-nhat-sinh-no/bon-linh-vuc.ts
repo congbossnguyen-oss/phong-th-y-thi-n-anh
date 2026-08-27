@@ -520,8 +520,37 @@ function daiVanTheoLinhVuc(bazi: BaziAnalysis): Record<LinhVucKey, { diem: numbe
 // ── Tổng hợp ────────────────────────────────────────────────────────────────────────────────────
 const clamp10 = (x: number) => Math.max(-10, Math.min(10, Math.round(x * 10) / 10));
 
+/**
+ * HIỆU CHỈNH TÂM — đo trên 1.117 phương án đã qua lọc (quét đủ 12 tháng 2027 × 2 giới tính, 27/8/2026).
+ *
+ * Vấn đề phát hiện: thang bị lệch tâm hệ thống, KHÔNG phải do lá số xấu mà do số quy tắc trừ nhiều
+ * hơn số quy tắc cộng ở phía Bát Tự, còn phía Tử Vi thì ngược lại. Trung vị đo được:
+ *     lĩnh vực     BátTự   TửVi
+ *     sức khỏe      −1,6   +1,2
+ *     gia đạo       −1,1   +1,4
+ *     tài vận       +0,4   +1,0
+ *     nhân duyên    −1,9   +0,9
+ * Hệ quả với khách: 36% số ô hiện "Cần lưu ý", chỉ 14% "Thuận rõ" — dù đây đã là những lá TỐT NHẤT
+ * sống sót qua lọc cứng. Tức là công cụ đang "chê" lệch, không phản ánh đúng.
+ *
+ * Cách chữa: dịch tâm mỗi nhánh về 0 bằng đúng trung vị đo được. Đây là chuẩn hóa thang đo (giống
+ * chuẩn hóa điểm thi), KHÔNG phải nới tay chấm: thứ tự mạnh–yếu trong từng lĩnh vực giữ nguyên,
+ * chỉ có mốc "trung bình" được đặt đúng chỗ.
+ */
+const HIEU_CHINH_TAM: Record<LinhVucKey, { batTu: number; tuVi: number }> = {
+  suc_khoe: { batTu: 1.6, tuVi: -1.2 },
+  gia_dao: { batTu: 1.1, tuVi: -1.4 },
+  tai_van: { batTu: -0.4, tuVi: -1.0 },
+  nhan_duyen: { batTu: 1.9, tuVi: -0.9 },
+};
+
+/**
+ * Ngưỡng nhãn đặt theo PHÂN VỊ thực tế của phân bố sau hiệu chỉnh tâm (cùng bộ 1.117 phương án):
+ * "Thuận rõ" ≈ nhóm 20% tốt nhất · "Khá thuận" ≈ 20–45% · "Trung bình" ≈ 45–80% · "Cần lưu ý" ≈ 20%
+ * kém nhất. Nhờ vậy nhãn có nghĩa SO SÁNH được giữa các phương án, thay vì mốc tuyệt đối đặt cảm tính.
+ */
 function danhGiaTu(diem: number): DiemLinhVuc["danhGia"] {
-  return diem >= 3 ? "tot" : diem >= 1 ? "kha" : diem >= -1.5 ? "trung_binh" : "can_luu_y";
+  return diem >= 2.8 ? "tot" : diem >= 0.6 ? "kha" : diem >= -2.4 ? "trung_binh" : "can_luu_y";
 }
 
 /**
@@ -554,8 +583,9 @@ export function chamBonLinhVuc(
     bt.diem += thanSat[k].diem;
     bt.canCu.push(...thanSat[k].canCu);
     const bo = tuVi?.boLinhVuc?.[k];
-    const diemBatTu = clamp10(bt.diem + dv[k].diem);
-    const diemTuVi = bo ? clamp10(bo.diemBo) : 0;
+    // Dịch tâm từng nhánh về 0 trước khi trộn — xem §HIEU_CHINH_TAM.
+    const diemBatTu = clamp10(bt.diem + dv[k].diem + HIEU_CHINH_TAM[k].batTu);
+    const diemTuVi = bo ? clamp10(bo.diemBo + HIEU_CHINH_TAM[k].tuVi) : 0;
     const canCu = [...bt.canCu, ...dv[k].canCu];
     if (bo) {
       canCu.push({
