@@ -1,66 +1,23 @@
 ---
-// TRANG DỊCH VỤ VIP "Trạch Nhật Sinh Nở — Chọn Ngày Giờ Sinh Cho Bé" — 499.000đ.
-//  - Chưa có ?orderCode → hiện FORM khung ngày dự sinh + thanh toán QR (poll trạng thái).
-//  - Có ?orderCode đã confirmed → server tính kết quả (thuần công thức, không AI) và hiện phương án.
-// ⏸️ THỬ NGHIỆM NỘI BỘ: chỉ tài khoản quản trị thấy form/dùng được, khách thấy màn "đang thử nghiệm".
+// TRANG DỊCH VỤ VIP "Trạch Nhật Sinh Nở — Chọn Ngày Giờ Sinh Cho Bé" (bản web) — chỉ lo khung
+// trang (SEO/PageHero/breadcrumbs); toàn bộ logic form/thanh toán/kết quả nằm ở component dùng
+// chung `TrachNhatSinhNo.astro`, cũng chính là component bản in-app Quân Sư
+// (`/quan-su/trach-nhat-sinh-no`) dùng — nên hai nơi luôn ra CÙNG một kết quả, không thể lệch.
+//
+// 🧹 Đã dọn code chết (27/8/2026): frontmatter trước đây còn nguyên phần tính toán từ thời chưa
+// tách component — `getOrderByCode()` + `phanTichTrachNhatSinhNo()` cùng ~15 import/biến không hề
+// được markup dùng tới (markup chỉ dùng đúng `TOOL_PRICE_LABEL`). Chúng VẪN CHẠY mỗi lượt xem
+// trang: thừa 1 truy vấn CSDL và thừa TRỌN một lượt phân tích Bát Tự + Tử Vi, xong vứt đi, rồi
+// component tính lại lần nữa. Xoá đi là hết tính hai lần, KHÔNG đổi gì về hiển thị/kết quả.
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/ui/PageHero.astro";
-import Container from "../../components/ui/Container.astro";
-import Button from "../../components/ui/Button.astro";
-import DateSelect from "../../components/ui/DateSelect.astro";
-import MaKhuyenMai from "../../components/ui/MaKhuyenMai.astro";
-import { GIA_CONG_CU, dinhDangTien } from "../../lib/payments/gia-cong-cu";
-import { getOrderByCode } from "../../lib/db/orders";
-import { phanTichTrachNhatSinhNo, type BirthSelectionInput, type PhanTichTrachNhatKetQua } from "../../lib/trach-nhat-sinh-no";
-import DoHinhUngVien from "../../components/trach-nhat-sinh-no/DoHinhUngVien.astro";
-import TabBatTu from "../../components/trach-nhat-sinh-no/TabBatTu.astro";
-import TabTuVi from "../../components/trach-nhat-sinh-no/TabTuVi.astro";
-import TongQuanKetQua from "../../components/trach-nhat-sinh-no/TongQuanKetQua.astro";
-import BangSoSanhPhuongAn from "../../components/trach-nhat-sinh-no/BangSoSanhPhuongAn.astro";
-import { siteConfig } from "../../lib/site-config";
 import VipQuyenBanner from "../../components/quan-su/VipQuyenBanner.astro";
+import TrachNhatSinhNo from "../../components/tools/TrachNhatSinhNo.astro";
+import { GIA_CONG_CU, dinhDangTien } from "../../lib/payments/gia-cong-cu";
 
 export const prerender = false;
 
-const laQuanTri = Astro.locals.user?.isAdmin === true;
-const TOOL_SLUG = "trach-nhat-sinh-no";
-const TOOL_PRICE = GIA_CONG_CU[TOOL_SLUG];
-const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
-
-const orderCode = Astro.url.searchParams.get("orderCode");
-let ketQua: PhanTichTrachNhatKetQua | null = null;
-let order: Awaited<ReturnType<typeof getOrderByCode>> | null = null;
-if (orderCode) {
-  order = await getOrderByCode(orderCode);
-  if (order && order.orderType === "tool" && order.toolSlug === TOOL_SLUG && order.status === "confirmed" && order.toolInputSnapshot) {
-    try {
-      ketQua = phanTichTrachNhatSinhNo(JSON.parse(order.toolInputSnapshot) as BirthSelectionInput);
-    } catch {
-      ketQua = null;
-    }
-  }
-}
-
-const r = ketQua?.recommendation ?? null;
-/** Tra ứng viên đầy đủ từ id trên thẻ tóm tắt — để vẽ đồ hình cho CẢ phương án chính lẫn dự phòng. */
-const timUngVien = (id: string | undefined) => (ketQua && id ? ketQua.tatCaUngVien.find((c) => c.id === id) ?? null : null);
-const primaryCandidate = timUngVien(r?.primary?.candidateId);
-const BAND_NHAN: Record<string, string> = {
-  rat_thuan: "Rất thuận", thuan: "Thuận", trung_binh: "Trung bình", thu_thach: "Có thử thách", nghich: "Nghịch",
-};
-const HINH_THUC_SINH = [
-  { value: "scheduled_c_section", label: "Mổ chủ động (bác sĩ cho khung giờ)" },
-  { value: "labor", label: "Chờ chuyển dạ (sinh thường)" },
-  { value: "unknown", label: "Chưa rõ" },
-];
-const UU_TIEN = [
-  { value: "balanced", label: "Cân bằng mọi mặt" },
-  { value: "health", label: "Sức khỏe" },
-  { value: "wealth", label: "Tài vận" },
-  { value: "career", label: "Công danh" },
-  { value: "academic", label: "Học hành" },
-];
-import TrachNhatSinhNo from "../../components/tools/TrachNhatSinhNo.astro";
+const TOOL_PRICE_LABEL = dinhDangTien(GIA_CONG_CU["trach-nhat-sinh-no"]);
 ---
 
 <BaseLayout
