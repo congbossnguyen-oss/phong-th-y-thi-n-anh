@@ -22,6 +22,9 @@ export const GIA_CONG_CU = {
   "trach-cat-ky-mon": 499000,
   "luan-giai-tu-vi-co-ban": 149000,
   "luan-giai-tu-vi-nang-cao": 299000,
+  // Hợp Hôn: hạng cao nhất cùng Xem Ngày Cao Cấp — cần ĐỦ 2 lá số (gấp đôi dữ liệu đầu vào so với
+  // mọi module khác), chạy 6 tầng qua cả Bát Tự lẫn Tử Vi, phục vụ quyết định lớn nhất đời người.
+  "hop-hon": 999000,
 } as const;
 
 /**
