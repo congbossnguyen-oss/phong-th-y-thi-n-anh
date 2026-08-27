@@ -78,6 +78,16 @@ export function phanTichTrachNhatSinhNo(input: BirthSelectionInput): PhanTichTra
     // từ điểm phú quý (`luan-giai-bat-tu-manh-phai/SKILL.md` Bước 6 & 10).
     c.bonLinhVuc = chamBonLinhVuc(baziAnalysis, tuViAnalysis, chart, input.babyGender);
 
+    // Giờ Tý vắt qua mốc đổi ngày — không còn loại (xem hard-filter L6) nhưng PHẢI cảnh báo, vì đây
+    // là vấn đề xác định đúng lá số: sinh 23h00–23h59 thì Can Ngày đã tính sang ngày hôm sau.
+    if (c.chiGio === "Tý") {
+      c.redFlags.push({
+        source: "bazi", severity: "medium", code: "L6_GIO_TY_MOC_DOI_NGAY",
+        title: "Giờ Tý (23h–01h) nằm ở mốc đổi ngày",
+        explanation: "Khung này vắt qua ranh giới ngày: sinh từ 23h00 đến trước 00h00 thì Trụ Ngày đã tính sang ngày hôm sau, còn từ 00h00 đến 01h00 vẫn thuộc ngày hiện tại — hai trường hợp cho ra lá số KHÁC NHAU. Nếu chọn khung này, gia đình cần chốt thật rõ mốc giờ với bệnh viện và báo lại để lập chính xác.",
+      });
+    }
+
     c.status = "FINALIST";
   }
 

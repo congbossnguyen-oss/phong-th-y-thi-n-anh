@@ -217,6 +217,12 @@ export interface DiemLinhVuc {
   diemTuVi: number;
   canCu: CanCuLinhVuc[];
   nhanXet: string;
+  /**
+   * true khi Bát Tự và Tử Vi đánh giá NGƯỢC CHIỀU nhau rõ rệt ở lĩnh vực này. Khi đó điểm trung bình
+   * KHÔNG phản ánh đúng thực tế — phải nói thẳng với người đọc là hai hệ bất đồng, thay vì để con số
+   * hoà lại thành "trung bình" một cách im lặng.
+   */
+  haiHeMauThuan: boolean;
 }
 
 /** So Mệnh với Thân — Mệnh chủ tiền vận, Thân chủ hậu vận (cách luận truyền thống). */

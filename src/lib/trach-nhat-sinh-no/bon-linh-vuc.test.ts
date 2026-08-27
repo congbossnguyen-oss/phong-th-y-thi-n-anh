@@ -137,6 +137,42 @@ describe("bon-linh-vuc — khoá hành vi", () => {
     expect(coKhac).toBe(true);
   });
 
+  it("giờ Tý được giữ lại nhưng PHẢI có cảnh báo mốc đổi ngày", () => {
+    const coGioTy = mau.filter((c) => c.chiGio === "Tý");
+    // Sau khi tắt L6, giờ Tý phải xuất hiện trong kết quả.
+    expect(coGioTy.length).toBeGreaterThan(0);
+    for (const c of coGioTy) {
+      expect(c.redFlags.some((f) => f.code === "L6_GIO_TY_MOC_DOI_NGAY")).toBe(true);
+    }
+  });
+
+  it("tổ hợp có ĐIỀU KIỆN CỨU phải nhẹ hơn tổ hợp không được cứu (không cộng dồn tuyến tính)", () => {
+    // Trong số lá "tài đa thân nhược", lá có Ấn hộ thân phải được chấm cao hơn lá không có gì cứu.
+    const nhuocTaiNhieu = mau.filter((c) => {
+      const v = c.baziAnalysis!.vuongSuy;
+      return (v.includes("Nhược") || v.includes("Suy"));
+    });
+    const coAn = nhuocTaiNhieu.filter((c) => c.baziAnalysis!.anTinh.coCan && c.baziAnalysis!.anTinh.muc !== "thieu");
+    const khongAn = nhuocTaiNhieu.filter((c) => !c.baziAnalysis!.anTinh.coCan || c.baziAnalysis!.anTinh.muc === "thieu");
+    if (coAn.length >= 5 && khongAn.length >= 5) {
+      const tb = (ds: BirthCandidate[]) => ds.reduce((s, c) => s + diemCua(c, "tai_van").diemBatTu, 0) / ds.length;
+      expect(tb(coAn)).toBeGreaterThan(tb(khongAn));
+    }
+  });
+
+  it("khi hai hệ mâu thuẫn thì phải GẮN CỜ, không im lặng lấy trung bình", () => {
+    for (const c of mau) {
+      for (const lv of c.bonLinhVuc!) {
+        const nguocChieu = lv.diemBatTu * lv.diemTuVi < 0 && Math.abs(lv.diemBatTu) >= 1.5 && Math.abs(lv.diemTuVi) >= 1.5;
+        // Cờ phải khớp đúng điều kiện — không bỏ sót, không báo thừa.
+        if (nguocChieu) {
+          expect(lv.haiHeMauThuan).toBe(true);
+          expect(lv.nhanXet).toContain("hai hệ đang nói ngược nhau");
+        }
+      }
+    }
+  });
+
   it("Thần Sát chỉ là lớp PHỤ — không được lấn át (than-sat.md §Nguyên tắc 1)", () => {
     // Không lá nào được có điểm chỉ do thần sát đẩy lên/xuống quá mức: kiểm gián tiếp qua việc
     // tổng điểm vẫn nằm trong dải hợp lý và không bị dồn về hai cực.

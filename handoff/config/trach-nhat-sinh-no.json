@@ -15,8 +15,8 @@
     "Ngũ hành lưu thông — sinh nhập hoặc khắc xuất tùy vượng suy, lấy nhật chủ làm trong"
   ],
   "hard_filters": {
-    "L6_loai_gio_ty": true,
-    "_note_L6": "Giờ Tý (23–01h) loại mặc định — mốc đổi ngày nhạy cảm. ⚠️ 27/8/2026 anh Công chốt 'tính dựa trên 12 canh giờ, không liên quan bác sỹ có làm hay không' → lý do 'bệnh viện không mổ' KHÔNG còn giá trị; nay chỉ còn lý do mệnh lý (mốc đổi ngày). Cân nhắc tắt.",
+    "L6_loai_gio_ty": false,
+    "_note_L6": "TẮT từ 27/8/2026. Lý do loại ban đầu gồm 2 vế: (a) 'bệnh viện gần như không mổ khung này' — vế này MẤT HIỆU LỰC sau khi anh Công chốt 'tính dựa trên 12 canh giờ, không liên quan bác sỹ có làm hay không'; (b) 'mốc đổi ngày nhạy cảm' — vế này là vấn đề XÁC ĐỊNH lá số (Tý sớm 23h-24h thuộc ngày hôm sau về Can Ngày, Tý muộn 00h-01h thuộc ngày hiện tại), KHÔNG phải lá số xấu. Loại thẳng 1/12 số canh giờ vì một vấn đề xác định là mất mát vô lý. Nay giữ lại và GẮN CẢNH BÁO rõ để gia đình biết cần chốt chính xác mốc giờ sinh với bệnh viện. Đặt lại true nếu muốn loại như cũ.",
 
     "L4_bat_buoc_du_5_hanh": false,
     "_note_L4": "Anh Công chốt 27/8/2026: NỚI, về đúng câu chữ. Tiêu chí 2 ghi nguyên văn 'Tứ trụ gốc đủ cả 5 hành LÀ TỐT NHẤT' — mong muốn lý tưởng, KHÔNG phải điều kiện loại; trước đây dùng làm lọc cứng nên loại oan ~24% ứng viên. Nay hành khuyết chuyển thành TRỪ ĐIỂM ở lĩnh vực Sức khỏe (benh-tat.md §Nguyên tắc nền (a): hành quá suy/khuyết là 1 trong 3 cơ chế sinh bệnh). Đặt lại true nếu muốn siết như cũ.",

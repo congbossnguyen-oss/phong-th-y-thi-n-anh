@@ -51,9 +51,13 @@ const NHAN_UU_TIEN: Record<string, string> = {
   health: "sức khỏe", wealth: "tài lộc", career: "sự nghiệp", academic: "học hành", balanced: "cân bằng cả bốn mặt",
 };
 let uuTienDaChon = "balanced";
+/** Khung dự sinh có nằm gọn trong 1 năm không — quyết định việc có cảnh báo hạn chế của Gia đạo. */
+let khungCungMotNam = true;
 if (order?.toolInputSnapshot) {
   try {
-    uuTienDaChon = (JSON.parse(order.toolInputSnapshot) as BirthSelectionInput).familyPriority ?? "balanced";
+    const snap = JSON.parse(order.toolInputSnapshot) as BirthSelectionInput;
+    uuTienDaChon = snap.familyPriority ?? "balanced";
+    khungCungMotNam = snap.startDate.year === snap.endDate.year;
   } catch { /* giữ mặc định */ }
 }
 
@@ -171,7 +175,7 @@ const UU_TIEN = [
                     </ul>
                   </div>
 
-                  <BonLinhVuc danhSach={r.primary.bonLinhVuc} nhanUuTien={NHAN_UU_TIEN[uuTienDaChon] ?? undefined} />
+                  <BonLinhVuc danhSach={r.primary.bonLinhVuc} nhanUuTien={NHAN_UU_TIEN[uuTienDaChon] ?? undefined} cungMotNam={khungCungMotNam} />
                 </div>
               </div>
 
