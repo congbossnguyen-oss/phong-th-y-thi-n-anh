@@ -18,7 +18,7 @@ import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
 import MaKhuyenMai from "../../components/ui/MaKhuyenMai.astro";
-import { GIA_CONG_CU, dinhDangTien } from "../../lib/payments/gia-cong-cu";
+import { GIA_CONG_CU, dinhDangTien, dangKhoaThuNghiem } from "../../lib/payments/gia-cong-cu";
 import { getConfirmedToolOrderForUser } from "../../lib/db/orders";
 import { taoLuanGiaiTuVi, type LuanGiaiTuViInput } from "../../lib/tu-vi/luan-giai/taoLuanGiaiTuVi";
 import { TEN_CUNG_HIEN_THI, TEN_CUNG_SNAKE } from "../../lib/tu-vi/luan-giai/aiCoBan";
@@ -34,6 +34,9 @@ const GIA_CO_BAN = GIA_CONG_CU[TOOL_SLUG_CO_BAN];
 const GIA_NANG_CAO = GIA_CONG_CU[TOOL_SLUG_NANG_CAO];
 
 const user = Astro.locals.user;
+const laQuanTri = user?.isAdmin === true;
+// ⚠️ Đang KHÓA thu phí để thử nghiệm (anh Công chốt 27/8/2026) — chốt chặn thật ở checkout API.
+const khoaThuNghiem = dangKhoaThuNghiem(TOOL_SLUG_CO_BAN) && !laQuanTri;
 const q = Astro.url.searchParams;
 
 const soTuQuery = (ten: string): number | null => {
@@ -104,7 +107,7 @@ function phanTramTuoi(tuoi: number): number {
   <PageHero
     eyebrow="⭐ Dịch vụ VIP · Đang thử nghiệm"
     title="Luận Giải Tử Vi"
-    description={`Luận Cơ Bản ${dinhDangTien(GIA_CO_BAN)} (đủ 12 cung) — Luận Nâng Cao ${dinhDangTien(GIA_NANG_CAO)} (thêm Đại Hạn, Tiểu Hạn, Tổng kết chiến lược). Mua thẳng Nâng Cao cũng được, không cần mua Cơ Bản trước.`}
+    description={`Luận Cơ Bản ${dinhDangTien(GIA_CO_BAN)} (đủ 12 cung) — Luận Trọn Đời ${dinhDangTien(GIA_NANG_CAO)} (thêm Đại Hạn, Tiểu Hạn, Tổng kết chiến lược). Mua thẳng Nâng Cao cũng được, không cần mua Cơ Bản trước.`}
     breadcrumbs={[
       { label: "Trang chủ", href: "/" },
       { label: "Đại Cát Lợi", href: "/dai-cat-loi" },
@@ -144,7 +147,8 @@ function phanTramTuoi(tuoi: number): number {
               {!daMuaNangCao && (
                 <div class="mt-4 border-t border-(--color-gold-400)/30 pt-4">
                   <p>Muốn biết vận trình 10 năm tới đang thuận hay khó, và nên làm gì trong giai đoạn hiện tại?</p>
-                  <Button id="tvlg-mua-nang-cao" size="md" class="mt-3">Xem Luận Nâng Cao — {dinhDangTien(GIA_NANG_CAO)}</Button>
+                  {!khoaThuNghiem && (<Button id="tvlg-mua-nang-cao" size="md" class="mt-3">Xem Luận Trọn Đời — {dinhDangTien(GIA_NANG_CAO)}</Button>)}
+                  {khoaThuNghiem && (<p class="mt-3 text-sm font-semibold text-(--color-gold-700)">⏳ Bản Trọn Đời đang được hoàn thiện, sẽ mở trong ít ngày tới.</p>)}
                 </div>
               )}
             </div>
@@ -236,7 +240,8 @@ function phanTramTuoi(tuoi: number): number {
               {!daMuaNangCao && (
                 <div class="mt-6 rounded-(--radius-control) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-4 text-sm text-(--color-ink-800)">
                   <p>Muốn biết vận trình 10 năm tới đang thuận hay khó, và nên làm gì trong giai đoạn hiện tại?</p>
-                  <Button id="tvlg-mua-nang-cao" size="md" class="mt-3">Xem Luận Nâng Cao — {dinhDangTien(GIA_NANG_CAO)}</Button>
+                  {!khoaThuNghiem && (<Button id="tvlg-mua-nang-cao" size="md" class="mt-3">Xem Luận Trọn Đời — {dinhDangTien(GIA_NANG_CAO)}</Button>)}
+                  {khoaThuNghiem && (<p class="mt-3 text-sm font-semibold text-(--color-gold-700)">⏳ Bản Trọn Đời đang được hoàn thiện, sẽ mở trong ít ngày tới.</p>)}
                 </div>
               )}
             </section>
@@ -245,7 +250,7 @@ function phanTramTuoi(tuoi: number): number {
           {/* --- Đã mua Nâng Cao nhưng KHÔNG phải admin --- */}
           {daMuaNangCao && !baoCaoNangCao?.nangCao && (
             <div class="mb-8 rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-6 text-sm text-(--color-ink-800)">
-              <p class="font-display text-lg font-bold text-(--color-ink-950)">✅ Đã mua Luận Nâng Cao</p>
+              <p class="font-display text-lg font-bold text-(--color-ink-950)">✅ Đã mua Luận Trọn Đời</p>
               <p class="mt-2">Bản luận giải đầy đủ (PDF, gồm cả phần Cơ Bản) đã được gửi tới email tài khoản của bạn ngay sau khi thanh toán thành công. Vui lòng kiểm tra hộp thư, kể cả mục Spam/Quảng cáo.</p>
             </div>
           )}
@@ -253,7 +258,7 @@ function phanTramTuoi(tuoi: number): number {
           {/* --- Báo cáo Nâng Cao (chỉ admin) --- */}
           {baoCaoNangCao?.nangCao && baoCaoNangCao.duLieu && (
             <section class="mb-8 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
-              <h2 class="font-display text-2xl font-bold text-(--color-ink-950)">Luận Nâng Cao</h2>
+              <h2 class="font-display text-2xl font-bold text-(--color-ink-950)">Luận Trọn Đời</h2>
 
               {baoCaoNangCao.duLieu.daiHanHienTai && (
                 <div class="mt-4 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4">
@@ -333,13 +338,14 @@ function phanTramTuoi(tuoi: number): number {
                   <p class="font-display text-lg font-bold text-(--color-cinnabar-400)">Luận Cơ Bản</p>
                   <p class="mt-1 text-sm text-(--color-ink-700)">Luận đủ 12 cung, mỗi cung 7 phần: kết luận nhanh, phân tích, điểm mạnh/yếu, nguyên nhân, khả năng ứng nghiệm, khuyến nghị.</p>
                   <p class="mt-3 font-display text-xl font-bold text-(--color-ink-950)">{dinhDangTien(GIA_CO_BAN)}</p>
-                  <Button id="tvlg-mua-co-ban" size="lg" class="mt-3">Mua Luận Cơ Bản</Button>
+                  {!khoaThuNghiem && (<Button id="tvlg-mua-co-ban" size="lg" class="mt-3">Mua Luận Cơ Bản</Button>)}
+                  {khoaThuNghiem && (<p class="mt-3 rounded-(--radius-control) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 px-4 py-3 text-sm font-semibold text-(--color-gold-700)">⏳ Bản luận giải đầy đủ đang được hoàn thiện, sẽ mở bán trong ít ngày tới. Phần xem trước ở trên vẫn dùng thoải mái, miễn phí.</p>)}
                 </div>
                 <div class="flex flex-col rounded-(--radius-card) border-2 border-(--color-gold-400)/60 bg-(--color-gold-400)/10 p-5">
-                  <p class="font-display text-lg font-bold text-(--color-gold-600)">Luận Nâng Cao</p>
+                  <p class="font-display text-lg font-bold text-(--color-gold-600)">Luận Trọn Đời</p>
                   <p class="mt-1 text-sm text-(--color-ink-700)">Trọn gói Cơ Bản, cộng thêm Đại Hạn hiện tại, Tiểu Hạn năm nay và năm sau, Tổng kết chiến lược dài hạn.</p>
                   <p class="mt-3 font-display text-xl font-bold text-(--color-ink-950)">{dinhDangTien(GIA_NANG_CAO)}</p>
-                  <Button id="tvlg-mua-nang-cao-thang" size="lg" class="mt-3">Mua Luận Nâng Cao</Button>
+                  <Button id="tvlg-mua-nang-cao-thang" size="lg" class="mt-3">Mua Luận Trọn Đời</Button>
                 </div>
               </div>
               <div class="mt-4"><MaKhuyenMai idPrefix="tvlg-ma" toolSlug={TOOL_SLUG_CO_BAN} giaGoc={GIA_CO_BAN} /></div>

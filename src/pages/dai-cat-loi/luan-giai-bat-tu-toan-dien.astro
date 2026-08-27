@@ -1,6 +1,6 @@
 ---
 // TRANG "Luận Giải Bát Tự Toàn Diện" — 12 giai đoạn A-L, 3 tầng: Free (không AI) → Luận Cơ Bản (trả
-// phí lần 1) → Luận Nâng Cao (trả phí lần 2). 2 tầng trả phí BẮT BUỘC đăng nhập (khác mọi công cụ
+// phí lần 1) → Luận Trọn Đời (trả phí lần 2). 2 tầng trả phí BẮT BUỘC đăng nhập (khác mọi công cụ
 // khác trong repo — SPEC mục 0.4), quyền truy cập gắn theo TÀI KHOẢN, không theo orderCode.
 //
 // ⚠️ CHƯA PUBLISH: trang KHÔNG được gắn link ở bất kỳ menu/nav nào — chỉ truy cập qua URL trực tiếp
@@ -12,7 +12,7 @@ import Button from "../../components/ui/Button.astro";
 import DateSelect from "../../components/ui/DateSelect.astro";
 import MaKhuyenMai from "../../components/ui/MaKhuyenMai.astro";
 import BieuDoGiaiDoanVan from "../../components/luan-giai-toan-dien/BieuDoGiaiDoanVan.astro";
-import { GIA_CONG_CU, dinhDangTien } from "../../lib/payments/gia-cong-cu";
+import { GIA_CONG_CU, dinhDangTien, dangKhoaThuNghiem } from "../../lib/payments/gia-cong-cu";
 import { getConfirmedToolOrderForUser } from "../../lib/db/orders";
 import { taoBaoCaoCoBan, taoBaoCaoNangCao } from "../../lib/luan-giai-toan-dien/orchestrator";
 import { hashLaSo, cacheCoBan, cacheNangCao } from "../../lib/luan-giai-toan-dien/cache";
@@ -26,6 +26,11 @@ const GIA_CO_BAN = GIA_CONG_CU[TOOL_SLUG_CO_BAN];
 const GIA_NANG_CAO = GIA_CONG_CU[TOOL_SLUG_NANG_CAO];
 
 const user = Astro.locals.user;
+const laQuanTri = user?.isAdmin === true;
+
+// ⚠️ Đang KHÓA thu phí để thử nghiệm (anh Công chốt 27/8/2026) — khách thấy bản xem trước miễn phí
+// nhưng KHÔNG mua được; chốt chặn thật nằm ở checkout API, đây chỉ là phần ẩn nút cho đỡ hụt hẫng.
+const khoaThuNghiem = dangKhoaThuNghiem(TOOL_SLUG_CO_BAN) && !laQuanTri;
 
 let baoCaoCoBan: Awaited<ReturnType<typeof taoBaoCaoCoBan>> | null = null;
 let baoCaoNangCao: Awaited<ReturnType<typeof taoBaoCaoNangCao>> | null = null;
@@ -87,7 +92,7 @@ function mauTheoDiemMoi(diem: number): string {
   <PageHero
     eyebrow="⭐ Dịch vụ VIP · Đang thử nghiệm"
     title="Luận Giải Bát Tự Toàn Diện"
-    description={`Báo cáo luận giải Bát Tự đầy đủ theo 12 giai đoạn — mở đầu miễn phí, Luận Cơ Bản ${dinhDangTien(GIA_CO_BAN)}, Luận Nâng Cao ${dinhDangTien(GIA_NANG_CAO)} (mua thêm sau vẫn được).`}
+    description={`Báo cáo luận giải Bát Tự đầy đủ theo 12 giai đoạn — mở đầu miễn phí, Luận Cơ Bản ${dinhDangTien(GIA_CO_BAN)}, Luận Trọn Đời ${dinhDangTien(GIA_NANG_CAO)} (mua thêm sau vẫn được).`}
     breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Đại Cát Lợi", href: "/dai-cat-loi" }, { label: "Luận Giải Bát Tự Toàn Diện" }]}
   />
 
@@ -108,8 +113,9 @@ function mauTheoDiemMoi(diem: number): string {
               nên khách thường đã mua Cơ Bản không có cách nào bấm mua Nâng Cao trên trang. */}
           {!coDonNangCaoChuaHienThi && (
             <div class="mt-4 border-t border-(--color-gold-400)/30 pt-4">
-              <p>Bản Luận Nâng Cao sẽ đi sâu vào Thần Sát, gia đình - lục thân, sức khỏe, và trọn vẹn các giai đoạn vận trình từ nhỏ đến già.</p>
-              <Button id="ldbtd-mua-nang-cao" size="md" class="mt-3">Xem Luận Nâng Cao — {dinhDangTien(GIA_NANG_CAO)}</Button>
+              <p>Bản Luận Trọn Đời sẽ đi sâu vào Thần Sát, gia đình - lục thân, sức khỏe, và trọn vẹn các giai đoạn vận trình từ nhỏ đến già.</p>
+              {!khoaThuNghiem && (<Button id="ldbtd-mua-nang-cao" size="md" class="mt-3">Xem Luận Trọn Đời — {dinhDangTien(GIA_NANG_CAO)}</Button>)}
+              {khoaThuNghiem && (<p class="mt-3 text-sm font-semibold text-(--color-gold-700)">⏳ Bản Trọn Đời đang được hoàn thiện, sẽ mở trong ít ngày tới.</p>)}
             </div>
           )}
         </div>
@@ -142,7 +148,7 @@ function mauTheoDiemMoi(diem: number): string {
           {(baoCaoCoBan.moiDaiVan.length > 0 || baoCaoCoBan.moiLuuNien.length > 0) && (
             <div class="mt-3 rounded-(--radius-control) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-4">
               <p class="text-sm font-bold text-(--color-ink-900)">Xem trước: Đại Vận & Lưu Niên</p>
-              <p class="mt-1 text-xs text-(--color-ink-600)">Ước tính thô 1 chỉ số theo Dụng/Hỷ/Kỵ Thần nguyên cục — bản Nâng Cao tính lại Dụng Thần theo từng Đại Vận, tách 4 khía cạnh (Sức khỏe/Công việc/Tài lộc/Lục thân) và luận chi tiết từng năm bằng AI.</p>
+              <p class="mt-1 text-xs text-(--color-ink-600)">Ước tính thô 1 chỉ số theo Dụng/Hỷ/Kỵ Thần nguyên cục — bản Trọn Đời tính lại Dụng Thần theo từng Đại Vận, tách 4 khía cạnh (Sức khỏe/Công việc/Tài lộc/Lục thân) và luận chi tiết từng năm bằng AI.</p>
               {baoCaoCoBan.moiDaiVan.length > 0 && (
                 <div class="mt-3">
                   <p class="text-xs font-medium text-(--color-ink-600)">Đại Vận trọn đời</p>
@@ -189,7 +195,8 @@ function mauTheoDiemMoi(diem: number): string {
           {!coDonNangCaoChuaHienThi && (
             <div class="mt-6 rounded-(--radius-control) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-4 text-sm text-(--color-ink-800)">
               <p>{baoCaoCoBan.ctaNangCao}</p>
-              <Button id="ldbtd-mua-nang-cao" size="md" class="mt-3">Xem Luận Nâng Cao — {dinhDangTien(GIA_NANG_CAO)}</Button>
+              {!khoaThuNghiem && (<Button id="ldbtd-mua-nang-cao" size="md" class="mt-3">Xem Luận Trọn Đời — {dinhDangTien(GIA_NANG_CAO)}</Button>)}
+              {khoaThuNghiem && (<p class="mt-3 text-sm font-semibold text-(--color-gold-700)">⏳ Bản Trọn Đời đang được hoàn thiện, sẽ mở trong ít ngày tới.</p>)}
             </div>
           )}
         </section>
@@ -198,7 +205,7 @@ function mauTheoDiemMoi(diem: number): string {
       {/* --- Đã mua Nâng Cao nhưng KHÔNG phải admin: không hiện trực tiếp, báo đã gửi qua email --- */}
       {coDonNangCaoChuaHienThi && !baoCaoNangCao && (
         <div class="mb-10 rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-6 text-sm text-(--color-ink-800)">
-          <p class="font-display text-lg font-bold text-(--color-ink-950)">✅ Đã mua Luận Nâng Cao</p>
+          <p class="font-display text-lg font-bold text-(--color-ink-950)">✅ Đã mua Luận Trọn Đời</p>
           <p class="mt-2">Bản luận giải đầy đủ (PDF) đã được gửi tới email tài khoản của bạn ngay sau khi thanh toán thành công. Vui lòng kiểm tra hộp thư (kể cả mục Spam/Quảng cáo).</p>
         </div>
       )}
@@ -207,7 +214,7 @@ function mauTheoDiemMoi(diem: number): string {
       {baoCaoNangCao && (
         <section class="mb-10 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
           <div class="flex flex-wrap items-center justify-between gap-2">
-            <h2 class="font-display text-2xl font-bold text-(--color-ink-950)">Luận Nâng Cao</h2>
+            <h2 class="font-display text-2xl font-bold text-(--color-ink-950)">Luận Trọn Đời</h2>
             {baoCaoNangCao.giaiDoan.length > 0 && (
               <button type="button" class="ldbtd-tts-btn shrink-0 rounded-full border border-(--color-gold-400)/50 bg-(--color-gold-400)/10 px-3 py-1.5 text-xs font-medium text-(--color-gold-700)" data-tts-target="ldbtd-nangcaotoanbo">🔊 Nghe toàn bộ</button>
             )}
@@ -305,8 +312,11 @@ function mauTheoDiemMoi(diem: number): string {
               </p>
             )}
             {user && !coDonCoBanChuaHienThi && <MaKhuyenMai idPrefix="ldbtd-ma" toolSlug={TOOL_SLUG_CO_BAN} giaGoc={GIA_CO_BAN} />}
-            {user && !coDonCoBanChuaHienThi && (
+            {user && !coDonCoBanChuaHienThi && !khoaThuNghiem && (
               <Button id="ldbtd-mua-co-ban" size="lg" class="mt-4 w-full sm:w-auto">Xem Luận Cơ Bản — {dinhDangTien(GIA_CO_BAN)}</Button>
+            )}
+            {user && !coDonCoBanChuaHienThi && khoaThuNghiem && (
+              <p class="mt-4 rounded-(--radius-control) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 px-4 py-3 text-sm font-semibold text-(--color-gold-700)">⏳ Bản luận giải đầy đủ đang được hoàn thiện, sẽ mở bán trong ít ngày tới. Phần xem trước ở trên vẫn dùng thoải mái, miễn phí.</p>
             )}
           </div>
         </div>

@@ -53,12 +53,79 @@ export function taoGoiMoFree(chart: BatTuChart, analysis: BatTuAnalysis): string
 
   const cauKeuGoiNangCap = "bấm \"Xem luận giải đầy đủ\" để khám phá trọn vẹn lá số của bạn.";
 
+  // ─ Bản mệnh Nạp Âm — người Việt quen gọi mệnh theo Nạp Âm ("Hải Trung Kim") hơn cả Nhật Chủ, nên
+  //   đặt ngay đầu để khách nhận ra lá số của chính mình. Lấy từ Trụ Năm (bat-tu.ts đã tính sẵn).
+  const banMenh = `${chart.year.napAm} (${chart.year.napAmElement})`;
+
+  // ─ Cấu trúc Ngũ Hành: hành nào dày, hành nào khuyết. Đây là thứ khách tự nhìn đồ hình cũng thấy,
+  //   nói ra bằng lời giúp họ hiểu vì sao Dụng Thần lại là hành đó.
+  const dem: Record<Hanh, number> = { Kim: 0, Mộc: 0, Thủy: 0, Hỏa: 0, Thổ: 0 };
+  for (const tru of [chart.year, chart.month, chart.day, chart.hour]) {
+    dem[hanhCan(tru.can)]++;
+    dem[hanhChi(tru.chi)]++;
+  }
+  const hanhSapXep = (Object.keys(dem) as Hanh[]).sort((a, b) => dem[b] - dem[a]);
+  const hanhDay = hanhSapXep.filter((h) => dem[h] >= 3);
+  const hanhKhuyet = hanhSapXep.filter((h) => dem[h] === 0);
+  const cauNguHanh = [
+    hanhDay.length > 0 ? `Trong tứ trụ, hành ${hanhDay.join(" và ")} chiếm phần nhiều` : "Ngũ hành trong tứ trụ phân bố khá đều",
+    hanhKhuyet.length > 0 ? `, còn thiếu hẳn ${hanhKhuyet.join(", ")}` : "",
+    ". ",
+    hanhKhuyet.length > 0
+      ? "Hành thiếu không có nghĩa là xấu — điều đáng quan tâm là vận sau này có bù vào được hay không, phần đó nằm trong bản luận đầy đủ."
+      : "Ngũ hành tương đối đủ mặt là nền tảng thuận lợi để khí lưu thông.",
+  ].join("");
+
+  // ─ Thần Sát CÁT nổi bật — tái dùng `chart.thanSat` (35 sao engine đã an sẵn), KHÔNG tự tra lại.
+  //   Cố ý chỉ nêu CÁT THẦN ở bản miễn phí: hung thần cần xét đủ điều kiện hóa giải (Không Vong,
+  //   hình/xung/hại...) mới kết luận được — nói nửa vời dễ làm khách lo sợ vô cớ, trái nguyên tắc
+  //   đạo đức trong `than-sat.md` (§Nguyên tắc 2-3) và không tử tế với người đọc.
+  // ⚠️ Tên sao trong `chart.thanSat` có thể kèm hậu tố nguồn tra, ví dụ "Thiên Ất (năm)" hay
+  // "Hồng Diễm (năm)" — phải cắt phần trong ngoặc trước khi đối chiếu. Phát hiện khi chạy thử trên
+  // lá số thật: bản đầu khớp chuỗi cứng nên BỎ SÓT "Thiên Ất (năm)", đúng cát thần mạnh nhất.
+  const CAT_THAN_DE_HIEU: Record<string, string> = {
+    "Thiên Ất": "gặp việc khó thường có người giúp đỡ đúng lúc — cát tinh quý nhất trong Bát Tự",
+    "Thiên Đức": "tâm tính hiền hòa, hay gặp may trong lúc ngặt",
+    "Nguyệt Đức": "được che chở, việc dữ thường hóa lành",
+    "Thiên Xá": "gặp hung hóa cát, lỡ sai cũng dễ được lượng thứ",
+    "Thái Cực": "thông minh hiếu học, có duyên với học thuật và tâm linh",
+    "Văn Xương": "sáng dạ, hợp đường học hành thi cử",
+    "Học Đường": "có duyên với sách vở, nghiên cứu",
+    "Từ Quán": "hợp nghề giảng dạy, chữ nghĩa",
+    "Quốc Ấn": "thành thực đáng tin, có thể nắm giữ trọng trách",
+    "Tướng Tinh": "có khí chất thủ lĩnh, dễ được giao việc lớn",
+    "Hồng Loan": "đường tình duyên có nhiều tin vui",
+    "Thiên Hỷ": "hay gặp chuyện đáng mừng",
+    "Kim Dư": "được hưởng phúc phần vật chất, đời sống dễ chịu",
+    "Thiên Y": "có duyên với nghề chữa bệnh, sức khỏe được phù trợ",
+    "Lộc Thần": "có lộc ăn, tự nuôi được thân",
+    "Dịch Mã": "đời năng động, hợp việc đi lại giao thương",
+    "Phúc Tinh": "chủ phúc khí bình an, sống thong dong",
+  };
+  /** Bỏ hậu tố nguồn tra: "Thiên Ất (năm)" → "Thiên Ất". */
+  const tenGoc = (sao: string) => sao.replace(/\s*\(.*\)\s*$/, "").trim();
+  const catThanCoTrongLaSo: string[] = [];
+  for (const tru of ["year", "month", "day", "hour"] as const) {
+    for (const sao of chart.thanSat[tru] ?? []) {
+      const g = tenGoc(sao);
+      if (CAT_THAN_DE_HIEU[g] && !catThanCoTrongLaSo.includes(g)) catThanCoTrongLaSo.push(g);
+    }
+  }
+  const cauThanSat = catThanCoTrongLaSo.length > 0
+    ? `Lá số có ${catThanCoTrongLaSo.slice(0, 3).map((s) => `${s} (${CAT_THAN_DE_HIEU[s]})`).join("; ")}.`
+      + (catThanCoTrongLaSo.length > 3 ? ` Ngoài ra còn ${catThanCoTrongLaSo.length - 3} cát tinh khác nữa.` : "")
+    : "Phần Thần Sát của lá số này cần xét kỹ từng trụ mới kết luận được, có trong bản luận đầy đủ.";
+
   return [
-    `Nhật Chủ của bạn là ${canNgay} (${hanhCanNgay}, ${amDuongCanNgay}), hiện đang ở mức ${nhanCapDoVuongSuy}.`,
+    `Bản mệnh của bạn là ${banMenh}. Nhật Chủ — tức chính bản thân bạn trong lá số — là ${canNgay} (${hanhCanNgay}, ${amDuongCanNgay}), hiện ở mức ${nhanCapDoVuongSuy}.`,
     "",
     cauTheoCapDo,
     "",
+    cauNguHanh,
+    "",
     `Dụng Thần phù hợp với lá số này là hành ${tenDungThan} — ${cauGoiYNganTheoHanh}`,
+    "",
+    `✦ Sao tốt trong lá số: ${cauThanSat}`,
     "",
     `Đây mới là phần mở đầu. Bản luận giải đầy đủ sẽ đi sâu vào 12 khía cạnh: tính cách, thần sát, gia đình - lục thân, sự nghiệp - tài vận, hôn nhân, sức khỏe, và trọn vẹn các giai đoạn vận trình từ nhỏ đến già — ${cauKeuGoiNangCap}`,
   ].join("\n");

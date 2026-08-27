@@ -151,6 +151,42 @@ export function tongQuanFree(chart: TuViChart): KetQuaTongQuanFree {
     },
   ];
 
+  // ─ Sao và dấu hiệu nổi bật tại Mệnh — làm sâu bản miễn phí 27/8/2026 (anh Công: "giữ thuần công
+  //   thức nhưng làm cho sâu hơn"). Vẫn KHÔNG gọi AI: chỉ đọc dữ liệu engine đã an sẵn.
+  const CAT_TINH_DE_HIEU: Record<string, string> = {
+    "Thiên Khôi": "quý nhân nam giúp đỡ",
+    "Thiên Việt": "quý nhân nữ giúp đỡ",
+    "Tả Phù": "có người phụ tá bên cạnh",
+    "Hữu Bật": "có người phụ tá bên cạnh",
+    "Văn Xương": "sáng dạ, giỏi chữ nghĩa thi cử",
+    "Văn Khúc": "tài hoa, khéo ăn nói",
+    "Lộc Tồn": "có lộc, giữ được của",
+    "Thiên Mã": "năng động, hợp đi xa lập nghiệp",
+  };
+  const catTaiMenh = (cungMenh?.phuTinh ?? [])
+    .map((s) => s.name)
+    .filter((n) => CAT_TINH_DE_HIEU[n]);
+  const hoaTaiMenh = [...(cungMenh?.chinhTinh ?? []), ...(cungMenh?.phuTinh ?? [])]
+    .filter((s) => s.tuHoa && s.tuHoa !== "Kỵ")
+    .map((s) => `${s.name} hóa ${s.tuHoa}`);
+
+  const phanCat = catTaiMenh.length > 0
+    ? `Tại cung Mệnh có ${catTaiMenh.slice(0, 3).map((n) => `${n} (${CAT_TINH_DE_HIEU[n]})`).join("; ")}. `
+    : "";
+  const phanHoa = hoaTaiMenh.length > 0
+    ? `Đáng chú ý, Mệnh được ${hoaTaiMenh.join(", ")} — đây là dấu hiệu tăng lực rõ rệt cho cung này. `
+    : "";
+  const phanTuanTriet = cungMenh?.tuan || cungMenh?.triet
+    ? `Mệnh có ${cungMenh?.tuan && cungMenh?.triet ? "cả Tuần và Triệt" : cungMenh?.tuan ? "Tuần" : "Triệt"} án ngữ — việc thường chậm hơn người, đến muộn nhưng không hẳn là mất; cách hóa giải và giai đoạn nào mới thông nằm trong bản luận đầy đủ. `
+    : "";
+
+  if (phanCat || phanHoa || phanTuanTriet) {
+    muc.push({
+      tieuDe: "Sao nổi bật tại Mệnh",
+      noiDung: `${phanCat}${phanHoa}${phanTuanTriet}`.trim(),
+    });
+  }
+
   const soCungTot = Object.values(cham.diem12Cung).filter((d) => d >= 4).length;
   const cungManhNhat = [...cham.chiTiet].sort((a, b) => b.diem - a.diem)[0];
   const cungCanLuuY = [...cham.chiTiet].sort((a, b) => a.diem - b.diem)[0];

@@ -31,7 +31,6 @@ export const GIA_CONG_CU = {
   "dinh-huong-nghe-nghiep": 500000,
   "trach-nhat-sinh-no": 500000,
   "trach-cat-ky-mon": 500000,
-  "luan-giai-bat-tu-nang-cao": 500000,
   // ⚠️ Trước 27/8/2026 để 999.999đ — con số này KHÔNG phải giá thật mà là số đặt tạm rồi quên (không
   // ai định giá lẻ tới hàng đơn vị). Chốt về 500.000đ: module luận số để khách quyết có nên bỏ vài
   // triệu mua sim hay không, giá trị ngang các module "việc lớn" khác.
@@ -40,14 +39,45 @@ export const GIA_CONG_CU = {
   // ─ Hạng 300.000đ — việc thường ───────────────────────────────────────────────────────────────
   "ngay-khai-truong-cao-cap": 300000,
   "ngay-ky-hop-dong-cao-cap": 300000,
-  "luan-giai-bat-tu-co-ban": 300000,
   "ky-mon-menh-chi-tiet": 300000,
-  "luan-giai-tu-vi-nang-cao": 300000,
+
+  // ─ Luận mệnh trọn đời — 2 bậc CƠ BẢN / TRỌN ĐỜI (anh Công chốt 27/8/2026) ────────────────────
+  // Bài luận rất dài (12 giai đoạn + Đại Vận trọn đời + Lưu Niên 10 năm, kèm PDF gửi email) nên
+  // tách 2 bậc rõ ràng thay vì "cơ bản/nâng cao" mơ hồ:
+  //   · CƠ BẢN  — đọc nền tảng lá số, đủ để hiểu mình.
+  //   · TRỌN ĐỜI — thêm trọn vẹn vận trình từ nhỏ đến già; đây là sản phẩm đầu bảng của mảng luận mệnh.
+  // ⚠️ GIỮ NGUYÊN slug "…-nang-cao" dù nhãn hiển thị đổi thành "Trọn Đời": slug đã nằm trong
+  // `orders.toolSlug` của các đơn CŨ, đổi slug sẽ làm mất quyền truy cập của khách đã mua.
+  "luan-giai-bat-tu-co-ban": 300000,
+  "luan-giai-bat-tu-nang-cao": 700000, // nhãn hiển thị: "Trọn Đời"
+  "luan-giai-tu-vi-co-ban": 200000,
+  "luan-giai-tu-vi-nang-cao": 500000, // nhãn hiển thị: "Trọn Đời"
 
   // ─ Cửa vào — cho khách chưa từng mua ─────────────────────────────────────────────────────────
   "ky-mon-hoi-dap": 200000,
-  "luan-giai-tu-vi-co-ban": 150000,
 } as const;
+
+/**
+ * Module ĐANG KHÓA THU PHÍ để thử nghiệm nội bộ — khách KHÔNG mua được, chỉ tài khoản quản trị
+ * chạy thử được trọn luồng.
+ *
+ * ⚠️ Anh Công chốt 27/8/2026: *"hiện tại anh chưa muốn cho chạy thu phí 2 mục này vội, anh cần test
+ * kỹ đã"* (Luận Giải Bát Tự Toàn Diện + Luận Giải Tử Vi). Vừa đổi giá và làm sâu bản xem trước nên
+ * cần chạy thử kỹ trước khi mở cho khách.
+ *
+ * Gỡ khóa = xoá slug khỏi danh sách này. KHÔNG cần sửa chỗ nào khác.
+ */
+export const MODULE_KHOA_THU_NGHIEM: readonly ToolSlug[] = [
+  "luan-giai-bat-tu-co-ban",
+  "luan-giai-bat-tu-nang-cao",
+  "luan-giai-tu-vi-co-ban",
+  "luan-giai-tu-vi-nang-cao",
+] as const;
+
+/** true = module đang khóa, khách thường không được tạo đơn (admin vẫn chạy thử được). */
+export function dangKhoaThuNghiem(slug: ToolSlug): boolean {
+  return MODULE_KHOA_THU_NGHIEM.includes(slug);
+}
 
 /**
  * Giá "gốc" hiển thị gạch ngang cạnh giá thật để tạo hiệu ứng đã giảm giá — THUẦN QUẢNG CÁO,

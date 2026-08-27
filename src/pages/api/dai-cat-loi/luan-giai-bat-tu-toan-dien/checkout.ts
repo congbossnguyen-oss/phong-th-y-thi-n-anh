@@ -3,6 +3,7 @@ import { taoDonCongCu } from "../../../../lib/payments/checkout-cong-cu";
 import { checkRateLimit } from "../../../../lib/rate-limit";
 import { docInput, jsonResponse, TOOL_SLUG_CO_BAN, TOOL_SLUG_NANG_CAO } from "./_chung";
 import { thongBaoLoiAnToan } from "../../../../lib/loi-an-toan";
+import { dangKhoaThuNghiem } from "../../../../lib/payments/gia-cong-cu";
 
 export const prerender = false;
 
@@ -31,6 +32,15 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
     return jsonResponse({ ok: false, error: "Tầng luận giải không hợp lệ." }, 400);
   }
   const toolSlug = tang === "co_ban" ? TOOL_SLUG_CO_BAN : TOOL_SLUG_NANG_CAO;
+
+  // ⚠️ CHỐT CHẶN THẬT Ở MÁY CHỦ — module đang khóa thử nghiệm thì khách KHÔNG tạo được đơn, kể cả
+  // khi gọi thẳng API (ẩn nút ở giao diện là chưa đủ). Admin vẫn chạy thử trọn luồng được.
+  if (dangKhoaThuNghiem(toolSlug) && locals.user.isAdmin !== true) {
+    return jsonResponse(
+      { ok: false, error: "Dịch vụ này đang được hoàn thiện, chưa mở bán. Vui lòng quay lại sau ít ngày." },
+      403,
+    );
+  }
 
   const docKq = docInput(body);
   if (!docKq.ok) return jsonResponse({ ok: false, error: docKq.error }, 400);
