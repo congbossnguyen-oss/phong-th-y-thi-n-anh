@@ -18,6 +18,7 @@ import { tinhVanKhi, type VanKhiOutput, type DiemLinhVuc, type LinhVucKey, type 
 import { getVanKhiCache, saveVanKhiCache } from "../../lib/db/van-khi-cache";
 import { tinhBatTu, THAP_THAN_ABBR } from "../../lib/bat-tu";
 import { hanhCan, hanhChi } from "../../lib/bat-tu-engine/engine";
+import { thongBaoLoiAnToan } from "../../lib/loi-an-toan";
 
 export const prerender = false;
 
@@ -50,7 +51,7 @@ if (coQuyen && hs) {
       luuLuuNienCache: (i, luuNien) => saveVanKhiCache(user!.id, i, luuNien),
     });
   } catch (err) {
-    loi = err instanceof Error ? err.message : "Không tính được vận khí từ hồ sơ ngày sinh.";
+    loi = thongBaoLoiAnToan(err, "Không tính được vận khí từ hồ sơ ngày sinh, vui lòng thử lại sau.");
   }
 }
 
