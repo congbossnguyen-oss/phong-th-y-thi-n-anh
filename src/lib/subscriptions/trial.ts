@@ -12,6 +12,10 @@ import { subscriptions, trialDevices } from "../../../db/schema";
 
 const SO_NGAY_DUNG_THU = 7;
 
+/** Lỗi nghiệp vụ cố ý — message tiếng Việt, AN TOÀN hiện thẳng cho khách. Phân biệt với lỗi hệ thống
+ * bất ngờ (DB lỗi, mất kết nối...) để route KHÔNG lỡ hiện message kỹ thuật thô cho khách. */
+export class LoiDungThu extends Error {}
+
 // Chống lạm dụng mức "Vừa": mỗi THIẾT BỊ chỉ 1 lượt trial; mỗi IP tối đa IP_TRIAL_TOI_DA lượt trong
 // IP_CUA_SO_NGAY ngày (nới để không chặn nhầm gia đình/công ty dùng chung 1 IP). Xem docs quyết định
 // của chủ dự án 2026-08-25.
@@ -60,11 +64,11 @@ export async function batDauDungThu(userId: string, device?: TrialDeviceContext)
     .where(and(eq(subscriptions.userId, userId), eq(subscriptions.status, "active")))
     .limit(1);
   if (dangHoatDong) {
-    throw new Error("Tài khoản đang có gói hoạt động, không cần dùng thử.");
+    throw new LoiDungThu("Tài khoản đang có gói hoạt động, không cần dùng thử.");
   }
 
   if (await daTungDungThu(userId)) {
-    throw new Error("Tài khoản đã dùng thử rồi, mỗi tài khoản chỉ dùng thử được 1 lần.");
+    throw new LoiDungThu("Tài khoản đã dùng thử rồi, mỗi tài khoản chỉ dùng thử được 1 lần.");
   }
 
   // --- Chống lạm dụng mức "Vừa" (theo thiết bị + IP): đọc DB rồi để hàm thuần quyết định ---
@@ -82,7 +86,7 @@ export async function batDauDungThu(userId: string, device?: TrialDeviceContext)
       .where(and(eq(trialDevices.ip, device.ip), gte(trialDevices.createdAt, tuNgay)));
 
     const loi = lyDoChanTrialTheoThietBi({ thietBiDaThu: !!thietBi, soLuotIp: luotCungIp.length });
-    if (loi) throw new Error(loi);
+    if (loi) throw new LoiDungThu(loi);
   }
 
   const startedAt = new Date();
