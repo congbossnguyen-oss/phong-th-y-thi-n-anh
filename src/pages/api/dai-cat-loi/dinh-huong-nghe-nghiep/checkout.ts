@@ -3,7 +3,7 @@ import { castBatTuFacts } from "../../../../lib/chart-profile/cast-bat-tu";
 import { taoDonCongCu } from "../../../../lib/payments/checkout-cong-cu";
 import { docInput, jsonResponse, TOOL_SLUG } from "./_chung";
 import { checkRateLimit } from "../../../../lib/rate-limit";
-import { LoiNghiepVu } from "../../../../lib/errors";
+import { thongBaoLoiAnToan } from "../../../../lib/loi-an-toan";
 
 export const prerender = false;
 
@@ -54,13 +54,9 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
     });
     return jsonResponse(kq, kq.ok ? 200 : 400);
   } catch (err) {
-    if (err instanceof LoiNghiepVu) {
-      return jsonResponse({ ok: false, error: err.message }, 400);
-    }
-    console.error("[dinh-huong-nghe-nghiep/checkout] Lỗi không mong đợi khi tạo đơn hàng:", err);
     return jsonResponse(
-      { ok: false, error: "Rất tiếc, hệ thống đang gặp trục trặc khi tạo đơn hàng. Bạn thử lại sau ít phút giúp mình nhé, hoặc liên hệ Thiên Anh nếu vẫn lỗi." },
-      500,
+      { ok: false, error: thongBaoLoiAnToan(err, "Không tạo được đơn hàng, vui lòng thử lại sau.") },
+      400,
     );
   }
 };

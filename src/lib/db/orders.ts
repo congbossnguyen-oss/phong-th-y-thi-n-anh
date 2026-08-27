@@ -1,6 +1,5 @@
 import { and, desc, eq } from "drizzle-orm";
 import { db } from "./client";
-import { LoiNghiepVu } from "../errors";
 import { orders, orderItems, courseEnrollments, users, subscriptions } from "../../../db/schema";
 import { SO_THANG_THEO_KY_HAN, type SubscriptionTier, type SubscriptionDuration } from "../payments/gia-subscription";
 import { generateOrderCode } from "../payments/sepay";
@@ -36,6 +35,7 @@ import { ghiDonThuPhiLenSheet, TEN_CONG_CU_HIEN_THI } from "../google-sheets-don
 import { ghiDonSimPhongThuyLenSheet } from "../google-sheets-sim-phong-thuy";
 import { NHAN_MONG_MUON, NHAN_MANG, NHAN_KHOANG_GIA, type SimPhongThuyInput } from "../sim-phong-thuy-khai-van/labels";
 import { Scoring } from "@thien-anh/rule-engine";
+import { LoiNguoiDung, boiLoiHeThong } from "../loi-an-toan";
 
 export interface CartLine {
   slug: string;
@@ -46,7 +46,7 @@ export interface CartLine {
  * Tạo đơn hàng vật phẩm — giá luôn lấy từ nguồn dữ liệu server (placeholder-data, sau này là
  * Sanity), KHÔNG bao giờ tin giá client gửi lên, để tránh khách hàng sửa giá qua devtools.
  */
-export async function createProductOrder(params: {
+async function _createProductOrderNoiBo(params: {
   userId: string | null;
   customerName: string;
   customerPhone: string;
@@ -65,7 +65,7 @@ export async function createProductOrder(params: {
     .filter((l): l is { product: (typeof products)[number]; qty: number } => l !== null);
 
   if (resolvedLines.length === 0) {
-    throw new LoiNghiepVu("Giỏ hàng không hợp lệ hoặc trống.");
+    throw new LoiNguoiDung("Giỏ hàng không hợp lệ hoặc trống.");
   }
 
   const totalAmount = resolvedLines.reduce((sum, l) => sum + l.product.price * l.qty, 0);
@@ -101,10 +101,18 @@ export async function createProductOrder(params: {
   return { orderId: order.id, orderCode: order.orderCode, totalAmount };
 }
 
+/** Tạo đơn hàng vật phẩm — bọc lỗi hệ thống (DB...) không cho lộ chi tiết ra client, chỉ lỗi
+ * nghiệp vụ (giỏ hàng trống...) mới hiển thị nguyên văn. */
+export function createProductOrder(params: Parameters<typeof _createProductOrderNoiBo>[0]) {
+  return boiLoiHeThong("createProductOrder", "Không tạo được đơn hàng, vui lòng thử lại sau.", () =>
+    _createProductOrderNoiBo(params)
+  );
+}
+
 /**
  * Tạo đơn hàng khóa học online — mỗi đơn ứng với đúng 1 khóa học, bắt buộc đăng nhập.
  */
-export async function createCourseOrder(params: {
+async function _createCourseOrderNoiBo(params: {
   userId: string;
   customerName: string;
   customerPhone: string;
@@ -114,7 +122,7 @@ export async function createCourseOrder(params: {
   const courseData = await getCourseBySlug(params.courseSlug);
   const course = courseData && courseData.format === "online" ? courseData : null;
   if (!course) {
-    throw new LoiNghiepVu("Khóa học không hợp lệ.");
+    throw new LoiNguoiDung("Khóa học không hợp lệ.");
   }
 
   // Tránh tạo đơn trùng nếu học viên tải lại trang thanh toán nhiều lần — tái sử dụng
@@ -157,13 +165,20 @@ export async function createCourseOrder(params: {
   return { orderId: order.id, orderCode: order.orderCode, totalAmount: course.price };
 }
 
+/** Tạo đơn hàng khóa học — bọc lỗi hệ thống, xem `createProductOrder`. */
+export function createCourseOrder(params: Parameters<typeof _createCourseOrderNoiBo>[0]) {
+  return boiLoiHeThong("createCourseOrder", "Không tạo được đơn hàng, vui lòng thử lại sau.", () =>
+    _createCourseOrderNoiBo(params)
+  );
+}
+
 /**
  * Tạo đơn hàng công cụ trả phí (vd "gio-liem-ha-huyet"). Có công cụ bắt đăng nhập, có công cụ
  * không (xem chú thích ở `userId`). `toolInput` lưu nguyên object input đã validate được
  * (JSON.stringify) để sau khi thanh toán xong, tầng API tính lại kết quả từ chính input này —
  * không lưu sẵn kết quả để tránh lệch dữ liệu nếu công thức tính được sửa sau khi đơn đã tạo.
  */
-export async function createToolOrder(params: {
+async function _createToolOrderNoiBo(params: {
   toolSlug: string;
   toolInput: unknown;
   // Gắn đơn vào tài khoản khi công cụ có bắt đăng nhập (vd Xem Ngày Cao Cấp) — để khách xem lại
@@ -206,12 +221,19 @@ export async function createToolOrder(params: {
   return { orderId: order.id, orderCode: order.orderCode, totalAmount: params.totalAmount };
 }
 
+/** Tạo đơn hàng công cụ trả phí — bọc lỗi hệ thống, xem `createProductOrder`. */
+export function createToolOrder(params: Parameters<typeof _createToolOrderNoiBo>[0]) {
+  return boiLoiHeThong("createToolOrder", "Không tạo được đơn hàng, vui lòng thử lại sau.", () =>
+    _createToolOrderNoiBo(params)
+  );
+}
+
 /**
  * Tạo đơn hàng gói thuê bao "Quân Sư" (Cơ bản / Cao cấp × 1-3-6-12 tháng). KHÁC `createToolOrder`:
  * BẮT BUỘC đăng nhập (`userId` không được null) — quyền truy cập gói tính theo tài khoản, không
  * theo orderCode của 1 lần mua, nên không có tài khoản thì không có gì để gắn quyền vào.
  */
-export async function createSubscriptionOrder(params: {
+async function _createSubscriptionOrderNoiBo(params: {
   userId: string;
   tier: SubscriptionTier;
   duration: SubscriptionDuration;
@@ -248,9 +270,18 @@ export async function createSubscriptionOrder(params: {
   return { orderId: order.id, orderCode: order.orderCode, totalAmount: params.totalAmount };
 }
 
-export async function getOrderByCode(orderCode: string) {
-  const [order] = await db.select().from(orders).where(eq(orders.orderCode, orderCode)).limit(1);
-  return order ?? null;
+/** Tạo đơn hàng gói thuê bao — bọc lỗi hệ thống, xem `createProductOrder`. */
+export function createSubscriptionOrder(params: Parameters<typeof _createSubscriptionOrderNoiBo>[0]) {
+  return boiLoiHeThong("createSubscriptionOrder", "Không tạo được đơn hàng, vui lòng thử lại sau.", () =>
+    _createSubscriptionOrderNoiBo(params)
+  );
+}
+
+export function getOrderByCode(orderCode: string) {
+  return boiLoiHeThong("getOrderByCode", "Có lỗi hệ thống, vui lòng thử lại sau.", async () => {
+    const [order] = await db.select().from(orders).where(eq(orders.orderCode, orderCode)).limit(1);
+    return order ?? null;
+  });
 }
 
 /**
@@ -259,21 +290,23 @@ export async function getOrderByCode(orderCode: string) {
  * (đã đóng tab lúc thanh toán, hoặc bookmark thẳng trang). Khác `getOrderByCode`: tra theo tài
  * khoản, không theo mã đơn cụ thể.
  */
-export async function getConfirmedToolOrderForUser(userId: string, toolSlug: string) {
-  const [order] = await db
-    .select()
-    .from(orders)
-    .where(and(eq(orders.userId, userId), eq(orders.toolSlug, toolSlug), eq(orders.status, "confirmed")))
-    .orderBy(desc(orders.createdAt))
-    .limit(1);
-  return order ?? null;
+export function getConfirmedToolOrderForUser(userId: string, toolSlug: string) {
+  return boiLoiHeThong("getConfirmedToolOrderForUser", "Có lỗi hệ thống, vui lòng thử lại sau.", async () => {
+    const [order] = await db
+      .select()
+      .from(orders)
+      .where(and(eq(orders.userId, userId), eq(orders.toolSlug, toolSlug), eq(orders.status, "confirmed")))
+      .orderBy(desc(orders.createdAt))
+      .limit(1);
+    return order ?? null;
+  });
 }
 
 /**
  * Đánh dấu đơn hàng đã thanh toán (gọi từ webhook SePay sau khi đối soát số tiền khớp) —
  * với đơn khóa học, tự động tạo lượt đăng ký (course_enrollments) và gửi email xác nhận.
  */
-export async function markOrderPaidAndFulfill(orderId: string) {
+async function _markOrderPaidAndFulfillNoiBo(orderId: string) {
   const [order] = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
   if (!order || order.status === "confirmed") return;
 
@@ -658,7 +691,18 @@ export async function markOrderPaidAndFulfill(orderId: string) {
   }
 }
 
-export async function getOrderById(orderId: string) {
-  const [order] = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
-  return order ?? null;
+/** Đánh dấu đơn đã thanh toán + fulfill — bọc lỗi hệ thống (DB...) không cho lộ chi tiết ra client
+ * (route webhook/checkout gọi hàm này trong try/catch của chúng). Các bước gửi email/PDF con bên
+ * trong ĐÃ tự bọc try/catch riêng từ trước (không rethrow), không bị ảnh hưởng bởi lớp bọc này. */
+export function markOrderPaidAndFulfill(orderId: string) {
+  return boiLoiHeThong("markOrderPaidAndFulfill", "Có lỗi hệ thống khi xác nhận đơn hàng, vui lòng liên hệ hỗ trợ.", () =>
+    _markOrderPaidAndFulfillNoiBo(orderId)
+  );
+}
+
+export function getOrderById(orderId: string) {
+  return boiLoiHeThong("getOrderById", "Có lỗi hệ thống, vui lòng thử lại sau.", async () => {
+    const [order] = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
+    return order ?? null;
+  });
 }
