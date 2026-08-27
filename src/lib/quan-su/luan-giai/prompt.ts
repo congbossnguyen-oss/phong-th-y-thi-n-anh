@@ -89,6 +89,34 @@ export function userPrompt(payload: QuanSuInterpretationPayload, moTa?: string):
     );
   }
 
+  if (payload.tien_thoai_than.co) {
+    phan.push(
+      "",
+      "TIẾN THẦN / THOÁI THẦN (engine tính sẵn — đà của việc là lên hay xuống):",
+      JSON.stringify(payload.tien_thoai_than, null, 1),
+    );
+  }
+
+  if (payload.ung_ky) {
+    phan.push(
+      "",
+      "ỨNG KỲ — MỐC THỜI GIAN (engine tính sẵn theo 8 quy luật, ĐÃ xếp theo độ ưu tiên):",
+      JSON.stringify(payload.ung_ky, null, 1),
+      "Cách dùng phần này khi viết `thoi_diem_khuyen_nghi`:",
+      `- Ưu tiên các mốc uuTien nhỏ nhất. Đọc theo đơn vị "${payload.ung_ky.donViGoiY}" như trường donViGoiY đã ghi.`,
+      "- Nói theo lời thường: 'vào những ngày Tý', 'khoảng tháng Thân' — KHÔNG đọc tên trường dữ liệu, không nói 'ưu tiên 1'.",
+      "- Mốc nào có canAudit=true thì nói dè dặt hơn ('có thể', 'thường rơi vào'), không khẳng định chắc.",
+      "- Mọi câu trong `ghiChu` là ràng buộc bắt buộc — nhất là các dòng CẢNH BÁO, phải phản ánh vào bài, không được lược bỏ.",
+      "- TUYỆT ĐỐI không tự nghĩ ra mốc thời gian nào khác ngoài danh sách trên.",
+    );
+  } else {
+    phan.push(
+      "",
+      "ỨNG KỲ: hệ thống KHÔNG tính được mốc sẵn cho nhóm việc này (Dụng Thần không đơn nhất).",
+      "→ Nếu quẻ có chỉ dấu thời điểm thì tự luận theo tài liệu; nếu không rõ thì để `thoi_diem_khuyen_nghi` rỗng. Không được bịa mốc.",
+    );
+  }
+
   phan.push("", `Thời điểm lập quẻ: ${payload.meta.castAtISO}. Cách lập quẻ: ${payload.meta.method}.`);
   phan.push("", "Hãy luận theo đúng quy trình và trả kết quả qua công cụ đã cho.");
   return phan.join("\n");

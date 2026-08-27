@@ -13,7 +13,7 @@
 // nghiệp `module-ket-hop.ts`). Phần "vận tốt hay xấu" (danhGia) dựa trên Dụng Thần đã được engine
 // bat-tu-engine tính (không bịa). Phần nhấn mạnh dimension theo Thập Thần là heuristic cần calibrate.
 
-import { tinhBatTu, tinhLuuNien, thapThanOf, type BatTuChart } from "../bat-tu";
+import { namBatTuHienTai, tinhBatTu, tinhLuuNien, thapThanOf, type BatTuChart } from "../bat-tu";
 import { coLucXung, hanhCan, hanhChi, phanTichBatTu, type Hanh, type TuTruInput } from "../bat-tu-engine/engine";
 import { tinhTuVi } from "../tu-vi/engine";
 
@@ -121,7 +121,9 @@ function danhGiaFromBand(band: Band): DanhGia {
  * Trích Vận Trình Hiện Tại của 1 người. CHỈ đọc/gom dữ liệu từ engine có sẵn — không luận sự việc.
  */
 export function tinhVanTrinhHienTai(input: LuckInput): LuckContext {
-  const nowYear = input.nowYear ?? new Date().getFullYear();
+  // Năm hiện hành phải tính theo LẬP XUÂN, không phải 1/1 dương lịch — nếu không thì suốt quãng
+  // 1/1 → ~4/2 mỗi năm, lưu niên (và cả 4 thanh chỉ số ăn theo nó) lệch nguyên 1 năm mà không báo lỗi.
+  const nowYear = input.nowYear ?? namBatTuHienTai();
   const gioSinhKnown = typeof input.hour === "number";
   const hour = input.hour ?? 12;
   const tuoiMu = nowYear - input.year + 1;
@@ -220,6 +222,11 @@ export function tinhVanTrinhHienTai(input: LuckInput): LuckContext {
     `Lưu niên ${nowYear} ${ln.can} ${ln.chi} (${thapThanLN}) — Can ${hanhCan(ln.can)} · Chi ${hanhChi(ln.chi)} → dải "${bandLN}".`,
     xungNguyetChi ? `Chi đại vận ${dv.chi} XUNG Nguyệt Chi ${chart.month.chi} (động gốc) → hạ vận + tăng biến động.` : xungNhatChi ? `Chi đại vận ${dv.chi} XUNG Nhật Chi ${chart.day.chi} (động thân) → tăng biến động.` : `Đại vận không xung Nhật/Nguyệt chi → biến động nền thấp hơn.`,
     !gioSinhKnown ? "Không có giờ sinh → vận trình mang tính ước lượng (dùng giờ mặc định 12h)." : "",
+    // Nếu năm Bát Tự khác năm dương lịch (quãng 1/1 → Lập Xuân) thì PHẢI nói rõ, nếu không khách
+    // nhìn thấy "lưu niên 2025" trong khi lịch đang là 2026 sẽ tưởng hệ thống tính sai.
+    input.nowYear === undefined && nowYear !== new Date().getFullYear()
+      ? `Hiện chưa qua tiết Lập Xuân nên theo Bát Tự vẫn tính là năm ${nowYear} (dù dương lịch đã sang ${new Date().getFullYear()}) — đây là cách tính đúng của môn này.`
+      : "",
   ].filter(Boolean);
 
   const tichCuc = [...dimensions].filter((d) => d.higherIsBetter);
