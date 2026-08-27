@@ -6,8 +6,13 @@ import PageHero from "../../components/ui/PageHero.astro";
 import BottomNav from "../../components/quan-su/BottomNav.astro";
 import VipQuyenBanner from "../../components/quan-su/VipQuyenBanner.astro";
 import KyMonMenhChiTiet from "../../components/tools/KyMonMenhChiTiet.astro";
+import SapRaMat from "../../components/quan-su/SapRaMat.astro";
 
 export const prerender = false;
+
+// Nhóm Kỳ Môn để dạng SẮP RA MẮT (anh Công 27/8/2026) — còn hoàn thiện thêm về phương pháp.
+// Chỉ tài khoản quản trị vào dùng thật để kiểm thử; khách thấy màn thông báo.
+const laQuanTri = Astro.locals.user?.isAdmin === true;
 ---
 
 <BaseLayout title="Luận Giải Kỳ Môn Mệnh chi tiết — Quân Sư Thiên Anh" description="Luận Giải Kỳ Môn Mệnh chi tiết trong app Quân Sư." appShell>
@@ -16,8 +21,14 @@ export const prerender = false;
     title="Luận Giải Kỳ Môn Mệnh chi tiết"
     breadcrumbs={[{ label: "Quân Sư", href: "/quan-su" }, { label: "Kỳ Môn Độn Giáp", href: "/quan-su/ky-mon" }, { label: "Luận Giải Mệnh chi tiết" }]}
   />
-  <VipQuyenBanner />
   {/* Thiếu ngày giờ sinh thì nhắc quay lại trang Lập Kỳ Môn TRONG APP, không đá ra bản web. */}
-  <KyMonMenhChiTiet hrefLapKyMon="/quan-su/lap-ky-mon" />
+  {laQuanTri ? (
+    <>
+      <VipQuyenBanner />
+    <KyMonMenhChiTiet hrefLapKyMon="/quan-su/lap-ky-mon" anGia />
+    </>
+  ) : (
+    <SapRaMat ten="Luận Giải Kỳ Môn Mệnh Chi Tiết" moTa="Người thân xung quanh, 4 giai đoạn cuộc đời và cách cục nổi bật tại Mệnh Cung / Trực Phù / Trực Sử." />
+  )}
   <BottomNav />
 </BaseLayout>

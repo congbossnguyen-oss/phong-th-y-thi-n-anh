@@ -6,8 +6,13 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import BottomNav from "../../components/quan-su/BottomNav.astro";
 import LapKyMon from "../../components/tools/LapKyMon.astro";
+import SapRaMat from "../../components/quan-su/SapRaMat.astro";
 
 export const prerender = false;
+
+// Nhóm Kỳ Môn để dạng SẮP RA MẮT (anh Công 27/8/2026) — còn hoàn thiện thêm về phương pháp.
+// Chỉ tài khoản quản trị vào dùng thật để kiểm thử; khách thấy màn thông báo.
+const laQuanTri = Astro.locals.user?.isAdmin === true;
 ---
 
 <BaseLayout
@@ -24,7 +29,11 @@ export const prerender = false;
 
   {/* Trỏ sang 2 trang liên quan TRONG APP — không để mặc định (/dai-cat-loi/...) vì sẽ đá khách
       đang dùng app văng ra ngoài bản web giữa chừng. */}
-  <LapKyMon hrefMenhChiTiet="/quan-su/ky-mon-menh-chi-tiet" hrefTrachCat="/quan-su/trach-cat-ky-mon" />
+  {laQuanTri ? (
+    <LapKyMon hrefMenhChiTiet="/quan-su/ky-mon-menh-chi-tiet" hrefTrachCat="/quan-su/trach-cat-ky-mon" anGia />
+  ) : (
+    <SapRaMat ten="Lập Lá Bàn Kỳ Môn" moTa="Lập bàn 9 cung theo giờ hiện tại hoặc giờ sinh, kèm Tam Thắng, lịch tháng Kỳ Môn và phần hỏi đáp theo từng việc." />
+  )}
 
   <BottomNav />
 </BaseLayout>

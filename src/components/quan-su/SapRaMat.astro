@@ -1,0 +1,80 @@
+---
+/**
+ * Màn "Sắp ra mắt" cho các mục trong app Quân Sư còn đang hoàn thiện — khách thường thấy thông
+ * báo này, tài khoản QUẢN TRỊ vẫn vào dùng thật để kiểm thử (trang gọi tự kiểm `isAdmin`).
+ *
+ * Dùng cho nhóm KỲ MÔN ĐỘN GIÁP (anh Công 27/8/2026: "để dạng sắp ra mắt sẽ ok hơn, anh cần hoàn
+ * thiện sâu hơn, chỉ admin test được bên trong").
+ *
+ * ⚠️ Đây chỉ là lớp che GIAO DIỆN trong app. Bản web của các module này vẫn chạy bình thường —
+ * cố ý, vì web là nơi đang bán thật; muốn khoá cả web thì phải khoá riêng ở trang/route web.
+ */
+interface Props {
+  /** Tên mục hiện trong tiêu đề, vd "Lập Lá Bàn Kỳ Môn". */
+  ten: string;
+  /** Câu mô tả ngắn cái mục này sẽ làm được, để khách biết đang chờ gì. */
+  moTa?: string;
+}
+const { ten, moTa } = Astro.props;
+---
+
+<div class="srm">
+  <span class="srm-ic">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5.2l3.4 2" stroke-linecap="round" stroke-linejoin="round" />
+    </svg>
+  </span>
+  <p class="srm-badge">Sắp ra mắt</p>
+  <h2 class="srm-ten">{ten}</h2>
+  {moTa && <p class="srm-mota">{moTa}</p>}
+  <p class="srm-note">
+    Phần này đang được Thầy hoàn thiện thêm về mặt phương pháp trước khi mở cho học viên. Anh/chị
+    quan tâm có thể liên hệ trực tiếp để được luận thủ công trong thời gian chờ.
+  </p>
+  <div class="srm-cta">
+    <a href="/lien-he" class="srm-btn">Liên hệ tư vấn trực tiếp</a>
+    <a href="/quan-su" class="srm-btn srm-btn-phu">← Về Quân Sư</a>
+  </div>
+</div>
+
+<style>
+  .srm {
+    margin: 1.2rem auto;
+    max-width: 34rem;
+    text-align: center;
+    padding: 2rem 1.4rem;
+    border-radius: 18px;
+    border: 1px solid rgba(241, 200, 90, 0.28);
+    background: linear-gradient(160deg, rgba(241, 200, 90, 0.09), rgba(255, 255, 255, 0.02));
+  }
+  .srm-ic {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 54px; height: 54px; border-radius: 999px; color: var(--qs-gold);
+    background: color-mix(in srgb, var(--qs-gold) 14%, transparent);
+    border: 1.5px solid color-mix(in srgb, var(--qs-gold) 55%, transparent);
+  }
+  .srm-ic svg { width: 26px; height: 26px; }
+  .srm-badge {
+    margin: 0.9rem 0 0.3rem; display: inline-block; padding: 0.18rem 0.7rem; border-radius: 999px;
+    background: rgba(241, 200, 90, 0.16); border: 1px solid var(--qs-gold); color: var(--qs-gold);
+    font-size: 0.66rem; font-weight: 800; letter-spacing: 0.09em; text-transform: uppercase;
+  }
+  .srm-ten {
+    margin: 0.5rem 0 0; font-family: "Cormorant Garamond", Georgia, serif; font-weight: 700;
+    font-size: 1.5rem; line-height: 1.2; color: var(--qs-ivory);
+  }
+  .srm-mota { margin: 0.6rem 0 0; color: var(--qs-ivory); opacity: 0.85; font-size: 0.84rem; line-height: 1.55; }
+  .srm-note { margin: 0.9rem 0 0; color: var(--qs-muted); font-size: 0.78rem; line-height: 1.6; }
+  .srm-cta { margin-top: 1.3rem; display: flex; flex-wrap: wrap; gap: 0.6rem; justify-content: center; }
+  .srm-btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 0.7rem 1.15rem; border-radius: 999px; text-decoration: none;
+    font-size: 0.85rem; font-weight: 700;
+    background: linear-gradient(160deg, #f6d878, #d9a53a); color: #1a1206;
+  }
+  .srm-btn-phu {
+    background: transparent; color: var(--qs-gold);
+    border: 1px solid rgba(241, 200, 90, 0.45);
+  }
+</style>

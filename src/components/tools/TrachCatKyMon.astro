@@ -28,6 +28,19 @@ import { DANH_MUC_VIEC_TRACH_CAT, DANH_SACH_TOA_SON } from "../../lib/kymon/trac
 
 export const prerender = false;
 
+interface Props {
+  /**
+   * true = KHÔNG hiện giá tiền từng lượt (dùng cho app Quân Sư — anh Công 27/8/2026: app sẽ tính
+   * giá trọn gói cho cả app, không niêm yết giá lẻ từng mục).
+   *
+   * ⚠️ Chỉ ẨN PHẦN HIỂN THỊ — luồng thanh toán phía sau VẪN thu tiền vì slug này chưa nằm trong
+   * VIP_SLUG_THEO_GOI (danh sách miễn phí cho gói Cao Cấp). App còn khoá admin-only nên chưa ảnh
+   * hưởng ai; TRƯỚC KHI mở cho khách phải chốt: thêm slug vào gói, hoặc hiện giá trở lại.
+   */
+  anGia?: boolean;
+}
+const { anGia = false } = Astro.props;
+
 const laQuanTri = Astro.locals.user?.isAdmin === true;
 const TOOL_SLUG = "trach-cat-ky-mon";
 const TOOL_PRICE = GIA_CONG_CU[TOOL_SLUG];
@@ -339,15 +352,17 @@ function ngayVN(iso: string): string {
             </div>
           </div>
 
-          <MaKhuyenMai idPrefix="tc-ma" toolSlug={TOOL_SLUG} giaGoc={TOOL_PRICE} />
+          {!anGia && <MaKhuyenMai idPrefix="tc-ma" toolSlug={TOOL_SLUG} giaGoc={TOOL_PRICE} />}
 
+          {!anGia && (
           <div class="flex items-baseline gap-2">
             {GIA_GOC_LABEL && <span class="text-sm text-(--color-ink-500) line-through">{GIA_GOC_LABEL}</span>}
             <span class="font-display text-xl font-bold text-(--color-cinnabar-400)">{TOOL_PRICE_LABEL}</span>
             {GIA_GOC_LABEL && <span class="rounded-full bg-(--color-cinnabar-400) px-2 py-0.5 text-xs font-bold text-white">-50%</span>}
           </div>
+          )}
 
-          <Button type="submit" size="lg">Xem ngày giờ tốt — {TOOL_PRICE_LABEL}</Button>
+          <Button type="submit" size="lg">{anGia ? "Xem ngày giờ tốt" : `Xem ngày giờ tốt — ${TOOL_PRICE_LABEL}`}</Button>
         </form>
 
         <div id="tc-dang-chay" class="mt-4 hidden rounded-(--radius-card) border border-(--color-gold-500)/40 bg-(--color-gold-400)/10 p-4 text-sm text-(--color-ink-700)">
@@ -356,7 +371,7 @@ function ngayVN(iso: string): string {
         <div id="tc-loi" class="mt-4 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm text-(--color-danger-500)"></div>
 
         <div id="tc-thanh-toan" class="mt-6 hidden space-y-4 rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-center text-(--color-ink-950) shadow-lg">
-          <p class="font-display text-lg font-bold">Quét mã QR để thanh toán <span id="tc-so-tien">{TOOL_PRICE_LABEL}</span></p>
+          <p class="font-display text-lg font-bold">Quét mã QR để thanh toán <span id="tc-so-tien"></span></p>
           <img id="tc-qr" src="" alt="Mã QR thanh toán" class="mx-auto h-64 w-64 rounded-xl border border-(--color-ivory-300)" />
           <p class="text-sm text-(--color-ink-600)">Mã đơn hàng: <strong id="tc-order-code"></strong></p>
           <p id="tc-trang-thai" class="text-sm font-medium text-(--color-gold-400)">Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)</p>

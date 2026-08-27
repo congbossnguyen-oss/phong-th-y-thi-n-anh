@@ -8,17 +8,28 @@ import PageHero from "../../components/ui/PageHero.astro";
 import BottomNav from "../../components/quan-su/BottomNav.astro";
 import VipQuyenBanner from "../../components/quan-su/VipQuyenBanner.astro";
 import TrachCatKyMon from "../../components/tools/TrachCatKyMon.astro";
+import SapRaMat from "../../components/quan-su/SapRaMat.astro";
 
 export const prerender = false;
+
+// Nhóm Kỳ Môn để dạng SẮP RA MẮT (anh Công 27/8/2026) — còn hoàn thiện thêm về phương pháp.
+// Chỉ tài khoản quản trị vào dùng thật để kiểm thử; khách thấy màn thông báo.
+const laQuanTri = Astro.locals.user?.isAdmin === true;
 ---
 
 <BaseLayout title="Trạch Cát Kỳ Môn — Quân Sư Thiên Anh" description="Trạch Cát Kỳ Môn trong app Quân Sư." appShell>
   <PageHero
-    eyebrow="Dịch vụ VIP"
+    eyebrow="Kỳ Môn Độn Giáp"
     title="Trạch Cát Kỳ Môn"
-    breadcrumbs={[{ label: "Quân Sư", href: "/quan-su" }, { label: "Dịch vụ VIP", href: "/quan-su/dich-vu-vip" }, { label: "Trạch Cát Kỳ Môn" }]}
+    breadcrumbs={[{ label: "Quân Sư", href: "/quan-su" }, { label: "Kỳ Môn Độn Giáp", href: "/quan-su/ky-mon" }, { label: "Trạch Cát Kỳ Môn" }]}
   />
-  <VipQuyenBanner />
-  <TrachCatKyMon />
+  {laQuanTri ? (
+    <>
+      <VipQuyenBanner />
+    <TrachCatKyMon anGia />
+    </>
+  ) : (
+    <SapRaMat ten="Trạch Cát Kỳ Môn" moTa="Chọn ngày giờ tốt theo bàn Kỳ Môn Mệnh của chính chủ sự — mỗi người ra một bộ ngày riêng." />
+  )}
   <BottomNav />
 </BaseLayout>
