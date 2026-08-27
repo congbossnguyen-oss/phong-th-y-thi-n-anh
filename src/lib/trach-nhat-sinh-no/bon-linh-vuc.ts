@@ -89,6 +89,31 @@ function demThapThan(chart: BatTuChart): DemThapThan {
 const laVuong = (capDo: string) => capDo.includes("Vượng") || capDo.includes("Cường");
 const laNhuoc = (capDo: string) => capDo.includes("Nhược") || capDo.includes("Suy");
 
+/**
+ * ĐIỀU HẬU (tiêu chí 5) — `dung-than.md` §Điều Hậu: sinh mùa Đông (Hợi/Tý/Sửu) thì cục hàn, cần Hỏa;
+ * sinh mùa Hè (Tị/Ngọ/Mùi) thì cục nhiệt, cần Thủy. Dùng CÙNG mốc mùa với engine (`MUA_DONG`/`MUA_HE`
+ * trong `bat-tu-engine/engine.ts`) để hai nơi không lệch nhau.
+ *
+ * "Có hành điều hòa" = hành đó xuất hiện ở Thiên Can hoặc ở BẢN KHÍ của một Chi — chỉ tàng phụ thì
+ * lực quá mỏng, không đủ điều hòa cả cục.
+ */
+function xetDieuHau(chart: BatTuChart): { mua: string; tinhChat: string; hanhCan: Hanh; duocDieuHoa: boolean } | null {
+  const MUA_DONG = ["Hợi", "Tý", "Sửu"];
+  const MUA_HE = ["Tị", "Ngọ", "Mùi"];
+  const thangChi = chiChuan(chart.month.chi);
+  let mua: string, tinhChat: string, hanhCanCo: Hanh;
+  if (MUA_DONG.includes(thangChi)) { mua = "Đông"; tinhChat = "hàn"; hanhCanCo = "Hỏa"; }
+  else if (MUA_HE.includes(thangChi)) { mua = "Hè"; tinhChat = "nhiệt"; hanhCanCo = "Thủy"; }
+  else return null; // Xuân/Thu khí hậu ôn hòa, không đặt vấn đề điều hậu
+
+  const duocDieuHoa = [chart.year, chart.month, chart.day, chart.hour].some((tru) => {
+    if (hanhCan(tru.can) === hanhCanCo) return true;
+    const banKhi = (tru.tangCan ?? [])[0]?.can;
+    return !!banKhi && hanhCan(banKhi) === hanhCanCo;
+  });
+  return { mua, tinhChat, hanhCan: hanhCanCo, duocDieuHoa };
+}
+
 /** Âm/Dương của 1 Thiên Can — Giáp Bính Mậu Canh Nhâm là Dương. */
 const CAN_DUONG = new Set(["Giáp", "Bính", "Mậu", "Canh", "Nhâm"]);
 
@@ -181,6 +206,23 @@ function chamSucKhoe(bazi: BaziAnalysis, chart: BatTuChart): { diem: number; can
       d -= VUA;
       canCu.push({ thuanLoi: false, noiDung: `${a} và ${b} cùng mạnh mà khắc nhau trực diện, thiếu ${thongQuan} đứng giữa hóa giải.`, nguon: "benh-tat.md §Nguyên tắc nền (b)" });
       break; // chỉ tính cặp nặng nhất, tránh trừ chồng
+    }
+  }
+
+  // ĐIỀU HẬU — tiêu chí 5 trong 9 tiêu chí anh Công chốt ("Phương vị tốt cho điều hậu"), trước
+  // 27/8/2026 CHƯA từng được cài vào module này dù engine đã tính sẵn `dieuHauNote`.
+  // Căn cứ `dung-than.md` §Điều Hậu: "mùa sinh quá lạnh (Đông) hoặc quá nóng (Hè) khiến mệnh cục
+  // thiên lệch về hàn/nhiệt BẤT KỂ vượng suy Nhật chủ — cần thêm hành đối lập để điều hòa".
+  // Đặt ở SỨC KHỎE vì hàn/nhiệt là chuyện thể trạng (benh-tat.md §Nguyên tắc nền: mất cân bằng
+  // Ngũ Hành sinh bệnh).
+  const dh = xetDieuHau(chart);
+  if (dh) {
+    if (dh.duocDieuHoa) {
+      d += VUA;
+      canCu.push({ thuanLoi: true, noiDung: `Sinh mùa ${dh.mua} (${dh.tinhChat}) và trong cục CÓ ${dh.hanhCan} để điều hòa — khí hậu tứ trụ cân bằng, thể trạng không thiên lệch hàn hay nhiệt.`, nguon: "dung-than.md §Điều Hậu (tiêu chí 5)" });
+    } else {
+      d -= VUA;
+      canCu.push({ thuanLoi: false, noiDung: `Sinh mùa ${dh.mua} (${dh.tinhChat}) mà cục THIẾU ${dh.hanhCan} để điều hòa — mệnh cục thiên lệch về ${dh.tinhChat}, cần chú ý giữ ấm/giải nhiệt và cân bằng sinh hoạt cho bé.`, nguon: "dung-than.md §Điều Hậu (tiêu chí 5)" });
     }
   }
 
@@ -481,6 +523,15 @@ function chamNhanDuyen(bazi: BaziAnalysis, chart: BatTuChart, dem: DemThapThan, 
   if ((laNam && toanDuong) || (!laNam && toanAm)) {
     d -= VUA;
     canCu.push({ thuanLoi: false, noiDung: `Tứ trụ toàn ${toanDuong ? "Dương" : "Âm"} — tài liệu ghi ${laNam ? "nam" : "nữ"} mệnh như vậy bất lợi cho đường bạn đời.`, nguon: "hon-nhan.md §2 (chung cho cả 2 mệnh)" });
+  }
+
+  // Điều Hậu thất bại cũng ảnh hưởng NHÂN DUYÊN — hon-nhan.md §2 nêu đích danh: "Mệnh cục quá khô/
+  // quá nóng (thiên khô, thiếu điều hòa Ngũ Hành) → dù Nam hay Nữ đều dễ cảm thấy cô đơn trong hôn
+  // nhân, khó tìm được người thấu hiểu."
+  const dhNd = xetDieuHau(chart);
+  if (dhNd && !dhNd.duocDieuHoa) {
+    d -= NHE;
+    canCu.push({ thuanLoi: false, noiDung: `Mệnh cục thiên lệch về ${dhNd.tinhChat} (sinh mùa ${dhNd.mua} mà thiếu ${dhNd.hanhCan} điều hòa) — tài liệu ghi mệnh quá khô/quá nóng thì dù nam hay nữ cũng dễ thấy cô đơn, khó tìm người thấu hiểu.`, nguon: "hon-nhan.md §2 (chung cho cả 2 mệnh)" });
   }
 
   // Tỷ Kiếp nhiều → kết hôn muộn (nhẹ, không phải xấu tuyệt đối).

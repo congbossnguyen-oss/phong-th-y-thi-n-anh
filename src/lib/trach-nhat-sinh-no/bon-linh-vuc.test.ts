@@ -7,6 +7,7 @@
  */
 import { describe, it, expect } from "vitest";
 import { phanTichTrachNhatSinhNo } from "./index";
+import { chiChuan } from "../bat-tu-engine/engine";
 import type { BirthSelectionInput, BirthCandidate, LinhVucKey } from "./types";
 
 const LV: LinhVucKey[] = ["suc_khoe", "gia_dao", "tai_van", "nhan_duyen"];
@@ -171,6 +172,32 @@ describe("bon-linh-vuc — khoá hành vi", () => {
         }
       }
     }
+  });
+
+  it("ĐIỀU HẬU (tiêu chí 5) phải được xét cho mọi lá sinh mùa Đông/Hè", () => {
+    // Dùng chiChuan vì "Tị"/"Tỵ" là hai cách viết của cùng một Chi — code chuẩn hoá, test phải theo.
+    const MUA_DONG_HE = ["Hợi", "Tý", "Sửu", "Tị", "Ngọ", "Mùi"];
+    const laDongHe = (c: BirthCandidate) => MUA_DONG_HE.includes(chiChuan(c.baziAnalysis!.tuTru.thang.chi));
+    const canXet = mau.filter(laDongHe);
+    expect(canXet.length).toBeGreaterThan(0);
+    for (const c of canXet) {
+      const sk = diemCua(c, "suc_khoe");
+      // Mọi lá sinh mùa Đông/Hè đều phải có 1 căn cứ Điều Hậu ở lĩnh vực Sức khoẻ.
+      expect(sk.canCu.some((x) => x.nguon.includes("Điều Hậu"))).toBe(true);
+    }
+    // Và lá sinh Xuân/Thu thì KHÔNG được có (khí hậu ôn hoà, không đặt vấn đề điều hậu).
+    const xuanThu = mau.filter((c) => !laDongHe(c));
+    for (const c of xuanThu) {
+      expect(diemCua(c, "suc_khoe").canCu.some((x) => x.nguon.includes("Điều Hậu"))).toBe(false);
+    }
+  });
+
+  it("ĐẠI VẬN phải được chấm bằng Dụng Thần TÍNH LẠI cho từng vận, không phải Dụng Thần nguyên cục", () => {
+    // Trên diện rộng phải có ít nhất vài lá mà Dụng Thần đổi khi nhập Đại Vận — nếu KHÔNG có lá nào
+    // thì tức là `phanTichBatTuTaiDaiVan` không được gọi (quay về so Dụng Thần cố định).
+    const coVanDoiDungThan = mau.some((c) =>
+      c.baziAnalysis!.daiVan.some((v) => v.dienGiai.includes("ĐỔI so với nguyên cục")));
+    expect(coVanDoiDungThan).toBe(true);
   });
 
   it("Thần Sát chỉ là lớp PHỤ — không được lấn át (than-sat.md §Nguyên tắc 1)", () => {
