@@ -22,6 +22,7 @@
  */
 import type { BatTuChart, Gender } from "../bat-tu";
 import { hanhCan, hanhChi, pheCua, coLucXung, trangThaiTruongSinh, chiChuan, TANG, type Hanh, type Phe } from "../bat-tu-engine/engine";
+import { chamThanSatVaHaiPha } from "./than-sat-va-hai-pha";
 import type { BaziAnalysis, TuViAnalysis, DiemLinhVuc, CanCuLinhVuc, LinhVucKey, BirthSelectionInput } from "./types";
 
 /**
@@ -537,6 +538,9 @@ export function chamBonLinhVuc(
 ): DiemLinhVuc[] {
   const dem = demThapThan(chart);
   const dv = daiVanTheoLinhVuc(bazi);
+  // Lớp Thần Sát + Lục Hại/Phá — lớp phụ mà chính tài liệu lĩnh vực yêu cầu kết hợp
+  // (hon-nhan.md §Ứng dụng, benh-tat.md §4.5); đã tự kẹp ±3 để không lấn phân tích Dụng Thần.
+  const thanSat = chamThanSatVaHaiPha(chart, bazi, gioiTinh);
 
   const batTuTheoLinhVuc: Record<LinhVucKey, { diem: number; canCu: CanCuLinhVuc[] }> = {
     suc_khoe: chamSucKhoe(bazi, chart),
@@ -547,6 +551,8 @@ export function chamBonLinhVuc(
 
   return (Object.keys(NHAN_LINH_VUC) as LinhVucKey[]).map((k) => {
     const bt = batTuTheoLinhVuc[k];
+    bt.diem += thanSat[k].diem;
+    bt.canCu.push(...thanSat[k].canCu);
     const bo = tuVi?.boLinhVuc?.[k];
     const diemBatTu = clamp10(bt.diem + dv[k].diem);
     const diemTuVi = bo ? clamp10(bo.diemBo) : 0;
