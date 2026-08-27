@@ -62,6 +62,15 @@ function vePhuongAn(b: But, f: Fonts, tieuDe: string, card: CandidateSummaryCard
   b.dong("Khuyết điểm cần lưu ý (không gỡ được):", { size: 9, font: f.vua, mau: MAU.son, x: LE + 4 });
   for (const d of card.diemCanLuuY) b.doan(`△ ${d}`, { size: 8.5, x: LE + 16, mau: MAU.son });
 
+  // Bốn mặt chấm riêng — không suy từ một điểm tổng (`luan-giai-bat-tu-manh-phai/SKILL.md` Bước 6 & 10).
+  if (card.bonLinhVuc?.length) {
+    b.dong("Bốn mặt của lá số (chấm riêng từng mặt):", { size: 9, font: f.vua, mau: MAU.vang, x: LE + 4 });
+    for (const lv of card.bonLinhVuc) {
+      const nhan = lv.danhGia === "tot" ? "Thuận rõ" : lv.danhGia === "kha" ? "Khá thuận" : lv.danhGia === "trung_binh" ? "Trung bình" : "Cần lưu ý";
+      b.doan(`• ${lv.nhan} — ${nhan} (Bát Tự ${lv.diemBatTu > 0 ? "+" : ""}${lv.diemBatTu}, Tử Vi ${lv.diemTuVi > 0 ? "+" : ""}${lv.diemTuVi}). ${lv.nhanXet}`, { size: 8.5, x: LE + 16 });
+    }
+  }
+
   b.thanhNhan(moc, MAU.vangNhat);
 }
 

@@ -187,6 +187,38 @@ export interface LuanBoTamPhuong {
   nhanXet: string;
 }
 
+/**
+ * 4 lĩnh vực chấm RIÊNG BIỆT (anh Công chốt 27/8/2026: "gia đạo, tài vận, sức khỏe, nhân duyên").
+ *
+ * ⚠️ CĂN CỨ BẮT BUỘC PHẢI TÁCH RIÊNG — `luan-giai-bat-tu-manh-phai/SKILL.md` nhắc 2 lần: "kết luận
+ * 'phú quý/đại nhân vật' CHỈ nói về sự nghiệp/tiền bạc — KHÔNG suy ra sức khỏe/hạnh phúc/gia đình";
+ * "nếu hỏi về hôn nhân/sức khỏe/gia đình, luận riêng bằng Thập Thần lục thân + Thần Sát, không suy
+ * diễn từ mức độ phú quý". Vì vậy KHÔNG được lấy 1 điểm tổng rồi chia ra 4 mặt.
+ */
+export type LinhVucKey = "suc_khoe" | "gia_dao" | "tai_van" | "nhan_duyen";
+
+/** Một căn cứ đã kích hoạt khi chấm 1 lĩnh vực — luôn kèm nguồn tài liệu để anh Công truy vết. */
+export interface CanCuLinhVuc {
+  /** true = điểm cộng, false = điểm trừ. */
+  thuanLoi: boolean;
+  noiDung: string;
+  /** Tên file + mục trong tài liệu gốc, vd "tai-van.md §1". */
+  nguon: string;
+}
+
+export interface DiemLinhVuc {
+  linhVuc: LinhVucKey;
+  nhan: string; // "Sức khỏe" ...
+  /** -10..10 — điểm tổng hợp của lĩnh vực này (Bát Tự + Tử Vi + Đại Vận). */
+  diem: number;
+  danhGia: "tot" | "kha" | "trung_binh" | "can_luu_y";
+  /** Tách phần đóng góp để phụ huynh thấy 2 hệ nói giống hay khác nhau. */
+  diemBatTu: number;
+  diemTuVi: number;
+  canCu: CanCuLinhVuc[];
+  nhanXet: string;
+}
+
 /** So Mệnh với Thân — Mệnh chủ tiền vận, Thân chủ hậu vận (cách luận truyền thống). */
 export interface SoSanhMenhThan {
   thanCuMenh: boolean;
@@ -214,6 +246,11 @@ export interface TuViAnalysis {
   /** Bước 5 — Mệnh cường Thân cường là tổ hợp tốt nhất. */
   cuongNhuocMenh: MucCuongNhuoc;
   cuongNhuocThan: MucCuongNhuoc;
+  /**
+   * Trọn bộ Tam Phương Tứ Chính của cung đại diện từng lĩnh vực (Tật Ách/Tài Bạch/Phụ Mẫu/Phu Thê)
+   * — nguyên liệu phần Tử Vi cho `bon-linh-vuc.ts`. Khóa là `LinhVucKey`.
+   */
+  boLinhVuc: Partial<Record<LinhVucKey, LuanBoTamPhuong>>;
   veto: TuViVetoResult;
   daiHan: TuViDaiHanBandItem[];
   /** 12 cung đầy đủ — để vẽ lá số trực quan. */
@@ -266,6 +303,8 @@ export interface BirthCandidate {
   hardFilterRejections: HardFilterReason[];
   baziAnalysis?: BaziAnalysis;
   tuViAnalysis?: TuViAnalysis;
+  /** Chấm riêng 4 mặt: Sức khỏe · Gia đạo · Tài vận · Nhân duyên (xem `bon-linh-vuc.ts`). */
+  bonLinhVuc?: DiemLinhVuc[];
   redFlags: RedFlag[];
 }
 
@@ -289,6 +328,8 @@ export interface CandidateSummaryCard {
   cuc: string;
   diemNoiBat: string[]; // ✓ ...
   diemCanLuuY: string[]; // △ ...
+  /** Chấm riêng 4 mặt, đã sắp theo thứ tự ưu tiên của gia đình (cao → thấp trong bảng trọng số). */
+  bonLinhVuc: DiemLinhVuc[];
 }
 
 export interface FinalBirthRecommendation {
