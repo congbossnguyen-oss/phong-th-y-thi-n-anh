@@ -8,6 +8,7 @@ import "../../styles/quan-su.css";
 import { layGoiDangHoatDong } from "../../lib/subscriptions/access";
 import { daTungDungThu } from "../../lib/subscriptions/trial";
 import { GIA_SUBSCRIPTION, SO_THANG_THEO_KY_HAN, dinhDangTien, type SubscriptionTier, type SubscriptionDuration } from "../../lib/payments/gia-subscription";
+import { HAN_MUC_LUOT_THEO_GOI } from "../../lib/subscriptions/usage";
 
 export const prerender = false;
 
@@ -32,6 +33,36 @@ const DURATIONS: SubscriptionDuration[] = ["1_thang", "3_thang", "6_thang", "1_n
 
       <div class="qs-notice" style="background:rgba(241,200,90,0.1);border-color:rgba(241,200,90,0.4);color:var(--qs-gold);">
         ⚙ Gói thuê bao sắp ra mắt — đang hoàn thiện khung giá. Trong lúc chờ, bạn vẫn dùng được đầy đủ các dịch vụ lẻ ở mục <a href="/dai-cat-loi/dich-vu-thu-phi" style="color:var(--qs-gold);text-decoration:underline;">Dịch vụ VIP</a>.
+      </div>
+
+      <div class="qs-card" style="margin-bottom:1.5rem;overflow-x:auto;">
+        <p class="qs-eyebrow" style="margin-top:0;">So sánh 2 gói</p>
+        <table style="width:100%;border-collapse:collapse;min-width:480px;">
+          <thead>
+            <tr style="border-bottom:1px solid rgba(241,200,90,0.25);">
+              <th style="text-align:left;padding:0.6rem 0.5rem;color:var(--qs-muted);font-weight:600;font-size:0.85rem;">Quyền lợi</th>
+              <th style="text-align:center;padding:0.6rem 0.5rem;color:var(--qs-ivory);font-weight:700;">Cơ bản</th>
+              <th style="text-align:center;padding:0.6rem 0.5rem;color:var(--qs-gold);font-weight:700;">Cao cấp</th>
+            </tr>
+          </thead>
+          <tbody>
+            {[
+              ["Hỏi 1 việc — nhận 1 lời khuyên (59 câu hỏi)", "✓", "✓"],
+              ["So sánh nhiều phương án, luận sâu chiến lược/thời điểm (61 câu hỏi)", "—", "✓"],
+              ["Hạn mức lượt hỏi trong tháng", `${HAN_MUC_LUOT_THEO_GOI.co_ban} lượt`, `${HAN_MUC_LUOT_THEO_GOI.cao_cap} lượt`],
+              ["Sơ đồ Vận Trình hiện tại (Bát Tự/Tử Vi) trong mỗi lượt luận", "✓", "✓"],
+              ["Xem Thời Vận — luận Đại Vận & Lưu Niên riêng", "✓", "✓"],
+              ["Kèm công cụ Đại Cát Lợi, luận số điện thoại, tính trùng tang, xem ngày tốt xấu", "✓", "✓"],
+            ].map(([nhan, cb, cc]) => (
+              <tr style="border-bottom:1px solid rgba(255,255,255,0.06);">
+                <td style="padding:0.55rem 0.5rem;color:var(--qs-ivory);font-size:0.88rem;">{nhan}</td>
+                <td style="padding:0.55rem 0.5rem;text-align:center;color:var(--qs-muted);">{cb}</td>
+                <td style="padding:0.55rem 0.5rem;text-align:center;color:var(--qs-gold);font-weight:600;">{cc}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p class="qs-sub" style="margin:0.7rem 0 0;font-size:0.78rem;">Hạn mức lượt hỏi làm mới vào đầu mỗi tháng dương lịch. Cao cấp bao gồm mọi quyền của Cơ bản.</p>
       </div>
 
       {!user ? (

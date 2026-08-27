@@ -137,6 +137,22 @@ export const trialDevices = pgTable("trial_devices", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// --- Hạn mức lượt hỏi/tháng cho gói thuê bao Quân Sư (mỗi câu = 1 lượt AI thật, không cache được vì
+// quẻ luôn khác nhau). Xem src/lib/subscriptions/usage.ts. ---
+export const quanSuUsage = pgTable(
+  "quan_su_usage",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    // "yyyy-MM" theo giờ Việt Nam (vd "2026-08") — đếm theo THÁNG DƯƠNG LỊCH, không phải 30 ngày kể
+    // từ lúc mua, cho dễ hiểu với khách.
+    thangNam: text("thang_nam").notNull(),
+    soLuotDaDung: integer("so_luot_da_dung").notNull().default(0),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [uniqueIndex("quan_su_usage_user_thang_idx").on(t.userId, t.thangNam)],
+);
+
 // --- Khóa học: đăng ký & tiến độ học ---
 
 export const enrollmentSourceEnum = pgEnum("enrollment_source", [
