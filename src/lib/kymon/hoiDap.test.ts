@@ -7,7 +7,9 @@ import { DANH_MUC_CAU_HOI } from "./danhMucCauHoi";
 // từ chối nếu không có. Bộ test này khoá lại đúng cái hợp đồng đó: luanHoiDap phải trả null cho
 // tình huống chưa có luật (để checkout chặn được) và trả nội dung thật cho tình huống đã có luật.
 
-const LA_BAN = lapLaBan({ cheDo: "gio", nam: 2026, thang: 8, ngay: 26, gio: 10, phut: 15 });
+// lapLaBan là async trên nhánh Cloudflare (đọc km_data.json qua Static Assets, xem engine.ts) —
+// top-level await (Vitest/ESM hỗ trợ) thay vì lỡ gán thẳng Promise chưa resolve vào LA_BAN.
+const LA_BAN = await lapLaBan({ cheDo: "gio", nam: 2026, thang: 8, ngay: 26, gio: 10, phut: 15 });
 
 /** Các tình huống CỐ TÌNH để trống vì nguồn không đủ rõ — xem ghi chú trong từng module chủ đề. */
 const CHUA_CO_LUAT: [string, string][] = [
