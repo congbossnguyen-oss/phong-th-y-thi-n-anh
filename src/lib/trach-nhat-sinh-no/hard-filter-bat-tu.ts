@@ -83,8 +83,13 @@ export function locCungL1L8(input: {
     const thieu = HANH_5.filter((h) => !tapHanh.has(h));
     reasons.push({ code: "L4", title: "Tứ trụ không đủ 5 hành", explanation: `Thiếu hành: ${thieu.join(", ")} (tính cả tàng can).` });
   }
-  // L5 — Trụ giờ xung trụ tháng (⚠️ quy ước, cùng lý L1 — xem 02-bo-loc-cung.md).
-  if (coLucXung(chart.hour.chi, [chart.month.chi])) {
+  // L5 — Trụ giờ xung trụ tháng.
+  // ⚠️ KHÔNG NẰM TRONG 9 TIÊU CHÍ. Tiêu chí 6 nguyên văn chỉ nói "TRỤ NGÀY không xung trụ giờ và trụ
+  // tháng" (đó là L1 + L2) — hoàn toàn không nhắc "trụ giờ xung trụ tháng". Config gốc cũng tự đánh
+  // ⚠️ "quy ước, cùng lý L1". Cùng lối xử lý đã áp cho L4/L7: không loại nữa (xung giờ–tháng không
+  // động trực tiếp tới Nhật Chủ), chuyển thành TRỪ ĐIỂM ở lĩnh vực Gia đạo vì Trụ Tháng là cung cha
+  // mẹ/anh em (`luc-than.md` §0). Đặt `L5_bat_buoc_khong_xung_gio_thang` = true để siết lại như cũ.
+  if (coLucXung(chart.hour.chi, [chart.month.chi]) && (cfg.hard_filters.L5_bat_buoc_khong_xung_gio_thang ?? true)) {
     reasons.push({ code: "L5", title: "Trụ giờ xung trụ tháng", explanation: `Chi giờ ${chart.hour.chi} xung Chi tháng ${chart.month.chi} (quy ước ⚠️, cùng lý do L1).` });
   }
   // L6 — Giờ Tý. TẮT mặc định từ 27/8/2026 (xem config._note_L6): lý do "bệnh viện không mổ" đã mất
