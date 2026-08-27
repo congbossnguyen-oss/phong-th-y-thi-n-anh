@@ -2,6 +2,7 @@ import type { APIRoute } from "astro";
 import { createCourseOrder } from "../../../lib/db/orders";
 import { getSepayQrUrl } from "../../../lib/payments/sepay";
 import { checkRateLimit } from "../../../lib/rate-limit";
+import { thongBaoLoiAnToan } from "../../../lib/loi-an-toan";
 
 export const prerender = false;
 
@@ -34,7 +35,9 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
 
     return new Response(JSON.stringify({ ok: true, orderId, orderCode, totalAmount, qrUrl }), { status: 200 });
   } catch (err) {
-    const message = err instanceof Error ? err.message : "Không tạo được đơn hàng.";
-    return new Response(JSON.stringify({ ok: false, error: message }), { status: 400 });
+    return new Response(
+      JSON.stringify({ ok: false, error: thongBaoLoiAnToan(err, "Không tạo được đơn hàng, vui lòng thử lại sau.") }),
+      { status: 400 },
+    );
   }
 };

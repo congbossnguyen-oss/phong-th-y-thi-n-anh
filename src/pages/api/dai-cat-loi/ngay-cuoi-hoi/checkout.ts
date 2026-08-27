@@ -3,6 +3,7 @@ import { calculateCuoiHoiTronGoi } from "@thien-anh/trachnhat-engine";
 import { taoDonCongCu } from "../../../../lib/payments/checkout-cong-cu";
 import { docInput, jsonResponse, TOOL_SLUG } from "./_chung";
 import { checkRateLimit } from "../../../../lib/rate-limit";
+import { LoiNghiepVu } from "../../../../lib/errors";
 
 export const prerender = false;
 
@@ -51,6 +52,13 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
     });
     return jsonResponse(kq, kq.ok ? 200 : 400);
   } catch (err) {
-    return jsonResponse({ ok: false, error: err instanceof Error ? err.message : "Không tạo được đơn hàng." }, 400);
+    if (err instanceof LoiNghiepVu) {
+      return jsonResponse({ ok: false, error: err.message }, 400);
+    }
+    console.error("[ngay-cuoi-hoi/checkout] Lỗi không mong đợi khi tạo đơn hàng:", err);
+    return jsonResponse(
+      { ok: false, error: "Rất tiếc, hệ thống đang gặp trục trặc khi tạo đơn hàng. Bạn thử lại sau ít phút giúp mình nhé, hoặc liên hệ Thiên Anh nếu vẫn lỗi." },
+      500,
+    );
   }
 };
