@@ -221,8 +221,23 @@ function chamTaiVan(bazi: BaziAnalysis, chart: BatTuChart, dem: DemThapThan): { 
     d += MANH;
     canCu.push({ thuanLoi: true, noiDung: "Thân đủ lực mà Tài cũng vượng — gánh được của cải, đây là cấu trúc phát tài theo tài liệu.", nguon: "tai-van.md §1 (nhóm cơ bản)" });
   } else if (!thanVuong && taiNhieu) {
-    d -= MANH;
-    canCu.push({ thuanLoi: false, noiDung: "Tài nhiều mà Thân nhược — \"tài đa thân nhược\", tiền của đến lại thành gánh nặng chứ không thành phúc.", nguon: "tai-van.md §Nguyên tắc nền" });
+    // ⚠️ KHÔNG cộng dồn thẳng — "tài đa thân nhược" là TỔ HỢP có điều kiện cứu, tài liệu nêu rõ 2 lối:
+    //   · tai-van.md §1: "Thân nhược, Tài nhiều mà được Ấn Thụ hộ thân → có vợ hiền, con cái, cuối
+    //     đời hạnh phúc" (Ấn sinh trợ Thân để gánh nổi Tài)
+    //   · tai-van.md §1: "Thân nhược Tài nhiều, hành đến vận Tỷ Kiếp → mới thực sự phát tài"
+    const anCuuDuoc = bazi.anTinh.coCan && bazi.anTinh.muc !== "thieu";
+    const vanTyKiepDauDoi = (chart.daiVan ?? []).slice(0, 4).some((v) =>
+      pheCua(hanhCan(v.can), bazi.nhatChu.nguHanh) === "ty_kiep" || pheCua(hanhChi(v.chi), bazi.nhatChu.nguHanh) === "ty_kiep");
+    if (anCuuDuoc) {
+      d -= MANH / 3;
+      canCu.push({ thuanLoi: true, noiDung: "Tài nhiều mà Thân nhược, NHƯNG có Ấn tinh hộ thân sinh trợ — tài liệu xếp trường hợp này vào nhóm \"có vợ hiền, con cái, cuối đời hạnh phúc\" chứ không còn là hoạ.", nguon: "tai-van.md §1 (Thân nhược Tài nhiều được Ấn hộ thân)" });
+    } else if (vanTyKiepDauDoi) {
+      d -= MANH / 2;
+      canCu.push({ thuanLoi: true, noiDung: "Tài nhiều mà Thân nhược, nhưng Đại Vận đầu đời có Tỷ Kiếp trợ lực — tài liệu ghi \"hành đến vận Tỷ Kiếp mới thực sự phát tài\", tức đúng giai đoạn ấy mới gánh nổi của cải.", nguon: "tai-van.md §1 (Thân nhược Tài nhiều, vận Tỷ Kiếp)" });
+    } else {
+      d -= MANH;
+      canCu.push({ thuanLoi: false, noiDung: "Tài nhiều mà Thân nhược, lại không có Ấn hộ thân cũng không gặp vận Tỷ Kiếp trợ lực — đúng thế \"tài đa thân nhược\", tiền của đến lại thành gánh nặng.", nguon: "tai-van.md §Nguyên tắc nền" });
+    }
   } else if (thanVuong) {
     d += NHE;
     canCu.push({ thuanLoi: true, noiDung: "Thân đủ lực, Tài ở mức vừa — giữ được của, không bị của cải lấn át.", nguon: "tai-van.md §Nguyên tắc nền" });
@@ -392,8 +407,17 @@ function chamNhanDuyen(bazi: BaziAnalysis, chart: BatTuChart, dem: DemThapThan, 
       (tru.tangCan ?? []).forEach((t) => xet(t.can));
     }
     if (chinhQuan.size > 0 && thatSat.size > 0) {
-      d -= MANH;
-      canCu.push({ thuanLoi: false, noiDung: "Chính Quan và Thất Sát cùng xuất hiện (Quan Sát hỗn tạp) — tài liệu xếp là dấu hiệu hôn nhân dễ trắc trở nhất với nữ mệnh.", nguon: "hon-nhan.md §Nguyên tắc nền + §2 (Nữ mệnh)" });
+      // ⚠️ Có điều kiện GỠ, tài liệu ghi thẳng: "Quan Sát hỗn tạp → hôn nhân dễ trắc trở, TRỪ KHI 1
+      // trong 2 bị Hóa hoặc Khắc để chỉ còn 1 loại thuần túy". Thực Thương khắc Quan là cơ chế chế
+      // Sát kinh điển — có Thực Thương đủ lực thì thế hỗn tạp được gỡ bớt.
+      const thucThuongCheDuoc = dem.coCan.thuc_thuong && dem.phan.thuc_thuong >= 2;
+      if (thucThuongCheDuoc) {
+        d -= MANH / 2;
+        canCu.push({ thuanLoi: false, noiDung: "Chính Quan và Thất Sát cùng xuất hiện (Quan Sát hỗn tạp), nhưng có Thực Thương đủ lực chế bớt — tài liệu nêu rõ thế hỗn tạp được gỡ khi một bên bị chế/hóa, nên mức bất lợi giảm đáng kể.", nguon: "hon-nhan.md §Nguyên tắc nền (trừ khi 1 trong 2 bị Hóa hoặc Khắc)" });
+      } else {
+        d -= MANH;
+        canCu.push({ thuanLoi: false, noiDung: "Chính Quan và Thất Sát cùng xuất hiện (Quan Sát hỗn tạp) mà không có gì chế bớt — tài liệu xếp là dấu hiệu hôn nhân dễ trắc trở nhất với nữ mệnh.", nguon: "hon-nhan.md §Nguyên tắc nền + §2 (Nữ mệnh)" });
+      }
     } else if (chinhQuan.size > 0 || thatSat.size > 0) {
       d += MANH;
       canCu.push({ thuanLoi: true, noiDung: `Chỉ có ${chinhQuan.size > 0 ? "Chính Quan" : "Thất Sát"} xuất hiện thuần túy, không hỗn tạp — tài liệu xếp là cấu trúc hôn nhân tốt nhất cho nữ mệnh.`, nguon: "hon-nhan.md §Nguyên tắc nền + §1 (Nữ mệnh)" });
@@ -597,14 +621,23 @@ export function chamBonLinhVuc(
 
     const diem = clamp10(diemBatTu + diemTuVi * 0.5);
     const danhGia = danhGiaTu(diem);
+
+    // Hai hệ NGƯỢC CHIỀU rõ rệt (trái dấu + mỗi bên đủ mạnh) → điểm trung bình không phản ánh đúng.
+    // Phải nói thẳng thay vì để con số hoà lại thành "trung bình" một cách im lặng.
+    const haiHeMauThuan = !!bo && diemBatTu * diemTuVi < 0 && Math.abs(diemBatTu) >= 1.5 && Math.abs(diemTuVi) >= 1.5;
+
     const thuan = canCu.filter((c) => c.thuanLoi);
     const nghich = canCu.filter((c) => !c.thuanLoi);
     const mo = danhGia === "tot" ? "Thuận rõ" : danhGia === "kha" ? "Khá thuận" : danhGia === "trung_binh" ? "Ở mức trung bình" : "Cần lưu ý";
+    const canhBaoMauThuan = haiHeMauThuan
+      ? ` ⚠️ Lưu ý: hai hệ đang nói ngược nhau ở mặt này — Bát Tự thiên ${diemBatTu > 0 ? "thuận" : "nghịch"} còn Tử Vi thiên ${diemTuVi > 0 ? "thuận" : "nghịch"}. Con số tổng ở đây là mức dung hoà, không có nghĩa mọi thứ đều bình thường; đây là chỗ nên hỏi thêm chuyên gia trước khi quyết.`
+      : "";
     const nhanXet = `${mo} về ${NHAN_LINH_VUC[k].toLowerCase()}. `
       + (thuan.length ? `Điểm được: ${thuan.slice(0, 2).map((c) => c.noiDung).join(" ")} ` : "")
-      + (nghich.length ? `Điểm cần lưu ý: ${nghich.slice(0, 2).map((c) => c.noiDung).join(" ")}` : (thuan.length ? "" : "Không có yếu tố nổi bật theo hướng nào."));
+      + (nghich.length ? `Điểm cần lưu ý: ${nghich.slice(0, 2).map((c) => c.noiDung).join(" ")}` : (thuan.length ? "" : "Không có yếu tố nổi bật theo hướng nào."))
+      + canhBaoMauThuan;
 
-    return { linhVuc: k, nhan: NHAN_LINH_VUC[k], diem, danhGia, diemBatTu, diemTuVi, canCu, nhanXet };
+    return { linhVuc: k, nhan: NHAN_LINH_VUC[k], diem, danhGia, diemBatTu, diemTuVi, canCu, nhanXet, haiHeMauThuan };
   });
 }
 

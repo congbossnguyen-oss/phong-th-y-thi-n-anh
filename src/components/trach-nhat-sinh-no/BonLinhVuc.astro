@@ -12,8 +12,10 @@ interface Props {
   danhSach: DiemLinhVuc[];
   /** Nhãn ưu tiên gia đình đã chọn, để nói rõ thứ tự xếp hạng dựa trên gì. */
   nhanUuTien?: string;
+  /** true khi mọi phương án nằm trong CÙNG một năm — khi đó "gia đạo" ít phân biệt được (xem ghi chú). */
+  cungMotNam?: boolean;
 }
-const { danhSach, nhanUuTien } = Astro.props;
+const { danhSach, nhanUuTien, cungMotNam } = Astro.props;
 
 const ICON: Record<string, string> = {
   suc_khoe: "💪", gia_dao: "🏠", tai_van: "💰", nhan_duyen: "💞",
@@ -50,8 +52,16 @@ const nhanTheo = (dg: string) =>
           </div>
           <p class="mt-1 text-[11px] text-(--color-ink-500)">
             Bát Tự {lv.diemBatTu > 0 ? "+" : ""}{lv.diemBatTu} · Tử Vi {lv.diemTuVi > 0 ? "+" : ""}{lv.diemTuVi}
-            <span class="ml-1 italic">(hai hệ xét độc lập — nếu lệch nhau thì nên tham khảo thêm chuyên gia)</span>
+            <span class="ml-1 italic">(hai hệ xét độc lập với nhau)</span>
           </p>
+
+          {lv.haiHeMauThuan && (
+            <p class="mt-2 rounded-(--radius-control) border border-(--color-cinnabar-400)/40 bg-(--color-cinnabar-400)/10 px-3 py-2 text-xs leading-relaxed text-(--color-cinnabar-700)">
+              ⚠️ <strong>Hai hệ đang nói ngược nhau ở mặt này.</strong> Bát Tự thiên {lv.diemBatTu > 0 ? "thuận" : "nghịch"},
+              còn Tử Vi thiên {lv.diemTuVi > 0 ? "thuận" : "nghịch"}. Con số tổng phía trên là mức dung hoà giữa hai bên,
+              <strong> không có nghĩa là mọi thứ đều bình thường</strong> — đây là chỗ nên hỏi thêm chuyên gia trước khi quyết.
+            </p>
+          )}
 
           <p class="mt-2 text-sm leading-relaxed text-(--color-ink-800)">{lv.nhanXet}</p>
 
@@ -74,6 +84,15 @@ const nhanTheo = (dg: string) =>
         </div>
       ))}
     </div>
+
+    {cungMotNam && (
+      <p class="mt-3 text-[11px] leading-relaxed text-(--color-ink-500)">
+        <strong>Về mặt Gia đạo:</strong> phần lớn thông tin gia đạo đến từ Trụ Năm, mà mọi phương án ở đây đều
+        nằm trong cùng một năm nên Trụ Năm giống nhau. Vì vậy điểm gia đạo giữa các phương án chênh nhau ít,
+        chủ yếu do Ấn tinh và các mối xung/hại khác biệt — nếu gia đình đặc biệt coi trọng mặt này thì cần
+        khung dự sinh trải qua hai năm mới thấy khác biệt rõ.
+      </p>
+    )}
 
     <p class="mt-4 text-[11px] leading-relaxed text-(--color-ink-500)">
       Thang điểm dùng để <strong>so sánh các phương án với nhau</strong>, không phải lời tiên đoán chắc chắn.

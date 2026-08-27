@@ -87,9 +87,11 @@ export function locCungL1L8(input: {
   if (coLucXung(chart.hour.chi, [chart.month.chi])) {
     reasons.push({ code: "L5", title: "Trụ giờ xung trụ tháng", explanation: `Chi giờ ${chart.hour.chi} xung Chi tháng ${chart.month.chi} (quy ước ⚠️, cùng lý do L1).` });
   }
-  // L6 — Giờ Tý, mặc định loại (config bật/tắt được).
+  // L6 — Giờ Tý. TẮT mặc định từ 27/8/2026 (xem config._note_L6): lý do "bệnh viện không mổ" đã mất
+  // hiệu lực khi anh Công chốt chấm đủ 12 canh giờ; lý do còn lại (mốc đổi ngày) là vấn đề XÁC ĐỊNH
+  // lá số chứ không phải lá số xấu → giữ lại và cảnh báo, không loại.
   if (cfg.hard_filters.L6_loai_gio_ty && input.chiGio === "Tý") {
-    reasons.push({ code: "L6", title: "Giờ Tý (23h–01h)", explanation: "Mốc đổi ngày nhạy cảm, bệnh viện gần như không mổ khung này — loại mặc định (bật lại được qua config)." });
+    reasons.push({ code: "L6", title: "Giờ Tý (23h–01h)", explanation: "Mốc đổi ngày nhạy cảm — loại theo cấu hình (tắt được qua config)." });
   }
   // L7 — Không có Ấn tinh trong nguyên cục (phải có mặt VÀ có căn).
   const nhatChuHanh = hanhCan(chart.day.can);
