@@ -299,7 +299,13 @@ export interface BirthCandidate {
   khungGio: string; // "23h–01h"
   hourRepr: number; // giờ đại diện dùng để tính (0-23)
   status: CandidateStatus;
+  /**
+   * Luôn `true` từ 27/8/2026 — công cụ chấm đủ 12 canh giờ, không loại giờ nào vì lịch bệnh viện
+   * (anh Công chốt). Giữ trường để không phá code cũ đang đọc nó.
+   */
   medicalEligible: boolean;
+  /** Chỉ để GẮN NHÃN tham khảo: giờ này nằm ngoài khung mổ gia đình khai. Không ảnh hưởng lọc/xếp hạng. */
+  ngoaiKhungGioBenhVien?: boolean;
   hardFilterRejections: HardFilterReason[];
   baziAnalysis?: BaziAnalysis;
   tuViAnalysis?: TuViAnalysis;

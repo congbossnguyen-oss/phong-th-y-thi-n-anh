@@ -86,18 +86,19 @@ export function phanTichTrachNhatSinhNo(input: BirthSelectionInput): PhanTichTra
   const xepHangNgay = xepHangKhongCongDiemCheo(finalists, input.familyPriority);
   if (xepHangNgay[0]) xepHangNgay[0].ungVienTotNhat.status = "RECOMMENDED";
 
+  // Đủ 12 canh giờ, không loại vì lịch bệnh viện (anh Công chốt 27/8/2026).
+  const soNgoaiKhung = tatCaUngVien.filter((c) => c.ngoaiKhungGioBenhVien).length;
   const medicalConstraintSummary =
-    input.deliveryMode === "scheduled_c_section"
-      ? `Đã lọc theo khung giờ bệnh viện cho phép mổ (${soDaLocYTe}/${soUngVienSinhRa} ứng viên bị loại vì ngoài khung y tế).`
-      : "Sinh thường / chưa rõ hình thức sinh — chưa giả định chọn được giờ chính xác, kết quả chỉ mang tính tham khảo cho việc chọn NGÀY.";
+    soNgoaiKhung > 0
+      ? `Đã chấm đủ 12 canh giờ mỗi ngày theo mệnh lý. Trong đó ${soNgoaiKhung}/${soUngVienSinhRa} khung giờ nằm ngoài lịch mổ gia đình khai — vẫn được xét và xếp hạng bình thường, chỉ ghi chú lại để gia đình tiện thu xếp với bệnh viện.`
+      : "Đã chấm đủ 12 canh giờ mỗi ngày theo mệnh lý — không loại giờ nào vì lý do lịch bệnh viện.";
 
   // Phễu lọc — đếm số còn sống sót sau TỪNG chặng, để vẽ đồ hình "sinh ra bao nhiêu, rụng ở đâu".
   const quaYTe = tatCaUngVien.filter((c) => c.medicalEligible).length;
   const quaLocCung = quaYTe - soLoaiLocCung;
   const quaNguongGoc = quaLocCung - soLoaiNguongGoc;
   const phezuLoc: BuocPhezuLoc[] = [
-    { ten: "Lập ứng viên", giaiThich: "Mỗi ngày trong khung dự sinh × 12 khung giờ Địa Chi.", conLai: soUngVienSinhRa, loai: 0 },
-    { ten: "Khung giờ y tế", giaiThich: "Chỉ giữ những khung giờ bệnh viện cho phép.", conLai: quaYTe, loai: soUngVienSinhRa - quaYTe },
+    { ten: "Lập ứng viên", giaiThich: "Mỗi ngày trong khung dự sinh × đủ 12 canh giờ Địa Chi.", conLai: soUngVienSinhRa, loai: 0 },
     { ten: "Lọc cứng Bát Tự", giaiThich: "Xung khắc trong tứ trụ, thiếu hành, thiếu gốc, thiếu Ấn tinh, nghi Tòng Cách.", conLai: quaLocCung, loai: quaYTe - quaLocCung },
     { ten: "Ngưỡng gốc Nhật Chủ", giaiThich: "Gốc phải đạt tối thiểu lớp C và đủ điểm thông căn.", conLai: quaNguongGoc, loai: quaLocCung - quaNguongGoc },
     { ten: "Phủ quyết Tử Vi", giaiThich: "Loại lá số có Mệnh bị Tuần/Triệt, nhiều sát tinh hội Mệnh, chuỗi Đại Hạn xấu.", conLai: finalists.length, loai: quaNguongGoc - finalists.length },
