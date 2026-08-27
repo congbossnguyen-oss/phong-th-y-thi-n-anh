@@ -17,10 +17,9 @@ interface Props {
    * true = KHÔNG hiện giá tiền từng lượt (dùng cho app Quân Sư — anh Công 27/8/2026: app sẽ tính
    * giá trọn gói cho cả app, không niêm yết giá lẻ từng mục).
    *
-   * ⚠️ Đây mới chỉ là ẨN PHẦN HIỂN THỊ. Luồng thanh toán phía sau VẪN thu 199.000đ/lượt vì
-   * "ky-mon-hoi-dap" chưa nằm trong VIP_SLUG_THEO_GOI (danh sách dịch vụ miễn phí cho gói Cao
-   * Cấp). Hiện app còn khoá admin-only nên chưa ảnh hưởng ai; TRƯỚC KHI mở app cho khách phải
-   * chốt: hoặc thêm slug này vào gói, hoặc hiện giá trở lại.
+   * Ẩn giá ở đây TRUNG THỰC vì "ky-mon-hoi-dap" đã nằm trong VIP_SLUG_THEO_GOI (miễn phí cho
+   * khách có gói Cao Cấp / đang dùng thử) — chốt 27/8/2026. Nếu sau này tách nhóm Kỳ Môn ra hạng
+   * riêng ("Siêu Cấp") thì phải xem lại chỗ này, đừng để ẩn giá mà vẫn thu tiền.
    */
   anGia?: boolean;
 }

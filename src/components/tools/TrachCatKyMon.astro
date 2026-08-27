@@ -33,9 +33,9 @@ interface Props {
    * true = KHÔNG hiện giá tiền từng lượt (dùng cho app Quân Sư — anh Công 27/8/2026: app sẽ tính
    * giá trọn gói cho cả app, không niêm yết giá lẻ từng mục).
    *
-   * ⚠️ Chỉ ẨN PHẦN HIỂN THỊ — luồng thanh toán phía sau VẪN thu tiền vì slug này chưa nằm trong
-   * VIP_SLUG_THEO_GOI (danh sách miễn phí cho gói Cao Cấp). App còn khoá admin-only nên chưa ảnh
-   * hưởng ai; TRƯỚC KHI mở cho khách phải chốt: thêm slug vào gói, hoặc hiện giá trở lại.
+   * Ẩn giá ở đây TRUNG THỰC vì slug này đã nằm trong VIP_SLUG_THEO_GOI (miễn phí cho khách có gói
+   * Cao Cấp / đang dùng thử) — chốt 27/8/2026. Nếu sau này tách nhóm Kỳ Môn ra hạng riêng ("Siêu
+   * Cấp") thì phải xem lại chỗ này, đừng để ẩn giá mà vẫn thu tiền.
    */
   anGia?: boolean;
 }
