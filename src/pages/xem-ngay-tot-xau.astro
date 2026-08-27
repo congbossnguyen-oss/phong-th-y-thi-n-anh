@@ -6,6 +6,7 @@ import Button from "../components/ui/Button.astro";
 
 export const prerender = true;
 import XemNgayTotXau from "../components/tools/XemNgayTotXau.astro";
+import GoiYNangCap from "../components/ui/GoiYNangCap.astro";
 ---
 
 <BaseLayout
@@ -20,4 +21,10 @@ import XemNgayTotXau from "../components/tools/XemNgayTotXau.astro";
   />
 
   <XemNgayTotXau />
+
+  <Container class="pb-12">
+    <div class="mx-auto max-w-4xl">
+      <GoiYNangCap slug="xem-ngay-cao-cap" lyDo="Công cụ trên chấm ngày theo lịch tiết khí và thần sát chung. Nếu là việc trọng đại (động thổ, nhập trạch), bản Cao Cấp soi thêm theo TỌA HƯỚNG NHÀ và MỆNH CHỦ — hai yếu tố khiến ngày đẹp với nhà này lại không đẹp với nhà khác." nhanNut="Xem Ngày Cao Cấp" tieuDe="Việc trọng đại nên xét kỹ hơn" />
+    </div>
+  </Container>
 </BaseLayout>

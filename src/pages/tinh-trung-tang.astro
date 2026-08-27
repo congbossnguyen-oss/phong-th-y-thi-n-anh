@@ -2,6 +2,8 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PageHero from "../components/ui/PageHero.astro";
 import TinhTrungTang from "../components/tools/TinhTrungTang.astro";
+import Container from "../components/ui/Container.astro";
+import GoiYNangCap from "../components/ui/GoiYNangCap.astro";
 
 export const prerender = true;
 ---
@@ -17,4 +19,10 @@ export const prerender = true;
     breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Tính Trùng Tang" }]}
   />
   <TinhTrungTang />
+
+  <Container class="pb-12">
+    <div class="mx-auto max-w-4xl">
+      <GoiYNangCap slug="gio-liem-ha-huyet" lyDo="Nếu kết quả cho thấy KHÔNG phạm Trùng Tang, bước tiếp theo là chọn giờ liệm, giờ đóng quan và ngày giờ hạ huyệt theo Chưởng Pháp Nhập Mộ – Thiên Di, có sàng thần sát an táng và xét tuổi thân quyến phải tránh mặt." nhanNut="Chọn giờ liệm – hạ huyệt" tieuDe="Bước tiếp theo của gia đình" />
+    </div>
+  </Container>
 </BaseLayout>

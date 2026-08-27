@@ -2,6 +2,7 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
+import GoiYNangCap from "../../components/ui/GoiYNangCap.astro";
 
 export const prerender = true;
 ---
@@ -40,7 +41,8 @@ export const prerender = true;
         <div id="khai-truong-list" class="mt-3 max-h-[520px] space-y-1.5 overflow-y-auto"></div>
       </div>
     </div>
-  </Container>
+    <GoiYNangCap slug="ngay-khai-truong-cao-cap" lyDo="Bản trên chọn ngày theo lịch chung. Bản Cao Cấp chồng thêm lớp Bát Tự mệnh chủ — xét Thập Thần hợp cầu tài và Dụng Thần theo vượng suy, để ngày khai trương hợp với chính người đứng tên." nhanNut="Xem bản Cao Cấp" tieuDe="Khai trương là việc lớn" />
+</Container>
 </BaseLayout>
 
 <script>

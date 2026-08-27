@@ -4,6 +4,7 @@ import PageHero from "../components/ui/PageHero.astro";
 import Container from "../components/ui/Container.astro";
 import Button from "../components/ui/Button.astro";
 import { GIA_CONG_CU, dinhDangTien } from "../lib/payments/gia-cong-cu";
+import GoiYNangCap from "../components/ui/GoiYNangCap.astro";
 
 export const prerender = true;
 ---
@@ -210,9 +211,9 @@ export const prerender = true;
           khởi Đại Vận là ước tính (độ chính xác trung bình); tuổi và Can Chi từng vận đã được đối chiếu chính xác.
           Kết quả cần chuyên gia đối chiếu thêm về Dụng Thần, vượng suy, cách cục trước khi kết luận cát hung.
         </p>
-        <a href="/dai-cat-loi/luan-giai-bat-tu-toan-dien" class="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-(--color-gold-300) hover:underline">
-          Xem Luận Giải Bát Tự Toàn Diện (Cơ Bản {dinhDangTien(GIA_CONG_CU["luan-giai-bat-tu-co-ban"])}) →
-        </a>
+        {/* Lời mời sang bản trả phí đã chuyển xuống cuối trang (component GoiYNangCap) — đặt sau khi
+            khách xem xong lá số thì đúng lúc hơn, và component đó tự ẩn giá khi module đang khoá thử
+            nghiệm. Link cũ ở đây gỡ bỏ vì vẫn mời mua kèm giá dù module đang khoá, gây hụt hẫng. */}
       </div>
     </div>
 
@@ -231,7 +232,8 @@ export const prerender = true;
         </li>
       </ul>
     </div>
-  </Container>
+    <GoiYNangCap slug="luan-giai-bat-tu-co-ban" lyDo="Lá số ở trên là phần lập. Bản luận giải đầy đủ đọc trọn 12 khía cạnh: tính cách, thần sát, lục thân, sự nghiệp, hôn nhân, sức khỏe và toàn bộ vận trình từ nhỏ đến già." nhanNut="Xem luận giải đầy đủ" tieuDe="Muốn đọc trọn lá số này?" />
+</Container>
 </BaseLayout>
 
 <script>

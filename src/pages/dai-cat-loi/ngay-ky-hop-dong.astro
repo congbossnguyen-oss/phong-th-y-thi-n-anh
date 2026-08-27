@@ -2,6 +2,7 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
+import GoiYNangCap from "../../components/ui/GoiYNangCap.astro";
 
 export const prerender = true;
 ---
@@ -40,7 +41,8 @@ export const prerender = true;
         <div id="ky-hop-dong-list" class="mt-3 max-h-[520px] space-y-1.5 overflow-y-auto"></div>
       </div>
     </div>
-  </Container>
+    <GoiYNangCap slug="ngay-ky-hop-dong-cao-cap" lyDo="Bản Cao Cấp xét thêm Bát Tự người đứng tên hợp đồng — ngày tốt chung chưa chắc đã tốt cho riêng bạn khi đặt bút ký." nhanNut="Xem bản Cao Cấp" tieuDe="Hợp đồng giá trị lớn?" />
+</Container>
 </BaseLayout>
 
 <script>

@@ -3,6 +3,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
+import GoiYNangCap from "../../components/ui/GoiYNangCap.astro";
 
 export const prerender = true;
 ---
@@ -58,7 +59,8 @@ export const prerender = true;
         <div id="gio-tot-list" class="mt-3 space-y-1.5"></div>
       </div>
     </div>
-  </Container>
+    <GoiYNangCap slug="xem-ngay-cao-cap" lyDo="Giờ tốt ở trên là giờ tốt chung cho mọi người. Bản Cao Cấp chọn giờ hợp riêng với tuổi và hướng nhà của gia chủ." nhanNut="Xem Ngày Cao Cấp" tieuDe="Muốn giờ hợp riêng với mình?" />
+</Container>
 </BaseLayout>
 
 <script>

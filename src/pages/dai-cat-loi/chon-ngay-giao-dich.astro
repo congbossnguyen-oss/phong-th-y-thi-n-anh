@@ -4,6 +4,7 @@ import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
 import DateSelect from "../../components/ui/DateSelect.astro";
+import GoiYNangCap from "../../components/ui/GoiYNangCap.astro";
 
 export const prerender = true;
 ---
@@ -65,7 +66,8 @@ export const prerender = true;
         riêng theo từng loại giao dịch — không khẳng định chắc chắn về kết quả giao dịch hay vận hạn.
       </p>
     </div>
-  </Container>
+    <GoiYNangCap slug="ngay-ky-hop-dong-cao-cap" lyDo="Giao dịch lớn thường đi kèm giấy tờ ký kết. Bản Cao Cấp chọn ngày giờ ký theo đúng Bát Tự người đứng tên." nhanNut="Xem bản Cao Cấp" tieuDe="Giao dịch có ký kết giấy tờ?" />
+</Container>
 </BaseLayout>
 
 <script>

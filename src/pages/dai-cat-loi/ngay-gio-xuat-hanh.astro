@@ -4,6 +4,7 @@ import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
 import DateSelect from "../../components/ui/DateSelect.astro";
+import GoiYNangCap from "../../components/ui/GoiYNangCap.astro";
 
 export const prerender = true;
 ---
@@ -90,7 +91,8 @@ export const prerender = true;
         theo ngày nên hướng xuất hành chỉ được xét qua Cung Mệnh Bát Trạch — không khẳng định chắc chắn về hiệu quả.
       </p>
     </div>
-  </Container>
+    <GoiYNangCap slug="xem-ngay-cao-cap" lyDo="Nếu chuyến đi gắn với việc trọng đại (ký kết, khai trương, chuyển nhà), nên xét cả mệnh chủ và phương vị thay vì chỉ giờ xuất hành." nhanNut="Xem Ngày Cao Cấp" tieuDe="Chuyến đi quan trọng?" />
+</Container>
 </BaseLayout>
 
 <script>
