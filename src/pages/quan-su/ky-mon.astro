@@ -1,0 +1,149 @@
+---
+// NHÓM "KỲ MÔN ĐỘN GIÁP" trong app Quân Sư — mục lớn riêng, tách khỏi nhóm Dịch vụ VIP (anh Công
+// chốt 27/8/2026). Vào từ banner ảnh ngang trên trang chủ app.
+//
+// Gom đủ 4 phần Kỳ Môn đang có trên site:
+//   1. Lập lá bàn Kỳ Môn (miễn phí)     → /quan-su/lap-ky-mon
+//   2. Luận giải Kỳ Môn Mệnh chi tiết   → /quan-su/ky-mon-menh-chi-tiet
+//   3. Hỏi Đáp Kỳ Môn                   → nằm TRONG trang lập lá bàn (không có trang riêng), nên
+//                                          trỏ tới đúng khối đó bằng neo #hoi-dap (component tự
+//                                          cuộn xuống sau khi lập xong lá bàn — khối đó bị ẩn lúc
+//                                          tải trang nên neo thường của trình duyệt không dùng được)
+//   4. Trạch Cát Kỳ Môn                 → /quan-su/trach-cat-ky-mon (chuyển từ nhóm VIP sang đây)
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
+import "../../styles/quan-su.css";
+
+export const prerender = false;
+
+const MUC = [
+  {
+    href: "/quan-su/lap-ky-mon",
+    icon: "board",
+    title: "Lập Lá Bàn Kỳ Môn",
+    desc: "Lập bàn 9 cung theo giờ hiện tại hoặc giờ sinh (Mệnh), kèm Tam Thắng và lịch tháng Kỳ Môn.",
+    nhan: "Miễn phí",
+  },
+  {
+    href: "/quan-su/ky-mon-menh-chi-tiet",
+    icon: "scroll",
+    title: "Luận Giải Kỳ Môn Mệnh Chi Tiết",
+    desc: "Người thân xung quanh, 4 giai đoạn cuộc đời, cách cục nổi bật tại Mệnh Cung / Trực Phù / Trực Sử.",
+    nhan: "Chuyên sâu",
+  },
+  {
+    href: "/quan-su/lap-ky-mon#hoi-dap",
+    icon: "question",
+    title: "Hỏi Đáp Kỳ Môn",
+    desc: "Hỏi một việc cụ thể — lập bàn theo đúng thời điểm hỏi rồi luận theo dụng thần của việc đó.",
+    nhan: "Theo lượt hỏi",
+  },
+  {
+    href: "/quan-su/trach-cat-ky-mon",
+    icon: "calendar",
+    title: "Trạch Cát Kỳ Môn",
+    desc: "Chọn ngày giờ tốt theo bàn Kỳ Môn Mệnh của chính chủ sự — hai người khác tuổi ra hai bộ ngày khác nhau.",
+    nhan: "Chọn ngày",
+  },
+] as const;
+---
+
+<BaseLayout
+  title="Kỳ Môn Độn Giáp — Quân Sư Thiên Anh"
+  description="Kỳ Môn Độn Giáp trong app Quân Sư: lập lá bàn 9 cung, luận giải Mệnh chi tiết, hỏi đáp theo việc và trạch cát chọn ngày giờ theo bàn mệnh."
+  appShell
+>
+  <section class="qs">
+    <div class="qs-wrap">
+      <a class="qs-back" href="/quan-su">← Quân Sư</a>
+
+      <div class="km-hero">
+        <img src="/images/quan-su/ky-mon-banner.jpg" alt="Kỳ Môn Độn Giáp" />
+        <div class="km-hero-overlay">
+          <p class="km-hero-tag">Đế vương chi học</p>
+          <h1 class="km-hero-title">Kỳ Môn Độn Giáp</h1>
+        </div>
+      </div>
+
+      <p class="qs-sub" style="margin-top:1rem;">
+        Môn thuật số xưa dùng để định thời – định hướng – định việc. Bốn phần dưới đây dùng chung một
+        engine lập bàn, khác nhau ở chỗ hỏi gì và luận theo dụng thần nào.
+      </p>
+
+      <div class="km-grid">
+        {MUC.map((m) => (
+          <a href={m.href} class="km-item">
+            <span class="km-ic">
+              {m.icon === "board" && (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3.5" y="3.5" width="17" height="17" rx="2"/><path d="M9.2 3.5v17M14.8 3.5v17M3.5 9.2h17M3.5 14.8h17"/></svg>
+              )}
+              {m.icon === "scroll" && (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M6 3.5h9l3 3v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-16a1 1 0 0 1 1-1Z" stroke-linejoin="round"/><path d="M8.5 12h7M8.5 15.5h7M8.5 8.5h4" stroke-linecap="round"/></svg>
+              )}
+              {m.icon === "question" && (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.5a2.4 2.4 0 1 1 3.3 2.2c-.6.3-.9.8-.9 1.4v.4" stroke-linecap="round"/><circle cx="12" cy="16.6" r="0.8" fill="currentColor" stroke="none"/></svg>
+              )}
+              {m.icon === "calendar" && (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4" stroke-linecap="round"/></svg>
+              )}
+            </span>
+            <span class="km-tx">
+              <b>{m.title}</b>
+              <small>{m.desc}</small>
+            </span>
+            <span class="km-nhan">{m.nhan}</span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <BottomNav />
+</BaseLayout>
+
+<style>
+  /* Banner ngang mở đầu nhóm — ảnh tạm dùng để demo bố cục, thay bằng ảnh chính thức sau. */
+  .km-hero {
+    position: relative; margin-top: 1rem; border-radius: 18px; overflow: hidden;
+    border: 1px solid rgba(241, 200, 90, 0.3); aspect-ratio: 16 / 8;
+  }
+  .km-hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+  .km-hero-overlay {
+    position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: flex-end;
+    padding: 1rem 1.1rem;
+    background: linear-gradient(0deg, rgba(7,6,5,0.9) 0%, rgba(7,6,5,0.35) 45%, rgba(7,6,5,0.1) 100%);
+  }
+  .km-hero-tag {
+    margin: 0 0 0.2rem; color: var(--qs-gold); font-size: 0.68rem; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; text-shadow: 0 1px 4px rgba(0,0,0,0.9);
+  }
+  .km-hero-title {
+    margin: 0; font-family: "Cormorant Garamond", Georgia, serif; font-weight: 700;
+    font-size: clamp(1.5rem, 6.5vw, 2rem); line-height: 1.1; color: var(--qs-ivory);
+    text-shadow: 0 2px 8px rgba(0,0,0,0.95);
+  }
+
+  .km-grid { display: grid; gap: 0.7rem; margin-top: 1.2rem; }
+  .km-item {
+    display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 0.85rem;
+    background: var(--qs-navy); border: 1px solid rgba(241, 200, 90, 0.2); border-radius: 14px;
+    padding: 0.9rem 1rem; text-decoration: none; color: var(--qs-ivory);
+    transition: border-color 0.15s ease, transform 0.15s ease;
+  }
+  .km-item:hover { border-color: var(--qs-gold); transform: translateY(-1px); }
+  .km-ic {
+    width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;
+    border-radius: 999px; color: var(--qs-gold);
+    background: color-mix(in srgb, var(--qs-gold) 14%, transparent);
+    border: 1.5px solid color-mix(in srgb, var(--qs-gold) 55%, transparent);
+  }
+  .km-ic svg { width: 19px; height: 19px; }
+  .km-tx b { display: block; font-size: 0.92rem; font-weight: 700; line-height: 1.3; color: var(--qs-ivory); }
+  .km-tx small { display: block; font-size: 0.72rem; color: var(--qs-muted); margin-top: 0.22rem; line-height: 1.45; }
+  .km-nhan {
+    flex-shrink: 0; font-size: 0.62rem; font-weight: 800; letter-spacing: 0.04em;
+    color: var(--qs-gold); border: 1px solid rgba(241, 200, 90, 0.45);
+    background: rgba(241, 200, 90, 0.12); border-radius: 999px; padding: 0.2rem 0.55rem;
+    white-space: nowrap;
+  }
+</style>

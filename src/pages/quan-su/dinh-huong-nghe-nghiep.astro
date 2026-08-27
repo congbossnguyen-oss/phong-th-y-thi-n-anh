@@ -1,0 +1,25 @@
+---
+// Bản in-app của dịch vụ VIP "Định Hướng Nghề Nghiệp (Bát Tự × Tử Vi)" — tự chứa trong app Quân Sư
+// (App Store, không link ra web). Module này ĐANG BÁN THẬT trên web nhưng trước đây hoàn toàn
+// KHÔNG có mặt trong app: nó cố ý không nằm trong `paidTools` (xem ghi chú đầu danh sách đó) nên
+// trang /quan-su/dich-vu-vip — vốn dựng từ paidTools — cũng không liệt kê. Nay bổ sung thẳng vào
+// danh sách VIP của app cùng với trang này.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
+import VipQuyenBanner from "../../components/quan-su/VipQuyenBanner.astro";
+import DinhHuongNgheNghiep from "../../components/tools/DinhHuongNgheNghiep.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout title="Định Hướng Nghề Nghiệp — Quân Sư Thiên Anh" description="Định Hướng Nghề Nghiệp (Bát Tự × Tử Vi) trong app Quân Sư." appShell>
+  <PageHero
+    eyebrow="Dịch vụ VIP"
+    title="Định Hướng Nghề Nghiệp"
+    breadcrumbs={[{ label: "Quân Sư", href: "/quan-su" }, { label: "Dịch vụ VIP", href: "/quan-su/dich-vu-vip" }, { label: "Định Hướng Nghề Nghiệp" }]}
+  />
+  <VipQuyenBanner />
+  <DinhHuongNgheNghiep />
+  <BottomNav />
+</BaseLayout>

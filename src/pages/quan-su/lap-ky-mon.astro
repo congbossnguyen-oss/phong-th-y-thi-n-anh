@@ -1,0 +1,30 @@
+---
+// Bản in-app của công cụ "Lập Kỳ Môn Độn Giáp" — thuộc nhóm KỲ MÔN ĐỘN GIÁP trong app Quân Sư,
+// vào từ /quan-su/ky-mon. Dùng chung component với bản web nên lá bàn, Tam Thắng, lịch tháng,
+// luận giải Mệnh miễn phí và Hỏi Đáp Kỳ Môn đều y hệt trang phongthuythienanh.com/lap-ky-mon.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
+import LapKyMon from "../../components/tools/LapKyMon.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout
+  title="Lập Kỳ Môn Độn Giáp — Quân Sư Thiên Anh"
+  description="Lập lá bàn Kỳ Môn Độn Giáp 9 cung trong app Quân Sư — kèm Tam Thắng, lịch tháng và Hỏi Đáp Kỳ Môn."
+  appShell
+>
+  <PageHero
+    eyebrow="Kỳ Môn Độn Giáp"
+    title="Lập Lá Bàn Kỳ Môn"
+    description="Chọn chế độ Thời Gian (thời điểm hiện tại) hoặc Mệnh (giờ sinh) để lập lá bàn 9 cung."
+    breadcrumbs={[{ label: "Quân Sư", href: "/quan-su" }, { label: "Kỳ Môn Độn Giáp", href: "/quan-su/ky-mon" }, { label: "Lập Lá Bàn" }]}
+  />
+
+  {/* Trỏ sang 2 trang liên quan TRONG APP — không để mặc định (/dai-cat-loi/...) vì sẽ đá khách
+      đang dùng app văng ra ngoài bản web giữa chừng. */}
+  <LapKyMon hrefMenhChiTiet="/quan-su/ky-mon-menh-chi-tiet" hrefTrachCat="/quan-su/trach-cat-ky-mon" />
+
+  <BottomNav />
+</BaseLayout>
