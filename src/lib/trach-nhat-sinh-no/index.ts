@@ -58,7 +58,7 @@ export function phanTichTrachNhatSinhNo(input: BirthSelectionInput): PhanTichTra
     }
 
     // Vòng 5 §1-3 — Đại Vận băng.
-    baziAnalysis.daiVan = tinhDaiVanBand(chart, baziAnalysis.dungThan, baziAnalysis.hyThan, baziAnalysis.kyThan, c.date);
+    baziAnalysis.daiVan = tinhDaiVanBand(chart, baziAnalysis.dungThan, baziAnalysis.hyThan, baziAnalysis.kyThan, c.date, input.babyGender);
     c.baziAnalysis = baziAnalysis;
     c.status = "BAZI_SURVIVOR";
 
