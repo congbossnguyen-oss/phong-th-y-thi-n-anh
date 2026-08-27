@@ -194,7 +194,7 @@ const formInputs = [...question.required_inputs, ...question.optional_inputs].fi
                 if (res.status === 401) {
                   resultEl.innerHTML = `<div class="qs-notice">${data.error || "Vui lòng đăng nhập."}</div>
                     <div class="qs-row" style="max-width:360px;margin-top:0.6rem;">
-                      <a href="/hoc-vien/dang-nhap" class="qs-btn" style="text-decoration:none;">Đăng nhập</a>
+                      <a href="/hoc-vien/dang-nhap?tiep=${encodeURIComponent(location.pathname + location.search)}" class="qs-btn" style="text-decoration:none;">Đăng nhập</a>
                       <a href="/hoc-vien/dang-ky" class="qs-btn qs-btn-ghost" style="text-decoration:none;">Đăng ký</a>
                     </div>`;
                   return;

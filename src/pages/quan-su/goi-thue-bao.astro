@@ -66,7 +66,7 @@ const DURATIONS: SubscriptionDuration[] = ["1_thang", "3_thang", "6_thang", "1_n
         <div class="qs-card" style="text-align:center;padding:1.5rem;">
           <p style="margin-bottom:1rem;">Cần đăng nhập để đăng ký gói.</p>
           <div class="qs-row" style="max-width:360px;margin:0 auto;">
-            <a href="/hoc-vien/dang-nhap" class="qs-btn" style="text-decoration:none;">Đăng nhập</a>
+            <a href={`/hoc-vien/dang-nhap?tiep=${encodeURIComponent(Astro.url.pathname + Astro.url.search)}`} class="qs-btn" style="text-decoration:none;">Đăng nhập</a>
             <a href="/hoc-vien/dang-ky" class="qs-btn qs-btn-ghost" style="text-decoration:none;">Đăng ký tài khoản</a>
           </div>
         </div>

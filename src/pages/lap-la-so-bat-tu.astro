@@ -237,6 +237,7 @@ export const prerender = true;
 </BaseLayout>
 
 <script>
+  import { luuLaSoTam } from "../lib/la-so-tam";
   import {
     tinhBatTu,
     tinhLuuNien,
@@ -557,6 +558,10 @@ export const prerender = true;
     const gender = (document.getElementById("bt-gender") as HTMLSelectElement).value as Gender;
 
     if (!day || !month || !year || Number.isNaN(hour)) return;
+
+    // Giữ lại lá số vừa lập để nếu khách sang bản trả phí (và phải đăng nhập giữa chừng) thì không
+    // phải nhập lại từ đầu — xem `src/lib/la-so-tam.ts`.
+    luuLaSoTam({ loai: "bat-tu", ngay: day, thang: month, nam: year, gio: hour, phut: minute, gioiTinh: gender as "Nam" | "Nữ", hoTen: name || undefined });
 
     try {
       const chart = tinhBatTu({ day, month, year, hour, minute, gender });

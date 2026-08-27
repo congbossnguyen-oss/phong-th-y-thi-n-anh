@@ -75,7 +75,7 @@
       );
     } else {
       el.innerHTML = wrap(
-        '🔒 <a href="/hoc-vien/dang-nhap" class="font-semibold text-(--color-gold-300) hover:underline">Đăng nhập</a> để dùng dịch vụ VIP miễn phí theo gói Cao Cấp. ' +
+        '🔒 <a href="/hoc-vien/dang-nhap?tiep=' + encodeURIComponent(location.pathname + location.search) + '" class="font-semibold text-(--color-gold-300) hover:underline">Đăng nhập</a> để dùng dịch vụ VIP miễn phí theo gói Cao Cấp. ' +
           'Khách vãng lai vẫn có thể thanh toán theo lượt bên dưới.',
         "muted",
       );

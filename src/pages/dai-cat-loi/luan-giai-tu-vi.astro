@@ -127,7 +127,10 @@ function phanTramTuoi(tuoi: number): number {
         <div class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6 text-center">
           <p class="font-medium text-(--color-ink-800)">Cần đăng nhập để mua bản luận giải này.</p>
           <p class="mt-2 text-sm text-(--color-ink-600)">Báo cáo gắn theo tài khoản — xem lại sau này không mất phí.</p>
-          <a href="/hoc-vien/dang-nhap" class="mt-4 inline-flex items-center justify-center rounded-(--radius-control) bg-(--color-gold-500) px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90">Đăng nhập</a>
+          {coDuLieuNgaySinh && (
+            <p class="mt-2 text-sm font-semibold text-(--color-gold-700)">✅ Lá số bạn vừa lập vẫn được giữ — đăng nhập xong không phải nhập lại.</p>
+          )}
+          <a href={`/hoc-vien/dang-nhap?tiep=${encodeURIComponent(Astro.url.pathname + Astro.url.search)}`} class="mt-4 inline-flex items-center justify-center rounded-(--radius-control) bg-(--color-gold-500) px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90">Đăng nhập</a>
         </div>
       ) : !coDuLieuNgaySinh && !daMuaCoBan && !daMuaNangCao ? (
         <div class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6 text-center">
@@ -137,6 +140,22 @@ function phanTramTuoi(tuoi: number): number {
         </div>
       ) : (
         <>
+          {/* Khách vừa từ trang lập lá số sang: nói rõ đang dùng lá số nào, và cho lối lập lá số khác
+              — anh Công phản ánh 27/8/2026 rằng trước đây phải nhập lại từ đầu sau khi đăng nhập. */}
+          {coDuLieuNgaySinh && !daMuaCoBan && !daMuaNangCao && (
+            <div class="mb-8 flex flex-wrap items-center justify-between gap-3 rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 px-5 py-4">
+              <div>
+                <p class="text-sm font-bold text-(--color-ink-900)">✅ Đang dùng lá số bạn vừa lập</p>
+                <p class="mt-1 text-sm text-(--color-ink-700)">
+                  {hoTen ? `${hoTen} · ` : ""}{gioiTinh} · {ngay}/{thang}/{nam} · giờ {gio}h
+                </p>
+              </div>
+              <a href="/lap-la-so-tu-vi" class="inline-flex items-center rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2 text-xs font-semibold text-(--color-ink-800) hover:bg-(--color-ivory-200)">
+                ↻ Lập lá số khác
+              </a>
+            </div>
+          )}
+
           {/* --- Đã mua Cơ Bản nhưng KHÔNG phải admin: không hiện trực tiếp, báo đã gửi qua email --- */}
           {daMuaCoBan && !baoCaoCoBan?.coBan && (
             <div class="mb-8 rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-6 text-sm text-(--color-ink-800)">
