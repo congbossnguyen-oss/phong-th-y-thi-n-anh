@@ -615,6 +615,29 @@ export function tinhLuuNien(startYear: number, birthYear: number, count = 10): L
   return result;
 }
 
+/**
+ * Năm BÁT TỰ của một thời điểm — ranh giới là LẬP XUÂN (~4/2), KHÔNG phải 1/1 dương lịch.
+ *
+ * ⚠️ DÙNG HÀM NÀY, ĐỪNG DÙNG `new Date().getFullYear()` khi cần lưu niên/thái tuế hiện hành.
+ * `tinhLuuNien()` cố ý nhận số năm dương lịch thuần (để liệt kê các năm tới theo nhãn dương lịch),
+ * nên nếu truyền thẳng getFullYear() vào thì suốt quãng 1/1 → Lập Xuân sẽ lệch nguyên 1 năm — sai
+ * âm thầm, không văng lỗi. (Lỗi này đã từng xảy ra thật ở Quân Sư `current-luck.ts`, 8/2026.)
+ */
+export function namBatTuCuaNgay(day: number, month: number, year: number, hour = 12): number {
+  const jdNow = jdFromDate(day, month, year) + (hour - 12) / 24 - 7 / 24;
+  return jdNow < findLapXuanJD(year) ? year - 1 : year;
+}
+
+/** Năm Bát Tự của "bây giờ", theo giờ Việt Nam. */
+export function namBatTuHienTai(now: Date = new Date()): number {
+  const p = new Intl.DateTimeFormat("en-US", {
+    timeZone: "Asia/Ho_Chi_Minh",
+    year: "numeric", month: "numeric", day: "numeric", hour: "numeric", hour12: false,
+  }).formatToParts(now);
+  const g = (t: string) => Number(p.find((x) => x.type === t)?.value ?? 0);
+  return namBatTuCuaNgay(g("day"), g("month"), g("year"), g("hour") % 24);
+}
+
 // Tìm JD của Lập Xuân trong năm dương lịch cho trước (dùng lại logic dò nhị phân của solar-term).
 function findLapXuanJD(year: number): number {
   const crossings = getTietKhiAround(year);

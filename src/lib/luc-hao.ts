@@ -98,12 +98,25 @@ export const HEXAGRAM_NAMES: Record<string, string> = {
 };
 
 // --- Quái Phản Ngâm (cấp quái, KHÔNG xét địa chi/nạp giáp/hào động/hào phản-phục ngâm/cát hung) ---
-// 4 cặp đối quái phản ngâm cố định: Càn↔Tốn, Khảm↔Ly, Cấn↔Khôn, Chấn↔Đoài.
+//
+// ĐỊNH NGHĨA GỐC: Phản Ngâm = địa chi hào biến XUNG địa chi hào gốc (cùng vị trí hào) — đối xứng với
+// Phục Ngâm = địa chi TRÙNG. Vì Phục Ngâm ở file này đã dựng đúng trên cặp Càn↔Chấn (2 quái duy nhất
+// có nạp giáp trùng nhau: Tý-Dần-Thìn / Ngọ-Thân-Tuất), Phản Ngâm BẮT BUỘC phải dựng trên cặp duy
+// nhất có nạp giáp xung nhau đủ 3 hào — nếu không thì 2 khái niệm anh em lại dùng 2 định nghĩa khác
+// nhau, vô lý.
+//
+// Quét toàn bộ 8×8 cặp quái từ chính bảng NAP_GIAP phía trên (cả hạ quái lẫn thượng quái):
+//   • xung đủ 3 hào  → CHỈ Tốn↔Khôn   (Sửu-Hợi-Dậu  ⟷ Mùi-Tỵ-Mão, xung 3/3)
+//   • trùng đủ 3 hào → CHỈ Càn↔Chấn   (đã dùng cho Phục Ngâm)
+//
+// ⚠️ SỬA LỖI 27/8/2026: bảng cũ ghi Càn↔Tốn, Khảm↔Ly, Cấn↔Khôn, Chấn↔Đoài — sai cả theo định nghĩa
+// địa chi LẪN theo chính chú thích cũ ("đối quái", tức quái nghịch đảo hào: Càn↔Khôn, Đoài↔Cấn,
+// Ly↔Khảm, Chấn↔Tốn — bảng cũ chỉ trúng 1/4 cặp). Hậu quả thực tế đã đo được: quẻ Thiên Thủy Tụng →
+// Phong Thủy Hoán có 3 hào ngoại đều LỤC HỢP (Ngọ-Mùi, Thân-Tỵ, Tuất-Mão) mà bị dán nhãn "Phản
+// Ngâm" (điềm rất xấu, tô đỏ trên UI); ngược lại Phong Thiên Tiểu Súc → Địa Thiên Thái xung đủ 3 hào
+// (Mão-Dậu, Tỵ-Hợi, Mùi-Sửu) lại báo "không có phản ngâm". Tức là đảo ngược hoàn toàn ý nghĩa.
 const FAN_YIN_OPPOSITE: Record<string, string> = {
-  "Càn": "Tốn", "Tốn": "Càn",
-  "Khảm": "Ly", "Ly": "Khảm",
-  "Cấn": "Khôn", "Khôn": "Cấn",
-  "Chấn": "Đoài", "Đoài": "Chấn",
+  "Tốn": "Khôn", "Khôn": "Tốn",
 };
 
 function oppositeTrigram(name: string): string | undefined {
@@ -298,6 +311,16 @@ const LUC_HAO_TAM_HOP_START: Record<NguHanh, number> = {
   Thổ: C("Thân"),
 };
 
+/**
+ * Chi ứng với 1 giai đoạn Trường Sinh của 1 Ngũ Hành (vòng Trường Sinh Lục Hào, luôn đi THUẬN).
+ * Vd: Mộc + "Mộ" -> Mùi; Kim + "Trường Sinh" -> Tỵ. Module Ứng Kỳ dùng để tìm chi Xung Mộ / chi
+ * Trường Sinh mà không phải chép lại bảng LUC_HAO_TAM_HOP_START.
+ */
+export function chiTaiGiaiDoanTruongSinh(nguHanh: NguHanh, giaiDoan: TruongSinhStage): number {
+  const buoc = TRUONG_SINH_STAGES.indexOf(giaiDoan);
+  return (LUC_HAO_TAM_HOP_START[nguHanh] + buoc) % 12;
+}
+
 // Trường Sinh Lục Hào: Ngũ Hành hào -> khởi điểm (bảng trên) -> đi thuận 12 vị trí -> giai đoạn tại
 // targetChiIndex (Chi Ngày hoặc Chi Tháng gieo quẻ).
 function truongSinhLucHaoOf(nguHanh: NguHanh, targetChiIndex: number | null): TruongSinhStage {
@@ -310,8 +333,20 @@ function truongSinhLucHaoOf(nguHanh: NguHanh, targetChiIndex: number | null): Tr
 // Lục Hợp / Lục Xung giữa 2 Chi — dùng để xác định nhãn đặc biệt thay cho tên đời quái, khi Chi của
 // hào Thế và hào Ứng hợp nhau hoặc xung nhau (đối chiếu khớp với 2 ví dụ thực tế: Thìn-Dậu hợp → nhãn
 // "Lục Hợp" thay cho "Tam Thế"; Mão-Tý không hợp không xung → giữ nguyên tên đời quái "Quy Hồn").
-const LUC_HOP_PAIRS: [number, number][] = [[0, 1], [2, 11], [3, 10], [4, 9], [5, 8], [6, 7]]; // Tý-Sửu, Dần-Hợi, Mão-Tuất, Thìn-Dậu, Tỵ-Thân, Ngọ-Mùi (theo index CHI)
-const LUC_XUNG_PAIRS: [number, number][] = [[0, 6], [1, 7], [2, 8], [3, 9], [4, 10], [5, 11]];
+export const LUC_HOP_PAIRS: [number, number][] = [[0, 1], [2, 11], [3, 10], [4, 9], [5, 8], [6, 7]]; // Tý-Sửu, Dần-Hợi, Mão-Tuất, Thìn-Dậu, Tỵ-Thân, Ngọ-Mùi (theo index CHI)
+export const LUC_XUNG_PAIRS: [number, number][] = [[0, 6], [1, 7], [2, 8], [3, 9], [4, 10], [5, 11]];
+
+/** Chi hợp với chi cho trước (Lục Hợp), null nếu không có. Dùng chung cho module Ứng Kỳ. */
+export function chiHopVoi(chiIndex: number): number | null {
+  const p = LUC_HOP_PAIRS.find(([x, y]) => x === chiIndex || y === chiIndex);
+  if (!p) return null;
+  return p[0] === chiIndex ? p[1] : p[0];
+}
+
+/** Chi xung với chi cho trước (Lục Xung) — luôn cách 6 ngôi. */
+export function chiXungVoi(chiIndex: number): number {
+  return (chiIndex + 6) % 12;
+}
 
 function chiRelation(a: number, b: number): "hop" | "xung" | null {
   if (LUC_HOP_PAIRS.some(([x, y]) => (x === a && y === b) || (x === b && y === a))) return "hop";
