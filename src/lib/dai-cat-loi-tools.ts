@@ -1,3 +1,4 @@
+import { nhanGiaLuot } from "./payments/gia-cong-cu";
 // Danh sách 15 công cụ con của "Đại Cát Lợi" — tách ra file .ts riêng (thay vì khai báo trong
 // dai-cat-loi/index.astro) để api/search.ts (endpoint .ts thuần, không qua Astro compiler) import được an
 // toàn, tránh lỗi resolve module khi import trực tiếp từ file .astro.
@@ -137,28 +138,28 @@ export const paidTools: PaidTool[] = [
     icon: "🕯️",
     title: "Chọn Giờ Liệm – Đóng Quan – Ngày Giờ Hạ Huyệt",
     desc: "Dành cho trường hợp KHÔNG phạm Trùng Tang — xếp hạng giờ liệm/đóng quan và ngày giờ hạ huyệt theo Chưởng Pháp Nhập Mộ – Thiên Di, có sàng thần sát an táng và xét tuổi thân quyến.",
-    priceLabel: "499.000đ / lượt",
+    priceLabel: nhanGiaLuot("gio-liem-ha-huyet"),
   },
   {
     href: "/dai-cat-loi/xem-ngay-cao-cap",
     icon: "🧭",
     title: "Xem Ngày Cao Cấp – Động Thổ / Nhập Trạch",
     desc: "Giám định ngày theo Huyền Không Đại Quái: lọc Ngũ Hoàng/Tam Sát/Bát Sát/Thái Tuế trước, rồi luận cách cục Tam Tài Thiên – Địa – Nhân giao.",
-    priceLabel: "999.000đ / lượt",
+    priceLabel: nhanGiaLuot("xem-ngay-cao-cap"),
   },
   {
     href: "/dai-cat-loi/ngay-ky-hop-dong-cao-cap",
     icon: "✍️",
     title: "Ngày Giờ Ký Kết Hợp Đồng – Bản Cao Cấp",
     desc: "Lọc loại ngày đại kỵ trước, rồi chấm điểm theo Thập Nhị Trực, 28 Tú, Tiểu Lục Nhâm và lớp Thập Thần theo Nhật Chủ người ký. Chọn luôn giờ ký trong ngày.",
-    priceLabel: "299.000đ / lượt",
+    priceLabel: nhanGiaLuot("ngay-ky-hop-dong-cao-cap"),
   },
   {
     href: "/dai-cat-loi/ngay-cuoi-hoi",
     icon: "💍",
     title: "Xem Ngày Cưới Hỏi Trọn Gói",
     desc: "Chọn ngày & giờ đẹp cho cả chuỗi cưới hỏi (ăn hỏi, đón dâu, thành hôn, đăng ký) — chấm điểm riêng cô dâu, chú rể rồi cân cặp đôi, lập lịch cả 4 nghi lễ theo trình tự thời gian.",
-    priceLabel: "499.000đ / lượt",
+    priceLabel: nhanGiaLuot("ngay-cuoi-hoi"),
     // Khách THẤY thẻ này bình thường nhưng CHƯA dùng được — trang tự hiện "sắp ra mắt" cho khách,
     // chỉ tài khoản quản trị mới chạy được (đang thử nghiệm). Khi phát hành thì bỏ khoá ở trang.
   },
@@ -167,28 +168,28 @@ export const paidTools: PaidTool[] = [
     icon: "🍼",
     title: "Đặt Tên Cho Con Theo Việt Danh Học",
     desc: "Từ ngày giờ sinh của bé, hệ thống lập Tứ Trụ theo tiết khí, chỉ ra ngũ hành còn thiếu cần bổ, rồi gợi ý danh sách tên đẹp hợp mệnh — mỗi tên chấm điểm theo Tứ Đại Cục 81 số.",
-    priceLabel: "499.000đ / lượt",
+    priceLabel: nhanGiaLuot("dat-ten-cho-con"),
   },
   {
     href: "/dai-cat-loi/nhan-chuc",
     icon: "🎖️",
     title: "Chọn Ngày Giờ Nhận Chức",
     desc: "Tìm ngày & giờ tốt để nhận chức, nhậm chức, bổ nhiệm — lọc hung sát trước (Kim Thần, Sát Chủ, Thọ Tử, Lục Xung tuổi), ưu tiên công danh theo 28 Tú, Thập Nhị Trực và lớp Thập Thần Chính Quan.",
-    priceLabel: "499.000đ / lượt",
+    priceLabel: nhanGiaLuot("nhan-chuc"),
   },
   {
     href: "/dai-cat-loi/ngay-khai-truong-cao-cap",
     icon: "🏪",
     title: "Chọn Ngày Khai Trương Cao Cấp (Bát Tự Mệnh Chủ)",
     desc: "Bản nâng cấp của Khai Trương thường: giữ nguyên điểm nền rồi chồng thêm lớp Bát Tự mệnh chủ — Thập Thần hợp cầu tài (Thê Tài/Thực Thương), xét cả Tứ Trụ (Nhật Chi, Tam Hình/Lục Hại) và Dụng Thần theo vượng suy (khi có giờ sinh).",
-    priceLabel: "499.000đ / lượt",
+    priceLabel: nhanGiaLuot("ngay-khai-truong-cao-cap"),
   },
   {
     href: "/dai-cat-loi/trach-nhat-sinh-no",
     icon: "👶",
     title: "Chọn Ngày Giờ Sinh Cho Bé",
     desc: "Lập toàn bộ ứng viên trong khung bác sĩ cho phép, kết hợp Bát Tự (xếp hạng ngày: vượng suy, gốc, Ấn tinh, ngũ hành lưu thông, Đại Vận) và Tử Vi (chọn giờ: Mệnh/Thân/Cục, Tuần–Triệt, sát tinh) — trả phương án chính + 2 dự phòng, luôn nêu rõ khuyết điểm.",
-    priceLabel: "499.000đ / lượt",
+    priceLabel: nhanGiaLuot("trach-nhat-sinh-no"),
     // ⏸️ THỬ NGHIỆM NỘI BỘ (mới xây, chưa kiểm chứng nhiều ca thật + quyết định giờ sinh mổ có rủi
     // ro cao) — trang tự hiện "đang thử nghiệm" cho khách, chỉ admin dùng được. Mở khi anh Công duyệt.
   },
@@ -197,7 +198,7 @@ export const paidTools: PaidTool[] = [
     icon: "🧿",
     title: "Trạch Cát Kỳ Môn (Chọn Ngày Giờ Theo Bàn Mệnh)",
     desc: "Khác các công cụ chọn ngày dùng lịch chung: lập riêng bàn Kỳ Môn Mệnh của chính chủ sự làm mẫu cục, nên hai người khác tuổi hỏi cùng một việc sẽ ra hai bộ ngày khác nhau. Lọc Kỳ Môn Tứ Hại, đối chiếu dụng thần riêng của từng việc (động thổ, nhập trạch, khai trương, xuất hành, an táng…), rồi xét 12 Kiến Tinh và 12 Trực Thần. Bấm vào một ngày sẽ lập tử cục để chọn luôn khung giờ.",
-    priceLabel: "499.000đ / lượt",
+    priceLabel: nhanGiaLuot("trach-cat-ky-mon"),
     best: true,
     // ✅ Đã mở bán cho khách từ 26/8/2026 (anh Công duyệt).
   },
@@ -206,7 +207,7 @@ export const paidTools: PaidTool[] = [
     icon: "💍",
     title: "Hợp Hôn Bát Tự × Tử Vi",
     desc: "Tầng luận sâu cho việc kết hôn, chạy tiếp sau vòng xem tuổi theo năm sinh. Đối chiếu ĐỦ hai lá số qua 5 trục: ngũ hành hai bên có bù đúng chỗ thiếu của nhau không, Cung Phu Thê và sao phối ngẫu, tính cách qua Thập Thần, Cung Phu Thê cùng Tứ Hóa giao thoa bên Tử Vi, và mức đồng bộ vận trình 30 năm tới. Không chấm điểm phán quyết — trả bản đồ điểm mạnh và điểm cần chủ động vun đắp.",
-    priceLabel: "999.000đ / lượt",
+    priceLabel: nhanGiaLuot("hop-hon"),
     // ⏸️ THỬ NGHIỆM NỘI BỘ — chủ đề nhạy cảm nhất trong bộ (kết luận sai ảnh hưởng cả đời người),
     // cần anh Công kiểm chứng nhiều ca thật trước khi mở cho khách. Trang tự khóa admin.
   },
@@ -215,7 +216,7 @@ export const paidTools: PaidTool[] = [
     icon: "📱",
     title: "Sim Phong Thủy Khai Vận Khí",
     desc: "Đặt dịch vụ tìm sim hợp mệnh: gửi ngày giờ sinh, mục đích (tài lộc, công danh, quý nhân…), đầu số và ngân sách mong muốn — chuyên gia đối chiếu Bát Tự rồi chọn tay dãy số phù hợp, liên hệ qua Zalo/SĐT.",
-    priceLabel: "999.999đ / lượt",
+    priceLabel: nhanGiaLuot("sim-phong-thuy-khai-van"),
     // Dịch vụ THỦ CÔNG (không phải công cụ tính tự động): chuyên gia tìm sim thật từ kho số theo
     // Bát Tự khách cung cấp — không có "kết quả" trả ngay như các công cụ khác. Xem _chung.ts.
   },

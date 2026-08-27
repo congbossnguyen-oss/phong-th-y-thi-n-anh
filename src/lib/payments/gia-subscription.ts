@@ -18,18 +18,32 @@ export const SO_THANG_THEO_KY_HAN: Record<SubscriptionDuration, number> = {
   "1_nam": 12,
 };
 
+/**
+ * ⚠️ CHỐT GIÁ 27/8/2026 (anh Công giao: "em cứ chốt như nào thấy hợp lý... để anh cho ra thị trường
+ * được", yêu cầu làm tròn số). Trước đó cả 8 mức để `null` từ 23/8 nên gói thuê bao — nguồn doanh
+ * thu ĐỊNH KỲ duy nhất của hệ thống — không bán được đồng nào.
+ *
+ * Căn cứ đặt giá:
+ *  · Rẻ hơn MỘT lần mua module lẻ (300k–1.000k) để khách thấy hời ngay khi so sánh.
+ *  · Nhưng dùng quá ~3 tháng là đã vượt doanh thu bán lẻ một lần → có lợi cho cả hai bên.
+ *  · Cao cấp ≈ 2,3× Cơ bản: đủ chênh để người có điều kiện chọn gói cao, không quá xa thành vô lý.
+ *  · Gói năm = giá 10 tháng (tặng 2 tháng) — mức khuyến khích trả trước phổ biến, dễ hiểu.
+ *
+ * Giá vốn thực tế mỗi lượt AI chỉ ~5.000–18.000đ, nên biên lợi nhuận rất cao ở mọi mức;
+ * ràng buộc thật khi định giá là SỨC MUA và cảm nhận giá trị, không phải chi phí.
+ */
 export const GIA_SUBSCRIPTION: Record<SubscriptionTier, Record<SubscriptionDuration, number | null>> = {
   co_ban: {
-    "1_thang": null,
-    "3_thang": null,
-    "6_thang": null,
-    "1_nam": null,
+    "1_thang": 150000,
+    "3_thang": 400000, // tiết kiệm 50.000đ
+    "6_thang": 750000, // tiết kiệm 150.000đ
+    "1_nam": 1500000, // tiết kiệm 300.000đ (≈ tặng 2 tháng)
   },
   cao_cap: {
-    "1_thang": null,
-    "3_thang": null,
-    "6_thang": null,
-    "1_nam": null,
+    "1_thang": 350000,
+    "3_thang": 950000, // tiết kiệm 100.000đ
+    "6_thang": 1800000, // tiết kiệm 300.000đ
+    "1_nam": 3500000, // tiết kiệm 700.000đ (≈ tặng 2 tháng)
   },
 };
 
