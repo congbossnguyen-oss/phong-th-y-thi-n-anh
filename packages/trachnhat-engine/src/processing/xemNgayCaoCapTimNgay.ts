@@ -17,7 +17,7 @@
  *   - Sách: "chỉ 1 trụ hoặc 0 trụ hỗ trợ ngày → tuyệt đối tránh".
  */
 import { Astronomy } from "@thien-anh/calendar-core";
-import { calculateXemNgayCaoCap, type XemNgayCaoCapInput, type XemNgayCaoCapResult } from "./xemNgayCaoCap.js";
+import { calculateXemNgayCaoCap, type LoaiViec, type XemNgayCaoCapInput, type XemNgayCaoCapResult } from "./xemNgayCaoCap.js";
 
 /** Mức định tính theo sách (Phần II `tang3-luat-hkdq.md`). */
 export type MucChatLuong = "ly_tuong" | "tot" | "duoc" | "khong_dung";
@@ -49,23 +49,35 @@ export interface ThangXepHang {
   diemCaoNhat: number;
 }
 
-/** Cộng điểm theo từng yếu tố đạt — minh bạch, không giấu công thức. */
-function chamDiem(kq: XemNgayCaoCapResult): { diem: number; yeuToDat: YeuToDat[] } {
+/**
+ * Cộng điểm theo từng yếu tố đạt — minh bạch, không giấu công thức.
+ *
+ * ⚠️ Hợp Thập được TĂNG TRỌNG SỐ riêng khi `loaiViec === "nhap_trach"` — theo `tang3-luat-hkdq.md`
+ * mục c: "Dùng cho: nhập trạch... → Đây là cách cục nên ưu tiên cho nhập trạch và các việc dài hạn,
+ * dù về thứ hạng tổng thể Hợp Thập đứng sau Hà Đồ." Trước đây `loaiViec` chỉ đổi 1 câu cảnh báo chữ,
+ * không ảnh hưởng chấm điểm — anh Công xác nhận cần sửa đúng phần này (28/8/2026), và KHÔNG thêm
+ * Kim Lâu/Hoang Ốc vào module này (đó là trạch nhật dân gian, khác hệ Huyền Không Đại Quái).
+ * Mức tăng: đưa Hợp Thập lên bằng Hà Đồ (15→20) khi là Nhập Trạch — không đưa nó vượt Nhất Quái
+ * Thuần Thanh (30), vì tài liệu không nói Hợp Thập vượt qua mức đó ở bất kỳ mục đích nào.
+ */
+export function chamDiem(kq: XemNgayCaoCapResult, loaiViec: LoaiViec): { diem: number; yeuToDat: YeuToDat[] } {
   const y = kq.yeuTo;
   const ds: YeuToDat[] = [];
   const them = (ten: string, diem: number) => ds.push({ ten, diem });
 
   // --- Tam Tài giao (lõi của HKĐQ) ---
+  const uuTienNhapTrach = loaiViec === "nhap_trach";
   const diemTheoMuc: Record<string, number> = {
     nhat_quai_thuan_thanh: 30, // đẹp nhất
     ha_do: 20,
-    hop_thap: 15,
-    hop_thap_7_3: 5, // miễn cưỡng (Khảm-Ly không hợp)
+    hop_thap: uuTienNhapTrach ? 20 : 15,
+    hop_thap_7_3: 5, // miễn cưỡng (Khảm-Ly không hợp) — vẫn hạn chế dù mục đích là nhập trạch
     sinh_nhap: 10,
     khac_nhap: 10,
   };
-  if (y.giaoSonGia) them(`Nhật Khóa giao Sơn Gia (${y.giaoSonGia})`, diemTheoMuc[y.giaoSonGia] ?? 8);
-  if (y.giaoMenhChuChinh) them(`Nhật Khóa giao Mệnh Chủ (${y.giaoMenhChuChinh})`, diemTheoMuc[y.giaoMenhChuChinh] ?? 8);
+  const hauToUuTien = (muc: string) => (uuTienNhapTrach && muc === "hop_thap" ? " — ưu tiên cho Nhập Trạch" : "");
+  if (y.giaoSonGia) them(`Nhật Khóa giao Sơn Gia (${y.giaoSonGia})${hauToUuTien(y.giaoSonGia)}`, diemTheoMuc[y.giaoSonGia] ?? 8);
+  if (y.giaoMenhChuChinh) them(`Nhật Khóa giao Mệnh Chủ (${y.giaoMenhChuChinh})${hauToUuTien(y.giaoMenhChuChinh)}`, diemTheoMuc[y.giaoMenhChuChinh] ?? 8);
   if (y.giaoMenhChuPhu) them("Giao thêm được Mệnh Chủ phụ (vợ/chồng)", 10);
   if (y.toaGiaoMenhChu) them("Tọa hợp với Mệnh Chủ", 8);
 
@@ -147,7 +159,7 @@ export function timNgayXemNgayCaoCap(input: TimNgayInput): {
       continue;
     }
 
-    const { diem, yeuToDat } = chamDiem(kq);
+    const { diem, yeuToDat } = chamDiem(kq, input.loaiViec);
     const muc = xepMuc(diem, kq.yeuTo.soTruHoTroNgay);
     if (muc === "khong_dung") {
       ghiLyDo("Chỉ 0-1 trụ hỗ trợ trụ Ngày — sách xếp mức phải tránh tuyệt đối.");
