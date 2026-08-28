@@ -13,8 +13,12 @@
  * Bước 3 soát đủ 5 sát cốt lõi + 3 Thái Tuế Sát mở rộng (Mậu Kỷ Đô Thiên, Âm Phủ Thái Tuế, Mộ
  * Long Biến Vận).
  */
-import { Data, getCanChi, getLunarDate } from "@thien-anh/calendar-core";
-import { Scoring, XemNgayCaoCap } from "@thien-anh/rule-engine";
+import { Astronomy, Calendar, Data, getCanChi, getJulianDay, getLunarDate } from "@thien-anh/calendar-core";
+import { Scoring, TrachNhat, XemNgayCaoCap } from "@thien-anh/rule-engine";
+
+function mod(a: number, n: number): number {
+  return ((a % n) + n) % n;
+}
 
 type Can = Data.Can;
 type Chi = Data.Chi;
@@ -45,6 +49,12 @@ export interface XemNgayCaoCapInput {
   /** Ngày dương lịch cần giám định. */
   ngayGiamDinh: { nam: number; thang: number; ngay: number };
   timeZone?: string;
+  /**
+   * Lớp lọc thần sát dân gian (Tam Nương/Nguyệt Kỵ/Sát Chủ/Kim Thần Thất Sát/Thọ Tử/Kim Lâu/
+   * Hoang Ốc/Tam Tai) — mặc định BẬT (SKILL.md Bước 0 #8). TẮT chỉ khi khách/Công chủ động yêu
+   * cầu. Trực (theo việc) và Lục Xung KHÔNG phụ thuộc cờ này — luôn chạy (nhóm "Luôn bắt buộc").
+   */
+  apDungLocDanGian?: boolean;
 }
 
 export interface TruQue {
@@ -65,7 +75,7 @@ export interface MenhChuQue {
 export type TrangThaiBuoc = "dat" | "khong_dat" | "thieu_du_lieu";
 
 export interface BuocKetQua {
-  buoc: 2 | 3 | 4 | 5 | 6;
+  buoc: 1 | 2 | 3 | 4 | 5 | 6;
   ten: string;
   trangThai: TrangThaiBuoc;
   lyDo: string;
@@ -117,6 +127,12 @@ export interface XemNgayCaoCapResult {
   /** Bước 6 — 12 giờ đã xếp hạng (tốt nhất trước). */
   gioDeXuat: GioDeXuat[];
   yeuTo: YeuToXepHang;
+  /** Trực của ngày (Kiến Trừ Thập Nhị Khách) — luôn tính, không phụ thuộc `apDungLocDanGian`. */
+  truc: { ten: string; totCho: boolean };
+  /** Bước 1 mục A (lọc dân gian theo ngày) — `null` nếu `apDungLocDanGian` = false. */
+  locDanGian: XemNgayCaoCap.KetQuaLocDanGian | null;
+  /** Soát Kim Lâu/Hoang Ốc/Tam Tai gia chủ chính — chỉ tính khi `loaiViec === "dong_tho"`, `null` nếu tắt cờ hoặc không phải động thổ. */
+  soatTuoiGiaChu: (XemNgayCaoCap.SoatTuoiGiaChuKetQua & { phamTamTai: boolean }) | null;
 }
 
 /**
@@ -231,6 +247,122 @@ export function calculateXemNgayCaoCap(input: XemNgayCaoCapInput): XemNgayCaoCap
   }
   const menhChuChinh = menhChuTuNamSinh(input.namSinhGiaChuChinh);
   const menhChuPhu = input.namSinhVoChong !== undefined ? menhChuTuNamSinh(input.namSinhVoChong) : undefined;
+
+  // =============================================================================================
+  // BƯỚC 1 — lọc thô thần sát dân gian THEO NGÀY (28/8/2026, anh Công chốt bổ sung sau khi tự phát
+  // hiện ngày phạm Sát Chủ/Trực Mãn lọt qua danh sách "Lý tưởng"). Cờ `apDungLocDanGian` mặc định
+  // BẬT — SKILL.md Bước 0 #8. Trực (theo việc) và Lục Xung Chi ngày với Tọa/Mệnh Chủ LUÔN chạy,
+  // không phụ thuộc cờ này (nhóm "Luôn bắt buộc" trong bảng cổng cứng SKILL.md).
+  // =============================================================================================
+  const apDungLocDanGian = input.apDungLocDanGian ?? true;
+  const phamBuoc1: string[] = [];
+
+  // Nguyệt Tận: ngày mai (ÂL) là mùng 1 → hôm nay là ngày cuối tháng ÂL.
+  const jdHomNay = getJulianDay({ year: nam, month: thang, day: ngay, hour: 12, timeZone });
+  const ngayMaiCal = Astronomy.julianDayNumberToCalendarDate(jdHomNay.julianDayNumber + 1);
+  const lunarNgayMai = getLunarDate({ year: ngayMaiCal.year, month: ngayMaiCal.month, day: ngayMaiCal.day, timeZone });
+  const phamNguyetTanTinh = lunarNgayMai.day === 1;
+
+  // Tứ Ly / Tứ Tuyệt: "1 ngày trước" 1 trong 8 mốc tiết khí — so JDN của tiết khí gần nhất với
+  // JDN(hôm nay)+1. Dùng `Calendar.findSolarTermJd` đã có sẵn (cùng cơ chế Newton-Raphson mà
+  // `getGanzhiYear` dùng để tìm Lập Xuân), KHÔNG tự suy công thức tiết khí riêng.
+  function jdnTietKhiGanNhat(kinhDoDeg: number): number {
+    const jd = Calendar.findSolarTermJd(kinhDoDeg, jdHomNay.julianDay);
+    return Math.floor(jd + 0.5); // quy ước Meeus: JDN nguyên = floor(jd + 0.5)
+  }
+  const jdnMai = jdHomNay.julianDayNumber + 1;
+  const phamTuLyTinh = [0, 90, 180, 270].some((kd) => jdnTietKhiGanNhat(kd) === jdnMai);
+  const phamTuTuyetTinh = [315, 45, 135, 225].some((kd) => jdnTietKhiGanNhat(kd) === jdnMai);
+
+  const locDanGianTinh = XemNgayCaoCap.locThoDanGian({
+    ngayAL: lunar.day,
+    thangAL: lunar.month,
+    canNam: truNam.can,
+    canNgay: truNgay.can,
+    chiNgay: truNgay.chi,
+    phamNguyetTan: phamNguyetTanTinh,
+    phamTuLy: phamTuLyTinh,
+    phamTuTuyet: phamTuTuyetTinh,
+    chiThangBatTu: truThang.chi,
+  });
+  const locDanGian: XemNgayCaoCapResult["locDanGian"] = apDungLocDanGian ? locDanGianTinh : null;
+  if (apDungLocDanGian) phamBuoc1.push(...locDanGianTinh.lyDo);
+
+  // Trực (Kiến Trừ Thập Nhị Khách) — LUÔN tính, không phụ thuộc cờ. Chi mà Trực Kiến khởi trong
+  // tháng CHÍNH LÀ Chi Tháng Bát Tự (lịch Kiến Nguyệt: tháng Dần luôn kiến Dần...) — dùng thẳng
+  // `truThang.chi`, không cần gọi lại tiết khí riêng cho Trực.
+  const CHI_ORDER_TRUC: readonly Chi[] = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"];
+  const monthOrderIndexTruc = mod(CHI_ORDER_TRUC.indexOf(truThang.chi) - 2, 12);
+  const dayChiIndexTruc = CHI_ORDER_TRUC.indexOf(truNgay.chi);
+  const trucKetQua = TrachNhat.getTruc(dayChiIndexTruc, monthOrderIndexTruc);
+  // Mục A "Kỵ chung mọi việc": Trực Phá, Trực Bế — áp cho MỌI loại việc, không riêng động thổ.
+  const TRUC_KY_CHUNG = new Set(["Phá", "Bế"]);
+  // Mục B "Kỵ riêng theo việc đất đai" — Bước 1b: Động Thổ kỵ thêm Kiến/Bình/Thâu (Phá đã ở trên).
+  // ⚠️ Nguồn KHÔNG liệt Trực Mãn vào bất kỳ danh sách kỵ nào (dù mục D xếp Mãn là "Hung" trong bảng
+  // Cát/Hung tổng quát) — không tự suy thêm ngoài đúng 2 danh sách A+B đã nêu tên cụ thể.
+  const TRUC_KY_RIENG_DONG_THO = new Set(["Kiến", "Bình", "Thâu"]);
+  const trucKyChung = TRUC_KY_CHUNG.has(trucKetQua.name);
+  const trucKyRieng = input.loaiViec === "dong_tho" && TRUC_KY_RIENG_DONG_THO.has(trucKetQua.name);
+  const trucKy = trucKyChung || trucKyRieng;
+  if (trucKy) {
+    phamBuoc1.push(
+      trucKyChung
+        ? `Trực ${trucKetQua.name} — kỵ chung mọi việc`
+        : `Trực ${trucKetQua.name} — kỵ riêng cho Động Thổ`,
+    );
+  }
+
+  // Lục Xung Chi ngày với Tọa (chỉ tính được khi Tọa là 1 trong 12 sơn Địa Chi) — "bổ sung mới"
+  // theo bảng cổng cứng SKILL.md, trước đây chỉ xét xung với năm sinh gia chủ, chưa xét xung Tọa.
+  const LUC_XUNG_B1: Record<Chi, Chi> = {
+    Tý: "Ngọ", Sửu: "Mùi", Dần: "Thân", Mão: "Dậu", Thìn: "Tuất", Tỵ: "Hợi",
+    Ngọ: "Tý", Mùi: "Sửu", Thân: "Dần", Dậu: "Mão", Tuất: "Thìn", Hợi: "Tỵ",
+  };
+  if (CHI_ORDER_TRUC.includes(input.toaNha as Chi) && LUC_XUNG_B1[truNgay.chi] === input.toaNha) {
+    phamBuoc1.push(`Chi ngày (${truNgay.chi}) xung Tọa (${input.toaNha})`);
+  }
+  // Lục Xung Chi ngày với Mệnh Chủ PHỤ (vợ/chồng) — trước đây chỉ xét Mệnh Chủ chính (Bước 5a).
+  if (menhChuPhu) {
+    const chiMenhPhu = Scoring.getChi(input.namSinhVoChong!);
+    if (LUC_XUNG_B1[truNgay.chi] === chiMenhPhu) {
+      phamBuoc1.push(`Chi ngày (${truNgay.chi}) xung năm sinh vợ/chồng gia chủ (${chiMenhPhu})`);
+    }
+  }
+
+  // Kim Lâu / Hoang Ốc / Tam Tai — chỉ soát khi ĐỘNG THỔ/khởi công (nguồn: Bước 1c), theo tuổi mụ
+  // gia chủ chính trong năm DƯƠNG LỊCH của ngày giám định (cùng quy ước tính tuổi mụ đã dùng ở các
+  // module khác trong dự án — không quy đổi qua năm âm lịch).
+  let soatTuoiGiaChuKetQua: XemNgayCaoCapResult["soatTuoiGiaChu"] = null;
+  if (input.loaiViec === "dong_tho") {
+    // Canh Chi dùng để soát "8 tuổi miễn kỵ" là Can Chi NĂM SINH gia chủ (đã có sẵn trong menhChuChinh).
+    const soat = XemNgayCaoCap.soatTuoiGiaChu(input.namSinhGiaChuChinh, nam, menhChuChinh.canChiNamSinh);
+    const phamTamTaiGiaChu = XemNgayCaoCap.getNhomTuoiPhamTamTai(truNam.chi).some((nhom) =>
+      (nhom as readonly Chi[]).includes(Scoring.getChi(input.namSinhGiaChuChinh)),
+    );
+    soatTuoiGiaChuKetQua = { ...soat, phamTamTai: phamTamTaiGiaChu };
+    if (apDungLocDanGian) {
+      if (soat.mucDo === "nen_muon_tuoi") {
+        phamBuoc1.push(
+          `Tuổi gia chủ (${soat.tuoiMu} mụ): cả Kim Lâu (${soat.kimLau.cung}) và Hoang Ốc (${soat.hoangOc.cung}) đều xấu — nên mượn tuổi hoặc lùi năm.`,
+        );
+      }
+      if (phamTamTaiGiaChu) {
+        phamBuoc1.push(`Gia chủ phạm Tam Tai năm ${truNam.can} ${truNam.chi}.`);
+      }
+    }
+  }
+
+  const buoc1Dat = phamBuoc1.length === 0;
+  chieuTungBuoc.push({
+    buoc: 1,
+    ten: "Lọc thô thần sát dân gian + Trực + Lục Xung",
+    trangThai: buoc1Dat ? "dat" : "khong_dat",
+    lyDo: buoc1Dat
+      ? apDungLocDanGian
+        ? "Không phạm thần sát dân gian nào, Trực không kỵ, không xung Tọa/Mệnh Chủ."
+        : "Lớp lọc dân gian ĐANG TẮT theo yêu cầu — chỉ Trực và Lục Xung đã được kiểm tra."
+      : phamBuoc1.join(" · "),
+  });
 
   // =============================================================================================
   // BƯỚC 3 — phương vị sát (bộ lọc phủ quyết, chạy TRƯỚC Bước 5 theo đúng bài học Bài 4 của nguồn)
@@ -551,13 +683,15 @@ export function calculateXemNgayCaoCap(input: XemNgayCaoCapInput): XemNgayCaoCap
 
   // ----- Kết luận -----
   let ketLuan: XemNgayCaoCapResult["ketLuan"];
-  if (!buoc3Dat || (queToa && !buoc5Dat)) ketLuan = "khong_dung";
+  if (!buoc1Dat || !buoc3Dat || (queToa && !buoc5Dat)) ketLuan = "khong_dung";
   else if (!queToa || thieuDuLieuSat || diemLuuY.length > 0) ketLuan = "dung_duoc_co_dieu_kien";
   else ketLuan = "dung_duoc";
 
-  diemLuuY.push(
-    "Module này luận theo Huyền Không Đại Quái (Bước 2-6), KHÔNG bao gồm lớp thần sát dân gian ở Bước 1 (Tam Nương, Nguyệt Kỵ, Sát Chủ, 28 sao...) theo đúng phạm vi đã chốt.",
-  );
+  if (!apDungLocDanGian) {
+    diemLuuY.push(
+      "⚠️ Đã tắt lớp lọc dân gian theo yêu cầu — kết quả CHƯA qua kiểm tra Tam Nương, Nguyệt Kỵ, Sát Chủ, Kim Thần Thất Sát, Kim Lâu-Hoang Ốc-Tam Tai. Đây là các lớp thần sát dân gian cổ truyền, tách biệt với Huyền Không Đại Quái (Ngũ Hoàng/Tam Sát/Bát Sát/Tam Tài vẫn đã kiểm tra đầy đủ, không bị ảnh hưởng).",
+    );
+  }
 
   return {
     ngayDuongLich: { nam, thang, ngay },
@@ -578,6 +712,9 @@ export function calculateXemNgayCaoCap(input: XemNgayCaoCapInput): XemNgayCaoCap
     diemManh,
     diemLuuY,
     gioDeXuat,
+    truc: { ten: trucKetQua.name, totCho: !trucKy },
+    locDanGian,
+    soatTuoiGiaChu: soatTuoiGiaChuKetQua,
     yeuTo,
   };
 }

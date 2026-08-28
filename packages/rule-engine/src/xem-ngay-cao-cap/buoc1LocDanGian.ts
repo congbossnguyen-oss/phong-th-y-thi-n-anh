@@ -11,10 +11,10 @@
  * này KHÔNG được gọi cho phần "Dân gian"; phần "Luôn bắt buộc" (Trực theo việc, Lục Xung) vẫn chạy
  * ở nơi khác (`xemNgayCaoCap.ts`), không phụ thuộc cờ này.
  *
- * ⚠️ Kim Lâu / Hoang Ốc / Tam Tai KHÔNG nằm trong file này — 3 mục đó tính theo TUỔI GIA CHỦ × NĂM
- * dự kiến (không theo từng ngày cụ thể như các mục dưới đây), và Kim Lâu/Hoang Ốc đang có mâu thuẫn
- * công thức với module có sẵn `hoang-oc-kim-lau/` — CẦN anh Công xác nhận trước khi code (xem báo
- * cáo trong hội thoại 28/8/2026), không tự ý chọn 1 trong 2 nguồn.
+ * Kim Lâu / Hoang Ốc / Tam Tai KHÔNG nằm trong file này — 3 mục đó tính theo TUỔI GIA CHỦ × NĂM dự
+ * kiến (không theo từng ngày cụ thể như các mục dưới đây). Kim Lâu/Hoang Ốc ở `kimLauHoangOc.ts`
+ * (công thức RIÊNG cho module này, anh Công đã chốt 28/8/2026 — xem ghi chú đầu file đó); Tam Tai
+ * tái xuất từ `trach-nhat/tamTai.ts` ngay bên dưới.
  */
 
 export interface KetQuaLocDanGian {
@@ -104,25 +104,16 @@ export function phamThoTu(thangAL: number, canNgay: string, chiNgay: string): bo
   return !!ct && ct.can === canNgay && ct.chi === chiNgay;
 }
 
-// ── Kim Lâu / Hoang Ốc — TẠM DỪNG, KHÔNG CODE Ở ĐÂY ─────────────────────────────────────────────
-// ⚠️ Phát hiện 28/8/2026: package này ĐÃ CÓ SẴN module `hoang-oc-kim-lau/` (dùng ở module khác,
-// vd Chọn Ngày Giờ Sinh Cho Bé) — NHƯNG dùng công thức KHÁC với công thức trong tài liệu skill
-// xem-ngay-cao-cap (`tang2-chon-thang-theo-toa.md`, đã verify khớp 2 ví dụ minh họa cụ thể trong
-// tài liệu đó). Module có sẵn tự nhận "công thức dân gian phổ biến nhất, KHÔNG đối chiếu được với
-// 1 nguồn cụ thể nào" — khác hẳn với công thức có ví dụ minh họa của tài liệu này.
-// KHÔNG tự ý chọn 1 trong 2 — đây là quyết định ảnh hưởng nhất quán dữ liệu TOÀN HỆ THỐNG (nếu
-// khách dùng 2 module khác nhau mà ra 2 kết quả Kim Lâu/Hoang Ốc khác nhau cho cùng 1 tuổi sẽ mất
-// niềm tin nghiêm trọng). Cần anh Công xác nhận dùng công thức nào làm chuẩn trước khi code phần
-// này. Xem báo cáo trong hội thoại 28/8/2026.
-
 // ── Tam Tai — TÁI DÙNG module có sẵn `trach-nhat/tamTai.ts`, KHÔNG viết bảng thứ hai ────────────
 export { getNhomTuoiPhamTamTai, TAM_TAI_GROUPS } from "../trach-nhat/tamTai.js";
+// ── Kim Lâu / Hoang Ốc — xem `kimLauHoangOc.ts` (file riêng, công thức khác `hoang-oc-kim-lau/`) ─
+export * from "./kimLauHoangOc.js";
 
 /**
  * Tổng hợp Bước 1 mục A (Tam Nương/Nguyệt Kỵ/Nguyệt Tận/Tứ Ly/Tứ Tuyệt/Kim Thần Thất Sát/Sát Chủ/
- * Thọ Tử). KHÔNG bao gồm Kim Lâu/Hoang Ốc (chỉ áp cho động thổ/khởi công, tính riêng theo tuổi gia
- * chủ — xem `traHoangOc`/`traKimLau`) và KHÔNG bao gồm Trực (đã có sẵn `trach-nhat/truc.ts`, thuộc
- * nhóm "Luôn bắt buộc", không nằm trong cờ lọc dân gian).
+ * Thọ Tử). KHÔNG bao gồm Kim Lâu/Hoang Ốc/Tam Tai (chỉ áp cho động thổ/khởi công, tính riêng theo
+ * tuổi gia chủ × năm — xem `soatTuoiGiaChu`/`getNhomTuoiPhamTamTai`) và KHÔNG bao gồm Trực (đã có
+ * sẵn `trach-nhat/truc.ts`, thuộc nhóm "Luôn bắt buộc", không nằm trong cờ lọc dân gian).
  */
 export function locThoDanGian(input: {
   ngayAL: number;
@@ -130,6 +121,8 @@ export function locThoDanGian(input: {
   canNam: string;
   canNgay: string;
   chiNgay: string;
+  /** Ngày mai (ÂL) là mùng 1 — tính từ ngoài vì cần biết lịch âm của ngày dương lịch hôm sau. */
+  phamNguyetTan: boolean;
   phamTuLy: boolean;
   phamTuTuyet: boolean;
   chiThangBatTu: string;
@@ -138,7 +131,7 @@ export function locThoDanGian(input: {
   const r: KetQuaLocDanGian = {
     phamTamNuong: phamTamNuong(input.ngayAL),
     phamNguyetKy: phamNguyetKy(input.ngayAL),
-    phamNguyetTan: false, // điền từ ngoài (cần biết ngày dương lịch hôm sau, xem xemNgayCaoCap.ts)
+    phamNguyetTan: input.phamNguyetTan,
     phamTuLy: input.phamTuLy,
     phamTuTuyet: input.phamTuTuyet,
     phamKimThanThatSat: phamKimThanThatSat(input.canNam, input.chiNgay),
@@ -150,6 +143,7 @@ export function locThoDanGian(input: {
   };
   if (r.phamTamNuong) lyDo.push(`Tam Nương Sát (mùng ${input.ngayAL} ÂL)`);
   if (r.phamNguyetKy) lyDo.push(`Nguyệt Kỵ (mùng ${input.ngayAL} ÂL)`);
+  if (r.phamNguyetTan) lyDo.push("Nguyệt Tận (ngày cuối tháng ÂL)");
   if (r.phamTuLy) lyDo.push("Tứ Ly (1 ngày trước Xuân/Thu Phân hoặc Hạ/Đông Chí)");
   if (r.phamTuTuyet) lyDo.push("Tứ Tuyệt (1 ngày trước Lập Xuân/Hạ/Thu/Đông)");
   if (r.phamKimThanThatSat) lyDo.push(`Kim Thần Thất Sát (Can năm ${input.canNam}, Chi ngày ${input.chiNgay}) — không hóa giải được`);
