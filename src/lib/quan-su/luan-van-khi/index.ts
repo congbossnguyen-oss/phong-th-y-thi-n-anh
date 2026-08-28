@@ -187,6 +187,43 @@ function tinhTongQuanDaiVan(
   return { trangThai, diem };
 }
 
+/** Tính (hoặc lấy từ cache) đủ 10 Lưu Niên kèm lời luận AI cho 1 Đại Vận. Tách riêng để dùng lại
+ *  được cho cả Đại Vận đang xem VÀ Đại Vận kế tiếp (khi khối "5 năm tới" vắt qua ranh giới). */
+async function layHoacTinhLuuNien(
+  index: number, dv: BatTuChart["daiVan"][number], tt: TuTruInput,
+  vsGoc: ReturnType<typeof phanTichBatTu>["vuongSuy"], dtGoc: ReturnType<typeof phanTichBatTu>["dungThan"],
+  input: VanKhiInput,
+): Promise<LuuNienKhi[]> {
+  const daCache = await input.layLuuNienCache?.(index);
+  if (daCache && daCache.length === 10) {
+    // Trúng cache — Can/Chi từng năm Lưu Niên không đổi theo thời gian nên khỏi tính/gọi AI lại.
+    return daCache;
+  }
+  const danhSachNam = tinhLuuNien(dv.startDate.y, input.year, 10);
+  // Tính điểm 4 lĩnh vực cho CẢ 10 năm bằng code (không AI, không tốn gì) TRƯỚC, rồi mới gọi AI
+  // đúng 1 lần cho cả danh sách — thay vì 10 lệnh AI riêng biệt như bản cũ.
+  const mocTheoNam = danhSachNam.map((ln, chiSo) => {
+    const trangThaiLN = tinhTrangThaiThoiDiem({
+      tt, vsGoc, dtGoc, loai: "LuuNien", canChi: { can: ln.can, chi: ln.chi }, nam: ln.year,
+      canChiDaiVanChua: { can: dv.can, chi: dv.chi },
+    });
+    const diem4 = chamDiem4LinhVuc({ tt, trangThai: trangThaiLN, capDoGoc: vsGoc.capDo, gioiTinh: input.gender });
+    return { chiSo, diem4, daiVanCanChi: `${dv.can} ${dv.chi}`, namLuuNien: ln.year, tuoi: ln.tuoi, ln };
+  });
+  const loiLuanTheoNam = await vietLoiLuanChoDanhSachNam(mocTheoNam, input.gender);
+  const luuNien = mocTheoNam.map((m) => {
+    const kq = loiLuanTheoNam.get(m.chiSo)!;
+    return {
+      nam: m.ln.year, tuoi: m.ln.tuoi, canChi: `${m.ln.can} ${m.ln.chi}`,
+      diemCacLinhVuc: m.diem4, loiLuan: kq.loiLuan, loiLuanTuAI: kq.tuAI,
+    };
+  });
+  // Chỉ lưu cache khi lời luận thật sự đến từ AI — kết quả toàn câu mẫu (thiếu key/lỗi mạng)
+  // không đáng lưu, để lần sau có cơ hội thử gọi AI lại.
+  if (luuNien.some((ln) => ln.loiLuanTuAI)) await input.luuLuuNienCache?.(index, luuNien);
+  return luuNien;
+}
+
 /**
  * Tính vận khí đầy đủ cho 1 người — SPEC.md §1-§6. Async vì Lưu Niên của Đại Vận đang xem chi tiết
  * gọi AI viết lời luận (có hậu kiểm an toàn).
@@ -221,42 +258,30 @@ export async function tinhVanKhi(input: VanKhiInput): Promise<VanKhiOutput> {
     const dv = chart.daiVan[i]!;
     const { diem: tongQuan } = tinhTongQuanDaiVan(tt, vsGoc, dtGoc, dv, input.gender);
 
-    let luuNien: LuuNienKhi[] = [];
-    if (i === chiTietDaiVanIndex) {
-      const daCache = await input.layLuuNienCache?.(i);
-      if (daCache && daCache.length === 10) {
-        // Trúng cache — Can/Chi từng năm Lưu Niên không đổi theo thời gian nên khỏi tính/gọi AI lại.
-        luuNien = daCache;
-      } else {
-        const danhSachNam = tinhLuuNien(dv.startDate.y, input.year, 10);
-        // Tính điểm 4 lĩnh vực cho CẢ 10 năm bằng code (không AI, không tốn gì) TRƯỚC, rồi mới gọi AI
-        // đúng 1 lần cho cả danh sách — thay vì 10 lệnh AI riêng biệt như bản cũ.
-        const mocTheoNam = danhSachNam.map((ln, chiSo) => {
-          const trangThaiLN = tinhTrangThaiThoiDiem({
-            tt, vsGoc, dtGoc, loai: "LuuNien", canChi: { can: ln.can, chi: ln.chi }, nam: ln.year,
-            canChiDaiVanChua: { can: dv.can, chi: dv.chi },
-          });
-          const diem4 = chamDiem4LinhVuc({ tt, trangThai: trangThaiLN, capDoGoc: vsGoc.capDo, gioiTinh: input.gender });
-          return { chiSo, diem4, daiVanCanChi: `${dv.can} ${dv.chi}`, namLuuNien: ln.year, tuoi: ln.tuoi, ln };
-        });
-        const loiLuanTheoNam = await vietLoiLuanChoDanhSachNam(mocTheoNam, input.gender);
-        luuNien = mocTheoNam.map((m) => {
-          const kq = loiLuanTheoNam.get(m.chiSo)!;
-          return {
-            nam: m.ln.year, tuoi: m.ln.tuoi, canChi: `${m.ln.can} ${m.ln.chi}`,
-            diemCacLinhVuc: m.diem4, loiLuan: kq.loiLuan, loiLuanTuAI: kq.tuAI,
-          };
-        });
-        // Chỉ lưu cache khi lời luận thật sự đến từ AI — kết quả toàn câu mẫu (thiếu key/lỗi mạng)
-        // không đáng lưu, để lần sau có cơ hội thử gọi AI lại.
-        if (luuNien.some((ln) => ln.loiLuanTuAI)) await input.luuLuuNienCache?.(i, luuNien);
-      }
-    }
+    const luuNien: LuuNienKhi[] = i === chiTietDaiVanIndex ? await layHoacTinhLuuNien(i, dv, tt, vsGoc, dtGoc, input) : [];
 
     danhSachDaiVan.push({
       canChi: `${dv.can} ${dv.chi}`, tuoiBatDau: dv.startAge, tuoiKetThuc: dv.endAge, namBatDau: dv.startDate.y,
       tongQuan, luuNien,
     });
+  }
+
+  // 5) "5 năm tới" TÍNH TỪ NĂM HIỆN TẠI — app chưa có nút đổi Đại Vận nên ai đã đi sâu vào Đại Vận
+  // đang chọn (vd 8/10 năm) chỉ còn 2 năm thật sự tương lai trong luuNien ở trên. Vắt qua Đại Vận kế
+  // tiếp nếu cần, tái dùng ĐÚNG cơ chế cache theo Đại Vận (không tính 2 lần, không tốn AI ngoài dự kiến).
+  const dvHienTai = chart.daiVan[chiTietDaiVanIndex];
+  let nam5NamToi: LuuNienKhi[] = [];
+  if (dvHienTai) {
+    const luuNienHienTai = danhSachDaiVan[chiTietDaiVanIndex]!.luuNien;
+    nam5NamToi = luuNienHienTai.filter((ln) => ln.nam >= nowYear && ln.nam < nowYear + 5);
+
+    const namCuoiDaiVanHienTai = dvHienTai.startDate.y + 9;
+    if (nowYear + 4 > namCuoiDaiVanHienTai && chiTietDaiVanIndex + 1 < chart.daiVan.length) {
+      const dvKeTiep = chart.daiVan[chiTietDaiVanIndex + 1]!;
+      const luuNienKeTiep = await layHoacTinhLuuNien(chiTietDaiVanIndex + 1, dvKeTiep, tt, vsGoc, dtGoc, input);
+      nam5NamToi = [...nam5NamToi, ...luuNienKeTiep.filter((ln) => ln.nam >= nowYear && ln.nam < nowYear + 5)];
+    }
+    nam5NamToi.sort((a, b) => a.nam - b.nam);
   }
 
   return {
@@ -272,6 +297,7 @@ export async function tinhVanKhi(input: VanKhiInput): Promise<VanKhiOutput> {
     dungThanGoc: { dungThan: dtGoc.dungThan, hyThan: dtGoc.hyThan, kyThan: dtGoc.kyThan, cuuThan: dtGoc.cuuThan, phuongPhap: dtGoc.phuongPhap },
     danhSachDaiVan,
     chiTietDaiVanIndex,
+    nam5NamToi,
     disclaimer: DISCLAIMER_BAT_BUOC,
   };
 }

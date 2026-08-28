@@ -286,6 +286,35 @@ const troLuc = ketQua ? veTroLuc(ketQua.danhSachDaiVan, ketQua.dungThanGoc, ketQ
                 </div>
               </div>
 
+              {/* --- 5 năm tới TÍNH TỪ NĂM HIỆN TẠI (khác 10 thẻ năm bên dưới, vốn cố định theo Đại
+                   Vận): app chưa có nút đổi Đại Vận nên ai đã đi sâu vào Đại Vận đang chọn (vd 8/10
+                   năm) chỉ còn vài năm thật sự tương lai trong khối 10 năm cố định — mục này luôn cho
+                   đủ 5 năm sắp tới, kể cả khi phải vắt qua Đại Vận kế tiếp. --- */}
+              {ketQua.nam5NamToi.length > 0 && (
+                <div class="qs-luck" style="margin-top:1rem;">
+                  <h3>5 năm tới ({ketQua.nam5NamToi[0]!.nam}–{ketQua.nam5NamToi[ketQua.nam5NamToi.length - 1]!.nam})</h3>
+                  {ketQua.nam5NamToi.map((ln) => {
+                    const trungBinhNam = ln.diemCacLinhVuc.reduce((s, d) => s + d.diem, 0) / ln.diemCacLinhVuc.length;
+                    return (
+                      <details class="qs-detail" open={ln.nam === namHienTai}>
+                        <summary>
+                          {ln.nam} ({ln.canChi}, {ln.tuoi} tuổi) — trung bình {trungBinhNam.toFixed(1)}/10
+                        </summary>
+                        <div class="body">
+                          {ln.diemCacLinhVuc.map((d) => (
+                            <p style="margin:0 0 0.6rem;">
+                              <strong style={`color:${MAU_SAC_HEX[d.mauSac]}`}>{TEN_LINH_VUC[d.linhVuc]} — {d.diem}/10 ({d.nhan})</strong><br />
+                              {ln.loiLuan[d.linhVuc]}
+                            </p>
+                          ))}
+                        </div>
+                      </details>
+                    );
+                  })}
+                  <p style="margin-top:0.3rem;color:var(--qs-muted);font-size:0.68rem;">Tính từ năm hiện tại trở đi — nếu vắt qua Đại Vận kế tiếp, Can Chi của những năm đó đã đổi theo Đại Vận mới.</p>
+                </div>
+              )}
+
               {/* --- Pie: tỷ trọng 4 lĩnh vực trong Đại Vận đang xem --- */}
               <div class="qs-luck" style="margin-top:1rem;">
                 <div class="qs-pie-row">

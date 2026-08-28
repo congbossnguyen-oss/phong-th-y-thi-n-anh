@@ -75,5 +75,14 @@ export interface VanKhiOutput {
   danhSachDaiVan: DaiVanKhi[];
   /** Index trong danhSachDaiVan đang có Lưu Niên chi tiết (đã tính AI). */
   chiTietDaiVanIndex: number;
+  /**
+   * 5 năm tới TÍNH TỪ NĂM HIỆN TẠI (không phải 5 năm đầu của Đại Vận) — app chưa có nút đổi Đại Vận
+   * nên ai đã đi sâu vào Đại Vận đang chọn (vd 8/10 năm) chỉ còn 2 năm "thật sự tương lai" trong
+   * `danhSachDaiVan[chiTietDaiVanIndex].luuNien`. Trường này vắt qua cả Đại Vận kế tiếp nếu cần, lấy
+   * lại từ đúng cache theo từng Đại Vận (không tốn AI ngoài dự kiến) — xem tinhVanKhi() trong index.ts.
+   * Rỗng nếu "năm hiện tại" nằm ngoài mọi Đại Vận đã tính (hiếm, chỉ khi chiTietDaiVanIndex bị ép
+   * qua tham số khác Đại Vận đang chứa tuổi hiện tại).
+   */
+  nam5NamToi: LuuNienKhi[];
   disclaimer: string;
 }
