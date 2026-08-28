@@ -3,8 +3,12 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import PageHero from "../components/ui/PageHero.astro";
 import Container from "../components/ui/Container.astro";
 import Button from "../components/ui/Button.astro";
+import { GIA_CONG_CU, dinhDangTien } from "../lib/payments/gia-cong-cu";
 
 export const prerender = true;
+
+const GIA_CO_BAN = dinhDangTien(GIA_CONG_CU["luan-giai-bat-tu-co-ban"]);
+const GIA_NANG_CAO = dinhDangTien(GIA_CONG_CU["luan-giai-bat-tu-nang-cao"]);
 ---
 
 <BaseLayout
@@ -209,9 +213,28 @@ export const prerender = true;
           khởi Đại Vận là ước tính (độ chính xác trung bình); tuổi và Can Chi từng vận đã được đối chiếu chính xác.
           Kết quả cần chuyên gia đối chiếu thêm về Dụng Thần, vượng suy, cách cục trước khi kết luận cát hung.
         </p>
-        <a href="/dich-vu/bat-tu" class="mt-3 inline-flex items-center gap-1.5 text-sm font-medium text-(--color-gold-300) hover:underline">
-          Đặt lịch luận giải Bát Tự chuyên sâu →
-        </a>
+      </div>
+    </div>
+
+    <div class="mx-auto mt-8 max-w-5xl rounded-(--radius-card) border border-(--color-gold-300)/40 bg-(--color-gold-300)/5 p-6">
+      <p class="text-xs font-semibold uppercase tracking-widest text-(--color-gold-300)">Đi sâu hơn lá số này</p>
+      <h2 class="mt-1 font-display text-lg font-semibold text-(--color-ink-950)">Luận Giải Bát Tự Toàn Diện</h2>
+      <p class="mt-2 text-sm leading-relaxed text-(--color-ink-700)">
+        Lá số ở trên mới dừng ở 4 trụ + Đại Vận/Lưu Niên ước tính thô. Bản luận đầy đủ theo 12 giai đoạn (Dụng Thần,
+        Thập Thần, Thần Sát, Mộ Khố, Lục Thân, nghề nghiệp - tài - quan, hôn nhân, sức khỏe...) có 2 mức, mua thêm
+        Nâng Cao sau vẫn được:
+      </p>
+      <div class="mt-4 grid gap-3 sm:grid-cols-2">
+        <div class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4">
+          <p class="font-display text-base font-semibold text-(--color-ink-950)">Luận Cơ Bản</p>
+          <p class="mt-1 text-xs text-(--color-ink-600)">Nền tảng, tính cách, Thập Thần, nghề - tài - quan, hôn nhân, kết luận.</p>
+          <Button href="/dai-cat-loi/luan-giai-bat-tu-toan-dien" size="sm" class="mt-3">Xem Luận Cơ Bản — {GIA_CO_BAN}</Button>
+        </div>
+        <div class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4">
+          <p class="font-display text-base font-semibold text-(--color-ink-950)">Luận Nâng Cao</p>
+          <p class="mt-1 text-xs text-(--color-ink-600)">Thêm Thần Sát, Mộ Khố, sức khỏe, Đại Vận trọn đời tính lại chính xác từng vận.</p>
+          <Button href="/dai-cat-loi/luan-giai-bat-tu-toan-dien" size="sm" variant="secondary" class="mt-3">Xem Luận Nâng Cao — {GIA_NANG_CAO}</Button>
+        </div>
       </div>
     </div>
 
