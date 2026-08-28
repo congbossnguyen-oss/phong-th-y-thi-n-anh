@@ -89,11 +89,15 @@ export const prerender = true;
         <div id="kcvm-bang-chi-tiet" class="mt-4 flex flex-col gap-2"></div>
 
         <p class="mt-6 text-sm leading-relaxed text-(--color-ink-600)">
-          <strong>Cách đọc kết quả:</strong> phần này chỉ xét trục Đại Vận + Lưu Niên theo Dụng/Hỷ/Kỵ/Cừu Thần —
-          chưa xét Thần Sát hay hình-xung-hợp-hại riêng của từng năm, nên "khớp" nghĩa là ĐÚNG HƯỚNG thuận/nghịch,
-          chưa chắc đúng mức độ hay đúng lĩnh vực cụ thể. Vì khai theo năm dương lịch (không có ngày/tháng), năm
-          Bát Tự thật (ranh giới Lập Xuân ~4/2) có thể lệch 1 năm so với năm bạn nhớ. "Trung tính/ngoài phạm vi"
-          là những năm hệ thống không đủ căn cứ để kết luận rõ ràng — không tính vào tỉ lệ khớp.
+          <strong>Cách đọc kết quả:</strong> hệ thống xét xem năm đó Lưu Niên có XUNG, HỢP, hay bổ sung đủ một
+          Tam Hợp/Tam Hội cục với lá số không (những dấu hiệu cho thấy năm đó "bị động"), cộng với hành Lưu Niên
+          thuận hay nghịch với Dụng/Hỷ/Kỵ/Cừu Thần của đúng Đại Vận năm đó — mỗi dòng "Căn cứ" bên trên là bằng
+          chứng cụ thể hệ thống dùng để kết luận, không phải khẳng định suông. Vẫn CHƯA xét Thần Sát riêng từng
+          năm và chưa xử lý hết các trường hợp một quan hệ Hợp/Xung trong mệnh cục bị Đại Vận/Lưu Niên "giải" hay
+          "ghi đè" (phần này cần bản đầy đủ), nên "khớp" nghĩa là ĐÚNG HƯỚNG, chưa chắc đúng mức độ hay đúng lĩnh
+          vực cụ thể. Vì khai theo năm dương lịch (không có ngày/tháng), năm Bát Tự thật (ranh giới Lập Xuân ~4/2)
+          có thể lệch 1 năm so với năm bạn nhớ. "Có biến động chưa rõ hướng" và "không đủ căn cứ" không tính vào
+          tỉ lệ khớp.
         </p>
 
         <Container class="px-0 pb-0 pt-8">
@@ -147,7 +151,8 @@ export const prerender = true;
   const NHAN_KET_LUAN: Record<string, { nhan: string; mau: string }> = {
     khop: { nhan: "✅ Khớp", mau: "text-emerald-600" },
     lech: { nhan: "❌ Lệch", mau: "text-(--color-danger-500)" },
-    trung_tinh: { nhan: "➖ Trung tính", mau: "text-(--color-ink-500)" },
+    co_bien_dong_chua_ro_huong: { nhan: "🔶 Có biến động, chưa rõ hướng", mau: "text-amber-600" },
+    khong_du_can_cu: { nhan: "➖ Không đủ căn cứ", mau: "text-(--color-ink-500)" },
     ngoai_pham_vi: { nhan: "— Ngoài phạm vi", mau: "text-(--color-ink-400)" },
   };
 
@@ -219,20 +224,26 @@ export const prerender = true;
         ? `Hệ thống đọc đúng hướng ${data.khop}/${coTheKetLuan} sự kiện (${tyLe}%)`
         : "Không đủ dữ liệu để kết luận rõ ràng";
     document.getElementById("kcvm-phu-de-ket-qua")!.textContent =
-      data.trungTinh > 0 ? `(${data.trungTinh} sự kiện trung tính hoặc ngoài phạm vi, không tính vào tỉ lệ)` : "";
+      data.trungTinh > 0 ? `(${data.trungTinh} sự kiện không đủ căn cứ để nói rõ hướng, không tính vào tỉ lệ — xem chi tiết bên dưới)` : "";
 
     const bangEl = document.getElementById("kcvm-bang-chi-tiet")!;
     bangEl.innerHTML = data.chiTiet
       .map((s: any) => {
-        const kl = NHAN_KET_LUAN[s.ketLuan] ?? NHAN_KET_LUAN.trung_tinh;
+        const kl = NHAN_KET_LUAN[s.ketLuan] ?? NHAN_KET_LUAN.khong_du_can_cu;
         const van = s.daiVan ? `Đại Vận ${s.daiVan.can} ${s.daiVan.chi} (${s.daiVan.startAge}-${s.daiVan.endAge}t)` : "Trước Đại Vận đầu tiên";
+        const canCu = (s.tinHieu ?? []).length > 0
+          ? `<p class="mt-1.5 text-xs italic text-(--color-ink-500)">Căn cứ: ${s.tinHieu.join("; ")}</p>`
+          : "";
         return `
-          <div class="flex flex-wrap items-center justify-between gap-2 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3 text-sm">
-            <div>
-              <p class="font-semibold text-(--color-ink-900)">${s.nam}${s.moTa ? ` — ${s.moTa}` : ""}</p>
-              <p class="text-xs text-(--color-ink-500)">${van} · Lưu Niên ${s.luuNien.can} ${s.luuNien.chi} · bạn khai: ${s.huong === "tich_cuc" ? "tích cực" : "tiêu cực"}</p>
+          <div class="flex flex-col gap-1 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3 text-sm">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+              <div>
+                <p class="font-semibold text-(--color-ink-900)">${s.nam}${s.moTa ? ` — ${s.moTa}` : ""}</p>
+                <p class="text-xs text-(--color-ink-500)">${van} · Lưu Niên ${s.luuNien.can} ${s.luuNien.chi} · bạn khai: ${s.huong === "tich_cuc" ? "tích cực" : "tiêu cực"}</p>
+              </div>
+              <span class="font-bold ${kl.mau}">${kl.nhan}</span>
             </div>
-            <span class="font-bold ${kl.mau}">${kl.nhan}</span>
+            ${canCu}
           </div>
         `;
       })
