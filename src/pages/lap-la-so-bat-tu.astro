@@ -3,7 +3,6 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import PageHero from "../components/ui/PageHero.astro";
 import Container from "../components/ui/Container.astro";
 import Button from "../components/ui/Button.astro";
-import { GIA_CONG_CU, dinhDangTien } from "../lib/payments/gia-cong-cu";
 import GoiYNangCap from "../components/ui/GoiYNangCap.astro";
 
 export const prerender = true;
@@ -223,8 +222,6 @@ export const prerender = true;
         {/* Lời mời sang bản trả phí đã chuyển xuống cuối trang (component GoiYNangCap) — đặt sau khi
             khách xem xong lá số thì đúng lúc hơn, và component đó tự ẩn giá khi module đang khoá thử
             nghiệm. Link cũ ở đây gỡ bỏ vì vẫn mời mua kèm giá dù module đang khoá, gây hụt hẫng. */}
-      </div>
-    </div>
 
     <div class="mx-auto mt-10 max-w-5xl rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6">
       <h2 class="font-display text-lg font-semibold text-(--color-ink-950)">Tìm hiểu thêm</h2>
