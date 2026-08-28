@@ -38,6 +38,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   const namSinhGiaChuChinh = Number(b.namSinhGiaChuChinh);
   const namSinhVoChong = b.namSinhVoChong ? Number(b.namSinhVoChong) : undefined;
   const toaDoSo = b.toaDoSo !== undefined && b.toaDoSo !== "" ? Number(b.toaDoSo) : undefined;
+  const apDungLocDanGian = typeof b.apDungLocDanGian === "boolean" ? b.apDungLocDanGian : undefined;
 
   if (typeof loaiViec !== "string" || !LOAI_VIEC_HOP_LE.includes(loaiViec)) {
     return jsonResponse({ ok: false, error: "Loại việc không hợp lệ." }, 400);
@@ -76,6 +77,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
     ...(huongNha ? { huongNha: huongNha as XemNgayCaoCapInput["toaNha"] } : {}),
     namSinhGiaChuChinh,
     ...(namSinhVoChong !== undefined ? { namSinhVoChong } : {}),
+    ...(apDungLocDanGian !== undefined ? { apDungLocDanGian } : {}),
     ngayGiamDinh: { nam, thang, ngay: ngayTrongThang },
   };
 

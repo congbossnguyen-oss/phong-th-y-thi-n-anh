@@ -63,11 +63,12 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
           <a href="/dich-vu/xem-ngay-cao-cap" class="text-(--color-gold-300) hover:underline">đặt lịch xem ngày cùng chuyên gia</a>.
         </p>
         <p class="mt-2">
-          Luận thuần <strong>Huyền Không Đại Quái</strong> (Bước 2→6): khung tháng theo tọa (2 phương pháp: theo mùa
+          Luận theo <strong>Huyền Không Đại Quái</strong> (Bước 2→6): khung tháng theo tọa (2 phương pháp: theo mùa
           và Bổ Long Tam Cục) · phương vị sát (Ngũ Hoàng/Tam Sát/Bát Sát/Thái Tuế/Tuế Phá/Mậu Kỷ Đô Thiên/Âm Phủ
-          Thái Tuế/Mộ Long Biến Vận) · quy Tứ Trụ về HKNH–Quái Vận · cách cục Tam Tài · chọn giờ.
-          <strong>Không</strong> bao gồm lớp thần sát dân gian ở Bước 1 (Tam Nương, Nguyệt Kỵ, Sát Chủ, 28 sao…)
-          theo đúng phạm vi đã chốt.
+          Thái Tuế/Mộ Long Biến Vận) · quy Tứ Trụ về HKNH–Quái Vận · cách cục Tam Tài · chọn giờ. <strong>Có kèm</strong>
+          lớp lọc thần sát dân gian ở Bước 1 (Tam Nương, Nguyệt Kỵ, Nguyệt Tận, Tứ Ly/Tứ Tuyệt, Kim Thần Thất Sát,
+          Sát Chủ, Trực theo việc, Lục Xung Tọa/Mệnh Chủ, và riêng Động Thổ có thêm Kim Lâu/Hoang Ốc/Tam Tai) —
+          có thể tắt lớp này ở dưới nếu muốn xem thuần Huyền Không Đại Quái.
         </p>
         <p class="mt-2">Dữ liệu Ngũ Hoàng tra bảng thật từ Vạn Niên Lịch Tam Nguyên, phủ liền mạch 1968–2068.</p>
       </div>
@@ -87,6 +88,18 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
               <input type="radio" name="loaiViec" value="dong_tho" /> Động thổ
             </label>
           </div>
+        </div>
+
+        <div class="flex items-start gap-2 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3">
+          <input type="checkbox" id="xncc-loc-dan-gian" checked class="mt-1" />
+          <label for="xncc-loc-dan-gian" class="text-sm text-(--color-ink-700)">
+            <span class="font-medium text-(--color-ink-800)">Áp dụng lớp lọc thần sát dân gian</span>
+            <span class="block text-xs text-(--color-ink-500)">
+              Tam Nương, Nguyệt Kỵ, Nguyệt Tận, Tứ Ly/Tứ Tuyệt, Kim Thần Thất Sát, Sát Chủ, Thọ Tử, và riêng Động Thổ
+              có thêm Kim Lâu/Hoang Ốc/Tam Tai. Nên để BẬT — chỉ tắt khi chuyên gia phong thủy yêu cầu xem thuần
+              Huyền Không Đại Quái.
+            </span>
+          </label>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
@@ -251,7 +264,15 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
 
   interface TruQue { can: string; chi: string; que: string; hknh: number; quaiVan: number }
   interface MenhChuQue { canChiNamSinh: string; que: string; hknh: number; quaiVan: number }
-  interface BuocKetQua { buoc: 2 | 3 | 4 | 5; ten: string; trangThai: "dat" | "khong_dat" | "thieu_du_lieu"; lyDo: string }
+  interface BuocKetQua { buoc: 1 | 2 | 3 | 4 | 5 | 6; ten: string; trangThai: "dat" | "khong_dat" | "thieu_du_lieu"; lyDo: string }
+  interface SoatTuoiGiaChu {
+    tuoiMu: number;
+    hoangOc: { cung: string; tot: boolean };
+    kimLau: { cung: string; tot: boolean };
+    mienKy: boolean;
+    mucDo: "duoc_van_khi" | "thu_kiet" | "nen_muon_tuoi";
+    phamTamTai: boolean;
+  }
   interface XemNgayCaoCapResult {
     ngayDuongLich: { nam: number; thang: number; ngay: number };
     amLich: { ngay: number; thang: number; nam: number; nhuan: boolean };
@@ -274,6 +295,9 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
       phamTamSatGio: boolean;
       diem: number;
     }[];
+    truc: { ten: string; totCho: boolean };
+    locDanGian: unknown | null;
+    soatTuoiGiaChu: SoatTuoiGiaChu | null;
   }
 
   const NHAN_KET_LUAN: Record<string, { text: string; cls: string }> = {
@@ -370,8 +394,21 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
           ${r.huongNha ? `<p><strong>Hướng nhà:</strong> ${esc(r.huongNha.ten)} — cung ${esc(r.huongNha.cung)}</p>` : ""}
           <p><strong>Mệnh Chủ chính:</strong> ${esc(r.menhChuChinh.canChiNamSinh)} — ${esc(r.menhChuChinh.que)} <strong class="text-(--color-gold-400)">${r.menhChuChinh.hknh}/${r.menhChuChinh.quaiVan}</strong></p>
           ${r.menhChuPhu ? `<p><strong>Mệnh Chủ phụ:</strong> ${esc(r.menhChuPhu.canChiNamSinh)} — ${esc(r.menhChuPhu.que)} <strong class="text-(--color-gold-400)">${r.menhChuPhu.hknh}/${r.menhChuPhu.quaiVan}</strong></p>` : ""}
+          <p><strong>Trực ngày:</strong> <span class="${r.truc.totCho ? "text-(--color-success-500)" : "text-(--color-cinnabar-500)"} font-semibold">${esc(r.truc.ten)}${r.truc.totCho ? "" : " (kỵ)"}</span></p>
         </div>
       </div>
+
+      ${r.soatTuoiGiaChu ? `<div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+        <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-400)">Soát tuổi gia chủ — Kim Lâu / Hoang Ốc / Tam Tai (riêng Động Thổ)</p>
+        <div class="mt-3 grid gap-2 text-sm text-(--color-ink-700) sm:grid-cols-2">
+          <p><strong>Tuổi mụ:</strong> ${r.soatTuoiGiaChu.tuoiMu}</p>
+          <p><strong>Kim Lâu:</strong> <span class="${r.soatTuoiGiaChu.kimLau.tot ? "text-(--color-success-500)" : "text-(--color-cinnabar-500)"} font-semibold">${esc(r.soatTuoiGiaChu.kimLau.cung)} (${r.soatTuoiGiaChu.kimLau.tot ? "tốt" : "xấu"})</span></p>
+          <p><strong>Hoang Ốc:</strong> <span class="${r.soatTuoiGiaChu.hoangOc.tot ? "text-(--color-success-500)" : "text-(--color-cinnabar-500)"} font-semibold">${esc(r.soatTuoiGiaChu.hoangOc.cung)} (${r.soatTuoiGiaChu.hoangOc.tot ? "tốt" : "xấu"})</span></p>
+          <p><strong>Tam Tai:</strong> <span class="${r.soatTuoiGiaChu.phamTamTai ? "text-(--color-cinnabar-500)" : "text-(--color-success-500)"} font-semibold">${r.soatTuoiGiaChu.phamTamTai ? "Phạm" : "Không phạm"}</span></p>
+        </div>
+        ${r.soatTuoiGiaChu.mienKy ? `<p class="mt-2 text-xs text-(--color-gold-400)">Tuổi thuộc nhóm 8 tuổi miễn kỵ xây dựng mọi năm.</p>` : ""}
+        ${r.soatTuoiGiaChu.mucDo === "nen_muon_tuoi" ? `<p class="mt-2 text-xs font-medium text-(--color-cinnabar-500)">⚠️ Cả Kim Lâu và Hoang Ốc đều xấu — nên cân nhắc mượn tuổi hoặc lùi năm.</p>` : ""}
+      </div>` : ""}
 
       <div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
         <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-400)">Chiếu từng bước</p>
@@ -654,6 +691,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
     const toaDoSo = (document.getElementById("xncc-do-so") as HTMLInputElement).value;
     const namSinhGiaChuChinh = (document.getElementById("xncc-nam-sinh") as HTMLInputElement).value;
     const namSinhVoChong = (document.getElementById("xncc-nam-sinh-phu") as HTMLInputElement).value;
+    const apDungLocDanGian = (document.getElementById("xncc-loc-dan-gian") as HTMLInputElement).checked;
 
     const chung = {
       loaiViec,
@@ -662,6 +700,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
       ...(toaDoSo ? { toaDoSo: Number(toaDoSo) } : {}),
       namSinhGiaChuChinh: Number(namSinhGiaChuChinh),
       ...(namSinhVoChong ? { namSinhVoChong: Number(namSinhVoChong) } : {}),
+      apDungLocDanGian,
     };
 
     const baoLoi = (msg: string) => {
