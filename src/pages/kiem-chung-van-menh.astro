@@ -177,52 +177,68 @@ export const prerender = true;
     }
 
     dangChayEl.classList.remove("hidden");
+
+    // Tách rõ 3 kiểu lỗi khác nhau — trước đây gộp chung 1 catch nên hễ máy chủ trả về BẤT KỲ gì
+    // không đúng định dạng JSON (lỗi 500, trang lỗi HTML tạm thời...) cũng hiện nhầm thành "không
+    // kết nối được máy chủ", khiến chẩn đoán sai khi có sự cố thật (anh Công báo 28/8/2026).
+    let res: Response;
     try {
-      const res = await fetch("/api/kiem-chung-van-menh", {
+      res = await fetch("/api/kiem-chung-van-menh", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ngaySinh: { day, month, year }, gio: hour, phut: minute, gioiTinh, suKien }),
       });
-      const data = await res.json();
-      dangChayEl.classList.add("hidden");
-      if (!data.ok) {
-        loiEl.textContent = data.error ?? "Có lỗi xảy ra, vui lòng thử lại.";
-        loiEl.classList.remove("hidden");
-        return;
-      }
-
-      const coTheKetLuan = data.khop + data.lech;
-      const tyLe = coTheKetLuan > 0 ? Math.round((data.khop / coTheKetLuan) * 100) : 0;
-      document.getElementById("kcvm-tieu-de-ket-qua")!.textContent =
-        coTheKetLuan > 0
-          ? `Hệ thống đọc đúng hướng ${data.khop}/${coTheKetLuan} sự kiện (${tyLe}%)`
-          : "Không đủ dữ liệu để kết luận rõ ràng";
-      document.getElementById("kcvm-phu-de-ket-qua")!.textContent =
-        data.trungTinh > 0 ? `(${data.trungTinh} sự kiện trung tính hoặc ngoài phạm vi, không tính vào tỉ lệ)` : "";
-
-      const bangEl = document.getElementById("kcvm-bang-chi-tiet")!;
-      bangEl.innerHTML = data.chiTiet
-        .map((s: any) => {
-          const kl = NHAN_KET_LUAN[s.ketLuan] ?? NHAN_KET_LUAN.trung_tinh;
-          const van = s.daiVan ? `Đại Vận ${s.daiVan.can} ${s.daiVan.chi} (${s.daiVan.startAge}-${s.daiVan.endAge}t)` : "Trước Đại Vận đầu tiên";
-          return `
-            <div class="flex flex-wrap items-center justify-between gap-2 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3 text-sm">
-              <div>
-                <p class="font-semibold text-(--color-ink-900)">${s.nam}${s.moTa ? ` — ${s.moTa}` : ""}</p>
-                <p class="text-xs text-(--color-ink-500)">${van} · Lưu Niên ${s.luuNien.can} ${s.luuNien.chi} · bạn khai: ${s.huong === "tich_cuc" ? "tích cực" : "tiêu cực"}</p>
-              </div>
-              <span class="font-bold ${kl.mau}">${kl.nhan}</span>
-            </div>
-          `;
-        })
-        .join("");
-
-      ketQuaEl.classList.remove("hidden");
-      ketQuaEl.scrollIntoView({ behavior: "smooth", block: "start" });
     } catch {
       dangChayEl.classList.add("hidden");
-      loiEl.textContent = "Không kết nối được máy chủ, vui lòng thử lại.";
+      loiEl.textContent = "Không kết nối được internet hoặc máy chủ đang gián đoạn. Vui lòng kiểm tra mạng và thử lại.";
       loiEl.classList.remove("hidden");
+      return;
     }
+
+    dangChayEl.classList.add("hidden");
+
+    let data: any;
+    try {
+      data = await res.json();
+    } catch {
+      loiEl.textContent = `Máy chủ phản hồi không hợp lệ (mã ${res.status}). Vui lòng tải lại trang và thử lại.`;
+      loiEl.classList.remove("hidden");
+      return;
+    }
+
+    if (!data.ok) {
+      loiEl.textContent = data.error ?? `Có lỗi xảy ra (mã ${res.status}), vui lòng thử lại.`;
+      loiEl.classList.remove("hidden");
+      return;
+    }
+
+    const coTheKetLuan = data.khop + data.lech;
+    const tyLe = coTheKetLuan > 0 ? Math.round((data.khop / coTheKetLuan) * 100) : 0;
+    document.getElementById("kcvm-tieu-de-ket-qua")!.textContent =
+      coTheKetLuan > 0
+        ? `Hệ thống đọc đúng hướng ${data.khop}/${coTheKetLuan} sự kiện (${tyLe}%)`
+        : "Không đủ dữ liệu để kết luận rõ ràng";
+    document.getElementById("kcvm-phu-de-ket-qua")!.textContent =
+      data.trungTinh > 0 ? `(${data.trungTinh} sự kiện trung tính hoặc ngoài phạm vi, không tính vào tỉ lệ)` : "";
+
+    const bangEl = document.getElementById("kcvm-bang-chi-tiet")!;
+    bangEl.innerHTML = data.chiTiet
+      .map((s: any) => {
+        const kl = NHAN_KET_LUAN[s.ketLuan] ?? NHAN_KET_LUAN.trung_tinh;
+        const van = s.daiVan ? `Đại Vận ${s.daiVan.can} ${s.daiVan.chi} (${s.daiVan.startAge}-${s.daiVan.endAge}t)` : "Trước Đại Vận đầu tiên";
+        return `
+          <div class="flex flex-wrap items-center justify-between gap-2 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3 text-sm">
+            <div>
+              <p class="font-semibold text-(--color-ink-900)">${s.nam}${s.moTa ? ` — ${s.moTa}` : ""}</p>
+              <p class="text-xs text-(--color-ink-500)">${van} · Lưu Niên ${s.luuNien.can} ${s.luuNien.chi} · bạn khai: ${s.huong === "tich_cuc" ? "tích cực" : "tiêu cực"}</p>
+            </div>
+            <span class="font-bold ${kl.mau}">${kl.nhan}</span>
+          </div>
+        `;
+      })
+      .join("");
+
+    ketQuaEl.classList.remove("hidden");
+    ketQuaEl.scrollIntoView({ behavior: "smooth", block: "start" });
   });
 </script>
