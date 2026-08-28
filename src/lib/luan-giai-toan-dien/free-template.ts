@@ -192,8 +192,8 @@ const TEN_TRU: Record<"year" | "month" | "day" | "hour", string> = {
   year: "Năm", month: "Tháng", day: "Ngày", hour: "Giờ",
 };
 
-/** Điểm thô 1 hành so với Dụng/Hỷ/Kỵ/Cừu Thần — dùng riêng cho đồ hình free, không thay thế luận giải AI. */
-function diemHanhTheoDungThan(hanh: Hanh, dungThan: BatTuAnalysis["dungThan"]): number {
+/** Điểm thô 1 hành so với Dụng/Hỷ/Kỵ/Cừu Thần — dùng cho đồ hình free và module Kiểm Chứng Vận Mệnh, không thay thế luận giải AI. */
+export function diemHanhTheoDungThan(hanh: Hanh, dungThan: BatTuAnalysis["dungThan"]): number {
   if (hanh === dungThan.dungThan || hanh === dungThan.hyThan) return 1;
   if (hanh === dungThan.kyThan || hanh === dungThan.cuuThan) return -1;
   return 0;

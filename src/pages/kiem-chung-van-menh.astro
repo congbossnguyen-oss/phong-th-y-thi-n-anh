@@ -1,0 +1,228 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/ui/PageHero.astro";
+import Container from "../components/ui/Container.astro";
+import Button from "../components/ui/Button.astro";
+import GoiYNangCap from "../components/ui/GoiYNangCap.astro";
+
+export const prerender = true;
+---
+
+<BaseLayout
+  title="Kiểm Chứng Vận Mệnh — Bát Tự có đọc đúng đời bạn không?"
+  description="Nhập ngày giờ sinh và vài sự kiện lớn đã xảy ra thật trong đời bạn (cưới, đổi việc, tai nạn...) — hệ thống tính lại Đại Vận/Lưu Niên đúng những năm đó và cho biết đọc đúng bao nhiêu phần trăm."
+>
+  <PageHero
+    eyebrow="Công cụ miễn phí"
+    title="Kiểm Chứng Vận Mệnh"
+    description={`Đừng tin lời chúng tôi nói — hãy để chính quá khứ của bạn kiểm chứng. Khai vài sự kiện lớn đã xảy ra thật, hệ thống tính lại Đại Vận/Lưu Niên đúng những năm đó và cho biết đọc đúng hướng bao nhiêu.`}
+    breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Kiểm Chứng Vận Mệnh" }]}
+  />
+
+  <Container class="py-16">
+    <div class="mx-auto max-w-3xl">
+      <form id="kcvm-form" class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6">
+        <h2 class="font-display text-lg font-bold text-(--color-ink-950)">1. Ngày giờ sinh của bạn</h2>
+        <div class="mt-3 grid grid-cols-3 gap-3 sm:grid-cols-5 sm:gap-4">
+          <div>
+            <label for="kcvm-day" class="text-sm font-medium text-(--color-ink-800)">Ngày</label>
+            <input id="kcvm-day" type="number" min="1" max="31" value="15" required
+              class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20" />
+          </div>
+          <div>
+            <label for="kcvm-month" class="text-sm font-medium text-(--color-ink-800)">Tháng</label>
+            <input id="kcvm-month" type="number" min="1" max="12" value="6" required
+              class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20" />
+          </div>
+          <div>
+            <label for="kcvm-year" class="text-sm font-medium text-(--color-ink-800)">Năm</label>
+            <input id="kcvm-year" type="number" min="1900" max="2100" value="1990" required
+              class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20" />
+          </div>
+          <div>
+            <label for="kcvm-hour" class="text-sm font-medium text-(--color-ink-800)">Giờ (0-23)</label>
+            <input id="kcvm-hour" type="number" min="0" max="23" value="12" required
+              class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20" />
+          </div>
+          <div>
+            <label for="kcvm-minute" class="text-sm font-medium text-(--color-ink-800)">Phút</label>
+            <input id="kcvm-minute" type="number" min="0" max="59" value="0"
+              class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20" />
+          </div>
+        </div>
+        <div class="mt-3">
+          <span class="text-sm font-medium text-(--color-ink-800)">Giới tính</span>
+          <div class="mt-1.5 flex gap-3">
+            <label class="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm font-medium text-(--color-ink-800) has-[:checked]:border-(--color-gold-500) has-[:checked]:bg-(--color-gold-400)/15">
+              <input type="radio" name="kcvm-gioi-tinh" value="Nam" checked /> Nam
+            </label>
+            <label class="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm font-medium text-(--color-ink-800) has-[:checked]:border-(--color-gold-500) has-[:checked]:bg-(--color-gold-400)/15">
+              <input type="radio" name="kcvm-gioi-tinh" value="Nữ" /> Nữ
+            </label>
+          </div>
+        </div>
+
+        <h2 class="mt-6 font-display text-lg font-bold text-(--color-ink-950)">2. Vài sự kiện lớn ĐÃ XẢY RA THẬT trong đời bạn</h2>
+        <p class="mt-1 text-sm text-(--color-ink-600)">Càng cụ thể càng chính xác: năm cưới, năm đổi/mất việc, năm tai nạn hoặc bệnh nặng, năm sinh con, năm phá sản hoặc phát tài... Nên khai từ 5 sự kiện trở lên.</p>
+
+        <div id="kcvm-danh-sach" class="mt-3 flex flex-col gap-2"></div>
+
+        <button type="button" id="kcvm-them" class="mt-3 inline-flex items-center rounded-(--radius-control) border border-dashed border-(--color-gold-400) px-4 py-2 text-sm font-semibold text-(--color-gold-700) hover:bg-(--color-gold-400)/10">
+          + Thêm sự kiện
+        </button>
+
+        <div id="kcvm-loi" class="mt-4 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm text-(--color-danger-500)"></div>
+
+        <Button type="submit" size="lg" class="mt-6 w-full sm:w-auto">Kiểm chứng ngay</Button>
+      </form>
+
+      <div id="kcvm-dang-chay" class="mt-4 hidden rounded-(--radius-card) border border-(--color-gold-500)/40 bg-(--color-gold-400)/10 p-4 text-sm text-(--color-ink-700)">
+        Đang tính lại Đại Vận/Lưu Niên cho từng năm...
+      </div>
+
+      <div id="kcvm-ket-qua" class="mt-6 hidden">
+        <div class="rounded-(--radius-card) border-2 border-(--color-gold-500)/60 bg-(--color-gold-400)/10 p-6 text-center">
+          <p id="kcvm-tieu-de-ket-qua" class="font-display text-2xl font-bold text-(--color-ink-950)"></p>
+          <p id="kcvm-phu-de-ket-qua" class="mt-1 text-sm text-(--color-ink-700)"></p>
+        </div>
+
+        <div id="kcvm-bang-chi-tiet" class="mt-4 flex flex-col gap-2"></div>
+
+        <p class="mt-6 text-sm leading-relaxed text-(--color-ink-600)">
+          <strong>Cách đọc kết quả:</strong> phần này chỉ xét trục Đại Vận + Lưu Niên theo Dụng/Hỷ/Kỵ/Cừu Thần —
+          chưa xét Thần Sát hay hình-xung-hợp-hại riêng của từng năm, nên "khớp" nghĩa là ĐÚNG HƯỚNG thuận/nghịch,
+          chưa chắc đúng mức độ hay đúng lĩnh vực cụ thể. Vì khai theo năm dương lịch (không có ngày/tháng), năm
+          Bát Tự thật (ranh giới Lập Xuân ~4/2) có thể lệch 1 năm so với năm bạn nhớ. "Trung tính/ngoài phạm vi"
+          là những năm hệ thống không đủ căn cứ để kết luận rõ ràng — không tính vào tỉ lệ khớp.
+        </p>
+
+        <Container class="px-0 pb-0 pt-8">
+          <GoiYNangCap
+            slug="luan-giai-bat-tu-co-ban"
+            tieuDe="Muốn biết chi tiết từng năm, từng lĩnh vực?"
+            lyDo="Bản kiểm chứng trên chỉ xét xu hướng lớn. Bản luận giải đầy đủ đọc riêng Thần Sát, sức khỏe, sự nghiệp, tài lộc, hôn nhân cho TỪNG năm Lưu Niên trong toàn bộ Đại Vận, không chỉ những năm bạn vừa khai."
+            nhanNut="Xem luận giải đầy đủ"
+          />
+        </Container>
+      </div>
+    </div>
+  </Container>
+</BaseLayout>
+
+<script>
+  const danhSachEl = document.getElementById("kcvm-danh-sach")!;
+  const form = document.getElementById("kcvm-form") as HTMLFormElement;
+  const loiEl = document.getElementById("kcvm-loi")!;
+  const dangChayEl = document.getElementById("kcvm-dang-chay")!;
+  const ketQuaEl = document.getElementById("kcvm-ket-qua")!;
+
+  let dem = 0;
+  function themDong(namMacDinh = "", moTaMacDinh = "", huongMacDinh: "tich_cuc" | "tieu_cuc" = "tich_cuc") {
+    const id = ++dem;
+    const row = document.createElement("div");
+    row.className = "flex flex-wrap items-center gap-2 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-2.5";
+    row.dataset.id = String(id);
+    row.innerHTML = `
+      <input type="number" placeholder="Năm" min="1900" max="2100" value="${namMacDinh}" class="kcvm-nam w-24 rounded-(--radius-control) border border-(--color-ivory-300) px-2 py-2 text-sm" />
+      <input type="text" placeholder="Mô tả ngắn (vd: đổi việc, mất thu nhập)" maxlength="200" value="${moTaMacDinh}" class="kcvm-mota min-w-40 flex-1 rounded-(--radius-control) border border-(--color-ivory-300) px-2 py-2 text-sm" />
+      <select class="kcvm-huong rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-2 py-2 text-sm">
+        <option value="tich_cuc" ${huongMacDinh === "tich_cuc" ? "selected" : ""}>✦ Tích cực (may mắn, thuận lợi)</option>
+        <option value="tieu_cuc" ${huongMacDinh === "tieu_cuc" ? "selected" : ""}>✧ Tiêu cực (khó khăn, bất lợi)</option>
+      </select>
+      <button type="button" class="kcvm-xoa rounded-(--radius-control) px-2 py-2 text-sm text-(--color-danger-500) hover:bg-(--color-danger-500)/10">✕</button>
+    `;
+    row.querySelector(".kcvm-xoa")?.addEventListener("click", () => row.remove());
+    danhSachEl.appendChild(row);
+  }
+
+  // 5 dòng mẫu để khách hình dung ngay loại sự kiện cần điền, không phải bắt đầu từ trống trơn.
+  themDong("", "Kết hôn", "tich_cuc");
+  themDong("", "Đổi việc / mất thu nhập", "tieu_cuc");
+  themDong("", "Sinh con", "tich_cuc");
+  themDong("", "Tai nạn hoặc bệnh nặng", "tieu_cuc");
+  themDong("", "Thăng chức / phát tài rõ rệt", "tich_cuc");
+
+  document.getElementById("kcvm-them")?.addEventListener("click", () => themDong());
+
+  const NHAN_KET_LUAN: Record<string, { nhan: string; mau: string }> = {
+    khop: { nhan: "✅ Khớp", mau: "text-emerald-600" },
+    lech: { nhan: "❌ Lệch", mau: "text-(--color-danger-500)" },
+    trung_tinh: { nhan: "➖ Trung tính", mau: "text-(--color-ink-500)" },
+    ngoai_pham_vi: { nhan: "— Ngoài phạm vi", mau: "text-(--color-ink-400)" },
+  };
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    loiEl.classList.add("hidden");
+    ketQuaEl.classList.add("hidden");
+
+    const day = parseInt((document.getElementById("kcvm-day") as HTMLInputElement).value, 10);
+    const month = parseInt((document.getElementById("kcvm-month") as HTMLInputElement).value, 10);
+    const year = parseInt((document.getElementById("kcvm-year") as HTMLInputElement).value, 10);
+    const hour = parseInt((document.getElementById("kcvm-hour") as HTMLInputElement).value, 10);
+    const minute = parseInt((document.getElementById("kcvm-minute") as HTMLInputElement).value, 10) || 0;
+    const gioiTinh = (document.querySelector('input[name="kcvm-gioi-tinh"]:checked') as HTMLInputElement | null)?.value;
+
+    const rows = Array.from(danhSachEl.querySelectorAll<HTMLDivElement>("[data-id]"));
+    const suKien = rows.map((row) => ({
+      nam: parseInt((row.querySelector(".kcvm-nam") as HTMLInputElement).value, 10),
+      moTa: (row.querySelector(".kcvm-mota") as HTMLInputElement).value.trim() || undefined,
+      huong: (row.querySelector(".kcvm-huong") as HTMLSelectElement).value as "tich_cuc" | "tieu_cuc",
+    })).filter((s) => Number.isInteger(s.nam));
+
+    if (suKien.length < 1) {
+      loiEl.textContent = "Vui lòng nhập ít nhất 1 sự kiện có năm hợp lệ.";
+      loiEl.classList.remove("hidden");
+      return;
+    }
+
+    dangChayEl.classList.remove("hidden");
+    try {
+      const res = await fetch("/api/kiem-chung-van-menh", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ngaySinh: { day, month, year }, gio: hour, phut: minute, gioiTinh, suKien }),
+      });
+      const data = await res.json();
+      dangChayEl.classList.add("hidden");
+      if (!data.ok) {
+        loiEl.textContent = data.error ?? "Có lỗi xảy ra, vui lòng thử lại.";
+        loiEl.classList.remove("hidden");
+        return;
+      }
+
+      const coTheKetLuan = data.khop + data.lech;
+      const tyLe = coTheKetLuan > 0 ? Math.round((data.khop / coTheKetLuan) * 100) : 0;
+      document.getElementById("kcvm-tieu-de-ket-qua")!.textContent =
+        coTheKetLuan > 0
+          ? `Hệ thống đọc đúng hướng ${data.khop}/${coTheKetLuan} sự kiện (${tyLe}%)`
+          : "Không đủ dữ liệu để kết luận rõ ràng";
+      document.getElementById("kcvm-phu-de-ket-qua")!.textContent =
+        data.trungTinh > 0 ? `(${data.trungTinh} sự kiện trung tính hoặc ngoài phạm vi, không tính vào tỉ lệ)` : "";
+
+      const bangEl = document.getElementById("kcvm-bang-chi-tiet")!;
+      bangEl.innerHTML = data.chiTiet
+        .map((s: any) => {
+          const kl = NHAN_KET_LUAN[s.ketLuan] ?? NHAN_KET_LUAN.trung_tinh;
+          const van = s.daiVan ? `Đại Vận ${s.daiVan.can} ${s.daiVan.chi} (${s.daiVan.startAge}-${s.daiVan.endAge}t)` : "Trước Đại Vận đầu tiên";
+          return `
+            <div class="flex flex-wrap items-center justify-between gap-2 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3 text-sm">
+              <div>
+                <p class="font-semibold text-(--color-ink-900)">${s.nam}${s.moTa ? ` — ${s.moTa}` : ""}</p>
+                <p class="text-xs text-(--color-ink-500)">${van} · Lưu Niên ${s.luuNien.can} ${s.luuNien.chi} · bạn khai: ${s.huong === "tich_cuc" ? "tích cực" : "tiêu cực"}</p>
+              </div>
+              <span class="font-bold ${kl.mau}">${kl.nhan}</span>
+            </div>
+          `;
+        })
+        .join("");
+
+      ketQuaEl.classList.remove("hidden");
+      ketQuaEl.scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch {
+      dangChayEl.classList.add("hidden");
+      loiEl.textContent = "Không kết nối được máy chủ, vui lòng thử lại.";
+      loiEl.classList.remove("hidden");
+    }
+  });
+</script>
