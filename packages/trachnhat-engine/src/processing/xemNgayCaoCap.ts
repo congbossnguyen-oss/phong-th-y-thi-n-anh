@@ -298,8 +298,10 @@ export function calculateXemNgayCaoCap(input: XemNgayCaoCapInput): XemNgayCaoCap
   // Mục A "Kỵ chung mọi việc": Trực Phá, Trực Bế — áp cho MỌI loại việc, không riêng động thổ.
   const TRUC_KY_CHUNG = new Set(["Phá", "Bế"]);
   // Mục B "Kỵ riêng theo việc đất đai" — Bước 1b: Động Thổ kỵ thêm Kiến/Bình/Thâu (Phá đã ở trên).
-  // ⚠️ Nguồn KHÔNG liệt Trực Mãn vào bất kỳ danh sách kỵ nào (dù mục D xếp Mãn là "Hung" trong bảng
-  // Cát/Hung tổng quát) — không tự suy thêm ngoài đúng 2 danh sách A+B đã nêu tên cụ thể.
+  // Trực Mãn CỐ Ý không nằm trong danh sách kỵ nào ở đây (dù mục D xếp Mãn là "Hung" trong bảng
+  // Cát/Hung tổng quát) — đã hỏi lại anh Công 28/8/2026, xác nhận Mãn thuận cho kết hôn/khai
+  // trương/tu tạo nhà cửa (gần nghĩa Động Thổ), chỉ kỵ chôn cất/nhận chức (ngoài phạm vi module
+  // này). Xem ghi chú đầy đủ trong tang1-loc-than-sat-hung.md ngay sau bảng 12 Trực.
   const TRUC_KY_RIENG_DONG_THO = new Set(["Kiến", "Bình", "Thâu"]);
   const trucKyChung = TRUC_KY_CHUNG.has(trucKetQua.name);
   const trucKyRieng = input.loaiViec === "dong_tho" && TRUC_KY_RIENG_DONG_THO.has(trucKetQua.name);
