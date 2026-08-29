@@ -12,7 +12,15 @@ const vapidPublicKey = docBien("VAPID_PUBLIC_KEY") || "";
 {vapidPublicKey && (
   <div class="tb-hop" id="tb-hop" hidden>
     <div class="tb-chu">
-      <strong>Nhắc ngày Rằm và mùng Một</strong>
+      <div class="tb-tieu">
+        {/* Chấm trạng thái + nhãn CHỮ luôn hiện — trước đây chỉ đổi màu/chữ nút bấm, không đủ rõ
+            đang bật hay tắt (anh Công báo 29/8/2026: "không thể hiện rõ lúc nào tắt bật"). Chấm
+            xám mặc định (trước khi JS xác định được trạng thái thật) để không "nháy" xanh/đỏ sai
+            trong lúc chờ đăng ký service worker trả lời. */}
+        <span class="tb-dot" id="tb-dot"></span>
+        <strong>Nhắc ngày Rằm và mùng Một</strong>
+        <span class="tb-trangthai" id="tb-trangthai">Đang tắt</span>
+      </div>
       <span id="tb-mo-ta">Để Quân Sư nhắc quý bằng hữu lo chuyện thờ cúng, khỏi quên.</span>
     </div>
     <button type="button" id="tb-nut" class="tb-nut">Bật nhắc</button>
@@ -26,8 +34,19 @@ const vapidPublicKey = docBien("VAPID_PUBLIC_KEY") || "";
       border-radius: 12px; padding: 0.9rem 1.1rem; margin: 1.5rem 0;
     }
     .tb-chu { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 0.2rem; }
-    .tb-chu strong { color: #f1c85a; font-size: 0.95rem; }
-    .tb-chu span { font-size: 0.82rem; opacity: 0.75; }
+    .tb-tieu { display: flex; align-items: center; gap: 0.45rem; flex-wrap: wrap; }
+    .tb-tieu strong { color: #f1c85a; font-size: 0.95rem; }
+    .tb-dot {
+      width: 9px; height: 9px; border-radius: 999px; flex-shrink: 0;
+      background: #6b6558; /* xám = chưa rõ/đang tắt, đổi xanh bằng .tb-dot-bat khi JS xác nhận bật */
+    }
+    .tb-dot.tb-dot-bat { background: #4ade80; box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.18); }
+    .tb-trangthai {
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.03em; text-transform: uppercase;
+      color: #9a9384; padding: 0.1rem 0.5rem; border-radius: 999px; background: rgba(255,255,255,0.04);
+    }
+    .tb-trangthai.tb-trangthai-bat { color: #4ade80; background: rgba(74, 222, 128, 0.12); }
+    .tb-chu > span:not(.tb-trangthai) { font-size: 0.82rem; opacity: 0.75; }
     .tb-nut {
       background: #f1c85a; color: #1a1206; border: 0; border-radius: 999px;
       padding: 0.55rem 1.3rem; font-weight: 700; font-size: 0.88rem; cursor: pointer;
@@ -43,6 +62,8 @@ const vapidPublicKey = docBien("VAPID_PUBLIC_KEY") || "";
       const hop = document.getElementById("tb-hop");
       const nut = document.getElementById("tb-nut");
       const moTa = document.getElementById("tb-mo-ta");
+      const dot = document.getElementById("tb-dot");
+      const trangThai = document.getElementById("tb-trangthai");
 
       // Trình duyệt không đỡ được thì ẩn luôn, không bày ra nút bấm không chạy.
       if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) return;
@@ -79,14 +100,21 @@ const vapidPublicKey = docBien("VAPID_PUBLIC_KEY") || "";
 
       async function capNhatNut() {
         const sub = await dangKy.pushManager.getSubscription();
-        if (sub && Notification.permission === "granted") {
-          nut.textContent = "Đang bật · Tắt đi";
+        const dangBat = !!sub && Notification.permission === "granted";
+        if (dangBat) {
+          nut.textContent = "Tắt nhắc";
           nut.classList.add("tb-tat");
           moTa.textContent = "Quân Sư sẽ nhắc quý bằng hữu trước mỗi dịp Rằm và mùng Một.";
         } else {
           nut.textContent = "Bật nhắc";
           nut.classList.remove("tb-tat");
         }
+        // Chấm + nhãn trạng thái — tách RIÊNG khỏi chữ trên nút bấm (trước đây gộp chung "Đang bật
+        // · Tắt đi" trên nút, đọc lướt dễ hiểu lầm là đang TẮT vì có chữ "Tắt"; giờ nút chỉ ghi
+        // hành động sắp làm, còn trạng thái hiện tại đọc ở chấm/nhãn bên cạnh tiêu đề).
+        dot.classList.toggle("tb-dot-bat", dangBat);
+        trangThai.classList.toggle("tb-trangthai-bat", dangBat);
+        trangThai.textContent = dangBat ? "Đang bật" : "Đang tắt";
         nut.disabled = false;
       }
 
