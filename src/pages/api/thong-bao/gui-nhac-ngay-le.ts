@@ -19,7 +19,9 @@ function json(body: unknown, status: number): Response {
  * toàn bộ khách hàng. Trên Render đặt Cron Job gọi vào đây kèm header Authorization.
  *
  * LỊCH CHẠY (máy chủ Render chạy giờ UTC, phải quy đổi):
- *   - kiểu "bao-truoc"   → 11 giờ trưa giờ Việt Nam  = 04:00 UTC  → cron: 0 4 * * *
+ *   - kiểu "bao-truoc"   →  9 giờ sáng giờ Việt Nam  = 02:00 UTC  → cron: 0 2 * * *
+ *     (đổi từ 11 giờ trưa — 04:00 UTC — theo anh Công 28/8/2026; xem cùng thay đổi ở
+ *     wrangler.jsonc "triggers.crons" trên nhánh Cloudflare, nơi cron THẬT đang chạy)
  *   - kiểu "dung-hom-do" →  6 giờ sáng giờ Việt Nam  = 23:00 UTC hôm trước → cron: 0 23 * * *
  *
  * Cron chạy MỖI NGÀY, còn việc "hôm nay có phải dịp cần nhắc không" do hàm cannhacHomNay() quyết —
