@@ -151,9 +151,17 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
         <span class="qsh-arrow">→</span>
       </a>
 
-      <p class="qs-sub" style="margin-top:1rem;">
-        Chưa có gói? <a href="/quan-su/goi-thue-bao" style="color:var(--qs-gold);">Xem gói thuê bao Quân Sư</a>
-      </p>
+      <!-- Gói thuê bao — trước đây chỉ là 1 dòng chữ nhỏ lọt thỏm giữa 2 khối, anh Công phản ánh
+           "không thấy rõ" (29/8/2026). Nâng thành thẻ cùng cỡ với thẻ Xem Thời Vận phía trên, kèm
+           nhãn "Sắp mở bán" cho trung thực — checkout vẫn đang khóa admin-only, chưa mở bán thật. -->
+      <a href="/quan-su/goi-thue-bao" class="qsh-goi-card">
+        <div>
+          <p class="qs-eyebrow" style="margin:0 0 0.2rem;">Gói thuê bao</p>
+          <h3>Gói Quân Sư Thiên Anh <span class="qsh-goi-soon">Sắp mở bán</span></h3>
+          <p>Cơ bản & Cao cấp — hỏi việc không giới hạn theo tháng, khung giá đã sẵn sàng.</p>
+        </div>
+        <span class="qsh-arrow" style="color:var(--qs-gold);">→</span>
+      </a>
 
       <!-- Đại Cát Lợi - Cơ Bản (tên cũ "Trạch Cát (Cơ bản)", đổi 28/8/2026 theo anh Công) — 12 công
            cụ MIỄN PHÍ của Đại Cát Lợi, trỏ THẲNG vào route thật đã có sẵn (không tạo trang mới).
@@ -415,6 +423,25 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
   .qsh-tv-card h3 { font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.1rem; margin: 0 0 0.25rem; color: var(--qs-ivory); }
   .qsh-tv-card p { margin: 0; color: var(--qs-muted); font-size: 0.78rem; }
   .qsh-arrow { color: var(--qs-purple); font-size: 1.3rem; }
+
+  /* Gói thuê bao — cùng bố cục thẻ với .qsh-tv-card, đổi tông vàng (gắn với VIP/gói mua) thay vì
+     tím (dành riêng cho Thời Vận). */
+  .qsh-goi-card {
+    display: flex; align-items: center; justify-content: space-between; gap: 1rem; text-decoration: none;
+    border: 1px solid rgba(241, 200, 90, 0.3); border-radius: 16px; padding: 1.1rem 1.2rem;
+    background: linear-gradient(160deg, rgba(241, 200, 90, 0.1), rgba(255, 255, 255, 0.02));
+    margin-top: 1rem; margin-bottom: 1.8rem;
+  }
+  .qsh-goi-card h3 {
+    font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.1rem; margin: 0 0 0.25rem; color: var(--qs-ivory);
+    display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
+  }
+  .qsh-goi-card p { margin: 0; color: var(--qs-muted); font-size: 0.78rem; }
+  .qsh-goi-soon {
+    font-size: 0.6rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 0.15rem 0.5rem; border-radius: 999px;
+    background: rgba(241, 200, 90, 0.14); border: 1px solid var(--qs-gold); color: var(--qs-gold);
+  }
 
   /* Trạch Cát — lưới 3×3, mỗi ô 1 màu neon riêng (--c) giống mockup, cùng kiểu badge tròn viền sáng
      như .qsh-icon-badge phía trên nhưng nhỏ hơn để đủ chỗ cho tên + mô tả 2 dòng. */
