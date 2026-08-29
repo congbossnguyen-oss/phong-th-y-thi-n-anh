@@ -163,16 +163,19 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
         <span class="qsh-arrow" style="color:var(--qs-gold);">→</span>
       </a>
 
-      <!-- Đại Cát Lợi - Cơ Bản (tên cũ "Trạch Cát (Cơ bản)", đổi 28/8/2026 theo anh Công) — 9 công
+      <!-- Đại Cát Lợi - Cơ Bản (tên cũ "Trạch Cát (Cơ bản)", đổi 28/8/2026 theo anh Công) — 12 công
            cụ MIỄN PHÍ của Đại Cát Lợi, trỏ THẲNG vào route thật đã có sẵn (không tạo trang mới).
-           Thầy, 2026-08-24: mục này gắn nhãn "(Cơ bản)" nên 5 công cụ trả phí trước đây (Nhập
-           Trạch/Động Thổ/Cưới Hỏi/Nhận Chức/Sinh Cho Bé) không hợp đặt ở đây nữa — đã đổi sang 5
-           công cụ miễn phí khác: Hoàng Ốc, Chọn Tuổi Kết Hôn, Đi Lễ, Sửa Chữa, Khai Quang. Các công
-           cụ trả phí đã dời sang thẻ "Đại Cát Lợi - Cao Cấp" phía dưới. -->
+           Thầy, 2026-08-24: mục này gắn nhãn "(Cơ bản)" nên công cụ trả phí không hợp đặt ở đây —
+           đã dời sang thẻ "Đại Cát Lợi - Cao Cấp" phía dưới.
+
+           Sửa 29/8/2026 (anh Công): bỏ "Xem Ngày Tốt" (trùng với "Xem Ngày Tốt Xấu" đã có sẵn trong
+           lưới "Công cụ hữu ích" bên dưới) và "Ngày Trùng Tang" (đã có bản riêng /quan-su/tinh-trung-
+           tang trong "Công cụ hữu ích", không cần lặp ở đây); thêm 5 mục mới đúng module đã có sẵn
+           trên web phongthuythienanh.com (Xông Đất – Xông Nhà, Chọn Năm Sinh Con, Tuổi Hợp Làm Ăn,
+           Giao Nhận Tài Sản) và đẩy "Hướng Xuất Hành" từ "Công cụ hữu ích" lên đây. -->
       <p class="qsh-section-title" style="margin-top:0.4rem;">Đại Cát Lợi - Cơ Bản</p>
       <div class="qsh-trach-cat-grid">
         {[
-          { href: "/xem-ngay-tot-xau", label: "Xem Ngày Tốt", sub: "Cho từng công việc", c: "#5fcf8a", icon: "calendar" },
           { href: "/dai-cat-loi/ngay-ky-hop-dong", label: "Ký Hợp Đồng", sub: "Ngày giờ ký kết", c: "#b18aff", icon: "doc" },
           { href: "/dai-cat-loi/ngay-khai-truong", label: "Khai Trương", sub: "Đại cát – phát lộc", c: "#f0a34d", icon: "store" },
           { href: "/dai-cat-loi/hoang-oc-kim-lau", label: "Hoàng Ốc", sub: "Kim Lâu – Tam Tai", c: "#e879a6", icon: "hoang-oc" },
@@ -180,7 +183,11 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
           { href: "/dai-cat-loi/ngay-le-vieng-mo", label: "Đi Lễ", sub: "Chùa – đền – viếng mộ", c: "#f1c85a", icon: "incense" },
           { href: "/dai-cat-loi/sua-chua-cai-tao-nha", label: "Sửa Chữa", sub: "Ngày giờ động thổ nhỏ", c: "#5aa8f1", icon: "wrench" },
           { href: "/dai-cat-loi/ngay-khai-quang", label: "Khai Quang", sub: "An vị vật phẩm", c: "#7fd99a", icon: "lamp" },
-          { href: "/tinh-trung-tang", label: "Ngày Trùng Tang", sub: "Tra – phân tích", c: "#e8735c", icon: "bowl" },
+          { href: "/dai-cat-loi/ngay-gio-xuat-hanh", label: "Hướng Xuất Hành", sub: "Chọn ngày giờ đi xa", c: "#5fcf8a", icon: "compass" },
+          { href: "/dai-cat-loi/xem-tuoi-xong-dat", label: "Xông Đất – Xông Nhà", sub: "Đầu năm hợp gia chủ", c: "#e8735c", icon: "xong-dat" },
+          { href: "/dai-cat-loi/chon-nam-sinh-con", label: "Chọn Năm Sinh Con", sub: "Hợp cả cha và mẹ", c: "#f4a6c6", icon: "baby" },
+          { href: "/dai-cat-loi/tuoi-hop-lam-an", label: "Tuổi Hợp Làm Ăn", sub: "Hợp tác – kinh doanh", c: "#7c93e8", icon: "briefcase" },
+          { href: "/dai-cat-loi/chon-ngay-giao-dich", label: "Giao Nhận Tài Sản", sub: "Nhà – xe – tài sản", c: "#c9a876", icon: "key" },
         ].map((t) => (
           <a href={t.href} class="qsh-tc-item" style={`--c:${t.c};`}>
             <span class="qsh-tc-badge">
@@ -192,7 +199,11 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
               {t.icon === "incense" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3c1.4 1.7 1.4 3.1 0 4.8-1.4-1.7-1.4-3.1 0-4.8Z" fill="currentColor" stroke="none"/><path d="M12 9v11M8.5 20h7" stroke-linecap="round"/></svg>}
               {t.icon === "wrench" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M14.5 3.5a4.5 4.5 0 0 0-5.7 5.7L3.5 14.5a2 2 0 0 0 2.8 2.8l5.3-5.3a4.5 4.5 0 0 0 5.7-5.7l-2.6 2.6-2-2 2.6-2.6Z" stroke-linejoin="round" stroke-linecap="round"/></svg>}
               {t.icon === "lamp" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 3v2.3" stroke-linecap="round"/><path d="M7 9.3a5 5 0 0 1 10 0c0 2.4-2 3.4-2 5.7H9c0-2.3-2-3.3-2-5.7Z" stroke-linejoin="round"/><path d="M9.5 17.5h5M10.5 20h3" stroke-linecap="round"/></svg>}
-              {t.icon === "bowl" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3.5 11h17a8.5 6 0 0 1-17 0Z" stroke-linejoin="round"/><path d="M7 11V8a5 5 0 0 1 10 0v3" /></svg>}
+              {t.icon === "compass" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="9"/><path d="m15 9-2 6-6 2 2-6 6-2Z" stroke-linejoin="round"/></svg>}
+              {t.icon === "xong-dat" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 11.5 12 4l9 7.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 10.5v9a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-9" stroke-linecap="round" stroke-linejoin="round"/><path d="M12 13.5l1 2.2 2.2 1-2.2 1L12 20l-1-2.2-2.2-1 2.2-1 1-2.2Z" stroke-linejoin="round"/></svg>}
+              {t.icon === "baby" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M10 3h4v3.5l1.5 1.5v10a2 2 0 0 1-2 2h-3a2 2 0 0 1-2-2v-10L10 6.5V3Z" stroke-linejoin="round"/><path d="M9.5 12h5" stroke-linecap="round"/></svg>}
+              {t.icon === "briefcase" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3.5" y="8" width="17" height="11" rx="2"/><path d="M8.5 8V6a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v2" stroke-linecap="round"/><path d="M3.5 13h17" stroke-linecap="round"/></svg>}
+              {t.icon === "key" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="8" cy="15.5" r="3.2"/><path d="M10.3 13.2 18 5.5M16 7.5l1.8 1.8M18.5 5l1.5 1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>}
             </span>
             <span class="qsh-tc-label">{t.label}</span>
             <span class="qsh-tc-sub">{t.sub}</span>
@@ -233,14 +244,17 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
         </div>
       </a>
 
-      <!-- Công cụ hữu ích — CHỈ 4/8 mục có trang thật tương ứng trên site (Can Chi/Ngũ Hành/Cung
+      <!-- Công cụ hữu ích — CHỈ 4/8 mục gốc có trang thật tương ứng trên site (Can Chi/Ngũ Hành/Cung
            Hoàng Đạo/Phong Thủy Nhà chưa có công cụ tra cứu riêng — không đưa vào để tránh dẫn khách
            tới trang không tồn tại; bổ sung sau khi các công cụ đó được xây).
 
            "Nhắc Lịch Cúng" (thêm 28/8/2026, anh Công) KHÔNG phải trang riêng — nó neo (#thong-bao)
            tới đúng ô bật/tắt nhắc mùng Một/Rằm đã có sẵn ngay trên trang chủ (NutBatThongBao.astro,
            phía trên). Trước đây ô đó nằm im ngay dưới hero, không ai để ý là có tính năng này; giờ
-           thêm lối vào rõ ràng trong lưới công cụ để khách dễ tìm thấy hơn. -->
+           thêm lối vào rõ ràng trong lưới công cụ để khách dễ tìm thấy hơn.
+
+           "Hướng Xuất Hành" đã DỜI lên lưới "Đại Cát Lợi - Cơ Bản" phía trên (29/8/2026, anh Công)
+           — không còn ở đây nữa, tránh lặp 2 nơi trên cùng 1 trang. -->
       <p class="qsh-section-title">Công cụ hữu ích</p>
       <div class="qsh-tool-grid">
         {[
@@ -248,7 +262,6 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
           { href: "/quan-su/luan-so-dien-thoai", label: "Luận Số Điện Thoại", icon: "phone" },
           { href: "/quan-su/tinh-trung-tang", label: "Tính Trùng Tang", icon: "clock" },
           { href: "/dai-cat-loi/doi-lich-am-duong", label: "Đổi Lịch", icon: "calendar" },
-          { href: "/dai-cat-loi/ngay-gio-xuat-hanh", label: "Hướng Xuất Hành", icon: "compass" },
           { href: "/dai-cat-loi/gio-tot-trong-ngay", label: "Giờ Hoàng Đạo", icon: "clock" },
           { href: "#thong-bao", label: "Nhắc Lịch Cúng", icon: "bell" },
         ].map((t) => (
@@ -256,7 +269,6 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
             <span class="qsh-tool-ic">
               {t.icon === "calendar" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4" stroke-linecap="round"/></svg>}
               {t.icon === "phone" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5.5 4.5h3l1.5 4-2 1.5a11 11 0 0 0 5 5l1.5-2 4 1.5v3a1.5 1.5 0 0 1-1.6 1.5C10.8 18.6 5.4 13.2 4 7.1a1.5 1.5 0 0 1 1.5-1.6Z" stroke-linejoin="round" stroke-linecap="round"/></svg>}
-              {t.icon === "compass" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9" /><path d="m15 9-2 6-6 2 2-6 6-2Z" stroke-linejoin="round" /></svg>}
               {t.icon === "clock" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3.5 2" stroke-linecap="round" stroke-linejoin="round" /></svg>}
               {t.icon === "bell" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 10a6 6 0 0 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 14 6 10Z" stroke-linejoin="round" stroke-linecap="round"/><path d="M10 18.5a2 2 0 0 0 4 0" stroke-linecap="round"/></svg>}
             </span>
