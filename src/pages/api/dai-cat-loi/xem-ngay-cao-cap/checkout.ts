@@ -56,6 +56,7 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
   const namSinhGiaChuChinh = Number(b.namSinhGiaChuChinh);
   const namSinhVoChong = b.namSinhVoChong ? Number(b.namSinhVoChong) : undefined;
   const toaDoSo = b.toaDoSo !== undefined && b.toaDoSo !== "" ? Number(b.toaDoSo) : undefined;
+  const apDungLocDanGian = typeof b.apDungLocDanGian === "boolean" ? b.apDungLocDanGian : undefined;
   const customerPhone = typeof b.customerPhone === "string" ? b.customerPhone.trim() : "";
   const customerName = locals.user?.name ?? (typeof b.customerName === "string" ? b.customerName.trim() : "");
   const customerEmail =
@@ -94,6 +95,7 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
     ...(huongNha ? { huongNha: huongNha as XemNgayCaoCapInput["toaNha"] } : {}),
     namSinhGiaChuChinh,
     ...(namSinhVoChong !== undefined ? { namSinhVoChong } : {}),
+    ...(apDungLocDanGian !== undefined ? { apDungLocDanGian } : {}),
   };
 
   // `snapshot` là thứ được lưu vào đơn; sau khi thanh toán, result.ts tính lại kết quả từ đây.

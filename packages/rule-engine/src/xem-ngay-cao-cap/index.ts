@@ -1,3 +1,4 @@
+export * from "./buoc1LocDanGian.js";
 export * from "./data/sonBatQuai.js";
 export * from "./data/bang60GiapTy.js";
 export * from "./data/bang64QueDoSo.js";
