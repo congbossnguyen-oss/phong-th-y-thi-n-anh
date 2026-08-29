@@ -65,15 +65,24 @@ const vapidPublicKey = docBien("VAPID_PUBLIC_KEY") || "";
       const dot = document.getElementById("tb-dot");
       const trangThai = document.getElementById("tb-trangthai");
 
-      // Trình duyệt không đỡ được thì ẩn luôn, không bày ra nút bấm không chạy.
-      if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) return;
+      // Luôn hiện khối này rồi mới xét — trước đây các nhánh lỗi bên dưới ĐỀU return sớm khi hop
+      // còn `hidden` (hoặc set lại `hidden = true`), nên khách thấy trống trơn không 1 dòng giải
+      // thích, tưởng nút biến mất (anh Công 29/8/2026: "vẫn chưa thấy nút tắt bật đâu"). Giờ LUÔN
+      // hiện khối + nút bấm; các nhánh lỗi chỉ khoá nút và ghi rõ lý do, không còn ẩn im lặng.
+      hop.hidden = false;
+
+      // Trình duyệt/WebView không hỗ trợ Push thì khoá nút, GHI RÕ lý do thay vì ẩn khối.
+      if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
+        moTa.textContent = "Trình duyệt hoặc ứng dụng đang mở KHÔNG hỗ trợ thông báo đẩy — thử mở bằng Chrome/Safari ngoài trình duyệt trong app, hoặc cập nhật lên phiên bản mới hơn.";
+        nut.disabled = true;
+        nut.textContent = "Không hỗ trợ";
+        return;
+      }
 
       // iPhone chỉ cho nhận thông báo khi trang đã được thêm vào màn hình chính. Nhận biết bằng
       // chế độ standalone; nếu chưa thì hướng dẫn thay vì để khách bấm mãi không được.
       const laIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
       const daCaiVeManHinh = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
-
-      hop.hidden = false;
 
       if (laIOS && !daCaiVeManHinh) {
         moTa.textContent = "Trên iPhone, hãy bấm nút Chia sẻ rồi chọn “Thêm vào MH chính”, sau đó mở lại từ biểu tượng ngoài màn hình để bật nhắc.";
@@ -94,7 +103,11 @@ const vapidPublicKey = docBien("VAPID_PUBLIC_KEY") || "";
         dangKy = await navigator.serviceWorker.register("/sw.js");
         await navigator.serviceWorker.ready;
       } catch (e) {
-        hop.hidden = true;
+        // Trước đây ẩn cả khối (hop.hidden = true) khi đăng ký service worker lỗi — khách không
+        // thấy gì, không biết vì sao. Giờ giữ khối hiện, khoá nút, ghi rõ ra để còn báo lại được.
+        moTa.textContent = "Không đăng ký được thông báo trên máy này (lỗi Service Worker). Thử tải lại trang, hoặc báo lại cho Thiên Anh giúp em.";
+        nut.disabled = true;
+        nut.textContent = "Lỗi — không dùng được";
         return;
       }
 
