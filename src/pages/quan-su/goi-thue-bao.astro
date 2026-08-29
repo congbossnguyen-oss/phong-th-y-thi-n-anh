@@ -1,7 +1,7 @@
 ---
 // Trang đăng ký/gia hạn gói thuê bao "Quân Sư" (Cơ bản / Cao cấp × 1-3-6-12 tháng).
-// GIAI ĐOẠN THỬ NGHIỆM NỘI BỘ — chỉ tài khoản quản trị đăng ký được (xem api/checkout.ts), giá
-// nhiều ô còn "Đang cập nhật" vì Thầy chưa chốt bảng giá (gia-subscription.ts).
+// GIAI ĐOẠN THỬ NGHIỆM NỘI BỘ — chỉ tài khoản quản trị đăng ký được (xem api/checkout.ts). Khung giá
+// đã chốt xong (gia-subscription.ts) nhưng CHƯA mở bán cho khách thường (Công quyết định 29/8/2026).
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import BottomNav from "../../components/quan-su/BottomNav.astro";
 import "../../styles/quan-su.css";
@@ -29,7 +29,7 @@ const DURATIONS: SubscriptionDuration[] = ["1_thang", "3_thang", "6_thang", "1_n
       <p class="qs-sub">Trọng tâm là <strong style="color:var(--qs-gold);">luận quẻ Kinh Dịch</strong> cùng Quân Sư — các công cụ Đại Cát Lợi, luận số điện thoại, tính trùng tang, xem ngày tốt xấu đi kèm theo gói.</p>
 
       <div class="qs-notice" style="background:rgba(241,200,90,0.1);border-color:rgba(241,200,90,0.4);color:var(--qs-gold);">
-        ⚙ Gói thuê bao sắp ra mắt — đang hoàn thiện khung giá. Trong lúc chờ, bạn vẫn dùng được đầy đủ các dịch vụ lẻ ở mục <a href="/dai-cat-loi/dich-vu-thu-phi" style="color:var(--qs-gold);text-decoration:underline;">Dịch vụ VIP</a>.
+        ⚙ Gói thuê bao sắp mở bán, khung giá đã sẵn sàng. Trong lúc chờ, bạn vẫn dùng được đầy đủ các dịch vụ lẻ ở mục <a href="/dai-cat-loi/dich-vu-thu-phi" style="color:var(--qs-gold);text-decoration:underline;">Dịch vụ VIP</a>.
       </div>
 
       <div class="qs-card" style="margin-bottom:1.5rem;overflow-x:auto;">
