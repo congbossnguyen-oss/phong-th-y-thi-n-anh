@@ -180,8 +180,39 @@ export const prerender = true;
         { ten: `Địa Chi (${d.canNhan.chi.moTa})`, diem: d.canNhan.chi.diem },
       ])}</ul>`;
   }
+  // Ý nghĩa 6 cung Tiểu Lục Nhâm — kiến thức phổ thông (không phải công thức chấm điểm riêng của
+  // hệ thống nên không cần trích nguồn cụ thể, mọi lịch vạn sự dân gian đều mô tả thống nhất).
+  // Trước đây yếu tố "Đại An (cát): 6.5" chỉ có tên + điểm, khách không hiểu ý nghĩa thật là gì
+  // (anh Công báo 28/8/2026: "chưa có đoạn giải nghĩa... theo từng cấp độ").
+  const LUC_NHAM_MEANING: Record<string, string> = {
+    "Đại An": "Yên ổn, vững vàng — hợp việc cần chắc chắn, lâu dài, không phải vội.",
+    "Lưu Niên": "Trì trệ, kéo dài — việc dễ chậm trễ, nên kiên nhẫn, tránh việc cần gấp.",
+    "Tốc Hỷ": "Vui đến nhanh, tin tốt sớm về — hợp việc cần kết quả nhanh, báo tin.",
+    "Xích Khẩu": "Khẩu thiệt, dễ cãi vã — nên tránh đàm phán, ký kết, việc liên quan lời nói.",
+    "Tiểu Cát": "Thuận lợi nhỏ, có quý nhân giúp — hợp khởi đầu nhẹ nhàng, việc không quá lớn.",
+    "Không Vong": "Trống rỗng, dễ công cốc — không nên khởi sự việc quan trọng, dễ uổng công.",
+  };
+  /** Yếu tố Tiểu Lục Nhâm có `ten` dạng "Đại An (cát)" — dò xem bắt đầu bằng tên cung nào. */
+  function timNghiaLucNham(ten: string): string | null {
+    for (const [name, moTa] of Object.entries(LUC_NHAM_MEANING)) {
+      if (ten.startsWith(name)) return moTa;
+    }
+    return null;
+  }
+  // Viết riêng (không tái dùng renderAbsYeuTo) vì mục Tiểu Lục Nhâm cần thêm 1 dòng giải nghĩa
+  // NẰM DƯỚI, mà renderAbsYeuTo dựng <li> flex 1 hàng ngang — chèn thêm span vào đó sẽ chỉ đẻ ra
+  // 1 flex-item nằm CẠNH điểm số chứ không xuống dòng như ý.
   function hourViSaoHtml(h: HourScoreFull): string {
-    return `<ul class="space-y-0.5 text-xs text-(--color-ink-600)">${renderAbsYeuTo(h.yeuTo)}</ul>`;
+    const items = h.yeuTo
+      .map((y) => {
+        const nghia = timNghiaLucNham(y.ten);
+        const cls = y.diem >= 5 ? "text-(--color-cinnabar-500)" : "text-(--color-ink-500)";
+        const hang = `<div class="flex justify-between gap-2"><span>${y.ten}</span><span class="${cls} font-semibold">${y.diem}</span></div>`;
+        if (!nghia) return `<li>${hang}</li>`;
+        return `<li>${hang}<p class="mt-0.5 text-[11px] leading-relaxed text-(--color-ink-400)">${nghia}</p></li>`;
+      })
+      .join("");
+    return `<ul class="space-y-1.5 text-xs text-(--color-ink-600)">${items}</ul>`;
   }
 
   const form = document.getElementById("form-xuat-hanh") as HTMLFormElement;

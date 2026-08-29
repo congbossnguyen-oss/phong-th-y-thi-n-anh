@@ -538,6 +538,18 @@ export const prerender = true;
     "Không Vong": "bg-slate-500 text-white",
     "Tiểu Cát": "bg-(--color-gold-500) text-white",
   };
+  // Ý nghĩa từng cung — kiến thức Tiểu Lục Nhâm phổ thông (không phải công thức chấm điểm riêng
+  // của hệ thống nên không cần trích nguồn cụ thể, giống mọi lịch vạn sự dân gian đều mô tả thống
+  // nhất) — trước đây chỉ hiện tên + "(Giờ tốt/xấu)", khách không hiểu VÌ SAO tốt/xấu (anh Công
+  // báo 28/8/2026: "chưa có đoạn giải nghĩa... theo từng cấp độ").
+  const LUC_NHAM_MEANING: Record<string, string> = {
+    "Đại An": "Yên ổn, vững vàng — hợp việc cần chắc chắn, lâu dài, không phải vội.",
+    "Lưu Niên": "Trì trệ, kéo dài — việc dễ chậm trễ, nên kiên nhẫn, tránh việc cần gấp.",
+    "Tốc Hỷ": "Vui đến nhanh, tin tốt sớm về — hợp việc cần kết quả nhanh, báo tin.",
+    "Xích Khẩu": "Khẩu thiệt, dễ cãi vã — nên tránh đàm phán, ký kết, việc liên quan lời nói.",
+    "Tiểu Cát": "Thuận lợi nhỏ, có quý nhân giúp — hợp khởi đầu nhẹ nhàng, việc không quá lớn.",
+    "Không Vong": "Trống rỗng, dễ công cốc — không nên khởi sự việc quan trọng, dễ uổng công.",
+  };
 
   function renderLucNham(gio12: GioTrongNgay[]): string {
     const grouped = new Map<string, { catHung: "cát" | "hung"; chiList: string[] }>();
@@ -565,6 +577,7 @@ export const prerender = true;
           <div class="space-y-0.5 p-3">
             ${chiLines}
             <p class="pt-1 text-xs font-semibold ${nhanXetCls}">(${nhanXet})</p>
+            <p class="pt-1 text-[11px] leading-relaxed text-slate-500">${LUC_NHAM_MEANING[name] ?? ""}</p>
           </div>
         </div>`;
     }).join("");
