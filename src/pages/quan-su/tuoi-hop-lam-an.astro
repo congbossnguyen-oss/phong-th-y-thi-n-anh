@@ -1,0 +1,22 @@
+---
+// Bản in-app của công cụ "Tuổi hợp làm ăn" — thuộc lưới "Đại Cát Lợi - Cơ Bản" trong app Quân Sư.
+// TỰ CHỨA trong app (App Store, không link ra web) — dùng chung component với bản web nên logic/
+// kết quả y hệt, chỉ khung trang khác.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
+import TuoiHopLamAn from "../../components/tools/TuoiHopLamAn.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout title="Tuổi hợp làm ăn — Quân Sư Thiên Anh" description="Tuổi hợp làm ăn trong app Quân Sư." appShell>
+  <PageHero
+    eyebrow="Đại Cát Lợi"
+    title="Tuổi hợp làm ăn"
+    description="Nhập năm sinh dương lịch của 2 người để xem mức độ hợp nhau khi hợp tác làm ăn, kinh doanh, đầu tư."
+    breadcrumbs={[{ label: "Quân Sư", href: "/quan-su" }, { label: "Tuổi hợp làm ăn" }]}
+  />
+  <TuoiHopLamAn laApp />
+  <BottomNav />
+</BaseLayout>

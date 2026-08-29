@@ -1,0 +1,22 @@
+---
+// Bản in-app của công cụ "Chọn Ngày Giao Dịch / Nhận Tài Sản" — thuộc lưới "Đại Cát Lợi - Cơ Bản"
+// trong app Quân Sư. TỰ CHỨA trong app (App Store, không link ra web) — dùng chung component với
+// bản web nên logic/kết quả y hệt, chỉ khung trang khác.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
+import ChonNgayGiaoDich from "../../components/tools/ChonNgayGiaoDich.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout title="Chọn Ngày Giao Dịch / Nhận Tài Sản — Quân Sư Thiên Anh" description="Chọn Ngày Giao Dịch / Nhận Tài Sản trong app Quân Sư." appShell>
+  <PageHero
+    eyebrow="Đại Cát Lợi"
+    title="Chọn Ngày Giao Dịch / Nhận Tài Sản"
+    description="Chọn tài sản (Nhà/Xe) và việc cần làm (Mua/Nhận), khoảng ngày muốn xem — hệ thống tự quét và xếp hạng ngày tốt nhất, sau đó có thể xem giờ tốt trong ngày đã chọn."
+    breadcrumbs={[{ label: "Quân Sư", href: "/quan-su" }, { label: "Chọn Ngày Giao Dịch / Nhận Tài Sản" }]}
+  />
+  <ChonNgayGiaoDich laApp />
+  <BottomNav />
+</BaseLayout>

@@ -1,0 +1,22 @@
+---
+// Bản in-app của công cụ "Xem Tuổi Xông Đất – Xông Nhà" — thuộc lưới "Đại Cát Lợi - Cơ Bản" trong
+// app Quân Sư. TỰ CHỨA trong app (App Store, không link ra web) — dùng chung component với bản
+// web nên logic/kết quả y hệt, chỉ khung trang khác.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
+import XemTuoiXongDat from "../../components/tools/XemTuoiXongDat.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout title="Xem Tuổi Xông Đất – Xông Nhà — Quân Sư Thiên Anh" description="Xem Tuổi Xông Đất – Xông Nhà trong app Quân Sư." appShell>
+  <PageHero
+    eyebrow="Đại Cát Lợi"
+    title="Xem Tuổi Xông Đất – Xông Nhà"
+    description="Nhập năm sinh gia chủ, năm cần xông và khoảng năm sinh ứng viên — hệ thống tự quét, loại trừ tuổi xấu và xếp hạng tuổi tốt nhất."
+    breadcrumbs={[{ label: "Quân Sư", href: "/quan-su" }, { label: "Xem Tuổi Xông Đất – Xông Nhà" }]}
+  />
+  <XemTuoiXongDat laApp />
+  <BottomNav />
+</BaseLayout>
