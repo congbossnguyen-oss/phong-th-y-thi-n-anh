@@ -25,13 +25,14 @@
   // Thay Render Cron Job cũ gọi /api/thong-bao/gui-nhac-ngay-le qua HTTP (xem comment gốc trong file
   // đó + src/worker-entry.ts).
   //
-  // CHỈ 1 mốc — 04:00 UTC (= 11 giờ trưa VN), ứng với kiểu nhắc "bao-truoc" (nhắc trước ngày lễ 1
-  // hôm). Đã kiểm lại lịch sử dự án (2026-08-25): ghi chú gốc lúc xây tính năng này (2026-08-23) nói
-  // rõ chỉ "tạo Cron Job" (số ít) trên Render, và "bao-truoc" là "ý ban đầu" còn "dung-hom-do" (mốc
-  // 23:00 UTC, nhắc đúng sáng ngày lễ) chỉ là phương án dự phòng "nếu khó" — không có bằng chứng nào
-  // cho thấy Render từng bật cả 2 Cron Job song song. Bỏ mốc 23:00 UTC theo đúng kết luận đó.
+  // CHỈ 1 mốc — 02:00 UTC (= 9 giờ sáng VN, đổi từ 11 giờ trưa/04:00 UTC theo anh Công 28/8/2026),
+  // ứng với kiểu nhắc "bao-truoc" (nhắc trước ngày lễ 1 hôm). Đã kiểm lại lịch sử dự án (2026-08-25):
+  // ghi chú gốc lúc xây tính năng này (2026-08-23) nói rõ chỉ "tạo Cron Job" (số ít) trên Render, và
+  // "bao-truoc" là "ý ban đầu" còn "dung-hom-do" (mốc 23:00 UTC, nhắc đúng sáng ngày lễ) chỉ là
+  // phương án dự phòng "nếu khó" — không có bằng chứng nào cho thấy Render từng bật cả 2 Cron Job
+  // song song. Bỏ mốc 23:00 UTC theo đúng kết luận đó.
   "triggers": {
-    "crons": ["0 4 * * *"]
+    "crons": ["0 2 * * *"]
   },
   "observability": {
     "enabled": true
