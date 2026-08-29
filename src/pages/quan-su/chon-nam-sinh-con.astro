@@ -1,0 +1,22 @@
+---
+// Bản in-app của công cụ "Chọn Năm Sinh Con" — thuộc lưới "Đại Cát Lợi - Cơ Bản" trong app Quân
+// Sư. TỰ CHỨA trong app (App Store, không link ra web) — dùng chung component với bản web nên
+// logic/kết quả y hệt, chỉ khung trang khác.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
+import ChonNamSinhCon from "../../components/tools/ChonNamSinhCon.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout title="Chọn Năm Sinh Con — Quân Sư Thiên Anh" description="Chọn Năm Sinh Con trong app Quân Sư." appShell>
+  <PageHero
+    eyebrow="Đại Cát Lợi"
+    title="Chọn Năm Sinh Con"
+    description="Nhập năm sinh cha, năm sinh mẹ, giới tính con và khoảng năm muốn xem — hệ thống tự tính Cha→Con, Mẹ→Con và xếp hạng năm tốt nhất."
+    breadcrumbs={[{ label: "Quân Sư", href: "/quan-su" }, { label: "Chọn Năm Sinh Con" }]}
+  />
+  <ChonNamSinhCon laApp />
+  <BottomNav />
+</BaseLayout>

@@ -1,0 +1,38 @@
+---
+/**
+ * LỜI MỜI NÂNG CẤP — bản DÀNH CHO APP QUÂN SƯ, đặt cuối mỗi công cụ MIỄN PHÍ trong lưới "Đại Cát
+ * Lợi - Cơ Bản" (đối chiếu `GoiYNangCap.astro` bên web — component đó mời sang 1 công cụ TRẢ PHÍ
+ * LẺ khác, đúng mô hình tính tiền của web).
+ *
+ * App KHÔNG bán lẻ từng công cụ — tính tiền theo THUÊ BAO (gói Cơ Bản / Cao Cấp, xem
+ * goi-thue-bao.astro). Anh Công 29/8/2026: "em chỉ nên điều hướng sang gói nâng cao [Cao Cấp],
+ * khi ấn vào sẽ yêu cầu khách hàng phải up lên gói Đại Cát Lợi Cao Cấp". Vì vậy component này
+ * KHÔNG nhận `slug` — luôn trỏ thẳng `/quan-su/goi-thue-bao`, không có khái niệm mua 1 lượt.
+ *
+ * ⚠️ Gói thuê bao hiện còn khoá thử nghiệm nội bộ (goi-thue-bao.astro, "CHƯA mở bán cho khách
+ * thường") — nút này khách vẫn bấm được, vào trang đăng ký nhưng checkout tự chặn nếu chưa phải
+ * quản trị, đúng luồng "sắp ra mắt" đã dùng ở nơi khác (không phải lỗi, không cần khoá thêm ở đây).
+ */
+interface Props {
+  /** Câu nối ngữ cảnh: vì sao khách vừa dùng công cụ này thì nên nâng cấp gói Cao Cấp. */
+  lyDo: string;
+  /** Tiêu đề ngắn. */
+  tieuDe?: string;
+}
+const { lyDo, tieuDe = "Muốn xem sâu hơn?" } = Astro.props;
+---
+
+<aside class="mt-10 rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-6">
+  <p class="font-display text-lg font-bold text-(--color-ink-950)">{tieuDe}</p>
+  <p class="mt-2 text-sm leading-relaxed text-(--color-ink-700)">{lyDo}</p>
+
+  <div class="mt-4 flex flex-wrap items-center gap-3">
+    <a
+      href="/quan-su/goi-thue-bao"
+      class="inline-flex items-center justify-center rounded-(--radius-control) bg-(--color-gold-500) px-5 py-2.5 text-sm font-bold text-(--color-ink-950) transition hover:bg-(--color-gold-400)"
+    >
+      Nâng cấp gói Cao Cấp
+    </a>
+    <span class="text-xs text-(--color-ink-500)">Đi kèm mọi dịch vụ trong nhóm "Đại Cát Lợi - Cao Cấp", không thu phí lẻ từng lượt.</span>
+  </div>
+</aside>

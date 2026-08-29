@@ -164,15 +164,23 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
       </a>
 
       <!-- Đại Cát Lợi - Cơ Bản (tên cũ "Trạch Cát (Cơ bản)", đổi 28/8/2026 theo anh Công) — 12 công
-           cụ MIỄN PHÍ của Đại Cát Lợi, trỏ THẲNG vào route thật đã có sẵn (không tạo trang mới).
+           cụ MIỄN PHÍ. 7 mục gốc (Ký Hợp Đồng...Khai Quang) trỏ THẲNG route web /dai-cat-loi/* —
+           quy ước CŨ từ trước, giữ nguyên không đụng tới.
            Thầy, 2026-08-24: mục này gắn nhãn "(Cơ bản)" nên công cụ trả phí không hợp đặt ở đây —
            đã dời sang thẻ "Đại Cát Lợi - Cao Cấp" phía dưới.
 
            Sửa 29/8/2026 (anh Công): bỏ "Xem Ngày Tốt" (trùng với "Xem Ngày Tốt Xấu" đã có sẵn trong
            lưới "Công cụ hữu ích" bên dưới) và "Ngày Trùng Tang" (đã có bản riêng /quan-su/tinh-trung-
-           tang trong "Công cụ hữu ích", không cần lặp ở đây); thêm 5 mục mới đúng module đã có sẵn
-           trên web phongthuythienanh.com (Xông Đất – Xông Nhà, Chọn Năm Sinh Con, Tuổi Hợp Làm Ăn,
-           Giao Nhận Tài Sản) và đẩy "Hướng Xuất Hành" từ "Công cụ hữu ích" lên đây. -->
+           tang trong "Công cụ hữu ích", không cần lặp ở đây); thêm 5 mục mới (Ngày Giờ Xuất Hành,
+           Xông Đất – Xông Nhà, Chọn Năm Sinh Con, Tuổi Hợp Làm Ăn, Giao Nhận Tài Sản).
+
+           ⚠️ 5 mục MỚI này KHÔNG trỏ ra web (khác 7 mục gốc ở trên) — anh Công nhắc lại nguyên tắc
+           tách bạch app/web đã chốt từ đầu ("tất cả các module bổ sung là không liên quan đến bên
+           web phongthuythienanh.com, đây là app độc lập"): mỗi mục có component dùng chung riêng
+           (src/components/tools/ChonNamSinhCon.astro, TuoiHopLamAn.astro, XemTuoiXongDat.astro,
+           ChonNgayGiaoDich.astro, NgayGioXuatHanh.astro) + trang /quan-su/* riêng, CTA cuối trang
+           mời nâng cấp cũng đổi sang mời gói Cao Cấp thuê bao (GoiYNangCapApp.astro) thay vì mời
+           mua lẻ 1 công cụ trả phí như bản web (GoiYNangCap.astro) — 2 mô hình tính tiền khác nhau. -->
       <p class="qsh-section-title" style="margin-top:0.4rem;">Đại Cát Lợi - Cơ Bản</p>
       <div class="qsh-trach-cat-grid">
         {[
@@ -183,11 +191,11 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
           { href: "/dai-cat-loi/ngay-le-vieng-mo", label: "Đi Lễ", sub: "Chùa – đền – viếng mộ", c: "#f1c85a", icon: "incense" },
           { href: "/dai-cat-loi/sua-chua-cai-tao-nha", label: "Sửa Chữa", sub: "Ngày giờ động thổ nhỏ", c: "#5aa8f1", icon: "wrench" },
           { href: "/dai-cat-loi/ngay-khai-quang", label: "Khai Quang", sub: "An vị vật phẩm", c: "#7fd99a", icon: "lamp" },
-          { href: "/dai-cat-loi/ngay-gio-xuat-hanh", label: "Hướng Xuất Hành", sub: "Chọn ngày giờ đi xa", c: "#5fcf8a", icon: "compass" },
-          { href: "/dai-cat-loi/xem-tuoi-xong-dat", label: "Xông Đất – Xông Nhà", sub: "Đầu năm hợp gia chủ", c: "#e8735c", icon: "xong-dat" },
-          { href: "/dai-cat-loi/chon-nam-sinh-con", label: "Chọn Năm Sinh Con", sub: "Hợp cả cha và mẹ", c: "#f4a6c6", icon: "baby" },
-          { href: "/dai-cat-loi/tuoi-hop-lam-an", label: "Tuổi Hợp Làm Ăn", sub: "Hợp tác – kinh doanh", c: "#7c93e8", icon: "briefcase" },
-          { href: "/dai-cat-loi/chon-ngay-giao-dich", label: "Giao Nhận Tài Sản", sub: "Nhà – xe – tài sản", c: "#c9a876", icon: "key" },
+          { href: "/quan-su/ngay-gio-xuat-hanh", label: "Ngày Giờ Xuất Hành", sub: "Chọn ngày giờ đi xa", c: "#5fcf8a", icon: "compass" },
+          { href: "/quan-su/xem-tuoi-xong-dat", label: "Xông Đất – Xông Nhà", sub: "Đầu năm hợp gia chủ", c: "#e8735c", icon: "xong-dat" },
+          { href: "/quan-su/chon-nam-sinh-con", label: "Chọn Năm Sinh Con", sub: "Hợp cả cha và mẹ", c: "#f4a6c6", icon: "baby" },
+          { href: "/quan-su/tuoi-hop-lam-an", label: "Tuổi Hợp Làm Ăn", sub: "Hợp tác – kinh doanh", c: "#7c93e8", icon: "briefcase" },
+          { href: "/quan-su/chon-ngay-giao-dich", label: "Giao Nhận Tài Sản", sub: "Nhà – xe – tài sản", c: "#c9a876", icon: "key" },
         ].map((t) => (
           <a href={t.href} class="qsh-tc-item" style={`--c:${t.c};`}>
             <span class="qsh-tc-badge">
@@ -253,8 +261,8 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
            phía trên). Trước đây ô đó nằm im ngay dưới hero, không ai để ý là có tính năng này; giờ
            thêm lối vào rõ ràng trong lưới công cụ để khách dễ tìm thấy hơn.
 
-           "Hướng Xuất Hành" đã DỜI lên lưới "Đại Cát Lợi - Cơ Bản" phía trên (29/8/2026, anh Công)
-           — không còn ở đây nữa, tránh lặp 2 nơi trên cùng 1 trang. -->
+           "Ngày Giờ Xuất Hành" (tên cũ "Hướng Xuất Hành") đã DỜI lên lưới "Đại Cát Lợi - Cơ Bản"
+           phía trên (29/8/2026, anh Công) — không còn ở đây nữa, tránh lặp 2 nơi trên cùng 1 trang. -->
       <p class="qsh-section-title">Công cụ hữu ích</p>
       <div class="qsh-tool-grid">
         {[

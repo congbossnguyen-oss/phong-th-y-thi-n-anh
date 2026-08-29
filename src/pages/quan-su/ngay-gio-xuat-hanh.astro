@@ -1,0 +1,22 @@
+---
+// Bản in-app của công cụ "Ngày Giờ Xuất Hành Cá Nhân" — thuộc lưới "Đại Cát Lợi - Cơ Bản" trong
+// app Quân Sư (tên cũ "Hướng Xuất Hành", đổi 29/8/2026 theo anh Công). TỰ CHỨA trong app (App
+// Store, không link ra web) — dùng chung component với bản web nên logic/kết quả y hệt.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
+import NgayGioXuatHanh from "../../components/tools/NgayGioXuatHanh.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout title="Ngày Giờ Xuất Hành Cá Nhân — Quân Sư Thiên Anh" description="Ngày Giờ Xuất Hành Cá Nhân trong app Quân Sư." appShell>
+  <PageHero
+    eyebrow="Đại Cát Lợi"
+    title="Ngày Giờ Xuất Hành Cá Nhân"
+    description="Chọn mục đích, năm sinh + giới tính và khoảng ngày muốn xem — hệ thống quét cả ngày lẫn 12 giờ Địa Chi, chấm điểm ngày và giờ riêng biệt rồi xếp hạng các tổ hợp tốt nhất."
+    breadcrumbs={[{ label: "Quân Sư", href: "/quan-su" }, { label: "Ngày Giờ Xuất Hành" }]}
+  />
+  <NgayGioXuatHanh laApp />
+  <BottomNav />
+</BaseLayout>

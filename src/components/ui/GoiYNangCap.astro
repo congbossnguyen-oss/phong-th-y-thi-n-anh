@@ -1,0 +1,55 @@
+---
+/**
+ * LỜI MỜI NÂNG CẤP theo NGỮ CẢNH — đặt cuối trang công cụ MIỄN PHÍ để dẫn khách sang bản trả phí
+ * làm sâu đúng việc họ vừa tra.
+ *
+ * ⚠️ VÌ SAO CẦN (khảo sát 27/8/2026): quét toàn bộ 25 công cụ miễn phí thì chỉ có ĐÚNG 2 trang
+ * (`lap-ky-mon`, `luan-so-dien-thoai`) thực sự mời khách sang mục trả phí. 23 trang còn lại chỉ
+ * "có link" nhờ menu chung xuất hiện ở mọi trang — tức khách tra xong rồi đi thẳng, không ai mời.
+ * Đây là lỗ hổng phễu lớn nhất của web: đồ miễn phí rất mạnh nhưng không dẫn về đâu cả.
+ *
+ * Nguyên tắc dùng:
+ *  · Đặt SAU khu vực kết quả — mời lúc khách vừa thấy giá trị, không phải lúc vừa vào trang.
+ *  · Mỗi trang chỉ MỘT lời mời, đúng việc khách đang làm. Không liệt kê cả danh mục dịch vụ.
+ *  · Giá LUÔN lấy từ `GIA_CONG_CU` (không gõ tay) — tránh lặp lại lỗi giá hiển thị lệch giá thu tiền.
+ *  · Module đang khóa thử nghiệm thì KHÔNG mời mua, chỉ báo "sắp mở" để khách biết mà quay lại.
+ */
+import { GIA_CONG_CU, dinhDangTien, dangKhoaThuNghiem, type ToolSlug } from "../../lib/payments/gia-cong-cu";
+
+interface Props {
+  /** Slug module trả phí muốn mời. */
+  slug: ToolSlug;
+  /** Câu nối ngữ cảnh: vì sao khách vừa tra cái này thì nên xem cái kia. */
+  lyDo: string;
+  /** Nhãn nút. Mặc định lấy theo tên dịch vụ. */
+  nhanNut?: string;
+  /** Tiêu đề ngắn. */
+  tieuDe?: string;
+}
+const { slug, lyDo, nhanNut = "Xem bản đầy đủ", tieuDe = "Muốn đi sâu hơn?" } = Astro.props;
+
+const dangKhoa = dangKhoaThuNghiem(slug);
+const gia = GIA_CONG_CU[slug];
+const href = `/dai-cat-loi/${slug}`;
+---
+
+<aside class="mt-10 rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-6">
+  <p class="font-display text-lg font-bold text-(--color-ink-950)">{tieuDe}</p>
+  <p class="mt-2 text-sm leading-relaxed text-(--color-ink-700)">{lyDo}</p>
+
+  {dangKhoa ? (
+    <p class="mt-4 text-sm font-semibold text-(--color-gold-700)">
+      ⏳ Dịch vụ này đang được hoàn thiện, sẽ mở trong ít ngày tới. Công cụ miễn phí ở trên vẫn dùng thoải mái.
+    </p>
+  ) : (
+    <div class="mt-4 flex flex-wrap items-center gap-3">
+      <a
+        href={href}
+        class="inline-flex items-center justify-center rounded-(--radius-control) bg-(--color-gold-500) px-5 py-2.5 text-sm font-bold text-(--color-ink-950) transition hover:bg-(--color-gold-400)"
+      >
+        {nhanNut} — {dinhDangTien(gia)}
+      </a>
+      <span class="text-xs text-(--color-ink-500)">Thanh toán một lần, nhận kết quả kèm PDF gửi email.</span>
+    </div>
+  )}
+</aside>

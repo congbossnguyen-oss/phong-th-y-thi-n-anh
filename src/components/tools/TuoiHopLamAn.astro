@@ -1,0 +1,159 @@
+---
+// Thân công cụ "Tuổi hợp làm ăn" tách dùng chung cho web + in-app Quân Sư (giữ nguyên logic/giao
+// diện) — cùng mẫu GioLiemHaHuyet.astro/TrachCatKyMon.astro. Trang gọi component này chỉ lo phần
+// khung (BaseLayout/PageHero/breadcrumbs), gọi chung API /api/tuoi-hop-lam-an.
+//
+// CTA cuối trang mời nâng cấp KHÁC NHAU giữa web/app (anh Công 29/8/2026: 2 nhánh tính tiền khác
+// nhau — web bán lẻ từng công cụ, app bán thuê bao) — `laApp` chọn đúng component.
+import Container from "../../components/ui/Container.astro";
+import Button from "../../components/ui/Button.astro";
+import GoiYNangCap from "../../components/ui/GoiYNangCap.astro";
+import GoiYNangCapApp from "../../components/quan-su/GoiYNangCapApp.astro";
+
+interface Props {
+  /** true = hiện app Quân Sư (mời nâng cấp gói Cao Cấp) thay vì mời mua lẻ như bản web. */
+  laApp?: boolean;
+}
+const { laApp = false } = Astro.props;
+---
+
+<Container class="py-16">
+  <div class="mx-auto max-w-2xl">
+    <div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+      <p class="mt-1 text-xs text-(--color-ink-500)">
+        Hệ thống tự tính Thiên Can, Địa Chi, Ngũ Hành bản mệnh và Nạp Âm, không cần biết trước phong thủy hay giới
+        tính.
+      </p>
+      <form id="tuoi-hop-lam-an-form" class="mt-3 flex flex-col gap-2 sm:flex-row sm:items-end">
+        <div class="flex-1">
+          <label for="tuoi-hop-nam-1" class="text-xs font-medium text-(--color-ink-600)">Năm sinh người 1</label>
+          <input
+            type="number"
+            id="tuoi-hop-nam-1"
+            placeholder="vd. 1988"
+            min="1900"
+            max="2100"
+            required
+            class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800) focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20"
+          />
+        </div>
+        <div class="flex-1">
+          <label for="tuoi-hop-nam-2" class="text-xs font-medium text-(--color-ink-600)">Năm sinh người 2</label>
+          <input
+            type="number"
+            id="tuoi-hop-nam-2"
+            placeholder="vd. 1992"
+            min="1900"
+            max="2100"
+            required
+            class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800) focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20"
+          />
+        </div>
+        <Button type="submit" size="lg" class="shrink-0">Xem tuổi hợp làm ăn</Button>
+      </form>
+      <div id="tuoi-hop-loi" class="mt-3 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-3 text-sm text-(--color-danger-500)"></div>
+      <div id="tuoi-hop-ket-qua" class="mt-4 hidden">
+        <button
+          type="button"
+          id="tuoi-hop-toggle"
+          class="w-full rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200) p-4 text-left hover:bg-(--color-ivory-200)"
+        >
+          <p id="tuoi-hop-nhan" class="font-display text-lg font-bold text-(--color-ink-950)"></p>
+          <p id="tuoi-hop-diem" class="mt-0.5 text-sm text-(--color-ink-600)"></p>
+        </button>
+        <div id="tuoi-hop-chi-tiet" class="mt-2 hidden space-y-1.5 rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-100) p-4 text-sm text-(--color-ink-700)">
+          <p><strong class="text-(--color-ink-600)">Can:</strong> <span id="tuoi-hop-can"></span></p>
+          <p><strong class="text-(--color-ink-600)">Chi:</strong> <span id="tuoi-hop-chi"></span></p>
+          <p><strong class="text-(--color-ink-600)">Mệnh:</strong> <span id="tuoi-hop-menh"></span></p>
+          <p><strong class="text-(--color-ink-600)">Nạp âm:</strong> <span id="tuoi-hop-nap-am"></span></p>
+          <p><strong class="text-(--color-ink-600)">Tổng hợp:</strong> <span id="tuoi-hop-tong-hop"></span></p>
+          <p class="pt-1 text-xs text-(--color-ink-400)">Kết luận: <span id="tuoi-hop-ket-luan"></span></p>
+        </div>
+      </div>
+    </div>
+
+    {laApp ? (
+      <GoiYNangCapApp lyDo="Hợp tác hợp tuổi mới là một nửa. Nửa còn lại là bạn hợp NGHỀ gì — dịch vụ Định Hướng Nghề Nghiệp soi Bát Tự và Tử Vi để chỉ ra ngành nghề, môi trường và giai đoạn nào thuận cho bạn." tieuDe="Còn nghề nào hợp với bạn?" />
+    ) : (
+      <GoiYNangCap slug="dinh-huong-nghe-nghiep" lyDo="Hợp tác hợp tuổi mới là một nửa. Nửa còn lại là bạn hợp NGHỀ gì — bản Định Hướng Nghề Nghiệp soi Bát Tự và Tử Vi để chỉ ra ngành nghề, môi trường và giai đoạn nào thuận cho bạn." nhanNut="Xem Định Hướng Nghề Nghiệp" tieuDe="Còn nghề nào hợp với bạn?" />
+    )}
+  </div>
+</Container>
+
+<script>
+  // Chấm màu CSS tự vẽ thay cho emoji tròn màu (🟢🟡🟠🔴) trong nhãn "nhan" — emoji phụ thuộc font
+  // từng máy, có thể khiến vàng/cam trông gần giống nhau ở cỡ nhỏ. Dùng hex cố định để tương phản rõ.
+  const EMOJI_DOT_COLOR: Record<string, string> = { "⭐": "#7c3aed", "🟢": "#16a34a", "🟡": "#eab308", "🟠": "#c2410c", "🔴": "#dc2626" };
+  function nhanDotHtml(nhan: string): string {
+    const m = nhan.match(/^(\S+)\s*([\s\S]*)$/);
+    const color = m ? EMOJI_DOT_COLOR[m[1]] : undefined;
+    if (!color || !m) return nhan;
+    return `<span class="inline-flex items-center gap-1.5"><span class="inline-block size-2.5 shrink-0 rounded-full" style="background:${color};"></span>${m[2]}</span>`;
+  }
+
+  interface TuoiHopTieuChi {
+    diem: number;
+    moTa: string;
+  }
+  interface TuoiHopLamAnResult {
+    diem: number;
+    hang: string;
+    nhan: string;
+    can: TuoiHopTieuChi;
+    chi: TuoiHopTieuChi;
+    menh: TuoiHopTieuChi;
+    napAm: TuoiHopTieuChi;
+    tongHop: TuoiHopTieuChi;
+    ketLuan: string;
+  }
+
+  const tuoiHopForm = document.getElementById("tuoi-hop-lam-an-form") as HTMLFormElement;
+  const tuoiHopNam1Input = document.getElementById("tuoi-hop-nam-1") as HTMLInputElement;
+  const tuoiHopNam2Input = document.getElementById("tuoi-hop-nam-2") as HTMLInputElement;
+  const tuoiHopLoiEl = document.getElementById("tuoi-hop-loi")!;
+  const tuoiHopKetQuaEl = document.getElementById("tuoi-hop-ket-qua")!;
+  const tuoiHopNhanEl = document.getElementById("tuoi-hop-nhan")!;
+  const tuoiHopDiemEl = document.getElementById("tuoi-hop-diem")!;
+  const tuoiHopChiTietEl = document.getElementById("tuoi-hop-chi-tiet")!;
+  const tuoiHopToggleBtn = document.getElementById("tuoi-hop-toggle") as HTMLButtonElement;
+
+  tuoiHopToggleBtn.addEventListener("click", () => {
+    tuoiHopChiTietEl.classList.toggle("hidden");
+  });
+
+  tuoiHopForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    tuoiHopLoiEl.classList.add("hidden");
+    tuoiHopKetQuaEl.classList.add("hidden");
+
+    const namSinh1 = Number(tuoiHopNam1Input.value);
+    const namSinh2 = Number(tuoiHopNam2Input.value);
+
+    let result: TuoiHopLamAnResult;
+    try {
+      const res = await fetch(`/api/tuoi-hop-lam-an?namSinh1=${namSinh1}&namSinh2=${namSinh2}`);
+      const data = await res.json();
+      if (!res.ok) {
+        tuoiHopLoiEl.textContent = data.error ?? "Không tính được.";
+        tuoiHopLoiEl.classList.remove("hidden");
+        return;
+      }
+      result = data;
+    } catch {
+      tuoiHopLoiEl.textContent = "Không tải được dữ liệu.";
+      tuoiHopLoiEl.classList.remove("hidden");
+      return;
+    }
+
+    tuoiHopNhanEl.innerHTML = `${namSinh1} × ${namSinh2} — ${nhanDotHtml(result.nhan)}`;
+    tuoiHopDiemEl.textContent = `${result.diem}/10 điểm`;
+    document.getElementById("tuoi-hop-can")!.textContent = result.can.moTa;
+    document.getElementById("tuoi-hop-chi")!.textContent = result.chi.moTa;
+    document.getElementById("tuoi-hop-menh")!.textContent = result.menh.moTa;
+    document.getElementById("tuoi-hop-nap-am")!.textContent = result.napAm.moTa;
+    document.getElementById("tuoi-hop-tong-hop")!.textContent = result.tongHop.moTa;
+    document.getElementById("tuoi-hop-ket-luan")!.textContent = result.ketLuan;
+    tuoiHopChiTietEl.classList.add("hidden");
+    tuoiHopKetQuaEl.classList.remove("hidden");
+  });
+</script>
