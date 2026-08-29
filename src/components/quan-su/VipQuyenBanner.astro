@@ -1,10 +1,10 @@
 ---
 // Banner quyền dịch vụ VIP — client-side gọi /api/quan-su/quyen-vip để báo khách:
-//   - Có gói Cao Cấp (hoặc đang dùng thử) → "miễn phí theo gói", cứ điền form và bấm (checkout tự 0đ).
-//   - Đủ điều kiện dùng thử → nút "Dùng thử 7 ngày".
+//   - Có gói Cao Cấp → "miễn phí theo gói", cứ điền form và bấm (checkout tự 0đ).
 //   - Đăng nhập nhưng chưa có gói → mời nâng gói.
 //   - Chưa đăng nhập → mời đăng nhập.
 // Đặt ngay dưới PageHero của mỗi trang dịch vụ VIP. Giữ trang tĩnh (chỉ thêm 1 fetch nhỏ).
+// KHÔNG còn nhánh "dùng thử" — anh Công bỏ hẳn (29/8/2026, các công cụ miễn phí sẵn có đã đủ làm phễu).
 ---
 
 <div id="vip-quyen-banner" class="mx-auto mt-6 max-w-2xl px-4 empty:hidden"></div>
@@ -14,7 +14,7 @@
     const el = document.getElementById("vip-quyen-banner");
     if (!el) return;
 
-    let d: { dangNhap: boolean; coQuyenCaoCap: boolean; daTungDungThu: boolean; coTheDungThu: boolean };
+    let d: { dangNhap: boolean; coQuyenCaoCap: boolean };
     try {
       const res = await fetch("/api/quan-su/quyen-vip", { headers: { Accept: "application/json" } });
       if (!res.ok) return;
@@ -38,35 +38,6 @@
         '✅ <b>Bạn đang có gói Cao Cấp</b> — dịch vụ này <b>miễn phí</b>. Cứ điền thông tin và bấm, hệ thống trả kết quả ngay, không cần thanh toán.',
         "good",
       );
-    } else if (d.coTheDungThu) {
-      el.innerHTML = wrap(
-        '🎁 <b>Dùng thử 7 ngày miễn phí</b> để mở khóa toàn bộ dịch vụ VIP (hưởng hạng Cao Cấp). ' +
-          '<button id="vip-trial-btn" class="mt-2 inline-flex items-center justify-center rounded-(--radius-pill) bg-(--color-gold-400) px-4 py-2 font-semibold text-(--color-on-accent) hover:bg-(--color-gold-300)">Dùng thử ngay</button>' +
-          '<span id="vip-trial-msg" class="ml-2"></span>',
-        "gold",
-      );
-      const btn = document.getElementById("vip-trial-btn") as HTMLButtonElement | null;
-      const msg = document.getElementById("vip-trial-msg");
-      btn?.addEventListener("click", async () => {
-        btn.disabled = true;
-        btn.textContent = "Đang kích hoạt…";
-        try {
-          const r = await fetch("/api/quan-su/goi-thue-bao/dung-thu", { method: "POST" });
-          const j = await r.json();
-          if (r.ok && j.ok) {
-            if (msg) msg.textContent = "✅ Đã kích hoạt! Đang tải lại…";
-            location.reload();
-          } else {
-            if (msg) msg.textContent = j.error ?? "Không kích hoạt được.";
-            btn.disabled = false;
-            btn.textContent = "Dùng thử ngay";
-          }
-        } catch {
-          if (msg) msg.textContent = "Lỗi mạng, thử lại sau.";
-          btn.disabled = false;
-          btn.textContent = "Dùng thử ngay";
-        }
-      });
     } else if (d.dangNhap) {
       el.innerHTML = wrap(
         '🔒 Dịch vụ VIP đi kèm <b>gói Cao Cấp</b> — nâng gói để dùng miễn phí không giới hạn. ' +
