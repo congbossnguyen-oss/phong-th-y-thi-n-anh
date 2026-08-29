@@ -48,6 +48,41 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
         <NutBatThongBao />
       </div>
 
+      <details class="qsh-intro">
+        <summary>Vì sao tôi xây dựng Quân Sư Thiên Anh?</summary>
+        <div class="qsh-intro-body">
+          <p>
+            Tôi là Zhi Gong, một người đam mê và nghiên cứu Huyền học với hơn 10 năm tìm hiểu và thực hành các lĩnh vực như
+            Phong thủy, Mệnh lý, Trạch nhật và luận đoán.
+          </p>
+          <p>
+            Càng nghiên cứu sâu, tôi càng nhận ra một điều: Huyền học là một hệ thống tri thức rất rộng và phức tạp. Để
+            hiểu và vận dụng được nó cần rất nhiều thời gian, công sức, trải nghiệm và không ngừng nghiên cứu. Không phải
+            ai cũng có điều kiện để dành hàng chục năm học hỏi như vậy.
+          </p>
+          <p>
+            Nhưng trong cuộc sống, ai cũng có những lúc cần một người chỉ đường. Khi nào nên tiến, lúc nào nên lùi? Nên
+            lựa chọn người đồng hành nào? Thời điểm nào phù hợp để bắt đầu một việc quan trọng? Đâu là những điều cần lưu
+            ý để chủ động hơn trước những biến động của cuộc đời?
+          </p>
+          <p>
+            Tôi đã dành hơn 10 năm để đi tìm câu trả lời cho những vấn đề đó. Và tôi muốn những giá trị mình đã nghiên cứu
+            không chỉ nằm trong những trang sách hay trong kiến thức của một người.
+          </p>
+          <p>
+            Đó là lý do tôi xây dựng <strong>Quân Sư Thiên Anh</strong> — một người bạn đồng hành được cá nhân hóa, giúp
+            mọi người tiếp cận những tri thức Huyền học một cách đơn giản và thuận tiện hơn, mà không cần phải mất nhiều
+            năm tự mình nghiên cứu.
+          </p>
+          <p>
+            Tôi không muốn Quân Sư quyết định thay bạn. Tôi muốn nó trở thành người quân sư để bạn có thêm một góc nhìn,
+            biết mình nên chuẩn bị gì, nên tiến hay nên lùi, và chủ động hơn trên con đường mình lựa chọn.
+          </p>
+          <p>Bởi cuộc đời mỗi người đều có những lúc cần một người chỉ đường.</p>
+          <p class="qsh-intro-signature">Quân Sư Thiên Anh — đồng hành cùng bạn trên mọi nẻo đường.</p>
+        </div>
+      </details>
+
       <p class="qs-eyebrow" style="margin-top:1.4rem;">Tính Năng Cốt Lõi</p>
       <div class="qsh-module">
         <span class="qsh-module-ic">
@@ -298,6 +333,29 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
   .qsh-more summary::-webkit-details-marker { display: none; }
   .qsh-more summary::after { content: "▾"; float: right; }
   .qsh-more[open] summary::after { content: "▴"; }
+
+  /* Nút "Giới thiệu Zhi Gong" — cùng cơ chế <details> với .qsh-more phía trên, nhưng tách class
+     riêng vì nội dung mở ra dài hẳn (tự sự nhiều đoạn), cần padding/line-height rộng rãi hơn thay
+     vì 1 dòng ngắn như "Xem tất cả N nhóm câu hỏi". */
+  .qsh-intro { margin-top: 1.4rem; margin-bottom: 0.4rem; }
+  .qsh-intro summary {
+    cursor: pointer; color: var(--qs-gold); font-size: 0.85rem; font-weight: 600;
+    padding: 0.8rem 1rem; border: 1px solid rgba(241, 200, 90, 0.28); border-radius: 12px;
+    background: linear-gradient(160deg, rgba(241, 200, 90, 0.08), rgba(255, 255, 255, 0.02));
+    list-style: none;
+  }
+  .qsh-intro summary::-webkit-details-marker { display: none; }
+  .qsh-intro summary::after { content: "▾"; float: right; }
+  .qsh-intro[open] summary { border-radius: 12px 12px 0 0; }
+  .qsh-intro[open] summary::after { content: "▴"; }
+  .qsh-intro-body {
+    padding: 1.1rem 1.1rem 1.2rem; border: 1px solid rgba(241, 200, 90, 0.2); border-top: none;
+    border-radius: 0 0 12px 12px; background: rgba(255, 255, 255, 0.015);
+  }
+  .qsh-intro-body p { margin: 0 0 0.85rem; color: var(--qs-muted); font-size: 0.82rem; line-height: 1.65; }
+  .qsh-intro-body p:last-child { margin-bottom: 0; }
+  .qsh-intro-body strong { color: var(--qs-gold); }
+  .qsh-intro-signature { color: var(--qs-ivory) !important; font-weight: 600; }
 
   .qsh-tv-card {
     display: flex; align-items: center; justify-content: space-between; gap: 1rem; text-decoration: none;
