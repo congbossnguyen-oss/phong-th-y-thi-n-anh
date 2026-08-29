@@ -21,6 +21,10 @@ function json(body: unknown, status: number): Response {
  * Nghiệp vụ thật (chấm "hôm nay có phải dịp cần nhắc", gửi push, dọn subscription hết hạn) nằm ở
  * `chayNhacNgayLe()` trong `lib/thong-bao/chay-nhac-ngay-le.ts` — dùng chung với `scheduled()`, sửa 1
  * chỗ là cả 2 đường đều đổi theo, không lặp code.
+ *
+ * LỊCH CHẠY THẬT: xem wrangler.jsonc "triggers.crons" — kiểu "bao-truoc" hiện chạy ~9 giờ sáng giờ
+ * Việt Nam = 02:00 UTC (đổi từ 11 giờ trưa/04:00 UTC theo anh Công 28/8/2026). Không lặp lại giá trị
+ * cron cụ thể ở đây để khỏi có 2 nơi có thể lệch nhau khi sau này đổi giờ lần nữa.
  */
 export const POST: APIRoute = async ({ request, url }) => {
   const secret = docBien("CRON_SECRET");

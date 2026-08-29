@@ -2,7 +2,7 @@
  * NHẮC NGÀY MÙNG MỘT / NGÀY RẰM — phần lõi, KHÔNG phụ thuộc kênh gửi.
  *
  * Thầy đặt (2026-08-23), có hai phương án gửi và module này đỡ được CẢ HAI, chỉ đổi cấu hình:
- *   - "bao-truoc": trước ngày lễ một hôm, lúc 11 giờ trưa.
+ *   - "bao-truoc": trước ngày lễ một hôm, khoảng 9 giờ sáng (đổi từ 11 giờ trưa, anh Công 28/8/2026).
  *   - "dung-hom-do": đúng sáng ngày lễ, lúc 6 giờ.
  *
  * Tách riêng phần "có phải ngày cần nhắc không + soạn lời nhắn" khỏi phần "gửi bằng gì" (Web Push
