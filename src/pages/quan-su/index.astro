@@ -51,6 +51,13 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
       <details class="qsh-intro">
         <summary>Vì sao tôi xây dựng Quân Sư Thiên Anh?</summary>
         <div class="qsh-intro-body">
+          <div class="qsh-intro-author">
+            <img src="/images/team/zhi-gong.jpg" alt="Zhi Gong" class="qsh-intro-avatar" loading="lazy" />
+            <div>
+              <p class="qsh-intro-author-name">Zhi Gong</p>
+              <p class="qsh-intro-author-role">Người sáng lập Quân Sư Thiên Anh</p>
+            </div>
+          </div>
           <p>
             Tôi là Zhi Gong, một người đam mê và nghiên cứu Huyền học với hơn 10 năm tìm hiểu và thực hành các lĩnh vực như
             Phong thủy, Mệnh lý, Trạch nhật và luận đoán.
@@ -373,6 +380,11 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
   .qsh-intro-body p:last-child { margin-bottom: 0; }
   .qsh-intro-body strong { color: var(--qs-gold); }
   .qsh-intro-signature { color: var(--qs-ivory) !important; font-weight: 600; }
+
+  .qsh-intro-author { display: flex; align-items: center; gap: 0.7rem; margin-bottom: 1.1rem; padding-bottom: 1.1rem; border-bottom: 1px solid rgba(241, 200, 90, 0.18); }
+  .qsh-intro-avatar { flex: 0 0 auto; width: 46px; height: 46px; border-radius: 999px; object-fit: cover; border: 1.5px solid rgba(241, 200, 90, 0.4); }
+  .qsh-intro-author-name { margin: 0; color: var(--qs-ivory); font-size: 0.85rem; font-weight: 700; }
+  .qsh-intro-author-role { margin: 0.1rem 0 0; color: var(--qs-muted); font-size: 0.72rem; }
 
   .qsh-tv-card {
     display: flex; align-items: center; justify-content: space-between; gap: 1rem; text-decoration: none;
