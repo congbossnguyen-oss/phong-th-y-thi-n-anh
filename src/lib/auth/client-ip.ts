@@ -1,19 +1,33 @@
 import type { APIContext } from "astro";
 
 /**
- * Lấy IP thật của client. Ưu tiên header X-Forwarded-For (Render, Nginx reverse proxy trên VPS
- * đều gắn header này) vì context.clientAddress phía sau proxy thường chỉ là IP nội bộ của proxy.
+ * Lấy IP thật của client.
+ *
+ * ⚠️ ĐỔI ƯU TIÊN 30/8/2026 (production đã chuyển hẳn sang Cloudflare Worker, không còn Render/Nginx):
+ * ưu tiên `context.clientAddress` trước — trên Cloudflare, @astrojs/cloudflare lấy giá trị này
+ * TRỰC TIẾP từ header `CF-Connecting-IP` (`getClientAddress()` trong cf-helpers.js của adapter),
+ * do chính Cloudflare edge gắn vào nên KHÔNG spoof được và ổn định giữa các request. Trước đây hàm
+ * này ưu tiên `X-Forwarded-For` (đúng cho Render/Nginx cũ, vì `clientAddress` khi đó chỉ là IP nội
+ * bộ của proxy) — nhưng trên Cloudflare, `X-Forwarded-For` không đảm bảo có mặt/ổn định giống nhau
+ * ở mọi request, nên 2 request liên tiếp từ CÙNG một trình duyệt có thể bị hàm cũ trả về 2 giá trị
+ * IP khác nhau (khi 1 request có XFF, request kia lại rơi về clientAddress) → khiến
+ * `validateSessionToken()` (session.ts) tưởng nhầm là đổi IP và hủy phiên đăng nhập oan. Đây là
+ * nguyên nhân thật gây ra ca admin (congboss.nguyen@gmail.com, is_admin=true, session còn hạn)
+ * vẫn bị coi như chưa đăng nhập dù đã áp dụng `cungMangIp()` nới lỏng IPv6 (30/8/2026).
+ * `X-Forwarded-For` giữ lại làm phương án dự phòng cuối cùng nếu vì lý do gì đó `clientAddress`
+ * không đọc được.
  */
 export function getClientIp(context: Pick<APIContext, "request" | "clientAddress">): string {
+  try {
+    return context.clientAddress;
+  } catch {
+    // Không có clientAddress hợp lệ (vd chạy ngoài môi trường SSR có adapter) — dự phòng bằng XFF.
+  }
   const forwarded = context.request.headers.get("x-forwarded-for");
   if (forwarded) {
     return forwarded.split(",")[0].trim();
   }
-  try {
-    return context.clientAddress;
-  } catch {
-    return "unknown";
-  }
+  return "unknown";
 }
 
 /**
