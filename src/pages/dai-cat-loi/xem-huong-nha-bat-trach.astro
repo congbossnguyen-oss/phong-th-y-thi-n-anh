@@ -2,20 +2,15 @@
 // TRANG "Xem hướng nhà Bát Trạch" — module MỚI (30/8/2026), MỘT luồng duy nhất, không phân
 // Free/Cao Cấp, không thu phí, kết quả lũy tiến theo SPEC-OVERRIDE-MOT-MODULE.md.
 //
-// 🔒 GIAI ĐOẠN THỬ NGHIỆM NỘI BỘ: CHỈ tài khoản quản trị được xem (anh Công yêu cầu build xong để
-// tự kiểm chứng trước khi mở cho khách — xem GHI-CHU-CAN-CHU-SITE-XEM.md). Chặn ở middleware.ts
-// (điều hướng thẳng về "/" cho khách thường) — trang tự kiểm tra thêm 1 lớp phòng thủ ở đây để
-// không phụ thuộc hoàn toàn vào middleware. Khi mở bán/mở dùng thật: xóa khối check dưới đây VÀ
-// dòng chặn tương ứng trong middleware.ts (đánh dấu rõ ràng ở cả 2 chỗ).
+// ĐÃ MỞ CÔNG KHAI (30/8/2026, anh Công: "để ra ngoài như mục huyền không phi tinh") — cùng mức mở
+// như "Xem phong thủy nhà (Huyền Không Phi Tinh)": không admin-gate, đăng ký trong site-config.ts
+// mục Công cụ. Trang tự kiểm chứng "/kiem-chung" (đối chiếu số liệu nội bộ) vẫn admin-only, tự
+// kiểm tra riêng trong file .astro của nó — không liên quan tới trang chính này.
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import XemHuongNhaBatTrach from "../../components/tools/XemHuongNhaBatTrach.astro";
 
 export const prerender = false;
-
-if (Astro.locals.user?.isAdmin !== true) {
-  return Astro.redirect("/");
-}
 ---
 
 <BaseLayout
