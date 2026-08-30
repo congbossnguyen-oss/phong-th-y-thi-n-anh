@@ -24,8 +24,12 @@ chi tiết sang chuyên gia người thật. Đã xoá: route `luan-ai.ts`, lib 
 - [`../../pages/dai-cat-loi/huyen-khong-phi-tinh.astro`](../../pages/dai-cat-loi/huyen-khong-phi-tinh.astro) —
   khung trang (PageHero/breadcrumbs).
 - `docs/huyen-khong-phi-tinh/` (thư mục riêng, ngoài `src/`) — SKILL.md, TRANG-THAI-MODULE.md gốc
-  và 12 file `references/` (a-i) — giữ để tra cứu. Cập nhật lần 2 (30/8/2026): thêm
-  h-81-cap-sao-va-hoa-giai.md + i-thu-son-xuat-sat-cua-chinh-duong-khi.md.
+  và 13 file `references/` (a-i, k, + 3 file không đánh chữ cái) — giữ để tra cứu. Cập nhật lần 3
+  (31/8/2026, anh Công gửi bản `huyen-khong-phi-tinh.skill` mới): thêm
+  `references/k-cac-cach-cuc-tot-nhat.md` (điều kiện phân biệt thật của Thất Tinh Đả Kiếp — Song
+  Tinh Hội Tọa/Hướng), đồng bộ lại SKILL.md + TRANG-THAI-MODULE.md. Các file `references/` khác
+  (a, c, h, i, thanh-mon...) đối chiếu byte-for-byte KHÔNG đổi so với bản trước, chỉ 2 file trên
+  + file K là mới/khác.
   (Các file AI `luan-ai.ts` / `tri-thuc-ai.ts` / route `luan-ai.ts` ĐÃ XOÁ — xem đầu README.)
 
 ## Kiểm chứng đã pass (4 mốc bắt buộc từ TRANG-THAI-MODULE.md gốc mục 3, + phần mở rộng)
@@ -60,6 +64,19 @@ Toàn bộ engine chạy **client của Astro SSR, thuần TypeScript, 0đ, khô
   bảng máy móc.)
 - Danh sách đầy đủ (Đào Hoa theo nhà, Bát Sát/Hoàng Tuyền theo sơn hướng, v.v.) nằm trong hằng số
   `KHONG_TINH` ở đầu `engine.ts`.
+
+**Cập nhật 31/8/2026 — Thất Tinh Đả Kiếp / Tam Ban Xảo Quái nay ĐÃ tự nhận diện được** (trước đó
+`canhBaoDaKiep()` trả lời "CẦN NGƯỜI LUẬN TỰ XÉT" vì mô tả nguồn cũ ("3 cung Ly-Chấn-Càn đủ bộ
+1-4-7/2-5-8/3-6-9") đã kiểm chứng đúng với MỌI tinh bàn (54/54), không phải điều kiện phân biệt).
+Nguồn mới `k-cac-cach-cuc-tot-nhat.md` (MV_HKPT1, anh Công gửi 31/8/2026) cho điều kiện phân biệt
+THẬT: **chỉ tồn tại khi có Song Tinh Hội Tọa hoặc Song Tinh Hội Hướng**; cung đích (Hướng nếu Song
+Tinh Đáo Hướng, Tọa nếu Đáo Tọa) rơi vào Ly-Chấn-Càn (9-3-6) → **Ly Cung Đả Kiếp (THẬT)**, Khảm-Tốn-
+Đoài (1-4-7) → **Khảm Cung Đả Kiếp (GIẢ)**, Cấn-Trung-Khôn (8-5-2) → **Tam Ban Xảo Quái** (yếu nhất).
+Đã thêm vào `nhanDienCachCuc()` (nhãn mới `"ĐẠI CÁT — CÓ ĐIỀU KIỆN"`), luôn kèm cảnh báo "cả 3 cung
+phải thông khí, hụt 1 cung là hỏng thành 'hạ thủy' tổn đinh" vì engine không biết thực địa. `canhBaoDaKiep()`
+giờ chỉ còn là ghi chú riêng về tính chất cấu trúc của bộ số tam ban (không phải điều kiện Đả Kiếp).
+Test: `Thất Tinh Đả Kiếp / Tam Ban Xảo Quái — cập nhật 31/8/2026` (quét toàn bộ 9 vận × 24 sơn, xác
+nhận cả 3 loại đều xuất hiện và đúng nhãn).
 
 **Cập nhật 30/8/2026 — đã tính thêm** (trước đây nằm trong "còn thiếu" của TRANG-THAI-MODULE.md):
 Chính Thần / Linh Thần / Chiếu Thần theo vận (`chinhLinhThan()`), Thu Sơn Xuất Sát từng cung

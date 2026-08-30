@@ -21,6 +21,9 @@ huyen-khong-phi-tinh/
     ├── e-case-study-thuc-nghiem.md     # 7 case thực tế
     ├── f-loan-dau-son-thuy.md          # Hình thế núi/nước phối với sao
     ├── g-tinh-ban-24-son-huong-van9.md # Tinh bàn dựng sẵn 24 sơn hướng Vận 9
+    ├── h-81-cap-sao-va-hoa-giai.md     # 81 cặp sao + kích hoạt/hóa giải từng sao
+    ├── i-thu-son-xuat-sat-cua-chinh-duong-khi.md  # Thu Sơn Xuất Sát, cửa chính, đường khí, Chính-Linh Thần
+    ├── k-cac-cach-cuc-tot-nhat.md      # Xếp hạng cách cục + Thất Tinh Đả Kiếp đầy đủ
     ├── quy-trinh-luan-khi-co-tinh-ban.md  # Quy trình 10 bước
     ├── song-tinh-danh-cuc.md           # 5 tổ hợp 2 sao cổ điển có tên
     └── thanh-mon.md                    # Thành Môn, mở cửa phụ cứu hướng
@@ -51,6 +54,7 @@ Chạy `--self-test` để tái kiểm bất cứ lúc nào:
 | Hạng mục | Kết quả | Đối chiếu với |
 |---|---|---|
 | Tinh bàn (Sơn + Hướng tinh, 9 cung) | **432/432 điểm (100%)** | 24 sơn hướng Vận 9 trong `g-tinh-ban-24-son-huong-van9.md` |
+| Chính Thần / Linh Thần | **9/9 vận** thỏa hợp thập | Bảng trong `i-...md` mục 4.2 |
 | Thành Môn | **3/3** | Ví dụ có lời giải trong sách Văn Hoài |
 | Niên tinh nhập trung | **5/5** | 3 mốc lịch sử trong Tứ Bạch Quyết (1870=4, 1930=7, 1992=8) |
 | Phân loại Không Vong | **8/8 ca biên** | Định nghĩa trong file A mục 15 |
@@ -69,6 +73,9 @@ Chạy `--self-test` để tái kiểm bất cứ lúc nào:
 - Song Tinh Danh Cục (Tứ Nhất, Cửu Thất, Nhị Ngũ, Tam Thất, Giao Kiếm)
 - Niên tinh / Nguyệt tinh + cảnh báo Ngũ Hoàng, Nhị Hắc lưu niên
 - Cảnh báo sát khí từng cung + gợi ý hướng hóa giải
+- **Chính Thần / Linh Thần / Chiếu Thần** theo vận + quy tắc bố trí thủy (Chính Thần kỵ nước, Linh Thần có nước là cát)
+- **Thu Sơn Xuất Sát** — khuyến nghị cao/thấp cho từng cung
+- **Thất Tinh Đả Kiếp / Tam Ban Xảo Quái** — nhận diện loại (Ly/Khảm/Xảo Quái) và thật/giả
 
 ---
 
@@ -78,7 +85,7 @@ Chạy `--self-test` để tái kiểm bất cứ lúc nào:
 |---|---|
 | **Đắc cách / thất cách** | Cần loan đầu thực tế (núi/nước/đường ở đâu) — web phải hỏi người dùng |
 | **Kết luận cát hung cuối cùng** | Phụ thuộc đắc/thất cách ở trên |
-| **Phụ Mẫu Tam Ban / Đả Kiếp** | Mô tả trong nguồn **đã kiểm chứng là đúng với 54/54 tổ hợp tinh bàn** → là tính chất cấu trúc Lạc Thư, không phải điều kiện phân biệt. Nguồn chưa đủ để nhận diện |
+| **Điều kiện "3 cung thông khí" của Đả Kiếp** | Engine nhận diện được LOẠI Đả Kiếp, nhưng không biết thực địa 3 cung có cửa/đường/thông khí hay không. Hụt điều kiện này thì Đả Kiếp thành cách XẤU (hạ thủy, tổn đinh) → engine luôn kèm cảnh báo |
 | **Thế Quái tự động** | Ngưỡng độ còn mâu thuẫn giữa nguồn (3°/6° vs 4°/7°); là quyết định của người luận. Bật thủ công `--the-quai` |
 | **Đào Hoa theo NHÀ** | Công thức gốc không còn trong phần OCR đọc được. Chỉ có Đào Hoa theo NGƯỜI (đã verify) |
 | **Ý nghĩa cặp sao ngoài Vận 9** | Bảng 9 cặp chỉ đúng Vận 9; engine tự tắt mục này khi vận khác |
@@ -103,9 +110,8 @@ Gợi ý mô hình: **Free** = lớp 1+2+3a (tinh bàn, cách cục, cảnh báo
 
 | # | Thiếu | Nguồn có sẵn để làm | Ảnh hưởng |
 |---|---|---|---|
-| 1 | **Điều kiện Đả Kiếp đầy đủ** | Văn Hoài Phần II, Tứ Bạch Quyết Bộ 2-3 | Cao — đang là gap có thật, đã xác định rõ |
-| 2 | **Chính Thần / Linh Thần** | Bình Nguyên Quân (OCR quá xấu, cần scan lại) | Cao — ảnh hưởng việc xác định phương nên có thủy |
-| 3 | Ý nghĩa cặp sao cho **mọi vận** (81 tổ hợp) | Tứ Bạch Quyết Bộ 2-3 | Cao nếu web phải xử lý nhà vận 7/8 |
+| 1 | Bảng "24 Đả Kiếp Thật Cục" | MV_HKPT1 (là ảnh, chưa trích được) | Trung bình — engine đã nhận diện bằng logic, bảng chỉ để đối chiếu |
+| 2 | Xác minh 3 cục Song Tinh vận 8 chênh với nguồn | MV_HKPT1 | Trung bình — engine ra 9 cục, nguồn liệt kê 6 (nghi OCR cắt) |
 | 4 | Bát Sát / Hoàng Tuyền theo 24 sơn hướng | Nguồn Trương Giác Minh (OCR hỏng) | Trung bình |
 | 5 | Loan Đầu kiến trúc hiện đại | Thẩm thị phong cảnh (chưa xử lý) | Trung bình — quan trọng với khách đô thị |
 | 6 | 23 case study còn lại | MV_HKPT2 | Trung bình — dùng để test độ chính xác |
