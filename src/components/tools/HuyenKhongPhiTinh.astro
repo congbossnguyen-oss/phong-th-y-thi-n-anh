@@ -83,7 +83,11 @@ const nhomBTrong =
   nhomB.wc.length === 0 &&
   nhomB.gieng === null;
 
+// van = VẬN NHÀ (từ năm nhập trạch), dùng lập tinh bàn. vanHienTai = vận đương lệnh (từ năm nay),
+// dùng xét vượng/suy. Nhà cũ (vd nhập trạch 2003 = Vận 7) xem trong Vận 9 thì 2 vận khác nhau —
+// tinh bàn giữ Vận 7 nhưng vượng/suy xét theo Vận 9 (nhà đã thoái vận).
 let van: number | null = null;
+let vanHienTai: number | null = null;
 let doHuong: number | null = null;
 let loi: string | null = null;
 let kq: KetQuaHuyenKhong | null = null;
@@ -95,8 +99,9 @@ if (daGuiForm) {
     loi = "Năm nhập trạch không hợp lệ.";
   } else {
     van = vanTuNam(namNhapTrach!);
+    vanHienTai = vanTuNam(new Date().getFullYear());
     doHuong = loaiDo === "toa" ? (doNhap! + 180) % 360 : doNhap!;
-    kq = tinhToanHuyenKhong(doHuong, van);
+    kq = tinhToanHuyenKhong(doHuong, van, { vanHienTai });
   }
 }
 
@@ -258,10 +263,18 @@ const MAU_TRANG_THAI: Record<string, string> = {
           <div class="mt-8 space-y-8">
             <section class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-4 text-base font-semibold text-(--color-ink-900)">
               <p>
-                Tọa <strong>{kq.tinh_ban.son_toa}</strong> ({kq.tinh_ban.do_toa}°) — Hướng <strong>{kq.tinh_ban.son_huong}</strong> ({kq.tinh_ban.do_huong}°) · Vận <strong>{van}</strong>
-                {" "}(suy từ năm nhập trạch {namNhapTrach})
+                Tọa <strong>{kq.tinh_ban.son_toa}</strong> ({kq.tinh_ban.do_toa}°) — Hướng <strong>{kq.tinh_ban.son_huong}</strong> ({kq.tinh_ban.do_huong}°)
+              </p>
+              <p class="mt-1 text-sm font-medium text-(--color-ink-800)">
+                Tinh bàn lập theo <strong>Vận {kq.van_nha}</strong> (năm nhập trạch {namNhapTrach}) · Xét vượng/suy theo <strong>Vận {kq.van_hien_tai}</strong> (đương lệnh, {new Date().getFullYear()})
               </p>
             </section>
+
+            {kq.da_thoai_van && (
+              <div class="rounded-(--radius-card) border-2 border-(--color-danger-500)/50 bg-(--color-danger-500)/10 p-4 text-base font-semibold text-(--color-danger-600)">
+                ⚠️ Nhà đã sang vận mới (Vận {kq.van_nha} → Vận {kq.van_hien_tai}) — gọi là "THOÁI VẬN". Tinh bàn và các cách cục (Vượng Sơn Vượng Hướng…) vẫn giữ theo Vận {kq.van_nha} là kết cấu gốc của nhà, NHƯNG các sao vượng của Vận {kq.van_nha} nay đã thoái khí. Cột "vượng/suy" và phần Thu Sơn Xuất Sát bên dưới đã xét theo Vận {kq.van_hien_tai} hiện tại — đây mới là tình trạng THỰC của nhà lúc này.
+              </div>
+            )}
 
             {(["phan_loai_huong", "phan_loai_toa"] as const).map((key) => {
               const pl = kq!.tinh_ban[key];
@@ -320,7 +333,12 @@ const MAU_TRANG_THAI: Record<string, string> = {
             )}
 
             <section>
-              <h2 class="font-display text-2xl font-bold text-(--color-ink-950)">Cách cục toàn bàn</h2>
+              <h2 class="font-display text-2xl font-bold text-(--color-ink-950)">Cách cục toàn bàn <span class="text-base font-semibold text-(--color-ink-600)">(theo Vận {kq.van_nha} — kết cấu gốc)</span></h2>
+              {kq.da_thoai_van && (
+                <p class="mt-1 text-sm font-medium text-(--color-danger-600)">
+                  Nhà đã sang Vận {kq.van_hien_tai}: các sao vượng của Vận {kq.van_nha} (như Vượng Sơn Vượng Hướng) nay đã thoái khí, cách cục gốc chỉ còn là nền tảng — tình trạng thực xét theo bảng vượng/suy Vận {kq.van_hien_tai} bên dưới.
+                </p>
+              )}
               <div class="mt-3 space-y-2">
                 {kq.cach_cuc.map(([ten, tc, moTa]) => (
                   <div class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4 text-base">
@@ -332,10 +350,10 @@ const MAU_TRANG_THAI: Record<string, string> = {
             </section>
 
             <section>
-              <h2 class="font-display text-2xl font-bold text-(--color-ink-950)">Vượng / Suy 9 sao theo Vận {van}</h2>
+              <h2 class="font-display text-2xl font-bold text-(--color-ink-950)">Vượng / Suy 9 sao theo Vận {kq.van_hien_tai} <span class="text-base font-semibold text-(--color-ink-600)">(đương lệnh hiện tại)</span></h2>
               <div class="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-9">
                 {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((sao) => {
-                  const tt = trangThaiSao(sao, van!);
+                  const tt = trangThaiSao(sao, kq!.van_hien_tai);
                   return (
                     <div class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3 text-center">
                       <p class="text-2xl font-extrabold text-(--color-ink-950)">{sao}</p>
@@ -489,9 +507,9 @@ const MAU_TRANG_THAI: Record<string, string> = {
                 Công cụ chỉ tính phần KHÁCH QUAN (từ tọa độ, vận, công thức Huyền Không Phi Tinh). Kết luận cát hung cuối cùng cần đối chiếu loan đầu thực tế
                 và KHÔNG được suy ra tự động — kể cả khi bạn đã điền đủ Nhóm B ở trên.
               </p>
-              {van !== 9 && (
+              {kq.van_nha !== 9 && (
                 <p class="mt-1">
-                  ⚠️ Vận {van}: thuật toán giống hệt Vận 9 nhưng CHƯA có bộ dữ liệu đối chiếu độc lập cho vận này (mục "Ý nghĩa cặp sao" đã tự ẩn vì chỉ đúng cho Vận 9).
+                  ⚠️ Tinh bàn lập theo Vận {kq.van_nha}: thuật toán giống hệt Vận 9 nhưng CHƯA có bộ dữ liệu đối chiếu độc lập cho vận này (bộ kiểm chứng 432/432 chỉ có cho Vận 9). Vượng/suy đã xét theo Vận {kq.van_hien_tai} hiện tại.
                 </p>
               )}
               {(kq.tinh_ban.phan_loai_huong.muc === "xau" || kq.tinh_ban.phan_loai_huong.muc === "nguy_hiem" ||

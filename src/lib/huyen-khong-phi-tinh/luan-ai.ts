@@ -86,6 +86,11 @@ const SYSTEM_CO_DINH = [
   "NGUYÊN TẮC BẮT BUỘC:",
   "1. Tinh bàn (Sơn/Vận/Hướng tinh từng cung), cách cục, Thành Môn, Chính-Linh-Chiếu Thần, Thu Sơn",
   "   Xuất Sát đã được TÍNH SẴN bằng công thức — dùng NGUYÊN VẸN, không tự tính lại, không sửa.",
+  "1b. PHÂN BIỆT 2 VẬN: 'Vận nhà' (lập tinh bàn, cố định) và 'Vận đương lệnh' (xét vượng/suy hiện",
+  "   tại). Nếu nhà ĐÃ THOÁI VẬN (2 vận khác nhau, xem dòng cảnh báo đầu dữ liệu): trạng thái",
+  "   vượng/suy từng cung đã tính theo vận đương lệnh — luận đúng theo đó. Cách cục (Vượng Sơn Vượng",
+  "   Hướng…) theo vận nhà PHẢI nói rõ là ĐÃ MẤT THỜI, chỉ còn nền tảng; TUYỆT ĐỐI không kết luận",
+  "   nhà đang vượng dựa trên cách cục của vận nhà đã qua.",
   "2. Đắc/thất cách CHỈ được kết luận khi có dữ liệu loan đầu (Nhóm B) cho đúng cung đó. Cung nào",
   "   khách không khai loan đầu thì PHẢI ghi rõ 'chưa đủ dữ liệu loan đầu để xét đắc/thất cách tại",
   "   cung này' trong trường dac_that_cach — TUYỆT ĐỐI không tự đoán loan đầu không có.",
@@ -94,7 +99,7 @@ const SYSTEM_CO_DINH = [
   "   đối chiếu' PHẢI nói rõ điều đó trong câu trả lời. Không hóa giải cho các trường hợp 'CỰC HUNG",
   "   không hóa giải được' hoặc thiếu dữ liệu do OCR — chỉ cảnh báo tránh phạm phải hoặc nói rõ",
   "   'nguồn không đủ dữ liệu'.",
-  "4. Nếu Vận khác Vận 9: mục 'Ý nghĩa cặp sao (chỉ Vận 9)' trong dữ liệu sẽ trống — dùng bảng 81",
+  "4. Nếu VẬN ĐƯƠNG LỆNH khác 9: mục 'ý nghĩa cặp (chỉ Vận 9)' trong dữ liệu sẽ trống — dùng bảng 81",
   "   cặp sao (Y_NGHIA_81_CAP_SAO) thay thế, LUÔN đối chiếu với Thời/Hình/Khí theo đúng cảnh báo",
   "   ở đầu tài liệu đó — không trích thẳng 'điềm báo' làm kết luận cuối.",
   "5. Chính Thần kỵ thấy nước, Linh Thần có nước là cát — quy tắc NGƯỢC TRỰC GIÁC, đối chiếu đúng",
@@ -153,24 +158,35 @@ function serializeTinhBan(kq: KetQuaHuyenKhong): string {
     .map((t) => `- ${t.cung}: ${t.khuyen_nghi.join(" | ")}`)
     .join("\n");
 
+  const dongThoaiVan = kq.da_thoai_van
+    ? `⚠️ NHÀ ĐÃ THOÁI VẬN: tinh bàn lập theo Vận ${kq.van_nha} (năm nhập trạch) nhưng nay đang ở Vận ` +
+      `${kq.van_hien_tai} (đương lệnh). Vượng/suy của các sao (cột trạng thái từng cung, Thu Sơn Xuất Sát, ` +
+      `Chính-Linh Thần) ĐÃ xét theo Vận ${kq.van_hien_tai} hiện tại — các sao vượng của Vận ${kq.van_nha} nay ` +
+      `đã thoái khí. Cách cục (Vượng Sơn Vượng Hướng…) giữ theo Vận ${kq.van_nha} là kết cấu gốc, PHẢI luận rõ ` +
+      `rằng cách cục đó nay đã mất thời, chỉ còn là nền tảng — không được nói nhà đang vượng theo cách cục Vận ` +
+      `${kq.van_nha}. Thành Môn cố định theo lá số (Vận ${kq.van_nha}).`
+    : `Nhà đúng vận hiện tại (Vận ${kq.van_hien_tai}) — vận nhà và vận đương lệnh trùng nhau.`;
+
   return [
-    `Tọa ${tb.son_toa} (${tb.do_toa}°) — Hướng ${tb.son_huong} (${tb.do_huong}°) — Vận ${tb.van}`,
+    `Tọa ${tb.son_toa} (${tb.do_toa}°) — Hướng ${tb.son_huong} (${tb.do_huong}°)`,
+    `Vận NHÀ (lập tinh bàn): ${kq.van_nha} · Vận ĐƯƠNG LỆNH (xét vượng/suy): ${kq.van_hien_tai}`,
+    dongThoaiVan,
     `Phân loại Hướng: ${tb.phan_loai_huong.loai} (lệch ${tb.phan_loai_huong.lech}°) — ${tb.phan_loai_huong.mo_ta}`,
     `Phân loại Tọa: ${tb.phan_loai_toa.loai} (lệch ${tb.phan_loai_toa.lech}°) — ${tb.phan_loai_toa.mo_ta}`,
     "",
-    "=== TỪNG CUNG (Sơn tinh — Vận tinh — Hướng tinh) ===",
+    "=== TỪNG CUNG (Sơn tinh — Vận tinh — Hướng tinh; trạng thái vượng/suy theo Vận đương lệnh) ===",
     dong,
     "",
-    "=== CÁCH CỤC TOÀN BÀN ===",
+    `=== CÁCH CỤC TOÀN BÀN (theo Vận ${kq.van_nha} — kết cấu gốc, xét mất thời nếu đã thoái vận) ===`,
     cachCuc || "(không có cách cục lớn đặc biệt)",
     "",
-    "=== THÀNH MÔN (đã áp dụng điều kiện Chân/Giả Thành Môn) ===",
+    "=== THÀNH MÔN (cố định theo lá số, điều kiện Chân/Giả Thành Môn) ===",
     thanhMon,
     "",
-    "=== CHÍNH THẦN — LINH THẦN — CHIẾU THẦN (Vận " + tb.van + ") ===",
+    "=== CHÍNH THẦN — LINH THẦN — CHIẾU THẦN (Vận đương lệnh " + kq.van_hien_tai + ") ===",
     chinhLinhThan,
     "",
-    "=== THU SƠN XUẤT SÁT TỪNG CUNG (đã tính theo Sơn/Hướng Bàn) ===",
+    "=== THU SƠN XUẤT SÁT TỪNG CUNG (xét theo Vận đương lệnh) ===",
     thuSonXuatSat,
   ].join("\n");
 }
