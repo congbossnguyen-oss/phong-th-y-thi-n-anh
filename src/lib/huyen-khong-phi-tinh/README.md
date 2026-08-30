@@ -86,6 +86,12 @@ Chính Thần / Linh Thần / Chiếu Thần theo vận (`chinhLinhThan()`), Thu
    **Hướng tinh THẬT phải đang VƯỢNG/SINH thì mới `kha_dung=true`; SUY/TỬ/TỬ-XA thì loại hẳn sang
    nhóm "xấu nếu mở"**, dù công thức mở cửa phụ tính ra đắc vượng. Khóa lại bằng 2 test trong
    `tests/huyen-khong-phi-tinh-engine.test.ts`.
+4. **Bổ sung thêm 31/8/2026 (anh Công hỏi tiếp)**: *"vậy hướng bắc sao hướng 9 hay nam sao hướng
+   tinh số 1 bay vào sao không nêu để mở cửa phụ"* — đúng, các cung có Hướng tinh THẬT vốn đã
+   VƯỢNG/SINH sẵn (không cần qua công thức mục 7) trước đó bị bỏ sót hoàn toàn. Đã thêm field
+   `huong_tinh_da_vuong_sinh_san` — liệt kê thêm các cung này vào nhóm "đủ điều kiện" (đã có sẵn
+   trong Thu Sơn Xuất Sát với vai trò khác, giờ cũng xuất hiện ở mục mở cửa phụ). Test:
+   `xetMoCuaPhu — liệt kê thêm cung có Hướng tinh THẬT vốn đã vượng/sinh sẵn`.
 
 **⚠️ Tách VẬN NHÀ vs VẬN ĐƯƠNG LỆNH (30/8/2026, anh Công báo lỗi)** — điểm dễ sai nhất, đọc kỹ:
 Nhà nhập trạch năm nào thì thuộc vận đó (vd 2003 = Vận 7). Nhưng **vượng/suy của sao phải xét theo

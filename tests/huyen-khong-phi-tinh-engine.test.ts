@@ -307,13 +307,13 @@ describe("Thành Môn / mở cửa phụ xét theo VẬN HIỆN TẠI (nhà tho�
   // Nhà Mão hướng, nhập trạch 2003 = Vận 7. Xem ở Vận 9.
   const tb = lapTinhBan(SON_24["Mão"][0], vanTuNam(2003));
 
-  it("mở cửa phụ theo Vận 9: mọi sơn đắc vượng phải là nơi vượng tinh 9 bay về (không phải sao 7)", () => {
+  it("mở cửa phụ theo Vận 9: sơn đắc vượng THEO CÔNG THỨC phải là nơi vượng tinh 9 bay về (không phải sao 7)", () => {
     const theoVan9 = xetMoCuaPhu(tb, 9);
     expect(theoVan9.length).toBeGreaterThan(0);
-    for (const m of theoVan9) expect(m.sao_ve_cung).toBe(9);
-    // Nếu (nhầm) xét theo vận nhà 7 thì đắc vượng là nơi sao 7 bay về.
+    for (const m of theoVan9.filter((x) => x.dac_vuong)) expect(m.sao_ve_cung).toBe(9);
+    // Nếu (nhầm) xét theo vận nhà 7 thì đắc vượng theo công thức là nơi sao 7 bay về.
     const theoVan7 = xetMoCuaPhu(tb, 7);
-    for (const m of theoVan7) expect(m.sao_ve_cung).toBe(7);
+    for (const m of theoVan7.filter((x) => x.dac_vuong)) expect(m.sao_ve_cung).toBe(7);
   });
 
   it("Thành Môn: khả dụng xét theo Vận 9 — sao về đúng cung là vượng tinh 9 (dùng vận bàn Vận 9)", () => {
@@ -397,6 +397,40 @@ describe("xetMoCuaPhu — ví dụ gốc thanh-mon.md mục 7 (tọa Giáp hư�
           if (m.kha_dung) {
             expect(["VƯỢNG", "SINH"]).toContain(m.tt_huong_tinh);
           }
+        }
+      }
+    }
+  });
+});
+
+describe("xetMoCuaPhu — liệt kê thêm cung có Hướng tinh THẬT vốn đã vượng/sinh sẵn (anh Công 31/8/2026)", () => {
+  it("nhà Đông/2003 xem Vận 9: Bắc (Hướng tinh thật = 9, VƯỢNG) và Nam (= 1, SINH) phải xuất hiện dù không qua công thức mở cửa phụ", () => {
+    const tb = lapTinhBan(SON_24["Mão"][0], vanTuNam(2003));
+    const kq = xetMoCuaPhu(tb, 9);
+    const bac = kq.filter((m) => TEN_TO_CUNG[m.cung_ten] === 1);
+    const nam = kq.filter((m) => TEN_TO_CUNG[m.cung_ten] === 9);
+    expect(bac.length).toBeGreaterThan(0);
+    expect(nam.length).toBeGreaterThan(0);
+    for (const m of bac) {
+      expect(m.huong_tinh_thuc_te).toBe(9);
+      expect(m.tt_huong_tinh).toBe("VƯỢNG");
+      expect(m.huong_tinh_da_vuong_sinh_san).toBe(true);
+      expect(m.kha_dung).toBe(true);
+    }
+    for (const m of nam) {
+      expect(m.huong_tinh_thuc_te).toBe(1);
+      expect(m.tt_huong_tinh).toBe("SINH");
+      expect(m.huong_tinh_da_vuong_sinh_san).toBe(true);
+      expect(m.kha_dung).toBe(true);
+    }
+  });
+
+  it("bất biến: huong_tinh_da_vuong_sinh_san=true luôn khớp tt_huong_tinh VƯỢNG/SINH; false thì không", () => {
+    for (const van of [1, 2, 3, 4, 5, 6, 7, 8, 9]) {
+      for (const son of Object.keys(SON_24)) {
+        const t = lapTinhBan(SON_24[son][0], van);
+        for (const m of xetMoCuaPhu(t, van)) {
+          expect(m.huong_tinh_da_vuong_sinh_san).toBe(m.tt_huong_tinh === "VƯỢNG" || m.tt_huong_tinh === "SINH");
         }
       }
     }
