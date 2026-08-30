@@ -1,0 +1,60 @@
+---
+// TRANG DANH MỤC "Phong thủy chính phái" (31/8/2026, anh Công yêu cầu) — chỉ gom 2 công cụ luận
+// nhà theo đúng trường phái cổ điển đã lập tinh bàn/cung phi thật (Huyền Không Phi Tinh, Bát
+// Trạch), tách khỏi các công cụ mệnh lý khác (Bát Tự, Tử Vi, Kỳ Môn...) trong dropdown Công cụ.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import Container from "../../components/ui/Container.astro";
+
+export const prerender = true;
+
+const muc = [
+  {
+    icon: "🧭",
+    title: "Xem phong thủy nhà (Huyền Không Phi Tinh)",
+    desc: "Lập tinh bàn từ tọa độ la bàn và năm nhập trạch: cách cục, vượng suy 9 sao, cảnh báo Không Vong/Ngũ Hoàng, Thành Môn — tính khách quan theo Tam Nguyên Cửu Vận.",
+    href: "/dai-cat-loi/huyen-khong-phi-tinh",
+  },
+  {
+    icon: "🏠",
+    title: "Xem hướng nhà Bát Trạch",
+    desc: "Xem hướng nhà hợp mệnh, cá nhân hóa theo Cung Phi gia chủ — Đông/Tây Tứ Trạch, Du Niên Bát Quái, Dương Trạch Tam Yếu (Cửa–Chủ–Bếp).",
+    href: "/dai-cat-loi/xem-huong-nha-bat-trach",
+  },
+];
+---
+
+<BaseLayout
+  title="Phong thủy chính phái"
+  description="2 công cụ luận nhà theo đúng trường phái cổ điển, lập tinh bàn/cung phi thật thay vì tra bảng có sẵn: Huyền Không Phi Tinh và Bát Trạch."
+>
+  <PageHero
+    eyebrow="Công cụ"
+    title="Phong thủy chính phái"
+    description="Khác với các công cụ xem ngày/mệnh lý khác, 2 công cụ dưới đây luận nhà bằng cách lập tinh bàn/cung phi thật từ tọa độ và thông tin gia chủ — theo đúng trường phái cổ điển, không tra bảng có sẵn."
+    breadcrumbs={[
+      { label: "Trang chủ", href: "/" },
+      { label: "Đại Cát Lợi", href: "/dai-cat-loi" },
+      { label: "Phong thủy chính phái" },
+    ]}
+  />
+
+  <Container class="py-16">
+    <div class="mx-auto grid max-w-3xl gap-4 sm:grid-cols-2">
+      {
+        muc.map((m) => (
+          <a
+            href={m.href}
+            class="relative flex flex-col gap-2 overflow-hidden rounded-2xl border-2 border-(--color-gold-300) bg-cover bg-center p-6 text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl"
+            style="background-image:url('/nen%205.png')"
+          >
+            <span class="absolute inset-0 bg-black/55" />
+            <span class="relative text-3xl">{m.icon}</span>
+            <span class="relative font-display text-lg font-bold text-white">{m.title}</span>
+            <span class="relative text-sm text-white/85">{m.desc}</span>
+          </a>
+        ))
+      }
+    </div>
+  </Container>
+</BaseLayout>

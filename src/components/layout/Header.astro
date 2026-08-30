@@ -36,15 +36,16 @@ const congCuChildren = mainNav.find((item) => item.label === "Công cụ")?.chil
 const BADGE_BEST = ["/luan-so-dien-thoai", "/dai-cat-loi/dinh-huong-nghe-nghiep"];
 
 // Gom các mục con liền kề có cùng `group` (vd "Phong thủy chính phái") thành 1 khối có tiêu đề
-// phụ, giữ nguyên thứ tự khai báo trong site-config.ts — mục không có `group` thì đứng riêng lẻ.
-type NavChild = { label: string; href: string; group?: string };
+// phụ BẤM ĐƯỢC (link tới `groupHref`), giữ nguyên thứ tự khai báo trong site-config.ts — mục
+// không có `group` thì đứng riêng lẻ, không thụt vào.
+type NavChild = { label: string; href: string; group?: string; groupHref?: string };
 function groupChildren(children: NavChild[]) {
-  const out: { group: string | null; items: NavChild[] }[] = [];
+  const out: { group: string | null; groupHref: string | null; items: NavChild[] }[] = [];
   for (const c of children) {
     const g = c.group ?? null;
     const last = out[out.length - 1];
     if (last && last.group === g) last.items.push(c);
-    else out.push({ group: g, items: [c] });
+    else out.push({ group: g, groupHref: c.groupHref ?? null, items: [c] });
   }
   return out;
 }
@@ -135,22 +136,30 @@ function groupChildren(children: NavChild[]) {
             {groupChildren(congCuChildren).map((grp) => (
               <>
                 {grp.group && (
-                  <p class="mt-1.5 px-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-(--color-gold-500) first:mt-0">{grp.group}</p>
+                  grp.groupHref ? (
+                    <a href={grp.groupHref} class="mt-2 rounded-(--radius-control) px-3 py-2 text-sm font-bold text-(--color-ink-900) hover:bg-(--color-ivory-200) first:mt-0">
+                      {grp.group}
+                    </a>
+                  ) : (
+                    <p class="mt-2 px-3 pb-1 text-sm font-bold text-(--color-ink-900) first:mt-0">{grp.group}</p>
+                  )
                 )}
-                {grp.items.map((child) => (
-                  <a
-                    href={child.href}
-                    class:list={[
-                      "rounded-(--radius-control) px-3 py-2.5 text-sm hover:bg-(--color-ivory-200)",
-                      child.label.startsWith("⭐") ? "font-medium text-(--color-gold-400)" : "text-(--color-ink-700)",
-                    ]}
-                  >
-                    {child.label}
-                    {BADGE_BEST.includes(child.href) && (
-                      <span class="ml-1.5 inline-block rounded bg-(--color-cinnabar-400) px-1.5 py-0.5 align-middle text-[10px] font-bold uppercase leading-none text-white">Best ⭐</span>
-                    )}
-                  </a>
-                ))}
+                <div class:list={[grp.group && "ml-3 flex flex-col border-l border-(--color-ivory-300) pl-3"]}>
+                  {grp.items.map((child) => (
+                    <a
+                      href={child.href}
+                      class:list={[
+                        "rounded-(--radius-control) px-3 py-2.5 text-sm hover:bg-(--color-ivory-200)",
+                        child.label.startsWith("⭐") ? "font-medium text-(--color-gold-400)" : "text-(--color-ink-700)",
+                      ]}
+                    >
+                      {child.label}
+                      {BADGE_BEST.includes(child.href) && (
+                        <span class="ml-1.5 inline-block rounded bg-(--color-cinnabar-400) px-1.5 py-0.5 align-middle text-[10px] font-bold uppercase leading-none text-white">Best ⭐</span>
+                      )}
+                    </a>
+                  ))}
+                </div>
               </>
             ))}
           </div>
@@ -167,16 +176,24 @@ function groupChildren(children: NavChild[]) {
                 {groupChildren(item.children).map((grp) => (
                   <>
                     {grp.group && (
-                      <p class="mt-1.5 px-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-(--color-gold-500) first:mt-0">{grp.group}</p>
+                      grp.groupHref ? (
+                        <a href={grp.groupHref} class="mt-2 rounded-(--radius-control) px-3 py-2 text-sm font-bold text-(--color-ink-900) hover:bg-(--color-ivory-200) first:mt-0">
+                          {grp.group}
+                        </a>
+                      ) : (
+                        <p class="mt-2 px-3 pb-1 text-sm font-bold text-(--color-ink-900) first:mt-0">{grp.group}</p>
+                      )
                     )}
-                    {grp.items.map((child) => (
-                      <a href={child.href} class="rounded-(--radius-control) px-3 py-2 text-sm text-(--color-ink-600) hover:bg-(--color-ivory-200)">
-                        {child.label}
-                        {child.href === "/luan-so-dien-thoai" && (
-                          <span class="ml-1.5 inline-block rounded bg-red-500 px-1.5 py-0.5 align-middle text-[10px] font-bold uppercase leading-none text-white">Hot</span>
-                        )}
-                      </a>
-                    ))}
+                    <div class:list={[grp.group && "ml-3 flex flex-col border-l border-(--color-ivory-300) pl-3"]}>
+                      {grp.items.map((child) => (
+                        <a href={child.href} class="rounded-(--radius-control) px-3 py-2 text-sm text-(--color-ink-600) hover:bg-(--color-ivory-200)">
+                          {child.label}
+                          {child.href === "/luan-so-dien-thoai" && (
+                            <span class="ml-1.5 inline-block rounded bg-red-500 px-1.5 py-0.5 align-middle text-[10px] font-bold uppercase leading-none text-white">Hot</span>
+                          )}
+                        </a>
+                      ))}
+                    </div>
                   </>
                 ))}
               </div>
@@ -226,14 +243,23 @@ function groupChildren(children: NavChild[]) {
                 {groupChildren(item.children).map((grp) => (
                   <>
                     {grp.group && (
-                      <li class="mt-1.5 px-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-(--color-gold-500) first:mt-0">{grp.group}</li>
+                      <li class="mt-1.5 first:mt-0">
+                        {grp.groupHref ? (
+                          <a href={grp.groupHref} class="block rounded-(--radius-control) px-3 py-2 text-sm font-bold text-(--color-ink-900) hover:bg-(--color-ivory-200) hover:text-(--color-gold-300)">
+                            {grp.group}
+                          </a>
+                        ) : (
+                          <p class="px-3 pb-1 text-sm font-bold text-(--color-ink-900)">{grp.group}</p>
+                        )}
+                      </li>
                     )}
                     {grp.items.map((child) => (
                       <li>
                         <a
                           href={child.href}
                           class:list={[
-                            "block rounded-(--radius-control) px-3 py-2 text-sm hover:bg-(--color-ivory-200) hover:text-(--color-gold-300)",
+                            "block rounded-(--radius-control) py-2 text-sm hover:bg-(--color-ivory-200) hover:text-(--color-gold-300)",
+                            grp.group ? "ml-3 border-l border-(--color-ivory-300) pl-3" : "px-3",
                             child.label.startsWith("⭐") ? "font-semibold text-(--color-gold-400)" : "text-(--color-ink-800)",
                           ]}
                         >
