@@ -38,11 +38,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
   }
 
-  // GIAI ĐOẠN THỬ NGHIỆM NỘI BỘ — module "Xem hướng nhà Bát Trạch" (30/8/2026) mới build xong,
-  // CHỈ admin xem được để tự kiểm chứng trước khi mở cho khách (trang .astro + API cũng tự kiểm
-  // tra thêm 1 lớp, xem GHI-CHU-CAN-CHU-SITE-XEM.md). KHI MỞ BÁN: xóa khối này (một chỗ duy nhất
-  // ở middleware, cộng với 2 chỗ đánh dấu tương tự trong trang .astro và API route).
-  if (path === "/dai-cat-loi/xem-huong-nha-bat-trach" || path.startsWith("/dai-cat-loi/xem-huong-nha-bat-trach/")) {
+  // "Xem hướng nhà Bát Trạch" (30/8/2026, anh Công: "để ra ngoài như mục huyền không phi tinh") —
+  // trang CHÍNH đã mở công khai (như Huyền Không Phi Tinh: tính toán free, không AI, không gating).
+  // CHỈ còn khóa riêng trang "/kiem-chung" (công cụ nội bộ đối chiếu số liệu, không phải sản phẩm
+  // cho khách) — trang đó tự kiểm tra isAdmin ngay trong file .astro của nó, không cần middleware.
+  if (path === "/dai-cat-loi/xem-huong-nha-bat-trach/kiem-chung") {
     if (!context.locals.user?.isAdmin) {
       return context.redirect("/");
     }

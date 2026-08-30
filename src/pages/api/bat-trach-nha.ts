@@ -19,17 +19,11 @@ function docCung(v: string | null): CungParam | null {
   return (CUNG_LIST as readonly string[]).includes(v) ? (v as CungParam) : null;
 }
 
-/**
- * 🔒 GIAI ĐOẠN THỬ NGHIỆM NỘI BỘ (anh Công 30/8/2026): module "Xem hướng nhà Bát Trạch" mới build
- * xong, CHỈ tài khoản quản trị được gọi. Trang .astro cũng chặn qua middleware (phòng thủ 2 lớp,
- * giống `ngay-cuoi-hoi/test-calculate.ts`) — khi mở bán thật thì gỡ khối check này VÀ dòng chặn
- * tương ứng trong `src/middleware.ts`.
- */
-export const GET: APIRoute = async ({ url, locals }) => {
-  if (locals.user?.isAdmin !== true) {
-    return jsonResponse({ error: "Công cụ đang trong giai đoạn thử nghiệm nội bộ." }, 403);
-  }
-
+// ĐÃ MỞ CÔNG KHAI (30/8/2026, anh Công: "để ra ngoài như mục huyền không phi tinh") — thuần tra
+// bảng + công thức, không AI, không thu phí, giống hệt cách "Xem phong thủy nhà (Huyền Không Phi
+// Tinh)" đã mở. Trang "/kiem-chung" (đối chiếu số liệu nội bộ, không phải sản phẩm cho khách) vẫn
+// admin-only nhưng tự kiểm tra ở tầng trang .astro của nó — không đi qua API này để chặn.
+export const GET: APIRoute = async ({ url }) => {
   const p = url.searchParams;
 
   const namSinhRaw = p.get("namSinh");

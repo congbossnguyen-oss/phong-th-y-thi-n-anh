@@ -122,17 +122,22 @@ phụ, đường nước...) — nhưng tầng tối thiểu chỉ thu thập h�
 phụ/đường nước cụ thể. Engine hiển thị đúng như bảng gốc: "hướng này cần tránh đặt cổng/đường nước
 tại sơn nào" (thông tin cảnh báo), KHÔNG kết luận "phạm" hay "không phạm" vì thiếu input để so.
 
-## 12. Quyết định về đường dẫn + hiển thị (chưa đưa vào menu công khai)
+## 12. Quyết định về đường dẫn + hiển thị
 
-- Trang chính: `/dai-cat-loi/xem-huong-nha-bat-trach` — admin-only (middleware.ts + trang + API đều
-  tự kiểm tra, 3 lớp phòng thủ).
-- Trang kiểm chứng: `/dai-cat-loi/xem-huong-nha-bat-trach/kiem-chung` — admin-only, KHÔNG link từ
-  đâu (đúng yêu cầu README "chủ site tự vào").
-- **CHƯA thêm vào** `src/lib/dai-cat-loi-tools.ts` (registry công khai dùng cho trang liệt kê công
-  cụ + tìm kiếm) và **CHƯA thêm vào** menu điều hướng — cố ý, vì đang giai đoạn admin-only; thêm
-  link công khai lúc này sẽ khiến khách thường bấm vào rồi bị đá về trang chủ, trông như lỗi. Khi
-  mở bán/mở dùng thật: (1) xóa 3 khối admin-check (middleware.ts dòng ~41-49, trang .astro, API
-  route), (2) thêm vào `dai-cat-loi-tools.ts`, (3) cân nhắc thêm vào menu điều hướng.
+- **Cập nhật 30/8/2026 (anh Công: "để ra ngoài như mục huyền không phi tinh"):** trang chính
+  `/dai-cat-loi/xem-huong-nha-bat-trach` **ĐÃ MỞ CÔNG KHAI** — đúng mức mở của "Xem phong thủy nhà
+  (Huyền Không Phi Tinh)": không admin-gate ở middleware/trang/API, đã đăng ký vào `mainNav` trong
+  `src/lib/site-config.ts` (mục "Công cụ"). Hợp lý với đúng tinh thần SPEC-OVERRIDE §1 gốc ("Chỉ có
+  MỘT module duy nhất... Mọi người dùng thấy toàn bộ năng lực của công cụ") — admin-gate ban đầu
+  chỉ là giai đoạn tự kiểm chứng nội bộ trước khi mở, không phải thiết kế lâu dài.
+- Trang kiểm chứng: `/dai-cat-loi/xem-huong-nha-bat-trach/kiem-chung` — **VẪN admin-only**, tự kiểm
+  tra `isAdmin` trong middleware.ts (chỉ khóa đúng đường dẫn `/kiem-chung`) VÀ trong chính file
+  `.astro` của nó — đúng đắn vì đây là công cụ nội bộ đối chiếu số liệu (README: "chủ site tự vào"),
+  không phải sản phẩm cho khách. KHÔNG link từ trang chính, không đăng ký ở đâu.
+- **CHƯA thêm vào** `src/lib/dai-cat-loi-tools.ts` (registry dùng cho trang liệt kê công cụ +
+  tìm kiếm `/dai-cat-loi`) — chỉ đăng ký ở `mainNav`, đúng khớp cách Huyền Không Phi Tinh đang làm
+  (không có card trong `ToolsShowcase.astro`/`dai-cat-loi/index.astro` cũng vì lý do tương tự). Nếu
+  muốn hiện đầy đủ hơn (card trang chủ, trong danh sách `/dai-cat-loi`), báo lại.
 
 ## 13. Kiểm thử
 
