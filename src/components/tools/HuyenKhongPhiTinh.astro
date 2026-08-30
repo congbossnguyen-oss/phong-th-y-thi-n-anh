@@ -375,11 +375,14 @@ const MAU_TRANG_THAI: Record<string, string> = {
                 {kq.thanh_mon.map((tm) => (
                   <div class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4 text-base">
                     <p class="font-bold text-(--color-ink-950)">
-                      {tm.son} ({tm.cung}) — Thành Môn {tm.loai} — {tm.kha_dung ? <span class="text-emerald-700">✓ khả dụng</span> : <span class="text-(--color-ink-600)">✗ không khả dụng</span>}
+                      {tm.son} ({tm.cung}) — Thành Môn {tm.loai} — {tm.kha_dung ? <span class="text-emerald-700">✓ CHÂN Thành Môn (dùng được)</span> : <span class="text-(--color-ink-600)">✗ GIẢ Thành Môn (không dùng)</span>}
                     </p>
                     <p class="mt-1.5 text-sm font-medium text-(--color-ink-800)">
-                      Vận tinh {tm.van_tinh} nhập trung bay {tm.chieu_bay} → sao {tm.sao_ve_cung} về cung này
-                      {!tm.kha_dung && ` (không phải vượng tinh ${van})`}
+                      Hướng tinh: vận tinh {tm.van_tinh} nhập trung bay {tm.chieu_bay} → sao {tm.sao_ve_cung} về cung này
+                      {!tm.kha_dung && tm.sao_ve_cung !== van && ` (không phải vượng tinh ${van})`}
+                    </p>
+                    <p class="mt-1 text-sm font-medium text-(--color-ink-800)">
+                      Sơn tinh tại đây: {tm.son_tinh_tai_do} [{tm.trang_thai_son_tinh}]
                     </p>
                     {tm.thanh_mon_ngam && <p class="mt-1.5 text-sm font-bold text-(--color-gold-700)">+ Có Thành Môn Ngầm</p>}
                     {tm.canh_bao && <p class="mt-1.5 text-sm font-bold text-(--color-danger-600)">⚠️ {tm.canh_bao}</p>}
@@ -387,6 +390,9 @@ const MAU_TRANG_THAI: Record<string, string> = {
                   </div>
                 ))}
               </div>
+              <p class="mt-2 text-xs italic text-(--color-ink-600)">
+                "Chân Thành Môn" cần đủ 3 điều kiện: Hướng tinh đang vượng · không phải Ngũ Hoàng (trừ Vận 5) · Sơn tinh đang thoái/sát (không vượng/sinh).
+              </p>
 
               {kq.mo_cua_phu.length > 0 && (
                 <details class="mt-3 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4">
@@ -406,6 +412,40 @@ const MAU_TRANG_THAI: Record<string, string> = {
               )}
             </section>
 
+            <section>
+              <h2 class="font-display text-2xl font-bold text-(--color-ink-950)">Chính Thần — Linh Thần — Chiếu Thần (bố trí thủy)</h2>
+              <p class="mt-1 text-sm font-medium text-(--color-ink-700)">Quy tắc ngược trực giác: phương Chính Thần (đang vượng) KỴ THẤY NƯỚC; phương Linh Thần lại CÓ NƯỚC LÀ CÁT.</p>
+              <div class="mt-3 grid gap-3 sm:grid-cols-3">
+                <div class="rounded-(--radius-control) border-2 border-(--color-danger-500)/40 bg-(--color-danger-500)/5 p-4">
+                  <p class="text-sm font-bold text-(--color-danger-600)">Chính Thần — sao {kq.chinh_linh_than.chinh_than_so}</p>
+                  <p class="mt-1 text-lg font-extrabold text-(--color-ink-950)">{kq.chinh_linh_than.chinh_than_cung}</p>
+                  <p class="mt-1 text-sm font-medium text-(--color-ink-800)">{kq.chinh_linh_than.quy_tac_chinh_than}</p>
+                </div>
+                <div class="rounded-(--radius-control) border-2 border-emerald-500/40 bg-emerald-500/5 p-4">
+                  <p class="text-sm font-bold text-emerald-700">Linh Thần — sao {kq.chinh_linh_than.linh_than_so ?? "—"}</p>
+                  <p class="mt-1 text-lg font-extrabold text-(--color-ink-950)">{kq.chinh_linh_than.linh_than_cung}</p>
+                  <p class="mt-1 text-sm font-medium text-(--color-ink-800)">{kq.chinh_linh_than.quy_tac_linh_than}</p>
+                </div>
+                <div class="rounded-(--radius-control) border-2 border-(--color-ivory-300) bg-(--color-ivory-50) p-4">
+                  <p class="text-sm font-bold text-(--color-ink-800)">Chiếu Thần — sao {kq.chinh_linh_than.chieu_than_so ?? "—"}</p>
+                  <p class="mt-1 text-lg font-extrabold text-(--color-ink-950)">{kq.chinh_linh_than.chieu_than_cung}</p>
+                </div>
+              </div>
+            </section>
+
+            <section>
+              <h2 class="font-display text-2xl font-bold text-(--color-ink-950)">Thu Sơn — Xuất Sát (bố trí cao/thấp từng cung)</h2>
+              <p class="mt-1 text-sm font-medium text-(--color-ink-700)">Sao vượng/sinh → đặt đúng chỗ nó phát huy (cao cho Sơn, thấp có nước cho Hướng). Sao suy/tử → đặt vào chỗ nó bị vô hiệu.</p>
+              <div class="mt-3 space-y-2">
+                {kq.thu_son_xuat_sat.map((t) => (
+                  <div class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3 text-sm font-medium text-(--color-ink-800)">
+                    <p class="font-bold text-(--color-ink-950)">{t.cung}</p>
+                    {t.khuyen_nghi.map((k) => <p class="mt-1">{k}</p>)}
+                  </div>
+                ))}
+              </div>
+            </section>
+
             {!laQuanTri ? (
               <section class="rounded-(--radius-card) border-2 border-dashed border-(--color-ivory-300) bg-(--color-ivory-50) p-5 text-center">
                 <p class="font-display text-xl font-bold text-(--color-ink-900)">🔒 Bản Trả Phí — sắp mở</p>
@@ -418,8 +458,8 @@ const MAU_TRANG_THAI: Record<string, string> = {
               <section id="hkpt-ai" class="rounded-(--radius-card) border-2 border-(--color-gold-400) bg-(--color-gold-400)/5 p-5">
                 <p class="font-display text-xl font-bold text-(--color-ink-900)">🔒 Luận chi tiết bằng AI — đang test nội bộ (DeepSeek)</p>
                 <p class="mt-1 text-sm font-medium text-(--color-ink-800)">
-                  Chỉ admin gọi được (chưa chốt giá nên chưa mở khách). AI đối chiếu tinh bàn với Nhóm B theo đúng quy trình 10 bước trong <code>quy-trinh-luan-khi-co-tinh-ban.md</code>,
-                  hóa giải lấy từ <code>c-hoa-giai-sat-khi.md</code> (ưu tiên mức đồng thuận nhiều thầy).
+                  Chỉ admin gọi được (chưa chốt giá nên chưa mở khách). AI đối chiếu tinh bàn với Nhóm B theo đúng quy trình 10 bước, cộng thêm Thu Sơn Xuất Sát, bố trí thủy theo
+                  Chính-Linh Thần, và hóa giải theo 81 cặp sao — tất cả nhúng cứng từ tài liệu gốc, không tự sáng tác (xem <code>tri-thuc-ai.ts</code>).
                 </p>
 
                 <div class="mt-3 flex flex-wrap items-end gap-3">
@@ -516,6 +556,10 @@ const MAU_TRANG_THAI: Record<string, string> = {
           const esc = (s) => String(s ?? "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
 
           let html = `<div class="rounded-(--radius-control) border-2 border-(--color-ivory-300) bg-(--color-ivory-50) p-4 text-base"><p class="font-bold text-(--color-ink-950)">Trục Sơn – Hướng</p><p class="mt-1 font-medium text-(--color-ink-800)">${esc(d.tomTatTrucSonHuong)}</p></div>`;
+
+          if (d.boTriThuy) {
+            html += `<div class="rounded-(--radius-control) border-2 border-(--color-ivory-300) bg-(--color-ivory-50) p-4 text-base"><p class="font-bold text-(--color-ink-950)">Bố trí thủy (Chính Thần / Linh Thần)</p><p class="mt-1 font-medium text-(--color-ink-800)">${esc(d.boTriThuy)}</p></div>`;
+          }
 
           html += `<div class="space-y-2">` + d.tungCung.map((c) => `
             <div class="rounded-(--radius-control) border-2 border-(--color-ivory-300) bg-(--color-ivory-50) p-4 text-base">

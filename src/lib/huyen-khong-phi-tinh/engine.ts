@@ -83,6 +83,18 @@ export const THE_QUAI: Record<string, number> = {
 // Ranh giới giữa 2 CUNG (quái) — dùng phân biệt Đại vs Tiểu Không Vong
 export const RANH_GIOI_CUNG = [22.5, 67.5, 112.5, 157.5, 202.5, 247.5, 292.5, 337.5];
 
+// Chính Thần / Linh Thần / Chiếu Thần theo vận (i-thu-son-xuat-sat-cua-chinh-duong-khi.md mục 4).
+// Chính Thần = sao đương vận (kỵ thấy nước, nên mở cửa thu khí).
+// Linh Thần  = hợp thập với đương vận (CÓ NƯỚC LÀ CÁT — "dĩ suy vi vượng"). Vận 5 không có số cố
+// định (chia 2 nửa 10 năm theo quy ước riêng của nguồn) — biểu diễn bằng null.
+export const CHINH_LINH_THAN: Record<number, [number, number | null]> = {
+  1: [1, 9], 2: [2, 8], 3: [3, 7], 4: [4, 6],
+  5: [5, null], 6: [6, 4], 7: [7, 3], 8: [8, 2], 9: [9, 1],
+};
+export const CHIEU_THAN: Record<number, number | null> = {
+  1: 6, 2: 7, 3: 8, 4: 9, 5: null, 6: 1, 7: 2, 8: 3, 9: 4,
+};
+
 // Cặp số Tiên Thiên (Hà Đồ) — dùng cho Thành Môn và nhận diện cặp Tiên Thiên
 const CAP_TIEN_THIEN_CANON: Array<[number, number]> = [[1, 6], [2, 7], [3, 8], [4, 9]];
 function laCapTienThien(a: number, b: number): boolean {
@@ -196,6 +208,19 @@ export const NGUON_GOC: Array<[string, "CHẮC" | "NGUỒN" | "MÂU THUẪN", st
   ["Đào Hoa / Thiên Hỷ / Hồng Loan", "CHẮC",
     "d-dao-hoa-vi.md mục 2",
     "Bảng Đào Hoa khớp đúng công thức Tam Hợp cổ điển"],
+  ["Chính Thần / Linh Thần / Chiếu Thần theo vận", "CHẮC",
+    "i-thu-son-xuat-sat-cua-chinh-duong-khi.md mục 4",
+    "Bảng khôi phục từ OCR lỗi cột, đã đối chiếu bằng logic hợp thập (Chính Thần + Linh Thần = 10) " +
+    "— khớp đủ cả 9 vận: 1↔9, 2↔8, 3↔7, 4↔6, 6↔4, 7↔3, 8↔2, 9↔1, riêng vận 5 theo quy ước riêng"],
+  ["Thu Sơn Xuất Sát (4 quy tắc gốc)", "CHẮC",
+    "i-thu-son-xuat-sat-cua-chinh-duong-khi.md mục 1",
+    "Trích nguyên văn quy tắc gốc MV_HKPT1: vượng/sinh khí trên Sơn Bàn -> cần cao; " +
+    "vượng/sinh khí trên Hướng Bàn -> cần thấp/có nước; ngược lại cho tử/sát khí"],
+  ["Điều kiện Chân Thành Môn (3 điều kiện)", "NGUỒN",
+    "i-thu-son-xuat-sat-cua-chinh-duong-khi.md mục 2.3",
+    "Bổ sung mới cho thanh-mon.md — thêm điều kiện 3 (Sơn tinh phải thoái/sát tinh, nếu vượng/sinh " +
+    "thì thành môn là thủy khẩu mở cửa ắt tổn đinh). Chưa có ví dụ sách đối chiếu riêng cho điều " +
+    "kiện 3 này (khác 3 ví dụ Thành Môn gốc trong self-test, vốn chỉ kiểm điều kiện 1)"],
 ];
 
 // Những gì engine CỐ TÌNH KHÔNG LÀM (vì không đủ căn cứ) — KHÔNG được lấp bằng suy đoán
@@ -207,7 +232,11 @@ export const KHONG_TINH: Array<[string, string]> = [
     "Bật thủ công bằng dungTheQuai=true"],
   ["Đào Hoa theo NHÀ (theo tinh bàn)", "Công thức gốc của Nguyễn Thành Phương không còn trong " +
     "phần OCR đọc được — chỉ có Đào Hoa theo NGƯỜI (Chi sinh)"],
-  ["Ý nghĩa cặp sao ở vận KHÁC vận 9", "Bảng 9 cặp chỉ đúng cho Vận 9; chưa xử lý 81 tổ hợp mọi vận"],
+  ["Ý nghĩa cặp sao ở vận KHÁC vận 9 (bảng tra cứu tĩnh Y_NGHIA_CAP_VAN9)",
+    "Bảng 9 cặp trong engine chỉ đúng cho Vận 9; chưa mã hoá 81 tổ hợp mọi vận thành tra cứu tĩnh. " +
+    "Dữ liệu 81 cặp + hóa giải theo từng sao ĐÃ có ở h-81-cap-sao-va-hoa-giai.md (nhúng trong " +
+    "tri-thuc-ai.ts) dành cho lớp AI luận — không đưa vào engine vì cần đọc kèm điều kiện Thời/" +
+    "Hình/Khí theo đúng cảnh báo của chính tác giả nguồn, không phải tra bảng máy móc"],
   ["Bát Sát / Hoàng Tuyền / Sát Long / Ám Ngũ Hoàng theo sơn hướng",
     "Dữ liệu trong nguồn bị OCR xáo trộn, đã bỏ qua thay vì đoán"],
   ["Phụ Mẫu Tam Ban / Thất Tinh Đả Kiếp (tự động)",
@@ -649,15 +678,25 @@ export interface ThanhMonEntry {
   van_tinh: number;
   chieu_bay: "thuận" | "nghịch";
   sao_ve_cung: number;
+  /** true = "Chân Thành Môn" (đủ cả 3 điều kiện mục 2.3), false = "Giả Thành Môn" không nên dùng. */
   kha_dung: boolean;
+  son_tinh_tai_do: number;
+  trang_thai_son_tinh: TrangThaiKhi;
   thanh_mon_ngam: boolean;
   canh_bao: string | null;
   ghi_chu: string;
 }
 
 /**
- * Tìm Thành Môn ở 2 CUNG liền kề cung Hướng (thanh-mon.md).
+ * Tìm Thành Môn ở 2 CUNG liền kề cung Hướng (thanh-mon.md + điều kiện "Chân Thành Môn" bổ sung ở
+ * i-thu-son-xuat-sat-cua-chinh-duong-khi.md mục 2.3).
  * Trong mỗi cung liền kề, lấy sơn CÙNG Tam Nguyên Long với hướng nhà.
+ *
+ * "Chân Thành Môn" cần ĐỦ 3 điều kiện:
+ *   1. Hướng tinh tại đó là đương lệnh vượng tinh (kiemTraSon().dac_vuong).
+ *   2. Hướng tinh KHÔNG phải Ngũ Hoàng (trừ Vận 5).
+ *   3. Sơn tinh tại đó phải thoái/sát tinh (SUY/TỬ/TỬ-XA) — nếu Sơn tinh đang VƯỢNG/SINH thì
+ *      thành môn là thủy khẩu, mở cửa ắt TỔN ĐINH, không dùng được dù điều kiện 1-2 đủ.
  */
 export function timThanhMon(tb: TinhBan): ThanhMonEntry[] {
   const van = tb.van;
@@ -696,9 +735,19 @@ export function timThanhMon(tb: TinhBan): ThanhMonEntry[] {
     const htKe = tb.huong_ban[cungKe];
     const ngam = laCapTienThien(htKe, cungKe);
 
+    // 3 điều kiện "Chân Thành Môn"
+    const stKe = tb.son_ban[cungKe];
+    const ttSonKe = trangThaiSao(stKe, van);
     let canhBao: string | null = null;
-    if (htKe === 5) {
-      canhBao = "Hướng tinh Ngũ Hoàng tại đây — KHÔNG NÊN dùng làm Thành Môn dù có tài lộc";
+    let chanThanhMon = kt.dac_vuong;
+    if (htKe === 5 && van !== 5) {
+      canhBao = "Hướng tinh Ngũ Hoàng tại đây — KHÔNG dùng làm Thành Môn (trừ Vận 5)";
+      chanThanhMon = false;
+    }
+    if (ttSonKe === "VƯỢNG" || ttSonKe === "SINH") {
+      canhBao = (canhBao ? canhBao + " | " : "") +
+        `Sơn tinh ${stKe} tại đây đang ${ttSonKe} — thành môn là thủy khẩu, mở cửa ắt TỔN ĐINH. Không dùng.`;
+      chanThanhMon = false;
     }
 
     ketQua.push({
@@ -708,10 +757,85 @@ export function timThanhMon(tb: TinhBan): ThanhMonEntry[] {
       van_tinh: kt.van_tinh,
       chieu_bay: kt.chieu,
       sao_ve_cung: kt.sao_ve_cung,
-      kha_dung: kt.dac_vuong,
+      kha_dung: chanThanhMon,
+      son_tinh_tai_do: stKe,
+      trang_thai_son_tinh: ttSonKe,
       thanh_mon_ngam: ngam,
       canh_bao: canhBao,
       ghi_chu: "Cần có thủy/ao hồ/ngã ba/cổng ngõ thực tế tại đây mới phát huy",
+    });
+  }
+  return ketQua;
+}
+
+export interface ChinhLinhThanResult {
+  chinh_than_cung: string;
+  chinh_than_so: number;
+  quy_tac_chinh_than: string;
+  linh_than_cung: string;
+  linh_than_so: number | null;
+  quy_tac_linh_than: string;
+  chieu_than_cung: string;
+  chieu_than_so: number | null;
+}
+
+/** Chính Thần / Linh Thần / Chiếu Thần của vận + quy tắc bố trí thủy. */
+export function chinhLinhThan(van: number): ChinhLinhThanResult {
+  const [ct, lt] = CHINH_LINH_THAN[van];
+  const cht = CHIEU_THAN[van];
+  return {
+    chinh_than_cung: ct !== 5 ? CUNG_INFO[ct].ten : "Trung Cung",
+    chinh_than_so: ct,
+    quy_tac_chinh_than: "NÊN mở cửa thu khí. KỴ THẤY NƯỚC tại phương này.",
+    linh_than_cung: lt !== null ? CUNG_INFO[lt].ten : "Vận 5: 10 năm đầu Đông Nam, 10 năm sau Tây Bắc",
+    linh_than_so: lt,
+    quy_tac_linh_than: "CÓ NƯỚC LÀ CÁT (nước vượng tài, lý 'dĩ suy vi vượng'). " +
+      "Nên mở đường/mở cửa, nhưng phải chọn phía thông khí sinh khí vượng. " +
+      "Sơn tinh không nên đoạt Linh Thần.",
+    chieu_than_cung: cht !== null ? CUNG_INFO[cht].ten : "Vận 5: 10 năm đầu Ngọ/Đinh, sau Tý/Quý",
+    chieu_than_so: cht,
+  };
+}
+
+export interface ThuSonXuatSatEntry {
+  cung: string;
+  vt: string;
+  son_tinh: number;
+  huong_tinh: number;
+  tt_son: TrangThaiKhi;
+  tt_huong: TrangThaiKhi;
+  khuyen_nghi: string[];
+}
+
+/**
+ * Với mỗi cung (trừ Trung Cung), tra khuyến nghị Thu Sơn / Xuất Sát theo 4 quy tắc gốc
+ * (i-thu-son-xuat-sat-cua-chinh-duong-khi.md mục 1): sao vượng/sinh trên Sơn Bàn cần chỗ CAO,
+ * trên Hướng Bàn cần chỗ THẤP có nước; sao suy/tử thì ngược lại.
+ */
+export function thuSonXuatSat(tb: TinhBan): ThuSonXuatSatEntry[] {
+  const van = tb.van;
+  const ketQua: ThuSonXuatSatEntry[] = [];
+  for (const c of THU_TU_BAY) {
+    if (c === 5) continue;
+    const s = tb.son_ban[c];
+    const h = tb.huong_ban[c];
+    const ttS = trangThaiSao(s, van);
+    const ttH = trangThaiSao(h, van);
+    const khuyen: string[] = [];
+    if (ttS === "VƯỢNG" || ttS === "SINH") {
+      khuyen.push(`THU SƠN: Sơn tinh ${s} (${ttS}) → cần chỗ CAO (núi/nhà cao/tủ cao/cây lớn)`);
+    } else {
+      khuyen.push(`XUẤT SÁT: Sơn tinh ${s} (${ttS}) → cần chỗ THẤP/trống, tránh vật cao`);
+    }
+    if (ttH === "VƯỢNG" || ttH === "SINH") {
+      khuyen.push(`THU SƠN: Hướng tinh ${h} (${ttH}) → cần chỗ THẤP có nước/cửa/đường/khoảng trống`);
+    } else {
+      khuyen.push(`XUẤT SÁT: Hướng tinh ${h} (${ttH}) → cần chỗ CAO che chắn, tránh nước/cửa động`);
+    }
+    ketQua.push({
+      cung: CUNG_INFO[c].ten, vt: CUNG_INFO[c].vt,
+      son_tinh: s, huong_tinh: h,
+      tt_son: ttS, tt_huong: ttH, khuyen_nghi: khuyen,
     });
   }
   return ketQua;
@@ -922,6 +1046,8 @@ export interface KetQuaHuyenKhong {
   cach_cuc: CachCuc[];
   thanh_mon: ThanhMonEntry[];
   mo_cua_phu: MoCuaPhuEntry[];
+  chinh_linh_than: ChinhLinhThanResult;
+  thu_son_xuat_sat: ThuSonXuatSatEntry[];
   cac_cung: PhanTichCungEntry[];
   luu_nien?: LuuNienResult;
 }
@@ -937,6 +1063,8 @@ export function tinhToanHuyenKhong(
     cach_cuc: [...nhanDienCachCuc(tb), canhBaoDaKiep()],
     thanh_mon: timThanhMon(tb),
     mo_cua_phu: xetMoCuaPhu(tb),
+    chinh_linh_than: chinhLinhThan(van),
+    thu_son_xuat_sat: thuSonXuatSat(tb),
     cac_cung: phanTichCung(tb),
   };
   if (opts.nam) {

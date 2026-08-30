@@ -16,19 +16,21 @@ giá, chưa mở khách. URL: `/dai-cat-loi/huyen-khong-phi-tinh`.
   (Astro SSR, `prerender = false`), đọc tham số qua GET query string.
 - [`../../pages/dai-cat-loi/huyen-khong-phi-tinh.astro`](../../pages/dai-cat-loi/huyen-khong-phi-tinh.astro) —
   khung trang (PageHero/breadcrumbs).
-- [`tri-thuc-ai.ts`](./tri-thuc-ai.ts) — nhúng CỨNG nội dung 2 file nguồn (`quy-trinh-luan-khi-co-tinh-ban.md`,
-  `c-hoa-giai-sat-khi.md`) làm system prompt AI. Nhúng cứng chứ không đọc file lúc chạy vì
-  **production là Cloudflare Worker, không có filesystem**.
+- [`tri-thuc-ai.ts`](./tri-thuc-ai.ts) — nhúng CỨNG nội dung 4 file nguồn (`quy-trinh-luan-khi-co-tinh-ban.md`,
+  `c-hoa-giai-sat-khi.md`, `h-81-cap-sao-va-hoa-giai.md`, `i-thu-son-xuat-sat-cua-chinh-duong-khi.md`)
+  làm system prompt AI. Nhúng cứng chứ không đọc file lúc chạy vì **production là Cloudflare
+  Worker, không có filesystem**.
 - [`luan-ai.ts`](./luan-ai.ts) — build prompt + gọi `goiAiToolUse` (tính năng
   `huyen-khong-luan-chi-tiet`, đang route sang DeepSeek qua lớp trung gian `openai-tuong-thich`).
 - [`../../pages/api/dai-cat-loi/huyen-khong-phi-tinh/luan-ai.ts`](../../pages/api/dai-cat-loi/huyen-khong-phi-tinh/luan-ai.ts) —
   route POST, tính lại tinh bàn ở server (không tin dữ liệu client gửi), gate `isAdmin` (403 cho
   khách thường).
 - `docs/huyen-khong-phi-tinh/` (thư mục riêng, ngoài `src/`) — SKILL.md, TRANG-THAI-MODULE.md gốc
-  và 10 file `references/` — giữ để tra cứu / đối chiếu khi cập nhật `tri-thuc-ai.ts`, KHÔNG được
-  code đọc trực tiếp lúc chạy.
+  và 12 file `references/` (a-i) — giữ để tra cứu / đối chiếu khi cập nhật `tri-thuc-ai.ts`, KHÔNG
+  được code đọc trực tiếp lúc chạy. Cập nhật lần 2 (30/8/2026): thêm h-81-cap-sao-va-hoa-giai.md +
+  i-thu-son-xuat-sat-cua-chinh-duong-khi.md, engine.py gốc cũng cập nhật theo (xem mục dưới).
 
-## Kiểm chứng đã pass (4 mốc bắt buộc, xem TRANG-THAI-MODULE.md gốc mục 3)
+## Kiểm chứng đã pass (4 mốc bắt buộc từ TRANG-THAI-MODULE.md gốc mục 3, + phần mở rộng)
 
 | Hạng mục | Kết quả |
 |---|---|
@@ -36,9 +38,11 @@ giá, chưa mở khách. URL: `/dai-cat-loi/huyen-khong-phi-tinh`.
 | Thành Môn | 3/3 |
 | Niên tinh nhập trung | 5/5 |
 | Phân loại Không Vong | 8/8 |
+| `vanTuNam` (năm nhập trạch → Vận) | tự viết, không có trong bản Python |
+| Chính Thần/Linh Thần hợp thập cả 9 vận + Chiếu Thần | đối chiếu bảng nguồn mục 4.2/4.5 |
+| Thu Sơn Xuất Sát + Chân/Giả Thành Môn | port đúng logic mã nguồn, CHƯA có ví dụ sách riêng cho điều kiện 3 (nguồn cũng chưa có) |
 
-Chạy lại: `npx vitest run tests/huyen-khong-phi-tinh-engine.test.ts` (53 test, gồm cả 4 mốc trên
-và `vanTuNam`).
+Chạy lại: `npx vitest run tests/huyen-khong-phi-tinh-engine.test.ts` (70 test).
 
 ## Chỗ nào tính, chỗ nào KHÔNG tính (và vì sao)
 
@@ -52,15 +56,24 @@ Toàn bộ engine chạy **client của Astro SSR, thuần TypeScript, 0đ, khô
   không phải điều kiện phân biệt được (`canhBaoDaKiep()` trả về ghi chú "CẦN NGƯỜI LUẬN TỰ XÉT").
 - **Thế Quái mặc định TẮT** (`dungTheQuai = false`) — là quyết định Tá Khố của người luận, không
   phải phép tính tự động.
-- **Ý nghĩa 9 cặp cách cục chỉ hiện ở Vận 9** — bảng nguồn chưa có dữ liệu cho vận khác.
+- **Ý nghĩa 9 cặp cách cục (`Y_NGHIA_CAP_VAN9`) chỉ hiện ở Vận 9** — bảng nguồn chưa có dữ liệu tra
+  cứu tĩnh cho vận khác. (Đã có dữ liệu 81 cặp mọi vận ở `h-81-cap-sao-va-hoa-giai.md`, nhưng dành
+  cho lớp AI luận — không mã hoá thành tra cứu tĩnh vì cần đọc kèm Thời/Hình/Khí, không phải tra
+  bảng máy móc.)
 - Danh sách đầy đủ (Đào Hoa theo nhà, Bát Sát/Hoàng Tuyền theo sơn hướng, v.v.) nằm trong hằng số
   `KHONG_TINH` ở đầu `engine.ts`.
 
-Phần AI (Trả Phí) THÌ ĐƯỢC PHÉP tự luận đắc/thất cách và đề xuất hóa giải — đó là việc của AI luận
-(giống người luận thật), không phải engine tự suy. Ràng buộc: AI chỉ được dùng đúng 2 nguồn nhúng ở
-`tri-thuc-ai.ts` (quy trình 10 bước + hóa giải theo mức đồng thuận nhiều thầy), phải nói rõ "chưa
-đủ dữ liệu loan đầu" ở cung nào khách không khai Nhóm B, và không được hóa giải các tổ hợp "cực
-hung không hóa giải được" — prompt trong `luan-ai.ts` đã ép các ràng buộc này.
+**Cập nhật 30/8/2026 — đã tính thêm** (trước đây nằm trong "còn thiếu" của TRANG-THAI-MODULE.md):
+Chính Thần / Linh Thần / Chiếu Thần theo vận (`chinhLinhThan()`), Thu Sơn Xuất Sát từng cung
+(`thuSonXuatSat()`), và điều kiện Chân/Giả Thành Môn (3 điều kiện, cập nhật `timThanhMon()`) — cả 3
+đều là engine tính thuần, Free tier, 0đ, dựa trên `i-thu-son-xuat-sat-cua-chinh-duong-khi.md`.
+
+Phần AI (Trả Phí) THÌ ĐƯỢC PHÉP tự luận đắc/thất cách và đề xuất hóa giải/kích hoạt theo từng sao —
+đó là việc của AI luận (giống người luận thật), không phải engine tự suy. Ràng buộc: AI chỉ được
+dùng đúng 4 nguồn nhúng ở `tri-thuc-ai.ts` (quy trình 10 bước, hóa giải sát khí theo mức đồng
+thuận, hóa giải/kích hoạt theo 81 cặp sao, Thu Sơn Xuất Sát/Chính-Linh Thần/đường khí), phải nói rõ
+"chưa đủ dữ liệu loan đầu" ở cung nào khách không khai Nhóm B, và không được hóa giải các tổ hợp
+"cực hung không hóa giải được" — prompt trong `luan-ai.ts` đã ép các ràng buộc này.
 
 ## Kiến trúc chi phí
 
