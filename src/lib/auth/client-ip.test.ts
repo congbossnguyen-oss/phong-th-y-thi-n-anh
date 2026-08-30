@@ -1,5 +1,35 @@
 import { describe, expect, it } from "vitest";
-import { cungMangIp } from "./client-ip";
+import { cungMangIp, getClientIp } from "./client-ip";
+
+function fakeContext(opts: { xff?: string; clientAddress?: string; throwsOnClientAddress?: boolean }) {
+  const headers = new Headers();
+  if (opts.xff) headers.set("x-forwarded-for", opts.xff);
+  return {
+    request: { headers } as unknown as Request,
+    get clientAddress(): string {
+      if (opts.throwsOnClientAddress) throw new Error("clientAddress not available");
+      return opts.clientAddress ?? "";
+    },
+  };
+}
+
+describe("getClientIp — ưu tiên clientAddress (CF-Connecting-IP qua @astrojs/cloudflare)", () => {
+  it("có cả clientAddress lẫn X-Forwarded-For -> dùng clientAddress (Cloudflare, không spoof được)", () => {
+    const ctx = fakeContext({ xff: "1.2.3.4", clientAddress: "2001:ee0:23f:6dd9::1" });
+    expect(getClientIp(ctx)).toBe("2001:ee0:23f:6dd9::1");
+  });
+
+  it("chỉ có X-Forwarded-For, clientAddress lỗi -> dự phòng bằng XFF (lấy IP đầu tiên trong chuỗi)", () => {
+    const ctx = fakeContext({ xff: "5.6.7.8, 9.9.9.9", throwsOnClientAddress: true });
+    expect(getClientIp(ctx)).toBe("5.6.7.8");
+  });
+
+  it("không có gì cả -> trả về 'unknown', không throw", () => {
+    const ctx = fakeContext({ throwsOnClientAddress: true });
+    expect(() => getClientIp(ctx)).not.toThrow();
+    expect(getClientIp(ctx)).toBe("unknown");
+  });
+});
 
 describe("cungMangIp", () => {
   it("IPv6 cùng 64-bit đầu, khác 64-bit cuối -> vẫn coi là cùng mạng (ca thật anh Công báo 30/8/2026)", () => {
