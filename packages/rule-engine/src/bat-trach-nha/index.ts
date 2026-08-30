@@ -1,6 +1,7 @@
 export * from "./config.js";
 export * from "./toaHuong.js";
 export * from "./hungSat.js";
+export * from "./kiepSat.js";
 export * from "./thaiTue.js";
 export * from "./sinhKhacCungSao.js";
 export * from "./xuyenCungTang.js";
