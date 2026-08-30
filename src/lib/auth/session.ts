@@ -2,6 +2,7 @@ import { randomBytes, createHash } from "node:crypto";
 import { eq } from "drizzle-orm";
 import { db } from "../db/client";
 import { sessions, users } from "../../../db/schema";
+import { cungMangIp } from "./client-ip";
 
 const SESSION_DURATION_MS = 1000 * 60 * 60 * 24 * 30; // 30 ngày
 export const SESSION_COOKIE_NAME = "thien_anh_session";
@@ -51,6 +52,9 @@ export async function createSession(userId: string, ipAddress: string): Promise<
  * Xác thực session — đồng thời kiểm tra IP hiện tại có khớp IP lúc tạo session không.
  * Khác IP (kể cả cookie còn hạn) = coi như bị lộ/dùng chung, HỦY session và bắt đăng nhập lại.
  * Đây là lớp chống chia sẻ tài khoản bổ sung, bên cạnh chính sách "1 thiết bị/lúc".
+ *
+ * IPv6: chỉ đòi khớp 64-bit ĐẦU (phần mạng), không đòi khớp toàn bộ 128-bit — xem `cungMangIp`
+ * trong `client-ip.ts` để biết lý do (mạng di động tự đổi 64-bit cuối theo phiên kết nối).
  */
 export async function validateSessionToken(token: string, currentIp: string): Promise<SessionUser | null> {
   const id = hashToken(token);
@@ -80,8 +84,9 @@ export async function validateSessionToken(token: string, currentIp: string): Pr
     return null;
   }
 
-  if (row.sessionIp && row.sessionIp !== currentIp) {
-    // IP đổi khác lúc đăng nhập -> hủy session, bắt xác thực lại (chống dùng chung tài khoản).
+  if (row.sessionIp && !cungMangIp(row.sessionIp, currentIp)) {
+    // IP đổi khác lúc đăng nhập (khác mạng, không chỉ khác 64-bit cuối IPv6) -> hủy session, bắt
+    // xác thực lại (chống dùng chung tài khoản).
     await db.delete(sessions).where(eq(sessions.id, id));
     return null;
   }
