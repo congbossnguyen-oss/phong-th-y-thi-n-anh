@@ -60,6 +60,7 @@ export const mainNav: NavItem[] = [
       { label: "Luận số điện thoại", href: "/luan-so-dien-thoai" },
       { label: "Tính Trùng Tang", href: "/tinh-trung-tang" },
       { label: "Định Hướng Nghề Nghiệp", href: "/dai-cat-loi/dinh-huong-nghe-nghiep" },
+      { label: "Xem phong thủy nhà (Huyền Không Phi Tinh)", href: "/dai-cat-loi/huyen-khong-phi-tinh" },
       { label: "⭐ Dịch vụ VIP", href: "/dai-cat-loi/dich-vu-thu-phi" },
     ],
   },

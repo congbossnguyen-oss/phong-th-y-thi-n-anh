@@ -1,0 +1,30 @@
+---
+// TRANG "Xem phong thủy nhà theo Huyền Không Phi Tinh" — chỉ lo khung trang (SEO/PageHero/
+// breadcrumbs); toàn bộ logic form/tính toán/kết quả nằm ở HuyenKhongPhiTinh.astro.
+//
+// ⚠️ CHƯA MỞ (30/8/2026): không đăng ký ở dai-cat-loi-tools.ts / site-config.ts, chỉ vào được
+// qua URL trực tiếp. Component tự gate isAdmin — xem ghi chú đầu HuyenKhongPhiTinh.astro.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import HuyenKhongPhiTinh from "../../components/tools/HuyenKhongPhiTinh.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout
+  title="Xem phong thủy nhà theo Huyền Không Phi Tinh"
+  description="Lập tinh bàn Huyền Không Phi Tinh từ tọa độ la bàn và năm nhập trạch: cách cục, vượng suy 9 sao, cảnh báo Không Vong/Ngũ Hoàng, Thành Môn — tính toán khách quan, không đoán mò."
+>
+  <PageHero
+    eyebrow="Đại Cát Lợi — đang thử nghiệm"
+    title="Xem phong thủy nhà theo Huyền Không Phi Tinh"
+    description="Nhập độ Tọa/Hướng đo bằng la bàn và năm nhập trạch để lập tinh bàn Lượng Thiên Xích: cách cục, vượng suy 9 sao theo vận, cảnh báo Không Vong/Ngũ Hoàng, Thành Môn. Phần này thuần tính toán, miễn phí."
+    breadcrumbs={[
+      { label: "Trang chủ", href: "/" },
+      { label: "Đại Cát Lợi", href: "/dai-cat-loi" },
+      { label: "Huyền Không Phi Tinh" },
+    ]}
+  />
+
+  <HuyenKhongPhiTinh />
+</BaseLayout>

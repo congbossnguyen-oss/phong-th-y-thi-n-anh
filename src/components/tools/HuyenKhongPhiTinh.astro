@@ -1,0 +1,566 @@
+---
+// Công cụ "Xem phong thủy nhà theo Huyền Không Phi Tinh" — bản TÍNH TOÁN (Free, 0đ, không AI)
+// CÔNG KHAI, đăng ký ở site-config.ts mục Công cụ — cùng mức mở như "Lập lá số Bát Tự" (anh Công
+// 30/8/2026: "em cứ để ra ngoài ở trong phần công cụ như module lập lá số bát tự để anh test").
+//
+// Bản Trả Phí (luận AI theo hoàn cảnh + hóa giải cá nhân hóa) ĐANG TEST NỘI BỘ — nút "Xem luận AI"
+// chỉ hiện/gọi được khi đăng nhập admin (chưa chốt giá nên chưa mở khách, cùng mẫu
+// luan-giai-tu-vi/checkout.ts). Gọi DeepSeek qua goi-ai.ts (anh Công: "anh vẫn đang dùng bên
+// DeepSeek") — xem huyen-khong-luan-chi-tiet trong goi-ai.ts và luan-ai.ts route.
+//
+// Kiến trúc chi phí: phần Free chạy engine.ts (thuần TS, không gọi AI) — 0đ mỗi lượt xem, công
+// khai không rủi ro chi phí. Phần AI chỉ admin gọi được nên không phát sinh chi phí ngoài ý muốn.
+//
+// NGUYÊN TẮC "KHÔNG ĐOÁN MÒ": phần Free CHỈ hiển thị lại dữ liệu Nhóm B (loan đầu) do khách khai
+// cạnh tinh bàn — KHÔNG tự phán đắc/thất cách hay cát/hung từ tổ hợp đó (xem KHONG_TINH trong
+// engine.ts). Phần AI (Trả Phí) MỚI được phép tự luận đắc/thất cách — đó là việc AI luận, không
+// phải engine tự suy — và phải bám theo quy-trinh-luan-khi-co-tinh-ban.md + c-hoa-giai-sat-khi.md,
+// không tự sáng tác nội dung phong thủy ngoài 2 nguồn đó.
+import Container from "../../components/ui/Container.astro";
+import Button from "../../components/ui/Button.astro";
+import {
+  CUNG_INFO,
+  TEN_SAO,
+  tinhToanHuyenKhong,
+  trangThaiSao,
+  vanTuNam,
+  type KetQuaHuyenKhong,
+} from "../../lib/huyen-khong-phi-tinh/engine";
+
+export const prerender = false;
+
+const laQuanTri = Astro.locals.user?.isAdmin === true;
+
+// 8 hướng bát quái theo thứ tự la bàn, dùng cho mọi select/checkbox Nhóm B (cung Lạc Thư, bỏ Trung Cung).
+const HUONG_8 = [1, 8, 3, 4, 9, 2, 7, 6];
+
+const q = Astro.url.searchParams;
+const soTuQuery = (ten: string): number | null => {
+  const raw = q.get(ten);
+  if (raw === null || raw.trim() === "") return null;
+  const n = Number(raw);
+  return Number.isFinite(n) ? n : null;
+};
+
+const loaiDo = q.get("loaiDo") === "toa" ? "toa" : "huong";
+const doNhap = soTuQuery("do");
+const namNhapTrach = soTuQuery("nam");
+const daGuiForm = doNhap !== null && namNhapTrach !== null;
+
+const cungTuQuery = (ten: string): number[] =>
+  q
+    .getAll(ten)
+    .map(Number)
+    .filter((n) => HUONG_8.includes(n));
+const cungDonTuQuery = (ten: string): number | null => {
+  const n = Number(q.get(ten));
+  return HUONG_8.includes(n) ? n : null;
+};
+
+const nhomB = {
+  nui: cungTuQuery("nui"),
+  nuoc: cungTuQuery("nuoc"),
+  cuaChinh: cungDonTuQuery("cuaChinh"),
+  bep: cungDonTuQuery("bep"),
+  giuongNgu: cungDonTuQuery("giuongNgu"),
+  banLamViec: cungDonTuQuery("banLamViec"),
+  cauThang: cungDonTuQuery("cauThang"),
+  wc: cungTuQuery("wc"),
+  gieng: cungDonTuQuery("gieng"),
+  soTang: soTuQuery("soTang"),
+};
+const nhomBTrong =
+  nhomB.nui.length === 0 &&
+  nhomB.nuoc.length === 0 &&
+  nhomB.cuaChinh === null &&
+  nhomB.bep === null &&
+  nhomB.giuongNgu === null &&
+  nhomB.banLamViec === null &&
+  nhomB.cauThang === null &&
+  nhomB.wc.length === 0 &&
+  nhomB.gieng === null;
+
+let van: number | null = null;
+let doHuong: number | null = null;
+let loi: string | null = null;
+let kq: KetQuaHuyenKhong | null = null;
+
+if (daGuiForm) {
+  if (doNhap! < 0 || doNhap! > 360) {
+    loi = "Độ la bàn phải trong khoảng 0–360°.";
+  } else if (namNhapTrach! < 1900 || namNhapTrach! > new Date().getFullYear() + 1) {
+    loi = "Năm nhập trạch không hợp lệ.";
+  } else {
+    van = vanTuNam(namNhapTrach!);
+    doHuong = loaiDo === "toa" ? (doNhap! + 180) % 360 : doNhap!;
+    kq = tinhToanHuyenKhong(doHuong, van);
+  }
+}
+
+// Ghi chú loan đầu theo từng cung (cho phần hiển thị cạnh tinh bàn) — CHỈ liệt kê lại, không phán.
+function ghiChuLoanDau(cung: number): string[] {
+  const gc: string[] = [];
+  if (nhomB.nui.includes(cung)) gc.push("🏔️ núi/nhà cao/cây lớn");
+  if (nhomB.nuoc.includes(cung)) gc.push("💧 sông hồ/đường lớn/đất trống");
+  if (nhomB.cuaChinh === cung) gc.push("🚪 cửa chính");
+  if (nhomB.bep === cung) gc.push("🍳 bếp");
+  if (nhomB.giuongNgu === cung) gc.push("🛏️ giường ngủ");
+  if (nhomB.banLamViec === cung) gc.push("💼 bàn làm việc");
+  if (nhomB.cauThang === cung) gc.push("🪜 cầu thang");
+  if (nhomB.wc.includes(cung)) gc.push("🚽 WC");
+  if (nhomB.gieng === cung) gc.push("☀️ giếng trời");
+  return gc;
+}
+
+const LUOI_3X3 = [
+  [4, 9, 2],
+  [3, 5, 7],
+  [8, 1, 6],
+];
+
+const MAU_MUC: Record<string, string> = {
+  tot: "border-emerald-500/50 bg-emerald-500/10 text-emerald-700",
+  canh_bao: "border-(--color-gold-400)/50 bg-(--color-gold-400)/10 text-(--color-gold-600)",
+  xau: "border-(--color-danger-500)/40 bg-(--color-danger-500)/10 text-(--color-danger-500)",
+  nguy_hiem: "border-(--color-danger-500)/60 bg-(--color-danger-500)/20 text-(--color-danger-500)",
+};
+
+const MAU_TRANG_THAI: Record<string, string> = {
+  "VƯỢNG": "text-emerald-700 font-bold",
+  "SINH": "text-(--color-gold-600) font-semibold",
+  "SUY": "text-(--color-ink-500)",
+  "TỬ": "text-(--color-danger-500)",
+  "TỬ/XA": "text-(--color-ink-400)",
+};
+---
+
+<Container class="py-10">
+  <div class="mx-auto max-w-4xl">
+    <>
+        <form method="GET" class="flex flex-col gap-6 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
+          <div>
+            <p class="text-sm font-semibold text-(--color-ink-900)">Nhóm A — bắt buộc</p>
+            <p class="mt-0.5 text-xs text-(--color-ink-500)">Độ la bàn đo bằng la bàn thật (la kinh) hoặc ứng dụng la bàn điện thoại, đặt vuông góc với mặt tiền/mặt sau nhà.</p>
+          </div>
+
+          <div>
+            <p class="text-sm font-medium text-(--color-ink-800)">Bạn đang nhập độ gì?</p>
+            <div class="mt-2 flex gap-4 text-sm">
+              <label class="flex items-center gap-1.5">
+                <input type="radio" name="loaiDo" value="huong" checked={loaiDo === "huong"} /> Độ HƯỚNG (mặt tiền nhà nhìn ra)
+              </label>
+              <label class="flex items-center gap-1.5">
+                <input type="radio" name="loaiDo" value="toa" checked={loaiDo === "toa"} /> Độ TỌA (lưng nhà tựa vào)
+              </label>
+            </div>
+          </div>
+
+          <div>
+            <label for="hkpt-do" class="text-sm font-medium text-(--color-ink-800)">Số độ (0–360°)</label>
+            <input
+              type="number" id="hkpt-do" name="do" min="0" max="360" step="0.5" required
+              value={doNhap ?? undefined}
+              class="mt-1 w-full max-w-[10rem] rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm"
+            />
+          </div>
+
+          <div>
+            <label for="hkpt-nam" class="text-sm font-medium text-(--color-ink-800)">Năm nhập trạch (dọn vào ở)</label>
+            <p class="mt-0.5 text-xs text-(--color-ink-500)">Nhà cũ dùng đúng năm bắt đầu ở, KHÔNG dùng năm hiện tại — Vận suy ra từ năm này quyết định toàn bộ tinh bàn.</p>
+            <input
+              type="number" id="hkpt-nam" name="nam" min="1900" max={new Date().getFullYear() + 1} required
+              value={namNhapTrach ?? undefined}
+              class="mt-1 w-full max-w-[10rem] rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm"
+            />
+          </div>
+
+          <div class="border-t border-(--color-ivory-300) pt-5">
+            <p class="text-sm font-semibold text-(--color-ink-900)">Nhóm B — loan đầu (không bắt buộc)</p>
+            <p class="mt-0.5 text-xs text-(--color-ink-500)">
+              Bỏ trống vẫn xem được tinh bàn, nhưng kết quả khi đó mới là khung lý khí — chưa đối chiếu thực địa. Điền càng đủ, phần hiển thị cạnh tinh bàn càng có ích.
+            </p>
+          </div>
+
+          <div>
+            <p class="text-sm font-medium text-(--color-ink-800)">Phía nào có núi / nhà cao / cây lớn? (chọn nhiều)</p>
+            <div class="mt-2 grid grid-cols-2 gap-x-4 gap-y-1.5 sm:grid-cols-4">
+              {HUONG_8.map((c) => (
+                <label class="flex items-center gap-1.5 text-sm">
+                  <input type="checkbox" name="nui" value={c} checked={nhomB.nui.includes(c)} /> {CUNG_INFO[c].ten}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <p class="text-sm font-medium text-(--color-ink-800)">Phía nào có sông hồ / đường lớn / khoảng đất trống? (chọn nhiều)</p>
+            <div class="mt-2 grid grid-cols-2 gap-x-4 gap-y-1.5 sm:grid-cols-4">
+              {HUONG_8.map((c) => (
+                <label class="flex items-center gap-1.5 text-sm">
+                  <input type="checkbox" name="nuoc" value={c} checked={nhomB.nuoc.includes(c)} /> {CUNG_INFO[c].ten}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div class="grid gap-4 sm:grid-cols-2">
+            {([
+              ["cuaChinh", "Cửa chính ở phía nào?", nhomB.cuaChinh],
+              ["bep", "Bếp ở phía nào?", nhomB.bep],
+              ["giuongNgu", "Giường ngủ chính ở phía nào?", nhomB.giuongNgu],
+              ["banLamViec", "Bàn làm việc ở phía nào?", nhomB.banLamViec],
+              ["cauThang", "Cầu thang ở phía nào? (nếu có)", nhomB.cauThang],
+              ["gieng", "Giếng trời ở phía nào? (nếu có)", nhomB.gieng],
+            ] as Array<[string, string, number | null]>).map(([name, nhan, val]) => (
+              <div>
+                <label for={`hkpt-${name}`} class="block text-xs font-medium text-(--color-ink-700)">{nhan}</label>
+                <select id={`hkpt-${name}`} name={name} class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2 text-sm">
+                  <option value="">— Không rõ / bỏ qua —</option>
+                  {HUONG_8.map((c) => <option value={c} selected={val === c}>{CUNG_INFO[c].ten}</option>)}
+                </select>
+              </div>
+            ))}
+          </div>
+
+          <div>
+            <p class="text-sm font-medium text-(--color-ink-800)">WC ở phía nào? (chọn nhiều, nếu nhà có nhiều WC)</p>
+            <div class="mt-2 grid grid-cols-2 gap-x-4 gap-y-1.5 sm:grid-cols-4">
+              {HUONG_8.map((c) => (
+                <label class="flex items-center gap-1.5 text-sm">
+                  <input type="checkbox" name="wc" value={c} checked={nhomB.wc.includes(c)} /> {CUNG_INFO[c].ten}
+                </label>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <label for="hkpt-soTang" class="text-sm font-medium text-(--color-ink-800)">Nhà mấy tầng?</label>
+            <input
+              type="number" id="hkpt-soTang" name="soTang" min="1" max="50"
+              value={nhomB.soTang ?? undefined}
+              class="mt-1 w-full max-w-[8rem] rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm"
+            />
+          </div>
+
+          <Button type="submit" size="lg">Xem tinh bàn (miễn phí)</Button>
+        </form>
+
+        {loi && (
+          <div class="mt-4 rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm text-(--color-danger-500)">
+            {loi}
+          </div>
+        )}
+
+        {kq && van !== null && doHuong !== null && (
+          <div class="mt-8 space-y-8">
+            <section class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-4 text-sm text-(--color-ink-700)">
+              <p>
+                Tọa <strong>{kq.tinh_ban.son_toa}</strong> ({kq.tinh_ban.do_toa}°) — Hướng <strong>{kq.tinh_ban.son_huong}</strong> ({kq.tinh_ban.do_huong}°) · Vận <strong>{van}</strong>
+                {" "}(suy từ năm nhập trạch {namNhapTrach})
+              </p>
+            </section>
+
+            {(["phan_loai_huong", "phan_loai_toa"] as const).map((key) => {
+              const pl = kq!.tinh_ban[key];
+              const nhan = key === "phan_loai_huong" ? "HƯỚNG" : "TỌA";
+              return pl.muc !== "tot" ? (
+                <div class:list={["rounded-(--radius-card) border p-4 text-sm", MAU_MUC[pl.muc]]}>
+                  <p class="font-bold">{nhan}: lệch {pl.lech > 0 ? "+" : ""}{pl.lech}° khỏi tâm sơn {pl.son} → {pl.loai}</p>
+                  <p class="mt-1">{pl.mo_ta}</p>
+                </div>
+              ) : (
+                <p class="text-sm text-emerald-700">✓ {nhan}: lệch {pl.lech > 0 ? "+" : ""}{pl.lech}° khỏi tâm sơn {pl.son} → {pl.loai} — {pl.mo_ta}</p>
+              );
+            })}
+
+            <section>
+              <h2 class="font-display text-xl font-bold text-(--color-ink-950)">Tinh bàn</h2>
+              <p class="mt-1 text-xs text-(--color-ink-500)">Mỗi ô: Sơn tinh — Vận tinh — Hướng tinh. Các dòng có 🏔️💧🚪... là loan đầu bạn đã khai ở Nhóm B.</p>
+              <div class="mt-3 grid grid-cols-3 gap-1 overflow-hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-300)">
+                {LUOI_3X3.flat().map((c) => {
+                  const s = kq!.tinh_ban.son_ban[c];
+                  const v = kq!.tinh_ban.van_ban[c];
+                  const h = kq!.tinh_ban.huong_ban[c];
+                  const laToa = c === kq!.tinh_ban.cung_toa;
+                  const laHuong = c === kq!.tinh_ban.cung_huong;
+                  const gc = ghiChuLoanDau(c);
+                  return (
+                    <div class="min-h-[110px] bg-white p-2 text-xs">
+                      <p class="font-bold text-(--color-cinnabar-400)">
+                        {CUNG_INFO[c].vt}
+                        {laToa && <span class="ml-1 rounded-full bg-(--color-ink-900) px-1.5 py-0.5 text-[10px] text-white">TỌA</span>}
+                        {laHuong && <span class="ml-1 rounded-full bg-(--color-gold-500) px-1.5 py-0.5 text-[10px] text-white">HƯỚNG</span>}
+                      </p>
+                      {c !== 5 ? (
+                        <p class="mt-1 font-mono text-sm">{s} <span class="text-(--color-ink-400)">{v}</span> {h}</p>
+                      ) : (
+                        <p class="mt-1 font-mono text-sm text-(--color-ink-500)">{v}</p>
+                      )}
+                      {gc.length > 0 && (
+                        <p class="mt-1 leading-relaxed text-(--color-ink-600)">{gc.join(" · ")}</p>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+
+            {nhomBTrong && (
+              <div class="rounded-(--radius-card) border border-(--color-gold-400)/50 bg-(--color-gold-400)/10 p-4 text-sm text-(--color-gold-600)">
+                ⚠️ Bạn chưa khai Nhóm B (loan đầu) — đây mới là khung lý khí tính từ tọa độ và vận, CHƯA đối chiếu với núi/nước/cửa/bếp thực tế nên CHƯA PHẢI là kết luận đắc cách hay cát/hung cuối cùng.
+              </div>
+            )}
+            {!nhomBTrong && (
+              <p class="text-xs italic text-(--color-ink-500)">
+                Lưu ý: trang chỉ hiển thị lại loan đầu bạn khai cạnh sao tương ứng, KHÔNG tự kết luận đắc/thất cách — việc đó cần người luận đối chiếu trực tiếp (xem mục "Phạm vi & độ tin cậy" cuối trang).
+              </p>
+            )}
+
+            <section>
+              <h2 class="font-display text-xl font-bold text-(--color-ink-950)">Cách cục toàn bàn</h2>
+              <div class="mt-3 space-y-2">
+                {kq.cach_cuc.map(([ten, tc, moTa]) => (
+                  <div class="rounded-(--radius-control) border border-(--color-ivory-300) bg-white p-3 text-sm">
+                    <p class="font-semibold text-(--color-ink-900)">{ten} <span class="ml-1 text-xs font-normal text-(--color-ink-500)">[{tc}]</span></p>
+                    <p class="mt-1 text-(--color-ink-600)">{moTa}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section>
+              <h2 class="font-display text-xl font-bold text-(--color-ink-950)">Vượng / Suy 9 sao theo Vận {van}</h2>
+              <div class="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-9">
+                {[1, 2, 3, 4, 5, 6, 7, 8, 9].map((sao) => {
+                  const tt = trangThaiSao(sao, van!);
+                  return (
+                    <div class="rounded-(--radius-control) border border-(--color-ivory-300) bg-white p-2 text-center text-xs">
+                      <p class="font-bold">{sao}</p>
+                      <p class="text-(--color-ink-500)">{TEN_SAO[sao]}</p>
+                      <p class:list={["mt-1", MAU_TRANG_THAI[tt]]}>{tt}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+
+            <section>
+              <h2 class="font-display text-xl font-bold text-(--color-ink-950)">Chi tiết từng cung</h2>
+              <div class="mt-3 space-y-2">
+                {kq.cac_cung.map((p) => (
+                  <div class="rounded-(--radius-control) border border-(--color-ivory-300) bg-white p-3 text-sm">
+                    <p class="font-semibold text-(--color-ink-900)">
+                      {p.cung} ({p.quai}, {p.nguhanh_cung}) — {p.bo_ba}
+                      {p.la_cung_toa && <span class="ml-2 text-xs font-normal text-(--color-ink-500)">◄ TỌA</span>}
+                      {p.la_cung_huong && <span class="ml-2 text-xs font-normal text-(--color-ink-500)">◄ HƯỚNG</span>}
+                    </p>
+                    <p class="mt-1 text-xs text-(--color-ink-600)">
+                      Sơn tinh {p.son_tinh} ({TEN_SAO[p.son_tinh]}) [{p.tt_son}] · Hướng tinh {p.huong_tinh} ({TEN_SAO[p.huong_tinh]}) [{p.tt_huong}]
+                    </p>
+                    {p.danh_cuc && (
+                      <p class="mt-1 text-xs text-(--color-gold-600)">★ {p.danh_cuc[0]} [{p.danh_cuc[1]}]: {p.danh_cuc[2]}</p>
+                    )}
+                    {p.y_nghia_cap && <p class="mt-1 text-xs text-(--color-ink-600)">{p.y_nghia_cap}</p>}
+                    {p.canh_bao.map((cb) => (
+                      <p class="mt-1 text-xs font-medium text-(--color-danger-500)">⚠️ {cb}</p>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            <section>
+              <h2 class="font-display text-xl font-bold text-(--color-ink-950)">Thành Môn (2 sơn liền kề Hướng)</h2>
+              <div class="mt-3 space-y-2">
+                {kq.thanh_mon.map((tm) => (
+                  <div class="rounded-(--radius-control) border border-(--color-ivory-300) bg-white p-3 text-sm">
+                    <p class="font-semibold text-(--color-ink-900)">
+                      {tm.son} ({tm.cung}) — Thành Môn {tm.loai} — {tm.kha_dung ? <span class="text-emerald-700">✓ khả dụng</span> : <span class="text-(--color-ink-500)">✗ không khả dụng</span>}
+                    </p>
+                    <p class="mt-1 text-xs text-(--color-ink-600)">
+                      Vận tinh {tm.van_tinh} nhập trung bay {tm.chieu_bay} → sao {tm.sao_ve_cung} về cung này
+                      {!tm.kha_dung && ` (không phải vượng tinh ${van})`}
+                    </p>
+                    {tm.thanh_mon_ngam && <p class="mt-1 text-xs text-(--color-gold-600)">+ Có Thành Môn Ngầm</p>}
+                    {tm.canh_bao && <p class="mt-1 text-xs font-medium text-(--color-danger-500)">⚠️ {tm.canh_bao}</p>}
+                    {tm.kha_dung && <p class="mt-1 text-xs text-(--color-ink-500)">→ {tm.ghi_chu}</p>}
+                  </div>
+                ))}
+              </div>
+
+              {kq.mo_cua_phu.length > 0 && (
+                <details class="mt-3 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3">
+                  <summary class="cursor-pointer text-sm font-semibold text-(--color-cinnabar-400)">
+                    Các sơn đắc vượng khí nếu mở cửa phụ ({kq.mo_cua_phu.length})
+                  </summary>
+                  <div class="mt-2 space-y-1.5 text-xs text-(--color-ink-600)">
+                    {kq.mo_cua_phu.map((m) => (
+                      <p>
+                        • Sơn <strong>{m.son}</strong> ({m.cung_ten}, {m.am_duong}, {m.cung_nguyen_long_voi_nha ? "cùng Nguyên Long" : "khác Nguyên Long"}) —
+                        vận tinh {m.van_tinh} bay {m.chieu} → vượng tinh về{m.canh_bao ? ` — ⚠️ ${m.canh_bao}` : ""}
+                      </p>
+                    ))}
+                    <p class="mt-1 italic">Lưu ý: cửa phụ nên đặt tại sơn ngược Âm Dương với cửa chính; cửa chỉ nằm gọn trong 1 sơn, không lấn cung.</p>
+                  </div>
+                </details>
+              )}
+            </section>
+
+            {!laQuanTri ? (
+              <section class="rounded-(--radius-card) border-2 border-dashed border-(--color-ivory-300) bg-(--color-ivory-50) p-5 text-center">
+                <p class="font-display text-lg font-bold text-(--color-ink-900)">🔒 Bản Trả Phí — sắp mở</p>
+                <p class="mx-auto mt-2 max-w-xl text-sm text-(--color-ink-600)">
+                  Luận chi tiết từng cung theo đúng hoàn cảnh nhà bạn, gợi ý hóa giải cá nhân hóa, và xem vận khí theo năm/tháng cụ thể — dùng AI đối chiếu tinh bàn với loan đầu bạn vừa khai ở trên.
+                  Đang chờ chốt giá và nhà cung cấp AI, chưa mở bán.
+                </p>
+              </section>
+            ) : (
+              <section id="hkpt-ai" class="rounded-(--radius-card) border-2 border-(--color-gold-400) bg-(--color-gold-400)/5 p-5">
+                <p class="font-display text-lg font-bold text-(--color-ink-900)">🔒 Luận chi tiết bằng AI — đang test nội bộ (DeepSeek)</p>
+                <p class="mt-1 text-sm text-(--color-ink-600)">
+                  Chỉ admin gọi được (chưa chốt giá nên chưa mở khách). AI đối chiếu tinh bàn với Nhóm B theo đúng quy trình 10 bước trong <code>quy-trinh-luan-khi-co-tinh-ban.md</code>,
+                  hóa giải lấy từ <code>c-hoa-giai-sat-khi.md</code> (ưu tiên mức đồng thuận nhiều thầy).
+                </p>
+
+                <div class="mt-3 flex flex-wrap items-end gap-3">
+                  <div>
+                    <label for="hkpt-ai-nam" class="block text-xs font-medium text-(--color-ink-700)">Xem theo năm (không bắt buộc)</label>
+                    <input type="number" id="hkpt-ai-nam" min="1900" max="2100" class="mt-1 w-28 rounded-(--radius-control) border border-(--color-ivory-300) bg-white px-2 py-1.5 text-sm" />
+                  </div>
+                  <div>
+                    <label for="hkpt-ai-thang" class="block text-xs font-medium text-(--color-ink-700)">Tháng âm lịch (1–12)</label>
+                    <input type="number" id="hkpt-ai-thang" min="1" max="12" class="mt-1 w-24 rounded-(--radius-control) border border-(--color-ivory-300) bg-white px-2 py-1.5 text-sm" />
+                  </div>
+                  <Button type="button" id="hkpt-ai-nut">Xem luận AI</Button>
+                </div>
+
+                <div id="hkpt-ai-dang-chay" class="mt-4 hidden text-sm text-(--color-ink-600)">⏳ AI đang luận (DeepSeek, thường 20–50 giây)…</div>
+                <div id="hkpt-ai-loi" class="mt-4 hidden rounded-(--radius-control) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-3 text-sm text-(--color-danger-500)"></div>
+                <div id="hkpt-ai-ket-qua" class="mt-4 hidden space-y-4"></div>
+              </section>
+            )}
+
+            <section class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4 text-xs text-(--color-ink-600)">
+              <p class="font-semibold text-(--color-ink-800)">Phạm vi & độ tin cậy</p>
+              <p class="mt-1">
+                Công cụ chỉ tính phần KHÁCH QUAN (từ tọa độ, vận, công thức Huyền Không Phi Tinh). Kết luận cát hung cuối cùng cần đối chiếu loan đầu thực tế
+                và KHÔNG được suy ra tự động — kể cả khi bạn đã điền đủ Nhóm B ở trên.
+              </p>
+              {van !== 9 && (
+                <p class="mt-1">
+                  ⚠️ Vận {van}: thuật toán giống hệt Vận 9 nhưng CHƯA có bộ dữ liệu đối chiếu độc lập cho vận này (mục "Ý nghĩa cặp sao" đã tự ẩn vì chỉ đúng cho Vận 9).
+                </p>
+              )}
+              {(kq.tinh_ban.phan_loai_huong.muc === "xau" || kq.tinh_ban.phan_loai_huong.muc === "nguy_hiem" ||
+                kq.tinh_ban.phan_loai_toa.muc === "xau" || kq.tinh_ban.phan_loai_toa.muc === "nguy_hiem") && (
+                <p class="mt-1">
+                  ⚠️ Nhà phạm Không Vong — việc cần làm trước tiên là chỉnh lại hướng, không phải hóa giải từng cung.
+                </p>
+              )}
+            </section>
+          </div>
+        )}
+    </>
+  </div>
+</Container>
+
+<script define:vars={{ DO_HUONG: doHuong, VAN: van, NHOM_B: nhomB }}>
+    const nut = document.getElementById("hkpt-ai-nut");
+    if (nut) {
+      const dangChayEl = document.getElementById("hkpt-ai-dang-chay");
+      const loiEl = document.getElementById("hkpt-ai-loi");
+      const ketQuaEl = document.getElementById("hkpt-ai-ket-qua");
+      const namEl = document.getElementById("hkpt-ai-nam");
+      const thangEl = document.getElementById("hkpt-ai-thang");
+
+      function thoat(html) {
+        ketQuaEl.innerHTML = html;
+      }
+
+      nut.addEventListener("click", async () => {
+        loiEl.classList.add("hidden");
+        ketQuaEl.classList.add("hidden");
+        dangChayEl.classList.remove("hidden");
+        nut.disabled = true;
+
+        const payload = {
+          doHuong: DO_HUONG,
+          van: VAN,
+          nhomB: NHOM_B,
+          soTang: NHOM_B.soTang,
+        };
+        const namXem = Number(namEl.value);
+        if (namEl.value && Number.isInteger(namXem)) {
+          payload.namXem = namXem;
+          const thangXem = Number(thangEl.value);
+          if (thangEl.value && Number.isInteger(thangXem)) payload.thangXem = thangXem;
+        }
+
+        try {
+          const res = await fetch("/api/dai-cat-loi/huyen-khong-phi-tinh/luan-ai", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+          });
+          const data = await res.json();
+          dangChayEl.classList.add("hidden");
+          nut.disabled = false;
+
+          if (!data.ok) {
+            loiEl.textContent = data.error ?? "Có lỗi xảy ra.";
+            loiEl.classList.remove("hidden");
+            return;
+          }
+
+          const d = data.data;
+          const esc = (s) => String(s ?? "").replace(/[&<>]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;" })[c]);
+
+          let html = `<div class="rounded-(--radius-control) border border-(--color-ivory-300) bg-white p-3 text-sm"><p class="font-semibold text-(--color-ink-900)">Trục Sơn – Hướng</p><p class="mt-1 text-(--color-ink-700)">${esc(d.tomTatTrucSonHuong)}</p></div>`;
+
+          html += `<div class="space-y-2">` + d.tungCung.map((c) => `
+            <div class="rounded-(--radius-control) border border-(--color-ivory-300) bg-white p-3 text-sm">
+              <p class="font-semibold text-(--color-ink-900)">${esc(c.cung)} <span class="ml-2 text-xs font-normal text-(--color-gold-600)">[${esc(c.mucCatHung)}]</span></p>
+              <p class="mt-1 text-xs text-(--color-ink-500)">Đắc/thất cách: ${esc(c.dacThatCach)}</p>
+              <p class="mt-1 text-(--color-ink-700)">${esc(c.luanChiTiet)}</p>
+              ${c.hoaGiai ? `<p class="mt-1 text-xs text-(--color-gold-600)">🔧 Hóa giải: ${esc(c.hoaGiai)}</p>` : ""}
+            </div>`).join("") + `</div>`;
+
+          html += `<div class="rounded-(--radius-control) border border-(--color-ivory-300) bg-white p-3 text-sm">
+            <p class="font-semibold text-(--color-ink-900)">Kết luận tổng thể</p>
+            <p class="mt-1"><strong>Tài lộc:</strong> ${esc(d.ketLuanTongThe.taiLoc)}</p>
+            <p class="mt-1"><strong>Nhân đinh:</strong> ${esc(d.ketLuanTongThe.nhanDinh)}</p>
+            <p class="mt-1"><strong>Sức khỏe:</strong> ${esc(d.ketLuanTongThe.sucKhoe)}</p>
+            <p class="mt-1"><strong>Công danh:</strong> ${esc(d.ketLuanTongThe.congDanh)}</p>
+            <p class="mt-1"><strong>Hôn nhân:</strong> ${esc(d.ketLuanTongThe.honNhan)}</p>
+          </div>`;
+
+          if (d.cungNenKichHoat?.length || d.cungCanGiuTinh?.length) {
+            html += `<div class="grid gap-3 sm:grid-cols-2">
+              ${d.cungNenKichHoat?.length ? `<div class="rounded-(--radius-control) border border-emerald-500/40 bg-emerald-500/10 p-3 text-sm"><p class="font-semibold text-emerald-700">Nên kích hoạt</p><ul class="mt-1 list-inside list-disc text-emerald-700">${d.cungNenKichHoat.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}
+              ${d.cungCanGiuTinh?.length ? `<div class="rounded-(--radius-control) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-3 text-sm"><p class="font-semibold text-(--color-danger-500)">Cần giữ tĩnh</p><ul class="mt-1 list-inside list-disc text-(--color-danger-500)">${d.cungCanGiuTinh.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>` : ""}
+            </div>`;
+          }
+
+          if (d.thuTuUuTien?.length) {
+            html += `<div class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3 text-sm"><p class="font-semibold text-(--color-ink-900)">Thứ tự ưu tiên xử lý</p><ol class="mt-1 list-inside list-decimal text-(--color-ink-700)">${d.thuTuUuTien.map((x) => `<li>${esc(x)}</li>`).join("")}</ol></div>`;
+          }
+
+          if (d.luuNien) {
+            html += `<div class="rounded-(--radius-control) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-3 text-sm"><p class="font-semibold text-(--color-gold-600)">Lưu niên</p><p class="mt-1">${esc(d.luuNien)}</p></div>`;
+          }
+
+          if (d.gioiHanLuuY?.length) {
+            html += `<div class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3 text-xs text-(--color-ink-500)"><p class="font-semibold text-(--color-ink-700)">Giới hạn / lưu ý</p><ul class="mt-1 list-inside list-disc">${d.gioiHanLuuY.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>`;
+          }
+
+          thoat(html);
+          ketQuaEl.classList.remove("hidden");
+        } catch {
+          dangChayEl.classList.add("hidden");
+          nut.disabled = false;
+          loiEl.textContent = "Có lỗi mạng khi gọi AI. Vui lòng thử lại.";
+          loiEl.classList.remove("hidden");
+        }
+      });
+    }
+</script>
