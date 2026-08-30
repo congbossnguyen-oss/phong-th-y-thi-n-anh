@@ -126,9 +126,14 @@ export async function goiClaudeToolUse(
   schema: object,
   maxTokens: number,
   tinhNang: TinhNangAi = "bat-tu-giai-doan",
+  // ⚠️ Model mặc định của DeepSeek trên site (deepseek-v4-flash) là model "thinking": từ chối
+  // tool_choice ép buộc mà goiAiToolUse LUÔN dùng — đo thật 30/8/2026 (Huyền Không, Kinh Dịch): gọi
+  // thất bại 100%. Truyền modelOverride cho các tinhNang đang route sang DeepSeek (bat-tu-cham-diem,
+  // bat-tu-kiem-duyet) để ép deepseek-chat (non-thinking, đã kiểm chứng chạy đúng).
+  modelOverride?: Parameters<typeof goiAiToolUse>[0]["modelOverride"],
 ): Promise<{ input: Record<string, unknown> | null; usage?: UsageAnthropic; model?: string }> {
   const [systemCoDinh, systemThayDoi] = Array.isArray(system) ? system : [system, undefined];
-  const kq = await goiAiToolUse({ tinhNang, systemCoDinh, systemThayDoi, userMessage, toolName, schema, maxTokens });
+  const kq = await goiAiToolUse({ tinhNang, systemCoDinh, systemThayDoi, userMessage, toolName, schema, maxTokens, modelOverride });
   return { input: kq.input, usage: kq.usage, model: kq.model };
 }
 
@@ -172,7 +177,7 @@ export async function kiemDuyetDoanVan(doanVan: string): Promise<string> {
   ].join("\n");
   const userMessage = `Đoạn văn cần kiểm tra:\n${doanVan}`;
 
-  const { input, usage, model } = await goiClaudeToolUse(system, userMessage, "tra_ve_doan_van_da_kiem_duyet", SCHEMA_KIEM_DUYET, 2000, "bat-tu-kiem-duyet");
+  const { input, usage, model } = await goiClaudeToolUse(system, userMessage, "tra_ve_doan_van_da_kiem_duyet", SCHEMA_KIEM_DUYET, 2000, "bat-tu-kiem-duyet", { "openai-tuong-thich": "deepseek-chat" });
   ghiLogChiPhi("Luận giải Bát Tự — Kiểm duyệt F/I", model ?? DEFAULT_MODEL, usage);
   if (!input) return doanVan; // AI lỗi → giữ nguyên bản gốc thay vì mất nội dung.
   const noiDung = typeof input.noi_dung === "string" ? xoaTheLaConSot(input.noi_dung.trim()) : "";

@@ -165,7 +165,7 @@ async function chamDiemMotLo(laSo: unknown, muc: MucCanCham[], tenLoai: string, 
   const system = buildSystemPrompt(laSoJSON, dsJSON, tenLoai, coChiTiet);
   const userMessage = `Hãy phân tích đúng đủ ${muc.length} mục trong danh sách ${tenLoai} theo đúng dữ liệu và nguyên tắc đã nêu.`;
 
-  const { input, usage, model } = await goiClaudeToolUse(system, userMessage, "tra_ve_diem_so", SCHEMA_DIEM, coChiTiet ? 8000 : 3000, "bat-tu-cham-diem");
+  const { input, usage, model } = await goiClaudeToolUse(system, userMessage, "tra_ve_diem_so", SCHEMA_DIEM, coChiTiet ? 8000 : 3000, "bat-tu-cham-diem", { "openai-tuong-thich": "deepseek-chat" });
   ghiLogChiPhi(`Luận giải Bát Tự — ${tenLoai}`, model ?? "claude-sonnet-5", usage);
 
   const danhSach = Array.isArray(input?.danh_sach) ? (input!.danh_sach as Record<string, unknown>[]) : [];

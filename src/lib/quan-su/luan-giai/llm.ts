@@ -64,6 +64,12 @@ export async function goiLuanGiaiKinhDich(
     toolName: TOOL_NAME,
     schema: INPUT_SCHEMA,
     maxTokens: MAX_TOKENS,
+    // ⚠️ Model mặc định của DeepSeek trên site (deepseek-v4-flash) là model "thinking": từ chối
+    // tool_choice ép buộc — đo thật 30/8/2026 khi so sánh nhà cung cấp: gọi thất bại 100% (trả null
+    // ngay, không có tool_calls), Hỏi Quân Sư âm thầm rớt về bản luận thuần luật (isDemo=true) dù
+    // khách vẫn trả tiền cho bài luận sâu AI. deepseek-chat (non-thinking) gọi tool đúng — cùng fix
+    // đã áp cho Huyền Không Phi Tinh (xem luan-ai.ts). Gemini không cần override, dùng AI_GEMINI_MODEL.
+    modelOverride: { "openai-tuong-thich": "deepseek-chat" },
   });
   ghiLogChiPhi("Kinh Dịch", ket.model, ket.usage);
 
