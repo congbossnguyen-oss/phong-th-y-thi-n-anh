@@ -49,12 +49,28 @@ export async function createSession(userId: string, ipAddress: string): Promise<
 }
 
 /**
- * Xác thực session — đồng thời kiểm tra IP hiện tại có khớp IP lúc tạo session không.
- * Khác IP (kể cả cookie còn hạn) = coi như bị lộ/dùng chung, HỦY session và bắt đăng nhập lại.
- * Đây là lớp chống chia sẻ tài khoản bổ sung, bên cạnh chính sách "1 thiết bị/lúc".
+ * Cảnh báo (CHỈ ĐỂ GHI LOG, không dùng để chặn) khi IP hiện tại khác IP lúc tạo session — HÀM
+ * THUẦN, không đụng DB, để test được (cùng cách làm với `lyDoChanTrialTheoThietBi` trong trial.ts).
  *
- * IPv6: chỉ đòi khớp 64-bit ĐẦU (phần mạng), không đòi khớp toàn bộ 128-bit — xem `cungMangIp`
- * trong `client-ip.ts` để biết lý do (mạng di động tự đổi 64-bit cuối theo phiên kết nối).
+ * Giai Đoạn A (31/8/2026): trước đây IP khác = HỦY session ngay (kể cả cookie còn hạn). Điện thoại
+ * di động đổi IP liên tục khi chuyển WiFi ↔ 4G/5G, khiến khách bị đăng xuất oan liên tục — đã xảy
+ * ra thật với chính tài khoản admin (xem ghi chú gốc trong `client-ip.ts`, phần `cungMangIp`, dù đã
+ * nới lỏng riêng IPv6 vẫn không đủ vì IPv4 di động đổi hẳn dải mạng chứ không chỉ đổi định danh giao
+ * diện). Bảo vệ chống dùng chung tài khoản đã có sẵn và MẠNH HƠN ở cơ chế "1 thiết bị/lúc"
+ * (`createSession()` xóa mọi session cũ khi đăng nhập máy khác) — đây mới là tín hiệu thật của việc
+ * bị lộ/chia sẻ (ai đó chủ động đăng nhập bằng mật khẩu ở nơi khác), còn IP đổi do di chuyển mạng là
+ * nhiễu bình thường, không đáng tin cậy để tự động đăng xuất.
+ */
+export function canhBaoDoiIp(sessionIp: string, currentIp: string): string | null {
+  if (cungMangIp(sessionIp, currentIp)) return null;
+  return `IP đổi khác lúc đăng nhập: ${sessionIp} -> ${currentIp}`;
+}
+
+/**
+ * Xác thực session.
+ *
+ * IP hiện tại KHÁC IP lúc tạo session KHÔNG còn hủy session (xem `canhBaoDoiIp` ở trên) — chỉ ghi
+ * log để theo dõi bất thường, không chặn request.
  */
 export async function validateSessionToken(token: string, currentIp: string): Promise<SessionUser | null> {
   const id = hashToken(token);
@@ -84,11 +100,9 @@ export async function validateSessionToken(token: string, currentIp: string): Pr
     return null;
   }
 
-  if (row.sessionIp && !cungMangIp(row.sessionIp, currentIp)) {
-    // IP đổi khác lúc đăng nhập (khác mạng, không chỉ khác 64-bit cuối IPv6) -> hủy session, bắt
-    // xác thực lại (chống dùng chung tài khoản).
-    await db.delete(sessions).where(eq(sessions.id, id));
-    return null;
+  if (row.sessionIp) {
+    const canhBao = canhBaoDoiIp(row.sessionIp, currentIp);
+    if (canhBao) console.warn(`[session] ${canhBao} (session ${id.slice(0, 8)}...)`);
   }
 
   const daDuNgay = row.birthDay != null && row.birthMonth != null && row.birthYear != null && row.gender != null;

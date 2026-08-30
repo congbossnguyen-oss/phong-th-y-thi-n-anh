@@ -25,18 +25,18 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
   }
 
-  // GIAI ĐOẠN THỬ NGHIỆM NỘI BỘ — cả khu Quân Sư (app trả phí) CHỈ mở cho admin. Khách thường (kể
-  // cả chưa đăng nhập) vào /quan-su/* bị đưa về trang chủ, coi như khu này chưa tồn tại. Cho phép
-  // test trên trang thật mà không lộ cho khách. KHI MỞ BÁN: xóa nguyên khối này (một chỗ duy nhất).
-  //
-  // KHÔNG chặn ở đây: /api/thong-bao/* (service worker + cron phải gọi được, không có đăng nhập) và
-  // /api/quan-su/* (đã có auth riêng: đăng nhập + gói). Chỉ khóa các TRANG hiển thị của Quân Sư.
+  // MỞ CÔNG KHAI /quan-su/* — Giai Đoạn A (31/8/2026, nhánh prepare-quan-su-public). Trước đây khối
+  // này chặn cứng "không phải admin thì đưa về trang chủ" (đúng như comment gốc đã ghi sẵn "KHI MỞ
+  // BÁN: xóa nguyên khối này"). Đã audit toàn bộ 34 trang + 5 API route dưới /quan-su: mọi trang có
+  // đọc Astro.locals.user (7/34 — [category], goi-thue-bao, xem-thoi-van, ky-mon*, lap-ky-mon,
+  // trach-cat-ky-mon) đều đã tự có nhánh xử lý an toàn cho khách chưa đăng nhập/chưa có gói (login
+  // card, component SapRaMat, hoặc lùi về template), và mọi API route (luan.ts, quyen-vip.ts,
+  // goi-thue-bao/checkout.ts + dung-thu.ts + result.ts) đã tự trả đúng 401/403 JSON theo gói/lượt.
+  // KHÔNG đụng các cổng admin-only KHÁC vẫn đang cố ý giữ nguyên (Kỳ Môn còn test nội bộ qua
+  // laQuanTri riêng của từng trang; gói thuê bao chưa mở bán qua checkout.ts; dùng thử đã ngưng vĩnh
+  // viễn qua dung-thu.ts) — những cổng đó là quyết định kinh doanh RIÊNG, không nằm trong phạm vi
+  // "App Quân Sư chưa launch" mà khối này từng đại diện.
   const path = context.url.pathname;
-  if (path === "/quan-su" || path.startsWith("/quan-su/")) {
-    if (!context.locals.user?.isAdmin) {
-      return context.redirect("/");
-    }
-  }
 
   // "Xem hướng nhà Bát Trạch" (30/8/2026, anh Công: "để ra ngoài như mục huyền không phi tinh") —
   // trang CHÍNH đã mở công khai (như Huyền Không Phi Tinh: tính toán free, không AI, không gating).
