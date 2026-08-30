@@ -1,0 +1,22 @@
+---
+// Bản in-app của công cụ "Giờ tốt trong ngày" — thuộc lưới "Công cụ hữu ích" trong app Quân Sư.
+// TỰ CHỨA trong app (không link ra web) — dùng chung component với bản web nên logic/kết quả y
+// hệt, chỉ khung trang khác.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
+import GioTotTrongNgay from "../../components/tools/GioTotTrongNgay.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout title="Giờ tốt trong ngày — Quân Sư Thiên Anh" description="Giờ tốt trong ngày trong app Quân Sư." appShell>
+  <PageHero
+    eyebrow="Đại Cát Lợi"
+    title="Giờ tốt trong ngày"
+    description="Nhập 1 ngày dương lịch, chọn mục đích (nếu có) — hệ thống tự phân tích và xếp hạng 12 giờ Địa Chi."
+    breadcrumbs={[{ label: "Quân Sư", href: "/quan-su" }, { label: "Giờ tốt trong ngày" }]}
+  />
+  <GioTotTrongNgay />
+  <BottomNav />
+</BaseLayout>

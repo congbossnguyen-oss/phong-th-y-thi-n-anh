@@ -13,12 +13,13 @@ interface Props {
   /** true = hiện app Quân Sư (mời nâng cấp gói Cao Cấp) thay vì mời mua lẻ như bản web. */
   laApp?: boolean;
   /**
-   * Nút "Xem giờ khai trương" trỏ sang "Giờ Tốt Trong Ngày" — module đó CHƯA có bản in-app riêng
-   * nên tạm trỏ web ở CẢ HAI ngữ cảnh (⚠️ việc cần dọn tiếp sau).
+   * Nút "Xem giờ khai trương" trỏ sang "Giờ Tốt Trong Ngày" — mặc định tự chọn theo `laApp`
+   * (30/8/2026: "Giờ Tốt Trong Ngày" đã có bản in-app riêng /quan-su/gio-tot-trong-ngay). Chỉ
+   * truyền tay khi cần ghi đè.
    */
   hrefGioTot?: string;
 }
-const { laApp = false, hrefGioTot = "/dai-cat-loi/gio-tot-trong-ngay" } = Astro.props;
+const { laApp = false, hrefGioTot = laApp ? "/quan-su/gio-tot-trong-ngay" : "/dai-cat-loi/gio-tot-trong-ngay" } = Astro.props;
 ---
 
 <Container class="py-16">

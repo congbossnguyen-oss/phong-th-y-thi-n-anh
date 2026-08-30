@@ -182,10 +182,12 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
            riêng, CTA cuối trang (trừ Khai Quang — bản gốc không có CTA) đổi sang mời gói Cao Cấp
            thuê bao (GoiYNangCapApp.astro) thay vì mời mua lẻ như bản web (GoiYNangCap.astro).
 
-           ⚠️ Còn 1 khoảng trống CHƯA dọn: nút "Xem giờ..." bên trong Ký Hợp Đồng/Khai Trương và 2
-           mục "Đổi Lịch"/"Giờ Hoàng Đạo" trong lưới "Công cụ hữu ích" bên dưới vẫn trỏ web
-           (/dai-cat-loi/gio-tot-trong-ngay, /dai-cat-loi/doi-lich-am-duong) — 2 công cụ đó chưa có
-           bản in-app riêng, việc cần dọn tiếp sau (ngoài phạm vi yêu cầu 30/8/2026). -->
+           Sửa thêm 30/8/2026 (anh Công: "em dựng riêng cho bản app đi"): 2 công cụ còn sót —
+           "Giờ tốt trong ngày" và "Đổi Dương Lịch ↔ Âm Lịch" — cũng đã tách thành component dùng
+           chung (GioTotTrongNgay.astro, DoiLichAmDuong.astro) + trang /quan-su/* riêng. Nút "Xem
+           giờ..." bên trong Ký Hợp Đồng/Khai Trương (prop hrefGioTot) và 2 mục "Đổi Lịch"/"Giờ
+           Hoàng Đạo" trong lưới "Công cụ hữu ích" bên dưới nay đều trỏ /quan-su/* khi ở app —
+           không còn ngoại lệ nào trong toàn bộ trang này trỏ ra web nữa. -->
       <p class="qsh-section-title" style="margin-top:0.4rem;">Đại Cát Lợi - Cơ Bản</p>
       <div class="qsh-trach-cat-grid">
         {[
@@ -274,8 +276,8 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
           { href: "/quan-su/xem-ngay-tot-xau", label: "Xem Ngày Tốt Xấu", icon: "calendar" },
           { href: "/quan-su/luan-so-dien-thoai", label: "Luận Số Điện Thoại", icon: "phone" },
           { href: "/quan-su/tinh-trung-tang", label: "Tính Trùng Tang", icon: "clock" },
-          { href: "/dai-cat-loi/doi-lich-am-duong", label: "Đổi Lịch", icon: "calendar" },
-          { href: "/dai-cat-loi/gio-tot-trong-ngay", label: "Giờ Hoàng Đạo", icon: "clock" },
+          { href: "/quan-su/doi-lich-am-duong", label: "Đổi Lịch", icon: "calendar" },
+          { href: "/quan-su/gio-tot-trong-ngay", label: "Giờ Hoàng Đạo", icon: "clock" },
           { href: "#thong-bao", label: "Nhắc Lịch Cúng", icon: "bell" },
         ].map((t) => (
           <a href={t.href} class="qsh-tool-item">
