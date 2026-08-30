@@ -6,7 +6,6 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import BottomNav from "../../components/quan-su/BottomNav.astro";
 import "../../styles/quan-su.css";
-import NutBatThongBao from "../../components/NutBatThongBao.astro";
 import { getCategoriesWithCounts } from "../../lib/quan-su";
 
 export const prerender = false;
@@ -44,10 +43,6 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
     </div>
 
     <div class="qs-wrap" style="margin-top:0;">
-      <div id="thong-bao" style="scroll-margin-top:1rem;">
-        <NutBatThongBao />
-      </div>
-
       <details class="qsh-intro">
         <summary>Vì sao tôi xây dựng Quân Sư Thiên Anh?</summary>
         <div class="qsh-intro-body">
