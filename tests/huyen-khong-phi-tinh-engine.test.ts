@@ -15,8 +15,10 @@ import {
   lapTinhBan,
   nienTinhNhapTrung,
   phanLoaiDoLech,
+  phanTichCung,
   thuSonXuatSat,
   timThanhMon,
+  tinhToanHuyenKhong,
   vanTuNam,
 } from "../src/lib/huyen-khong-phi-tinh/engine";
 
@@ -219,5 +221,83 @@ describe("Thành Môn — trường mới (Chân/Giả) nhất quán với engin
     const suu = ds.find((tm) => tm.son === "Sửu")!;
     expect(suu.sao_ve_cung).not.toBe(9);
     expect(suu.kha_dung).toBe(false);
+  });
+});
+
+describe("Tách vận nhà vs vận đương lệnh — nhà thoái vận (ca thật anh Công báo 30/8/2026)", () => {
+  // Nhà nhập trạch 2003 = Vận 7. Xem trong Vận 9 (hiện tại) → nhà đã thoái vận.
+  const vanNha = vanTuNam(2003);
+  const vanHienTai = 9;
+
+  it("2003 → Vận nhà = 7", () => {
+    expect(vanNha).toBe(7);
+  });
+
+  it("tinh bàn vẫn lập theo VẬN NHÀ (7), không đổi theo vận đương lệnh", () => {
+    const kq = tinhToanHuyenKhong(SON_24["Mão"][0], vanNha, { vanHienTai });
+    // Vận tinh nhập trung = vận nhà 7 (không phải 9)
+    expect(kq.tinh_ban.van_ban[5]).toBe(7);
+    expect(kq.van_nha).toBe(7);
+    expect(kq.van_hien_tai).toBe(9);
+    expect(kq.da_thoai_van).toBe(true);
+  });
+
+  it("Hướng tinh 7 KHÔNG còn VƯỢNG khi xét theo Vận 9 (nhà Vận 7 đã thoái vận)", () => {
+    const tb = lapTinhBan(SON_24["Mão"][0], vanNha);
+    // Xét theo vận nhà (cũ, sai): sao 7 = VƯỢNG
+    const cungCu = phanTichCung(tb, vanNha);
+    const coVuong7Cu = cungCu.some((c) => c.huong_tinh === 7 && c.tt_huong === "VƯỢNG");
+    expect(coVuong7Cu).toBe(true);
+    // Xét theo vận đương lệnh 9 (đúng): sao 7 KHÔNG được là VƯỢNG ở bất kỳ cung nào
+    const cungMoi = phanTichCung(tb, vanHienTai);
+    const coVuong7Moi = cungMoi.some((c) => c.huong_tinh === 7 && c.tt_huong === "VƯỢNG");
+    expect(coVuong7Moi).toBe(false);
+    // Trong Vận 9 chỉ có sao 9 là VƯỢNG
+    for (const c of cungMoi) {
+      if (c.tt_huong === "VƯỢNG") expect(c.huong_tinh).toBe(9);
+      if (c.tt_son === "VƯỢNG") expect(c.son_tinh).toBe(9);
+    }
+  });
+
+  it("ý nghĩa cặp Vận 9 hiện theo VẬN ĐƯƠNG LỆNH (nhà Vận 7 xem ở Vận 9 vẫn có)", () => {
+    const tb = lapTinhBan(SON_24["Mão"][0], vanNha);
+    const cungTheoVan9 = phanTichCung(tb, 9);
+    expect(cungTheoVan9.some((c) => c.y_nghia_cap !== null)).toBe(true);
+    // Nếu (nhầm) xét theo vận nhà 7 thì mục này trống
+    const cungTheoVan7 = phanTichCung(tb, 7);
+    expect(cungTheoVan7.every((c) => c.y_nghia_cap === null)).toBe(true);
+  });
+
+  it("Chính/Linh Thần lấy theo vận đương lệnh (9): Chính Thần Nam, Linh Thần Bắc — không theo vận nhà 7", () => {
+    const kq = tinhToanHuyenKhong(SON_24["Mão"][0], vanNha, { vanHienTai: 9 });
+    expect(kq.chinh_linh_than.chinh_than_so).toBe(9);
+    expect(kq.chinh_linh_than.linh_than_so).toBe(1);
+  });
+
+  it("Thu Sơn Xuất Sát xét theo vận đương lệnh (9): chỉ sao 9 (và sinh khí 1) mới được THU SƠN", () => {
+    const tb = lapTinhBan(SON_24["Mão"][0], vanNha);
+    const tss = thuSonXuatSat(tb, 9);
+    for (const t of tss) {
+      for (const k of t.khuyen_nghi) {
+        if (k.startsWith("THU SƠN")) {
+          // THU SƠN chỉ dành cho sao VƯỢNG (9) hoặc SINH (1) trong Vận 9
+          const so = Number(k.match(/tinh (\d)/)![1]);
+          expect([9, 1]).toContain(so);
+        }
+      }
+    }
+  });
+
+  it("nhà ĐÚNG vận hiện tại (Vận 9 nhập trạch 2024): da_thoai_van=false, không tách vận", () => {
+    const kq = tinhToanHuyenKhong(SON_24["Mão"][0], 9, { vanHienTai: 9 });
+    expect(kq.da_thoai_van).toBe(false);
+    expect(kq.van_nha).toBe(9);
+    expect(kq.van_hien_tai).toBe(9);
+  });
+
+  it("mặc định không truyền vanHienTai → dùng luôn vận nhà (tương thích ngược)", () => {
+    const kq = tinhToanHuyenKhong(SON_24["Mão"][0], 7);
+    expect(kq.van_hien_tai).toBe(7);
+    expect(kq.da_thoai_van).toBe(false);
   });
 });

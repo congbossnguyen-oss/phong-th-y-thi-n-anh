@@ -811,16 +811,18 @@ export interface ThuSonXuatSatEntry {
  * Với mỗi cung (trừ Trung Cung), tra khuyến nghị Thu Sơn / Xuất Sát theo 4 quy tắc gốc
  * (i-thu-son-xuat-sat-cua-chinh-duong-khi.md mục 1): sao vượng/sinh trên Sơn Bàn cần chỗ CAO,
  * trên Hướng Bàn cần chỗ THẤP có nước; sao suy/tử thì ngược lại.
+ *
+ * @param vanHienTai Vận đương lệnh dùng xét vượng/suy — Thu Sơn Xuất Sát là bố trí theo sao ĐANG
+ *   vượng ở hiện tại (mặc định = tb.van, xem chú thích phanTichCung).
  */
-export function thuSonXuatSat(tb: TinhBan): ThuSonXuatSatEntry[] {
-  const van = tb.van;
+export function thuSonXuatSat(tb: TinhBan, vanHienTai: number = tb.van): ThuSonXuatSatEntry[] {
   const ketQua: ThuSonXuatSatEntry[] = [];
   for (const c of THU_TU_BAY) {
     if (c === 5) continue;
     const s = tb.son_ban[c];
     const h = tb.huong_ban[c];
-    const ttS = trangThaiSao(s, van);
-    const ttH = trangThaiSao(h, van);
+    const ttS = trangThaiSao(s, vanHienTai);
+    const ttH = trangThaiSao(h, vanHienTai);
     const khuyen: string[] = [];
     if (ttS === "VƯỢNG" || ttS === "SINH") {
       khuyen.push(`THU SƠN: Sơn tinh ${s} (${ttS}) → cần chỗ CAO (núi/nhà cao/tủ cao/cây lớn)`);
@@ -889,9 +891,15 @@ export interface PhanTichCungEntry {
   canh_bao: string[];
 }
 
-/** Phân tích chi tiết từng cung: 3 sao, trạng thái khí, danh cục, cảnh báo. */
-export function phanTichCung(tb: TinhBan): PhanTichCungEntry[] {
-  const van = tb.van;
+/**
+ * Phân tích chi tiết từng cung: 3 sao, trạng thái khí, danh cục, cảnh báo.
+ *
+ * @param vanHienTai Vận ĐANG CAI QUẢN (đương lệnh) dùng để xét vượng/suy — KHÁC vận nhà (tb.van)
+ *   khi nhà đã sang vận mới. Vượng/suy của sao (đắc lệnh/thất lệnh) phải xét theo vận hiện tại, còn
+ *   tinh bàn (con số Sơn/Hướng tinh) thì cố định theo vận nhà. Mặc định = tb.van để giữ tương thích
+ *   ngược (nhà đúng vận hiện tại thì 2 vận trùng nhau). Xem b-tinh-chat-van-9... mục 1.
+ */
+export function phanTichCung(tb: TinhBan, vanHienTai: number = tb.van): PhanTichCungEntry[] {
   const ketQua: PhanTichCungEntry[] = [];
   for (const c of THU_TU_BAY) {
     const s = tb.son_ban[c];
@@ -900,7 +908,9 @@ export function phanTichCung(tb: TinhBan): PhanTichCungEntry[] {
     const info = CUNG_INFO[c];
 
     const danhCuc = layDanhCuc(s, h);
-    const yNghia = van === 9 ? (Y_NGHIA_CAP_VAN9[`${s},${h}`] ?? null) : null;
+    // Ý nghĩa cặp sao chỉ đúng cho Vận 9 — gate theo VẬN HIỆN TẠI (bảng file G mô tả cặp sao ứng xử
+    // TRONG Vận 9, áp dụng cho mọi nhà đang xét ở Vận 9, không phụ thuộc vận lúc lập trạch).
+    const yNghia = vanHienTai === 9 ? (Y_NGHIA_CAP_VAN9[`${s},${h}`] ?? null) : null;
 
     const canhBao: string[] = [];
     if (s === 5 || h === 5) {
@@ -910,7 +920,7 @@ export function phanTichCung(tb: TinhBan): PhanTichCungEntry[] {
       canhBao.push(`NGŨ HOÀNG (${vai.join("+")}) — kỵ động, tránh đặt bếp/cửa/giường. ` +
         "Hóa bằng vật phẩm hành Kim (đồng), tuyệt đối không dùng Hỏa.");
     }
-    if ((s === 2 || h === 2) && ["SUY", "TỬ"].includes(trangThaiSao(2, van))) {
+    if ((s === 2 || h === 2) && ["SUY", "TỬ"].includes(trangThaiSao(2, vanHienTai))) {
       canhBao.push("Nhị Hắc (Bệnh Phù) thất vận — chú ý sức khỏe, hóa bằng Kim.");
     }
 
@@ -919,8 +929,8 @@ export function phanTichCung(tb: TinhBan): PhanTichCungEntry[] {
       nguhanh_cung: info.nguhanh,
       son_tinh: s, van_tinh: v, huong_tinh: h,
       bo_ba: `${s}-${v}-${h}`,
-      tt_son: trangThaiSao(s, van),
-      tt_huong: trangThaiSao(h, van),
+      tt_son: trangThaiSao(s, vanHienTai),
+      tt_huong: trangThaiSao(h, vanHienTai),
       la_cung_toa: c === tb.cung_toa,
       la_cung_huong: c === tb.cung_huong,
       danh_cuc: danhCuc,
@@ -972,9 +982,18 @@ export interface LuuNienResult {
   canh_bao: string[];
 }
 
-/** Xếp Niên tinh (và Nguyệt tinh nếu có) lên tinh bàn, tìm danh cục phát sinh. */
-export function phanTichLuuNien(tb: TinhBan, nam: number, thangAm?: number | null): LuuNienResult {
-  const van = tb.van;
+/**
+ * Xếp Niên tinh (và Nguyệt tinh nếu có) lên tinh bàn, tìm danh cục phát sinh.
+ * @param vanHienTai Vận đương lệnh — dùng xét Hướng tinh có đang thất vận (suy/tử) không để luận
+ *   hợp thập lưu niên. Mặc định = tb.van.
+ */
+export function phanTichLuuNien(
+  tb: TinhBan,
+  nam: number,
+  thangAm?: number | null,
+  vanHienTai: number = tb.van
+): LuuNienResult {
+  const van = vanHienTai;
   const nt = nienTinhNhapTrung(nam);
   const nienBan = bayTinh(nt, true);
   let nguyetBan: Record<number, number> | null = null;
@@ -1043,6 +1062,12 @@ export function vanTuNam(nam: number): number {
 
 export interface KetQuaHuyenKhong {
   tinh_ban: TinhBan;
+  /** Vận nhà (từ năm nhập trạch) — tinh bàn + cách cục + Thành Môn lập theo vận này (cố định). */
+  van_nha: number;
+  /** Vận đương lệnh (từ năm hiện tại) — vượng/suy + Chính-Linh Thần + Thu Sơn Xuất Sát xét theo vận này. */
+  van_hien_tai: number;
+  /** true = nhà đã sang vận mới (van_nha ≠ van_hien_tai) → các sao vượng của vận nhà nay đã thoái. */
+  da_thoai_van: boolean;
   cach_cuc: CachCuc[];
   thanh_mon: ThanhMonEntry[];
   mo_cua_phu: MoCuaPhuEntry[];
@@ -1052,23 +1077,36 @@ export interface KetQuaHuyenKhong {
   luu_nien?: LuuNienResult;
 }
 
+/**
+ * @param van Vận NHÀ (từ năm nhập trạch) — dùng lập tinh bàn, nhãn cách cục, Thành Môn (cố định).
+ * @param opts.vanHienTai Vận ĐANG CAI QUẢN (từ năm hiện tại) — dùng xét vượng/suy, Chính-Linh Thần,
+ *   Thu Sơn Xuất Sát, ý nghĩa cặp Vận 9. Mặc định = van (nhà đúng vận hiện tại thì 2 vận trùng nhau).
+ *   Tách 2 vận vì: tinh bàn cố định theo vận lập trạch, nhưng vượng/suy đổi theo vận đương lệnh —
+ *   nhà Vận 7 sang Vận 9 là "thoái vận", Hướng tinh 7 lúc lập trạch vượng nay đã thành tử khí.
+ */
 export function tinhToanHuyenKhong(
   doHuong: number,
   van: number,
-  opts: { dungTheQuai?: boolean; nam?: number; thangAm?: number } = {}
+  opts: { dungTheQuai?: boolean; nam?: number; thangAm?: number; vanHienTai?: number } = {}
 ): KetQuaHuyenKhong {
+  const vanHienTai = opts.vanHienTai ?? van;
   const tb = lapTinhBan(doHuong, van, opts.dungTheQuai ?? false);
   const out: KetQuaHuyenKhong = {
     tinh_ban: tb,
+    van_nha: van,
+    van_hien_tai: vanHienTai,
+    da_thoai_van: vanHienTai !== van,
+    // Cách cục + Thành Môn + mở cửa phụ: giữ theo VẬN NHÀ (kết cấu cố định của lá số).
     cach_cuc: [...nhanDienCachCuc(tb), canhBaoDaKiep()],
     thanh_mon: timThanhMon(tb),
     mo_cua_phu: xetMoCuaPhu(tb),
-    chinh_linh_than: chinhLinhThan(van),
-    thu_son_xuat_sat: thuSonXuatSat(tb),
-    cac_cung: phanTichCung(tb),
+    // Chính-Linh Thần + Thu Sơn Xuất Sát + phân tích cung: xét theo VẬN HIỆN TẠI (đương lệnh).
+    chinh_linh_than: chinhLinhThan(vanHienTai),
+    thu_son_xuat_sat: thuSonXuatSat(tb, vanHienTai),
+    cac_cung: phanTichCung(tb, vanHienTai),
   };
   if (opts.nam) {
-    out.luu_nien = phanTichLuuNien(tb, opts.nam, opts.thangAm ?? null);
+    out.luu_nien = phanTichLuuNien(tb, opts.nam, opts.thangAm ?? null, vanHienTai);
   }
   return out;
 }

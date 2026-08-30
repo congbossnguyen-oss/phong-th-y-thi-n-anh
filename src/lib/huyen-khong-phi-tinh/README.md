@@ -51,7 +51,7 @@ thái công khai** (chốt hiện tại, không phải do lỗi kỹ thuật l�
 | Chính Thần/Linh Thần hợp thập cả 9 vận + Chiếu Thần | đối chiếu bảng nguồn mục 4.2/4.5 |
 | Thu Sơn Xuất Sát + Chân/Giả Thành Môn | port đúng logic mã nguồn, CHƯA có ví dụ sách riêng cho điều kiện 3 (nguồn cũng chưa có) |
 
-Chạy lại: `npx vitest run tests/huyen-khong-phi-tinh-engine.test.ts` (70 test).
+Chạy lại: `npx vitest run tests/huyen-khong-phi-tinh-engine.test.ts` (78 test).
 
 ## Chỗ nào tính, chỗ nào KHÔNG tính (và vì sao)
 
@@ -76,6 +76,21 @@ Toàn bộ engine chạy **client của Astro SSR, thuần TypeScript, 0đ, khô
 Chính Thần / Linh Thần / Chiếu Thần theo vận (`chinhLinhThan()`), Thu Sơn Xuất Sát từng cung
 (`thuSonXuatSat()`), và điều kiện Chân/Giả Thành Môn (3 điều kiện, cập nhật `timThanhMon()`) — cả 3
 đều là engine tính thuần, Free tier, 0đ, dựa trên `i-thu-son-xuat-sat-cua-chinh-duong-khi.md`.
+
+**⚠️ Tách VẬN NHÀ vs VẬN ĐƯƠNG LỆNH (30/8/2026, anh Công báo lỗi)** — điểm dễ sai nhất, đọc kỹ:
+Nhà nhập trạch năm nào thì thuộc vận đó (vd 2003 = Vận 7). Nhưng **vượng/suy của sao phải xét theo
+vận ĐANG CAI QUẢN (đương lệnh, hiện tại Vận 9)**, KHÔNG phải vận lúc lập trạch. Nhà Vận 7 xem trong
+Vận 9 là nhà "thoái vận" — Hướng tinh 7 lúc lập trạch vượng, nay đã thành tử khí.
+- `tinhToanHuyenKhong(doHuong, vanNha, { vanHienTai })` — `vanHienTai` mặc định = `vanNha` (nhà đúng
+  vận thì 2 vận trùng). Kết quả có `van_nha`, `van_hien_tai`, `da_thoai_van`.
+- **Theo VẬN NHÀ (cố định):** tinh bàn (`lapTinhBan`), nhãn cách cục (`nhanDienCachCuc` — VSVH, TSHT,
+  Song Tinh…), **Thành Môn + mở cửa phụ** (`timThanhMon`/`xetMoCuaPhu` — anh Công: "Thành Môn là cố
+  định").
+- **Theo VẬN ĐƯƠNG LỆNH:** vượng/suy 9 sao (`trangThaiSao`), `phanTichCung` (tt_son/tt_huong, ý nghĩa
+  cặp Vận 9 gate theo vanHienTai, cảnh báo Ngũ Hoàng/Nhị Hắc thất vận), `chinhLinhThan`,
+  `thuSonXuatSat`, `phanTichLuuNien` (hợp thập lưu niên).
+- UI + AI đều hiện cảnh báo "THOÁI VẬN" khi `da_thoai_van`, và nói rõ cách cục Vận cũ nay đã mất thời.
+- `vanHienTai` luôn tính lại ở SERVER từ năm hiện tại (component + route AI), không tin client.
 
 Phần AI (Trả Phí) THÌ ĐƯỢC PHÉP tự luận đắc/thất cách và đề xuất hóa giải/kích hoạt theo từng sao —
 đó là việc của AI luận (giống người luận thật), không phải engine tự suy. Ràng buộc: AI chỉ được

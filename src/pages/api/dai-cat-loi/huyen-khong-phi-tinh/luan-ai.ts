@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { checkRateLimit } from "../../../../lib/rate-limit";
-import { phanTichLuuNien, tinhToanHuyenKhong } from "../../../../lib/huyen-khong-phi-tinh/engine";
+import { phanTichLuuNien, tinhToanHuyenKhong, vanTuNam } from "../../../../lib/huyen-khong-phi-tinh/engine";
 import { luanHuyenKhongBangAi, type NhomBLoanDau } from "../../../../lib/huyen-khong-phi-tinh/luan-ai";
 
 export const prerender = false;
@@ -66,16 +66,20 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
   const coNamXem = Number.isInteger(namXem) && namXem >= 1900 && namXem <= 2100;
   const coThangXem = coNamXem && Number.isInteger(thangXem) && thangXem >= 1 && thangXem <= 12;
 
+  // van = vận NHÀ (lập tinh bàn). vanHienTai = vận đương lệnh (xét vượng/suy) — tính lại ở SERVER
+  // từ năm hiện tại, không tin client, để nhà thoái vận được luận đúng theo vận hiện tại.
+  const vanHienTai = vanTuNam(new Date().getFullYear());
+
   let kq;
   try {
-    kq = tinhToanHuyenKhong(doHuong, van);
+    kq = tinhToanHuyenKhong(doHuong, van, { vanHienTai });
   } catch (err) {
     return jsonResponse({ ok: false, error: err instanceof Error ? err.message : "Không lập được tinh bàn." }, 400);
   }
 
   let luuNienData: Parameters<typeof luanHuyenKhongBangAi>[2] = null;
   if (coNamXem) {
-    const ln = phanTichLuuNien(kq.tinh_ban, namXem, coThangXem ? thangXem : null);
+    const ln = phanTichLuuNien(kq.tinh_ban, namXem, coThangXem ? thangXem : null, vanHienTai);
     luuNienData = {
       nam: namXem,
       thang: coThangXem ? thangXem : null,
