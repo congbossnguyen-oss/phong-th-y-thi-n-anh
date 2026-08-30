@@ -1,0 +1,532 @@
+---
+// Công cụ "Xem hướng nhà Bát Trạch" — MỘT module duy nhất, kết quả LŨY TIẾN theo
+// SPEC-OVERRIDE-MOT-MODULE.md (không phân tầng Free/Cao Cấp, không thu phí, không đăng nhập).
+// Logic tính nằm hết ở @thien-anh/rule-engine (BatTrachNha) qua API /api/bat-trach-nha; component
+// này chỉ dựng form + gọi API + render — không tự tính lại bất kỳ phép nào (nguyên tắc bao-trùm).
+//
+// 🔒 GIAI ĐOẠN THỬ NGHIỆM NỘI BỘ (anh Công 30/8/2026): trang gọi component này phải admin-gate ở
+// cả middleware LẪN API (xem GHI-CHU-CAN-CHU-SITE-XEM.md ở gốc dự án).
+import Container from "../../components/ui/Container.astro";
+---
+
+<Container class="py-16">
+  <div class="mx-auto max-w-2xl">
+    <div class="mb-4 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-4 text-xs text-(--color-ink-600)">
+      📐 <strong>Phương pháp tính:</strong> Theo Bát Trạch — Đông/Tây Tứ Trạch, Du Niên Bát Quái, Dương
+      Trạch Tam Yếu. Cá nhân hóa theo Cung Phi gia chủ.
+    </div>
+
+    <form id="bt-form" class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label for="bt-nam-sinh" class="text-xs font-medium text-(--color-ink-600)">Năm sinh gia chủ (Dương lịch)</label>
+          <input type="number" id="bt-nam-sinh" min="1900" max="2100" required placeholder="vd. 1989" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+        </div>
+        <div>
+          <p class="text-xs font-medium text-(--color-ink-600)">Giới tính</p>
+          <div class="mt-1.5 flex gap-3 text-sm">
+            <label class="flex items-center gap-1.5"><input type="radio" name="bt-gioi-tinh" value="nam" checked /> Nam</label>
+            <label class="flex items-center gap-1.5"><input type="radio" name="bt-gioi-tinh" value="nu" /> Nữ</label>
+          </div>
+        </div>
+      </div>
+
+      <div class="mt-3">
+        <p class="text-xs font-medium text-(--color-ink-600)">Hướng nhà (hướng mặt tiền/lối ra chính)</p>
+        <div class="mt-1.5 flex gap-2 text-xs">
+          <button type="button" id="bt-tab-8huong" class="rounded-(--radius-pill) bg-(--color-gold-400) px-3 py-1.5 font-semibold text-(--color-on-accent)">Chọn nhanh 8 hướng</button>
+          <button type="button" id="bt-tab-do" class="rounded-(--radius-pill) border border-(--color-ivory-400) px-3 py-1.5 font-semibold text-(--color-ink-600)">Nhập độ số</button>
+        </div>
+        <select id="bt-huong-8" class="mt-2 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)">
+          <option value="Bắc">Bắc</option>
+          <option value="Đông Bắc">Đông Bắc</option>
+          <option value="Đông">Đông</option>
+          <option value="Đông Nam">Đông Nam</option>
+          <option value="Nam">Nam</option>
+          <option value="Tây Nam">Tây Nam</option>
+          <option value="Tây">Tây</option>
+          <option value="Tây Bắc">Tây Bắc</option>
+        </select>
+        <div id="bt-huong-do-wrap" class="mt-2 hidden">
+          <div class="flex gap-2">
+            <input type="number" id="bt-huong-do" min="0" max="360" step="0.1" placeholder="vd. 182.5" class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+            <button type="button" id="bt-la-ban" class="shrink-0 rounded-(--radius-control) border border-(--color-gold-400) px-3 py-2.5 text-xs font-semibold text-(--color-gold-500) hover:bg-(--color-gold-400)/10">🧭 Dùng la bàn máy</button>
+          </div>
+          <p class="mt-1 text-[11px] text-(--color-ink-400)">
+            La bàn điện thoại đo từ trường, sai số lớn nếu gần kim loại/thiết bị điện — chỉ dùng tham khảo, nên đo lại
+            bằng la kinh khi luận nghiêm túc. Không dùng số này cho Hoàng Tuyền/Bát Sát trừ khi đã đối chiếu la kinh.
+          </p>
+        </div>
+      </div>
+
+      <p id="bt-loi" class="mt-3 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-3 text-sm text-(--color-danger-500)"></p>
+    </form>
+
+    <div id="bt-canh-bao-lap-huong" class="mt-3 hidden rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-3 text-xs text-(--color-gold-600)"></div>
+
+    <div id="bt-ket-qua-toi-thieu" class="mt-4 hidden space-y-4"></div>
+
+    <details id="bt-accordion-tam-yeu" class="mt-4 hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100)">
+      <summary class="cursor-pointer px-4 py-3 text-sm font-semibold text-(--color-ink-800)">
+        Muốn biết Cửa – Chủ – Bếp đặt đúng chưa? Nhập thêm vị trí 3 điểm.
+      </summary>
+      <div class="border-t border-(--color-ivory-300) p-4">
+        <p class="text-xs text-(--color-ink-500)">
+          "Cung của Cửa/Chủ/Bếp" = vị trí đó nằm ở PHƯƠNG nào trong mặt bằng nhà (nhìn từ tâm nhà) — khác với hướng
+          nhà. Riêng Bếp tính theo TỌA bếp (hướng lưng bếp), không theo miệng bếp.
+        </p>
+        <div class="mt-2 grid grid-cols-3 gap-2">
+          <div>
+            <label for="bt-cua" class="text-xs font-medium text-(--color-ink-600)">Cửa chính ở phương</label>
+            <select id="bt-cua" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-2 py-2 text-xs text-(--color-ink-800)"></select>
+          </div>
+          <div>
+            <label for="bt-chu" class="text-xs font-medium text-(--color-ink-600)">Phòng ngủ chủ ở phương</label>
+            <select id="bt-chu" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-2 py-2 text-xs text-(--color-ink-800)"></select>
+          </div>
+          <div>
+            <label for="bt-bep" class="text-xs font-medium text-(--color-ink-600)">Bếp tọa ở phương</label>
+            <select id="bt-bep" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-2 py-2 text-xs text-(--color-ink-800)"></select>
+          </div>
+        </div>
+        <div id="bt-ket-qua-tam-yeu" class="mt-3 hidden space-y-3"></div>
+      </div>
+    </details>
+
+    <details id="bt-accordion-tang" class="mt-3 hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100)">
+      <summary class="cursor-pointer px-4 py-3 text-sm font-semibold text-(--color-ink-800)">
+        Nhà nhiều tầng? Nhập số tầng để xem tầng nào nên bố trí phòng gì.
+      </summary>
+      <div class="border-t border-(--color-ivory-300) p-4">
+        <p class="text-xs text-(--color-ink-500)">Cần nhập Cửa chính ở mục trên trước — Xuyên Cung Cửu Tinh tính theo Tọa nhà × Cửa.</p>
+        <label for="bt-so-tang" class="mt-2 block text-xs font-medium text-(--color-ink-600)">Số tầng (tối đa 10)</label>
+        <input type="number" id="bt-so-tang" min="1" max="10" placeholder="vd. 3" class="mt-1 w-32 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2 text-sm text-(--color-ink-800)" />
+        <div id="bt-ket-qua-tang" class="mt-3 hidden space-y-2"></div>
+      </div>
+    </details>
+
+    <details id="bt-accordion-nam" class="mt-3 hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100)">
+      <summary class="cursor-pointer px-4 py-3 text-sm font-semibold text-(--color-ink-800)">
+        Xem 1 năm cụ thể có Thái Tuế/Tuế Phá/Đô Thiên đóng ở phương định động không.
+      </summary>
+      <div class="border-t border-(--color-ivory-300) p-4">
+        <label for="bt-nam-xem" class="text-xs font-medium text-(--color-ink-600)">Năm cần xem</label>
+        <input type="number" id="bt-nam-xem" min="1900" max="2100" class="mt-1 w-32 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2 text-sm text-(--color-ink-800)" />
+        <div id="bt-ket-qua-nam" class="mt-3 hidden space-y-2"></div>
+      </div>
+    </details>
+
+    <div id="bt-cta-tu-van" class="mt-5 hidden rounded-(--radius-card) border border-(--color-gold-400)/50 bg-(--color-gold-400)/10 p-4 text-sm text-(--color-ink-800)"></div>
+
+    <p class="mt-5 text-xs text-(--color-ink-500)">
+      Công cụ mang tính tham khảo dựa trên tri thức phong thủy – cổ học phương Đông (Bát Trạch), không phán chắc chắn về
+      vận mệnh và không thay thế tư vấn trực tiếp. Sát khí chỉ mang tính xác suất, cần đúng thời điểm và yếu tố con
+      người mới ứng nghiệm rõ — xem <a href="/lien-he" class="text-(--color-gold-300) hover:underline">đặt lịch tư vấn</a> nếu cần đánh giá mặt bằng thực tế.
+    </p>
+  </div>
+</Container>
+
+<script>
+  interface HopMenhMotChieu {
+    khi: string;
+    tenKhi: string;
+    hop: boolean;
+  }
+  interface KetQuaToiThieu {
+    cungMenh: string;
+    nguHanhMenh: string;
+    nhomMenh: "dong" | "tay";
+    huong: { do: number; cung: string; canhBao: { chinhHuongTuyetDoi: boolean; ranhGioiKhongVong: boolean } };
+    toa: { do: number; cung: string };
+    hopMenh: { theoHuong: HopMenhMotChieu; theoToa: HopMenhMotChieu; ketLuanChinh: HopMenhMotChieu; dungHuongLamChinh: boolean; lech: boolean };
+    bonPhuong: { catList: string[]; hungList: string[] };
+    goiYBoTri: { coBan: { ten: string; datOPhuong: "cat" | "hung"; ghiChu: string }[]; nguyenTacUuTien: string; hoaGiaiNeuKhongHop: string[] | null; daiKyLoanDau: string[] };
+    hungSatDacBiet: {
+      hoangTuyen: { apDung: boolean; sonHuong?: string; canhBao?: string; sonKy?: string[] };
+      batSat: { cungHuong: string; sonPham: string; anhHuong: string };
+    };
+  }
+  interface KetQuaTamYeu {
+    tamYeu: { khiChu: string; tenKhiChu: string; khiBep: string; tenKhiBep: string; danhGiaBep: string; ghiChuBep: string };
+    sinhKhacChu: { phuongAnA: string; phuongAnB: string; lech: boolean };
+    sinhKhacBep: { phuongAnA: string; phuongAnB: string; lech: boolean };
+    thienTinhBep: { ten: string; chuVe: string }[];
+    thanhVienAnhHuongNeuXauChu: string;
+    thanhVienAnhHuongNeuXauBep: string;
+  }
+  interface TangCuuTinh { tang: number; tenKhi: string; saoTen: string; cat: boolean }
+  interface KetQuaXuyenCung { khaNang1: TangCuuTinh[]; khaNang2: TangCuuTinh[] | null; lech: boolean; ghiChu: string }
+  interface KetQuaLuuNien {
+    thaiTue: { nam: number; namChi: string; thaiTueCung: string; tuePhaCung: string; tamSatCung: string };
+    doThien: { canNamSinh: string; sonDoThien: [string, string] };
+  }
+  interface ApiResponse {
+    toiThieu: KetQuaToiThieu;
+    tamYeu: KetQuaTamYeu | null;
+    xuyenCung: KetQuaXuyenCung | null;
+    luuNien: KetQuaLuuNien | null;
+  }
+
+  const HUONG_8 = ["Bắc", "Đông Bắc", "Đông", "Đông Nam", "Nam", "Tây Nam", "Tây", "Tây Bắc"];
+  // Cửa/Chủ/Bếp hiển thị cho người dùng bằng nhãn "hướng địa lý" (dễ hiểu hơn tên quái), nhưng
+  // API (giống hệ thống Bát Quái nội bộ) cần tên CUNG — quy đổi trước khi gửi (data/03).
+  const HUONG_TOI_CUNG: Record<string, string> = {
+    Bắc: "Khảm", "Đông Bắc": "Cấn", Đông: "Chấn", "Đông Nam": "Tốn",
+    Nam: "Ly", "Tây Nam": "Khôn", Tây: "Đoài", "Tây Bắc": "Càn",
+  };
+
+  function elId<T extends HTMLElement>(id: string): T {
+    return document.getElementById(id) as T;
+  }
+
+  const form = elId<HTMLFormElement>("bt-form");
+  const namSinhInput = elId<HTMLInputElement>("bt-nam-sinh");
+  const loiEl = elId<HTMLParagraphElement>("bt-loi");
+  const tabHuong8 = elId<HTMLButtonElement>("bt-tab-8huong");
+  const tabHuongDo = elId<HTMLButtonElement>("bt-tab-do");
+  const huong8Select = elId<HTMLSelectElement>("bt-huong-8");
+  const huongDoWrap = elId<HTMLDivElement>("bt-huong-do-wrap");
+  const huongDoInput = elId<HTMLInputElement>("bt-huong-do");
+  const laBanBtn = elId<HTMLButtonElement>("bt-la-ban");
+  const canhBaoLapHuongEl = elId<HTMLDivElement>("bt-canh-bao-lap-huong");
+  const ketQuaToiThieuEl = elId<HTMLDivElement>("bt-ket-qua-toi-thieu");
+
+  const accordionTamYeu = elId<HTMLDetailsElement>("bt-accordion-tam-yeu");
+  const cuaSelect = elId<HTMLSelectElement>("bt-cua");
+  const chuSelect = elId<HTMLSelectElement>("bt-chu");
+  const bepSelect = elId<HTMLSelectElement>("bt-bep");
+  const ketQuaTamYeuEl = elId<HTMLDivElement>("bt-ket-qua-tam-yeu");
+
+  const accordionTang = elId<HTMLDetailsElement>("bt-accordion-tang");
+  const soTangInput = elId<HTMLInputElement>("bt-so-tang");
+  const ketQuaTangEl = elId<HTMLDivElement>("bt-ket-qua-tang");
+
+  const accordionNam = elId<HTMLDetailsElement>("bt-accordion-nam");
+  const namXemInput = elId<HTMLInputElement>("bt-nam-xem");
+  const ketQuaNamEl = elId<HTMLDivElement>("bt-ket-qua-nam");
+
+  const ctaTuVanEl = elId<HTMLDivElement>("bt-cta-tu-van");
+
+  for (const sel of [cuaSelect, chuSelect, bepSelect]) {
+    // Option rỗng mặc định — KHÔNG được để select tự chọn sẵn 1 hướng, nếu không Tam Yếu sẽ tự
+    // tính ngay cả khi người dùng chưa chủ động nhập, phá vỡ nguyên tắc "kết quả lũy tiến".
+    sel.insertAdjacentHTML("beforeend", `<option value="">— chưa chọn —</option>`);
+    for (const h of HUONG_8) {
+      sel.insertAdjacentHTML("beforeend", `<option value="${h}">${h}</option>`);
+    }
+  }
+
+  const TAB_ACTIVE = "rounded-(--radius-pill) bg-(--color-gold-400) px-3 py-1.5 font-semibold text-(--color-on-accent)";
+  const TAB_INACTIVE = "rounded-(--radius-pill) border border-(--color-ivory-400) px-3 py-1.5 font-semibold text-(--color-ink-600)";
+  let huongKieu: "8huong" | "do" = "8huong";
+  function chonKieuHuong(kieu: "8huong" | "do") {
+    huongKieu = kieu;
+    tabHuong8.className = kieu === "8huong" ? TAB_ACTIVE : TAB_INACTIVE;
+    tabHuongDo.className = kieu === "do" ? TAB_ACTIVE : TAB_INACTIVE;
+    huong8Select.classList.toggle("hidden", kieu !== "8huong");
+    huongDoWrap.classList.toggle("hidden", kieu !== "do");
+    guiForm();
+  }
+  tabHuong8.addEventListener("click", () => chonKieuHuong("8huong"));
+  tabHuongDo.addEventListener("click", () => chonKieuHuong("do"));
+
+  laBanBtn.addEventListener("click", async () => {
+    // La bàn điện thoại — DeviceOrientationEvent, cần xin quyền trên iOS 13+.
+    type DOEwp = typeof DeviceOrientationEvent & { requestPermission?: () => Promise<"granted" | "denied"> };
+    const DOE = DeviceOrientationEvent as unknown as DOEwp;
+    try {
+      if (typeof DOE.requestPermission === "function") {
+        const quyen = await DOE.requestPermission();
+        if (quyen !== "granted") {
+          loiEl.textContent = "Trình duyệt đang chặn quyền cảm biến hướng.";
+          loiEl.classList.remove("hidden");
+          return;
+        }
+      }
+      const handler = (e: DeviceOrientationEvent) => {
+        const alphaEvt = e as DeviceOrientationEvent & { webkitCompassHeading?: number };
+        const heading = typeof alphaEvt.webkitCompassHeading === "number" ? alphaEvt.webkitCompassHeading : e.alpha !== null ? 360 - e.alpha : null;
+        if (heading !== null) {
+          huongDoInput.value = heading.toFixed(1);
+          guiForm();
+        }
+        window.removeEventListener("deviceorientation", handler);
+      };
+      window.addEventListener("deviceorientation", handler);
+    } catch {
+      loiEl.textContent = "Máy không hỗ trợ la bàn điện thoại — nhập độ số thủ công.";
+      loiEl.classList.remove("hidden");
+    }
+  });
+
+  function huongParams(): URLSearchParams | null {
+    const p = new URLSearchParams();
+    if (huongKieu === "8huong") {
+      p.set("huongKieu", "8huong");
+      p.set("huongGiaTri", huong8Select.value);
+    } else {
+      const v = huongDoInput.value;
+      if (!v) return null;
+      p.set("huongKieu", "do");
+      p.set("huongGiaTri", v);
+    }
+    return p;
+  }
+
+  function nhanHop(hop: boolean): string {
+    return hop
+      ? `<span class="text-(--color-success-500) font-semibold">Hợp</span>`
+      : `<span class="text-(--color-cinnabar-500) font-semibold">Không hợp</span>`;
+  }
+
+  function renderToiThieu(r: KetQuaToiThieu) {
+    const hm = r.hopMenh;
+    const canhBaoHtml =
+      hm.lech
+        ? `<p class="mt-2 rounded-lg bg-(--color-gold-400)/10 p-2 text-xs text-(--color-gold-600)">⚠️ Theo Hướng và theo Tọa cho 2 kết luận KHÁC nhau — đây là ca cần tự thẩm định thêm.</p>`
+        : "";
+    ketQuaToiThieuEl.innerHTML = `
+      <div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+        <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-400)">🧭 Cung Phi gia chủ</p>
+        <p class="mt-1 font-display text-xl font-bold">${r.cungMenh} — Ngũ hành ${r.nguHanhMenh} — ${r.nhomMenh === "dong" ? "Đông Tứ Mệnh" : "Tây Tứ Mệnh"}</p>
+        <div class="mt-3 border-t border-(--color-ivory-300) pt-3 text-sm">
+          <p>Nhà hướng <strong>${r.huong.cung}</strong> (${r.huong.do.toFixed(1)}°) — tọa <strong>${r.toa.cung}</strong> (${r.toa.do.toFixed(1)}°)</p>
+          <p class="mt-1.5">Theo Hướng${hm.dungHuongLamChinh ? " (mặc định)" : ""}: ${hm.theoHuong.tenKhi} → ${nhanHop(hm.theoHuong.hop)}</p>
+          <p>Theo Tọa (đối chiếu): ${hm.theoToa.tenKhi} → ${nhanHop(hm.theoToa.hop)}</p>
+          ${canhBaoHtml}
+        </div>
+        ${
+          r.huong.canhBao.ranhGioiKhongVong
+            ? `<p class="mt-2 text-xs text-(--color-gold-600)">⚠️ Hướng nhập gần đúng ranh giới 2 cung (không vong) — nên đo lại bằng la kinh để chính xác.</p>`
+            : ""
+        }
+        ${
+          r.huong.canhBao.chinhHuongTuyetDoi
+            ? `<p class="mt-2 text-xs text-(--color-ink-500)">Lưu ý: đây là 1 trong 4 chính hướng tuyệt đối — khí mạnh, dễ bất ổn, nhiều phái khuyên lệch nhẹ (kiêm hướng).</p>`
+            : ""
+        }
+      </div>
+
+      <div class="rounded-2xl border border-(--color-ivory-300) bg-(--color-ivory-100) p-5">
+        <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-400)">4 phương Cát / Hung</p>
+        <div class="mt-2 grid grid-cols-2 gap-3 text-sm">
+          <div><p class="font-semibold text-(--color-success-500)">Cát: ${r.bonPhuong.catList.join(", ")}</p></div>
+          <div><p class="font-semibold text-(--color-cinnabar-500)">Hung: ${r.bonPhuong.hungList.join(", ")}</p></div>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-(--color-ivory-300) bg-(--color-ivory-100) p-5">
+        <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-400)">Gợi ý bố trí nhanh</p>
+        <ul class="mt-2 space-y-1.5 text-sm">
+          ${r.goiYBoTri.coBan
+            .map(
+              (h) =>
+                `<li><strong>${h.ten}:</strong> <span class="${h.datOPhuong === "cat" ? "text-(--color-success-500)" : "text-(--color-cinnabar-500)"}">${h.datOPhuong === "cat" ? "phương Cát" : "phương Hung"}</span> — ${h.ghiChu}</li>`,
+            )
+            .join("")}
+        </ul>
+        <p class="mt-2 text-xs text-(--color-ink-500)">Ưu tiên khi xung đột: ${r.goiYBoTri.nguyenTacUuTien}</p>
+        ${
+          r.goiYBoTri.hoaGiaiNeuKhongHop
+            ? `<div class="mt-3 rounded-lg bg-(--color-danger-500)/5 p-3 text-xs text-(--color-ink-700)">
+                <p class="font-semibold text-(--color-cinnabar-500)">Nhà chưa hợp mệnh — gợi ý hóa giải:</p>
+                <ul class="mt-1 list-disc space-y-1 pl-4">${r.goiYBoTri.hoaGiaiNeuKhongHop.map((s) => `<li>${s}</li>`).join("")}</ul>
+              </div>`
+            : ""
+        }
+        <details class="mt-3 text-xs text-(--color-ink-500)">
+          <summary class="cursor-pointer font-semibold">Đại kỵ loan đầu cần tránh tuyệt đối</summary>
+          <ul class="mt-1.5 list-disc space-y-1 pl-4">${r.goiYBoTri.daiKyLoanDau.map((s) => `<li>${s}</li>`).join("")}</ul>
+        </details>
+      </div>
+
+      <div class="rounded-2xl border border-(--color-ivory-300) bg-(--color-ivory-100) p-5">
+        <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-400)">Hoàng Tuyền – Bát Sát (theo hướng nhà)</p>
+        <div class="mt-2 space-y-1.5 text-sm text-(--color-ink-700)">
+          <p>${r.hungSatDacBiet.hoangTuyen.apDung ? `⚠️ ${r.hungSatDacBiet.hoangTuyen.canhBao}` : "Hoàng Tuyền: không áp dụng ở hướng này (chỉ xét 8 Thiên Can + 4 Duy)."}</p>
+          <p>⚠️ Bát Sát: kỵ tại sơn <strong>${r.hungSatDacBiet.batSat.sonPham}</strong> — ${r.hungSatDacBiet.batSat.anhHuong}.</p>
+        </div>
+        <p class="mt-2 text-[11px] text-(--color-ink-400)">Cần độ số chính xác tới sơn 15° — nếu chỉ chọn nhanh 8 hướng, Hoàng Tuyền chỉ hiện đúng khi hướng rơi đúng 1 trong 4 hướng chéo (ĐB/ĐN/TN/TB).</p>
+      </div>
+    `;
+    ketQuaToiThieuEl.classList.remove("hidden");
+  }
+
+  function renderTamYeu(r: KetQuaTamYeu) {
+    const dgLabel: Record<string, string> = {
+      "dai-cat": "Đại cát",
+      "tot-kem-mot-bac": "Tốt (kém 1 bậc)",
+      "tranh-tuyet-doi": "Tránh tuyệt đối",
+      "binh-thuong": "Bình thường",
+    };
+    const dgMau: Record<string, string> = {
+      "dai-cat": "text-(--color-success-500)",
+      "tot-kem-mot-bac": "text-(--color-success-500)",
+      "tranh-tuyet-doi": "text-(--color-cinnabar-500)",
+      "binh-thuong": "text-(--color-ink-600)",
+    };
+    ketQuaTamYeuEl.innerHTML = `
+      <div class="rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200) p-4 text-sm">
+        <p><strong>Cửa ↔ Chủ:</strong> ${r.tamYeu.tenKhiChu} — thành viên chịu ảnh hưởng rõ nhất nếu xấu: ${r.thanhVienAnhHuongNeuXauChu}.</p>
+        <p class="mt-1"><strong>Cửa ↔ Bếp:</strong> ${r.tamYeu.tenKhiBep} — <span class="${dgMau[r.tamYeu.danhGiaBep]} font-semibold">${dgLabel[r.tamYeu.danhGiaBep]}</span>. ${r.tamYeu.ghiChuBep}</p>
+        ${r.thienTinhBep.length ? `<p class="mt-1 text-xs text-(--color-ink-500)">Thiên Tinh tại Bếp: ${r.thienTinhBep.map((t) => `${t.ten} (${t.chuVe})`).join("; ")}</p>` : ""}
+      </div>
+      <div class="rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200) p-4 text-xs text-(--color-ink-600)">
+        <p class="font-semibold text-(--color-ink-800)">Sinh khắc Cung–Sao (đọc thêm, dùng cả 2 phương án theo ngữ cảnh — data/00 MĐ-2):</p>
+        <p class="mt-1">Chủ: phương án A (đánh giá tổng thể) = ${r.sinhKhacChu.phuongAnA}; phương án B (luận cặp cụ thể) = ${r.sinhKhacChu.phuongAnB}${r.sinhKhacChu.lech ? " ⚠️ lệch nhau" : ""}.</p>
+        <p class="mt-1">Bếp: phương án A = ${r.sinhKhacBep.phuongAnA}; phương án B = ${r.sinhKhacBep.phuongAnB}${r.sinhKhacBep.lech ? " ⚠️ lệch nhau" : ""}.</p>
+      </div>
+    `;
+    ketQuaTamYeuEl.classList.remove("hidden");
+  }
+
+  function renderXuyenCung(r: KetQuaXuyenCung) {
+    const dong = (arr: TangCuuTinh[]) =>
+      arr
+        .map((t) => `<li class="flex justify-between"><span>Tầng ${t.tang}</span><span class="${t.cat ? "text-(--color-success-500)" : "text-(--color-cinnabar-500)"}">${t.tenKhi} (${t.saoTen})</span></li>`)
+        .join("");
+    ketQuaTangEl.innerHTML = `
+      <div class="rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200) p-4 text-sm">
+        <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-400)">Bố trí theo tầng (Khả năng 1 — mặc định hệ thống)</p>
+        <ul class="mt-2 space-y-1">${dong(r.khaNang1)}</ul>
+        <p class="mt-2 text-xs text-(--color-ink-500)">${r.ghiChu}</p>
+      </div>
+    `;
+    ketQuaTangEl.classList.remove("hidden");
+  }
+
+  function renderLuuNien(r: KetQuaLuuNien) {
+    ketQuaNamEl.innerHTML = `
+      <div class="rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200) p-4 text-sm">
+        <p>Năm ${r.thaiTue.nam} (${r.thaiTue.namChi}): Thái Tuế tại <strong>${r.thaiTue.thaiTueCung}</strong>, Tuế Phá tại <strong>${r.thaiTue.tuePhaCung}</strong>, Tam Sát tại <strong>${r.thaiTue.tamSatCung}</strong>.</p>
+        <p class="mt-1.5">Đô Thiên (theo Can năm sinh ${r.doThien.canNamSinh}): tại 2 sơn <strong>${r.doThien.sonDoThien.join(", ")}</strong>.</p>
+        <p class="mt-2 text-xs text-(--color-ink-500)">Nếu định động thổ/sửa chữa ở đúng các phương/sơn trên trong năm này, nên tránh hoặc chọn thời điểm khác.</p>
+      </div>
+    `;
+    ketQuaNamEl.classList.remove("hidden");
+  }
+
+  function renderCtaTuVan(r: ApiResponse) {
+    const lyDoList: string[] = [];
+    if (!r.toiThieu.hopMenh.ketLuanChinh.hop) lyDoList.push("Nhà hiện chưa hợp mệnh gia chủ — nên xem trực tiếp mặt bằng để có phương án cụ thể.");
+    if (r.toiThieu.hopMenh.lech) lyDoList.push("Kết luận theo Hướng và theo Tọa đang lệch nhau — ca này cần thẩm định thêm.");
+    if (r.tamYeu && r.tamYeu.tamYeu.danhGiaBep === "tranh-tuyet-doi") lyDoList.push("Vị trí bếp đang rơi vào nhóm tối kỵ (Tuyệt mệnh/Ngũ quỷ) — nên xem xét đổi vị trí.");
+    if (r.xuyenCung && r.xuyenCung.lech) lyDoList.push("Xuyên Cung Cửu Tinh đang có 2 khả năng khác nhau cho tầng 1 — cần đối chiếu thực tế.");
+    if (lyDoList.length === 0) {
+      ctaTuVanEl.classList.add("hidden");
+      return;
+    }
+    ctaTuVanEl.innerHTML = `
+      <p class="font-semibold">💬 Trường hợp này nên xem trực tiếp mặt bằng:</p>
+      <ul class="mt-1.5 list-disc space-y-1 pl-4 text-xs">${lyDoList.map((s) => `<li>${s}</li>`).join("")}</ul>
+      <a href="/lien-he" class="mt-3 inline-block rounded-(--radius-pill) bg-(--color-gold-400) px-4 py-2 text-xs font-semibold text-(--color-on-accent)">Đặt lịch tư vấn 1-1</a>
+    `;
+    ctaTuVanEl.classList.remove("hidden");
+  }
+
+  let dangGoi = false;
+  let hangDoiGoiLai = false;
+
+  async function guiForm() {
+    if (dangGoi) {
+      hangDoiGoiLai = true;
+      return;
+    }
+    loiEl.classList.add("hidden");
+    canhBaoLapHuongEl.classList.add("hidden");
+
+    const namSinh = namSinhInput.value;
+    if (!namSinh) return;
+    const gioiTinhEl = form.querySelector('input[name="bt-gioi-tinh"]:checked') as HTMLInputElement | null;
+    if (!gioiTinhEl) return;
+
+    const hp = huongParams();
+    if (!hp) return;
+
+    const p = new URLSearchParams(hp);
+    p.set("namSinh", namSinh);
+    p.set("gioiTinh", gioiTinhEl.value);
+    if (cuaSelect.value) p.set("cuaCung", HUONG_TOI_CUNG[cuaSelect.value]!);
+    if (chuSelect.value) p.set("chuCung", HUONG_TOI_CUNG[chuSelect.value]!);
+    if (bepSelect.value) p.set("bepCung", HUONG_TOI_CUNG[bepSelect.value]!);
+    if (soTangInput.value) p.set("soTang", soTangInput.value);
+    if (namXemInput.value) p.set("namCanXem", namXemInput.value);
+
+    localStorage.setItem("bat-trach-nha-input", JSON.stringify({ namSinh, gioiTinh: gioiTinhEl.value, huongKieu, huong8: huong8Select.value, huongDo: huongDoInput.value, cua: cuaSelect.value, chu: chuSelect.value, bep: bepSelect.value, soTang: soTangInput.value, namXem: namXemInput.value }));
+
+    dangGoi = true;
+    try {
+      const res = await fetch(`/api/bat-trach-nha?${p.toString()}`);
+      const data = await res.json();
+      if (!res.ok) {
+        loiEl.textContent = data.error ?? "Không tính được.";
+        loiEl.classList.remove("hidden");
+        ketQuaToiThieuEl.classList.add("hidden");
+        return;
+      }
+      const r = data as ApiResponse;
+      renderToiThieu(r.toiThieu);
+      if (r.toiThieu.huong.canhBao.ranhGioiKhongVong) {
+        canhBaoLapHuongEl.textContent = "⚠️ Hướng nhập gần đúng ranh giới 2 cung — nên đo lại bằng la kinh để chính xác.";
+        canhBaoLapHuongEl.classList.remove("hidden");
+      }
+
+      accordionTamYeu.classList.remove("hidden");
+      accordionTang.classList.remove("hidden");
+      accordionNam.classList.remove("hidden");
+
+      if (r.tamYeu) renderTamYeu(r.tamYeu);
+      else ketQuaTamYeuEl.classList.add("hidden");
+
+      if (r.xuyenCung) renderXuyenCung(r.xuyenCung);
+      else ketQuaTangEl.classList.add("hidden");
+
+      if (r.luuNien) renderLuuNien(r.luuNien);
+      else ketQuaNamEl.classList.add("hidden");
+
+      renderCtaTuVan(r);
+    } catch {
+      loiEl.textContent = "Không tải được dữ liệu.";
+      loiEl.classList.remove("hidden");
+    } finally {
+      dangGoi = false;
+      if (hangDoiGoiLai) {
+        hangDoiGoiLai = false;
+        void guiForm();
+      }
+    }
+  }
+
+  for (const el of [namSinhInput, huong8Select, huongDoInput, cuaSelect, chuSelect, bepSelect, soTangInput, namXemInput]) {
+    el.addEventListener("input", () => void guiForm());
+    el.addEventListener("change", () => void guiForm());
+  }
+  form.querySelectorAll('input[name="bt-gioi-tinh"]').forEach((el) => el.addEventListener("change", () => void guiForm()));
+  form.addEventListener("submit", (e) => e.preventDefault());
+
+  // Tự khôi phục input từ localStorage — không phải nhập lại khi quay lại trang.
+  try {
+    const luu = localStorage.getItem("bat-trach-nha-input");
+    if (luu) {
+      const d = JSON.parse(luu);
+      if (d.namSinh) namSinhInput.value = d.namSinh;
+      if (d.gioiTinh) {
+        const el = form.querySelector(`input[name="bt-gioi-tinh"][value="${d.gioiTinh}"]`) as HTMLInputElement | null;
+        if (el) el.checked = true;
+      }
+      if (d.huongKieu === "do") chonKieuHuong("do");
+      if (d.huong8) huong8Select.value = d.huong8;
+      if (d.huongDo) huongDoInput.value = d.huongDo;
+      if (d.cua) cuaSelect.value = d.cua;
+      if (d.chu) chuSelect.value = d.chu;
+      if (d.bep) bepSelect.value = d.bep;
+      if (d.soTang) soTangInput.value = d.soTang;
+      if (d.namXem) namXemInput.value = d.namXem;
+      if (d.namSinh) void guiForm();
+    } else {
+      namXemInput.value = String(new Date().getFullYear());
+    }
+  } catch {
+    namXemInput.value = String(new Date().getFullYear());
+  }
+</script>
