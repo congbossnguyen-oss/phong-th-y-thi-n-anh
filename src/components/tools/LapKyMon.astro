@@ -1502,21 +1502,17 @@ const {
   function renderMenh(laBan: LapLaBanResult, luanGiai: KetQuaLuanGiaiMenh | null) {
     const modauEl = document.getElementById("km-luan-giai-modau")!;
     const theEl = document.getElementById("km-luan-giai-the")!;
+    // 11 mục lĩnh vực chi tiết (Tiền bạc, Công việc, Gia đình, Học hành, Rủi ro, Nhà cửa, Danh
+    // tiếng, Vốn hiểu biết, Sức khỏe, Thể trạng, Tình duyên) CHUYỂN HẲN vào bản trả phí
+    // (KyMonMenhChiTiet.astro đã render đủ 11 mục này) — trang free chỉ giữ đoạn Tổng quan làm ví
+    // dụ minh họa (anh Công 31/8/2026: "chưa mở các mục... chỉ để hết vào bản trả phí, chỉ để phần
+    // ví dụ như Luận Giải Kỳ Môn Mệnh [đoạn Tổng quan]"). Không xóa hẳn theLinhVuc khỏi engine —
+    // KyMonMenhChiTiet.astro vẫn dùng chung luanGiaiMenh() để lấy đủ 11 mục cho bản trả phí.
+    theEl.innerHTML = "";
     if (luanGiai?.hopLe) {
       modauEl.textContent = luanGiai.moDau;
-      theEl.innerHTML = luanGiai.theLinhVuc
-        .map(
-          (t) => `
-        <details class="km-luan-giai-the-item">
-          <summary>${t.tieuDe}</summary>
-          <p class="km-luan-giai-noidung">${t.noiDung}</p>
-          <p class="km-luan-giai-chitiet">Chi tiết kỹ thuật: ${t.chiTiet}</p>
-        </details>`,
-        )
-        .join("");
     } else {
       modauEl.textContent = "Không xác định được Mệnh Cung để luận giải lá bàn này.";
-      theEl.innerHTML = "";
     }
 
     // Nút "Xem chi tiết" mang theo đúng ngày giờ sinh đang xem — trang kia không hỏi lại.
