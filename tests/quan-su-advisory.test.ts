@@ -119,3 +119,40 @@ describe("Advisory Engine — quy tắc verdict & điểm số", () => {
     expect(coVanTrinhTrongDiem).toBe(true);
   });
 });
+
+describe("Advisory Engine — luận CHI TIẾT sâu + khuyên KHÔNG bị giống hệt nhau", () => {
+  it("luận chi tiết có đủ các mục sâu (Dụng Thần, vượng suy, hào động / quẻ tĩnh)", async () => {
+    const r = await runQuanSu({ question_id: "xin-viec", ngaySinh: NGAY_SINH, rng: seededRng(777), boQuaAI: true });
+    const lct = r.report.luanGiaiChiTiet;
+    expect(lct).toContain("▪ Dụng Thần");
+    expect(lct).toContain("▪ Quẻ");
+    // Có phần hào động HOẶC quẻ tĩnh — luôn phải có 1 trong 2.
+    expect(/Hào động|Quẻ TĨNH/.test(lct)).toBe(true);
+    // Không còn câu placeholder "sẽ do Quân Sư đảm nhận khi hoàn thiện".
+    expect(lct).not.toContain("sẽ do Quân Sư đảm nhận khi hoàn thiện");
+  });
+
+  it("quẻ có hào động → luận chi tiết nêu Lục Thú và quan hệ hào động", async () => {
+    // Gieo cố định có hào động (9 = lão dương động, 6 = lão âm động).
+    const tosses: CoinLineValue[] = [9, 8, 7, 6, 7, 8];
+    const q = getQuestion("mo-cua-hang")!;
+    const cast = castLucHaoFromTosses(tosses, { day: 15, month: 6, year: 2024, hour: 10 });
+    const rep = buildAdvisoryReport(buildInterpretationPayload(q, cast, { method: "luc-hao-tosses", vanTrinh: null }));
+    expect(rep.luanGiaiChiTiet).toContain("Hào động");
+    // Ít nhất 1 tên Lục Thú xuất hiện.
+    expect(/Thanh Long|Chu Tước|Câu Trần|Đằng Xà|Bạch Hổ|Huyền Vũ/.test(rep.luanGiaiChiTiet)).toBe(true);
+  });
+
+  it("nhiều lần gieo khác nhau → 'Quân Sư khuyên' KHÔNG y hệt nhau (câu đầu đa dạng theo tín hiệu quẻ)", async () => {
+    // Mỗi lần gieo dùng seed khác → quẻ khác (sát thực tế: mỗi người gieo 1 quẻ riêng). Trước đây
+    // câu đầu chỉ theo verdict nên rất dễ trùng; nay bám tín hiệu quẻ (Không Vong/suy/kỵ thần
+    // động/hóa thoái...) nên phải đa dạng rõ.
+    const cauDau = new Set<string>();
+    let i = 0;
+    for (const qid of QUESTION_TYPES) {
+      const r = await runQuanSu({ question_id: qid, ngaySinh: NGAY_SINH, rng: seededRng(1000 + i++), boQuaAI: true });
+      cauDau.add(r.report.quanSuKhuyen[0]);
+    }
+    expect(cauDau.size).toBeGreaterThanOrEqual(5);
+  });
+});
