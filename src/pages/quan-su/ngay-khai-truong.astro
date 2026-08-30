@@ -1,0 +1,22 @@
+---
+// Bản in-app của công cụ "Ngày khai trương" — thuộc lưới "Đại Cát Lợi - Cơ Bản" trong app Quân
+// Sư. TỰ CHỨA trong app (không link ra web) — dùng chung component với bản web nên logic/kết quả
+// y hệt, chỉ khung trang khác.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
+import NgayKhaiTruong from "../../components/tools/NgayKhaiTruong.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout title="Ngày khai trương — Quân Sư Thiên Anh" description="Ngày khai trương trong app Quân Sư." appShell>
+  <PageHero
+    eyebrow="Đại Cát Lợi"
+    title="Ngày khai trương"
+    description="Chọn tháng cần xem — hệ thống tự xếp hạng ngày đẹp nhất để khai trương, mở hàng. Nhập năm sinh chủ nếu muốn xét thêm tuổi."
+    breadcrumbs={[{ label: "Quân Sư", href: "/quan-su" }, { label: "Ngày khai trương" }]}
+  />
+  <NgayKhaiTruong laApp />
+  <BottomNav />
+</BaseLayout>

@@ -1,0 +1,22 @@
+---
+// Bản in-app của công cụ "Ngày Giờ Khai Quang – An Vị Vật Phẩm" — thuộc lưới "Đại Cát Lợi - Cơ
+// Bản" trong app Quân Sư. TỰ CHỨA trong app (không link ra web) — dùng chung component với bản web
+// nên logic/kết quả y hệt, chỉ khung trang khác.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
+import NgayKhaiQuang from "../../components/tools/NgayKhaiQuang.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout title="Ngày Giờ Khai Quang — Quân Sư Thiên Anh" description="Ngày giờ khai quang, an vị vật phẩm trong app Quân Sư." appShell>
+  <PageHero
+    eyebrow="Đại Cát Lợi"
+    title="Ngày Giờ Khai Quang – An Vị Vật Phẩm"
+    description="Chọn vật phẩm, mục đích, năm sinh + giới tính chủ và khoảng ngày muốn xem — hệ thống tự quét, xếp hạng ngày tốt nhất rồi có thể xem luôn giờ tốt trong ngày đã chọn."
+    breadcrumbs={[{ label: "Quân Sư", href: "/quan-su" }, { label: "Ngày Giờ Khai Quang" }]}
+  />
+  <NgayKhaiQuang />
+  <BottomNav />
+</BaseLayout>

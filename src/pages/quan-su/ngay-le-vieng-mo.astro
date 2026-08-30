@@ -1,0 +1,22 @@
+---
+// Bản in-app của công cụ "Ngày Tốt Đi Lễ – Viếng Mộ" — thuộc lưới "Đại Cát Lợi - Cơ Bản" trong
+// app Quân Sư. TỰ CHỨA trong app (không link ra web) — dùng chung component với bản web nên
+// logic/kết quả y hệt, chỉ khung trang khác.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
+import NgayLeViengMo from "../../components/tools/NgayLeViengMo.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout title="Ngày Tốt Đi Lễ – Viếng Mộ — Quân Sư Thiên Anh" description="Ngày tốt đi lễ, viếng mộ trong app Quân Sư." appShell>
+  <PageHero
+    eyebrow="Đại Cát Lợi"
+    title="Ngày Tốt Đi Lễ – Viếng Mộ"
+    description="Chọn mục đích (Đi lễ / Viếng mộ) và khoảng ngày muốn xem — hệ thống tự quét, xếp hạng và giải thích vì sao ngày được chọn."
+    breadcrumbs={[{ label: "Quân Sư", href: "/quan-su" }, { label: "Ngày Tốt Đi Lễ – Viếng Mộ" }]}
+  />
+  <NgayLeViengMo laApp />
+  <BottomNav />
+</BaseLayout>

@@ -1,169 +1,24 @@
 ---
+// TRANG "Ngày khai trương" (bản web) — chỉ lo khung trang (SEO/PageHero/breadcrumbs); toàn bộ
+// công cụ nằm ở component dùng chung `NgayKhaiTruong.astro`, cũng được bản in-app Quân Sư
+// (`/quan-su/ngay-khai-truong`) tái sử dụng.
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/ui/PageHero.astro";
-import Container from "../../components/ui/Container.astro";
-import GoiYNangCap from "../../components/ui/GoiYNangCap.astro";
+import NgayKhaiTruong from "../../components/tools/NgayKhaiTruong.astro";
 
 export const prerender = true;
 ---
 
 <BaseLayout
   title="Ngày khai trương"
-  description="Tự động tìm và xếp hạng ngày đẹp cho khai trương, mở cửa kinh doanh, cầu tài — có thể xét thêm tuổi chủ."
+  description="Tự động tìm và xếp hạng ngày đẹp để khai trương, mở hàng — có thể xét thêm tuổi chủ."
 >
   <PageHero
     eyebrow="Đại Cát Lợi"
     title="Ngày khai trương"
-    description="Chọn tháng cần xem — hệ thống tự xếp hạng ngày đẹp nhất cho khai trương/mở cửa kinh doanh. Nhập năm sinh chủ nếu muốn xét thêm tuổi."
+    description="Chọn tháng cần xem — hệ thống tự xếp hạng ngày đẹp nhất để khai trương, mở hàng. Nhập năm sinh chủ nếu muốn xét thêm tuổi."
     breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Đại Cát Lợi", href: "/dai-cat-loi" }, { label: "Ngày khai trương" }]}
   />
 
-  <Container class="py-16">
-    <div class="mx-auto max-w-2xl">
-      <form id="khai-truong-form" class="flex flex-col gap-3 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6 sm:flex-row sm:items-end">
-        <div class="flex-1">
-          <p class="text-sm font-medium text-(--color-ink-800)">Tháng cần xem</p>
-          <div class="mt-1.5 grid grid-cols-2 gap-2">
-            <select id="khai-truong-thang" aria-label="Tháng" class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"></select>
-            <select id="khai-truong-nam" aria-label="Năm" class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"></select>
-          </div>
-        </div>
-        <div class="flex-1">
-          <label for="khai-truong-nam-sinh-chu" class="text-sm font-medium text-(--color-ink-800)">Năm sinh chủ (tùy chọn)</label>
-          <input type="number" id="khai-truong-nam-sinh-chu" placeholder="vd. 1985" min="1900" max="2100" class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
-        </div>
-      </form>
-
-      <div id="khai-truong-loi" class="mt-4 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm text-(--color-danger-500)"></div>
-
-      <div class="mt-6 rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
-        <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-400)">🏪 Ngày khai trương</p>
-        <div id="khai-truong-list" class="mt-3 max-h-[520px] space-y-1.5 overflow-y-auto"></div>
-      </div>
-    </div>
-    <GoiYNangCap slug="ngay-khai-truong-cao-cap" lyDo="Bản trên chọn ngày theo lịch chung. Bản Cao Cấp chồng thêm lớp Bát Tự mệnh chủ — xét Thập Thần hợp cầu tài và Dụng Thần theo vượng suy, để ngày khai trương hợp với chính người đứng tên." nhanNut="Xem bản Cao Cấp" tieuDe="Khai trương là việc lớn" />
-</Container>
+  <NgayKhaiTruong />
 </BaseLayout>
-
-<script>
-  // Chấm màu CSS tự vẽ thay cho emoji tròn màu (🟢🟡🟠🔴) trong nhãn "nhan" — emoji phụ thuộc font
-  // từng máy, có thể khiến vàng/cam trông gần giống nhau ở cỡ nhỏ. Dùng hex cố định để tương phản rõ.
-  const EMOJI_DOT_COLOR: Record<string, string> = { "⭐": "#7c3aed", "🟢": "#16a34a", "🟡": "#eab308", "🟠": "#c2410c", "🔴": "#dc2626" };
-  function nhanDotHtml(nhan: string): string {
-    const m = nhan.match(/^(\S+)\s*([\s\S]*)$/);
-    const color = m ? EMOJI_DOT_COLOR[m[1]] : undefined;
-    if (!color || !m) return nhan;
-    return `<span class="inline-flex items-center gap-1.5"><span class="inline-block size-2.5 shrink-0 rounded-full" style="background:${color};"></span>${m[2]}</span>`;
-  }
-
-  interface QuanHeTuoi {
-    diem: number;
-    can: { moTa: string };
-    chi: { moTa: string; xung: boolean; hinh: boolean; hai: boolean; pha: boolean; tamHop: boolean; lucHop: boolean };
-    nguHanh: { moTa: string };
-  }
-  interface KhaiTruongNgay {
-    solarDate: { year: number; month: number; day: number };
-    lunarDate: { day: number };
-    diem: number;
-    hang: string;
-    nhan: string;
-    tuoiChu?: QuanHeTuoi | null;
-    catCaNhan?: { chanLoc: boolean; chanDuongQuy: boolean; chanAmQuy: boolean; loc: boolean } | null;
-  }
-
-  /** Badge sao cát cá nhân theo Can năm sinh: Chân Lộc / Chân Dương Quý / Chân Âm Quý / Lộc (địa chi). */
-  function badgeChan(c: { chanLoc: boolean; chanDuongQuy: boolean; chanAmQuy: boolean; loc: boolean } | null | undefined): string {
-    if (!c) return "";
-    const ds: string[] = [];
-    if (c.chanLoc) ds.push(`<span class="inline-flex items-center rounded-full bg-(--color-gold-400)/15 px-2 py-0.5 text-[11px] font-bold text-(--color-gold-500)" title="Ngày Chân Lộc theo Can năm sinh — vượng tài lộc, tốt nhất cho cá nhân">💰 Chân Lộc</span>`);
-    else if (c.loc) ds.push(`<span class="inline-flex items-center rounded-full bg-(--color-gold-400)/10 px-2 py-0.5 text-[11px] font-bold text-(--color-gold-400) ring-1 ring-(--color-gold-400)/30" title="Lộc theo địa chi (chỉ trùng Chi Lộc, chưa đủ Can) — tạm được">🪙 Lộc (địa chi)</span>`);
-    if (c.chanDuongQuy) ds.push(`<span class="inline-flex items-center rounded-full bg-(--color-gold-300)/20 px-2 py-0.5 text-[11px] font-bold text-(--color-gold-300)" title="Ngày Chân Dương Quý Nhân theo Can năm sinh — quý nhân phù trợ (ban ngày)">🌤️ Chân Dương Quý Nhân</span>`);
-    if (c.chanAmQuy) ds.push(`<span class="inline-flex items-center rounded-full bg-(--color-gold-600)/20 px-2 py-0.5 text-[11px] font-bold text-(--color-gold-600)" title="Ngày Chân Âm Quý Nhân theo Can năm sinh — quý nhân phù trợ (ban đêm)">🌙 Chân Âm Quý Nhân</span>`);
-    return ds.length ? `<span class="mt-1 flex flex-wrap gap-1">${ds.join("")}</span>` : "";
-  }
-
-  /** Badge quan hệ ngày ↔ tuổi chủ — chỉ hiện khi đã nhập năm sinh. Làm rõ năm sinh có tác dụng. */
-  function badgeTuoi(t: QuanHeTuoi | null | undefined): string {
-    if (!t) return "";
-    const c = t.chi;
-    let nhan: string, mau: string;
-    if (c.xung) { nhan = "⚠ Xung tuổi chủ"; mau = "bg-(--color-danger-500)/15 text-(--color-danger-500)"; }
-    else if (c.hinh || c.hai || c.pha) { nhan = "Hình/Hại/Phá tuổi"; mau = "bg-(--color-gold-400)/15 text-(--color-gold-500)"; }
-    else if (c.tamHop) { nhan = "✓ Tam hợp tuổi"; mau = "bg-(--color-success-500)/15 text-(--color-success-500)"; }
-    else if (c.lucHop) { nhan = "✓ Lục hợp tuổi"; mau = "bg-(--color-success-500)/10 text-(--color-success-500)"; }
-    else { nhan = "Bình hòa tuổi"; mau = "bg-(--color-ivory-200) text-(--color-ink-600)"; }
-    const chiTiet = `Chi: ${c.moTa} · Can: ${t.can.moTa} · Ngũ hành: ${t.nguHanh.moTa}`;
-    return `<span class="mt-1 inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-bold ${mau}" title="${chiTiet}">${nhan}</span>`;
-  }
-  interface KhaiTruongResult {
-    ngayXepHang: KhaiTruongNgay[];
-  }
-
-  const thangSelect = document.getElementById("khai-truong-thang") as HTMLSelectElement;
-  const namSelect = document.getElementById("khai-truong-nam") as HTMLSelectElement;
-  const namSinhChuInput = document.getElementById("khai-truong-nam-sinh-chu") as HTMLInputElement;
-  const loiEl = document.getElementById("khai-truong-loi")!;
-  const listEl = document.getElementById("khai-truong-list")!;
-
-  const today = new Date();
-  for (let m = 1; m <= 12; m++) thangSelect.insertAdjacentHTML("beforeend", `<option value="${m}" ${m === today.getMonth() + 1 ? "selected" : ""}>Tháng ${m}</option>`);
-  for (let y = today.getFullYear() - 1; y <= today.getFullYear() + 3; y++) namSelect.insertAdjacentHTML("beforeend", `<option value="${y}" ${y === today.getFullYear() ? "selected" : ""}>${y}</option>`);
-
-  async function load() {
-    loiEl.classList.add("hidden");
-    listEl.innerHTML = '<p class="py-2 text-center text-sm text-(--color-ink-500)">Đang tính điểm...</p>';
-
-    let qs = `year=${namSelect.value}&month=${thangSelect.value}&timeZone=Asia/Ho_Chi_Minh`;
-    const namSinhChu = namSinhChuInput.value.trim();
-    // Chỉ áp năm sinh khi đã đủ 4 chữ số hợp lệ — tránh gửi năm dở dang khi đang gõ.
-    if (/^\d{4}$/.test(namSinhChu)) qs += `&namSinhChu=${namSinhChu}`;
-
-    let result: KhaiTruongResult;
-    try {
-      const res = await fetch(`/api/ngay-khai-truong?${qs}`);
-      const data = await res.json();
-      if (!res.ok) {
-        loiEl.textContent = data.error ?? "Không tính được.";
-        loiEl.classList.remove("hidden");
-        listEl.innerHTML = "";
-        return;
-      }
-      result = data;
-    } catch {
-      loiEl.textContent = "Không tải được dữ liệu.";
-      loiEl.classList.remove("hidden");
-      listEl.innerHTML = "";
-      return;
-    }
-
-    listEl.innerHTML = result.ngayXepHang
-      .map((n) => {
-        const ngayStr = `${String(n.solarDate.day).padStart(2, "0")}/${String(n.solarDate.month).padStart(2, "0")}/${n.solarDate.year}`;
-        const gioLink = `/dai-cat-loi/gio-tot-trong-ngay?year=${n.solarDate.year}&month=${n.solarDate.month}&day=${n.solarDate.day}&purpose=KHAI_TRUONG`;
-        return `
-          <div class="flex items-center justify-between gap-2 rounded-lg border border-(--color-ivory-200) px-3 py-2.5">
-            <div>
-              <p class="text-sm font-bold text-(--color-ink-950)">${ngayStr} (${n.lunarDate.day} âm)</p>
-              <p class="text-sm">${nhanDotHtml(n.nhan)} — ${n.diem}/10</p>
-              ${badgeTuoi(n.tuoiChu)}
-              ${badgeChan(n.catCaNhan)}
-            </div>
-            <a href="${gioLink}" class="shrink-0 rounded-(--radius-control) border border-(--color-gold-400) px-3 py-1.5 text-xs font-semibold text-(--color-gold-500) hover:bg-(--color-gold-400)/10">Xem giờ khai trương</a>
-          </div>`;
-      })
-      .join("");
-  }
-
-  thangSelect.addEventListener("change", load);
-  namSelect.addEventListener("change", load);
-  // `change` chỉ chạy khi rời ô — thêm `input` có debounce để gõ xong năm sinh là tự xếp lại ngày,
-  // không cần nút bấm hay bấm ra ngoài. 500ms để không gọi API mỗi lần gõ một chữ số.
-  let hejTinhLai: ReturnType<typeof setTimeout>;
-  namSinhChuInput.addEventListener("input", () => {
-    clearTimeout(hejTinhLai);
-    hejTinhLai = setTimeout(load, 500);
-  });
-  namSinhChuInput.addEventListener("change", load);
-  load();
-</script>

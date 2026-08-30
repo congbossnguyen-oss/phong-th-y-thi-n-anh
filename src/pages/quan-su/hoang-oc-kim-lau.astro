@@ -1,0 +1,22 @@
+---
+// Bản in-app của công cụ "Hoàng Ốc – Kim Lâu – Tam Tai" — thuộc lưới "Đại Cát Lợi - Cơ Bản" trong
+// app Quân Sư. TỰ CHỨA trong app (không link ra web) — dùng chung component với bản web nên
+// logic/kết quả y hệt, chỉ khung trang khác.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
+import HoangOcKimLau from "../../components/tools/HoangOcKimLau.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout title="Hoàng Ốc – Kim Lâu – Tam Tai — Quân Sư Thiên Anh" description="Hoàng Ốc – Kim Lâu – Tam Tai trong app Quân Sư." appShell>
+  <PageHero
+    eyebrow="Đại Cát Lợi"
+    title="Hoàng Ốc – Kim Lâu – Tam Tai"
+    description="Nhập năm sinh và năm cần xem — hệ thống tự tính tuổi mụ, Hoàng Ốc, Kim Lâu, Tam Tai và đưa ra khuyến nghị tham khảo cho việc xây/sửa nhà."
+    breadcrumbs={[{ label: "Quân Sư", href: "/quan-su" }, { label: "Hoàng Ốc – Kim Lâu – Tam Tai" }]}
+  />
+  <HoangOcKimLau laApp />
+  <BottomNav />
+</BaseLayout>

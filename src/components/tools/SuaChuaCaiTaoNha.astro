@@ -1,0 +1,440 @@
+---
+// Thân công cụ "Chọn Ngày Giờ Sửa Chữa – Cải Tạo Nhà" tách dùng chung cho web + in-app Quân Sư —
+// cùng mẫu các module khác trong "Đại Cát Lợi - Cơ Bản". Trang gọi component này chỉ lo khung
+// (BaseLayout/PageHero/breadcrumbs), gọi chung API /api/sua-chua-cai-tao-nha.
+//
+// CTA cuối trang mời nâng cấp KHÁC NHAU giữa web/app (anh Công 29/8/2026: 2 nhánh tính tiền khác
+// nhau — web bán lẻ từng công cụ, app bán thuê bao) — `laApp` chọn đúng component.
+import Container from "../../components/ui/Container.astro";
+import Button from "../../components/ui/Button.astro";
+import DateSelect from "../../components/ui/DateSelect.astro";
+import GoiYNangCap from "../../components/ui/GoiYNangCap.astro";
+import GoiYNangCapApp from "../../components/quan-su/GoiYNangCapApp.astro";
+
+interface Props {
+  /** true = hiện app Quân Sư (mời nâng cấp gói Cao Cấp) thay vì mời mua lẻ như bản web. */
+  laApp?: boolean;
+}
+const { laApp = false } = Astro.props;
+---
+
+<Container class="py-16">
+  <div class="mx-auto max-w-2xl">
+    <form id="form-sua-chua" class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label for="sc-nam-sinh" class="text-xs font-medium text-(--color-ink-600)">Năm sinh chủ nhà <span class="text-(--color-cinnabar-400)">*</span></label>
+          <input type="number" id="sc-nam-sinh" min="1900" max="2100" required placeholder="vd. 1990" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+        </div>
+        <div>
+          <label for="sc-loai" class="text-xs font-medium text-(--color-ink-600)">Loại sửa chữa</label>
+          <select id="sc-loai" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)">
+            <option value="light">Sửa nhẹ (sơn, nội thất...)</option>
+            <option value="medium" selected>Sửa vừa (đập tường phụ, thay cửa...)</option>
+            <option value="major">Sửa lớn (đập kết cấu, đổi bố cục)</option>
+            <option value="ground_breaking">Động thổ / đào móng</option>
+            <option value="kitchen">Sửa bếp</option>
+            <option value="main_door">Sửa cửa chính</option>
+            <option value="stair">Sửa cầu thang</option>
+            <option value="roof">Sửa mái</option>
+            <option value="extension">Mở rộng nhà</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="mt-3 flex flex-wrap gap-4">
+        <label class="flex items-center gap-2 text-sm text-(--color-ink-700)">
+          <input type="checkbox" id="sc-dap-pha" class="size-4 rounded border-(--color-ivory-300)" />
+          Đập phá kết cấu chịu lực
+        </label>
+        <label class="flex items-center gap-2 text-sm text-(--color-ink-700)">
+          <input type="checkbox" id="sc-dao-dat" class="size-4 rounded border-(--color-ivory-300)" />
+          Đào đất / động thổ
+        </label>
+      </div>
+
+      <div class="mt-3">
+        <p class="text-xs font-medium text-(--color-ink-600)">Phương vị định động (chọn ít nhất 1)</p>
+        <div class="mt-1.5 grid grid-cols-4 gap-1.5 text-xs">
+          {
+            [
+              ["Bắc", "Khảm"],
+              ["Đông Bắc", "Cấn"],
+              ["Đông", "Chấn"],
+              ["Đông Nam", "Tốn"],
+              ["Nam", "Ly"],
+              ["Tây Nam", "Khôn"],
+              ["Tây", "Đoài"],
+              ["Tây Bắc", "Càn"],
+            ].map(([huong, cung]) => (
+              <label class="flex items-center gap-1.5 rounded-lg border border-(--color-ivory-300) px-2 py-1.5">
+                <input type="checkbox" class="sc-cung size-3.5 shrink-0" value={cung} />
+                {huong}
+              </label>
+            ))
+          }
+        </div>
+        <p class="mt-1.5 text-xs text-(--color-ink-400)">
+          "Sửa nhà ở phương Nam" nghĩa là khu vực định động nằm ở phía Nam của ngôi nhà — khác với "nhà hướng Nam" (hướng cửa chính).
+        </p>
+      </div>
+
+      <div class="mt-3 space-y-3">
+        <DateSelect idPrefix="sc-tu-ngay" label="Từ ngày" />
+        <DateSelect idPrefix="sc-den-ngay" label="Đến ngày" />
+      </div>
+      <p class="mt-2 text-xs text-(--color-ink-400)">Từ ngày và Đến ngày phải cùng 1 năm dương lịch (Thái Tuế/Tam Sát/Kim Lâu/Hoàng Ốc tính theo năm), tối đa 31 ngày mỗi lượt quét.</p>
+      <Button type="submit" size="lg" class="mt-4 w-full">Kiểm tra & tìm ngày giờ tốt</Button>
+    </form>
+
+    <div id="loi" class="mt-3 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-3 text-sm text-(--color-danger-500)"></div>
+
+    <div id="an-toan" class="mt-4 hidden rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+      <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-400)">🧭 An toàn phương vị & năm</p>
+      <div id="an-toan-noi-dung" class="mt-2 space-y-2"></div>
+    </div>
+
+    <div id="ket-qua" class="mt-4 hidden space-y-2"></div>
+
+    <div id="ket-qua-gio" class="mt-4 hidden rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+      <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-400)">🕘 Giờ sửa chữa trong ngày</p>
+      <p id="gio-tieu-de" class="mt-1 text-sm text-(--color-ink-500)"></p>
+      <div id="gio-danh-sach" class="mt-2 space-y-1.5"></div>
+    </div>
+
+    <p class="mt-4 text-xs text-(--color-ink-500)">
+      Đây là công cụ tham khảo: Thái Tuế/Tuế Phá/Tam Sát theo phương vị (8 phương), Kim Lâu/Hoàng Ốc/Tam Tai của chủ theo năm, Trạch Cát ngày,
+      Tiểu Lục Nhâm giờ, quan hệ Can/Chi/Ngũ Hành với tuổi. Hệ thống chưa có bảng Huyền Không Phi Tinh (Vận/tinh bàn/Ngũ Hoàng/Nhị Hắc) và chưa xét
+      quan hệ với tọa hướng nhà cụ thể — không khẳng định chắc chắn về hiệu quả, chỉ mang tính tham khảo.
+    </p>
+  </div>
+  {laApp ? (
+    <GoiYNangCapApp lyDo="Sửa chữa động tới kết cấu nhà thì nên chọn ngày giờ theo đúng tọa hướng và mệnh chủ, không chỉ tránh ngày xấu chung." tieuDe="Cải tạo lớn?" />
+  ) : (
+    <GoiYNangCap slug="xem-ngay-cao-cap" lyDo="Sửa chữa động tới kết cấu nhà thì nên chọn ngày giờ theo đúng tọa hướng và mệnh chủ, không chỉ tránh ngày xấu chung." nhanNut="Xem Ngày Cao Cấp" tieuDe="Cải tạo lớn?" />
+  )}
+</Container>
+
+<script>
+  import { readDateSelects } from "../../lib/date-select";
+
+  const EMOJI_DOT_COLOR: Record<string, string> = { "⭐": "#7c3aed", "🟢": "#16a34a", "🟡": "#eab308", "🟠": "#c2410c", "🔴": "#dc2626" };
+  function nhanDotHtml(nhan: string): string {
+    const m = nhan.match(/^(\S+)\s*([\s\S]*)$/);
+    const color = m ? EMOJI_DOT_COLOR[m[1]] : undefined;
+    if (!color || !m) return nhan;
+    return `<span class="inline-flex items-center gap-1.5"><span class="inline-block size-2.5 shrink-0 rounded-full" style="background:${color};"></span>${m[2]}</span>`;
+  }
+
+  const CUNG_HUONG_VIET: Record<string, string> = {
+    Khảm: "Bắc",
+    Cấn: "Đông Bắc",
+    Chấn: "Đông",
+    Tốn: "Đông Nam",
+    Ly: "Nam",
+    Khôn: "Tây Nam",
+    Đoài: "Tây",
+    Càn: "Tây Bắc",
+  };
+
+  interface DirectionReason { code: string; title: string; severity: string; description: string }
+  interface DirectionRisk {
+    cung: string;
+    thaiTue: boolean;
+    tuePha: boolean;
+    tamSat: boolean;
+    severity: "none" | "low" | "medium" | "high" | "critical";
+    reasons: DirectionReason[];
+  }
+  interface SiteSafety { diem: number; phamNghiemTrong: boolean; directionRisks: DirectionRisk[] }
+  interface OwnerYear {
+    diem: number;
+    hoangOcKimLauTamTai: {
+      hoangOc: { ten: string; tot: boolean };
+      kimLau: { ten: string; pham: boolean };
+      tamTai: { pham: boolean };
+      ketLuan: { nhan: string };
+    };
+    chiNamQuanHe: { moTa: string };
+  }
+  interface YeuTo { ten: string; diem: number }
+  interface QuanHe { diem: number; moTa: string }
+  interface TrachCatDayBaseResult { diem: number; yeuTo: YeuTo[] }
+  interface DayPersonalResult { diem: number; nguHanh: QuanHe; can: QuanHe; chi: QuanHe; nguHanhPhuongVi: QuanHe }
+  interface DayScoreFull {
+    diem: number;
+    nhan: string;
+    base: TrachCatDayBaseResult;
+    mucDich: TrachCatDayBaseResult;
+    canNhan: DayPersonalResult;
+  }
+  interface HourScoreFull { diem: number; nhan: string; yeuTo: YeuTo[] }
+  interface ToHop {
+    solarDate: { year: number; month: number; day: number };
+    khungGio: string;
+    chiGio: string;
+    finalDiem: number;
+    hang: string;
+    nhan: string;
+    dayScore: DayScoreFull;
+    hourScore: HourScoreFull;
+    catCaNhan?: { tang: string | null; nhan: string } | null;
+  }
+  interface RangeResult { renovationLevel: string; siteSafety: SiteSafety; ownerYear: OwnerYear; xepHang: ToHop[] }
+
+  const MAU_TANG: Record<string, string> = {
+    "chan-loc": "bg-(--color-gold-400)/15 text-(--color-gold-500)", "chan-duong-quy": "bg-(--color-gold-300)/20 text-(--color-gold-300)",
+    "chan-am-quy": "bg-(--color-gold-600)/20 text-(--color-gold-600)", "loc": "bg-(--color-gold-400)/10 text-(--color-gold-400) ring-1 ring-(--color-gold-400)/30",
+    "tam-hop": "bg-(--color-success-500)/15 text-(--color-success-500)", "luc-hop": "bg-(--color-success-500)/10 text-(--color-success-500)",
+  };
+  const ICON_TANG: Record<string, string> = { "chan-loc": "💰", "chan-duong-quy": "🌤️", "chan-am-quy": "🌙", "loc": "🪙", "tam-hop": "☯", "luc-hop": "☯" };
+  function badgeCat(c: { tang: string | null; nhan: string } | null | undefined): string {
+    if (!c || !c.tang) return "";
+    return ` <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-bold ${MAU_TANG[c.tang] ?? "bg-(--color-ivory-200) text-(--color-ink-600)"}">${ICON_TANG[c.tang] ?? ""} ${c.nhan}</span>`;
+  }
+  interface MotNgayResult { xepHang: ToHop[] }
+
+  function renderDeltaYeuTo(list: YeuTo[]): string {
+    if (list.length === 0) return `<li class="text-(--color-ink-400)">Không có yếu tố đặc biệt.</li>`;
+    return list
+      .map((y) => {
+        const cls = y.diem > 0 ? "text-(--color-success-500)" : y.diem < 0 ? "text-(--color-cinnabar-500)" : "text-(--color-ink-500)";
+        const dau = y.diem > 0 ? "+" : "";
+        return `<li class="flex justify-between gap-2"><span>${y.ten}</span><span class="${cls} font-semibold">${dau}${y.diem}</span></li>`;
+      })
+      .join("");
+  }
+  function renderAbsYeuTo(list: { ten: string; diem: number }[]): string {
+    if (list.length === 0) return `<li class="text-(--color-ink-400)">Không có yếu tố đặc biệt.</li>`;
+    return list
+      .map((y) => {
+        const cls = y.diem >= 5 ? "text-(--color-cinnabar-500)" : "text-(--color-ink-500)";
+        return `<li class="flex justify-between gap-2"><span>${y.ten}</span><span class="${cls} font-semibold">${y.diem}</span></li>`;
+      })
+      .join("");
+  }
+  function dayViSaoHtml(d: DayScoreFull): string {
+    return `<p class="text-xs font-semibold text-(--color-ink-700)">Nền Trạch Cát ngày:</p>
+      <ul class="mt-1 space-y-0.5 text-xs text-(--color-ink-600)">${renderDeltaYeuTo(d.base.yeuTo)}</ul>
+      <p class="mt-2.5 text-xs font-semibold text-(--color-ink-700)">Theo mức độ sửa chữa:</p>
+      <ul class="mt-1 space-y-0.5 text-xs text-(--color-ink-600)">${renderDeltaYeuTo(d.mucDich.yeuTo)}</ul>
+      <p class="mt-2.5 text-xs font-semibold text-(--color-ink-700)">Ngày ↔ chủ nhà:</p>
+      <ul class="mt-1 space-y-0.5 text-xs text-(--color-ink-600)">${renderAbsYeuTo([
+        { ten: `Ngũ Hành (${d.canNhan.nguHanh.moTa})`, diem: d.canNhan.nguHanh.diem },
+        { ten: `Thiên Can (${d.canNhan.can.moTa})`, diem: d.canNhan.can.diem },
+        { ten: `Địa Chi (${d.canNhan.chi.moTa})`, diem: d.canNhan.chi.diem },
+        { ten: `Ngũ Hành ngày ↔ phương vị đang động (${d.canNhan.nguHanhPhuongVi.moTa})`, diem: d.canNhan.nguHanhPhuongVi.diem },
+      ])}</ul>`;
+  }
+  function hourViSaoHtml(h: HourScoreFull): string {
+    return `<ul class="space-y-0.5 text-xs text-(--color-ink-600)">${renderAbsYeuTo(h.yeuTo)}</ul>`;
+  }
+
+  const SEVERITY_LABEL: Record<string, string> = {
+    none: "🟢 Không phạm",
+    low: "🟢 Không phạm",
+    medium: "🟡 Cần lưu ý",
+    high: "🟠 Nên tránh",
+    critical: "🔴 Đại kỵ",
+  };
+
+  const form = document.getElementById("form-sua-chua") as HTMLFormElement;
+  const loiEl = document.getElementById("loi")!;
+  const anToanEl = document.getElementById("an-toan")!;
+  const anToanNoiDungEl = document.getElementById("an-toan-noi-dung")!;
+  const ketQuaEl = document.getElementById("ket-qua")!;
+  const ketQuaGioEl = document.getElementById("ket-qua-gio")!;
+  const gioTieuDeEl = document.getElementById("gio-tieu-de")!;
+  const gioDanhSachEl = document.getElementById("gio-danh-sach")!;
+
+  const HUY_CHUONG = ["🥇", "🥈", "🥉"];
+
+  function pad2(n: number): string {
+    return String(n).padStart(2, "0");
+  }
+
+  let thamSoHienTai = { renovationType: "", affectsStructure: "0", digsGround: "0", namSinh: "", cungList: [] as string[] };
+
+  async function taiGioTrongNgay(year: number, month: number, day: number) {
+    const { renovationType, affectsStructure, digsGround, namSinh, cungList } = thamSoHienTai;
+    const cungQs = cungList.map((c) => `affectedCung=${encodeURIComponent(c)}`).join("&");
+    const qs = `renovationType=${renovationType}&affectsStructure=${affectsStructure}&digsGround=${digsGround}&namSinh=${namSinh}&${cungQs}&year=${year}&month=${month}&day=${day}`;
+    try {
+      const res = await fetch(`/api/sua-chua-cai-tao-nha?${qs}`);
+      const data = await res.json();
+      if (!res.ok) return;
+      const result = data as MotNgayResult;
+      gioTieuDeEl.textContent = `Ngày ${pad2(day)}/${pad2(month)}/${year} — xếp hạng đủ 12 giờ Địa Chi`;
+      gioDanhSachEl.innerHTML = result.xepHang
+        .slice(0, 5)
+        .map(
+          (g, i) =>
+            `<div class="rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200)">
+              <button type="button" class="sc-gio-vi-sao w-full p-2.5 text-left" data-idx="${i}">
+                <div class="flex items-center justify-between">
+                  <p class="text-sm font-semibold text-(--color-ink-950)">${HUY_CHUONG[i] ?? `${i + 1}.`} ${g.khungGio} (giờ ${g.chiGio})${badgeCat(g.catCaNhan)}</p>
+                  <span class="text-sm">${nhanDotHtml(g.nhan)} — ${g.finalDiem}/10</span>
+                </div>
+                <p class="mt-1 text-xs text-(--color-gold-400)">Vì sao? (bấm để xem chi tiết)</p>
+              </button>
+              <div class="sc-gio-chi-tiet hidden border-t border-(--color-ivory-300) px-2.5 py-2.5">${hourViSaoHtml(g.hourScore)}</div>
+            </div>`,
+        )
+        .join("");
+      gioDanhSachEl.querySelectorAll<HTMLButtonElement>(".sc-gio-vi-sao").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          (btn.nextElementSibling as HTMLElement).classList.toggle("hidden");
+        });
+      });
+      ketQuaGioEl.classList.remove("hidden");
+      ketQuaGioEl.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    } catch {
+      // bỏ qua lỗi phụ, không chặn luồng chính
+    }
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    loiEl.classList.add("hidden");
+    anToanEl.classList.add("hidden");
+    ketQuaEl.classList.add("hidden");
+    ketQuaGioEl.classList.add("hidden");
+
+    const namSinh = (document.getElementById("sc-nam-sinh") as HTMLInputElement).value;
+    const renovationType = (document.getElementById("sc-loai") as HTMLSelectElement).value;
+    const affectsStructure = (document.getElementById("sc-dap-pha") as HTMLInputElement).checked ? "1" : "0";
+    const digsGround = (document.getElementById("sc-dao-dat") as HTMLInputElement).checked ? "1" : "0";
+    const cungList = [...document.querySelectorAll<HTMLInputElement>(".sc-cung:checked")].map((el) => el.value);
+    const tuNgay = readDateSelects("sc-tu-ngay");
+    const denNgay = readDateSelects("sc-den-ngay");
+
+    if (!namSinh) {
+      loiEl.textContent = "Vui lòng nhập năm sinh chủ nhà.";
+      loiEl.classList.remove("hidden");
+      return;
+    }
+    if (cungList.length === 0) {
+      loiEl.textContent = "Vui lòng chọn ít nhất 1 phương vị định động.";
+      loiEl.classList.remove("hidden");
+      return;
+    }
+    if (!tuNgay || !denNgay) {
+      loiEl.textContent = "Vui lòng chọn đầy đủ Từ ngày và Đến ngày.";
+      loiEl.classList.remove("hidden");
+      return;
+    }
+    const { year: startYear, month: startMonth, day: startDay } = tuNgay;
+    const { year: endYear, month: endMonth, day: endDay } = denNgay;
+    if (startYear !== endYear) {
+      loiEl.textContent = "Từ ngày và Đến ngày phải cùng 1 năm dương lịch.";
+      loiEl.classList.remove("hidden");
+      return;
+    }
+
+    thamSoHienTai = { renovationType, affectsStructure, digsGround, namSinh, cungList };
+    const cungQs = cungList.map((c) => `affectedCung=${encodeURIComponent(c)}`).join("&");
+    const qs = `renovationType=${renovationType}&affectsStructure=${affectsStructure}&digsGround=${digsGround}&namSinh=${namSinh}&${cungQs}&startYear=${startYear}&startMonth=${startMonth}&startDay=${startDay}&endYear=${endYear}&endMonth=${endMonth}&endDay=${endDay}`;
+
+    try {
+      const res = await fetch(`/api/sua-chua-cai-tao-nha?${qs}`);
+      const data = await res.json();
+      if (!res.ok) {
+        loiEl.textContent = data.error ?? "Không tính được.";
+        loiEl.classList.remove("hidden");
+        return;
+      }
+      const result = data as RangeResult;
+
+      const canhBao = result.siteSafety.phamNghiemTrong
+        ? `<div class="rounded-xl border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-3 text-sm text-(--color-danger-500)">
+            ⚠️ Có phương vị phạm mức đại kỵ (Thái Tuế/Tuế Phá/Tam Sát kết hợp với mức độ động mạnh) — nên cân nhắc đổi phương vị, đổi mức độ sửa chữa, hoặc dời sang năm khác.
+          </div>`
+        : "";
+      const bangPhuongVi = result.siteSafety.directionRisks
+        .map(
+          (r) =>
+            `<div class="rounded-lg border border-(--color-ivory-300) bg-(--color-ivory-200) p-2 text-sm">
+              <div class="flex items-center justify-between">
+                <span class="font-medium text-(--color-ink-800)">${CUNG_HUONG_VIET[r.cung] ?? r.cung}</span>
+                <span>${SEVERITY_LABEL[r.severity] ?? r.severity}${r.thaiTue ? " · Thái Tuế" : ""}${r.tuePha ? " · Tuế Phá" : ""}${r.tamSat ? " · Tam Sát" : ""}</span>
+              </div>
+              <ul class="mt-1 space-y-0.5 text-xs text-(--color-ink-500)">
+                ${r.reasons.map((rs) => `<li>${rs.title}: ${rs.description}</li>`).join("")}
+              </ul>
+            </div>`,
+        )
+        .join("");
+      anToanNoiDungEl.innerHTML = `${canhBao}
+        <div class="grid grid-cols-2 gap-2 text-sm">
+          <div class="rounded-lg bg-(--color-ivory-200) p-2"><span class="text-(--color-ink-500)">Điểm an toàn phương vị:</span> <span class="font-semibold">${result.siteSafety.diem}/10</span></div>
+          <div class="rounded-lg bg-(--color-ivory-200) p-2"><span class="text-(--color-ink-500)">Chủ nhà ↔ năm nay:</span> <span class="font-semibold">${result.ownerYear.diem}/10</span> — ${result.ownerYear.hoangOcKimLauTamTai.ketLuan.nhan}</div>
+        </div>
+        <ul class="space-y-0.5 rounded-lg bg-(--color-ivory-200) p-2 text-xs text-(--color-ink-500)">
+          <li>Hoàng Ốc: ${result.ownerYear.hoangOcKimLauTamTai.hoangOc.ten} (${result.ownerYear.hoangOcKimLauTamTai.hoangOc.tot ? "tốt" : "không tốt"})</li>
+          <li>Kim Lâu: ${result.ownerYear.hoangOcKimLauTamTai.kimLau.ten}${result.ownerYear.hoangOcKimLauTamTai.kimLau.pham ? " (phạm)" : " (không phạm)"}</li>
+          <li>Tam Tai: ${result.ownerYear.hoangOcKimLauTamTai.tamTai.pham ? "Có phạm năm nay" : "Không phạm năm nay"}</li>
+          <li>Chi năm sửa chữa ↔ Chi tuổi chủ: ${result.ownerYear.chiNamQuanHe.moTa}</li>
+        </ul>
+        <div class="space-y-1.5">${bangPhuongVi}</div>`;
+      anToanEl.classList.remove("hidden");
+
+      const HANG_DUNG_DUOC = new Set(["rat-tot", "tot", "kha-tot", "co-the-dung"]);
+      const ngayTotNhatMap = new Map<string, ToHop>();
+      for (const t of result.xepHang) {
+        const key = `${t.solarDate.year}-${t.solarDate.month}-${t.solarDate.day}`;
+        if (!ngayTotNhatMap.has(key)) ngayTotNhatMap.set(key, t);
+      }
+      const top5Ngay = [...ngayTotNhatMap.values()]
+        .filter((t) => HANG_DUNG_DUOC.has(t.hang))
+        .sort((a, b) => b.finalDiem - a.finalDiem)
+        .slice(0, 5);
+
+      if (top5Ngay.length === 0) {
+        ketQuaEl.innerHTML = `<div class="rounded-xl border border-(--color-danger-500)/30 bg-(--color-danger-500)/5 p-4 text-sm text-(--color-ink-600)">
+          Không có ngày nào trong khoảng đã chọn đủ tốt để sửa chữa (mọi ngày đều rơi vào mức "Không thuận" trở xuống).
+          Anh thử chọn khoảng ngày khác, đổi phương vị, hoặc giảm mức độ sửa chữa xem sao.
+        </div>`;
+        ketQuaEl.classList.remove("hidden");
+        return;
+      }
+
+      ketQuaEl.innerHTML = top5Ngay
+        .map((t, i) => {
+          const huyChuong = HUY_CHUONG[i] ?? `${i + 1}.`;
+          const ngayStr = `${pad2(t.solarDate.day)}/${pad2(t.solarDate.month)}/${t.solarDate.year}`;
+          return `<div class="rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200) p-3">
+            <div class="flex items-center justify-between">
+              <p class="font-display text-base font-bold text-(--color-ink-950)">${huyChuong} ${ngayStr}</p>
+              <span class="text-sm font-semibold">${nhanDotHtml(t.nhan)} — ${t.finalDiem}/10</span>
+            </div>
+            <p class="mt-1.5 text-xs text-(--color-ink-500)">Giờ tốt nhất: ${t.khungGio} (giờ ${t.chiGio}) · Ngày: ${nhanDotHtml(t.dayScore.nhan)} (${t.dayScore.diem}/10) · Giờ: ${nhanDotHtml(t.hourScore.nhan)} (${t.hourScore.diem}/10)</p>
+            <div class="mt-2 flex gap-2">
+              <button type="button" class="sc-xem-gio rounded-lg bg-(--color-gold-400) px-2.5 py-1 text-xs font-semibold text-(--color-on-accent)" data-year="${t.solarDate.year}" data-month="${t.solarDate.month}" data-day="${t.solarDate.day}">Xem giờ khác</button>
+              <button type="button" class="sc-vi-sao rounded-lg border border-(--color-ivory-400) px-2.5 py-1 text-xs font-semibold text-(--color-ink-700)" data-idx="${i}">Vì sao?</button>
+            </div>
+            <div class="sc-ngay-chi-tiet hidden mt-2.5 border-t border-(--color-ivory-300) pt-2.5">${dayViSaoHtml(t.dayScore)}</div>
+          </div>`;
+        })
+        .join("");
+
+      ketQuaEl.querySelectorAll<HTMLButtonElement>(".sc-xem-gio").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          void taiGioTrongNgay(Number(btn.dataset.year), Number(btn.dataset.month), Number(btn.dataset.day));
+        });
+      });
+      ketQuaEl.querySelectorAll<HTMLButtonElement>(".sc-vi-sao").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const chiTiet = btn.parentElement!.nextElementSibling as HTMLElement;
+          chiTiet.classList.toggle("hidden");
+        });
+      });
+
+      ketQuaEl.classList.remove("hidden");
+      const d = top5Ngay[0]!.solarDate;
+      void taiGioTrongNgay(d.year, d.month, d.day);
+    } catch {
+      loiEl.textContent = "Không tải được dữ liệu.";
+      loiEl.classList.remove("hidden");
+    }
+  });
+</script>

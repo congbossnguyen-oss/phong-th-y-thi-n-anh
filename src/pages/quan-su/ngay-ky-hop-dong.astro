@@ -1,0 +1,22 @@
+---
+// Bản in-app của công cụ "Ngày ký hợp đồng" — thuộc lưới "Đại Cát Lợi - Cơ Bản" trong app Quân
+// Sư. TỰ CHỨA trong app (App Store, không link ra web) — dùng chung component với bản web nên
+// logic/kết quả y hệt, chỉ khung trang khác.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
+import NgayKyHopDong from "../../components/tools/NgayKyHopDong.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout title="Ngày ký hợp đồng — Quân Sư Thiên Anh" description="Ngày ký hợp đồng trong app Quân Sư." appShell>
+  <PageHero
+    eyebrow="Đại Cát Lợi"
+    title="Ngày ký hợp đồng"
+    description="Chọn tháng cần xem — hệ thống tự xếp hạng ngày đẹp nhất cho ký kết/giao dịch. Nhập năm sinh người ký nếu muốn xét thêm tuổi."
+    breadcrumbs={[{ label: "Quân Sư", href: "/quan-su" }, { label: "Ngày ký hợp đồng" }]}
+  />
+  <NgayKyHopDong laApp />
+  <BottomNav />
+</BaseLayout>
