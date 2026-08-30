@@ -866,6 +866,7 @@ export interface MoCuaPhuEntry {
   am_duong_nguoc_cua_chinh: boolean;
   sao_ve_cung: number;
   dac_vuong: boolean;
+  huong_tinh_da_vuong_sinh_san: boolean;
   huong_tinh_thuc_te: number;
   tt_huong_tinh: TrangThaiKhi;
   son_tinh_thuc_te: number;
@@ -897,6 +898,12 @@ export interface MoCuaPhuEntry {
  * Bỏ qua sơn Hướng chính và sơn Tọa (đã là cửa chính/mặt sau, không phải "cửa phụ").
  * Vẫn cần thủy/ao hồ/ngã ba/cổng ngõ thực tế mới phát huy (thanh-mon.md mục 5, áp dụng chung).
  *
+ * Ngoài các sơn đắc vượng theo công thức mở cửa phụ (`dac_vuong`), CŨNG liệt kê thêm những sơn mà
+ * Hướng tinh THẬT tại đó vốn đã VƯỢNG/SINH sẵn (`huong_tinh_da_vuong_sinh_san`) — không cần qua
+ * công thức mục 7 mới biết chỗ đó tốt, đơn giản là khí ở đó đã đang vượng. Bổ sung 31/8/2026 theo
+ * anh Công: các cung này trước đó bị bỏ sót hoàn toàn khỏi mục "mở cửa phụ" dù đã có mặt (với vai
+ * trò khác — gợi ý cao/thấp) trong Thu Sơn Xuất Sát.
+ *
  * @param vanHienTai Vận đương lệnh — mặc định = tb.van.
  */
 export function xetMoCuaPhu(tb: TinhBan, vanHienTai: number = tb.van): MoCuaPhuEntry[] {
@@ -908,6 +915,7 @@ export function xetMoCuaPhu(tb: TinhBan, vanHienTai: number = tb.van): MoCuaPhuE
     7: "Thất Xích (Phá Quân) đang thất vận tại đây — dễ trộm cướp/hỏa tai",
   };
   const KHI_CHET: TrangThaiKhi[] = ["SUY", "TỬ", "TỬ/XA"];
+  const KHI_TOT: TrangThaiKhi[] = ["VƯỢNG", "SINH"];
 
   const ketQua: MoCuaPhuEntry[] = [];
   for (const ten of Object.keys(SON_24)) {
@@ -916,10 +924,12 @@ export function xetMoCuaPhu(tb: TinhBan, vanHienTai: number = tb.van): MoCuaPhuE
     const thuan = xacDinhChieuBay(seed, nl);
     const saoVe = bayTinh(seed, thuan)[cung];
     const dacVuong = saoVe === vanHienTai;
-    if (!dacVuong) continue;
 
     const htThat = tb.huong_ban[cung];
     const ttHuong = trangThaiSao(htThat, vanHienTai);
+    const huongThatDaTot = KHI_TOT.includes(ttHuong);
+    if (!dacVuong && !huongThatDaTot) continue;
+
     const stThat = tb.son_ban[cung];
     const ttSon = trangThaiSao(stThat, vanHienTai);
 
@@ -942,6 +952,7 @@ export function xetMoCuaPhu(tb: TinhBan, vanHienTai: number = tb.van): MoCuaPhuE
       nguyen_long: nl, am_duong: amDuong,
       am_duong_nguoc_cua_chinh: amDuong !== SON_24[tb.son_huong][3],
       sao_ve_cung: saoVe, dac_vuong: dacVuong,
+      huong_tinh_da_vuong_sinh_san: huongThatDaTot,
       huong_tinh_thuc_te: htThat, tt_huong_tinh: ttHuong,
       son_tinh_thuc_te: stThat, tt_son_tinh: ttSon,
       kha_dung: canhBao.length === 0,

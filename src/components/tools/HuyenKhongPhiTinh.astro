@@ -431,7 +431,7 @@ Thành Môn xét theo VẬN HIỆN TẠI (Vận {kq.van_hien_tai}), không phả
               <section>
                 <h2 class="font-display text-2xl font-bold text-(--color-ink-950)">Xét thêm các cung khác — mở cửa phụ đón vượng khí</h2>
                 <p class="mt-1 text-sm font-medium text-(--color-ink-700)">
-                  Ngoài Thành Môn ở 2 sơn liền kề Hướng, đây là các sơn khác trên vòng 24 sơn mà nếu mở thêm cửa/cổng phụ tại đó (có thủy/ao hồ/ngã ba/cổng ngõ thực tế), theo cách tính riêng cho mở cửa phụ sẽ đón được vượng khí của Vận {kq.van_hien_tai} — <strong>đây KHÔNG phải Vận tinh hay Hướng tinh có sẵn trong tinh bàn ở trên</strong>, mà là 1 con số tính cục bộ cho từng sơn theo đúng kỹ thuật cổ, nên đã đối chiếu thêm với Hướng tinh/Sơn tinh thật của nhà tại đó để lọc bỏ những cung tuy tính ra vậy nhưng thực tế khí đang xấu.
+                  Ngoài Thành Môn ở 2 sơn liền kề Hướng, đây là các sơn khác trên vòng 24 sơn mà nếu mở thêm cửa/cổng phụ tại đó (có thủy/ao hồ/ngã ba/cổng ngõ thực tế) sẽ đón được vượng khí của Vận {kq.van_hien_tai} — gồm 2 nguồn: (1) sơn có Hướng tinh THẬT tại đó vốn đã vượng/sinh sẵn trong tinh bàn, và (2) sơn đắc vượng theo cách tính riêng cho mở cửa phụ (kỹ thuật cổ, không phải Vận tinh hay Hướng tinh có sẵn — chỉ dùng khi đã đối chiếu Hướng tinh/Sơn tinh thật không xấu).
                 </p>
 
                 {kq.mo_cua_phu.some((m) => m.kha_dung) && (
@@ -441,7 +441,14 @@ Thành Môn xét theo VẬN HIỆN TẠI (Vận {kq.van_hien_tai}), không phả
                       {kq.mo_cua_phu.filter((m) => m.kha_dung).map((m) => (
                         <div class="rounded-(--radius-control) border border-emerald-500/30 bg-emerald-500/[0.04] p-4 text-sm font-medium text-(--color-ink-800)">
                           <p class="font-bold text-(--color-ink-950)">{m.son} ({m.cung_ten})</p>
-                          <p class="mt-1">Theo cách tính mở cửa phụ, tại đây đón đúng vượng khí Vận {kq.van_hien_tai}. Hướng tinh thật tại đây: {m.huong_tinh_thuc_te} [{m.tt_huong_tinh}] — không xấu. Âm/Dương: {m.am_duong}{m.am_duong_nguoc_cua_chinh ? " (ngược cửa chính — hợp lý)" : " (cùng cực cửa chính — chỉ tốt lúc đầu rồi suy)"}.</p>
+                          <p class="mt-1">
+                            {m.dac_vuong && m.huong_tinh_da_vuong_sinh_san
+                              ? `Theo cách tính mở cửa phụ, tại đây đón đúng vượng khí Vận ${kq.van_hien_tai} — và Hướng tinh thật tại đây cũng đang ${m.tt_huong_tinh.toLowerCase()} (${m.huong_tinh_thuc_te}), 2 chiều cùng xác nhận.`
+                              : m.dac_vuong
+                              ? `Theo cách tính mở cửa phụ, tại đây đón đúng vượng khí Vận ${kq.van_hien_tai}. Hướng tinh thật tại đây: ${m.huong_tinh_thuc_te} [${m.tt_huong_tinh}] — không xấu.`
+                              : `Hướng tinh thật tại đây đã sẵn ${m.tt_huong_tinh === "VƯỢNG" ? "VƯỢNG" : "SINH"} (${m.huong_tinh_thuc_te}) — không cần qua kỹ thuật mở cửa phụ mới biết chỗ này tốt.`}
+                            {" "}Âm/Dương: {m.am_duong}{m.am_duong_nguoc_cua_chinh ? " (ngược cửa chính — hợp lý)" : " (cùng cực cửa chính — chỉ tốt lúc đầu rồi suy)"}.
+                          </p>
                         </div>
                       ))}
                     </div>
