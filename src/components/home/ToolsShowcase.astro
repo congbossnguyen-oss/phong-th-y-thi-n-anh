@@ -81,21 +81,15 @@ const CORE_TOOLS: { href: string; icon: IconName; image?: string; title: string 
     title: "Ngày Giờ Xuất Hành Cá Nhân",
   },
   {
-    // 3 thẻ Kỳ Môn mở bán 26/8/2026 — chưa có poster riêng nên dùng nhánh thẻ chữ (gradient
-    // thương hiệu + hiện tiêu đề), đúng phương án dự phòng đã chừa sẵn ở ghi chú phía trên.
-    href: "/lap-ky-mon",
+    // 30/8/2026 (anh Công: "trên web đang thấy lỗi không có hình vậy") — 3 thẻ Kỳ Môn (mở bán
+    // 26/8/2026) dùng nhánh thẻ chữ (không ảnh) bị chê là lỗi hiển thị trên thực tế dù đúng thiết
+    // kế dự phòng. Đổi 1 thẻ (Lập Kỳ Môn Độn Giáp) sang Hợp Hôn — đã có sẵn poster riêng
+    // (hop-hon.webp) — 2 thẻ còn lại (Trạch Cát Kỳ Môn, Hỏi Đáp Kỳ Môn) gỡ khỏi khu này, vẫn vào
+    // được qua /lap-ky-mon và menu Đại Cát Lợi như cũ, chỉ không còn trong 9 công cụ nổi bật.
+    href: "/dai-cat-loi/hop-hon",
     icon: "star",
-    title: "Lập Kỳ Môn Độn Giáp",
-  },
-  {
-    href: "/dai-cat-loi/trach-cat-ky-mon",
-    icon: "clock",
-    title: "Trạch Cát Kỳ Môn",
-  },
-  {
-    href: "/lap-ky-mon#km-hoidap-wrap",
-    icon: "book-open",
-    title: "Hỏi Đáp Kỳ Môn",
+    image: "/hop-hon.webp",
+    title: "Hợp Hôn",
   },
   {
     href: "/dai-cat-loi/dinh-huong-nghe-nghiep",
