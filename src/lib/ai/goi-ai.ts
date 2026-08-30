@@ -106,6 +106,16 @@ export interface ThamSoGoiAi {
   toolName: string;
   schema: object;
   maxTokens: number;
+  /**
+   * Ép model CỤ THỂ cho riêng lệnh này, bỏ qua model mặc định theo env — KHÓA THEO TỪNG NHÀ CUNG
+   * CẤP (không phải 1 chuỗi chung), vì override chỉ đúng cho ĐÚNG nhà cung cấp đó. Dùng khi 1 tính
+   * năng cần model khác cả site (vd Huyền Không cần `deepseek-chat` KHÔNG-thinking bên DeepSeek vì
+   * model thinking mặc định từ chối tool_choice ép buộc + đốt hết token vào reasoning) — nếu ép
+   * cứng 1 chuỗi không phân biệt nhà cung cấp, đổi `AI_EP_NHA_CUNG_CAP` sang Gemini để so sánh sẽ
+   * VẪN gửi nhầm tên model DeepSeek cho Gemini (lỗi thật đã gặp 30/8/2026 khi so sánh 2 bên). Chỉ
+   * áp dụng cho path OpenAI-compat (DeepSeek/Gemini); path Anthropic bỏ qua trường này.
+   */
+  modelOverride?: Partial<Record<"openai-tuong-thich" | "gemini-tuong-thich", string>>;
 }
 
 export interface KetQuaGoiAi {
@@ -257,6 +267,6 @@ export async function goiAiToolUse(t: ThamSoGoiAi): Promise<KetQuaGoiAi> {
     const model = bienMoiTruong("ANTHROPIC_MODEL") || MODEL_MAC_DINH[ncc];
     return goiAnthropic(t, model);
   }
-  const model = bienMoiTruong(BIEN_KIEU_OPENAI[ncc].model) || MODEL_MAC_DINH[ncc];
+  const model = t.modelOverride?.[ncc]?.trim() || bienMoiTruong(BIEN_KIEU_OPENAI[ncc].model) || MODEL_MAC_DINH[ncc];
   return goiKieuOpenAi(t, model, ncc);
 }

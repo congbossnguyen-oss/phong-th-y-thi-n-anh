@@ -108,6 +108,9 @@ const SYSTEM_CO_DINH = [
   "   cung đó để biết đã đúng Thu Sơn Xuất Sát hay chưa — sao xấu đúng vị trí Xuất Sát vẫn có thể",
   "   vô hại, không mặc định kết luận hung chỉ từ con số sao.",
   "7. Ghi nhận thẳng những chỗ dữ liệu chưa đủ vào gioi_han_luu_y, không che giấu.",
+  "8. VIẾT SÚC TÍCH để vừa khuôn dữ liệu: mỗi luan_chi_tiet 2-3 câu, mỗi mục ket_luan_tong_the 1-2",
+  "   câu, mỗi phần tử mảng 1 câu ngắn. KHÔNG lặp lại nguyên văn dữ liệu đã cho, KHÔNG viết lan man —",
+  "   đi thẳng vào kết luận có căn cứ. (Báo cáo quá dài sẽ bị cắt giữa chừng, hỏng cả kết quả.)",
   "",
   "=== QUY TRÌNH LUẬN (bám sát, đủ 10 bước cho mỗi cung) ===",
   QUY_TRINH_LUAN,
@@ -255,7 +258,18 @@ export async function luanHuyenKhongBangAi(
     userMessage,
     toolName: "tra_ve_luan_giai_huyen_khong",
     schema: SCHEMA,
-    maxTokens: 6000,
+    // Báo cáo dài (8 cung + kết luận + hóa giải) — cần đủ token để JSON không bị cắt giữa chừng
+    // (deepseek-chat non-thinking dồn hết token vào output thật). Kèm câu lệnh súc tích ở prompt
+    // để output không phình quá, vừa fit token vừa dưới ~100s giới hạn Cloudflare Worker.
+    maxTokens: 12000,
+    // ⚠️ Model mặc định của DeepSeek trên site (deepseek-v4-flash) là model "thinking": từ chối
+    // tool_choice ép buộc + đốt hết token vào reasoning ẩn (>120s, quá giới hạn Cloudflare) → KHÔNG
+    // dùng được cho báo cáo có schema lớn này. deepseek-chat (non-thinking) trên cùng endpoint chạy
+    // tốt: gọi tool đúng, ~50-70s. Khóa RIÊNG CHO NHÀ CUNG CẤP DeepSeek (không phải toàn bộ) — nếu
+    // ép cứng 1 chuỗi không phân biệt, đổi AI_EP_NHA_CUNG_CAP sang Gemini để so sánh sẽ gửi nhầm
+    // tên model DeepSeek cho Gemini (lỗi thật đã gặp 30/8/2026: Gemini trả 404 "models/deepseek-chat
+    // is not found"). Gemini dùng đúng model của nó qua AI_GEMINI_MODEL, không cần override ở đây.
+    modelOverride: { "openai-tuong-thich": "deepseek-chat" },
   });
 
   if (!res.input) return null;
