@@ -876,11 +876,15 @@ export interface MoCuaPhuEntry {
 }
 
 /**
- * "Mở cửa phụ" theo thanh-mon.md mục 7 — quy trình KHÁC với Thành Môn ở mục 2/3 (timThanhMon):
- * seed CỐ ĐỊNH = Vận tinh tại chính cung Hướng (không đổi theo từng sơn ứng viên như kiemTraSon),
- * nhập trung số đó rồi xoay thuận/nghịch theo Âm Dương của SƠN MUỐN MỞ CỬA — khác Hướng thì hướng
- * bay khác, nên đây là kỹ thuật tìm điểm nạp khí PHỤ, không phải tính lại Hướng Bàn thật của nhà.
- * Ví dụ nguồn (tọa Giáp hướng Canh, Vận 8, xét Dậu — cùng cung Tây với Canh) khớp với công thức này.
+ * "Mở cửa phụ" theo thanh-mon.md mục 7 — dùng CHUNG lõi kỹ thuật với Thành Môn ở mục 2/3
+ * (`kiemTraSon`, giống hệt `timThanhMon`): với MỖI sơn ứng viên, lấy Vận tinh tại CHÍNH cung của
+ * sơn đó nhập trung, bay thuận/nghịch theo Âm Dương của chính sơn đó, xem vượng tinh vận hiện tại
+ * có về đúng cung đó không. ĐÃ SỬA 31/8/2026 sau khi đối chiếu lại `scripts/engine.py` gốc của tác
+ * giả (bản cập nhật anh Công gửi) — bản trước đó trong phiên này dùng seed CỐ ĐỊNH từ cung Hướng
+ * chính là suy diễn SAI của em từ việc đọc chữ "cung Hướng chính" trong mục 7 quá máy móc; hàm
+ * `xet_mo_cua_phu` gốc dùng `kiem_tra_son` y hệt `tim_thanh_mon`, không phân biệt 2 công thức.
+ * Ví dụ nguồn (tọa Giáp hướng Canh, Vận 8, xét Dậu — cùng cung Tây với Canh) khớp với cả 2 cách
+ * tính vì Dậu và Canh chung 1 cung nên không phân biệt được — lỗi chỉ lộ ra ở các cung khác cung.
  *
  * Chỉ liệt kê sơn có "sao_ve_cung === vanHienTai" (đắc vượng khí hiện tại — điều kiện cần đầu
  * tiên). Trong số đó, đối chiếu thêm với Hướng tinh/Sơn tinh THẬT của nhà tại đúng cung đó
@@ -908,7 +912,6 @@ export interface MoCuaPhuEntry {
  */
 export function xetMoCuaPhu(tb: TinhBan, vanHienTai: number = tb.van): MoCuaPhuEntry[] {
   const vanBanHienTai = bayTinh(vanHienTai, true);
-  const seed = vanBanHienTai[tb.cung_huong];
   const HUNG_TINH: Record<number, string> = {
     2: "Nhị Hắc (Bệnh Phù) đang thất vận tại đây — dễ sinh bệnh tật",
     3: "Tam Bích (Xi Vưu) đang thất vận tại đây — dễ sinh tranh chấp/kiện tụng",
@@ -920,10 +923,10 @@ export function xetMoCuaPhu(tb: TinhBan, vanHienTai: number = tb.van): MoCuaPhuE
   const ketQua: MoCuaPhuEntry[] = [];
   for (const ten of Object.keys(SON_24)) {
     if (ten === tb.son_huong || ten === tb.son_toa) continue;
-    const [, cung, nl, amDuong] = SON_24[ten];
-    const thuan = xacDinhChieuBay(seed, nl);
-    const saoVe = bayTinh(seed, thuan)[cung];
-    const dacVuong = saoVe === vanHienTai;
+    const [, cung, , amDuong] = SON_24[ten];
+    const kt = kiemTraSon(ten, vanHienTai, vanBanHienTai);
+    const saoVe = kt.sao_ve_cung;
+    const dacVuong = kt.dac_vuong;
 
     const htThat = tb.huong_ban[cung];
     const ttHuong = trangThaiSao(htThat, vanHienTai);
@@ -949,7 +952,7 @@ export function xetMoCuaPhu(tb: TinhBan, vanHienTai: number = tb.van): MoCuaPhuE
 
     ketQua.push({
       son: ten, cung, cung_ten: CUNG_INFO[cung].ten,
-      nguyen_long: nl, am_duong: amDuong,
+      nguyen_long: kt.nguyen_long, am_duong: amDuong,
       am_duong_nguoc_cua_chinh: amDuong !== SON_24[tb.son_huong][3],
       sao_ve_cung: saoVe, dac_vuong: dacVuong,
       huong_tinh_da_vuong_sinh_san: huongThatDaTot,
