@@ -136,7 +136,9 @@ const BADGE_BEST = ["/luan-so-dien-thoai"];
         </details>
 
         <p class="mb-2 text-xs font-semibold uppercase tracking-wide text-(--color-gold-500)">Tất cả danh mục</p>
-        {navWithChildren.map((item) => (
+        {/* "Công cụ" đã có khối truy cập nhanh riêng ở trên (details.group/tools) — bỏ qua ở đây để
+            khỏi lặp lại y hệt 10 mục con 2 lần trong cùng 1 menu (anh Công báo mobile lộn xộn). */}
+        {navWithChildren.filter((item) => item.label !== "Công cụ").map((item) => (
           <div>
             <a href={item.href} class="block rounded-(--radius-control) px-3 py-2.5 text-sm font-medium text-(--color-ink-800) hover:bg-(--color-ivory-200)">
               {item.label}
