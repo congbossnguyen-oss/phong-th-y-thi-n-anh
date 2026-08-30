@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { BatTrachNha } from "@thien-anh/rule-engine";
-import { nienTinhNhapTrung } from "../../lib/huyen-khong-phi-tinh/engine";
+import { nienTinhNhapTrung, nguyetTinhNhapTrung } from "../../lib/huyen-khong-phi-tinh/engine";
 
 export const prerender = false;
 
@@ -86,11 +86,18 @@ export const GET: APIRoute = async ({ url }) => {
 
     const namCanXemRaw = p.get("namCanXem");
     const namCanXem = namCanXemRaw !== null ? Number(namCanXemRaw) : null;
-    // Niên Tinh nhập trung KHÔNG tự tính trong package (nguyên tắc bao-trùm) — lấy từ engine
-    // huyen-khong-phi-tinh đã có sẵn trên site, truyền số sao vào luanLuuNien.
+    // Nguyệt Tinh (tùy chọn, cần cả năm lẫn tháng âm lịch — data/08 "Nguyệt Tinh của từng tháng").
+    const thangAmXemRaw = p.get("thangAmXem");
+    const thangAmXem = thangAmXemRaw !== null ? Number(thangAmXemRaw) : null;
+    // Niên Tinh/Nguyệt Tinh nhập trung KHÔNG tự tính trong package (nguyên tắc bao-trùm) — lấy từ
+    // engine huyen-khong-phi-tinh đã có sẵn trên site, truyền số sao vào luanLuuNien.
+    const saoThang =
+      namCanXem !== null && thangAmXem !== null && Number.isInteger(thangAmXem) && thangAmXem >= 1 && thangAmXem <= 12
+        ? nguyetTinhNhapTrung(namCanXem, thangAmXem)
+        : undefined;
     const luuNien =
       namCanXem !== null && Number.isInteger(namCanXem)
-        ? BatTrachNha.luanLuuNien(namSinh, namCanXem, toiThieu.cungMenh, nienTinhNhapTrung(namCanXem))
+        ? BatTrachNha.luanLuuNien(namSinh, namCanXem, toiThieu.cungMenh, nienTinhNhapTrung(namCanXem), saoThang)
         : null;
 
     return jsonResponse({ toiThieu, tamYeu, xuyenCung, luuNien, config }, 200);

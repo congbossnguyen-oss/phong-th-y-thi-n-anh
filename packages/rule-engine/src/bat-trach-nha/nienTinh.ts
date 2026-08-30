@@ -51,3 +51,13 @@ export function tinhNienTinhHopMenh(cungMenh: CungBatTrach, saoNamNay: number): 
   const khi = getKhiBatTrach(cungMenh, cungSao);
   return { apDung: true, saoNamNay, cungSao, khi, tenKhi: KHI_BAT_TRACH_INFO[khi].ten, hop: KHI_BAT_TRACH_INFO[khi].cat };
 }
+
+/**
+ * "Xem tháng này nhà/tuổi này có hợp không" (Nguyệt Tinh) — CÙNG PHÉP TÍNH hệt Niên Tinh (data/08
+ * mục "Ứng dụng Niên Tinh/Nguyệt Tinh trong Bát Trạch": "Lập Cửu Cung Lạc Thư theo Niên Tinh (hoặc
+ * Nguyệt Tinh của từng tháng)... Phối Mệnh Cung Phi với Niên/Nguyệt Tinh → tra Du Niên" — cùng 1
+ * quy trình, chỉ khác nguồn sao đầu vào), nên gọi lại đúng hàm trên thay vì lặp logic. Caller tự
+ * lấy `saoThangNay` từ `nguyetTinhNhapTrung(nam, thangAm)` của engine `huyen-khong-phi-tinh`
+ * (nguyên tắc bao-trùm, giống hệt cách lấy `saoNamNay`).
+ */
+export const tinhNguyetTinhHopMenh = tinhNienTinhHopMenh;

@@ -110,8 +110,16 @@ import Container from "../../components/ui/Container.astro";
         Xem 1 năm cụ thể có Thái Tuế/Tuế Phá/Đô Thiên đóng ở phương định động không, và năm đó có hợp với mệnh gia chủ không (Niên Tinh).
       </summary>
       <div class="border-t border-(--color-ivory-300) p-4">
-        <label for="bt-nam-xem" class="text-xs font-medium text-(--color-ink-600)">Năm cần xem</label>
-        <input type="number" id="bt-nam-xem" min="1900" max="2100" class="mt-1 w-32 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2 text-sm text-(--color-ink-800)" />
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="bt-nam-xem" class="text-xs font-medium text-(--color-ink-600)">Năm cần xem</label>
+            <input type="number" id="bt-nam-xem" min="1900" max="2100" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2 text-sm text-(--color-ink-800)" />
+          </div>
+          <div>
+            <label for="bt-thang-am-xem" class="text-xs font-medium text-(--color-ink-600)">Tháng ÂM lịch (tùy chọn, xem thêm Nguyệt Tinh)</label>
+            <input type="number" id="bt-thang-am-xem" min="1" max="12" placeholder="1-12" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2 text-sm text-(--color-ink-800)" />
+          </div>
+        </div>
         <div id="bt-ket-qua-nam" class="mt-3 hidden space-y-2"></div>
       </div>
     </details>
@@ -168,6 +176,7 @@ import Container from "../../components/ui/Container.astro";
     thaiTue: { nam: number; namChi: string; thaiTueCung: string; tuePhaCung: string; tamSatCung: string };
     doThien: { canNamSinh: string; sonDoThien: [string, string] };
     nienTinh: KetQuaNienTinh | null;
+    nguyetTinh: KetQuaNienTinh | null;
   }
   interface ApiResponse {
     toiThieu: KetQuaToiThieu;
@@ -212,6 +221,7 @@ import Container from "../../components/ui/Container.astro";
 
   const accordionNam = elId<HTMLDetailsElement>("bt-accordion-nam");
   const namXemInput = elId<HTMLInputElement>("bt-nam-xem");
+  const thangAmXemInput = elId<HTMLInputElement>("bt-thang-am-xem");
   const ketQuaNamEl = elId<HTMLDivElement>("bt-ket-qua-nam");
 
   const ctaTuVanEl = elId<HTMLDivElement>("bt-cta-tu-van");
@@ -410,11 +420,17 @@ import Container from "../../components/ui/Container.astro";
         ? `<p class="mt-1.5">Niên Tinh nhập trung năm ${r.thaiTue.nam} là sao ${r.nienTinh.saoNamNay} (cung ${r.nienTinh.cungSao}) — với mệnh: <strong>${r.nienTinh.tenKhi}</strong> → ${nhanHop(!!r.nienTinh.hop)}.</p>`
         : `<p class="mt-1.5 text-(--color-ink-500)">${r.nienTinh.ghiChu}</p>`
       : "";
+    const nguyetTinhHtml = r.nguyetTinh
+      ? r.nguyetTinh.apDung
+        ? `<p class="mt-1.5">Nguyệt Tinh nhập trung tháng đã chọn là sao ${r.nguyetTinh.saoNamNay} (cung ${r.nguyetTinh.cungSao}) — với mệnh: <strong>${r.nguyetTinh.tenKhi}</strong> → ${nhanHop(!!r.nguyetTinh.hop)}.</p>`
+        : `<p class="mt-1.5 text-(--color-ink-500)">${r.nguyetTinh.ghiChu}</p>`
+      : "";
     ketQuaNamEl.innerHTML = `
       <div class="rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200) p-4 text-sm">
         <p>Năm ${r.thaiTue.nam} (${r.thaiTue.namChi}): Thái Tuế tại <strong>${r.thaiTue.thaiTueCung}</strong>, Tuế Phá tại <strong>${r.thaiTue.tuePhaCung}</strong>, Tam Sát tại <strong>${r.thaiTue.tamSatCung}</strong>.</p>
         <p class="mt-1.5">Đô Thiên (theo Can năm sinh ${r.doThien.canNamSinh}): tại 2 sơn <strong>${r.doThien.sonDoThien.join(", ")}</strong>.</p>
         ${nienTinhHtml}
+        ${nguyetTinhHtml}
         <p class="mt-2 text-xs text-(--color-ink-500)">Nếu định động thổ/sửa chữa ở đúng các phương/sơn trên trong năm này, nên tránh hoặc chọn thời điểm khác.</p>
       </div>
     `;
@@ -466,8 +482,9 @@ import Container from "../../components/ui/Container.astro";
     if (bepSelect.value) p.set("bepCung", HUONG_TOI_CUNG[bepSelect.value]!);
     if (soTangInput.value) p.set("soTang", soTangInput.value);
     if (namXemInput.value) p.set("namCanXem", namXemInput.value);
+    if (namXemInput.value && thangAmXemInput.value) p.set("thangAmXem", thangAmXemInput.value);
 
-    localStorage.setItem("bat-trach-nha-input", JSON.stringify({ namSinh, gioiTinh: gioiTinhEl.value, huongKieu, huong8: huong8Select.value, huongDo: huongDoInput.value, cua: cuaSelect.value, chu: chuSelect.value, bep: bepSelect.value, soTang: soTangInput.value, namXem: namXemInput.value }));
+    localStorage.setItem("bat-trach-nha-input", JSON.stringify({ namSinh, gioiTinh: gioiTinhEl.value, huongKieu, huong8: huong8Select.value, huongDo: huongDoInput.value, cua: cuaSelect.value, chu: chuSelect.value, bep: bepSelect.value, soTang: soTangInput.value, namXem: namXemInput.value, thangAmXem: thangAmXemInput.value }));
 
     dangGoi = true;
     try {
@@ -512,7 +529,7 @@ import Container from "../../components/ui/Container.astro";
     }
   }
 
-  for (const el of [namSinhInput, huong8Select, huongDoInput, cuaSelect, chuSelect, bepSelect, soTangInput, namXemInput]) {
+  for (const el of [namSinhInput, huong8Select, huongDoInput, cuaSelect, chuSelect, bepSelect, soTangInput, namXemInput, thangAmXemInput]) {
     el.addEventListener("input", () => void guiForm());
     el.addEventListener("change", () => void guiForm());
   }
@@ -537,6 +554,7 @@ import Container from "../../components/ui/Container.astro";
       if (d.bep) bepSelect.value = d.bep;
       if (d.soTang) soTangInput.value = d.soTang;
       if (d.namXem) namXemInput.value = d.namXem;
+      if (d.thangAmXem) thangAmXemInput.value = d.thangAmXem;
       if (d.namSinh) void guiForm();
     } else {
       namXemInput.value = String(new Date().getFullYear());
