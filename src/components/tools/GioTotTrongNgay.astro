@@ -7,10 +7,18 @@
 // Dịch) qua query string year/month/day/purpose — giữ nguyên hành vi tự đọc URLSearchParams và tự
 // submit khi có đủ ngày.
 //
-// Không có CTA nâng cấp cuối trang (bản gốc trên web cũng không có) nên không cần phân biệt
-// web/app ở đây.
+// CTA cuối trang mời nâng cấp KHÁC NHAU giữa web/app (anh Công 29/8/2026: 2 nhánh tính tiền khác
+// nhau — web bán lẻ từng công cụ, app bán thuê bao) — `laApp` chọn đúng component.
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
+import GoiYNangCap from "../../components/ui/GoiYNangCap.astro";
+import GoiYNangCapApp from "../../components/quan-su/GoiYNangCapApp.astro";
+
+interface Props {
+  /** true = hiện app Quân Sư (mời nâng cấp gói Cao Cấp) thay vì mời mua lẻ như bản web. */
+  laApp?: boolean;
+}
+const { laApp = false } = Astro.props;
 ---
 
 <Container class="py-16">
@@ -53,6 +61,11 @@ import Button from "../../components/ui/Button.astro";
       <div id="gio-tot-list" class="mt-3 space-y-1.5"></div>
     </div>
   </div>
+  {laApp ? (
+    <GoiYNangCapApp lyDo="Giờ tốt ở trên là giờ tốt chung cho mọi người. Dịch vụ Cao Cấp chọn giờ hợp riêng với tuổi và hướng nhà của gia chủ." tieuDe="Muốn giờ hợp riêng với mình?" />
+  ) : (
+    <GoiYNangCap slug="xem-ngay-cao-cap" lyDo="Giờ tốt ở trên là giờ tốt chung cho mọi người. Bản Cao Cấp chọn giờ hợp riêng với tuổi và hướng nhà của gia chủ." nhanNut="Xem Ngày Cao Cấp" tieuDe="Muốn giờ hợp riêng với mình?" />
+  )}
 </Container>
 
 <script>
