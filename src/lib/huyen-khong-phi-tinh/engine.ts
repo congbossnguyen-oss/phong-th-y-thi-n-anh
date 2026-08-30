@@ -784,6 +784,7 @@ export interface ChinhLinhThanResult {
   quy_tac_linh_than: string;
   chieu_than_cung: string;
   chieu_than_so: number | null;
+  quy_tac_chieu_than: string;
 }
 
 /** Chính Thần / Linh Thần / Chiếu Thần của vận + quy tắc bố trí thủy. */
@@ -801,6 +802,13 @@ export function chinhLinhThan(van: number): ChinhLinhThanResult {
       "Sơn tinh không nên đoạt Linh Thần.",
     chieu_than_cung: cht !== null ? CUNG_INFO[cht].ten : "Vận 5: 10 năm đầu Ngọ/Đinh, sau Tý/Quý",
     chieu_than_so: cht,
+    // i-thu-son-xuat-sat-cua-chinh-duong-khi.md mục 4.5: Chiếu Thần cũng là phương THỦY, có nước ở
+    // đây để "thúc cát" (tăng cường thêm cát khí) — PHỤ TRỢ cho Linh Thần, không phải chính. Nguồn tự
+    // ghi câu này hơi mờ/mâu thuẫn (OCR) nên coi là thứ yếu: ưu tiên bố trí Linh Thần (chính cát)
+    // trước, Chiếu Thần chỉ dùng để hỗ trợ thêm khi có điều kiện.
+    quy_tac_chieu_than: "PHỤ TRỢ cho Linh Thần — CÓ NƯỚC ở đây cũng tốt (dùng để 'thúc cát', tăng " +
+      "cường thêm cát khí), nhưng là thứ yếu. Ưu tiên bố trí Linh Thần trước; Chiếu Thần chỉ dùng " +
+      "hỗ trợ thêm. (Nguồn ghi phần này hơi mờ — xem là tham khảo.)",
   };
 }
 
