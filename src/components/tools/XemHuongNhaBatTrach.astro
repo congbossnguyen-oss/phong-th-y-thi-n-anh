@@ -409,6 +409,25 @@ import Container from "../../components/ui/Container.astro";
   }
 
   function renderTamYeu(r: KetQuaTamYeu) {
+    // Dịch trạng thái sinh khắc Cung–Sao sang tiếng Việt dễ hiểu (thay vì slug kỹ thuật). "đồng
+    // đạo" + "không tương khắc" đều là KHÔNG có khắc gây hại; 2 loại "khắc" mới là hung.
+    const SINH_KHAC_LABEL: Record<string, { chu: string; hung: boolean }> = {
+      "dong-dao": { chu: "hòa hợp âm dương, không phát sinh khắc", hung: false },
+      "khong-tuong-khac": { chu: "không phát sinh khắc (bình thường)", hung: false },
+      "sao-khac-cung": { chu: "Sao khắc Cung (ngoại chiến) — hung nhẹ", hung: true },
+      "cung-khac-sao": { chu: "Cung khắc Sao (nội khắc) — hung nặng", hung: true },
+    };
+    // "phương án B" = luận riêng cặp này (đúng ngữ cảnh Cửa–Chủ/Cửa–Bếp) → lấy làm chính. "phương
+    // án A" = xét trên tổng thể cả nhà → chỉ nêu thêm khi kết luận CÓ/KHÔNG khắc lệch với B.
+    const dongSinhKhac = (nhan: string, sk: { phuongAnA: string; phuongAnB: string; lech: boolean }): string => {
+      const b = SINH_KHAC_LABEL[sk.phuongAnB] ?? { chu: sk.phuongAnB, hung: false };
+      const a = SINH_KHAC_LABEL[sk.phuongAnA] ?? { chu: sk.phuongAnA, hung: false };
+      const mau = b.hung ? "text-(--color-cinnabar-500)" : "text-(--color-success-500)";
+      // Chỉ nhắc "xét tổng thể cả nhà" khi kết luận tốt/xấu thực sự khác nhau (tránh gây rối khi 2
+      // cách chỉ khác cách gọi nhưng cùng là "không có khắc").
+      const themTongThe = sk.lech && a.hung !== b.hung ? ` <span class="text-(--color-ink-400)">(xét trên tổng thể cả nhà thì: ${a.chu})</span>` : "";
+      return `<p class="mt-1.5">${nhan}: <strong class="${mau}">${b.chu}</strong>${themTongThe}.</p>`;
+    };
     const dgLabel: Record<string, string> = {
       "dai-cat": "Đại cát",
       "tot-kem-mot-bac": "Tốt (kém 1 bậc)",
@@ -438,9 +457,10 @@ import Container from "../../components/ui/Container.astro";
       </div>
       ${batCungHtml}
       <div class="rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200) p-4 text-xs text-(--color-ink-600)">
-        <p class="font-semibold text-(--color-ink-800)">Sinh khắc Cung–Sao (đọc thêm, dùng cả 2 phương án theo ngữ cảnh — data/00 MĐ-2):</p>
-        <p class="mt-1">Chủ: phương án A (đánh giá tổng thể) = ${r.sinhKhacChu.phuongAnA}; phương án B (luận cặp cụ thể) = ${r.sinhKhacChu.phuongAnB}${r.sinhKhacChu.lech ? " ⚠️ lệch nhau" : ""}.</p>
-        <p class="mt-1">Bếp: phương án A = ${r.sinhKhacBep.phuongAnA}; phương án B = ${r.sinhKhacBep.phuongAnB}${r.sinhKhacBep.lech ? " ⚠️ lệch nhau" : ""}.</p>
+        <p class="font-semibold text-(--color-ink-800)">Sinh khắc Cung–Sao (phân tích sâu)</p>
+        <p class="mt-1 text-(--color-ink-500)">Xét sao Du Niên đóng tại cung có bị Cung/Sao khắc lẫn nhau không — nếu có khắc thì dù khí vốn tốt vẫn giảm cát, khí xấu thì nặng thêm.</p>
+        ${dongSinhKhac("Cửa ↔ Chủ", r.sinhKhacChu)}
+        ${dongSinhKhac("Cửa ↔ Bếp", r.sinhKhacBep)}
       </div>
     `;
     ketQuaTamYeuEl.classList.remove("hidden");
