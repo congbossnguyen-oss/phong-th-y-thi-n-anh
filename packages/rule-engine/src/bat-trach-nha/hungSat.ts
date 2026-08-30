@@ -1,7 +1,16 @@
 /**
- * BÁT TRẠCH NHÀ — Hoàng Tuyền + Bát Sát (hung sát đặc biệt theo hướng nhà, tầng Cao Cấp).
+ * BÁT TRẠCH NHÀ — Hoàng Tuyền + Bát Sát (hung sát đặc biệt, tầng Cao Cấp).
  * Nguồn: gói build `data/05-hung-sat-cao-cap.md`. Cần độ số chính xác tới sơn 15° — KHÔNG dùng
  * số la bàn điện thoại chưa hiệu chỉnh (data/03).
+ *
+ * ⚠️ HAI SÁT NÀY LẤY MỐC KHÁC NHAU (anh Công đính chính 30/8/2026 — trước đó cả hai đều lấy Hướng,
+ * làm Bát Sát ra NGƯỢC):
+ * - **Hoàng Tuyền (Tứ Lộ Hoàng Tuyền, theo Can/Duy)** — theo **HƯỚNG** nhà. Khẩu quyết cổ dùng chữ
+ *   "hướng" ("Canh Đinh Khôn HƯỚNG thị Hoàng Tuyền..."), và data/05 mục 1 cũng ghi cột "Hướng nhà".
+ * - **Bát Sát (Tọa Sơn Bát Sát, theo con giáp)** — theo **TỌA** nhà (= trạch), KHÔNG theo hướng.
+ *   Khẩu quyết cổ: "Khảm long, Khôn thỏ, Chấn sơn hầu, Tốn kê, Càn mã, Đoài xà đầu, Cấn hổ, Ly trư"
+ *   — mỗi mục là 1 TRẠCH (tọa) ứng 1 con giáp. VD nhà **tọa Bắc (Khảm)** hướng Nam → Bát Sát tại
+ *   **Thìn** (Long/rồng), KHÔNG phải Hợi (con giáp của Ly/hướng Nam).
  *
  * ⚠️ Nghi vấn số liệu Hoàng Tuyền (ghi vào GHI-CHU-CAN-CHU-SITE-XEM.md): data/05 liệt kê dòng
  * "Tốn | Bính" (chỉ 1 sơn) nhưng dòng đối xứng "Ất, Bính | Tốn" lại liệt kê 2 sơn — không đối
@@ -10,10 +19,11 @@
  * nhóm kia — KHÔNG tự bịa số liệu mới, chỉ chọn giữa 2 dòng đã có sẵn trong chính data/05.
  */
 import type { CungBatTrach } from "../cung-menh-bat-trach/cungPhi.js";
-import { doToCung, doToSon, type Son24 } from "./toaHuong.js";
+import { doToCung, doToSon, huongToToa, type Son24 } from "./toaHuong.js";
 
 // -----------------------------------------------------------------------------------------------
-// Hoàng Tuyền (Tứ Lộ Hoàng Tuyền) — chỉ ở 8 Thiên Can + 4 Duy (Càn/Khôn/Cấn/Tốn), KHÔNG ở 12 Địa Chi.
+// Hoàng Tuyền (Tứ Lộ Hoàng Tuyền) — theo HƯỚNG. Chỉ ở 8 Thiên Can + 4 Duy (Càn/Khôn/Cấn/Tốn),
+// KHÔNG ở 12 Địa Chi.
 // -----------------------------------------------------------------------------------------------
 const HOANG_TUYEN_NHOM: readonly { son: readonly Son24[]; canhBao: string }[] = [
   { son: ["Khôn", "Canh", "Đinh"], canhBao: "Tứ Lộ Hoàng Tuyền nhóm Khôn — kỵ đặt cổng/đường nước tại Khôn ↔ Canh/Đinh." },
@@ -46,9 +56,11 @@ export function kiemHoangTuyen(sonHuong: Son24): KetQuaHoangTuyen {
 }
 
 // -----------------------------------------------------------------------------------------------
-// Bát Sát (theo hướng nhà — 8 cung, mỗi cung 1 sơn phạm cụ thể trong 24 sơn). Data/05 mục 2.
+// Bát Sát (Tọa Sơn Bát Sát) — theo TỌA nhà (trạch), mỗi trạch 1 sơn phạm cụ thể trong 24 sơn.
+// Data/05 mục 2. Bảng số (Khảm→Thìn, Ly→Hợi...) khớp khẩu quyết con giáp cổ; điểm SỬA 30/8/2026 là
+// tra theo TỌA thay vì Hướng (trước đây tra nhầm theo Hướng → ra ngược).
 // -----------------------------------------------------------------------------------------------
-const BAT_SAT_THEO_CUNG: Record<CungBatTrach, { sonPham: Son24; anhHuong: string }> = {
+const BAT_SAT_THEO_TRACH: Record<CungBatTrach, { sonPham: Son24; anhHuong: string }> = {
   Khảm: { sonPham: "Thìn", anhHuong: "Bệnh tật, vợ chồng bất hòa" },
   Ly: { sonPham: "Hợi", anhHuong: "Nói xấu nhau, khó chăn nuôi" },
   Chấn: { sonPham: "Thân", anhHuong: "Dễ nghiện, gặp tai họa" },
@@ -60,15 +72,16 @@ const BAT_SAT_THEO_CUNG: Record<CungBatTrach, { sonPham: Son24; anhHuong: string
 };
 
 export interface KetQuaBatSat {
-  cungHuong: CungBatTrach;
+  /** Cung TỌA nhà (trạch) — mốc để tra Bát Sát (KHÔNG phải cung hướng). */
+  cungToa: CungBatTrach;
   sonPham: Son24;
   anhHuong: string;
 }
 
-/** Kiểm Bát Sát theo cung của HƯỚNG nhà (data/05 mục 2) — luôn áp dụng, đủ 8/8 cung. */
-export function kiemBatSat(cungHuong: CungBatTrach): KetQuaBatSat {
-  const r = BAT_SAT_THEO_CUNG[cungHuong];
-  return { cungHuong, sonPham: r.sonPham, anhHuong: r.anhHuong };
+/** Kiểm Bát Sát theo cung TỌA nhà (trạch) — data/05 mục 2, luôn áp dụng, đủ 8/8 trạch. */
+export function kiemBatSat(cungToa: CungBatTrach): KetQuaBatSat {
+  const r = BAT_SAT_THEO_TRACH[cungToa];
+  return { cungToa, sonPham: r.sonPham, anhHuong: r.anhHuong };
 }
 
 export interface HungSatDacBiet {
@@ -76,12 +89,14 @@ export interface HungSatDacBiet {
   batSat: KetQuaBatSat;
 }
 
-/** Tổng hợp Hoàng Tuyền + Bát Sát từ độ số HƯỚNG nhà. */
+/**
+ * Tổng hợp từ độ số HƯỚNG nhà: Hoàng Tuyền tra theo HƯỚNG, Bát Sát tra theo TỌA (= hướng + 180°).
+ */
 export function tinhHungSatDacBiet(huongDo: number): HungSatDacBiet {
   const sonHuong = doToSon(huongDo);
-  const cungHuong = doToCung(huongDo);
+  const cungToa = doToCung(huongToToa(huongDo));
   return {
     hoangTuyen: kiemHoangTuyen(sonHuong),
-    batSat: kiemBatSat(cungHuong),
+    batSat: kiemBatSat(cungToa),
   };
 }
