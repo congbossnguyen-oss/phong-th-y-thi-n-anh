@@ -103,6 +103,11 @@ const DUNG_THAN_BY_CATEGORY: Record<CategoryId, DungThanHint> = {
     ref: "ENGINE_INTEGRATION.md §5 (trachnhat-engine)",
     note: "KHÔNG gieo quẻ — dùng trach-nhat. Không nên gọi lớp Kinh Dịch cho nhóm này.",
   },
+  "cau-hoi-khac": {
+    kind: "framework",
+    ref: "QUY_TRINH_LUC_HAO_LUAN.md §1.1 (dòng cuối — việc lạ, ít gặp)",
+    note: "Việc không thuộc nhóm chuẩn nào — Dụng Thần phải tự suy theo bản chất câu hỏi cụ thể (tra theo nguyên tắc suy luận tương tự), không có sẵn 1 Lục Thân cố định. Chưa chắc chắn thì phải nói rõ, không đoán bừa.",
+  },
   "quyet-dinh": {
     kind: "framework",
     ref: "LUAN_QUE_LUC_HAO_SPEC.md §4.9",

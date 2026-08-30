@@ -8,7 +8,7 @@
 // và luôn chạy — vì vậy KHÔNG nằm trong `recommended_engines` (đó chỉ là các engine NGỮ CẢNH tùy chọn:
 // Bát Tự / Tử Vi đưa sơ đồ vận trình, Trạch Nhật chọn ngày giờ).
 
-/** Nhóm vấn đề (15 nhóm). Xem categories.ts để biết tiêu đề/thứ tự hiển thị. */
+/** Nhóm vấn đề (16 nhóm). Xem categories.ts để biết tiêu đề/thứ tự hiển thị. */
 export type CategoryId =
   | "su-nghiep"
   | "kinh-doanh"
@@ -24,7 +24,8 @@ export type CategoryId =
   | "suc-khoe"
   | "xuat-hanh"
   | "chon-ngay-gio"
-  | "quyet-dinh";
+  | "quyet-dinh"
+  | "cau-hoi-khac"; // việc lạ/ít gặp không thuộc nhóm nào ở trên — khách tự gõ câu hỏi (quy trình §1.1, dòng cuối)
 
 /**
  * Engine NGỮ CẢNH tùy chọn (không gồm Kinh Dịch — Kinh Dịch là divination_method, luôn chạy).

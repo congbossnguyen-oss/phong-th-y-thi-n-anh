@@ -73,4 +73,11 @@ describe("Orchestrator — chạy đầu-cuối", () => {
     const r = await runQuanSu({ question_id: "xu-huong-suc-khoe", tosses: TOSSES, ngaySinh: NGAY_SINH, boQuaAI: true });
     expect(r.vanTrinh).not.toBeNull();
   });
+
+  it("nhóm 'Câu hỏi khác' (khách tự gõ, không thuộc nhóm chuẩn) vẫn chạy đủ luồng, chấm theo Hào Thế (framework)", async () => {
+    const r = await runQuanSu({ question_id: "cau-hoi-tu-do", tosses: TOSSES, boQuaAI: true, moTa: "Có nên cho hàng xóm mượn đất không?" });
+    expect(r.question.category).toBe("cau-hoi-khac");
+    expect(VERDICTS).toContain(r.report.ketLuan);
+    expect(r.report.luanGiaiChiTiet).toContain("Hào Thế");
+  });
 });

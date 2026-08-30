@@ -117,6 +117,15 @@ export const categories: CategoryDefinition[] = [
     subtitle: "A hay B, tiến hay lui, làm ngay hay chờ, tiếp tục hay dừng.",
     order: 15,
   },
+  {
+    id: "cau-hoi-khac",
+    title: "Câu hỏi khác",
+    icon: "❓",
+    subtitle: "Không thấy đúng nhóm mình cần? Anh/chị tự gõ câu hỏi, Quân Sư vẫn gieo quẻ luận giúp.",
+    order: 16,
+    notice:
+      "Việc lạ/ít gặp không có sẵn công thức chuẩn — Quân Sư luận theo nguyên tắc suy luận tương tự, chỗ nào chưa chắc chắn sẽ nói rõ thay vì đoán bừa.",
+  },
 ];
 
 const categoryById = new Map(categories.map((c) => [c.id, c]));

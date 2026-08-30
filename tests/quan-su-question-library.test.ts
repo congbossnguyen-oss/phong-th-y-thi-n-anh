@@ -21,8 +21,8 @@ const PRICING = new Set(["co-ban", "nang-cao", "cao-cap"]);
 const SAFETY = new Set(["thuong", "nhay-cam", "cao"]);
 
 describe("Question Library — cấu trúc nhóm", () => {
-  it("có đúng 15 nhóm, id không trùng, order không trùng", () => {
-    expect(categories).toHaveLength(15);
+  it("có đúng 16 nhóm, id không trùng, order không trùng", () => {
+    expect(categories).toHaveLength(16);
     const ids = categories.map((c) => c.id);
     expect(new Set(ids).size).toBe(ids.length);
     const orders = categories.map((c) => c.order);
