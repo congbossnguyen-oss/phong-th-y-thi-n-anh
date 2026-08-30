@@ -1,16 +1,17 @@
 # Module Huyền Không Phi Tinh
 
-Trạng thái (30/8/2026, chốt cuối ngày): **TOÀN BỘ module (Free lẫn AI) chỉ tài khoản quản trị xem
-được** — công cụ tính toán riêng của anh Công, không phải sản phẩm cho khách. KHÔNG đăng ký ở
-`site-config.ts` / `dai-cat-loi-tools.ts`, chỉ vào được qua URL trực tiếp lúc đã đăng nhập admin.
-URL: `/dai-cat-loi/huyen-khong-phi-tinh`.
+Trạng thái (30/8/2026, chốt cuối ngày): **phần Free CÔNG KHAI** (đăng ký ở `site-config.ts` mục
+Công cụ). **Phần AI (luận chi tiết) vẫn chỉ admin gọi được** — chưa chốt giá, chưa mở khách. URL:
+`/dai-cat-loi/huyen-khong-phi-tinh`.
 
 Lịch sử đổi trạng thái trong ngày (chỉ để tham khảo, đừng suy ra pattern — đây là quyết định thủ
-công của anh Công từng lúc, không phải quy tắc tự động): mở công khai → khoá admin-only (gặp lỗi
-session/IP khiến chính anh Công cũng không vào được lúc đó) → mở công khai lại → lỗi session/IP đã
-được vá (xem `fix(auth)` "nới lỏng khóa IP phiên đăng nhập cho IPv6 di động") → **khoá admin-only
-lần cuối trong ngày** (chốt hiện tại). Nếu cần mở lại, xem mục "Nếu sau này muốn mở công khai lại"
-bên dưới.
+công của anh Công từng lúc, không phải quy tắc tự động, và có lúc đổi qua lại trong lúc đang debug
+lỗi session/IP): mở công khai → khoá admin-only → mở công khai lại → khoá admin-only lần 2 (lúc
+này vẫn còn gặp lỗi session/IP khiến chính anh Công không vào được, dù đã tưởng vá xong) → phát
+hiện + vá nốt nguyên nhân thật (`getClientIp()` ưu tiên sai header trên hạ tầng Cloudflare — xem
+`fix(auth)` "ưu tiên clientAddress thay vì X-Forwarded-For") → **anh Công yêu cầu undo về trạng
+thái công khai** (chốt hiện tại, không phải do lỗi kỹ thuật lần này). Nếu cần khoá lại, xem mục
+"Nếu sau này muốn khoá lại" bên dưới.
 
 ## Cấu trúc
 
@@ -88,18 +89,19 @@ thuận, hóa giải/kích hoạt theo 81 cặp sao, Thu Sơn Xuất Sát/Chính
 | Lớp | Chạy bằng | Chi phí |
 |---|---|---|
 | Engine tính (`engine.ts`) | TypeScript thuần, SSR | 0đ |
-| Form + kết quả Free | Astro SSR đọc engine trực tiếp, gate `isAdmin` ở cả trang | 0đ |
+| Form + kết quả Free | Astro SSR đọc engine trực tiếp, CÔNG KHAI | 0đ |
 | Luận AI chi tiết (`luan-ai.ts`) | DeepSeek qua `goi-ai.ts`, chỉ admin gọi | có phí AI, nhưng gate `isAdmin` ở cả UI lẫn route nên khách không gọi được → không phát sinh chi phí ngoài ý muốn |
 
-Trạng thái (30/8/2026, chốt cuối ngày): toàn bộ trang (Free + AI) chỉ admin xem/gọi được —
-`HuyenKhongPhiTinh.astro` gate cả trang bằng `laQuanTri`, route `luan-ai.ts` tự kiểm `isAdmin`
-thêm 1 lớp (403 nếu không). Chưa có giá trong `gia-cong-cu.ts`, chưa có checkout/order.
+Trạng thái (30/8/2026, chốt cuối ngày): trang Free công khai đăng ký ở `site-config.ts`, nút "Xem
+luận AI" chỉ hiện khi đăng nhập admin (`HuyenKhongPhiTinh.astro`) và route `luan-ai.ts` tự kiểm
+`isAdmin` lần nữa (403 nếu không). Chưa có giá trong `gia-cong-cu.ts`, chưa có checkout/order cho
+phần AI.
 
-## Nếu sau này muốn mở công khai lại (đã từng làm nhiều lần trong ngày 30/8/2026)
+## Nếu sau này muốn khoá lại chỉ admin xem (đã từng làm 2 lần trong ngày 30/8/2026)
 
-1. Bỏ điều kiện `{!laQuanTri ? (...) : (<>...)}` bọc toàn bộ nội dung trong
-   `HuyenKhongPhiTinh.astro`, chỉ giữ lại phần nội dung bên trong nhánh admin.
-2. Đăng ký lại vào `site-config.ts` mục Công cụ.
+1. Bọc lại toàn bộ nội dung trong `<Container>...</Container>` của `HuyenKhongPhiTinh.astro` bằng
+   `{!laQuanTri ? (<div>...khoá...</div>) : (<>...nội dung hiện tại...</>)}`.
+2. Gỡ dòng "Xem phong thủy nhà (Huyền Không Phi Tinh)" khỏi `site-config.ts` mục Công cụ.
 
 ## Nếu sau này muốn mở AI cho khách (chưa có kế hoạch, chỉ ghi lại các bước)
 
