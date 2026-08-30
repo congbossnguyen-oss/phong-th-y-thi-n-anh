@@ -1,8 +1,11 @@
 # Module Huyền Không Phi Tinh
 
-Trạng thái (30/8/2026): **phần Free CÔNG KHAI** (đăng ký ở `site-config.ts` mục Công cụ, cùng mức
-mở như "Lập lá số Bát Tự"). **Phần AI (Trả Phí) đang test nội bộ, chỉ admin gọi được** — chưa chốt
-giá, chưa mở khách. URL: `/dai-cat-loi/huyen-khong-phi-tinh`.
+Trạng thái (30/8/2026, chốt cuối ngày): **TOÀN BỘ module (Free lẫn AI) chỉ tài khoản quản trị xem
+được**. Đây KHÔNG phải sản phẩm cho khách — anh Công: *"phần huyền không này em để chỉ admin nhìn
+thấy thôi, anh đang cần tính toán, và là công cụ của anh"*. Trong ngày module này từng có lúc mở
+công khai phần Free (theo yêu cầu trước đó để test), nhưng quyết định cuối cùng là khoá lại — không
+đăng ký ở `site-config.ts` / `dai-cat-loi-tools.ts`, chỉ vào được qua URL trực tiếp lúc đã đăng
+nhập admin. URL: `/dai-cat-loi/huyen-khong-phi-tinh`.
 
 ## Cấu trúc
 
@@ -80,21 +83,22 @@ thuận, hóa giải/kích hoạt theo 81 cặp sao, Thu Sơn Xuất Sát/Chính
 | Lớp | Chạy bằng | Chi phí |
 |---|---|---|
 | Engine tính (`engine.ts`) | TypeScript thuần, SSR | 0đ |
-| Form + kết quả Free | Astro SSR đọc engine trực tiếp, CÔNG KHAI | 0đ |
+| Form + kết quả Free | Astro SSR đọc engine trực tiếp, gate `isAdmin` ở cả trang | 0đ |
 | Luận AI chi tiết (`luan-ai.ts`) | DeepSeek qua `goi-ai.ts`, chỉ admin gọi | có phí AI, nhưng gate `isAdmin` ở cả UI lẫn route nên khách không gọi được → không phát sinh chi phí ngoài ý muốn |
 
-Trạng thái AI (30/8/2026): đã nối DeepSeek để **anh Công tự test**, KHÔNG phải đã mở bán — trang
-Free vẫn công khai đăng ký ở `site-config.ts`, nhưng nút "Xem luận AI" chỉ hiện khi đăng nhập admin
-(`HuyenKhongPhiTinh.astro`) và route `luan-ai.ts` tự kiểm `isAdmin` lần nữa (403 nếu không). Chưa có
-giá trong `gia-cong-cu.ts`, chưa có checkout/order — đây KHÔNG phải sản phẩm bán được, chỉ để xem
-chất lượng luận trước khi chốt giá.
+Trạng thái (30/8/2026, chốt cuối ngày): **toàn bộ trang (Free + AI) chỉ admin xem/gọi được** —
+đây là công cụ tính toán riêng của anh Công, không phải sản phẩm cho khách. `HuyenKhongPhiTinh.astro`
+gate cả trang bằng `laQuanTri`, route `luan-ai.ts` tự kiểm `isAdmin` thêm 1 lớp (403 nếu không).
+Chưa có giá trong `gia-cong-cu.ts`, chưa có checkout/order.
 
-## Mở cho khách (khi chốt giá)
+## Nếu sau này muốn mở cho khách (chưa có kế hoạch, chỉ ghi lại các bước)
 
-1. Bỏ gate `isAdmin` ở nút "Xem luận AI" (`HuyenKhongPhiTinh.astro`) và ở route `luan-ai.ts`.
-2. Thêm giá vào `GIA_CONG_CU`, quyết định có cần checkout/order (theo mẫu `taoDonCongCu`) hay giữ
+1. Bỏ gate `laQuanTri` chặn toàn trang ở `HuyenKhongPhiTinh.astro` (và gate `isAdmin` ở nút "Xem
+   luận AI" + route `luan-ai.ts` nếu muốn mở luôn cả AI).
+2. Đăng ký lại vào `site-config.ts` mục Công cụ (đã gỡ khi khoá lại 30/8/2026).
+3. Thêm giá vào `GIA_CONG_CU`, quyết định có cần checkout/order (theo mẫu `taoDonCongCu`) hay giữ
    nguyên kiểu gọi trực tiếp — tùy mô hình bán (theo lượt hay theo gói thuê bao Quân Sư).
-3. Cân nhắc thêm `MODULE_KHOA_THU_NGHIEM` nếu muốn có giai đoạn thử nghiệm giới hạn trước khi mở
+4. Cân nhắc thêm `MODULE_KHOA_THU_NGHIEM` nếu muốn có giai đoạn thử nghiệm giới hạn trước khi mở
    hẳn, theo đúng tiền lệ `luan-giai-tu-vi`/`luan-giai-bat-tu-toan-dien`.
-4. Đăng ký tool trong `src/lib/dai-cat-loi-tools.ts` (`paidTools`) nếu muốn hiện thêm ở
-   `/dai-cat-loi/dich-vu-thu-phi` (không bắt buộc — trang đã có link công khai ở `site-config.ts`).
+5. Đăng ký tool trong `src/lib/dai-cat-loi-tools.ts` (`paidTools`) nếu muốn hiện thêm ở
+   `/dai-cat-loi/dich-vu-thu-phi`.
