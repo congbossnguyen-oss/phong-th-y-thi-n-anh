@@ -34,6 +34,20 @@ const navWithChildren = mainNav.map((item) => {
 // Nay lấy thẳng từ mainNav để đồng bộ tuyệt đối, không bao giờ drift nữa.
 const congCuChildren = mainNav.find((item) => item.label === "Công cụ")?.children ?? [];
 const BADGE_BEST = ["/luan-so-dien-thoai", "/dai-cat-loi/dinh-huong-nghe-nghiep"];
+
+// Gom các mục con liền kề có cùng `group` (vd "Phong thủy chính phái") thành 1 khối có tiêu đề
+// phụ, giữ nguyên thứ tự khai báo trong site-config.ts — mục không có `group` thì đứng riêng lẻ.
+type NavChild = { label: string; href: string; group?: string };
+function groupChildren(children: NavChild[]) {
+  const out: { group: string | null; items: NavChild[] }[] = [];
+  for (const c of children) {
+    const g = c.group ?? null;
+    const last = out[out.length - 1];
+    if (last && last.group === g) last.items.push(c);
+    else out.push({ group: g, items: [c] });
+  }
+  return out;
+}
 ---
 
 <header class="sticky top-0 z-40 border-b border-(--color-ivory-300) bg-(--color-ivory-50)/95">
@@ -118,19 +132,26 @@ const BADGE_BEST = ["/luan-so-dien-thoai", "/dai-cat-loi/dinh-huong-nghe-nghiep"
             <Icon name="chevron-down" class="size-4 text-(--color-ink-500) transition-transform group-open/tools:rotate-180" />
           </summary>
           <div class="flex flex-col gap-0.5 border-t border-(--color-ivory-300) p-2">
-            {congCuChildren.map((child) => (
-              <a
-                href={child.href}
-                class:list={[
-                  "rounded-(--radius-control) px-3 py-2.5 text-sm hover:bg-(--color-ivory-200)",
-                  child.label.startsWith("⭐") ? "font-medium text-(--color-gold-400)" : "text-(--color-ink-700)",
-                ]}
-              >
-                {child.label}
-                {BADGE_BEST.includes(child.href) && (
-                  <span class="ml-1.5 inline-block rounded bg-(--color-cinnabar-400) px-1.5 py-0.5 align-middle text-[10px] font-bold uppercase leading-none text-white">Best ⭐</span>
+            {groupChildren(congCuChildren).map((grp) => (
+              <>
+                {grp.group && (
+                  <p class="mt-1.5 px-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-(--color-gold-500) first:mt-0">{grp.group}</p>
                 )}
-              </a>
+                {grp.items.map((child) => (
+                  <a
+                    href={child.href}
+                    class:list={[
+                      "rounded-(--radius-control) px-3 py-2.5 text-sm hover:bg-(--color-ivory-200)",
+                      child.label.startsWith("⭐") ? "font-medium text-(--color-gold-400)" : "text-(--color-ink-700)",
+                    ]}
+                  >
+                    {child.label}
+                    {BADGE_BEST.includes(child.href) && (
+                      <span class="ml-1.5 inline-block rounded bg-(--color-cinnabar-400) px-1.5 py-0.5 align-middle text-[10px] font-bold uppercase leading-none text-white">Best ⭐</span>
+                    )}
+                  </a>
+                ))}
+              </>
             ))}
           </div>
         </details>
@@ -143,13 +164,20 @@ const BADGE_BEST = ["/luan-so-dien-thoai", "/dai-cat-loi/dinh-huong-nghe-nghiep"
             </a>
             {item.children && (
               <div class="ml-3 flex flex-col border-l border-(--color-ivory-300) pl-3">
-                {item.children.map((child) => (
-                  <a href={child.href} class="rounded-(--radius-control) px-3 py-2 text-sm text-(--color-ink-600) hover:bg-(--color-ivory-200)">
-                    {child.label}
-                    {child.href === "/luan-so-dien-thoai" && (
-                      <span class="ml-1.5 inline-block rounded bg-red-500 px-1.5 py-0.5 align-middle text-[10px] font-bold uppercase leading-none text-white">Hot</span>
+                {groupChildren(item.children).map((grp) => (
+                  <>
+                    {grp.group && (
+                      <p class="mt-1.5 px-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-(--color-gold-500) first:mt-0">{grp.group}</p>
                     )}
-                  </a>
+                    {grp.items.map((child) => (
+                      <a href={child.href} class="rounded-(--radius-control) px-3 py-2 text-sm text-(--color-ink-600) hover:bg-(--color-ivory-200)">
+                        {child.label}
+                        {child.href === "/luan-so-dien-thoai" && (
+                          <span class="ml-1.5 inline-block rounded bg-red-500 px-1.5 py-0.5 align-middle text-[10px] font-bold uppercase leading-none text-white">Hot</span>
+                        )}
+                      </a>
+                    ))}
+                  </>
                 ))}
               </div>
             )}
@@ -195,24 +223,31 @@ const BADGE_BEST = ["/luan-so-dien-thoai", "/dai-cat-loi/dinh-huong-nghe-nghiep"
             </a>
             <div class="absolute left-0 top-full z-10 hidden pt-1 group-hover:block group-focus-within:block">
               <ul class="max-h-[70vh] min-w-56 overflow-y-auto rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-1.5 shadow-lg">
-                {item.children.map((child) => (
-                  <li>
-                    <a
-                      href={child.href}
-                      class:list={[
-                        "block rounded-(--radius-control) px-3 py-2 text-sm hover:bg-(--color-ivory-200) hover:text-(--color-gold-300)",
-                        child.label.startsWith("⭐") ? "font-semibold text-(--color-gold-400)" : "text-(--color-ink-800)",
-                      ]}
-                    >
-                      {child.label}
-                      {child.href === "/luan-so-dien-thoai" && (
-                        <span class="ml-1.5 inline-block rounded bg-red-500 px-1.5 py-0.5 align-middle text-[10px] font-bold uppercase leading-none text-white">Hot</span>
-                      )}
-                      {child.href === "/dai-cat-loi/dinh-huong-nghe-nghiep" && (
-                        <span class="ml-1.5 inline-block rounded bg-(--color-cinnabar-400) px-1.5 py-0.5 align-middle text-[10px] font-bold uppercase leading-none text-white">Best ⭐</span>
-                      )}
-                    </a>
-                  </li>
+                {groupChildren(item.children).map((grp) => (
+                  <>
+                    {grp.group && (
+                      <li class="mt-1.5 px-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-(--color-gold-500) first:mt-0">{grp.group}</li>
+                    )}
+                    {grp.items.map((child) => (
+                      <li>
+                        <a
+                          href={child.href}
+                          class:list={[
+                            "block rounded-(--radius-control) px-3 py-2 text-sm hover:bg-(--color-ivory-200) hover:text-(--color-gold-300)",
+                            child.label.startsWith("⭐") ? "font-semibold text-(--color-gold-400)" : "text-(--color-ink-800)",
+                          ]}
+                        >
+                          {child.label}
+                          {child.href === "/luan-so-dien-thoai" && (
+                            <span class="ml-1.5 inline-block rounded bg-red-500 px-1.5 py-0.5 align-middle text-[10px] font-bold uppercase leading-none text-white">Hot</span>
+                          )}
+                          {child.href === "/dai-cat-loi/dinh-huong-nghe-nghiep" && (
+                            <span class="ml-1.5 inline-block rounded bg-(--color-cinnabar-400) px-1.5 py-0.5 align-middle text-[10px] font-bold uppercase leading-none text-white">Best ⭐</span>
+                          )}
+                        </a>
+                      </li>
+                    ))}
+                  </>
                 ))}
               </ul>
             </div>
