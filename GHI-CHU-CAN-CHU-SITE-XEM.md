@@ -105,9 +105,32 @@ hệt (`packages/rule-engine/src/scoring/tuoiHopLamAn.ts`), không phải tự b
   năng trùng lặp đáng kể với tool "Chọn Tuổi Kết Hôn"/"Xem Ngày Cưới Hỏi" đã có sẵn trên site**
   (cùng dùng Cung Phi + Du Niên). Không tự build để tránh dựng trùng — nếu anh muốn thêm, cần xác
   nhận trước có nên gộp vào tool cưới hỏi hiện có hay tách riêng.
-- **Phần Chân Pháp không phù hợp số hóa** (ADDENDUM mục 4: bố cục 3 chiều, luận 64 tổ hợp Cửa-Chủ-
-  Bếp, luận an táng) — đúng theo khuyến nghị gói build, không đưa vào công cụ, để làm nội dung dẫn
-  phễu tư vấn 1-1 (CTA cuối trang đã có sẵn cơ chế này).
+- **Cập nhật 30/8/2026 (anh Công: "cho hết các yếu tố có thể số hóa được lên web, đây là công cụ
+  để anh sử dụng"):** đã rà lại TOÀN BỘ nguồn gốc (6 file OCR trong `nguon-goc/`) tìm phần số hóa
+  được mà gói build ban đầu bỏ sót. Thêm 3 lớp DƯƠNG TRẠCH mới:
+  1. **Bát Cung Xoay Chuyển** (Chân Pháp Phụ lục 4, `batCungXoayChuyen.ts`): 63/64 ô luận CHI TIẾT
+     Tọa nhà × Cửa (đoạn văn giàu chi tiết: thành viên bị ảnh hưởng, năm Can Chi ứng, biểu hiện).
+     Khớp chéo khung với bảng Du Niên chuẩn (test xác nhận không gán lộn ô). 1 ô Khôn×Khảm OCR quá
+     lộn → null "đang bổ sung".
+  2. **64 Lời tượng Cửa×Chủ** (Tập 3, `loiTuong.ts`): câu cổ văn súc tích mỗi tổ hợp. Cửa/Chủ chắc
+     chắn 100%; 17/64 câu OCR mờ (sai 1-2 chữ) → gắn cờ `ocrMo`, UI ghi "chữ OCR mờ, đang đối
+     chiếu", KHÔNG hiển thị như dữ liệu đã chốt.
+  3. **Bát Quái cung tài & khuyết góc** (`cungTaiKhuyetGoc.ts`): bản đồ 8 cung ↔ lĩnh vực đời sống
+     (theo PHƯƠNG VỊ cố định, giống "Bagua map") + mẹo bố trí + luận "nhà khuyết góc nào → lĩnh vực
+     đó suy". ⚠️ ĐÃ GẮN NHÃN RÕ: đây là cách dùng PHỔ THÔNG (nguồn ghi "Đài Loan hay áp dụng, Lý Cư
+     Minh hay dùng"), KHÔNG phải cổ pháp Bát Trạch lõi — tách biệt rõ với phần luận theo mệnh.
+- **CHỦ ĐỘNG chưa build (2 phần ranh giới, anh Công 30/8 chọn "để sau"):**
+  (a) **Lục Thập Giáp Tý** (Chân Pháp Phụ lục 6): số hóa được (60 dòng đã bóc sẵn) NHƯNG là ÂM
+  TRẠCH (an táng/mộ phần) — chính sách nguồn cảnh báo "sai lầm lớn nhất là áp lý thuyết âm trạch
+  vào dương trạch", nên KHÔNG trộn vào module xem hướng nhà; để làm module âm trạch riêng nếu cần.
+  (b) **Mở cửa theo Tam Hợp Nạp Giáp** (hệ 24 sơn): số hóa được nhưng mâu thuẫn có chủ đích với
+  cách "một quẻ quản 3 sơn" module đang dùng → chờ chốt trước khi thêm dạng tùy chọn nâng cao.
+- **Nhánh mở rộng "chọn tháng cưới"** (ADDENDUM mục 2): vẫn chưa build — trùng khả năng với tool
+  "Chọn Tuổi Kết Hôn"/"Xem Ngày Cưới Hỏi" đã có, chờ anh xác nhận gộp hay tách.
+- **Phần Chân Pháp XÁC NHẬN không số hóa được** (đã rà kỹ nguồn): bố cục 3 chiều phát tài (cần đọc
+  ngoại/nội cục thực địa), Long Hình Phú (thuộc Loan Đầu tang gia, đầu vào là tuổi/năm mất chứ
+  không phải tọa hướng nhà), 156 thế thủy lộ, loan đầu ngoại/nội cục — đều cần quan sát hình thế
+  thật, giữ làm nội dung dẫn phễu tư vấn 1-1 (CTA cuối trang đã có).
 
 ## 10. Phạm vi Cửa–Chủ–Bếp trong Tam Yếu — độ chính xác 8 cung (không phải 24 sơn)
 

@@ -124,6 +124,20 @@ import Container from "../../components/ui/Container.astro";
       </div>
     </details>
 
+    <details id="bt-accordion-cung-tai" class="mt-3 hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100)">
+      <summary class="cursor-pointer px-4 py-3 text-sm font-semibold text-(--color-ink-800)">
+        Bản đồ 8 cung ↔ lĩnh vực đời sống + mẹo bố trí, và xem nhà khuyết góc nào thì lĩnh vực nào dễ suy.
+      </summary>
+      <div class="border-t border-(--color-ivory-300) p-4">
+        <p class="text-xs text-(--color-ink-500)">
+          Lớp tham khảo theo PHƯƠNG VỊ CỐ ĐỊNH (giống "Bagua map" phổ thông, không theo mệnh gia chủ) — tách biệt với
+          phần luận theo Cung Phi ở trên. Nếu nhà/vườn bị lõm/thiếu góc, tích vào các cung tương ứng.
+        </p>
+        <div class="mt-2 grid grid-cols-2 gap-1.5 text-xs sm:grid-cols-4" id="bt-khuyet-goc-list"></div>
+        <div id="bt-ket-qua-cung-tai" class="mt-3 hidden space-y-2"></div>
+      </div>
+    </details>
+
     <div id="bt-cta-tu-van" class="mt-5 hidden rounded-(--radius-card) border border-(--color-gold-400)/50 bg-(--color-gold-400)/10 p-4 text-sm text-(--color-ink-800)"></div>
 
     <p class="mt-5 text-xs text-(--color-ink-500)">
@@ -161,6 +175,14 @@ import Container from "../../components/ui/Container.astro";
     thienTinhBep: { ten: string; chuVe: string }[];
     thanhVienAnhHuongNeuXauChu: string;
     thanhVienAnhHuongNeuXauBep: string;
+    batCungXoayChuyen: string | null;
+    loiTuongCuaChu: { cau: string; ocrMo?: boolean };
+  }
+  interface KetQuaCungTai {
+    bang: Record<string, { linhVuc: string; huong: string }>;
+    meoBoTri: string[];
+    ghiChuTrungCung: string;
+    khuyet: { cung: string; linhVuc: string; huong: string }[];
   }
   interface TangCuuTinh { tang: number; tenKhi: string; saoTen: string; cat: boolean }
   interface KetQuaXuyenCung { khaNang1: TangCuuTinh[]; khaNang2: TangCuuTinh[] | null; lech: boolean; ghiChu: string }
@@ -183,6 +205,7 @@ import Container from "../../components/ui/Container.astro";
     tamYeu: KetQuaTamYeu | null;
     xuyenCung: KetQuaXuyenCung | null;
     luuNien: KetQuaLuuNien | null;
+    cungTai: KetQuaCungTai | null;
   }
 
   const HUONG_8 = ["Bắc", "Đông Bắc", "Đông", "Đông Nam", "Nam", "Tây Nam", "Tây", "Tây Bắc"];
@@ -223,6 +246,18 @@ import Container from "../../components/ui/Container.astro";
   const namXemInput = elId<HTMLInputElement>("bt-nam-xem");
   const thangAmXemInput = elId<HTMLInputElement>("bt-thang-am-xem");
   const ketQuaNamEl = elId<HTMLDivElement>("bt-ket-qua-nam");
+
+  const accordionCungTai = elId<HTMLDetailsElement>("bt-accordion-cung-tai");
+  const khuyetGocListEl = elId<HTMLDivElement>("bt-khuyet-goc-list");
+  const ketQuaCungTaiEl = elId<HTMLDivElement>("bt-ket-qua-cung-tai");
+
+  const CUNG_8 = ["Càn", "Khảm", "Cấn", "Chấn", "Tốn", "Ly", "Khôn", "Đoài"];
+  for (const c of CUNG_8) {
+    khuyetGocListEl.insertAdjacentHTML(
+      "beforeend",
+      `<label class="flex items-center gap-1.5 rounded-lg border border-(--color-ivory-300) px-2 py-1.5"><input type="checkbox" class="bt-khuyet size-3.5 shrink-0" value="${c}" /> Khuyết ${c}</label>`,
+    );
+  }
 
   const ctaTuVanEl = elId<HTMLDivElement>("bt-cta-tu-van");
 
@@ -384,12 +419,22 @@ import Container from "../../components/ui/Container.astro";
       "tranh-tuyet-doi": "text-(--color-cinnabar-500)",
       "binh-thuong": "text-(--color-ink-600)",
     };
+    const batCungHtml = r.batCungXoayChuyen
+      ? `<div class="rounded-xl border border-(--color-gold-300) bg-(--color-gold-400)/5 p-4 text-sm">
+          <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-500)">Bát Cung Xoay Chuyển (Chân Pháp) — Tọa nhà × phương Cửa</p>
+          <p class="mt-1.5 text-(--color-ink-700)">${r.batCungXoayChuyen}</p>
+        </div>`
+      : `<div class="rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200) p-4 text-xs text-(--color-ink-500)">
+          Bát Cung Xoay Chuyển: tổ hợp Tọa/Cửa này trong nguồn Chân Pháp đang bị mờ chữ (OCR) — đang bổ sung.
+        </div>`;
     ketQuaTamYeuEl.innerHTML = `
       <div class="rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200) p-4 text-sm">
         <p><strong>Cửa ↔ Chủ:</strong> ${r.tamYeu.tenKhiChu} — thành viên chịu ảnh hưởng rõ nhất nếu xấu: ${r.thanhVienAnhHuongNeuXauChu}.</p>
+        <p class="mt-1 italic text-(--color-ink-600)">Lời tượng: "${r.loiTuongCuaChu.cau}"${r.loiTuongCuaChu.ocrMo ? ` <span class="text-[11px] not-italic text-(--color-ink-400)">(chữ OCR mờ, đang đối chiếu)</span>` : ""}</p>
         <p class="mt-1"><strong>Cửa ↔ Bếp:</strong> ${r.tamYeu.tenKhiBep} — <span class="${dgMau[r.tamYeu.danhGiaBep]} font-semibold">${dgLabel[r.tamYeu.danhGiaBep]}</span>. ${r.tamYeu.ghiChuBep}</p>
         ${r.thienTinhBep.length ? `<p class="mt-1 text-xs text-(--color-ink-500)">Thiên Tinh tại Bếp: ${r.thienTinhBep.map((t) => `${t.ten} (${t.chuVe})`).join("; ")}</p>` : ""}
       </div>
+      ${batCungHtml}
       <div class="rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200) p-4 text-xs text-(--color-ink-600)">
         <p class="font-semibold text-(--color-ink-800)">Sinh khắc Cung–Sao (đọc thêm, dùng cả 2 phương án theo ngữ cảnh — data/00 MĐ-2):</p>
         <p class="mt-1">Chủ: phương án A (đánh giá tổng thể) = ${r.sinhKhacChu.phuongAnA}; phương án B (luận cặp cụ thể) = ${r.sinhKhacChu.phuongAnB}${r.sinhKhacChu.lech ? " ⚠️ lệch nhau" : ""}.</p>
@@ -435,6 +480,31 @@ import Container from "../../components/ui/Container.astro";
       </div>
     `;
     ketQuaNamEl.classList.remove("hidden");
+  }
+
+  function renderCungTai(r: KetQuaCungTai) {
+    const bangHtml = Object.entries(r.bang)
+      .map(([cung, v]) => `<li class="flex justify-between gap-2"><span>${cung} (${v.huong})</span><span class="text-(--color-ink-500)">${v.linhVuc}</span></li>`)
+      .join("");
+    const khuyetHtml = r.khuyet.length
+      ? `<div class="rounded-lg bg-(--color-danger-500)/5 p-3 text-xs text-(--color-cinnabar-500)">
+          <p class="font-semibold">Nhà khuyết góc → lĩnh vực dễ suy:</p>
+          <ul class="mt-1 list-disc space-y-0.5 pl-4">${r.khuyet.map((k) => `<li>Khuyết ${k.cung} (${k.huong}) — ${k.linhVuc} dễ bị ảnh hưởng.</li>`).join("")}</ul>
+        </div>`
+      : "";
+    ketQuaCungTaiEl.innerHTML = `
+      <div class="rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200) p-4 text-sm">
+        <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-400)">8 cung ↔ lĩnh vực đời sống</p>
+        <ul class="mt-2 space-y-1 text-xs text-(--color-ink-700)">${bangHtml}</ul>
+        <p class="mt-2 text-xs text-(--color-ink-400)">${r.ghiChuTrungCung}</p>
+      </div>
+      ${khuyetHtml}
+      <div class="rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200) p-4 text-xs text-(--color-ink-600)">
+        <p class="font-semibold text-(--color-ink-800)">Mẹo bố trí (cách dùng phổ thông):</p>
+        <ul class="mt-1 list-disc space-y-1 pl-4">${r.meoBoTri.map((s) => `<li>${s}</li>`).join("")}</ul>
+      </div>
+    `;
+    ketQuaCungTaiEl.classList.remove("hidden");
   }
 
   function renderCtaTuVan(r: ApiResponse) {
@@ -483,8 +553,10 @@ import Container from "../../components/ui/Container.astro";
     if (soTangInput.value) p.set("soTang", soTangInput.value);
     if (namXemInput.value) p.set("namCanXem", namXemInput.value);
     if (namXemInput.value && thangAmXemInput.value) p.set("thangAmXem", thangAmXemInput.value);
+    const cungKhuyet = [...khuyetGocListEl.querySelectorAll<HTMLInputElement>(".bt-khuyet:checked")].map((el) => el.value);
+    if (cungKhuyet.length) p.set("khuyetGoc", cungKhuyet.join(","));
 
-    localStorage.setItem("bat-trach-nha-input", JSON.stringify({ namSinh, gioiTinh: gioiTinhEl.value, huongKieu, huong8: huong8Select.value, huongDo: huongDoInput.value, cua: cuaSelect.value, chu: chuSelect.value, bep: bepSelect.value, soTang: soTangInput.value, namXem: namXemInput.value, thangAmXem: thangAmXemInput.value }));
+    localStorage.setItem("bat-trach-nha-input", JSON.stringify({ namSinh, gioiTinh: gioiTinhEl.value, huongKieu, huong8: huong8Select.value, huongDo: huongDoInput.value, cua: cuaSelect.value, chu: chuSelect.value, bep: bepSelect.value, soTang: soTangInput.value, namXem: namXemInput.value, thangAmXem: thangAmXemInput.value, khuyet: cungKhuyet }));
 
     dangGoi = true;
     try {
@@ -506,6 +578,7 @@ import Container from "../../components/ui/Container.astro";
       accordionTamYeu.classList.remove("hidden");
       accordionTang.classList.remove("hidden");
       accordionNam.classList.remove("hidden");
+      accordionCungTai.classList.remove("hidden");
 
       if (r.tamYeu) renderTamYeu(r.tamYeu);
       else ketQuaTamYeuEl.classList.add("hidden");
@@ -515,6 +588,9 @@ import Container from "../../components/ui/Container.astro";
 
       if (r.luuNien) renderLuuNien(r.luuNien);
       else ketQuaNamEl.classList.add("hidden");
+
+      if (r.cungTai) renderCungTai(r.cungTai);
+      else ketQuaCungTaiEl.classList.add("hidden");
 
       renderCtaTuVan(r);
     } catch {
@@ -534,6 +610,7 @@ import Container from "../../components/ui/Container.astro";
     el.addEventListener("change", () => void guiForm());
   }
   form.querySelectorAll('input[name="bt-gioi-tinh"]').forEach((el) => el.addEventListener("change", () => void guiForm()));
+  khuyetGocListEl.querySelectorAll<HTMLInputElement>(".bt-khuyet").forEach((el) => el.addEventListener("change", () => void guiForm()));
   form.addEventListener("submit", (e) => e.preventDefault());
 
   // Tự khôi phục input từ localStorage — không phải nhập lại khi quay lại trang.
@@ -555,6 +632,12 @@ import Container from "../../components/ui/Container.astro";
       if (d.soTang) soTangInput.value = d.soTang;
       if (d.namXem) namXemInput.value = d.namXem;
       if (d.thangAmXem) thangAmXemInput.value = d.thangAmXem;
+      if (Array.isArray(d.khuyet)) {
+        for (const c of d.khuyet) {
+          const el = khuyetGocListEl.querySelector<HTMLInputElement>(`.bt-khuyet[value="${c}"]`);
+          if (el) el.checked = true;
+        }
+      }
       if (d.namSinh) void guiForm();
     } else {
       namXemInput.value = String(new Date().getFullYear());
