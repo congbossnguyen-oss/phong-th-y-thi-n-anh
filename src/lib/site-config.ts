@@ -22,7 +22,7 @@ export const siteConfig = {
 export type NavItem = {
   label: string;
   href: string;
-  children?: { label: string; href: string; group?: string; groupHref?: string }[];
+  children?: { label: string; href: string }[];
 };
 
 export const mainNav: NavItem[] = [
@@ -52,8 +52,7 @@ export const mainNav: NavItem[] = [
     href: "/dai-cat-loi",
     children: [
       { label: "Đại Cát Lợi", href: "/dai-cat-loi" },
-      { label: "Xem phong thủy nhà (Huyền Không Phi Tinh)", href: "/dai-cat-loi/huyen-khong-phi-tinh", group: "Phong thủy chính phái", groupHref: "/dai-cat-loi/phong-thuy-chinh-phai" },
-      { label: "Xem hướng nhà Bát Trạch", href: "/dai-cat-loi/xem-huong-nha-bat-trach", group: "Phong thủy chính phái", groupHref: "/dai-cat-loi/phong-thuy-chinh-phai" },
+      { label: "Phong thủy chính phái", href: "/dai-cat-loi/phong-thuy-chinh-phai" },
       { label: "Lập lá số Bát Tự", href: "/lap-la-so-bat-tu" },
       { label: "Lập quẻ Kinh Dịch", href: "/gieo-que-kinh-dich" },
       { label: "Lập lá số Tử Vi", href: "/lap-la-so-tu-vi" },
@@ -61,7 +60,6 @@ export const mainNav: NavItem[] = [
       { label: "Xem ngày tốt xấu", href: "/xem-ngay-tot-xau" },
       { label: "Luận số điện thoại", href: "/luan-so-dien-thoai" },
       { label: "Tính Trùng Tang", href: "/tinh-trung-tang" },
-      { label: "Định Hướng Nghề Nghiệp", href: "/dai-cat-loi/dinh-huong-nghe-nghiep" },
       { label: "⭐ Dịch vụ VIP", href: "/dai-cat-loi/dich-vu-thu-phi" },
     ],
   },

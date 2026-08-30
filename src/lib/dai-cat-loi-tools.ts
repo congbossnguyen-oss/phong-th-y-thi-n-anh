@@ -131,8 +131,17 @@ export type PaidTool = {
 };
 
 export const paidTools: PaidTool[] = [
-  // "Định Hướng Nghề Nghiệp" KHÔNG lặp lại ở đây — chỉ vào qua menu chính "Công cụ" (nhãn BEST ⭐,
-  // xem site-config.ts) để tránh hiện trùng cả ở Đại Cát Lợi lẫn Dịch vụ VIP (yêu cầu anh Công).
+  // 31/8/2026: anh Công đổi ý — "Định Hướng Nghề Nghiệp" trước đây CỐ TÌNH không lặp ở đây (chỉ
+  // vào qua menu chính "Công cụ") để tránh trùng cả 2 chỗ. Nay gộp hẳn vào đây cho gọn menu chính;
+  // đã bỏ mục riêng khỏi site-config.ts.
+  {
+    href: "/dai-cat-loi/dinh-huong-nghe-nghiep",
+    icon: "🎯",
+    title: "Định Hướng Nghề Nghiệp — Bát Tự × Tử Vi",
+    desc: "Kết hợp hai hệ độc lập Bát Tự và Tử Vi: 5 trục năng lực, xu hướng Quan Lộc/Kinh Doanh, nhóm ngành nên theo, các giai đoạn vận và mức đồng thuận giữa hai hệ. Kết quả gửi kèm PDF về email.",
+    priceLabel: "500.000đ / lượt",
+    best: true,
+  },
   {
     href: "/dai-cat-loi/gio-liem-ha-huyet",
     icon: "🕯️",
