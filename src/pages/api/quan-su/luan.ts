@@ -137,7 +137,21 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
     });
     // Chỉ tính lượt khi luận giải THÀNH CÔNG — khách không nhận được gì thì không bị trừ lượt.
     if (locals.user.isAdmin !== true) await ghiNhanLuotHoi(locals.user.id);
-    return json(result, 200);
+
+    // Phần "Cách hóa giải" CHỈ mở cho gói Cao cấp đang hoạt động (anh Công quyết định 30/8/2026) —
+    // gói Cơ bản vẫn xem đủ phần luận giải + kết quả quân sư, chỉ riêng phương pháp hóa giải cụ thể
+    // bị khóa lại kèm gợi ý nâng cấp. Đọc GÓI THẬT của tài khoản (không phải pricing_tier của câu
+    // hỏi) — 1 câu hỏi Cơ bản do khách gói Cao cấp hỏi vẫn phải thấy đủ hóa giải.
+    let hoaGiaiBiKhoa = false;
+    if (locals.user.isAdmin !== true && result.luanAI && result.luanAI.phuong_phap_hoa_giai.length > 0) {
+      const goiThat = await layGoiDangHoatDong(locals.user.id);
+      if (goiThat?.tier !== "cao_cap") {
+        hoaGiaiBiKhoa = true;
+        result.luanAI.phuong_phap_hoa_giai = [];
+      }
+    }
+
+    return json({ ...result, hoaGiaiBiKhoa }, 200);
   } catch (err) {
     const msg = err instanceof Error ? err.message : "Lỗi không xác định.";
     // Câu chọn ngày giờ / câu không tồn tại / thiếu seri tiền → 400 (lỗi đầu vào, message tự viết sẵn
