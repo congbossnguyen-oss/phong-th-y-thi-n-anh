@@ -1,0 +1,22 @@
+---
+// Bản in-app của công cụ "Đổi Dương Lịch ↔ Âm Lịch" — thuộc lưới "Công cụ hữu ích" trong app Quân
+// Sư. TỰ CHỨA trong app (không link ra web) — dùng chung component với bản web nên logic/kết quả y
+// hệt, chỉ khung trang khác.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
+import DoiLichAmDuong from "../../components/tools/DoiLichAmDuong.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout title="Đổi Dương Lịch ↔ Âm Lịch — Quân Sư Thiên Anh" description="Đổi Dương Lịch, Âm Lịch trong app Quân Sư." appShell>
+  <PageHero
+    eyebrow="Đại Cát Lợi"
+    title="Đổi Dương Lịch ↔ Âm Lịch"
+    description="Chuyển đổi hai chiều giữa Dương lịch và Âm lịch Việt Nam (không phải lịch Trung Quốc), có xử lý tháng nhuận."
+    breadcrumbs={[{ label: "Quân Sư", href: "/quan-su" }, { label: "Đổi Dương Lịch ↔ Âm Lịch" }]}
+  />
+  <DoiLichAmDuong />
+  <BottomNav />
+</BaseLayout>

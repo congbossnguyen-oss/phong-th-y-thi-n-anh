@@ -1,0 +1,200 @@
+---
+// Thân công cụ "Giờ tốt trong ngày" tách dùng chung cho web + in-app Quân Sư — cùng mẫu các module
+// khác trong "Đại Cát Lợi". Trang gọi component này chỉ lo khung (BaseLayout/PageHero/breadcrumbs),
+// gọi chung API /api/gio-tot-trong-ngay.
+//
+// Được deep-link từ nhiều module khác (Ký Hợp Đồng, Khai Trương, Đại Cát Cá Nhân, Chọn Ngày Giao
+// Dịch) qua query string year/month/day/purpose — giữ nguyên hành vi tự đọc URLSearchParams và tự
+// submit khi có đủ ngày.
+//
+// Không có CTA nâng cấp cuối trang (bản gốc trên web cũng không có) nên không cần phân biệt
+// web/app ở đây.
+import Container from "../../components/ui/Container.astro";
+import Button from "../../components/ui/Button.astro";
+---
+
+<Container class="py-16">
+  <div class="mx-auto max-w-2xl">
+    <form id="gio-tot-form" class="flex flex-col gap-4 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
+      <div>
+        <p class="text-sm font-medium text-(--color-ink-800)">Ngày cần xem (dương lịch)</p>
+        <div class="mt-1.5 grid grid-cols-3 gap-2">
+          <select id="gio-tot-ngay" aria-label="Ngày" class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"></select>
+          <select id="gio-tot-thang" aria-label="Tháng" class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"></select>
+          <select id="gio-tot-nam" aria-label="Năm" class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"></select>
+        </div>
+      </div>
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label for="gio-tot-purpose" class="text-sm font-medium text-(--color-ink-800)">Mục đích (tùy chọn)</label>
+          <select id="gio-tot-purpose" class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)">
+            <option value="GENERAL">Chung</option>
+            <option value="CAU_TAI">Cầu tài</option>
+            <option value="GIAO_TIEP_TIEC_TUNG">Giao tế · tiệc tùng</option>
+            <option value="DONG_PHONG">Động phòng</option>
+            <option value="KHAI_TRUONG">Khai trương</option>
+            <option value="KY_HOP_DONG">Ký hợp đồng</option>
+            <option value="XUAT_HANH">Xuất hành</option>
+            <option value="CUOI_HOI">Cưới hỏi</option>
+          </select>
+        </div>
+        <div>
+          <label for="gio-tot-nam-sinh" class="text-sm font-medium text-(--color-ink-800)">Năm sinh (tùy chọn)</label>
+          <input type="number" id="gio-tot-nam-sinh" placeholder="vd. 1990" min="1900" max="2100" class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+        </div>
+      </div>
+      <Button type="submit" size="lg">Xem giờ tốt</Button>
+    </form>
+
+    <div id="gio-tot-loi" class="mt-4 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm text-(--color-danger-500)"></div>
+
+    <div id="gio-tot-ket-qua" class="mt-6 hidden">
+      <p id="gio-tot-tieu-de" class="font-display text-lg font-bold text-(--color-ink-900)"></p>
+      <div id="gio-tot-list" class="mt-3 space-y-1.5"></div>
+    </div>
+  </div>
+</Container>
+
+<script>
+  interface GioTotYeuTo { ten: string; diem: number }
+  interface GioTotGio {
+    chiGio: string;
+    canGio: string;
+    khungGio: string;
+    diem: number;
+    hang: string;
+    nhan: string;
+    yeuTo: GioTotYeuTo[];
+  }
+  interface GioTotResult {
+    solarDate: { year: number; month: number; day: number };
+    purpose: string;
+    gioXepHang: GioTotGio[];
+  }
+
+  const HUY_CHUONG = ["🥇", "🥈", "🥉"];
+
+  // Chấm màu CSS tự vẽ thay cho emoji tròn màu (🟢🟡🟠🔴) — emoji phụ thuộc font từng máy, có thể
+  // khiến vàng/cam trông gần giống nhau ở cỡ nhỏ. Dùng hex cố định để đảm bảo tương phản rõ ràng.
+  const HANG_COLOR: Record<string, string> = {
+    "rat-tot": "#7c3aed",
+    "tot": "#16a34a",
+    "co-the-dung": "#eab308",
+    "khong-thuan": "#c2410c",
+    "nen-tranh": "#dc2626",
+  };
+  function stripEmoji(nhan: string): string {
+    return nhan.replace(/^\S+\s*/u, "");
+  }
+  function nhanDotHtml(hang: string, nhan: string): string {
+    const color = HANG_COLOR[hang] ?? "#6b7280";
+    return `<span class="inline-flex items-center gap-1.5"><span class="inline-block size-2.5 shrink-0 rounded-full" style="background:${color};"></span>${stripEmoji(nhan)}</span>`;
+  }
+
+  const ngaySelect = document.getElementById("gio-tot-ngay") as HTMLSelectElement;
+  const thangSelect = document.getElementById("gio-tot-thang") as HTMLSelectElement;
+  const namSelect = document.getElementById("gio-tot-nam") as HTMLSelectElement;
+  const purposeSelect = document.getElementById("gio-tot-purpose") as HTMLSelectElement;
+  const namSinhInput = document.getElementById("gio-tot-nam-sinh") as HTMLInputElement;
+  const form = document.getElementById("gio-tot-form") as HTMLFormElement;
+  const loiEl = document.getElementById("gio-tot-loi")!;
+  const ketQuaEl = document.getElementById("gio-tot-ket-qua")!;
+  const tieuDeEl = document.getElementById("gio-tot-tieu-de")!;
+  const listEl = document.getElementById("gio-tot-list")!;
+
+  const today = new Date();
+  for (let d = 1; d <= 31; d++) ngaySelect.insertAdjacentHTML("beforeend", `<option value="${d}" ${d === today.getDate() ? "selected" : ""}>Ngày ${d}</option>`);
+  for (let m = 1; m <= 12; m++) thangSelect.insertAdjacentHTML("beforeend", `<option value="${m}" ${m === today.getMonth() + 1 ? "selected" : ""}>Tháng ${m}</option>`);
+  for (let y = today.getFullYear() - 1; y <= today.getFullYear() + 3; y++) namSelect.insertAdjacentHTML("beforeend", `<option value="${y}" ${y === today.getFullYear() ? "selected" : ""}>${y}</option>`);
+
+  const PURPOSE_LABEL: Record<string, string> = {
+    GENERAL: "Chung",
+    CAU_TAI: "Cầu tài",
+    GIAO_TIEP_TIEC_TUNG: "Giao tế · tiệc tùng",
+    DONG_PHONG: "Động phòng",
+    KHAI_TRUONG: "Khai trương",
+    KY_HOP_DONG: "Ký hợp đồng",
+    XUAT_HANH: "Xuất hành",
+    CUOI_HOI: "Cưới hỏi",
+  };
+
+  // Cho phép các module khác (Khai Trương, Ký Hợp Đồng, Đại Cát Cá Nhân, Chọn Ngày Giao Dịch)
+  // deep-link vào đây với ngày + mục đích đã chọn sẵn, vd. ?year=2026&month=9&day=18&purpose=KHAI_TRUONG
+  const urlParams = new URLSearchParams(window.location.search);
+  const prefillYear = urlParams.get("year");
+  const prefillMonth = urlParams.get("month");
+  const prefillDay = urlParams.get("day");
+  const prefillPurpose = urlParams.get("purpose");
+  if (prefillYear) namSelect.value = prefillYear;
+  if (prefillMonth) thangSelect.value = prefillMonth;
+  if (prefillDay) ngaySelect.value = prefillDay;
+  if (prefillPurpose) purposeSelect.value = prefillPurpose;
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    loiEl.classList.add("hidden");
+    ketQuaEl.classList.add("hidden");
+
+    const year = namSelect.value;
+    const month = thangSelect.value;
+    const day = ngaySelect.value;
+    const purpose = purposeSelect.value;
+    const namSinh = namSinhInput.value;
+
+    let qs = `year=${year}&month=${month}&day=${day}&timeZone=Asia/Ho_Chi_Minh&purpose=${purpose}`;
+    if (namSinh) qs += `&namSinh=${namSinh}`;
+
+    let result: GioTotResult;
+    try {
+      const res = await fetch(`/api/gio-tot-trong-ngay?${qs}`);
+      const data = await res.json();
+      if (!res.ok) {
+        loiEl.textContent = data.error ?? "Không tính được.";
+        loiEl.classList.remove("hidden");
+        return;
+      }
+      result = data;
+    } catch {
+      loiEl.textContent = "Không tải được dữ liệu.";
+      loiEl.classList.remove("hidden");
+      return;
+    }
+
+    const ngayStr = `${String(result.solarDate.day).padStart(2, "0")}/${String(result.solarDate.month).padStart(2, "0")}/${result.solarDate.year}`;
+    tieuDeEl.textContent = `GIỜ TỐT${purpose !== "GENERAL" ? " " + PURPOSE_LABEL[purpose]?.toUpperCase() : ""} — ${ngayStr}`;
+
+    listEl.innerHTML = result.gioXepHang
+      .map((g, i) => {
+        const huyChuong = HUY_CHUONG[i] ?? "";
+        const yeuToHtml = g.yeuTo
+          .map((y) => {
+            const dauCls = y.diem >= 5 ? "text-(--color-cinnabar-500)" : "text-(--color-ink-500)";
+            return `<li class="flex justify-between gap-2"><span>${y.ten}</span><span class="${dauCls} font-semibold">${y.diem}</span></li>`;
+          })
+          .join("");
+        return `
+          <div class="rounded-lg border border-(--color-ivory-300) bg-(--color-ivory-100)">
+            <button type="button" class="gio-tot-row w-full px-4 py-3 text-left" data-idx="${i}">
+              <p class="text-sm font-bold text-(--color-ink-950)">${huyChuong} ${g.khungGio} (giờ ${g.chiGio})</p>
+              <p class="text-sm">${nhanDotHtml(g.hang, g.nhan)} — ${g.diem}/10</p>
+            </button>
+            <div class="gio-tot-detail hidden border-t border-(--color-ivory-200) px-4 py-3">
+              <ul class="space-y-0.5 text-xs text-(--color-ink-600)">${yeuToHtml}</ul>
+            </div>
+          </div>`;
+      })
+      .join("");
+
+    listEl.querySelectorAll<HTMLButtonElement>(".gio-tot-row").forEach((btn) => {
+      btn.addEventListener("click", () => {
+        (btn.nextElementSibling as HTMLElement).classList.toggle("hidden");
+      });
+    });
+
+    ketQuaEl.classList.remove("hidden");
+  });
+
+  if (prefillYear && prefillMonth && prefillDay) {
+    form.requestSubmit();
+  }
+</script>
