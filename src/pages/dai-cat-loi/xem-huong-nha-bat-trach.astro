@@ -1,0 +1,33 @@
+---
+// TRANG "Xem hướng nhà Bát Trạch" — module MỚI (30/8/2026), MỘT luồng duy nhất, không phân
+// Free/Cao Cấp, không thu phí, kết quả lũy tiến theo SPEC-OVERRIDE-MOT-MODULE.md.
+//
+// 🔒 GIAI ĐOẠN THỬ NGHIỆM NỘI BỘ: CHỈ tài khoản quản trị được xem (anh Công yêu cầu build xong để
+// tự kiểm chứng trước khi mở cho khách — xem GHI-CHU-CAN-CHU-SITE-XEM.md). Chặn ở middleware.ts
+// (điều hướng thẳng về "/" cho khách thường) — trang tự kiểm tra thêm 1 lớp phòng thủ ở đây để
+// không phụ thuộc hoàn toàn vào middleware. Khi mở bán/mở dùng thật: xóa khối check dưới đây VÀ
+// dòng chặn tương ứng trong middleware.ts (đánh dấu rõ ràng ở cả 2 chỗ).
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import XemHuongNhaBatTrach from "../../components/tools/XemHuongNhaBatTrach.astro";
+
+export const prerender = false;
+
+if (Astro.locals.user?.isAdmin !== true) {
+  return Astro.redirect("/");
+}
+---
+
+<BaseLayout
+  title="Xem hướng nhà Bát Trạch"
+  description="Xem hướng nhà hợp mệnh và gợi ý bố trí theo Bát Trạch — cá nhân hóa theo Cung Phi gia chủ, Đông/Tây Tứ Trạch, Du Niên Bát Quái, Dương Trạch Tam Yếu."
+>
+  <PageHero
+    eyebrow="Đại Cát Lợi"
+    title="Xem hướng nhà Bát Trạch"
+    description="Nhập năm sinh, giới tính và hướng nhà — hệ thống tự tính Cung Phi, xét hợp mệnh, gợi ý bố trí. Nhập thêm Cửa–Chủ–Bếp, số tầng, năm cần xem để xem sâu hơn."
+    breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Đại Cát Lợi", href: "/dai-cat-loi" }, { label: "Xem hướng nhà Bát Trạch" }]}
+  />
+
+  <XemHuongNhaBatTrach />
+</BaseLayout>
