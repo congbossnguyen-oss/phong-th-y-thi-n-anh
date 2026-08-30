@@ -38,10 +38,13 @@ describe("bat-trach-nha — Hoàng Tuyền + Bát Sát (data/05)", () => {
     expect(r.batSat.sonPham).toBe("Thìn");
   });
 
-  it("tổng hợp hướng Đông Bắc (45°, tọa Tây Nam/Khôn) -> Hoàng Tuyền theo HƯỚNG (sơn Cấn, áp dụng) + Bát Sát theo TỌA (Khôn -> Mão)", () => {
+  it("tổng hợp hướng Đông Bắc (45°, tọa Tây Nam/Khôn) -> Hoàng Tuyền theo HƯỚNG (sơn Cấn, áp dụng) + Bát Sát theo TỌA (Khôn -> Mão) + Kiếp Sát theo TỌA sơn (Khôn -> Ất)", () => {
     const r = tinhHungSatDacBiet(45);
     expect(r.hoangTuyen.apDung).toBe(true);
     expect(r.batSat.cungToa).toBe("Khôn");
     expect(r.batSat.sonPham).toBe("Mão");
+    // Tọa 225° = sơn Khôn -> Kiếp Sát Ất (bảng anh Công).
+    expect(r.kiepSat.sonToa).toBe("Khôn");
+    expect(r.kiepSat.sonKiepSat).toBe("Ất");
   });
 });

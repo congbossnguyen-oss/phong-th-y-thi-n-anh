@@ -20,6 +20,7 @@
  */
 import type { CungBatTrach } from "../cung-menh-bat-trach/cungPhi.js";
 import { doToCung, doToSon, huongToToa, type Son24 } from "./toaHuong.js";
+import { kiemKiepSat, type KetQuaKiepSat } from "./kiepSat.js";
 
 // -----------------------------------------------------------------------------------------------
 // Hoàng Tuyền (Tứ Lộ Hoàng Tuyền) — theo HƯỚNG. Chỉ ở 8 Thiên Can + 4 Duy (Càn/Khôn/Cấn/Tốn),
@@ -87,16 +88,19 @@ export function kiemBatSat(cungToa: CungBatTrach): KetQuaBatSat {
 export interface HungSatDacBiet {
   hoangTuyen: KetQuaHoangTuyen;
   batSat: KetQuaBatSat;
+  kiepSat: KetQuaKiepSat;
 }
 
 /**
- * Tổng hợp từ độ số HƯỚNG nhà: Hoàng Tuyền tra theo HƯỚNG, Bát Sát tra theo TỌA (= hướng + 180°).
+ * Tổng hợp từ độ số HƯỚNG nhà: Hoàng Tuyền tra theo HƯỚNG; Bát Sát tra theo TỌA (cung); Kiếp Sát
+ * tra theo TỌA (sơn 24 — bảng riêng của anh Công). Tọa = hướng + 180°.
  */
 export function tinhHungSatDacBiet(huongDo: number): HungSatDacBiet {
   const sonHuong = doToSon(huongDo);
-  const cungToa = doToCung(huongToToa(huongDo));
+  const toaDo = huongToToa(huongDo);
   return {
     hoangTuyen: kiemHoangTuyen(sonHuong),
-    batSat: kiemBatSat(cungToa),
+    batSat: kiemBatSat(doToCung(toaDo)),
+    kiepSat: kiemKiepSat(doToSon(toaDo)),
   };
 }
