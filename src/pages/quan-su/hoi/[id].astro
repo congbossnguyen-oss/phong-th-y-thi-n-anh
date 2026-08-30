@@ -340,7 +340,7 @@ const formInputs = [...question.required_inputs, ...question.optional_inputs].fi
                   </div>
                   <p>${esc(rep.xuHuong)}</p>
                   ${khoiAI}
-                  ${data.isDemo ? '<div class="qs-demo">⚙ Lần này chưa nối được phần luận sâu, đang hiển thị bản chấm điểm theo quy tắc. Quý bằng hữu thử lại sau ít phút.</div>' : ""}
+                  ${data.isDemo ? '<div class="qs-demo">⚙ Bản luận này dựa trên quy tắc Lục Hào từ số liệu quẻ (Dụng Thần, vượng suy, hào động, hóa biến…). Xem chi tiết ở mục "Xem luận giải chi tiết" bên dưới.</div>' : ""}
                 </div>
                 ${luckHtml}
                 <div class="qs-luck" style="margin-top:1rem;">
@@ -350,7 +350,7 @@ const formInputs = [...question.required_inputs, ...question.optional_inputs].fi
                 <details class="qs-detail">
                   <summary>Xem luận giải chi tiết (chấm điểm theo luật)</summary>
                   <div class="body">
-                    ${esc(rep.luanGiaiChiTiet)}<br><br>
+                    ${esc(rep.luanGiaiChiTiet).replace(/\n/g, "<br>")}<br><br>
                     Bảng chấm điểm:
                     <ul style="margin:0.4rem 0 0;padding-left:1.1rem;">
                       ${rep.bangChamDiem.map((i) => `<li>${i.delta > 0 ? "+" : ""}${i.delta} · ${esc(i.factor)} — ${esc(i.reason)}</li>`).join("") || "<li>(không có điều chỉnh)</li>"}
