@@ -54,7 +54,7 @@
 .qs-field { margin-bottom: 1rem; }
 .qs-field label { display: block; font-size: 0.85rem; margin-bottom: 0.35rem; color: var(--qs-ivory); }
 .qs-field .help { color: var(--qs-muted); font-size: 0.76rem; margin-top: 0.25rem; }
-.qs-input, .qs-textarea {
+.qs-input, .qs-textarea, select.qs-input {
   width: 100%; box-sizing: border-box; background: var(--qs-navy-2); color: var(--qs-ivory);
   border: 1px solid rgba(241, 200, 90, 0.2); border-radius: 10px; padding: 0.6rem 0.7rem; font: inherit;
 }

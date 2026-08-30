@@ -3,6 +3,7 @@ import BaseLayout from "../../../layouts/BaseLayout.astro";
 import BottomNav from "../../../components/quan-su/BottomNav.astro";
 import "../../../styles/quan-su.css";
 import { getQuestion, getCategory } from "../../../lib/quan-su";
+import { dungThanHintFor } from "../../../lib/quan-su/divination";
 
 export const prerender = false;
 
@@ -16,6 +17,11 @@ const isLucHao = question.divination_method === "luc-hao";
 // Ô nhập cần render dạng form (bỏ 'gieo-que' vì đó là bước gieo quẻ riêng). KHÔNG thu ngày sinh/
 // giới tính — Thầy: "ngày sinh, giới tính bỏ, làm đúng như /gieo-que-kinh-dich" (2026-08-23).
 const formInputs = [...question.required_inputs, ...question.optional_inputs].filter((i) => i.type !== "gieo-que");
+// Nhóm câu hỏi mặc định lấy Hào Thế (= chính người hỏi) làm Dụng Thần (vd Sức khỏe) mới cần hỏi
+// "hỏi cho ai" — hỏi cho cha/mẹ/con... thì Dụng Thần phải đổi sang đúng Lục Thân đại diện người đó
+// (quy trình luận §1.1), không phải Hào Thế nữa. Nhóm đã cố định 1 Lục Thân theo chủ đề (vd "Con
+// cái" → Tử Tôn) hoặc dùng khung riêng (framework) thì không áp dụng — giữ nguyên như cũ.
+const choDoiTuongKhac = dungThanHintFor(question.category).kind === "the-hao";
 ---
 
 <BaseLayout title={`${question.title} — Quân Sư Thiên Anh`} description={question.subtitle} appShell>
@@ -48,6 +54,22 @@ const formInputs = [...question.required_inputs, ...question.optional_inputs].fi
               </div>
             ))}
           </form>
+
+          {choDoiTuongKhac && (
+            <div class="qs-field">
+              <label for="f-doi-tuong">Hỏi cho ai?</label>
+              <select class="qs-input" id="f-doi-tuong">
+                <option value="chinh-toi">Chính tôi</option>
+                <option value="cha-me">Cha / mẹ</option>
+                <option value="con">Con</option>
+                <option value="vo">Vợ</option>
+                <option value="chong">Chồng</option>
+                <option value="anh-chi-em">Anh chị em / bạn bè</option>
+                <option value="nguoi-khac">Người khác</option>
+              </select>
+              <div class="help">Hỏi cho người thân thì Quân Sư đổi Dụng Thần đúng theo người đó (cha/mẹ → Phụ Mẫu, con → Tử Tôn, vợ → Thê Tài, chồng → Quan Quỷ...) thay vì tính cho chính anh/chị.</div>
+            </div>
+          )}
 
           <p class="qs-eyebrow">Bước 3 · Cách lập quẻ</p>
           <p class="qs-sub">Chọn 1 trong 3 cách lập quẻ Kinh Dịch — kết quả luận giải như nhau, chỉ khác cách nhập.</p>
@@ -176,6 +198,7 @@ const formInputs = [...question.required_inputs, ...question.optional_inputs].fi
 
             async function submit(opts) {
               const moTaEl = document.querySelector('[data-key="mo_ta_tinh_huong"]');
+              const doiTuongEl = document.getElementById("f-doi-tuong");
               try {
                 resultEl.classList.remove("qs-hidden");
                 resultEl.innerHTML = '<p class="qs-sub">Quân Sư đang luận…</p>';
@@ -188,6 +211,7 @@ const formInputs = [...question.required_inputs, ...question.optional_inputs].fi
                     tosses: opts.tosses,
                     seriTien: opts.seriTien,
                     moTa: moTaEl ? moTaEl.value : undefined,
+                    doiTuong: doiTuongEl ? doiTuongEl.value : undefined,
                   }),
                 });
                 const data = await res.json();

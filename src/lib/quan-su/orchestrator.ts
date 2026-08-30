@@ -11,6 +11,7 @@ import {
   castLucHaoRandom,
   castMaiHoa,
   castSeriTien,
+  type DoiTuongHoi,
   type QuanSuInterpretationPayload,
 } from "./divination";
 import { tinhVanTrinhHienTai, type LuckContext } from "./current-luck";
@@ -50,6 +51,8 @@ export interface RunQuanSuInput {
   ngaySinh?: NgaySinhInput;
   /** Mô tả tình huống người dùng nhập (chỉ đưa vào ngữ cảnh, không ảnh hưởng quẻ). */
   moTa?: string;
+  /** Hỏi việc cho ai — mặc định "chinh-toi". Đổi Dụng Thần theo Lục Thân đại diện người đó (§1.1). */
+  doiTuong?: DoiTuongHoi;
   /** Cho phép truyền RNG để test tái lập (mặc định Math.random). */
   rng?: () => number;
   /**
@@ -109,8 +112,12 @@ export async function runQuanSu(input: RunQuanSuInput): Promise<QuanSuResult> {
     method = "luc-hao-random";
   }
 
-  // 2) Vận trình hiện tại (nếu câu hỏi dùng Bát Tự/Tử Vi và có ngày sinh).
-  const canVanTrinh = question.recommended_engines.includes("bat-tu") || question.recommended_engines.includes("tu-vi");
+  // 2) Vận trình hiện tại (nếu câu hỏi dùng Bát Tự/Tử Vi và có ngày sinh). CHỈ chạy khi hỏi cho
+  //    CHÍNH người dùng — ngày sinh lấy từ hồ sơ tài khoản đăng nhập, nếu doiTuong là người khác
+  //    (cha mẹ, con...) thì vận trình này sẽ là của SAI người nên phải bỏ qua, không đưa vào ngữ cảnh.
+  const hoiChoChinhMinh = !input.doiTuong || input.doiTuong === "chinh-toi";
+  const canVanTrinh =
+    hoiChoChinhMinh && (question.recommended_engines.includes("bat-tu") || question.recommended_engines.includes("tu-vi"));
   const vanTrinh: LuckContext | null =
     canVanTrinh && input.ngaySinh
       ? tinhVanTrinhHienTai({
@@ -123,7 +130,7 @@ export async function runQuanSu(input: RunQuanSuInput): Promise<QuanSuResult> {
       : null;
 
   // 3) Đóng gói payload cho Advisory Engine.
-  const payload = buildInterpretationPayload(question, cast, { method, vanTrinh });
+  const payload = buildInterpretationPayload(question, cast, { method, vanTrinh, doiTuong: input.doiTuong });
 
   // 4) Báo cáo cố vấn bằng LUẬT — điểm số + verdict deterministic. Luôn chạy, vì đây là lưới an
   //    toàn: AI hỏng thì khách vẫn có kết quả để xem.

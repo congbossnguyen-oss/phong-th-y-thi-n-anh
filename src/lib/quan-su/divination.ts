@@ -34,7 +34,27 @@ import { tinhTamHopCuc, type KetQuaTamHopCuc } from "../luc-hao-tam-hop-cuc";
 export type DungThanHint =
   | { kind: "luc-than"; value: LucThan; note?: string }
   | { kind: "the-hao"; note?: string } // lấy Hào Thế làm Dụng Thần (sức khỏe, vận hạn chung)
+  | { kind: "ung-hao"; note?: string } // lấy Hào Ứng — hỏi việc cho NGƯỜI KHÁC chung (không phải lục thân cụ thể)
   | { kind: "framework"; ref: string; note: string }; // khung riêng (Thế-Ứng, 2 bước, 4 Dụng thần...)
+
+/**
+ * ĐỐI TƯỢNG được hỏi — khi hỏi việc cho NGƯỜI KHÁC (vd sức khỏe cha/mẹ), Dụng Thần đổi theo Lục
+ * Thân đại diện người đó (quy trình luận §1.1: "Cha mẹ → Phụ Mẫu; Con cái → Tử Tôn; Anh chị em/bạn
+ * → Huynh Đệ; Đối phương/người khác → Hào Ứng"; vợ/chồng theo hôn nhân: vợ → Thê Tài, chồng → Quan
+ * Quỷ). `chinh-toi` = không đổi, giữ Dụng Thần mặc định của nhóm câu hỏi.
+ */
+export type DoiTuongHoi = "chinh-toi" | "cha-me" | "con" | "vo" | "chong" | "anh-chi-em" | "nguoi-khac";
+
+/** Đối tượng → Dụng Thần thay thế. null = chính mình (giữ mặc định theo nhóm). */
+export const DOI_TUONG_TO_HINT: Record<DoiTuongHoi, DungThanHint | null> = {
+  "chinh-toi": null,
+  "cha-me": { kind: "luc-than", value: "Phụ Mẫu", note: "Hỏi việc cho cha/mẹ → Phụ Mẫu làm Dụng Thần (§1.1)." },
+  "con": { kind: "luc-than", value: "Tử Tôn", note: "Hỏi việc cho con cái → Tử Tôn làm Dụng Thần (§1.1)." },
+  "vo": { kind: "luc-than", value: "Thê Tài", note: "Hỏi việc cho vợ → Thê Tài làm Dụng Thần (§1.1)." },
+  "chong": { kind: "luc-than", value: "Quan Quỷ", note: "Hỏi việc cho chồng → Quan Quỷ làm Dụng Thần (§1.1)." },
+  "anh-chi-em": { kind: "luc-than", value: "Huynh Đệ", note: "Hỏi việc cho anh chị em/bạn bè → Huynh Đệ làm Dụng Thần (§1.1)." },
+  "nguoi-khac": { kind: "ung-hao", note: "Hỏi việc cho người khác (không thuộc lục thân cụ thể) → Hào Ứng đại diện người đó (§1.1)." },
+};
 
 const DUNG_THAN_BY_CATEGORY: Record<CategoryId, DungThanHint> = {
   "su-nghiep": { kind: "luc-than", value: "Quan Quỷ", note: "Công danh/chức vụ → Quan Quỷ (spec 4.1)." },
@@ -90,8 +110,16 @@ const DUNG_THAN_BY_CATEGORY: Record<CategoryId, DungThanHint> = {
   },
 };
 
-export function dungThanHintFor(category: CategoryId): DungThanHint {
-  return DUNG_THAN_BY_CATEGORY[category];
+/**
+ * `doiTuong` (nếu khác "chinh-toi") ghi đè Dụng Thần mặc định của nhóm — hỏi việc cho người thân thì
+ * Dụng Thần đổi theo Lục Thân đại diện người đó, không còn theo nhóm câu hỏi nữa (quy trình §1.1).
+ * Nhóm "framework" (Thế-Ứng, 4 Dụng Thần đồng thời...) giữ nguyên bất kể `doiTuong` — những nhóm đó
+ * vốn không dùng 1 Dụng Thần đơn nhất nên đổi đối tượng không áp dụng được.
+ */
+export function dungThanHintFor(category: CategoryId, doiTuong: DoiTuongHoi = "chinh-toi"): DungThanHint {
+  const macDinh = DUNG_THAN_BY_CATEGORY[category];
+  if (doiTuong === "chinh-toi" || macDinh.kind === "framework") return macDinh;
+  return DOI_TUONG_TO_HINT[doiTuong] ?? macDinh;
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -170,7 +198,8 @@ export interface QuanSuInterpretationPayload {
     title: string;
     output_type: QuestionDefinition["output_type"];
     safety_level: QuestionDefinition["safety_level"];
-    dung_than_hint: DungThanHint; // gợi ý Dụng Thần theo nhóm (Lớp 3 rule-based)
+    dung_than_hint: DungThanHint; // gợi ý Dụng Thần theo nhóm (Lớp 3 rule-based), đã áp dụng doi_tuong_hoi nếu có
+    doi_tuong_hoi: DoiTuongHoi; // hỏi việc cho ai — "chinh-toi" nếu không chọn
   };
   /** Nguyên văn kết quả engine lập quẻ — KHÔNG sửa đổi. Đây là nguồn sự thật, LLM không tự tính lại. */
   cast: FullCastResult;
@@ -198,7 +227,13 @@ export interface QuanSuInterpretationPayload {
 export function buildInterpretationPayload(
   question: QuestionDefinition,
   cast: FullCastResult,
-  opts: { vanTrinh?: LuckContext | null; method: QuanSuInterpretationPayload["meta"]["method"]; castAt?: Date } = {
+  opts: {
+    vanTrinh?: LuckContext | null;
+    method: QuanSuInterpretationPayload["meta"]["method"];
+    castAt?: Date;
+    /** Hỏi việc cho ai — mặc định "chinh-toi". Đổi Dụng Thần theo Lục Thân đại diện người đó. */
+    doiTuong?: DoiTuongHoi;
+  } = {
     method: "luc-hao-tosses",
   },
 ): QuanSuInterpretationPayload {
@@ -207,7 +242,7 @@ export function buildInterpretationPayload(
       `Câu hỏi "${question.question_id}" không dùng Kinh Dịch (divination_method=${question.divination_method}). Nhóm chọn ngày giờ đi theo trach-nhat, không qua đây.`,
     );
   }
-  const hint = dungThanHintFor(question.category);
+  const hint = dungThanHintFor(question.category, opts.doiTuong ?? "chinh-toi");
   return {
     question: {
       question_id: question.question_id,
@@ -216,6 +251,7 @@ export function buildInterpretationPayload(
       output_type: question.output_type,
       safety_level: question.safety_level,
       dung_than_hint: hint,
+      doi_tuong_hoi: opts.doiTuong ?? "chinh-toi",
     },
     cast,
     van_trinh: opts.vanTrinh ?? null,
@@ -244,6 +280,8 @@ function tinhUngKyTheoHint(cast: FullCastResult, hint: DungThanHint): KetQuaUngK
     ungVien = timHaoDungThan(cast, hint.value);
   } else if (hint.kind === "the-hao") {
     ungVien = [{ viTriHao: cast.chinh.theHao, laPhucThan: false }];
+  } else if (hint.kind === "ung-hao") {
+    ungVien = [{ viTriHao: cast.chinh.ungHao, laPhucThan: false }];
   } else {
     return null; // framework — không có Dụng Thần đơn nhất
   }

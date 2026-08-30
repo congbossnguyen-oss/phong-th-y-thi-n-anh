@@ -74,7 +74,7 @@ const KHAC: Record<string, string> = { Mộc: "Thổ", Thổ: "Thủy", Thủy: 
 // KHÔNG tự luận. Trả về hào + trạng thái (hiện / phục tàng / không hiện).
 interface DungThanResolved {
   hao: HaoInfo | null; // hào để chấm điểm
-  target: LucThan | "the-hao" | null;
+  target: LucThan | "the-hao" | "ung-hao" | null;
   trangThai: "hien" | "phuc_tang" | "khong_hien";
   lyDo: string;
 }
@@ -98,6 +98,15 @@ function resolveDungThan(chinh: QueDayDu, hint: QuanSuInterpretationPayload["que
       target: "the-hao",
       trangThai: the ? "hien" : "khong_hien",
       lyDo: hint.kind === "framework" ? "Loại việc cần khung riêng — bản này tạm chấm theo Hào Thế (chính anh/chị)." : "Chấm theo Hào Thế (chính anh/chị).",
+    };
+  }
+  if (hint.kind === "ung-hao") {
+    const ung = chinh.hao.find((h) => h.theUng === "Ứng") ?? null;
+    return {
+      hao: ung,
+      target: "ung-hao",
+      trangThai: ung ? "hien" : "khong_hien",
+      lyDo: "Hỏi việc cho người khác (không thuộc lục thân cụ thể) — chấm theo Hào Ứng (đại diện người đó).",
     };
   }
   // kind === "luc-than"
