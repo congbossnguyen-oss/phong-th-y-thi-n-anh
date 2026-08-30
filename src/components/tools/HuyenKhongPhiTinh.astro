@@ -427,6 +427,47 @@ Thành Môn xét theo VẬN HIỆN TẠI (Vận {kq.van_hien_tai}), không phả
               )}
             </section>
 
+            {kq.mo_cua_phu.length > 0 && (
+              <section>
+                <h2 class="font-display text-2xl font-bold text-(--color-ink-950)">Xét thêm các cung khác — mở cửa phụ đón vượng khí</h2>
+                <p class="mt-1 text-sm font-medium text-(--color-ink-700)">
+                  Ngoài Thành Môn ở 2 sơn liền kề Hướng, đây là các sơn khác trên vòng 24 sơn mà nếu mở thêm cửa/cổng phụ tại đó (có thủy/ao hồ/ngã ba/cổng ngõ thực tế) sẽ đón được vượng khí của Vận {kq.van_hien_tai}.
+                </p>
+
+                {kq.mo_cua_phu.some((m) => m.kha_dung) && (
+                  <div class="mt-3">
+                    <p class="text-sm font-bold text-emerald-700">✓ Đủ điều kiện</p>
+                    <div class="mt-2 space-y-2">
+                      {kq.mo_cua_phu.filter((m) => m.kha_dung).map((m) => (
+                        <div class="rounded-(--radius-control) border border-emerald-500/30 bg-emerald-500/[0.04] p-4 text-sm font-medium text-(--color-ink-800)">
+                          <p class="font-bold text-(--color-ink-950)">{m.son} ({m.cung_ten})</p>
+                          <p class="mt-1">Vượng tinh Vận {kq.van_hien_tai} bay về đúng sơn này. Âm/Dương: {m.am_duong}{m.am_duong_nguoc_cua_chinh ? " (ngược cửa chính — hợp lý)" : " (cùng cực cửa chính — chỉ tốt lúc đầu rồi suy)"}.</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {kq.mo_cua_phu.some((m) => !m.kha_dung) && (
+                  <div class="mt-4">
+                    <p class="text-sm font-bold text-(--color-danger-600)">✗ Xấu nếu mở — nên tránh dù có vẻ đắc vượng khí</p>
+                    <div class="mt-2 space-y-2">
+                      {kq.mo_cua_phu.filter((m) => !m.kha_dung).map((m) => (
+                        <div class="rounded-(--radius-control) border border-(--color-danger-500)/30 bg-(--color-danger-500)/[0.04] p-4 text-sm font-medium text-(--color-ink-800)">
+                          <p class="font-bold text-(--color-ink-950)">{m.son} ({m.cung_ten})</p>
+                          {m.canh_bao.map((cb) => <p class="mt-1 font-bold text-(--color-danger-600)">⚠️ {cb}</p>)}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                <p class="mt-3 text-xs italic text-(--color-ink-600)">
+                  Cửa phụ chỉ nên nằm gọn trong 1 sơn (~15°), không lấn sang cung bên cạnh, và cần có thủy/lối đi thực tế mới phát huy tác dụng.
+                </p>
+              </section>
+            )}
+
             <section>
               <h2 class="font-display text-2xl font-bold text-(--color-ink-950)">Chính Thần — Linh Thần — Chiếu Thần (bố trí thủy)</h2>
               <p class="mt-1 text-sm font-medium text-(--color-ink-700)">Quy tắc ngược trực giác: phương Chính Thần (đang vượng) KỴ THẤY NƯỚC; phương Linh Thần lại CÓ NƯỚC LÀ CÁT (chính); Chiếu Thần cũng có nước là cát nhưng là phụ trợ.</p>

@@ -66,6 +66,19 @@ Chính Thần / Linh Thần / Chiếu Thần theo vận (`chinhLinhThan()`), Thu
 (`thuSonXuatSat()`), và điều kiện Chân/Giả Thành Môn (3 điều kiện, cập nhật `timThanhMon()`) — cả 3
 đều là engine tính thuần, Free tier, 0đ, dựa trên `i-thu-son-xuat-sat-cua-chinh-duong-khi.md`.
 
+**⚠️ `xetMoCuaPhu()` — GỠ rồi DỰNG LẠI trong cùng ngày 30/8/2026 (2 lần):**
+1. Bản đầu quét 24 sơn nhưng seed sai (dùng vận-bàn tại chính cung ứng viên) — không khớp công thức
+   nguồn `thanh-mon.md` mục 7 ("lấy Vận tinh tại cung Hướng CHÍNH nhập trung"), và chỉ cảnh báo Ngũ
+   Hoàng, bỏ sót Nhị Hắc/Tam Bích/Thất Xích (anh Công phát hiện qua 2 lượt hỏi lại). Đã gỡ khỏi UI.
+2. Bản dựng lại: seed CỐ ĐỊNH = vận tinh tại cung Hướng chính (`vanBanHienTai[tb.cung_huong]`),
+   nhập trung, xoay theo Âm Dương của sơn ứng viên — khớp đúng ví dụ số trong nguồn (tọa Giáp hướng
+   Canh, Vận 8 → Dậu đắc vượng tinh 8, có test `xetMoCuaPhu — ví dụ gốc thanh-mon.md mục 7` khóa lại).
+   Loại trừ sơn Hướng/Tọa (đã là cửa chính/mặt sau). Đối chiếu Hướng tinh/Sơn tinh THẬT của nhà tại
+   từng cung để phân 2 nhóm: `kha_dung` (đủ điều kiện) và cảnh báo (`canh_bao[]`) khi phạm Ngũ Hoàng
+   (luôn hung, trừ Vận 5), Nhị Hắc/Tam Bích/Thất Xích đang thất vận (Bệnh Phù/Xi Vưu/Phá Quân — nguồn
+   `c-hoa-giai-sat-khi.md` mục 3-5), hoặc Sơn tinh đang vượng/sinh (thủy khẩu → tổn đinh). UI hiện cả
+   2 nhóm ("Đủ điều kiện" / "Xấu nếu mở") theo yêu cầu anh Công, không chỉ hiện mặt tốt.
+
 **⚠️ Tách VẬN NHÀ vs VẬN ĐƯƠNG LỆNH (30/8/2026, anh Công báo lỗi)** — điểm dễ sai nhất, đọc kỹ:
 Nhà nhập trạch năm nào thì thuộc vận đó (vd 2003 = Vận 7). Nhưng **vượng/suy của sao phải xét theo
 vận ĐANG CAI QUẢN (đương lệnh, hiện tại Vận 9)**, KHÔNG phải vận lúc lập trạch. Nhà Vận 7 xem trong
