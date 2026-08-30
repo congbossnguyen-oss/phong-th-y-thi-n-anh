@@ -884,10 +884,16 @@ export interface MoCuaPhuEntry {
  * Chỉ liệt kê sơn có "sao_ve_cung === vanHienTai" (đắc vượng khí hiện tại — điều kiện cần đầu
  * tiên). Trong số đó, đối chiếu thêm với Hướng tinh/Sơn tinh THẬT của nhà tại đúng cung đó
  * (không phải số tính riêng cho mở cửa phụ) để lọc ra cung nào thực sự an toàn (`kha_dung`) và
- * cung nào tuy đắc vượng theo công thức nhưng vẫn xấu (`canh_bao` không rỗng) — dựa trên
- * c-hoa-giai-sat-khi.md: Ngũ Hoàng (5) hung tuyệt đối; Nhị Hắc (2 - Bệnh Phù), Tam Bích
- * (3 - Xi Vưu/tranh chấp), Thất Xích (7 - Phá Quân/trộm cướp-hỏa tai) hung khi đang SUY/TỬ (thất
- * vận); và quy tắc Sơn tinh vượng/sinh tại thủy khẩu → tổn đinh (giống điều kiện 3 của timThanhMon).
+ * cung nào tuy đắc vượng theo công thức nhưng vẫn xấu (`canh_bao` không rỗng):
+ *   - Ngũ Hoàng (5) hung tuyệt đối (c-hoa-giai-sat-khi.md), trừ đúng Vận 5.
+ *   - Hướng tinh THẬT tại đó đang SUY/TỬ/TỬ-XA (thất vận, khí đã yếu/chết trong tinh bàn thật của
+ *     nhà) → loại, dù công thức mở cửa phụ (con số cục bộ, khác Hướng Bàn thật — xem chú thích
+ *     trên) tính ra "đắc vượng". Đây là điều kiện BỔ SUNG do anh Công yêu cầu 31/8/2026 (nguồn
+ *     thanh-mon.md không nói rõ 2 con số này mâu thuẫn thì bên nào thắng — anh Công chọn ưu tiên
+ *     khí THẬT tại đó, không tin số cục bộ nếu Hướng tinh thật đã chết). Nếu số cụ thể là Nhị Hắc
+ *     (2 - Bệnh Phù), Tam Bích (3 - Xi Vưu/tranh chấp), Thất Xích (7 - Phá Quân/trộm cướp-hỏa tai)
+ *     thì nêu rõ tên hung tinh (c-hoa-giai-sat-khi.md mục 3-5); các số còn lại nêu chung chung.
+ *   - Sơn tinh THẬT vượng/sinh tại thủy khẩu → tổn đinh (giống điều kiện 3 của timThanhMon).
  * Bỏ qua sơn Hướng chính và sơn Tọa (đã là cửa chính/mặt sau, không phải "cửa phụ").
  * Vẫn cần thủy/ao hồ/ngã ba/cổng ngõ thực tế mới phát huy (thanh-mon.md mục 5, áp dụng chung).
  *
@@ -897,10 +903,11 @@ export function xetMoCuaPhu(tb: TinhBan, vanHienTai: number = tb.van): MoCuaPhuE
   const vanBanHienTai = bayTinh(vanHienTai, true);
   const seed = vanBanHienTai[tb.cung_huong];
   const HUNG_TINH: Record<number, string> = {
-    2: "Nhị Hắc (Bệnh Phù) đang thất vận tại đây — dễ sinh bệnh tật, không nên mở cửa dù đắc vượng khí theo công thức mở cửa phụ",
-    3: "Tam Bích (Xi Vưu) đang thất vận tại đây — dễ sinh tranh chấp/kiện tụng, không nên mở cửa dù đắc vượng khí theo công thức mở cửa phụ",
-    7: "Thất Xích (Phá Quân) đang thất vận tại đây — dễ trộm cướp/hỏa tai, không nên mở cửa dù đắc vượng khí theo công thức mở cửa phụ",
+    2: "Nhị Hắc (Bệnh Phù) đang thất vận tại đây — dễ sinh bệnh tật",
+    3: "Tam Bích (Xi Vưu) đang thất vận tại đây — dễ sinh tranh chấp/kiện tụng",
+    7: "Thất Xích (Phá Quân) đang thất vận tại đây — dễ trộm cướp/hỏa tai",
   };
+  const KHI_CHET: TrangThaiKhi[] = ["SUY", "TỬ", "TỬ/XA"];
 
   const ketQua: MoCuaPhuEntry[] = [];
   for (const ten of Object.keys(SON_24)) {
@@ -919,8 +926,12 @@ export function xetMoCuaPhu(tb: TinhBan, vanHienTai: number = tb.van): MoCuaPhuE
     const canhBao: string[] = [];
     if (htThat === 5 && vanHienTai !== 5) {
       canhBao.push("Ngũ Hoàng (sát khí mạnh nhất, hung bất kể sinh khắc) đang tại đây — không nên mở cửa dù đắc vượng khí theo công thức mở cửa phụ");
-    } else if ((ttHuong === "SUY" || ttHuong === "TỬ") && HUNG_TINH[htThat]) {
-      canhBao.push(HUNG_TINH[htThat]);
+    } else if (KHI_CHET.includes(ttHuong)) {
+      const tenHung = HUNG_TINH[htThat];
+      canhBao.push(
+        (tenHung ? tenHung + " — " : `Hướng tinh ${htThat} tại đây đang ${ttHuong} (khí đã yếu/chết) — `) +
+        "không nên mở cửa dù công thức mở cửa phụ tính ra đắc vượng khí, vì Hướng tinh THẬT tại đây đang thất vận"
+      );
     }
     if (ttSon === "VƯỢNG" || ttSon === "SINH") {
       canhBao.push(`Sơn tinh ${stThat} tại đây đang ${ttSon} — mở cửa (thủy khẩu) tại đây dễ TỔN ĐINH`);
