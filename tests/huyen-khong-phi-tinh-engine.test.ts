@@ -375,4 +375,30 @@ describe("xetMoCuaPhu — ví dụ gốc thanh-mon.md mục 7 (tọa Giáp hư�
       }
     }
   });
+
+  it("cung có Hướng tinh THẬT đang SUY/TỬ/TỬ-XA luôn bị loại (anh Công 31/8/2026: không tin số cục bộ nếu khí thật đã chết)", () => {
+    for (const van of [1, 2, 3, 4, 5, 6, 7, 8, 9]) {
+      for (const son of Object.keys(SON_24)) {
+        const t = lapTinhBan(SON_24[son][0], van);
+        for (const m of xetMoCuaPhu(t, van)) {
+          if (m.tt_huong_tinh === "SUY" || m.tt_huong_tinh === "TỬ" || m.tt_huong_tinh === "TỬ/XA") {
+            expect(m.kha_dung).toBe(false);
+          }
+        }
+      }
+    }
+  });
+
+  it("kha_dung=true chỉ khi Hướng tinh thật đang VƯỢNG hoặc SINH và không phải Ngũ Hoàng thất vận", () => {
+    for (const van of [1, 2, 3, 4, 5, 6, 7, 8, 9]) {
+      for (const son of Object.keys(SON_24)) {
+        const t = lapTinhBan(SON_24[son][0], van);
+        for (const m of xetMoCuaPhu(t, van)) {
+          if (m.kha_dung) {
+            expect(["VƯỢNG", "SINH"]).toContain(m.tt_huong_tinh);
+          }
+        }
+      }
+    }
+  });
 });

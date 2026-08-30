@@ -78,6 +78,14 @@ Chính Thần / Linh Thần / Chiếu Thần theo vận (`chinhLinhThan()`), Thu
    (luôn hung, trừ Vận 5), Nhị Hắc/Tam Bích/Thất Xích đang thất vận (Bệnh Phù/Xi Vưu/Phá Quân — nguồn
    `c-hoa-giai-sat-khi.md` mục 3-5), hoặc Sơn tinh đang vượng/sinh (thủy khẩu → tổn đinh). UI hiện cả
    2 nhóm ("Đủ điều kiện" / "Xấu nếu mở") theo yêu cầu anh Công, không chỉ hiện mặt tốt.
+3. **Bổ sung 31/8/2026 (anh Công phát hiện)**: con số "đắc vượng" của `xetMoCuaPhu` là số tính CỤC BỘ
+   riêng cho từng sơn (không phải Hướng tinh có sẵn trong tinh bàn — xem docstring hàm). Với ví dụ
+   Đông hướng/2003 xem ở Vận 9: Canh tính ra "đắc vượng" nhưng Hướng tinh THẬT tại Tây đang là 3
+   (Tam Bích), TỬ/XA — anh Công: *"hướng tinh ở tây là 3 thì anh nghĩ không mở được cửa phụ"*. Nguồn
+   `thanh-mon.md` không nói rõ 2 con số mâu thuẫn thì bên nào thắng — đã hỏi lại và anh Công chọn:
+   **Hướng tinh THẬT phải đang VƯỢNG/SINH thì mới `kha_dung=true`; SUY/TỬ/TỬ-XA thì loại hẳn sang
+   nhóm "xấu nếu mở"**, dù công thức mở cửa phụ tính ra đắc vượng. Khóa lại bằng 2 test trong
+   `tests/huyen-khong-phi-tinh-engine.test.ts`.
 
 **⚠️ Tách VẬN NHÀ vs VẬN ĐƯƠNG LỆNH (30/8/2026, anh Công báo lỗi)** — điểm dễ sai nhất, đọc kỹ:
 Nhà nhập trạch năm nào thì thuộc vận đó (vd 2003 = Vận 7). Nhưng **vượng/suy của sao phải xét theo
