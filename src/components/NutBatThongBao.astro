@@ -21,7 +21,7 @@ const vapidPublicKey = docBien("VAPID_PUBLIC_KEY") || "";
         <strong>Nhắc ngày Rằm và mùng Một</strong>
         <span class="tb-trangthai" id="tb-trangthai">Đang tắt</span>
       </div>
-      <span id="tb-mo-ta">Để Quân Sư nhắc quý bằng hữu lo chuyện thờ cúng, khỏi quên.</span>
+      <span id="tb-mo-ta">Nhắc trước ngày Rằm, mùng Một để khỏi quên.</span>
     </div>
     <button type="button" id="tb-nut" class="tb-nut">Bật nhắc</button>
   </div>
@@ -73,7 +73,7 @@ const vapidPublicKey = docBien("VAPID_PUBLIC_KEY") || "";
 
       // Trình duyệt/WebView không hỗ trợ Push thì khoá nút, GHI RÕ lý do thay vì ẩn khối.
       if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
-        moTa.textContent = "Trình duyệt hoặc ứng dụng đang mở KHÔNG hỗ trợ thông báo đẩy — thử mở bằng Chrome/Safari ngoài trình duyệt trong app, hoặc cập nhật lên phiên bản mới hơn.";
+        moTa.textContent = "Trình duyệt này chưa hỗ trợ. Hãy mở bằng Chrome hoặc Safari.";
         nut.disabled = true;
         nut.textContent = "Không hỗ trợ";
         return;
@@ -85,7 +85,7 @@ const vapidPublicKey = docBien("VAPID_PUBLIC_KEY") || "";
       const daCaiVeManHinh = window.matchMedia("(display-mode: standalone)").matches || window.navigator.standalone === true;
 
       if (laIOS && !daCaiVeManHinh) {
-        moTa.textContent = "Trên iPhone, hãy bấm nút Chia sẻ rồi chọn “Thêm vào MH chính”, sau đó mở lại từ biểu tượng ngoài màn hình để bật nhắc.";
+        moTa.textContent = "Trên iPhone: bấm Chia sẻ → Thêm vào MH chính, rồi mở lại từ biểu tượng đó.";
         nut.disabled = true;
         nut.textContent = "Cần thêm vào màn hình";
         return;
@@ -105,7 +105,7 @@ const vapidPublicKey = docBien("VAPID_PUBLIC_KEY") || "";
       } catch (e) {
         // Trước đây ẩn cả khối (hop.hidden = true) khi đăng ký service worker lỗi — khách không
         // thấy gì, không biết vì sao. Giờ giữ khối hiện, khoá nút, ghi rõ ra để còn báo lại được.
-        moTa.textContent = "Không đăng ký được thông báo trên máy này (lỗi Service Worker). Thử tải lại trang, hoặc báo lại cho Thiên Anh giúp em.";
+        moTa.textContent = "Không bật được trên máy này. Thử tải lại trang.";
         nut.disabled = true;
         nut.textContent = "Lỗi — không dùng được";
         return;
@@ -117,7 +117,7 @@ const vapidPublicKey = docBien("VAPID_PUBLIC_KEY") || "";
         if (dangBat) {
           nut.textContent = "Tắt nhắc";
           nut.classList.add("tb-tat");
-          moTa.textContent = "Quân Sư sẽ nhắc quý bằng hữu trước mỗi dịp Rằm và mùng Một.";
+          moTa.textContent = "Sẽ nhắc trước mỗi dịp Rằm và mùng Một.";
         } else {
           nut.textContent = "Bật nhắc";
           nut.classList.remove("tb-tat");
@@ -156,7 +156,7 @@ const vapidPublicKey = docBien("VAPID_PUBLIC_KEY") || "";
         let quyen = Notification.permission;
         if (quyen === "default") quyen = await Notification.requestPermission();
         if (quyen !== "granted") {
-          moTa.textContent = "Trình duyệt đang chặn thông báo. Hãy mở phần cài đặt của trang và cho phép, rồi bật lại.";
+          moTa.textContent = "Trình duyệt đang chặn. Vào cài đặt trang, cho phép rồi bật lại.";
           nut.disabled = false;
           return;
         }
@@ -174,7 +174,7 @@ const vapidPublicKey = docBien("VAPID_PUBLIC_KEY") || "";
           });
           if (!res.ok) throw new Error("luu that bai");
         } catch (e) {
-          moTa.textContent = "Chưa bật được, quý bằng hữu thử lại giúp.";
+          moTa.textContent = "Chưa bật được, thử lại giúp em.";
           nut.disabled = false;
           return;
         }
