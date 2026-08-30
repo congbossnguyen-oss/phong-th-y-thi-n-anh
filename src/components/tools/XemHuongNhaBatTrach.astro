@@ -165,7 +165,7 @@ import Container from "../../components/ui/Container.astro";
     goiYBoTri: { coBan: { ten: string; datOPhuong: "cat" | "hung"; ghiChu: string }[]; nguyenTacUuTien: string; hoaGiaiNeuKhongHop: string[] | null; daiKyLoanDau: string[] };
     hungSatDacBiet: {
       hoangTuyen: { apDung: boolean; sonHuong?: string; canhBao?: string; sonKy?: string[] };
-      batSat: { cungHuong: string; sonPham: string; anhHuong: string };
+      batSat: { cungToa: string; sonPham: string; anhHuong: string };
     };
   }
   interface KetQuaTamYeu {
@@ -395,12 +395,12 @@ import Container from "../../components/ui/Container.astro";
       </div>
 
       <div class="rounded-2xl border border-(--color-ivory-300) bg-(--color-ivory-100) p-5">
-        <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-400)">Hoàng Tuyền – Bát Sát (theo hướng nhà)</p>
+        <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-400)">Hoàng Tuyền (theo hướng) – Bát Sát (theo tọa)</p>
         <div class="mt-2 space-y-1.5 text-sm text-(--color-ink-700)">
-          <p>${r.hungSatDacBiet.hoangTuyen.apDung ? `⚠️ ${r.hungSatDacBiet.hoangTuyen.canhBao}` : "Hoàng Tuyền: không áp dụng ở hướng này (chỉ xét 8 Thiên Can + 4 Duy)."}</p>
-          <p>⚠️ Bát Sát: kỵ tại sơn <strong>${r.hungSatDacBiet.batSat.sonPham}</strong> — ${r.hungSatDacBiet.batSat.anhHuong}.</p>
+          <p>${r.hungSatDacBiet.hoangTuyen.apDung ? `⚠️ Hoàng Tuyền (theo hướng): ${r.hungSatDacBiet.hoangTuyen.canhBao}` : "Hoàng Tuyền (theo hướng): không áp dụng ở hướng này (chỉ xét 8 Thiên Can + 4 Duy)."}</p>
+          <p>⚠️ Bát Sát (theo tọa ${r.hungSatDacBiet.batSat.cungToa}): kỵ tại sơn <strong>${r.hungSatDacBiet.batSat.sonPham}</strong> — ${r.hungSatDacBiet.batSat.anhHuong}.</p>
         </div>
-        <p class="mt-2 text-[11px] text-(--color-ink-400)">Cần độ số chính xác tới sơn 15° — nếu chỉ chọn nhanh 8 hướng, Hoàng Tuyền chỉ hiện đúng khi hướng rơi đúng 1 trong 4 hướng chéo (ĐB/ĐN/TN/TB).</p>
+        <p class="mt-2 text-[11px] text-(--color-ink-400)">Bát Sát (Tọa Sơn Bát Sát) tính theo TỌA nhà = lưng nhà (đối diện hướng); Hoàng Tuyền tính theo HƯỚNG. Cần độ số chính xác tới sơn 15° — nếu chỉ chọn nhanh 8 hướng, Hoàng Tuyền chỉ hiện đúng khi hướng rơi đúng 1 trong 4 hướng chéo (ĐB/ĐN/TN/TB).</p>
       </div>
     `;
     ketQuaToiThieuEl.classList.remove("hidden");
