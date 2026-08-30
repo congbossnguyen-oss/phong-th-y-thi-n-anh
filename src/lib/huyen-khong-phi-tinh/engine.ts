@@ -610,7 +610,7 @@ export function nhanDienCachCuc(tb: TinhBan): CachCuc[] {
       `Ba cung: ${baCung}. ${manh} ⚠ ĐIỀU KIỆN BẮT BUỘC: CẢ BA cung phải THÔNG KHÍ (có cửa/cửa ` +
       `sổ/đường/hành lang/cầu thang), trong đó ÍT NHẤT 1 cung phải có CỬA CHÍNH. Chỉ cần MỘT ` +
       `trong ba cung không thông khí thì đả kiếp KHÔNG THÀNH và biến thành cách cục "hạ thủy" — ` +
-      `TỔN NHÂN ĐINH. Engine không biết thực địa nên KHÔNG thể xác nhận điều kiện này; người luận ` +
+      `TỔN NHÂN ĐINH. Công cụ không biết thực địa nên KHÔNG thể xác nhận điều kiện này; người luận ` +
       `phải tự kiểm tra.`]);
   }
 
