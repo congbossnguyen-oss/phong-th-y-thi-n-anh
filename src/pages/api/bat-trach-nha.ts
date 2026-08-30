@@ -1,5 +1,6 @@
 import type { APIRoute } from "astro";
 import { BatTrachNha } from "@thien-anh/rule-engine";
+import { nienTinhNhapTrung } from "../../lib/huyen-khong-phi-tinh/engine";
 
 export const prerender = false;
 
@@ -91,7 +92,12 @@ export const GET: APIRoute = async ({ url, locals }) => {
 
     const namCanXemRaw = p.get("namCanXem");
     const namCanXem = namCanXemRaw !== null ? Number(namCanXemRaw) : null;
-    const luuNien = namCanXem !== null && Number.isInteger(namCanXem) ? BatTrachNha.luanLuuNien(namSinh, namCanXem) : null;
+    // Niên Tinh nhập trung KHÔNG tự tính trong package (nguyên tắc bao-trùm) — lấy từ engine
+    // huyen-khong-phi-tinh đã có sẵn trên site, truyền số sao vào luanLuuNien.
+    const luuNien =
+      namCanXem !== null && Number.isInteger(namCanXem)
+        ? BatTrachNha.luanLuuNien(namSinh, namCanXem, toiThieu.cungMenh, nienTinhNhapTrung(namCanXem))
+        : null;
 
     return jsonResponse({ toiThieu, tamYeu, xuyenCung, luuNien, config }, 200);
   } catch (err) {

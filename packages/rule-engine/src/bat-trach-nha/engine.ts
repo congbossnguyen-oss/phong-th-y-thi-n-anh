@@ -15,6 +15,7 @@ import { xetSinhKhacCungSaoCaHai, CUNG_THANH_VIEN_GIA_DINH, type SinhKhacCaHaiPh
 import { tinhXuyenCungTang, type KetQuaXuyenCungTang } from "./xuyenCungTang.js";
 import { tinhThaiTuePhuongVi, tinhDoThien, type KetQuaThaiTuePhuongVi, type KetQuaDoThien } from "./thaiTue.js";
 import { THIEN_TINH_THEO_KHI } from "./thienTinhCa.js";
+import { tinhNienTinhHopMenh, type KetQuaNienTinh } from "./nienTinh.js";
 
 type NguHanh = Data.NguHanh;
 
@@ -137,17 +138,25 @@ export function luanXuyenCung(toaCung: CungBatTrach, monCung: CungBatTrach, soTa
 }
 
 // -----------------------------------------------------------------------------------------------
-// LỚP + NĂM CẦN XEM — Thái Tuế/Tuế Phá/Tam Sát (phương vị) + Đô Thiên (theo Can năm sinh).
+// LỚP + NĂM CẦN XEM — Thái Tuế/Tuế Phá/Tam Sát (phương vị) + Đô Thiên (theo Can năm sinh) +
+// Niên Tinh hợp mệnh (ADDENDUM mục 2 — "xem năm nay nhà/tuổi này có hợp không").
 // -----------------------------------------------------------------------------------------------
 export interface KetQuaLuuNien {
   thaiTue: KetQuaThaiTuePhuongVi;
   doThien: KetQuaDoThien;
+  /**
+   * null khi caller không truyền `cungMenh` + `saoNamNayNhapTrung` — 2 tham số này KHÔNG tự tính
+   * trong package (đúng nguyên tắc bao-trùm, xem nienTinh.ts): `saoNamNayNhapTrung` phải lấy từ
+   * `nienTinhNhapTrung()` của engine `huyen-khong-phi-tinh` (app layer, `src/lib/`) rồi truyền vào.
+   */
+  nienTinh: KetQuaNienTinh | null;
 }
 
-export function luanLuuNien(namSinh: number, namCanXem: number): KetQuaLuuNien {
+export function luanLuuNien(namSinh: number, namCanXem: number, cungMenh?: CungBatTrach, saoNamNayNhapTrung?: number): KetQuaLuuNien {
   return {
     thaiTue: tinhThaiTuePhuongVi(namCanXem),
     doThien: tinhDoThien(namSinh),
+    nienTinh: cungMenh !== undefined && saoNamNayNhapTrung !== undefined ? tinhNienTinhHopMenh(cungMenh, saoNamNayNhapTrung) : null,
   };
 }
 

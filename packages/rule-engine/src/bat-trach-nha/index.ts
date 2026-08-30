@@ -7,4 +7,5 @@ export * from "./xuyenCungTang.js";
 export * from "./thienTinhCa.js";
 export * from "./boTri.js";
 export * from "./tamYeu.js";
+export * from "./nienTinh.js";
 export * from "./engine.js";

@@ -69,4 +69,15 @@ describe("bat-trach-nha — engine.luanXuyenCung + luanLuuNien", () => {
     expect(ket.doThien.sonDoThien).toHaveLength(2);
     expect(ket.thaiTue.namChi).toBeDefined();
   });
+
+  it("Lưu niên KHÔNG kèm Niên Tinh khi không truyền cungMenh + saoNamNayNhapTrung (không tự bịa)", () => {
+    const ket = luanLuuNien(1990, 2026);
+    expect(ket.nienTinh).toBeNull();
+  });
+
+  it("Lưu niên CÓ kèm Niên Tinh khi truyền đủ cungMenh + saoNamNayNhapTrung", () => {
+    const ket = luanLuuNien(1990, 2026, "Khảm", 1);
+    expect(ket.nienTinh).not.toBeNull();
+    expect(ket.nienTinh?.apDung).toBe(true);
+  });
 });
