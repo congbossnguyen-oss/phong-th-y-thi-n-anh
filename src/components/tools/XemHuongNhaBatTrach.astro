@@ -419,18 +419,18 @@ import Container from "../../components/ui/Container.astro";
       "tranh-tuyet-doi": "text-(--color-cinnabar-500)",
       "binh-thuong": "text-(--color-ink-600)",
     };
+    // Ô Bát Cung chưa có dữ liệu (nguồn chưa đủ) thì ẩn hẳn khối này — KHÔNG hiển thị bất kỳ ghi
+    // chú "đang bổ sung"/kỹ thuật nào ra cho người dùng (anh Công 30/8/2026).
     const batCungHtml = r.batCungXoayChuyen
       ? `<div class="rounded-xl border border-(--color-gold-300) bg-(--color-gold-400)/5 p-4 text-sm">
           <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-500)">Bát Cung Xoay Chuyển (Chân Pháp) — Tọa nhà × phương Cửa</p>
           <p class="mt-1.5 text-(--color-ink-700)">${r.batCungXoayChuyen}</p>
         </div>`
-      : `<div class="rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200) p-4 text-xs text-(--color-ink-500)">
-          Bát Cung Xoay Chuyển: tổ hợp Tọa/Cửa này trong nguồn Chân Pháp đang bị mờ chữ (OCR) — đang bổ sung.
-        </div>`;
+      : "";
     ketQuaTamYeuEl.innerHTML = `
       <div class="rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200) p-4 text-sm">
         <p><strong>Cửa ↔ Chủ:</strong> ${r.tamYeu.tenKhiChu} — thành viên chịu ảnh hưởng rõ nhất nếu xấu: ${r.thanhVienAnhHuongNeuXauChu}.</p>
-        <p class="mt-1 italic text-(--color-ink-600)">Lời tượng: "${r.loiTuongCuaChu.cau}"${r.loiTuongCuaChu.ocrMo ? ` <span class="text-[11px] not-italic text-(--color-ink-400)">(chữ OCR mờ, đang đối chiếu)</span>` : ""}</p>
+        <p class="mt-1 italic text-(--color-ink-600)">Lời tượng: "${r.loiTuongCuaChu.cau}"</p>
         <p class="mt-1"><strong>Cửa ↔ Bếp:</strong> ${r.tamYeu.tenKhiBep} — <span class="${dgMau[r.tamYeu.danhGiaBep]} font-semibold">${dgLabel[r.tamYeu.danhGiaBep]}</span>. ${r.tamYeu.ghiChuBep}</p>
         ${r.thienTinhBep.length ? `<p class="mt-1 text-xs text-(--color-ink-500)">Thiên Tinh tại Bếp: ${r.thienTinhBep.map((t) => `${t.ten} (${t.chuVe})`).join("; ")}</p>` : ""}
       </div>
