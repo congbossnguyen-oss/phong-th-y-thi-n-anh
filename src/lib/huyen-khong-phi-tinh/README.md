@@ -72,12 +72,16 @@ vận ĐANG CAI QUẢN (đương lệnh, hiện tại Vận 9)**, KHÔNG phải 
 Vận 9 là nhà "thoái vận" — Hướng tinh 7 lúc lập trạch vượng, nay đã thành tử khí.
 - `tinhToanHuyenKhong(doHuong, vanNha, { vanHienTai })` — `vanHienTai` mặc định = `vanNha` (nhà đúng
   vận thì 2 vận trùng). Kết quả có `van_nha`, `van_hien_tai`, `da_thoai_van`.
-- **Theo VẬN NHÀ (cố định):** tinh bàn (`lapTinhBan`), nhãn cách cục (`nhanDienCachCuc` — VSVH, TSHT,
-  Song Tinh…), **Thành Môn + mở cửa phụ** (`timThanhMon`/`xetMoCuaPhu` — anh Công: "Thành Môn là cố
-  định").
+- **Theo VẬN NHÀ (kết cấu cố định của lá số):** tinh bàn (`lapTinhBan`), nhãn cách cục
+  (`nhanDienCachCuc` — VSVH, TSHT, Song Tinh…).
 - **Theo VẬN ĐƯƠNG LỆNH:** vượng/suy 9 sao (`trangThaiSao`), `phanTichCung` (tt_son/tt_huong, ý nghĩa
   cặp Vận 9 gate theo vanHienTai, cảnh báo Ngũ Hoàng/Nhị Hắc thất vận), `chinhLinhThan`,
-  `thuSonXuatSat`, `phanTichLuuNien` (hợp thập lưu niên).
+  `thuSonXuatSat`, `phanTichLuuNien` (hợp thập lưu niên), **và Thành Môn + mở cửa phụ**
+  (`timThanhMon`/`xetMoCuaPhu`) — sửa 30/8/2026 (anh Công: "bây giờ đang là vận 9 nhé"): VỊ TRÍ 2 sơn
+  Thành Môn cố định theo tọa-hướng (hình học), nhưng KHẢ DỤNG (chân/giả) xét theo vận đương lệnh —
+  dùng vận bàn `bayTinh(vanHienTai)` + so vượng tinh vận hiện tại. Căn cứ: `thanh-mon.md` có ví dụ
+  "cùng sơn Tý, Vận 8 không dùng được nhưng Vận 9 lại dùng được". (Trước đó từng hiểu nhầm "Thành Môn
+  cố định" = giữ theo vận nhà; nay đã sửa cho đúng: chỉ VỊ TRÍ cố định, khả dụng đổi theo vận.)
 - UI + AI đều hiện cảnh báo "THOÁI VẬN" khi `da_thoai_van`, và nói rõ cách cục Vận cũ nay đã mất thời.
 - `vanHienTai` luôn tính lại ở SERVER từ năm hiện tại (component + route AI), không tin client.
 
