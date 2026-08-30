@@ -16,6 +16,8 @@ import { tinhXuyenCungTang, type KetQuaXuyenCungTang } from "./xuyenCungTang.js"
 import { tinhThaiTuePhuongVi, tinhDoThien, type KetQuaThaiTuePhuongVi, type KetQuaDoThien } from "./thaiTue.js";
 import { THIEN_TINH_THEO_KHI } from "./thienTinhCa.js";
 import { tinhNienTinhHopMenh, tinhNguyetTinhHopMenh, type KetQuaNienTinh } from "./nienTinh.js";
+import { luanBatCungXoayChuyen } from "./batCungXoayChuyen.js";
+import { loiTuongCuaChu, type LoiTuong } from "./loiTuong.js";
 
 type NguHanh = Data.NguHanh;
 
@@ -116,9 +118,17 @@ export interface KetQuaTamYeuVaSinhKhac {
   thienTinhBep: (typeof THIEN_TINH_THEO_KHI)[KhiBatTrach];
   thanhVienAnhHuongNeuXauChu: string;
   thanhVienAnhHuongNeuXauBep: string;
+  /**
+   * Luận Bát Cung Xoay Chuyển (Chân Pháp Phụ lục 4): đoạn luận CHI TIẾT khi phối TỌA nhà × phương
+   * CỬA. Chỉ có khi caller truyền `toaCung` (từ `luanBatTrachToiThieu().toa.cung`). null nếu không
+   * truyền toaCung HOẶC ô đó OCR chưa tách sạch (đang bổ sung).
+   */
+  batCungXoayChuyen: string | null;
+  /** Lời tượng cổ văn của tổ hợp Cửa × Chủ (Dương Trạch Tam Yếu, Tập 3). `ocrMo` = câu OCR mờ. */
+  loiTuongCuaChu: LoiTuong;
 }
 
-export function luanTamYeuVaSinhKhac(input: DauVaoTamYeu): KetQuaTamYeuVaSinhKhac {
+export function luanTamYeuVaSinhKhac(input: DauVaoTamYeu, toaCung?: CungBatTrach): KetQuaTamYeuVaSinhKhac {
   const tamYeu = tinhDuongTrachTamYeu(input);
   return {
     tamYeu,
@@ -127,6 +137,8 @@ export function luanTamYeuVaSinhKhac(input: DauVaoTamYeu): KetQuaTamYeuVaSinhKha
     thienTinhBep: THIEN_TINH_THEO_KHI[tamYeu.khiBep],
     thanhVienAnhHuongNeuXauChu: CUNG_THANH_VIEN_GIA_DINH[input.chuCung],
     thanhVienAnhHuongNeuXauBep: CUNG_THANH_VIEN_GIA_DINH[input.bepCung],
+    batCungXoayChuyen: toaCung !== undefined ? luanBatCungXoayChuyen(toaCung, input.cuaCung) : null,
+    loiTuongCuaChu: loiTuongCuaChu(input.cuaCung, input.chuCung),
   };
 }
 

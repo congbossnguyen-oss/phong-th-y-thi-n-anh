@@ -8,4 +8,7 @@ export * from "./thienTinhCa.js";
 export * from "./boTri.js";
 export * from "./tamYeu.js";
 export * from "./nienTinh.js";
+export * from "./batCungXoayChuyen.js";
+export * from "./cungTaiKhuyetGoc.js";
+export * from "./loiTuong.js";
 export * from "./engine.js";

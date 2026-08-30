@@ -75,7 +75,7 @@ export const GET: APIRoute = async ({ url }) => {
     const cuaCung = docCung(p.get("cuaCung"));
     const chuCung = docCung(p.get("chuCung"));
     const bepCung = docCung(p.get("bepCung"));
-    const tamYeu = cuaCung && chuCung && bepCung ? BatTrachNha.luanTamYeuVaSinhKhac({ cuaCung, chuCung, bepCung }) : null;
+    const tamYeu = cuaCung && chuCung && bepCung ? BatTrachNha.luanTamYeuVaSinhKhac({ cuaCung, chuCung, bepCung }, toiThieu.toa.cung) : null;
 
     const soTangRaw = p.get("soTang");
     const soTang = soTangRaw !== null ? Number(soTangRaw) : null;
@@ -100,7 +100,21 @@ export const GET: APIRoute = async ({ url }) => {
         ? BatTrachNha.luanLuuNien(namSinh, namCanXem, toiThieu.cungMenh, nienTinhNhapTrung(namCanXem), saoThang)
         : null;
 
-    return jsonResponse({ toiThieu, tamYeu, xuyenCung, luuNien, config }, 200);
+    // Cung tài & khuyết góc (bản đồ phổ thông theo phương vị, tách biệt với luận theo mệnh). Bảng
+    // + mẹo bố trí luôn kèm; phần "khuyết góc" chỉ khi người dùng chọn cung khuyết (param khuyetGoc
+    // = danh sách cung phân cách dấu phẩy).
+    const khuyetGoc = (p.get("khuyetGoc") ?? "")
+      .split(",")
+      .map((s) => docCung(s.trim()))
+      .filter((c): c is CungParam => c !== null);
+    const cungTai = {
+      bang: BatTrachNha.CUNG_LINH_VUC,
+      meoBoTri: BatTrachNha.MEO_BO_TRI_CUNG,
+      ghiChuTrungCung: BatTrachNha.GHI_CHU_TRUNG_CUNG,
+      khuyet: khuyetGoc.length > 0 ? BatTrachNha.luanKhuyetGoc(khuyetGoc) : [],
+    };
+
+    return jsonResponse({ toiThieu, tamYeu, xuyenCung, luuNien, cungTai, config }, 200);
   } catch (err) {
     return jsonResponse({ error: err instanceof Error ? err.message : "Không tính được." }, 400);
   }
