@@ -1,16 +1,15 @@
 ---
-// Công cụ "Xem phong thủy nhà theo Huyền Không Phi Tinh" — bản TÍNH TOÁN (Free, 0đ, không AI) +
-// luận AI. CHỈ ADMIN XEM ĐƯỢC — anh Công 30/8/2026: "phần huyền không này em để chỉ admin nhìn
-// thấy thôi, anh đang cần tính toán, và là công cụ của anh" (đảo lại quyết định "để công khai"
-// trước đó cùng ngày — đây là công cụ riêng của anh Công, không phải sản phẩm cho khách). KHÔNG
-// đăng ký ở site-config.ts / dai-cat-loi-tools.ts — chỉ vào được qua URL trực tiếp lúc đã đăng
-// nhập admin.
+// Công cụ "Xem phong thủy nhà theo Huyền Không Phi Tinh" — bản TÍNH TOÁN (Free, 0đ, không AI)
+// CÔNG KHAI, đăng ký ở site-config.ts mục Công cụ (anh Công 30/8/2026: "em để module này ra ngoài
+// mục công cụ đi" — sau khi module từng bị khoá admin-only trong ngày rồi mở lại lần này).
 //
-// Bản luận AI (DeepSeek qua goi-ai.ts, tính năng huyen-khong-luan-chi-tiet) cũng chỉ admin gọi
-// được — cùng gate isAdmin, xem luan-ai.ts route.
+// Bản luận AI (DeepSeek qua goi-ai.ts, tính năng huyen-khong-luan-chi-tiet) VẪN chỉ admin gọi được
+// — nút "Xem luận AI" chỉ hiện/gọi được khi đăng nhập admin (chưa chốt giá nên chưa mở khách),
+// route luan-ai.ts tự kiểm isAdmin thêm 1 lớp (403 nếu không). Việc mở phần Free công khai KHÔNG
+// đồng nghĩa mở luôn phần AI.
 //
-// Kiến trúc chi phí: phần Free chạy engine.ts (thuần TS, không gọi AI) — 0đ mỗi lượt xem. Phần AI
-// chỉ admin gọi được nên không phát sinh chi phí ngoài ý muốn.
+// Kiến trúc chi phí: phần Free chạy engine.ts (thuần TS, không gọi AI) — 0đ mỗi lượt xem, công
+// khai không rủi ro chi phí. Phần AI chỉ admin gọi được nên không phát sinh chi phí ngoài ý muốn.
 //
 // NGUYÊN TẮC "KHÔNG ĐOÁN MÒ": phần Free CHỈ hiển thị lại dữ liệu Nhóm B (loan đầu) do khách khai
 // cạnh tinh bàn — KHÔNG tự phán đắc/thất cách hay cát/hung từ tổ hợp đó (xem KHONG_TINH trong
@@ -137,11 +136,6 @@ const MAU_TRANG_THAI: Record<string, string> = {
 
 <Container class="py-10">
   <div class="mx-auto max-w-4xl">
-    {!laQuanTri ? (
-      <div class="rounded-(--radius-card) border-2 border-(--color-gold-400) bg-(--color-gold-400)/10 p-6 text-center text-sm font-medium text-(--color-gold-600)">
-        🔒 Công cụ riêng, chỉ tài khoản quản trị xem được.
-      </div>
-    ) : (
     <>
         <form method="GET" class="flex flex-col gap-6 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
           <div>
@@ -507,7 +501,6 @@ const MAU_TRANG_THAI: Record<string, string> = {
           </div>
         )}
     </>
-    )}
   </div>
 </Container>
 
