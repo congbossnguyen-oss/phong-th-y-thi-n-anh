@@ -34,7 +34,8 @@ export type TinhNangAi =
   | "chart-profile-tu-vi"
   | "nghe-nghiep-luan-van"
   | "luan-giai-tu-vi-co-ban"
-  | "luan-giai-tu-vi-nang-cao";
+  | "luan-giai-tu-vi-nang-cao"
+  | "huyen-khong-luan-chi-tiet";
 
 /**
  * BẢNG CHỌN NHÀ CUNG CẤP CHO TỪNG TÍNH NĂNG — chỗ duy nhất cần sửa khi muốn đổi.
@@ -58,6 +59,8 @@ const BANG_NHA_CUNG_CAP: Record<TinhNangAi, NhaCungCap> = {
   // Gói 149k/299k, khách đọc kỹ và trả tiền cao — giữ Anthropic cho chắc chất lượng.
   "luan-giai-tu-vi-co-ban": "anthropic",
   "luan-giai-tu-vi-nang-cao": "anthropic",
+  // Đang test nội bộ (chưa chốt giá) — anh Công 30/8/2026: "anh vẫn đang dùng bên DeepSeek".
+  "huyen-khong-luan-chi-tiet": "openai-tuong-thich",
 };
 
 /**
