@@ -1,17 +1,15 @@
 # Module Huyền Không Phi Tinh
 
-Trạng thái (30/8/2026, chốt cuối ngày): **phần Free CÔNG KHAI** (đăng ký ở `site-config.ts` mục
-Công cụ). **Phần AI (luận chi tiết) vẫn chỉ admin gọi được** — chưa chốt giá, chưa mở khách. URL:
-`/dai-cat-loi/huyen-khong-phi-tinh`.
+Trạng thái (30/8/2026, chốt cuối ngày): **CÔNG KHAI, KHÔNG DÙNG AI** — chỉ có lớp TÍNH TOÁN engine
+(Free, 0đ). Luận chi tiết theo hoàn cảnh cụ thể do **CTV/chuyên gia người thật** làm; cuối trang có
+CTA mời liên hệ chuyên gia (`/lien-he`). URL: `/dai-cat-loi/huyen-khong-phi-tinh`.
 
-Lịch sử đổi trạng thái trong ngày (chỉ để tham khảo, đừng suy ra pattern — đây là quyết định thủ
-công của anh Công từng lúc, không phải quy tắc tự động, và có lúc đổi qua lại trong lúc đang debug
-lỗi session/IP): mở công khai → khoá admin-only → mở công khai lại → khoá admin-only lần 2 (lúc
-này vẫn còn gặp lỗi session/IP khiến chính anh Công không vào được, dù đã tưởng vá xong) → phát
-hiện + vá nốt nguyên nhân thật (`getClientIp()` ưu tiên sai header trên hạ tầng Cloudflare — xem
-`fix(auth)` "ưu tiên clientAddress thay vì X-Forwarded-For") → **anh Công yêu cầu undo về trạng
-thái công khai** (chốt hiện tại, không phải do lỗi kỹ thuật lần này). Nếu cần khoá lại, xem mục
-"Nếu sau này muốn khoá lại" bên dưới.
+⚠️ **AI đã GỠ HẲN** (anh Công 30/8/2026: *"huyền không phi tinh không sử dụng AI được không? luận
+như bình thường được rồi, xong CTV với chuyên gia"*). Lý do kỹ thuật kèm theo: model DeepSeek mặc
+định của site là model "thinking" — từ chối tool_choice ép buộc + đốt hết token vào reasoning (>120s,
+quá giới hạn Cloudflare), gây lỗi 502. Thay vì chữa cháy bằng model khác, anh Công quyết chuyển luận
+chi tiết sang chuyên gia người thật. Đã xoá: route `luan-ai.ts`, lib `luan-ai.ts`, `tri-thuc-ai.ts`.
+`goi-ai.ts` để nguyên (entry `huyen-khong-luan-chi-tiet` thành cấu hình thừa vô hại, không gọi tới).
 
 ## Cấu trúc
 
@@ -25,19 +23,10 @@ thái công khai** (chốt hiện tại, không phải do lỗi kỹ thuật l�
   (Astro SSR, `prerender = false`), đọc tham số qua GET query string.
 - [`../../pages/dai-cat-loi/huyen-khong-phi-tinh.astro`](../../pages/dai-cat-loi/huyen-khong-phi-tinh.astro) —
   khung trang (PageHero/breadcrumbs).
-- [`tri-thuc-ai.ts`](./tri-thuc-ai.ts) — nhúng CỨNG nội dung 4 file nguồn (`quy-trinh-luan-khi-co-tinh-ban.md`,
-  `c-hoa-giai-sat-khi.md`, `h-81-cap-sao-va-hoa-giai.md`, `i-thu-son-xuat-sat-cua-chinh-duong-khi.md`)
-  làm system prompt AI. Nhúng cứng chứ không đọc file lúc chạy vì **production là Cloudflare
-  Worker, không có filesystem**.
-- [`luan-ai.ts`](./luan-ai.ts) — build prompt + gọi `goiAiToolUse` (tính năng
-  `huyen-khong-luan-chi-tiet`, đang route sang DeepSeek qua lớp trung gian `openai-tuong-thich`).
-- [`../../pages/api/dai-cat-loi/huyen-khong-phi-tinh/luan-ai.ts`](../../pages/api/dai-cat-loi/huyen-khong-phi-tinh/luan-ai.ts) —
-  route POST, tính lại tinh bàn ở server (không tin dữ liệu client gửi), gate `isAdmin` (403 cho
-  khách thường).
 - `docs/huyen-khong-phi-tinh/` (thư mục riêng, ngoài `src/`) — SKILL.md, TRANG-THAI-MODULE.md gốc
-  và 12 file `references/` (a-i) — giữ để tra cứu / đối chiếu khi cập nhật `tri-thuc-ai.ts`, KHÔNG
-  được code đọc trực tiếp lúc chạy. Cập nhật lần 2 (30/8/2026): thêm h-81-cap-sao-va-hoa-giai.md +
-  i-thu-son-xuat-sat-cua-chinh-duong-khi.md, engine.py gốc cũng cập nhật theo (xem mục dưới).
+  và 12 file `references/` (a-i) — giữ để tra cứu. Cập nhật lần 2 (30/8/2026): thêm
+  h-81-cap-sao-va-hoa-giai.md + i-thu-son-xuat-sat-cua-chinh-duong-khi.md.
+  (Các file AI `luan-ai.ts` / `tri-thuc-ai.ts` / route `luan-ai.ts` ĐÃ XOÁ — xem đầu README.)
 
 ## Kiểm chứng đã pass (4 mốc bắt buộc từ TRANG-THAI-MODULE.md gốc mục 3, + phần mở rộng)
 
@@ -92,12 +81,9 @@ Vận 9 là nhà "thoái vận" — Hướng tinh 7 lúc lập trạch vượng,
 - UI + AI đều hiện cảnh báo "THOÁI VẬN" khi `da_thoai_van`, và nói rõ cách cục Vận cũ nay đã mất thời.
 - `vanHienTai` luôn tính lại ở SERVER từ năm hiện tại (component + route AI), không tin client.
 
-Phần AI (Trả Phí) THÌ ĐƯỢC PHÉP tự luận đắc/thất cách và đề xuất hóa giải/kích hoạt theo từng sao —
-đó là việc của AI luận (giống người luận thật), không phải engine tự suy. Ràng buộc: AI chỉ được
-dùng đúng 4 nguồn nhúng ở `tri-thuc-ai.ts` (quy trình 10 bước, hóa giải sát khí theo mức đồng
-thuận, hóa giải/kích hoạt theo 81 cặp sao, Thu Sơn Xuất Sát/Chính-Linh Thần/đường khí), phải nói rõ
-"chưa đủ dữ liệu loan đầu" ở cung nào khách không khai Nhóm B, và không được hóa giải các tổ hợp
-"cực hung không hóa giải được" — prompt trong `luan-ai.ts` đã ép các ràng buộc này.
+Đắc/thất cách + kết luận cát hung cuối cùng: **do CTV/chuyên gia người thật luận** (không AI). Cuối
+trang kết quả có CTA mời liên hệ chuyên gia (`/lien-he`) + link `/dich-vu`. Các file tri thức nhúng
+(4 nguồn từng dùng cho AI) đã xoá cùng code AI — tri thức gốc vẫn còn ở `docs/.../references/`.
 
 ## Kiến trúc chi phí
 
@@ -105,25 +91,20 @@ thuận, hóa giải/kích hoạt theo 81 cặp sao, Thu Sơn Xuất Sát/Chính
 |---|---|---|
 | Engine tính (`engine.ts`) | TypeScript thuần, SSR | 0đ |
 | Form + kết quả Free | Astro SSR đọc engine trực tiếp, CÔNG KHAI | 0đ |
-| Luận AI chi tiết (`luan-ai.ts`) | DeepSeek qua `goi-ai.ts`, chỉ admin gọi | có phí AI, nhưng gate `isAdmin` ở cả UI lẫn route nên khách không gọi được → không phát sinh chi phí ngoài ý muốn |
+| Luận chi tiết | **CTV/chuyên gia người thật** (qua CTA `/lien-he`) | không phát sinh chi phí AI |
 
-Trạng thái (30/8/2026, chốt cuối ngày): trang Free công khai đăng ký ở `site-config.ts`, nút "Xem
-luận AI" chỉ hiện khi đăng nhập admin (`HuyenKhongPhiTinh.astro`) và route `luan-ai.ts` tự kiểm
-`isAdmin` lần nữa (403 nếu không). Chưa có giá trong `gia-cong-cu.ts`, chưa có checkout/order cho
-phần AI.
+Toàn bộ trang 0đ, không gọi AI → công khai không rủi ro chi phí.
 
-## Nếu sau này muốn khoá lại chỉ admin xem (đã từng làm 2 lần trong ngày 30/8/2026)
+## Nếu sau này muốn khoá lại chỉ admin xem
 
 1. Bọc lại toàn bộ nội dung trong `<Container>...</Container>` của `HuyenKhongPhiTinh.astro` bằng
-   `{!laQuanTri ? (<div>...khoá...</div>) : (<>...nội dung hiện tại...</>)}`.
+   `{!laQuanTri ? (<div>...khoá...</div>) : (<>...nội dung hiện tại...</>)}` và khai lại
+   `const laQuanTri = Astro.locals.user?.isAdmin === true;` (đã gỡ khi bỏ AI).
 2. Gỡ dòng "Xem phong thủy nhà (Huyền Không Phi Tinh)" khỏi `site-config.ts` mục Công cụ.
 
-## Nếu sau này muốn mở AI cho khách (chưa có kế hoạch, chỉ ghi lại các bước)
+## Nếu sau này muốn dựng lại luận AI
 
-1. Bỏ gate `isAdmin` ở nút "Xem luận AI" (`HuyenKhongPhiTinh.astro`) và ở route `luan-ai.ts`.
-2. Thêm giá vào `GIA_CONG_CU`, quyết định có cần checkout/order (theo mẫu `taoDonCongCu`) hay giữ
-   nguyên kiểu gọi trực tiếp — tùy mô hình bán (theo lượt hay theo gói thuê bao Quân Sư).
-3. Cân nhắc thêm `MODULE_KHOA_THU_NGHIEM` nếu muốn có giai đoạn thử nghiệm giới hạn trước khi mở
-   hẳn, theo đúng tiền lệ `luan-giai-tu-vi`/`luan-giai-bat-tu-toan-dien`.
-4. Đăng ký tool trong `src/lib/dai-cat-loi-tools.ts` (`paidTools`) nếu muốn hiện thêm ở
-   `/dai-cat-loi/dich-vu-thu-phi` (không bắt buộc — trang đã có link công khai ở `site-config.ts`).
+Khôi phục từ git history (commit trước khi gỡ AI 30/8/2026): route + lib `luan-ai.ts` + `tri-thuc-ai.ts`
++ khối UI gọi AI. LƯU Ý model: KHÔNG dùng model DeepSeek "thinking" (deepseek-v4-flash) — dùng
+`deepseek-chat` (non-thinking) qua `modelOverride` trong `goi-ai.ts` + max_tokens ~12000 (đã kiểm
+chứng chạy được, xem commit lịch sử).
