@@ -80,4 +80,15 @@ describe("bat-trach-nha — engine.luanXuyenCung + luanLuuNien", () => {
     expect(ket.nienTinh).not.toBeNull();
     expect(ket.nienTinh?.apDung).toBe(true);
   });
+
+  it("Lưu niên KHÔNG kèm Nguyệt Tinh khi không truyền saoThangNayNhapTrung (không tự bịa)", () => {
+    const ket = luanLuuNien(1990, 2026, "Khảm", 1);
+    expect(ket.nguyetTinh).toBeNull();
+  });
+
+  it("Lưu niên CÓ kèm Nguyệt Tinh khi truyền đủ 5 tham số — dùng ĐÚNG phép tính như Niên Tinh (data/08)", () => {
+    const ket = luanLuuNien(1990, 2026, "Khảm", 1, 3);
+    expect(ket.nguyetTinh).not.toBeNull();
+    expect(ket.nguyetTinh?.apDung).toBe(true);
+  });
 });

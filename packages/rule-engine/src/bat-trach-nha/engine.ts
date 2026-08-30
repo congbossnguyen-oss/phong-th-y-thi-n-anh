@@ -15,7 +15,7 @@ import { xetSinhKhacCungSaoCaHai, CUNG_THANH_VIEN_GIA_DINH, type SinhKhacCaHaiPh
 import { tinhXuyenCungTang, type KetQuaXuyenCungTang } from "./xuyenCungTang.js";
 import { tinhThaiTuePhuongVi, tinhDoThien, type KetQuaThaiTuePhuongVi, type KetQuaDoThien } from "./thaiTue.js";
 import { THIEN_TINH_THEO_KHI } from "./thienTinhCa.js";
-import { tinhNienTinhHopMenh, type KetQuaNienTinh } from "./nienTinh.js";
+import { tinhNienTinhHopMenh, tinhNguyetTinhHopMenh, type KetQuaNienTinh } from "./nienTinh.js";
 
 type NguHanh = Data.NguHanh;
 
@@ -150,13 +150,23 @@ export interface KetQuaLuuNien {
    * `nienTinhNhapTrung()` của engine `huyen-khong-phi-tinh` (app layer, `src/lib/`) rồi truyền vào.
    */
   nienTinh: KetQuaNienTinh | null;
+  /** Tương tự nienTinh nhưng theo THÁNG — chỉ có khi caller truyền thêm `saoThangNayNhapTrung`
+   * (từ `nguyetTinhNhapTrung(nam, thangAm)`, cần cả cungMenh). null nếu không xem theo tháng. */
+  nguyetTinh: KetQuaNienTinh | null;
 }
 
-export function luanLuuNien(namSinh: number, namCanXem: number, cungMenh?: CungBatTrach, saoNamNayNhapTrung?: number): KetQuaLuuNien {
+export function luanLuuNien(
+  namSinh: number,
+  namCanXem: number,
+  cungMenh?: CungBatTrach,
+  saoNamNayNhapTrung?: number,
+  saoThangNayNhapTrung?: number,
+): KetQuaLuuNien {
   return {
     thaiTue: tinhThaiTuePhuongVi(namCanXem),
     doThien: tinhDoThien(namSinh),
     nienTinh: cungMenh !== undefined && saoNamNayNhapTrung !== undefined ? tinhNienTinhHopMenh(cungMenh, saoNamNayNhapTrung) : null,
+    nguyetTinh: cungMenh !== undefined && saoThangNayNhapTrung !== undefined ? tinhNguyetTinhHopMenh(cungMenh, saoThangNayNhapTrung) : null,
   };
 }
 
