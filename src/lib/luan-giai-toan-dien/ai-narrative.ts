@@ -1,7 +1,6 @@
 // TẦNG 2 — AI NARRATIVE. Gọi Claude API THEO TỪNG GIAI ĐOẠN (không gộp), đúng khung prompt trong
 // content/bat-tu/prompts/khung-chung.md + giai-doan-A-L.md. Cùng hạ tầng gọi AI với
 // `nghe-nghiep/llm-luan-van.ts` (retry 429/5xx, cache_control ephemeral, log chi phí).
-import { layAnthropicApiKey } from "../chart-profile/api-key";
 import { ghiLogChiPhi, type UsageAnthropic } from "../chart-profile/ghi-log-chi-phi";
 import { docNhieuKnowledge } from "./content-loader";
 import {
@@ -9,11 +8,11 @@ import {
   tuDienThayTheDangText,
   quyTacDienDatChungDangText,
   quyTacRiengGiaiDoan,
+  xoaTheLaConSot,
 } from "./content-safety";
 import type { GiaiDoanFindings, MaGiaiDoan } from "./types";
+import { goiAiToolUse, type TinhNangAi } from "../ai/goi-ai";
 
-const ANTHROPIC_API_URL = "https://api.anthropic.com/v1/messages";
-const ANTHROPIC_VERSION = "2023-06-01";
 const DEFAULT_MODEL = "claude-sonnet-5";
 const TOOL_NAME = "tra_ve_doan_van";
 
@@ -46,7 +45,8 @@ export const GIAI_DOAN_NANG_CAO: GiaiDoanConfig[] = [
   { ma: "E", ten: "Mộ Khố", tang: "nang_cao", knowledgeFiles: ["mo-kho.md"], doDaiGoiY: "100-150 chữ (bỏ qua nếu không có Mộ Khố nào)", quyTacRieng: "E" },
   { ma: "F", ten: "Lục Thân", tang: "nang_cao", knowledgeFiles: ["luc-than.md"], doDaiGoiY: "400-600 chữ", quyTacRieng: "F", canKiemDuyet: true },
   { ma: "I", ten: "Sức khỏe", tang: "nang_cao", knowledgeFiles: ["benh-tat.md"], doDaiGoiY: "250-350 chữ", canKiemDuyet: true },
-  { ma: "K", ten: "Đại Vận trọn đời", tang: "nang_cao", knowledgeFiles: ["ung-ky.md", "quan-he-can-chi.md"], doDaiGoiY: "500-800 chữ (dài nhất)" },
+  { ma: "K", ten: "Đại Vận trọn đời", tang: "nang_cao", knowledgeFiles: ["ung-ky.md", "quan-he-can-chi.md"], doDaiGoiY: "80-120 chữ",
+    huongDanRieng: "Chỉ viết đoạn GIỚI THIỆU ngắn cho phần Đại Vận trọn đời — nêu quy luật chung 1-2 câu (Đại Vận nào hành trùng/sinh Dụng-Hỷ Thần thì thuận, trùng/sinh Kỵ-Cừu Thần thì cần thận trọng hơn). KHÔNG liệt kê chi tiết từng giai đoạn — phần chi tiết từng giai đoạn (điểm số sức khỏe/công việc/tài lộc/lục thân) đã có đồ hình riêng ngay bên dưới đoạn này, không cần lặp lại bằng văn xuôi." },
 ];
 
 const SCHEMA = {
@@ -94,51 +94,47 @@ function buildSystemPrompt(cfg: GiaiDoanConfig, laSoJSON: string, findingsJSON: 
     "",
     "## Yêu cầu định dạng",
     "- Viết văn xuôi tiếng Việt tự nhiên, giọng điềm đạm, ấm áp, không giáo điều.",
-    `- Độ dài: ${cfg.doDaiGoiY} (điều chỉnh theo lượng findings thực có — findings ít thì viết ngắn, không độn chữ).`,
-    "- Không dùng gạch đầu dòng liệt kê khô khan — viết thành đoạn văn liền mạch.",
-    "- Không lặp lại nguyên văn thuật ngữ Hán Việt (Thất Sát, Kiếp Tài...) quá nhiều lần liên tiếp — xen kẽ diễn giải bằng ngôn ngữ đời thường.",
+    `- Độ dài: ${cfg.doDaiGoiY} (điều chỉnh theo lượng findings thực có, findings ít thì viết ngắn, không độn chữ).`,
+    "- Không dùng gạch đầu dòng liệt kê khô khan, viết thành đoạn văn liền mạch.",
+    "- Không lặp lại nguyên văn thuật ngữ Hán Việt (Thất Sát, Kiếp Tài...) quá nhiều lần liên tiếp, xen kẽ diễn giải bằng ngôn ngữ đời thường.",
+    "- TUYỆT ĐỐI KHÔNG dùng dấu gạch ngang \"-\" hay chấm phẩy \";\" để nối câu (đây là lỗi văn phong lộ rõ là AI viết) — thay bằng dấu phẩy, chấm câu, hoặc viết lại thành 2 câu riêng.",
+    "- TUYỆT ĐỐI KHÔNG chèn bất kỳ thẻ/ký hiệu nào giống code hoặc XML (vd </noi_dung>, <invoke>, **, ##) vào NỘI DUNG văn xuôi — chỉ viết văn xuôi thuần tuý tiếng Việt, không có ký hiệu định dạng nào khác ngoài dấu câu thông thường.",
+    "- KHÔNG viết các câu sáo rỗng kiểu AI tự nhận xét về dữ liệu (vd \"dữ liệu chưa đủ căn cứ để xác định rõ\", \"không có đủ thông tin để phân tích sâu hơn\") — nếu 1 khía cạnh không đủ căn cứ, ĐƠN GIẢN LÀ BỎ QUA khía cạnh đó, không nhắc tới việc thiếu dữ liệu.",
   ].join("\n");
 }
 
-async function goiClaudeToolUse(system: string, userMessage: string, toolName: string, schema: object, maxTokens: number): Promise<{ input: Record<string, unknown> | null; usage?: UsageAnthropic }> {
-  const apiKey = layAnthropicApiKey();
-  if (!apiKey) return { input: null };
-  const model = (typeof process !== "undefined" ? process.env?.ANTHROPIC_MODEL : undefined) || DEFAULT_MODEL;
-
-  const body = JSON.stringify({
-    model,
-    max_tokens: maxTokens,
-    system: [{ type: "text", text: system, cache_control: { type: "ephemeral" } }],
-    messages: [{ role: "user", content: userMessage }],
-    tools: [{ name: toolName, description: "Trả về kết quả đã yêu cầu.", input_schema: schema }],
-    tool_choice: { type: "tool", name: toolName },
-  });
-
-  const RETRYABLE = new Set([429, 500, 502, 503, 504, 529]);
-  let res: Response | null = null;
-  for (let lan = 1; lan <= 3; lan++) {
-    try {
-      res = await fetch(ANTHROPIC_API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-api-key": apiKey, "anthropic-version": ANTHROPIC_VERSION },
-        body,
-      });
-    } catch {
-      res = null;
-    }
-    if (res && res.ok) break;
-    if (res && !RETRYABLE.has(res.status)) break;
-    if (lan < 3) await new Promise((r) => setTimeout(r, 800 * lan));
-  }
-  if (!res || !res.ok) {
-    console.error(`[luan-giai-toan-dien] Gọi AI thất bại: ${res ? `HTTP ${res.status}` : "lỗi mạng"}`);
-    return { input: null };
-  }
-
-  const data = (await res.json()) as { content?: { type: string; input?: unknown }[]; usage?: UsageAnthropic };
-  const toolUse = data.content?.find((c) => c.type === "tool_use");
-  if (!toolUse || typeof toolUse.input !== "object" || toolUse.input === null) return { input: null, usage: data.usage };
-  return { input: toolUse.input as Record<string, unknown>, usage: data.usage };
+/**
+ * `system` nhận 1 chuỗi, HOẶC `[phầnCốĐịnh, phầnThayĐổi]`.
+ *
+ * Dạng 2 phần dùng cho prompt caching giữa NHIỀU lệnh gọi khác nhau: Anthropic khớp cache theo TIỀN
+ * TỐ (tools → system → messages), nên khối tri thức lớn phải nằm TRƯỚC dữ liệu riêng của từng lệnh
+ * thì lệnh sau mới đọc lại được cache (0,1x) thay vì ghi cache mới (1,25x). Chỉ đánh dấu
+ * `cache_control` ở phần cố định; phần thay đổi nằm sau breakpoint nên không phá cache.
+ * ⚠️ Muốn cache dùng chung được thì `tools` (render TRƯỚC system) cũng phải giống hệt nhau.
+ */
+/**
+ * `system` nhận 1 chuỗi, HOẶC `[phầnCốĐịnh, phầnThayĐổi]` để bật prompt caching dùng chung giữa
+ * nhiều lệnh (xem ghi chú ở `luu-nien-dai-van.ts`).
+ *
+ * Nay uỷ quyền cho `goiAiToolUse` — lớp dùng chung tự chọn nhà cung cấp (Anthropic / OpenAI tương
+ * thích) theo BẢNG trong `src/lib/ai/goi-ai.ts`, nên đổi nhà cung cấp không phải sửa file này.
+ */
+export async function goiClaudeToolUse(
+  system: string | [string, string],
+  userMessage: string,
+  toolName: string,
+  schema: object,
+  maxTokens: number,
+  tinhNang: TinhNangAi = "bat-tu-giai-doan",
+  // ⚠️ Model mặc định của DeepSeek trên site (deepseek-v4-flash) là model "thinking": từ chối
+  // tool_choice ép buộc mà goiAiToolUse LUÔN dùng — đo thật 30/8/2026 (Huyền Không, Kinh Dịch): gọi
+  // thất bại 100%. Truyền modelOverride cho các tinhNang đang route sang DeepSeek (bat-tu-cham-diem,
+  // bat-tu-kiem-duyet) để ép deepseek-chat (non-thinking, đã kiểm chứng chạy đúng).
+  modelOverride?: Parameters<typeof goiAiToolUse>[0]["modelOverride"],
+): Promise<{ input: Record<string, unknown> | null; usage?: UsageAnthropic; model?: string }> {
+  const [systemCoDinh, systemThayDoi] = Array.isArray(system) ? system : [system, undefined];
+  const kq = await goiAiToolUse({ tinhNang, systemCoDinh, systemThayDoi, userMessage, toolName, schema, maxTokens, modelOverride });
+  return { input: kq.input, usage: kq.usage, model: kq.model };
 }
 
 /**
@@ -153,11 +149,10 @@ export async function viecGiaiDoan(cfg: GiaiDoanConfig, laSo: unknown, findings:
   const system = buildSystemPrompt(cfg, laSoJSON, findingsJSON);
   const userMessage = `Hãy viết đoạn văn cho giai đoạn "${cfg.ten}" (${cfg.ma}) theo đúng dữ liệu và nguyên tắc đã nêu ở system prompt.`;
 
-  const { input, usage } = await goiClaudeToolUse(system, userMessage, TOOL_NAME, SCHEMA, 2000);
-  const model = (typeof process !== "undefined" ? process.env?.ANTHROPIC_MODEL : undefined) || DEFAULT_MODEL;
-  ghiLogChiPhi(`Luận giải Bát Tự — Giai đoạn ${cfg.ma}`, model, usage);
+  const { input, usage, model } = await goiClaudeToolUse(system, userMessage, TOOL_NAME, SCHEMA, 2000);
+  ghiLogChiPhi(`Luận giải Bát Tự — Giai đoạn ${cfg.ma}`, model ?? DEFAULT_MODEL, usage);
   if (!input) return null;
-  const noiDung = typeof input.noi_dung === "string" ? input.noi_dung.trim() : "";
+  const noiDung = typeof input.noi_dung === "string" ? xoaTheLaConSot(input.noi_dung.trim()) : "";
   return noiDung.length > 0 ? noiDung : null;
 }
 
@@ -182,10 +177,9 @@ export async function kiemDuyetDoanVan(doanVan: string): Promise<string> {
   ].join("\n");
   const userMessage = `Đoạn văn cần kiểm tra:\n${doanVan}`;
 
-  const { input, usage } = await goiClaudeToolUse(system, userMessage, "tra_ve_doan_van_da_kiem_duyet", SCHEMA_KIEM_DUYET, 2000);
-  const model = (typeof process !== "undefined" ? process.env?.ANTHROPIC_MODEL : undefined) || DEFAULT_MODEL;
-  ghiLogChiPhi("Luận giải Bát Tự — Kiểm duyệt F/I", model, usage);
+  const { input, usage, model } = await goiClaudeToolUse(system, userMessage, "tra_ve_doan_van_da_kiem_duyet", SCHEMA_KIEM_DUYET, 2000, "bat-tu-kiem-duyet", { "openai-tuong-thich": "deepseek-chat" });
+  ghiLogChiPhi("Luận giải Bát Tự — Kiểm duyệt F/I", model ?? DEFAULT_MODEL, usage);
   if (!input) return doanVan; // AI lỗi → giữ nguyên bản gốc thay vì mất nội dung.
-  const noiDung = typeof input.noi_dung === "string" ? input.noi_dung.trim() : "";
+  const noiDung = typeof input.noi_dung === "string" ? xoaTheLaConSot(input.noi_dung.trim()) : "";
   return noiDung.length > 0 ? noiDung : doanVan;
 }

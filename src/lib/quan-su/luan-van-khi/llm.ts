@@ -60,6 +60,11 @@ export async function goiLoiLuanVanKhi(
     toolName: TOOL_NAME,
     schema: INPUT_SCHEMA,
     maxTokens: MAX_TOKENS,
+    // ⚠️ Model mặc định của DeepSeek trên site (deepseek-v4-flash) là model "thinking": từ chối
+    // tool_choice ép buộc mà goiAiToolUse LUÔN dùng — đo thật 30/8/2026 (Huyền Không, Kinh Dịch):
+    // gọi thất bại 100%. deepseek-chat (non-thinking) chạy đúng — cùng fix đã áp cho các tính năng
+    // DeepSeek khác cùng ngày.
+    modelOverride: { "openai-tuong-thich": "deepseek-chat" },
   });
   ghiLogChiPhi("Vận Khí", ket.model, ket.usage);
 
