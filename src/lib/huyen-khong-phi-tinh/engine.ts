@@ -857,34 +857,85 @@ export function thuSonXuatSat(tb: TinhBan, vanHienTai: number = tb.van): ThuSonX
   return ketQua;
 }
 
-export interface MoCuaPhuEntry extends KiemTraSonResult {
-  huong_tinh_hien_tai: number;
-  canh_bao: string | null;
-  cung_nguyen_long_voi_nha: boolean;
+export interface MoCuaPhuEntry {
+  son: string;
+  cung: number;
+  cung_ten: string;
+  nguyen_long: NguyenLong;
+  am_duong: AmDuong;
+  am_duong_nguoc_cua_chinh: boolean;
+  sao_ve_cung: number;
+  dac_vuong: boolean;
+  huong_tinh_thuc_te: number;
+  tt_huong_tinh: TrangThaiKhi;
+  son_tinh_thuc_te: number;
+  tt_son_tinh: TrangThaiKhi;
+  kha_dung: boolean;
+  canh_bao: string[];
 }
 
 /**
- * Quét toàn bộ 24 sơn: sơn nào đắc vượng khí (của VẬN HIỆN TẠI) nếu mở cửa/cổng phụ tại đó.
- * Dùng khi hướng chính không có vượng khí hoặc nhà kiêm hướng (thanh-mon.md mục 7).
+ * "Mở cửa phụ" theo thanh-mon.md mục 7 — quy trình KHÁC với Thành Môn ở mục 2/3 (timThanhMon):
+ * seed CỐ ĐỊNH = Vận tinh tại chính cung Hướng (không đổi theo từng sơn ứng viên như kiemTraSon),
+ * nhập trung số đó rồi xoay thuận/nghịch theo Âm Dương của SƠN MUỐN MỞ CỬA — khác Hướng thì hướng
+ * bay khác, nên đây là kỹ thuật tìm điểm nạp khí PHỤ, không phải tính lại Hướng Bàn thật của nhà.
+ * Ví dụ nguồn (tọa Giáp hướng Canh, Vận 8, xét Dậu — cùng cung Tây với Canh) khớp với công thức này.
  *
- * @param vanHienTai Vận đương lệnh — mở cửa phụ để đón vượng khí ĐANG CAI QUẢN, nên dùng vận bàn
- *   của vận hiện tại + so vượng tinh vận hiện tại (giống timThanhMon). Mặc định = tb.van.
+ * Chỉ liệt kê sơn có "sao_ve_cung === vanHienTai" (đắc vượng khí hiện tại — điều kiện cần đầu
+ * tiên). Trong số đó, đối chiếu thêm với Hướng tinh/Sơn tinh THẬT của nhà tại đúng cung đó
+ * (không phải số tính riêng cho mở cửa phụ) để lọc ra cung nào thực sự an toàn (`kha_dung`) và
+ * cung nào tuy đắc vượng theo công thức nhưng vẫn xấu (`canh_bao` không rỗng) — dựa trên
+ * c-hoa-giai-sat-khi.md: Ngũ Hoàng (5) hung tuyệt đối; Nhị Hắc (2 - Bệnh Phù), Tam Bích
+ * (3 - Xi Vưu/tranh chấp), Thất Xích (7 - Phá Quân/trộm cướp-hỏa tai) hung khi đang SUY/TỬ (thất
+ * vận); và quy tắc Sơn tinh vượng/sinh tại thủy khẩu → tổn đinh (giống điều kiện 3 của timThanhMon).
+ * Bỏ qua sơn Hướng chính và sơn Tọa (đã là cửa chính/mặt sau, không phải "cửa phụ").
+ * Vẫn cần thủy/ao hồ/ngã ba/cổng ngõ thực tế mới phát huy (thanh-mon.md mục 5, áp dụng chung).
+ *
+ * @param vanHienTai Vận đương lệnh — mặc định = tb.van.
  */
 export function xetMoCuaPhu(tb: TinhBan, vanHienTai: number = tb.van): MoCuaPhuEntry[] {
   const vanBanHienTai = bayTinh(vanHienTai, true);
+  const seed = vanBanHienTai[tb.cung_huong];
+  const HUNG_TINH: Record<number, string> = {
+    2: "Nhị Hắc (Bệnh Phù) đang thất vận tại đây — dễ sinh bệnh tật, không nên mở cửa dù đắc vượng khí theo công thức mở cửa phụ",
+    3: "Tam Bích (Xi Vưu) đang thất vận tại đây — dễ sinh tranh chấp/kiện tụng, không nên mở cửa dù đắc vượng khí theo công thức mở cửa phụ",
+    7: "Thất Xích (Phá Quân) đang thất vận tại đây — dễ trộm cướp/hỏa tai, không nên mở cửa dù đắc vượng khí theo công thức mở cửa phụ",
+  };
+
   const ketQua: MoCuaPhuEntry[] = [];
   for (const ten of Object.keys(SON_24)) {
-    const kt = kiemTraSon(ten, vanHienTai, vanBanHienTai);
-    if (kt.dac_vuong) {
-      const cung = kt.cung;
-      const ht = tb.huong_ban[cung];
-      ketQua.push({
-        ...kt,
-        huong_tinh_hien_tai: ht,
-        canh_bao: ht === 5 ? "Hướng tinh Ngũ Hoàng tại cung này — không nên mở cửa" : null,
-        cung_nguyen_long_voi_nha: kt.nguyen_long === tb.nguyen_long_huong,
-      });
+    if (ten === tb.son_huong || ten === tb.son_toa) continue;
+    const [, cung, nl, amDuong] = SON_24[ten];
+    const thuan = xacDinhChieuBay(seed, nl);
+    const saoVe = bayTinh(seed, thuan)[cung];
+    const dacVuong = saoVe === vanHienTai;
+    if (!dacVuong) continue;
+
+    const htThat = tb.huong_ban[cung];
+    const ttHuong = trangThaiSao(htThat, vanHienTai);
+    const stThat = tb.son_ban[cung];
+    const ttSon = trangThaiSao(stThat, vanHienTai);
+
+    const canhBao: string[] = [];
+    if (htThat === 5 && vanHienTai !== 5) {
+      canhBao.push("Ngũ Hoàng (sát khí mạnh nhất, hung bất kể sinh khắc) đang tại đây — không nên mở cửa dù đắc vượng khí theo công thức mở cửa phụ");
+    } else if ((ttHuong === "SUY" || ttHuong === "TỬ") && HUNG_TINH[htThat]) {
+      canhBao.push(HUNG_TINH[htThat]);
     }
+    if (ttSon === "VƯỢNG" || ttSon === "SINH") {
+      canhBao.push(`Sơn tinh ${stThat} tại đây đang ${ttSon} — mở cửa (thủy khẩu) tại đây dễ TỔN ĐINH`);
+    }
+
+    ketQua.push({
+      son: ten, cung, cung_ten: CUNG_INFO[cung].ten,
+      nguyen_long: nl, am_duong: amDuong,
+      am_duong_nguoc_cua_chinh: amDuong !== SON_24[tb.son_huong][3],
+      sao_ve_cung: saoVe, dac_vuong: dacVuong,
+      huong_tinh_thuc_te: htThat, tt_huong_tinh: ttHuong,
+      son_tinh_thuc_te: stThat, tt_son_tinh: ttSon,
+      kha_dung: canhBao.length === 0,
+      canh_bao: canhBao,
+    });
   }
   return ketQua;
 }

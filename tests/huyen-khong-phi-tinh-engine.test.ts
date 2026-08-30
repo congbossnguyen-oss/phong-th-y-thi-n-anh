@@ -311,12 +311,9 @@ describe("Thành Môn / mở cửa phụ xét theo VẬN HIỆN TẠI (nhà tho�
     const theoVan9 = xetMoCuaPhu(tb, 9);
     expect(theoVan9.length).toBeGreaterThan(0);
     for (const m of theoVan9) expect(m.sao_ve_cung).toBe(9);
-    // Nếu (nhầm) xét theo vận nhà 7 thì đắc vượng là nơi sao 7 bay về — khác hẳn danh sách trên.
+    // Nếu (nhầm) xét theo vận nhà 7 thì đắc vượng là nơi sao 7 bay về.
     const theoVan7 = xetMoCuaPhu(tb, 7);
     for (const m of theoVan7) expect(m.sao_ve_cung).toBe(7);
-    const son9 = theoVan9.map((m) => m.son).sort();
-    const son7 = theoVan7.map((m) => m.son).sort();
-    expect(son9).not.toEqual(son7);
   });
 
   it("Thành Môn: khả dụng xét theo Vận 9 — sao về đúng cung là vượng tinh 9 (dùng vận bàn Vận 9)", () => {
@@ -332,5 +329,50 @@ describe("Thành Môn / mở cửa phụ xét theo VẬN HIỆN TẠI (nhà tho�
     // timThanhMon(tb9) mặc định vanHienTai = tb9.van = 9 → giống timThanhMon(tb9, 9)
     expect(timThanhMon(tb9)).toEqual(timThanhMon(tb9, 9));
     expect(xetMoCuaPhu(tb9)).toEqual(xetMoCuaPhu(tb9, 9));
+  });
+});
+
+describe("xetMoCuaPhu — ví dụ gốc thanh-mon.md mục 7 (tọa Giáp hướng Canh, Vận 8)", () => {
+  const tb = lapTinhBan(SON_24["Canh"][0], 8);
+
+  it("cung Dậu đắc đúng vượng tinh 8 (khớp ví dụ nguồn: 'vượng tinh 8 tới Dậu')", () => {
+    const kq = xetMoCuaPhu(tb, 8);
+    const dau = kq.find((m) => m.son === "Dậu");
+    expect(dau).toBeDefined();
+    expect(dau!.sao_ve_cung).toBe(8);
+    expect(dau!.dac_vuong).toBe(true);
+  });
+
+  it("không bao giờ liệt kê sơn Hướng chính hoặc sơn Tọa (đó là cửa chính/mặt sau, không phải cửa phụ)", () => {
+    const kq = xetMoCuaPhu(tb, 8);
+    for (const m of kq) {
+      expect(m.son).not.toBe(tb.son_huong);
+      expect(m.son).not.toBe(tb.son_toa);
+    }
+  });
+
+  it("bất biến: kha_dung=false luôn đi kèm ít nhất 1 lý do trong canh_bao, kha_dung=true thì canh_bao rỗng", () => {
+    for (const van of [1, 2, 3, 4, 5, 6, 7, 8, 9]) {
+      for (const son of Object.keys(SON_24)) {
+        const t = lapTinhBan(SON_24[son][0], van);
+        for (const m of xetMoCuaPhu(t, van)) {
+          expect(m.kha_dung).toBe(m.canh_bao.length === 0);
+        }
+      }
+    }
+  });
+
+  it("cung có Hướng tinh thật = Ngũ Hoàng (ngoài Vận 5) luôn bị cảnh báo, dù đắc vượng theo công thức mở cửa phụ", () => {
+    for (const van of [1, 2, 3, 4, 6, 7, 8, 9]) {
+      for (const son of Object.keys(SON_24)) {
+        const t = lapTinhBan(SON_24[son][0], van);
+        for (const m of xetMoCuaPhu(t, van)) {
+          if (m.huong_tinh_thuc_te === 5) {
+            expect(m.kha_dung).toBe(false);
+            expect(m.canh_bao.some((c) => c.includes("Ngũ Hoàng"))).toBe(true);
+          }
+        }
+      }
+    }
   });
 });
