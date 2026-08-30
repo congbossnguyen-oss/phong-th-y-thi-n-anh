@@ -1,0 +1,22 @@
+---
+// Bản in-app của công cụ "Chọn Tuổi Kết Hôn" — thuộc lưới "Đại Cát Lợi - Cơ Bản" trong app Quân
+// Sư. TỰ CHỨA trong app (không link ra web) — dùng chung component với bản web nên logic/kết quả
+// y hệt, chỉ khung trang khác.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
+import ChonTuoiKetHon from "../../components/tools/ChonTuoiKetHon.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout title="Chọn Tuổi Kết Hôn — Quân Sư Thiên Anh" description="Chọn tuổi kết hôn trong app Quân Sư." appShell>
+  <PageHero
+    eyebrow="Đại Cát Lợi"
+    title="Chọn Tuổi Kết Hôn"
+    description="Nhập giới tính + năm sinh của 2 người — hệ thống tự tính 5 tiêu chí hòa hợp và chấm điểm 0-10."
+    breadcrumbs={[{ label: "Quân Sư", href: "/quan-su" }, { label: "Chọn Tuổi Kết Hôn" }]}
+  />
+  <ChonTuoiKetHon laApp />
+  <BottomNav />
+</BaseLayout>

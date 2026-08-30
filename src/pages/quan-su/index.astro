@@ -164,8 +164,7 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
       </a>
 
       <!-- Đại Cát Lợi - Cơ Bản (tên cũ "Trạch Cát (Cơ bản)", đổi 28/8/2026 theo anh Công) — 12 công
-           cụ MIỄN PHÍ. 7 mục gốc (Ký Hợp Đồng...Khai Quang) trỏ THẲNG route web /dai-cat-loi/* —
-           quy ước CŨ từ trước, giữ nguyên không đụng tới.
+           cụ MIỄN PHÍ.
            Thầy, 2026-08-24: mục này gắn nhãn "(Cơ bản)" nên công cụ trả phí không hợp đặt ở đây —
            đã dời sang thẻ "Đại Cát Lợi - Cao Cấp" phía dưới.
 
@@ -174,23 +173,29 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
            tang trong "Công cụ hữu ích", không cần lặp ở đây); thêm 5 mục mới (Ngày Giờ Xuất Hành,
            Xông Đất – Xông Nhà, Chọn Năm Sinh Con, Tuổi Hợp Làm Ăn, Giao Nhận Tài Sản).
 
-           ⚠️ 5 mục MỚI này KHÔNG trỏ ra web (khác 7 mục gốc ở trên) — anh Công nhắc lại nguyên tắc
-           tách bạch app/web đã chốt từ đầu ("tất cả các module bổ sung là không liên quan đến bên
-           web phongthuythienanh.com, đây là app độc lập"): mỗi mục có component dùng chung riêng
-           (src/components/tools/ChonNamSinhCon.astro, TuoiHopLamAn.astro, XemTuoiXongDat.astro,
-           ChonNgayGiaoDich.astro, NgayGioXuatHanh.astro) + trang /quan-su/* riêng, CTA cuối trang
-           mời nâng cấp cũng đổi sang mời gói Cao Cấp thuê bao (GoiYNangCapApp.astro) thay vì mời
-           mua lẻ 1 công cụ trả phí như bản web (GoiYNangCap.astro) — 2 mô hình tính tiền khác nhau. -->
+           Sửa 30/8/2026 (anh Công: "em phải làm riêng tách ra không liên quan đến web, vì sau anh
+           sẽ tách bạch không liên quan"): 7 mục gốc (Ký Hợp Đồng...Khai Quang) TRƯỚC ĐÂY trỏ thẳng
+           route web /dai-cat-loi/* — nay đã tách y hệt 5 mục mới, không còn ngoại lệ nào trong lưới
+           này trỏ ra web nữa. Mỗi mục có component dùng chung riêng (src/components/tools/
+           NgayKyHopDong.astro, NgayKhaiTruong.astro, HoangOcKimLau.astro, ChonTuoiKetHon.astro,
+           NgayLeViengMo.astro, SuaChuaCaiTaoNha.astro, NgayKhaiQuang.astro) + trang /quan-su/*
+           riêng, CTA cuối trang (trừ Khai Quang — bản gốc không có CTA) đổi sang mời gói Cao Cấp
+           thuê bao (GoiYNangCapApp.astro) thay vì mời mua lẻ như bản web (GoiYNangCap.astro).
+
+           ⚠️ Còn 1 khoảng trống CHƯA dọn: nút "Xem giờ..." bên trong Ký Hợp Đồng/Khai Trương và 2
+           mục "Đổi Lịch"/"Giờ Hoàng Đạo" trong lưới "Công cụ hữu ích" bên dưới vẫn trỏ web
+           (/dai-cat-loi/gio-tot-trong-ngay, /dai-cat-loi/doi-lich-am-duong) — 2 công cụ đó chưa có
+           bản in-app riêng, việc cần dọn tiếp sau (ngoài phạm vi yêu cầu 30/8/2026). -->
       <p class="qsh-section-title" style="margin-top:0.4rem;">Đại Cát Lợi - Cơ Bản</p>
       <div class="qsh-trach-cat-grid">
         {[
-          { href: "/dai-cat-loi/ngay-ky-hop-dong", label: "Ký Hợp Đồng", sub: "Ngày giờ ký kết", c: "#b18aff", icon: "doc" },
-          { href: "/dai-cat-loi/ngay-khai-truong", label: "Khai Trương", sub: "Đại cát – phát lộc", c: "#f0a34d", icon: "store" },
-          { href: "/dai-cat-loi/hoang-oc-kim-lau", label: "Hoàng Ốc", sub: "Kim Lâu – Tam Tai", c: "#e879a6", icon: "hoang-oc" },
-          { href: "/dai-cat-loi/chon-tuoi-ket-hon", label: "Tuổi Kết Hôn", sub: "So tuổi 2 người", c: "#4fd1c5", icon: "rings" },
-          { href: "/dai-cat-loi/ngay-le-vieng-mo", label: "Đi Lễ", sub: "Chùa – đền – viếng mộ", c: "#f1c85a", icon: "incense" },
-          { href: "/dai-cat-loi/sua-chua-cai-tao-nha", label: "Sửa Chữa", sub: "Ngày giờ động thổ nhỏ", c: "#5aa8f1", icon: "wrench" },
-          { href: "/dai-cat-loi/ngay-khai-quang", label: "Khai Quang", sub: "An vị vật phẩm", c: "#7fd99a", icon: "lamp" },
+          { href: "/quan-su/ngay-ky-hop-dong", label: "Ký Hợp Đồng", sub: "Ngày giờ ký kết", c: "#b18aff", icon: "doc" },
+          { href: "/quan-su/ngay-khai-truong", label: "Khai Trương", sub: "Đại cát – phát lộc", c: "#f0a34d", icon: "store" },
+          { href: "/quan-su/hoang-oc-kim-lau", label: "Hoàng Ốc", sub: "Kim Lâu – Tam Tai", c: "#e879a6", icon: "hoang-oc" },
+          { href: "/quan-su/chon-tuoi-ket-hon", label: "Tuổi Kết Hôn", sub: "So tuổi 2 người", c: "#4fd1c5", icon: "rings" },
+          { href: "/quan-su/ngay-le-vieng-mo", label: "Đi Lễ", sub: "Chùa – đền – viếng mộ", c: "#f1c85a", icon: "incense" },
+          { href: "/quan-su/sua-chua-cai-tao-nha", label: "Sửa Chữa", sub: "Ngày giờ động thổ nhỏ", c: "#5aa8f1", icon: "wrench" },
+          { href: "/quan-su/ngay-khai-quang", label: "Khai Quang", sub: "An vị vật phẩm", c: "#7fd99a", icon: "lamp" },
           { href: "/quan-su/ngay-gio-xuat-hanh", label: "Ngày Giờ Xuất Hành", sub: "Chọn ngày giờ đi xa", c: "#5fcf8a", icon: "compass" },
           { href: "/quan-su/xem-tuoi-xong-dat", label: "Xông Đất – Xông Nhà", sub: "Đầu năm hợp gia chủ", c: "#e8735c", icon: "xong-dat" },
           { href: "/quan-su/chon-nam-sinh-con", label: "Chọn Năm Sinh Con", sub: "Hợp cả cha và mẹ", c: "#f4a6c6", icon: "baby" },

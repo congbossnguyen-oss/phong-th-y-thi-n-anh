@@ -1,0 +1,22 @@
+---
+// Bản in-app của công cụ "Chọn Ngày Giờ Sửa Chữa – Cải Tạo Nhà" — thuộc lưới "Đại Cát Lợi - Cơ
+// Bản" trong app Quân Sư. TỰ CHỨA trong app (không link ra web) — dùng chung component với bản web
+// nên logic/kết quả y hệt, chỉ khung trang khác.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
+import SuaChuaCaiTaoNha from "../../components/tools/SuaChuaCaiTaoNha.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout title="Sửa Chữa – Cải Tạo Nhà — Quân Sư Thiên Anh" description="Chọn ngày giờ sửa chữa, cải tạo nhà trong app Quân Sư." appShell>
+  <PageHero
+    eyebrow="Đại Cát Lợi"
+    title="Chọn Ngày Giờ Sửa Chữa – Cải Tạo Nhà"
+    description="Chọn loại sửa chữa, phương vị định động, năm sinh chủ nhà và khoảng ngày — hệ thống kiểm tra Thái Tuế/Tuế Phá/Tam Sát tại phương vị đó, Kim Lâu/Hoàng Ốc/Tam Tai của chủ trong năm, rồi mới tìm ngày giờ tốt nhất."
+    breadcrumbs={[{ label: "Quân Sư", href: "/quan-su" }, { label: "Sửa Chữa – Cải Tạo Nhà" }]}
+  />
+  <SuaChuaCaiTaoNha laApp />
+  <BottomNav />
+</BaseLayout>
