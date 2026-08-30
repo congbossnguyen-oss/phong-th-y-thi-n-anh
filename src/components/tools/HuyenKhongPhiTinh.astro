@@ -331,13 +331,19 @@ const MAU_TRANG_THAI: Record<string, string> = {
                 </p>
               )}
               <div class="mt-3 space-y-2">
-                {kq.cach_cuc.map(([ten, tc, moTa]) => (
+                {kq.cach_cuc.filter(([, tc]) => tc !== "CẦN NGƯỜI LUẬN TỰ XÉT").map(([ten, tc, moTa]) => (
                   <div class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4 text-base">
                     <p class="font-bold text-(--color-ink-950)">{ten} <span class="ml-1 text-sm font-semibold text-(--color-ink-700)">[{tc}]</span></p>
                     <p class="mt-1 text-(--color-ink-800)">{moTa}</p>
                   </div>
                 ))}
+                {kq.cach_cuc.filter(([, tc]) => tc !== "CẦN NGƯỜI LUẬN TỰ XÉT").length === 0 && (
+                  <p class="text-base font-medium text-(--color-ink-700)">Không có cách cục lớn đặc biệt trên toàn bàn.</p>
+                )}
               </div>
+              <p class="mt-2 text-xs italic text-(--color-ink-600)">
+                Riêng cách cục nâng cao Phụ Mẫu Tam Ban / Thất Tinh Đả Kiếp, công cụ không tự kết luận — cần chuyên gia đối chiếu riêng theo trường phái sử dụng.
+              </p>
             </section>
 
             <section>
@@ -497,7 +503,7 @@ Thành Môn xét theo VẬN HIỆN TẠI (Vận {kq.van_hien_tai}), không phả
               </p>
               {kq.van_nha !== 9 && (
                 <p class="mt-1">
-                  ⚠️ Tinh bàn lập theo Vận {kq.van_nha}: thuật toán giống hệt Vận 9 nhưng CHƯA có bộ dữ liệu đối chiếu độc lập cho vận này (bộ kiểm chứng 432/432 chỉ có cho Vận 9). Vượng/suy đã xét theo Vận {kq.van_hien_tai} hiện tại.
+                  ⚠️ Nhà thuộc Vận {kq.van_nha}: cách lập tinh bàn giống Vận 9, nhưng phần đối chiếu sẵn có mới đầy đủ cho nhà Vận 9 — với nhà vận khác nên nhờ chuyên gia rà lại cho chắc. Vượng/suy đã xét theo Vận {kq.van_hien_tai} hiện tại.
                 </p>
               )}
               {(kq.tinh_ban.phan_loai_huong.muc === "xau" || kq.tinh_ban.phan_loai_huong.muc === "nguy_hiem" ||

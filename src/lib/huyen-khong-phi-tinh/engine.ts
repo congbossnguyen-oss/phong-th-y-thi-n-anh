@@ -603,17 +603,16 @@ export function nhanDienCachCuc(tb: TinhBan): CachCuc[] {
   }
   if (tamBanCung.length === 9) {
     kq.push(["Cả 9 cung đều có bộ 3 số 1-4-7 / 2-5-8 / 3-6-9 (Sơn-Vận-Hướng)", "QUAN SÁT",
-      "Cấu trúc hiếm gặp. Nhiều trường phái gọi đây là Phụ Mẫu Tam Ban Quái, " +
-      "NHƯNG nguồn của skill này dành tên đó cho dạng 3-cung ở trên — " +
-      "engine chỉ mô tả cấu trúc, không tự gán tên. Người luận tự quyết theo phái mình dùng."]);
+      "Cấu trúc hiếm gặp. Nhiều trường phái gọi đây là Phụ Mẫu Tam Ban Quái, nhưng cách gọi khác " +
+      "nhau tùy phái — đây chỉ là ghi nhận cấu trúc số, người luận tự xét theo trường phái mình dùng."]);
   } else if (tamBanCung.length) {
     const ten = tamBanCung.map((c) => CUNG_INFO[c].ten).join(", ");
     kq.push([`Có bộ 3 số tam ban trong từng cung tại: ${ten}`, "QUAN SÁT",
-      "Chỉ là ghi nhận cấu trúc số, chưa phải cách cục có tên trong nguồn."]);
+      "Chỉ là ghi nhận cấu trúc số, chưa phải cách cục có tên gọi thống nhất."]);
   }
   if (lienChauCung.length === 9) {
     kq.push(["Liên Châu Tam Ban (cả 9 cung đều 3 số liên tiếp)", "CÁT",
-      "3 số liên tiếp trong mỗi cung — theo quy-trinh-luan-khi-co-tinh-ban.md Bước 2."]);
+      "Mỗi cung có 3 số liên tiếp nhau — cấu trúc tốt, khí liền mạch."]);
   }
 
   // Nhập Tù — vượng tinh Hướng rơi vào trung cung
@@ -806,9 +805,9 @@ export function chinhLinhThan(van: number): ChinhLinhThanResult {
     // đây để "thúc cát" (tăng cường thêm cát khí) — PHỤ TRỢ cho Linh Thần, không phải chính. Nguồn tự
     // ghi câu này hơi mờ/mâu thuẫn (OCR) nên coi là thứ yếu: ưu tiên bố trí Linh Thần (chính cát)
     // trước, Chiếu Thần chỉ dùng để hỗ trợ thêm khi có điều kiện.
-    quy_tac_chieu_than: "PHỤ TRỢ cho Linh Thần — CÓ NƯỚC ở đây cũng tốt (dùng để 'thúc cát', tăng " +
-      "cường thêm cát khí), nhưng là thứ yếu. Ưu tiên bố trí Linh Thần trước; Chiếu Thần chỉ dùng " +
-      "hỗ trợ thêm. (Nguồn ghi phần này hơi mờ — xem là tham khảo.)",
+    quy_tac_chieu_than: "PHỤ TRỢ cho Linh Thần — có nước ở đây cũng tốt (dùng để 'thúc cát', tăng " +
+      "cường thêm cát khí), nhưng là thứ yếu. Ưu tiên bố trí Linh Thần (chính cát) trước; Chiếu " +
+      "Thần chỉ dùng hỗ trợ thêm khi có điều kiện.",
   };
 }
 
