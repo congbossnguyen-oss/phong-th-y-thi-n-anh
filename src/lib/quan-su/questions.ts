@@ -344,4 +344,30 @@ export const questions: QuestionDefinition[] = [
   // vào đúng nhóm chuyên môn ở trên: thoi-diem-doi-viec (sự nghiệp), khi-nao-xuong-tien (tài
   // chính), khi-nao-mo-rong (kinh doanh), khi-nao-ky-bds (bất động sản), thoi-diem-ra-tay (cạnh
   // tranh) — sát hoàn cảnh hơn hẳn một câu "khi nào nên hành động" chung chung.
+
+  // ----- CÂU HỎI KHÁC (mục 18) — khách tự gõ câu hỏi (quy trình §1.1, dòng cuối "việc lạ/ít gặp") -----
+  // Câu hỏi CHUNG không thuộc nhóm chuyên môn nào — nên KHÔNG dùng qLuan() (label mặc định của
+  // IN_MO_TA chỉ là "kể ngắn gọn hoàn cảnh", ở đây ô đó CHÍNH LÀ câu hỏi, cần label mời gọi rõ hơn.
+  {
+    question_id: "cau-hoi-tu-do",
+    category: "cau-hoi-khac",
+    title: "Câu hỏi khác",
+    subtitle: "Không có trong danh sách các nhóm ở trên? Anh/chị viết cụ thể việc muốn hỏi.",
+    required_inputs: [
+      {
+        key: "mo_ta_tinh_huong",
+        label: "Anh/chị muốn hỏi Quân Sư việc gì?",
+        type: "text",
+        required: true,
+        helpText: "Viết cụ thể càng tốt — việc gì, liên quan ai, đang phân vân điều gì. Ví dụ: 'Có nên cho hàng xóm mượn đất không', 'Xin visa đợt này có được không', 'Việc đấu thầu lần này nên thế nào'.",
+      },
+      IN_GIEO_QUE,
+    ],
+    optional_inputs: [],
+    recommended_engines: ["bat-tu", "tu-vi"],
+    divination_method: "luc-hao",
+    output_type: "luan-giai",
+    pricing_tier: "cao-cap",
+    safety_level: "thuong",
+  },
 ];
