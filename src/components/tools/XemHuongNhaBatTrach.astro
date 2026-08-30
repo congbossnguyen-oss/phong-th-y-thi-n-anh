@@ -107,7 +107,7 @@ import Container from "../../components/ui/Container.astro";
 
     <details id="bt-accordion-nam" class="mt-3 hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100)">
       <summary class="cursor-pointer px-4 py-3 text-sm font-semibold text-(--color-ink-800)">
-        Xem 1 năm cụ thể có Thái Tuế/Tuế Phá/Đô Thiên đóng ở phương định động không.
+        Xem 1 năm cụ thể có Thái Tuế/Tuế Phá/Đô Thiên đóng ở phương định động không, và năm đó có hợp với mệnh gia chủ không (Niên Tinh).
       </summary>
       <div class="border-t border-(--color-ivory-300) p-4">
         <label for="bt-nam-xem" class="text-xs font-medium text-(--color-ink-600)">Năm cần xem</label>
@@ -156,9 +156,18 @@ import Container from "../../components/ui/Container.astro";
   }
   interface TangCuuTinh { tang: number; tenKhi: string; saoTen: string; cat: boolean }
   interface KetQuaXuyenCung { khaNang1: TangCuuTinh[]; khaNang2: TangCuuTinh[] | null; lech: boolean; ghiChu: string }
+  interface KetQuaNienTinh {
+    apDung: boolean;
+    saoNamNay: number;
+    cungSao?: string;
+    tenKhi?: string;
+    hop?: boolean;
+    ghiChu?: string;
+  }
   interface KetQuaLuuNien {
     thaiTue: { nam: number; namChi: string; thaiTueCung: string; tuePhaCung: string; tamSatCung: string };
     doThien: { canNamSinh: string; sonDoThien: [string, string] };
+    nienTinh: KetQuaNienTinh | null;
   }
   interface ApiResponse {
     toiThieu: KetQuaToiThieu;
@@ -396,10 +405,16 @@ import Container from "../../components/ui/Container.astro";
   }
 
   function renderLuuNien(r: KetQuaLuuNien) {
+    const nienTinhHtml = r.nienTinh
+      ? r.nienTinh.apDung
+        ? `<p class="mt-1.5">Niên Tinh nhập trung năm ${r.thaiTue.nam} là sao ${r.nienTinh.saoNamNay} (cung ${r.nienTinh.cungSao}) — với mệnh: <strong>${r.nienTinh.tenKhi}</strong> → ${nhanHop(!!r.nienTinh.hop)}.</p>`
+        : `<p class="mt-1.5 text-(--color-ink-500)">${r.nienTinh.ghiChu}</p>`
+      : "";
     ketQuaNamEl.innerHTML = `
       <div class="rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200) p-4 text-sm">
         <p>Năm ${r.thaiTue.nam} (${r.thaiTue.namChi}): Thái Tuế tại <strong>${r.thaiTue.thaiTueCung}</strong>, Tuế Phá tại <strong>${r.thaiTue.tuePhaCung}</strong>, Tam Sát tại <strong>${r.thaiTue.tamSatCung}</strong>.</p>
         <p class="mt-1.5">Đô Thiên (theo Can năm sinh ${r.doThien.canNamSinh}): tại 2 sơn <strong>${r.doThien.sonDoThien.join(", ")}</strong>.</p>
+        ${nienTinhHtml}
         <p class="mt-2 text-xs text-(--color-ink-500)">Nếu định động thổ/sửa chữa ở đúng các phương/sơn trên trong năm này, nên tránh hoặc chọn thời điểm khác.</p>
       </div>
     `;

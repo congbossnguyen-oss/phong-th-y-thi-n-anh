@@ -90,10 +90,21 @@ hệt (`packages/rule-engine/src/scoring/tuoiHopLamAn.ts`), không phải tự b
 
 ## 9. Phạm vi KHÔNG build (nằm ngoài README build order chính)
 
-- **Lưu niên/Nguyệt vận đầy đủ + nhánh mở rộng** (so tuổi vợ chồng, chọn tháng cưới — ADDENDUM mục
-  2): chỉ build phần Thái Tuế/Tuế Phá/Tam Sát + Đô Thiên theo năm cần xem (đã đủ cho SPEC-OVERRIDE
-  §2 tầng "năm cần xem"). Phần "niên tinh" đầy đủ theo `references/08-luu-nien-nguyet-van.md` của
-  skill gốc CHƯA trích vào gói này nên chưa build — báo nếu anh cần.
+- **Cập nhật 30/8/2026 (sau khi build xong bản đầu, anh yêu cầu "chạy tiếp"):** đã bổ sung tính
+  năng nhỏ "xem năm nay có hợp mệnh không" (ADDENDUM mục 2 gợi ý) — dùng file
+  `references/08-luu-nien-nguyet-van.md` của skill gốc (đọc lại từ file .skill anh gửi, không có
+  trong gói zip ban đầu). Đúng nguyên tắc bao-trùm: KHÔNG tự tính lại Niên Tinh nhập trung — gọi
+  thẳng `nienTinhNhapTrung()` của engine `huyen-khong-phi-tinh` đã có sẵn trên site (đã kiểm chứng
+  3 mốc lịch sử), package Bát Trạch chỉ làm phần thuộc phạm vi của nó: quy đổi số sao → quái Bát
+  Quái (Lạc Thư chuẩn) → tra Du Niên với mệnh gia chủ. Năm nào Ngũ Hoàng nhập trung (số 5, không có
+  quái Bát Quái tương ứng trong nguồn) → hiển thị "đang bổ sung", không tự chọn quy ước Khôn/Cấn
+  (nhiều phái khác nhau, nguồn không xác nhận cái nào đúng cho kỹ thuật này). Xem
+  `packages/rule-engine/src/bat-trach-nha/nienTinh.ts`.
+- **Vẫn CHƯA build — nhánh mở rộng "chọn tháng cưới"** (ADDENDUM mục 2, 4 bước cuối file
+  `08-luu-nien-nguyet-van.md`): đây là ứng dụng phụ của Du Niên cho việc chọn ngày cưới, **có khả
+  năng trùng lặp đáng kể với tool "Chọn Tuổi Kết Hôn"/"Xem Ngày Cưới Hỏi" đã có sẵn trên site**
+  (cùng dùng Cung Phi + Du Niên). Không tự build để tránh dựng trùng — nếu anh muốn thêm, cần xác
+  nhận trước có nên gộp vào tool cưới hỏi hiện có hay tách riêng.
 - **Phần Chân Pháp không phù hợp số hóa** (ADDENDUM mục 4: bố cục 3 chiều, luận 64 tổ hợp Cửa-Chủ-
   Bếp, luận an táng) — đúng theo khuyến nghị gói build, không đưa vào công cụ, để làm nội dung dẫn
   phễu tư vấn 1-1 (CTA cuối trang đã có sẵn cơ chế này).
@@ -125,7 +136,7 @@ tại sơn nào" (thông tin cảnh báo), KHÔNG kết luận "phạm" hay "kh�
 
 ## 13. Kiểm thử
 
-`packages/rule-engine/tests/unit/bat-trach-nha/` — 39 test mới (tổng package: 77 test, đều pass),
+`packages/rule-engine/tests/unit/bat-trach-nha/` — 45 test (tổng package: 83 test, đều pass),
 gồm: 4 ca cung phi mẫu (data/01), đối xứng Du Niên + kiểm toán độc lập từ biến hào (data/02), ca
 mẫu bắt buộc SPEC §5 (Nam 1989 × hướng Nam = Lục sát, không hợp mệnh — **đã xác nhận đúng cả trên
 UI thật**), kiểm toán Sinh khắc Cung–Sao port lại chính xác 2 script Python trong gói build (phương
