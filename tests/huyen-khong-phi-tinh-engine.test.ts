@@ -20,6 +20,7 @@ import {
   timThanhMon,
   tinhToanHuyenKhong,
   vanTuNam,
+  xetMoCuaPhu,
 } from "../src/lib/huyen-khong-phi-tinh/engine";
 
 const TEN_TO_CUNG: Record<string, number> = Object.fromEntries(
@@ -299,5 +300,37 @@ describe("Tách vận nhà vs vận đương lệnh — nhà thoái vận (ca th
     const kq = tinhToanHuyenKhong(SON_24["Mão"][0], 7);
     expect(kq.van_hien_tai).toBe(7);
     expect(kq.da_thoai_van).toBe(false);
+  });
+});
+
+describe("Thành Môn / mở cửa phụ xét theo VẬN HIỆN TẠI (nhà thoái vận) — anh Công 30/8/2026", () => {
+  // Nhà Mão hướng, nhập trạch 2003 = Vận 7. Xem ở Vận 9.
+  const tb = lapTinhBan(SON_24["Mão"][0], vanTuNam(2003));
+
+  it("mở cửa phụ theo Vận 9: mọi sơn đắc vượng phải là nơi vượng tinh 9 bay về (không phải sao 7)", () => {
+    const theoVan9 = xetMoCuaPhu(tb, 9);
+    expect(theoVan9.length).toBeGreaterThan(0);
+    for (const m of theoVan9) expect(m.sao_ve_cung).toBe(9);
+    // Nếu (nhầm) xét theo vận nhà 7 thì đắc vượng là nơi sao 7 bay về — khác hẳn danh sách trên.
+    const theoVan7 = xetMoCuaPhu(tb, 7);
+    for (const m of theoVan7) expect(m.sao_ve_cung).toBe(7);
+    const son9 = theoVan9.map((m) => m.son).sort();
+    const son7 = theoVan7.map((m) => m.son).sort();
+    expect(son9).not.toEqual(son7);
+  });
+
+  it("Thành Môn: khả dụng xét theo Vận 9 — sao về đúng cung là vượng tinh 9 (dùng vận bàn Vận 9)", () => {
+    const tm9 = timThanhMon(tb, 9);
+    for (const tm of tm9) {
+      // van_tinh trong kết quả lấy từ vận bàn Vận 9, không phải vận bàn Vận 7 của nhà
+      if (tm.kha_dung) expect(tm.sao_ve_cung).toBe(9);
+    }
+  });
+
+  it("nhà đúng vận (Vận 9): mặc định không truyền vanHienTai = xét theo vận nhà, không đổi kết quả", () => {
+    const tb9 = lapTinhBan(SON_24["Mão"][0], 9);
+    // timThanhMon(tb9) mặc định vanHienTai = tb9.van = 9 → giống timThanhMon(tb9, 9)
+    expect(timThanhMon(tb9)).toEqual(timThanhMon(tb9, 9));
+    expect(xetMoCuaPhu(tb9)).toEqual(xetMoCuaPhu(tb9, 9));
   });
 });

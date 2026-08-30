@@ -692,16 +692,23 @@ export interface ThanhMonEntry {
  * i-thu-son-xuat-sat-cua-chinh-duong-khi.md mục 2.3).
  * Trong mỗi cung liền kề, lấy sơn CÙNG Tam Nguyên Long với hướng nhà.
  *
+ * @param vanHienTai Vận ĐANG CAI QUẢN — Thành Môn xét theo VẬN HIỆN TẠI, KHÔNG phải vận lập trạch:
+ *   dùng vận bàn của vận hiện tại (bayTinh(vanHienTai)) + so vượng tinh của vận hiện tại. Nguồn
+ *   thanh-mon.md có ví dụ: CÙNG sơn Tý, ở Vận 8 KHÔNG dùng được nhưng ở Vận 9 LẠI dùng được — tức
+ *   Thành Môn đổi theo vận đang cai quản. Vị trí 2 sơn Thành Môn CỐ ĐỊNH theo tọa-hướng (hình học),
+ *   chỉ tính khả dụng mới đổi theo vận. Mặc định = tb.van.
+ *
  * "Chân Thành Môn" cần ĐỦ 3 điều kiện:
- *   1. Hướng tinh tại đó là đương lệnh vượng tinh (kiemTraSon().dac_vuong).
- *   2. Hướng tinh KHÔNG phải Ngũ Hoàng (trừ Vận 5).
- *   3. Sơn tinh tại đó phải thoái/sát tinh (SUY/TỬ/TỬ-XA) — nếu Sơn tinh đang VƯỢNG/SINH thì
+ *   1. Vượng tinh của VẬN HIỆN TẠI bay về đúng cung đó (kiemTraSon().dac_vuong).
+ *   2. Hướng tinh (lá số) tại đó KHÔNG phải Ngũ Hoàng (trừ Vận 5).
+ *   3. Sơn tinh (lá số) tại đó đang thoái/sát tinh theo vận hiện tại — nếu đang VƯỢNG/SINH thì
  *      thành môn là thủy khẩu, mở cửa ắt TỔN ĐINH, không dùng được dù điều kiện 1-2 đủ.
  */
-export function timThanhMon(tb: TinhBan): ThanhMonEntry[] {
-  const van = tb.van;
+export function timThanhMon(tb: TinhBan, vanHienTai: number = tb.van): ThanhMonEntry[] {
   const nlHuong = tb.nguyen_long_huong;
   const cungH = tb.cung_huong;
+  // Thành Môn xét theo vận bàn của VẬN HIỆN TẠI (không phải vận bàn lá số nhà).
+  const vanBanHienTai = bayTinh(vanHienTai, true);
   let doHCung: number | null = null;
   // tâm cung hướng = tâm của sơn Thiên Nguyên trong cung đó
   for (const ten of Object.keys(SON_24)) {
@@ -725,22 +732,22 @@ export function timThanhMon(tb: TinhBan): ThanhMonEntry[] {
       }
     }
 
-    const kt = kiemTraSon(sonKe as string, van, tb.van_ban);
+    const kt = kiemTraSon(sonKe as string, vanHienTai, vanBanHienTai);
 
     // Loại Thành Môn: Chính nếu địa bàn 2 cung tạo cặp Tiên Thiên (Hà Đồ)
     const laChinh = laCapTienThien(cungKe, cungH);
     const loai: "Chính" | "Phụ" = laChinh ? "Chính" : "Phụ";
 
-    // Thành Môn Ngầm: Hướng tinh tại cung kề + địa bàn cung đó thành cặp Tiên Thiên
+    // Thành Môn Ngầm: Hướng tinh (lá số nhà) tại cung kề + địa bàn cung đó thành cặp Tiên Thiên
     const htKe = tb.huong_ban[cungKe];
     const ngam = laCapTienThien(htKe, cungKe);
 
-    // 3 điều kiện "Chân Thành Môn"
+    // 3 điều kiện "Chân Thành Môn" (vượng/suy xét theo VẬN HIỆN TẠI)
     const stKe = tb.son_ban[cungKe];
-    const ttSonKe = trangThaiSao(stKe, van);
+    const ttSonKe = trangThaiSao(stKe, vanHienTai);
     let canhBao: string | null = null;
     let chanThanhMon = kt.dac_vuong;
-    if (htKe === 5 && van !== 5) {
+    if (htKe === 5 && vanHienTai !== 5) {
       canhBao = "Hướng tinh Ngũ Hoàng tại đây — KHÔNG dùng làm Thành Môn (trừ Vận 5)";
       chanThanhMon = false;
     }
@@ -850,14 +857,17 @@ export interface MoCuaPhuEntry extends KiemTraSonResult {
 }
 
 /**
- * Quét toàn bộ 24 sơn: sơn nào đắc vượng khí nếu mở cửa tại đó.
+ * Quét toàn bộ 24 sơn: sơn nào đắc vượng khí (của VẬN HIỆN TẠI) nếu mở cửa/cổng phụ tại đó.
  * Dùng khi hướng chính không có vượng khí hoặc nhà kiêm hướng (thanh-mon.md mục 7).
+ *
+ * @param vanHienTai Vận đương lệnh — mở cửa phụ để đón vượng khí ĐANG CAI QUẢN, nên dùng vận bàn
+ *   của vận hiện tại + so vượng tinh vận hiện tại (giống timThanhMon). Mặc định = tb.van.
  */
-export function xetMoCuaPhu(tb: TinhBan): MoCuaPhuEntry[] {
-  const van = tb.van;
+export function xetMoCuaPhu(tb: TinhBan, vanHienTai: number = tb.van): MoCuaPhuEntry[] {
+  const vanBanHienTai = bayTinh(vanHienTai, true);
   const ketQua: MoCuaPhuEntry[] = [];
   for (const ten of Object.keys(SON_24)) {
-    const kt = kiemTraSon(ten, van, tb.van_ban);
+    const kt = kiemTraSon(ten, vanHienTai, vanBanHienTai);
     if (kt.dac_vuong) {
       const cung = kt.cung;
       const ht = tb.huong_ban[cung];
@@ -1096,10 +1106,12 @@ export function tinhToanHuyenKhong(
     van_nha: van,
     van_hien_tai: vanHienTai,
     da_thoai_van: vanHienTai !== van,
-    // Cách cục + Thành Môn + mở cửa phụ: giữ theo VẬN NHÀ (kết cấu cố định của lá số).
+    // Cách cục: giữ theo VẬN NHÀ (nhãn kết cấu cố định của lá số).
     cach_cuc: [...nhanDienCachCuc(tb), canhBaoDaKiep()],
-    thanh_mon: timThanhMon(tb),
-    mo_cua_phu: xetMoCuaPhu(tb),
+    // Thành Môn + mở cửa phụ: VỊ TRÍ cố định theo tọa-hướng, nhưng KHẢ DỤNG xét theo VẬN HIỆN TẠI
+    // (đón vượng khí đang cai quản) — xem ví dụ "Tý vận 8 vs vận 9" trong thanh-mon.md.
+    thanh_mon: timThanhMon(tb, vanHienTai),
+    mo_cua_phu: xetMoCuaPhu(tb, vanHienTai),
     // Chính-Linh Thần + Thu Sơn Xuất Sát + phân tích cung: xét theo VẬN HIỆN TẠI (đương lệnh).
     chinh_linh_than: chinhLinhThan(vanHienTai),
     thu_son_xuat_sat: thuSonXuatSat(tb, vanHienTai),

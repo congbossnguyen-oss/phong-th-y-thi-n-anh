@@ -391,7 +391,7 @@ const MAU_TRANG_THAI: Record<string, string> = {
                     </p>
                     <p class="mt-1.5 text-sm font-medium text-(--color-ink-800)">
                       Hướng tinh: vận tinh {tm.van_tinh} nhập trung bay {tm.chieu_bay} → sao {tm.sao_ve_cung} về cung này
-                      {!tm.kha_dung && tm.sao_ve_cung !== van && ` (không phải vượng tinh ${van})`}
+                      {!tm.kha_dung && tm.sao_ve_cung !== kq.van_hien_tai && ` (không phải vượng tinh ${kq.van_hien_tai} của vận hiện tại)`}
                     </p>
                     <p class="mt-1 text-sm font-medium text-(--color-ink-800)">
                       Sơn tinh tại đây: {tm.son_tinh_tai_do} [{tm.trang_thai_son_tinh}]
@@ -403,22 +403,41 @@ const MAU_TRANG_THAI: Record<string, string> = {
                 ))}
               </div>
               <p class="mt-2 text-xs italic text-(--color-ink-600)">
-                "Chân Thành Môn" cần đủ 3 điều kiện: Hướng tinh đang vượng · không phải Ngũ Hoàng (trừ Vận 5) · Sơn tinh đang thoái/sát (không vượng/sinh).
+Thành Môn xét theo VẬN HIỆN TẠI (Vận {kq.van_hien_tai}), không phải vận lập trạch — vị trí 2 sơn cố định theo tọa/hướng, nhưng "dùng được hay không" thì đổi theo vận. "Chân Thành Môn" cần đủ 3 điều kiện: vượng tinh của vận hiện tại bay về đúng cung · không phải Ngũ Hoàng (trừ Vận 5) · Sơn tinh tại đó đang thoái/sát (không vượng/sinh).
               </p>
 
               {kq.mo_cua_phu.length > 0 && (
                 <details class="mt-3 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4">
                   <summary class="cursor-pointer text-base font-bold text-(--color-cinnabar-500)">
-                    Các sơn đắc vượng khí nếu mở cửa phụ ({kq.mo_cua_phu.length})
+                    Gợi ý mở cửa/cổng phụ để đón thêm vượng khí ({kq.mo_cua_phu.length} hướng)
                   </summary>
-                  <div class="mt-2 space-y-1.5 text-sm font-medium text-(--color-ink-800)">
-                    {kq.mo_cua_phu.map((m) => (
-                      <p>
-                        • Sơn <strong>{m.son}</strong> ({m.cung_ten}, {m.am_duong}, {m.cung_nguyen_long_voi_nha ? "cùng Nguyên Long" : "khác Nguyên Long"}) —
-                        vận tinh {m.van_tinh} bay {m.chieu} → vượng tinh về{m.canh_bao ? ` — ⚠️ ${m.canh_bao}` : ""}
-                      </p>
-                    ))}
-                    <p class="mt-1 italic">Lưu ý: cửa phụ nên đặt tại sơn ngược Âm Dương với cửa chính; cửa chỉ nằm gọn trong 1 sơn, không lấn cung.</p>
+                  <div class="mt-2 text-sm font-medium text-(--color-ink-800)">
+                    <p>
+                      Ngoài cửa chính, đây là những hướng mà nếu mở thêm một cửa/cổng/lối đi phụ đặt <strong>gọn trong hướng đó</strong>, nhà sẽ "đón" thêm được vượng khí <strong>của vận hiện tại (Vận {kq.van_hien_tai})</strong> — kỹ thuật cổ gọi là <strong>Thành Môn</strong>. Chỉ cần chọn <strong>một</strong> hướng hợp với bố cục nhà, không phải mở hết.
+                    </p>
+                    <ul class="mt-3 space-y-1.5">
+                      {kq.mo_cua_phu.map((m) => (
+                        <li class="flex flex-wrap items-center gap-x-2 gap-y-1">
+                          <span class="font-bold text-(--color-ink-950)">{m.cung_ten}</span>
+                          <span class="text-(--color-ink-600)">— sơn</span>
+                          <strong class="text-(--color-ink-950)">{m.son}</strong>
+                          <span class="rounded-full bg-(--color-ivory-300) px-2 py-0.5 text-xs font-semibold text-(--color-ink-800)">{m.am_duong}</span>
+                          <span class:list={["rounded-full px-2 py-0.5 text-xs font-semibold", m.cung_nguyen_long_voi_nha ? "bg-emerald-500/15 text-emerald-700" : "bg-(--color-ivory-300) text-(--color-ink-700)"]}>
+                            {m.cung_nguyen_long_voi_nha ? "cùng Nguyên Long với nhà" : "khác Nguyên Long"}
+                          </span>
+                          {m.canh_bao && <span class="text-xs font-bold text-(--color-danger-600)">⚠️ {m.canh_bao}</span>}
+                        </li>
+                      ))}
+                    </ul>
+                    <div class="mt-3 rounded-(--radius-control) border border-(--color-ivory-300) bg-white/50 p-3">
+                      <p class="font-bold text-(--color-ink-900)">Cách chọn &amp; lưu ý</p>
+                      <ul class="mt-1 list-inside list-disc space-y-1 text-(--color-ink-800)">
+                        <li>Ưu tiên hướng <strong>"cùng Nguyên Long với nhà"</strong> (khí thuần hơn) và Âm/Dương <strong>ngược</strong> với cửa chính (Âm–Dương giao hòa).</li>
+                        <li>Cửa phụ phải nằm <strong>gọn trong 1 sơn (~15°)</strong>, không lấn sang hướng bên cạnh thì mới đúng khí.</li>
+                        <li>Nơi mở cửa phụ cần có <strong>thủy/ao hồ/ngã ba/cổng ngõ</strong> thực tế thì mới phát huy — không phải cứ mở cửa là được.</li>
+                      </ul>
+                      <p class="mt-2 text-xs italic text-(--color-ink-600)">Nguyên Long = tầng Thiên/Địa/Nhân của mỗi sơn; "cùng Nguyên Long" nghĩa là cùng tầng với hướng nhà. Danh sách trên đã lọc sẵn những hướng mà vượng khí bay về đúng cung — anh/chị không cần tự tính.</p>
+                    </div>
                   </div>
                 </details>
               )}
