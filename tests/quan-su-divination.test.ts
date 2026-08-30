@@ -103,6 +103,46 @@ describe("Divination — Dụng Thần gợi ý theo nhóm", () => {
   });
 });
 
+describe("Divination — hỏi cho người khác (doiTuong đổi Dụng Thần theo Lục Thân, quy trình §1.1)", () => {
+  it("mặc định (không truyền doiTuong, hoặc 'chinh-toi') giữ nguyên Dụng Thần của nhóm", () => {
+    expect(dungThanHintFor("suc-khoe")).toMatchObject({ kind: "the-hao" });
+    expect(dungThanHintFor("suc-khoe", "chinh-toi")).toMatchObject({ kind: "the-hao" });
+  });
+
+  it("hỏi cho cha/mẹ, con, vợ, chồng, anh chị em → đổi đúng Lục Thân đại diện", () => {
+    expect(dungThanHintFor("suc-khoe", "cha-me")).toMatchObject({ kind: "luc-than", value: "Phụ Mẫu" });
+    expect(dungThanHintFor("suc-khoe", "con")).toMatchObject({ kind: "luc-than", value: "Tử Tôn" });
+    expect(dungThanHintFor("suc-khoe", "vo")).toMatchObject({ kind: "luc-than", value: "Thê Tài" });
+    expect(dungThanHintFor("suc-khoe", "chong")).toMatchObject({ kind: "luc-than", value: "Quan Quỷ" });
+    expect(dungThanHintFor("suc-khoe", "anh-chi-em")).toMatchObject({ kind: "luc-than", value: "Huynh Đệ" });
+  });
+
+  it("hỏi cho 'người khác' (không thuộc lục thân cụ thể) → Hào Ứng", () => {
+    expect(dungThanHintFor("suc-khoe", "nguoi-khac")).toMatchObject({ kind: "ung-hao" });
+  });
+
+  it("nhóm 'framework' (không có 1 Dụng Thần đơn nhất) giữ nguyên bất kể doiTuong", () => {
+    expect(dungThanHintFor("hop-tac", "cha-me").kind).toBe("framework");
+  });
+
+  it("payload ghi lại doi_tuong_hoi + Ứng Kỳ tính theo hào Ứng khi doiTuong='nguoi-khac'", () => {
+    const q = getQuestion("xu-huong-suc-khoe")!;
+    const cast = castLucHaoFromTosses([9, 7, 8, 7, 8, 7], FIXED_INPUT);
+    const payload = buildInterpretationPayload(q, cast, { method: "luc-hao-tosses", doiTuong: "nguoi-khac" });
+    expect(payload.question.doi_tuong_hoi).toBe("nguoi-khac");
+    expect(payload.question.dung_than_hint.kind).toBe("ung-hao");
+    // Hào Ứng luôn hiện trên quẻ (không có khái niệm phục tàng cho Thế/Ứng) → luôn tính được Ứng Kỳ.
+    expect(payload.ung_ky).not.toBeNull();
+  });
+
+  it("payload mặc định doi_tuong_hoi='chinh-toi' khi không truyền doiTuong", () => {
+    const q = getQuestion("xu-huong-suc-khoe")!;
+    const cast = castLucHaoFromTosses([9, 7, 8, 7, 8, 7], FIXED_INPUT);
+    const payload = buildInterpretationPayload(q, cast, { method: "luc-hao-tosses" });
+    expect(payload.question.doi_tuong_hoi).toBe("chinh-toi");
+  });
+});
+
 describe("Divination — payload cho Interpretation Engine", () => {
   it("gói đủ cấu trúc: câu hỏi + quẻ nguyên văn + slot vận trình + meta", () => {
     const q = getQuestion("dau-tu-du-an")!;

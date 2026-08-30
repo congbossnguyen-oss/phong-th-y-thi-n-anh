@@ -59,4 +59,18 @@ describe("Orchestrator — chạy đầu-cuối", () => {
   it("câu không tồn tại → báo lỗi", async () => {
     await expect(runQuanSu({ question_id: "khong-co-that", tosses: TOSSES, boQuaAI: true })).rejects.toThrow();
   });
+
+  it("hỏi sức khỏe cho cha/mẹ (doiTuong) → chấm theo Phụ Mẫu, KHÔNG chạy vận trình của người đăng nhập", async () => {
+    // Có ngaySinh (hồ sơ người dùng) nhưng doiTuong khác chính mình → vanTrinh phải null, vì vận
+    // trình Bát Tự tính từ ngày sinh CHỦ TÀI KHOẢN, không phải của cha/mẹ đang được hỏi tới.
+    const r = await runQuanSu({ question_id: "xu-huong-suc-khoe", tosses: TOSSES, ngaySinh: NGAY_SINH, doiTuong: "cha-me", boQuaAI: true });
+    expect(r.vanTrinh).toBeNull();
+    expect(r.report.vanTrinh).toBeNull();
+    expect(r.report.luanGiaiChiTiet).toContain("Phụ Mẫu");
+  });
+
+  it("hỏi sức khỏe không truyền doiTuong (mặc định chính mình) → vẫn chạy vận trình như cũ", async () => {
+    const r = await runQuanSu({ question_id: "xu-huong-suc-khoe", tosses: TOSSES, ngaySinh: NGAY_SINH, boQuaAI: true });
+    expect(r.vanTrinh).not.toBeNull();
+  });
 });

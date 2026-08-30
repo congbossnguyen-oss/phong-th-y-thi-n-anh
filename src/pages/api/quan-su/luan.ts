@@ -3,6 +3,7 @@
 
 import type { APIRoute } from "astro";
 import { runQuanSu, type CastingMethod, type NgaySinhInput } from "../../../lib/quan-su/orchestrator";
+import type { DoiTuongHoi } from "../../../lib/quan-su/divination";
 import { getQuestion } from "../../../lib/quan-su";
 import { coQuyenTruyCap, hangYeuCauTheoCauHoi, layGoiDangHoatDong } from "../../../lib/subscriptions/access";
 import { conLuotHoiKhong, ghiNhanLuotHoi } from "../../../lib/subscriptions/usage";
@@ -17,6 +18,7 @@ function json(body: unknown, status: number): Response {
 
 const VALID_TOSS = new Set([6, 7, 8, 9]);
 const VALID_CASTING_METHODS = new Set<CastingMethod>(["gieo-tay", "mai-hoa", "seri-tien"]);
+const VALID_DOI_TUONG = new Set<DoiTuongHoi>(["chinh-toi", "cha-me", "con", "vo", "chong", "anh-chi-em", "nguoi-khac"]);
 
 export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
   // Chống spam dồn dập (script/click liên tục) — TÁCH RIÊNG khỏi hạn mức lượt/tháng bên dưới, đây
@@ -37,6 +39,7 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
     tosses?: unknown;
     seriTien?: unknown;
     moTa?: unknown;
+    doiTuong?: unknown;
   };
 
   if (typeof body.question_id !== "string" || body.question_id.length === 0) {
@@ -105,6 +108,15 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
     seriTien = body.seriTien;
   }
 
+  // doiTuong (tùy chọn) — hỏi việc cho ai; mặc định "chinh-toi" ở orchestrator nếu bỏ trống.
+  let doiTuong: DoiTuongHoi | undefined;
+  if (body.doiTuong !== undefined) {
+    if (typeof body.doiTuong !== "string" || !VALID_DOI_TUONG.has(body.doiTuong as DoiTuongHoi)) {
+      return json({ error: "doiTuong không hợp lệ." }, 400);
+    }
+    doiTuong = body.doiTuong as DoiTuongHoi;
+  }
+
   // Ngày sinh KHÔNG còn thu qua form câu hỏi — tự lấy từ hồ sơ tài khoản đã đăng nhập (khai báo lúc
   // đăng ký hoặc bổ sung ở /hoc-vien/ho-so). Thầy, 2026-08-23: "khai báo lúc đăng ký, lúc đó mới
   // chạy" — tài khoản chưa khai thì vẫn luận được bình thường, chỉ không có lớp vận trình.
@@ -121,6 +133,7 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
       seriTien,
       ngaySinh,
       moTa: typeof body.moTa === "string" ? body.moTa : undefined,
+      doiTuong,
     });
     // Chỉ tính lượt khi luận giải THÀNH CÔNG — khách không nhận được gì thì không bị trừ lượt.
     if (locals.user.isAdmin !== true) await ghiNhanLuotHoi(locals.user.id);

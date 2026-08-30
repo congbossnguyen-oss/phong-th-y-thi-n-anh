@@ -63,6 +63,20 @@ export function userPrompt(payload: QuanSuInterpretationPayload, moTa?: string):
     `Gợi ý Dụng Thần theo nhóm việc (do hệ thống tra sẵn, vẫn phải tự kiểm lại theo Bước 1): ${JSON.stringify(q.dung_than_hint)}`,
   ];
 
+  if (q.doi_tuong_hoi && q.doi_tuong_hoi !== "chinh-toi") {
+    const XUNG_HO: Record<string, string> = {
+      "cha-me": "cha/mẹ của người hỏi",
+      con: "con của người hỏi",
+      vo: "vợ của người hỏi",
+      chong: "chồng của người hỏi",
+      "anh-chi-em": "anh/chị/em hoặc bạn của người hỏi",
+      "nguoi-khac": "một người khác mà người hỏi quan tâm (không phải chính người hỏi)",
+    };
+    phan.push(
+      `NGƯỜI ĐƯỢC HỎI: Đây là quẻ hỏi CHO ${XUNG_HO[q.doi_tuong_hoi] ?? "người khác"}, KHÔNG PHẢI hỏi cho chính người hỏi. Dụng Thần ở trên đã đổi đúng theo người này — khi viết bài luận, xưng hô đúng đối tượng (vd "cha/mẹ anh/chị", "cháu"...), không mặc định nói về bản thân người hỏi.`,
+    );
+  }
+
   if (moTa && moTa.trim()) {
     phan.push("", `HOÀN CẢNH NGƯỜI HỎI TỰ KỂ:\n${moTa.trim()}`);
   }
