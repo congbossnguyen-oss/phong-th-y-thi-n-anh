@@ -526,7 +526,7 @@ const {
   .km-lbl {
     position: absolute;
     color: #fff;
-    font-size: 0.58rem;
+    font-size: 0.64rem;
     font-weight: 700;
     text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
     white-space: nowrap;
@@ -542,21 +542,27 @@ const {
   /* Mã (🐴) — gắn trên viền màu ngoài, cạnh nhãn địa chi (không còn trong ô trắng). writing-mode
      ép RIÊNG (không ăn theo dải cha) để luôn đứng trục dọc dù rơi vào dải trên/dưới (nằm ngang)
      hay dải trái/phải (đã dọc sẵn) — anh Công 28/8/2026: "mã tinh khi an vào cung nào em cũng
-     cho nó đứng thẳng theo trục dọc". */
+     cho nó đứng thẳng theo trục dọc". Cỡ chữ tăng thêm 31/8/2026 (anh Công: "mã tinh cũng cho to
+     lên chút"). */
   .km-lbl-ma {
     display: inline-block; writing-mode: vertical-rl; text-orientation: upright;
-    margin-left: 0.2em; font-size: 0.8rem; vertical-align: middle;
+    margin-left: 0.2em; font-size: 0.95rem; vertical-align: middle;
   }
-  /* KV (Không Vong) — gắn ngay sau CHÍNH chi bị không vong trên viền ngoài (không còn nằm trong ô
-     trắng như trước). Cùng lý do ép writing-mode riêng như Mã ở trên. Cung góc có 2 chi (vd "Tuất
-     Hợi"): nếu cả 2 đều không vong thì mỗi chi có 1 chữ KV riêng — xem chiHtml trong script. */
+  /* KV (Không Vong) — gắn ngay sau CHÍNH chi bị không vong trên viền ngoài. SỬA 31/8/2026 (anh
+     Công, kèm ảnh chụp KV ở cung Thìn-Tị bị lộn đầu): bỏ writing-mode dọc từng ép riêng cho KV
+     (khác Mã — Mã vẫn giữ dọc theo đúng ý ở trên) — giờ KV LUÔN NẰM NGANG, đọc xuôi bình thường.
+     Riêng dải trái (.km-lbl-l) có thêm transform:rotate(180deg) ở CẢ DẢI (để chữ chi Hán/Việt dọc
+     đọc đúng chiều) — chữ KV nằm ngang lồng bên trong dải đó sẽ ăn theo, bị lộn ngược 180°, nên
+     phải tự xoay ngược lại 180° một lần nữa để triệt tiêu, xem selector .km-lbl-l .km-lbl-kv bên
+     dưới, mới đứng thẳng đúng chiều đọc như các dải khác. */
   .km-lbl-kv {
-    display: inline-block; writing-mode: vertical-rl; text-orientation: upright;
-    margin-left: 0.1em; font-size: 0.56rem; font-weight: 800; color: #ffd76a; vertical-align: middle;
+    display: inline-block; writing-mode: horizontal-tb;
+    margin-left: 0.15em; font-size: 0.68rem; font-weight: 800; color: #ffd76a; vertical-align: middle;
   }
+  .km-lbl-l .km-lbl-kv { transform: rotate(180deg); }
   .km-cung-so {
     flex: none;
-    font-size: 0.62rem;
+    font-size: 0.68rem;
     font-weight: 700;
     opacity: 0.85;
   }
@@ -574,11 +580,16 @@ const {
   /* r1 giờ chỉ còn 2 cột [thiên can | Cửu Tinh] — Bát Thần (.cc-than) đã tách khỏi lưới này, neo
      tuyệt đối vào góc trên-phải của .km-cung-inner (anh Công 28/8/2026: "bát thần cho sang góc
      phải"), không còn chiếm chỗ chung dòng với can/sao nữa. */
+  /* r1: 3 cột [thiên can | Cửu Tinh | Bát Thần] — TRƯỚC ĐÂY Bát Thần (.cc-than) tách khỏi lưới này
+     bằng position:absolute neo góc trên-phải .km-cung-inner, nhưng góc đó cũng là nơi Cửu Tinh
+     (cột "auto" cuối của lưới 2 cột) tự nhiên trôi tới → ĐÈ THẲNG LÊN NHAU ở mọi ô (anh Công báo
+     31/8/2026, kèm ảnh). Sửa: đưa Bát Thần vào làm cột thứ 3 thật sự của lưới — layout tự nhường
+     chỗ theo đúng độ rộng chữ, không cần đoán trước khoảng cách như cách chừa padding cố định. */
   .km-cung-r1 {
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: 1fr auto auto;
     align-items: start;
-    column-gap: 2px;
+    column-gap: 5px;
   }
   .km-cung-r2 {
     display: grid;
@@ -586,30 +597,24 @@ const {
     align-items: start;
     column-gap: 2px;
   }
-  .cc-can { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.72rem; font-weight: 700; color: #3a2620; text-align: left; }
-  /* Cửu Tinh (sao): chữ đậm rõ — dùng font sans thay vì serif để đọc "đậm" hơn ở cỡ nhỏ. Cỡ chữ
-     hạ 1rem -> 0.84rem (anh Công 28/8/2026: "cửu tinh cho chính giữa chữ nhỏ đi"), vẫn giữ căn giữa. */
+  .cc-can { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.8rem; font-weight: 700; color: #3a2620; text-align: left; }
+  /* Cửu Tinh (sao): chữ đậm rõ — dùng font sans thay vì serif để đọc "đậm" hơn ở cỡ nhỏ. */
   .cc-sao {
     font-family: var(--font-sans);
     font-weight: 800;
-    font-size: 0.84rem;
+    font-size: 0.94rem;
     color: #1f120e;
     text-align: center;
     line-height: 1;
+    white-space: nowrap;
   }
-  /* Bát Thần: chuyển sang GÓC TRÊN-PHẢI của ô (position:absolute, neo vào .km-cung-inner — ancestor
-     gần nhất có position:absolute), không còn nằm chung dòng với can/sao. Đồng thời đổi sang TÊN
-     VIẾT TẮT sẵn có trong dữ liệu gốc ("B.Hổ", "Đ.Xà"...) thay vì tên đầy đủ ("Bạch Hổ", "Đằng Xà")
-     — cỡ chữ hạ theo cho vừa góc, không cần ellipsis/overflow phòng tràn như trước nữa vì tên viết
-     tắt luôn ngắn (anh Công 28/8/2026: "bát thần... chữ bạch hổ ghi tắt là B.hồ... để cho đỡ dài"). */
+  /* Bát Thần: TÊN VIẾT TẮT sẵn có trong dữ liệu gốc ("B.Hổ", "Đ.Xà"...) thay vì tên đầy đủ ("Bạch
+     Hổ", "Đằng Xà") cho ngắn gọn. Giờ là cột thật của lưới r1 (xem ghi chú trên .km-cung-r1) —
+     không còn absolute/z-index, layout tự né Cửu Tinh bên trái nó. */
   .cc-than {
-    position: absolute;
-    top: 0.05rem;
-    right: 0.02rem;
-    z-index: 1;
     font-family: var(--font-sans);
     font-weight: 800;
-    font-size: 0.66rem;
+    font-size: 0.76rem;
     color: #b8322a;
     text-align: right;
     line-height: 1.05;
@@ -649,7 +654,7 @@ const {
   .cc-so { font-family: var(--font-display); font-weight: 700; font-size: 1.6rem; color: #1f120e; line-height: 0.9; }
   /* Hàng dưới: địa can ghim trái, MÔN căn giữa theo TOÀN BỘ chiều rộng ô, sát đáy — như app. */
   .km-cung-r2 { position: relative; display: block; min-height: 1.1rem; }
-  .cc-diacan { position: absolute; left: 0; bottom: 0; font-size: 0.72rem; font-weight: 700; color: #3a2620; }
+  .cc-diacan { position: absolute; left: 0; bottom: 0; font-size: 0.8rem; font-weight: 700; color: #3a2620; }
   .cc-mon {
     display: block;
     font-family: var(--font-sans);
@@ -669,7 +674,7 @@ const {
   .km-badge {
     border-radius: var(--radius-pill);
     padding: 0.04rem 0.34rem;
-    font-size: 0.56rem;
+    font-size: 0.62rem;
     font-weight: 700;
     line-height: 1.35;
   }
@@ -682,8 +687,8 @@ const {
   /* H/D/M/Y — ô đỏ chữ trắng nhỏ như app (Giờ/Ngày/Tháng/Năm) */
   .km-hdmy {
     display: inline-flex; align-items: center; justify-content: center;
-    width: 0.95rem; height: 0.95rem; border-radius: 3px;
-    background: #f5726a; color: #fff; font-size: 0.56rem; font-weight: 800; line-height: 1;
+    width: 1.05rem; height: 1.05rem; border-radius: 3px;
+    background: #f5726a; color: #fff; font-size: 0.62rem; font-weight: 800; line-height: 1;
   }
 
   /* Mục Lưu Ý (chú giải ký hiệu) — dưới Bảng Chi Tiết, phong cách app. */
@@ -827,25 +832,29 @@ const {
     .km-cung { min-height: 152px; }
 
     /* Dải nhãn hướng/địa chi bám theo --km-vien nên tự mỏng theo, chỉ cần hạ cỡ chữ. */
-    .km-lbl { font-size: 0.48rem; }
-    .km-lbl-ma { font-size: 0.6rem; }
+    .km-lbl { font-size: 0.52rem; }
+    .km-lbl-ma { font-size: 0.68rem; }
+    .km-lbl-kv { font-size: 0.58rem; margin-left: 0.1em; }
 
     /* Bát Thần giờ neo góc trên-phải bằng tên viết tắt ngắn ("B.Hổ") thay vì tên đầy đủ ("Bạch
-       Hổ") nên không còn tràn/cần xuống dòng riêng như trước — chỉ hạ cỡ chữ thêm theo màn hẹp. */
+       Hổ") nên không còn tràn/cần xuống dòng riêng như trước — chỉ hạ cỡ chữ thêm theo màn hẹp.
+       r1 giờ có 3 cột (can/sao/than) nên thu gọn column-gap để đỡ chật trên màn hẹp. */
     .km-cung-inner { padding: 0.2rem 0.22rem; }
-    .cc-can, .cc-diacan { font-size: 0.6rem; }
-    .cc-sao { font-size: 0.72rem; }
-    .cc-than { font-size: 0.56rem; }
-    .cc-mon { font-size: 0.76rem; }
-    .cc-so { font-size: 1.2rem; }
-    .km-mt { font-size: 0.85rem; }
-    .km-cung-so { font-size: 0.54rem; }
-    .km-cung-trung-note { font-size: 0.48rem; }
+    .km-cung-r1 { column-gap: 3px; }
+    .cc-can, .cc-diacan { font-size: 0.64rem; }
+    .cc-sao { font-size: 0.78rem; }
+    .cc-than { font-size: 0.6rem; }
+    .cc-mon { font-size: 0.8rem; }
+    .cc-so { font-size: 1.25rem; }
+    .km-mt { font-size: 0.9rem; }
+    .km-cung-so { font-size: 0.58rem; }
+    .km-cung-trung-note { font-size: 0.5rem; }
 
     /* Nhãn Trực Phù/Trực Sử/Hình/Mộ… xếp chồng ở góc — nhỏ lại để không đè lên chữ chính. */
-    .km-badge { font-size: 0.46rem; padding: 0.02rem 0.24rem; }
-    .km-badge-ma { font-size: 0.72rem; }
-    .km-badge-mo { font-size: 0.7rem; }
+    .km-badge { font-size: 0.5rem; padding: 0.02rem 0.24rem; }
+    .km-badge-ma { font-size: 0.76rem; }
+    .km-badge-mo { font-size: 0.74rem; }
+    .km-hdmy { width: 0.98rem; height: 0.98rem; font-size: 0.58rem; }
   }
 </style>
 
