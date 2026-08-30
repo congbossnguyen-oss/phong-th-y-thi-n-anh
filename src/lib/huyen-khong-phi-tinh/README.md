@@ -92,6 +92,17 @@ Chính Thần / Linh Thần / Chiếu Thần theo vận (`chinhLinhThan()`), Thu
    `huong_tinh_da_vuong_sinh_san` — liệt kê thêm các cung này vào nhóm "đủ điều kiện" (đã có sẵn
    trong Thu Sơn Xuất Sát với vai trò khác, giờ cũng xuất hiện ở mục mở cửa phụ). Test:
    `xetMoCuaPhu — liệt kê thêm cung có Hướng tinh THẬT vốn đã vượng/sinh sẵn`.
+5. **SỬA LỖI 31/8/2026 (đối chiếu lại `scripts/engine.py` gốc do anh Công gửi bản cập nhật)**: seed
+   "cố định từ cung Hướng chính" ở bước 2 phía trên là em suy diễn SAI từ câu chữ "lấy Vận tinh tại
+   cung Hướng chính" trong `thanh-mon.md` mục 7 — đọc quá máy móc. Đối chiếu `xet_mo_cua_phu()` +
+   `kiem_tra_son()` trong engine.py gốc của tác giả (đã tự kiểm chứng CHẮC, khớp 3/3 ví dụ Thành
+   Môn trong sách) thì thấy: mở cửa phụ dùng ĐÚNG 1 kỹ thuật `kiem_tra_son` y hệt Thành Môn — seed
+   là Vận tinh tại CHÍNH cung của từng sơn ứng viên (reseed theo từng sơn), KHÔNG có seed cố định
+   riêng. Đã sửa lại `xetMoCuaPhu()` gọi thẳng `kiemTraSon()` như `timThanhMon()` vẫn làm. Ví dụ
+   Dậu/Canh (thanh-mon.md mục 7) vẫn khớp cả 2 cách vì 2 sơn đó chung 1 cung nên không phân biệt
+   được — lỗi chỉ lộ ra ở các cung khác. Toàn bộ điều kiện bổ sung (mục 3-4 ở trên: loại Ngũ Hoàng/
+   Nhị Hắc/Tam Bích/Thất Xích/khí chết, thêm cung Hướng tinh thật sẵn vượng/sinh) vẫn giữ nguyên vì
+   đó là quyết định độc lập của anh Công, không phụ thuộc seed nào.
 
 **⚠️ Tách VẬN NHÀ vs VẬN ĐƯƠNG LỆNH (30/8/2026, anh Công báo lỗi)** — điểm dễ sai nhất, đọc kỹ:
 Nhà nhập trạch năm nào thì thuộc vận đó (vd 2003 = Vận 7). Nhưng **vượng/suy của sao phải xét theo
