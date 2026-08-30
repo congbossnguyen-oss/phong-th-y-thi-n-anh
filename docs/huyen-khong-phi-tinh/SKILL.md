@@ -170,6 +170,8 @@ Khi Công chỉ hỏi nhanh 1 điểm (không luận toàn bàn) → dùng **mô
 | Thành Môn, mở cửa phụ cứu hướng | `thanh-mon.md` |
 | Tổ hợp 2 sao cổ điển có tên riêng | `song-tinh-danh-cuc.md` |
 | Quy trình 10 bước đầy đủ | `quy-trinh-luan-khi-co-tinh-ban.md` |
+| **Ý nghĩa 81 cặp sao** + kích hoạt/hóa giải từng sao | `h-81-cap-sao-va-hoa-giai.md` |
+| **Thu Sơn Xuất Sát, luận cửa chính, đường khí, Chính-Linh-Chiếu Thần** | `i-thu-son-xuat-sat-cua-chinh-duong-khi.md` |
 
 ## Giới hạn dữ liệu chung
 

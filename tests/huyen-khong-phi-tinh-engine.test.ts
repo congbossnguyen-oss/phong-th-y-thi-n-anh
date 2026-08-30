@@ -5,13 +5,18 @@
 
 import { describe, expect, it } from "vitest";
 import {
+  CHIEU_THAN,
+  CHINH_LINH_THAN,
   CUNG_INFO,
   SON_24,
   bayTinh,
+  chinhLinhThan,
   kiemTraSon,
   lapTinhBan,
   nienTinhNhapTrung,
   phanLoaiDoLech,
+  thuSonXuatSat,
+  timThanhMon,
   vanTuNam,
 } from "../src/lib/huyen-khong-phi-tinh/engine";
 
@@ -140,5 +145,79 @@ describe("Phân loại Không Vong — 8 ca biên", () => {
     [337.5, "ĐẠI KHÔNG VONG", "ranh giới cung Càn|Khảm"],
   ] as Array<[number, string, string]>)("%s° -> %s (%s)", (do_, mong) => {
     expect(phanLoaiDoLech(do_).loai).toBe(mong);
+  });
+});
+
+describe("Chính Thần / Linh Thần / Chiếu Thần — i-thu-son-xuat-sat-cua-chinh-duong-khi.md mục 4", () => {
+  it("hợp thập giữa Chính Thần và Linh Thần đúng cho cả 9 vận (Vận 5 bỏ qua vì không có số cố định)", () => {
+    for (let van = 1; van <= 9; van++) {
+      const [ct, lt] = CHINH_LINH_THAN[van];
+      if (lt === null) {
+        expect(van).toBe(5);
+        continue;
+      }
+      expect(ct + lt).toBe(10);
+    }
+  });
+
+  it("Vận 9: Chính Thần ở Nam (Ly), Linh Thần ở Bắc (Khảm) — đúng theo nguồn", () => {
+    const kq = chinhLinhThan(9);
+    expect(kq.chinh_than_so).toBe(9);
+    expect(kq.chinh_than_cung).toBe("Nam");
+    expect(kq.linh_than_so).toBe(1);
+    expect(kq.linh_than_cung).toBe("Bắc");
+  });
+
+  it.each([
+    [1, 6], [2, 7], [3, 8], [4, 9], [5, null], [6, 1], [7, 2], [8, 3], [9, 4],
+  ] as Array<[number, number | null]>)("Chiếu Thần vận %i = sao %s", (van, mongDoi) => {
+    expect(CHIEU_THAN[van]).toBe(mongDoi);
+  });
+});
+
+describe("Thu Sơn Xuất Sát — Tọa Bính Hướng Nhâm Vận 9 (đối chiếu tinh bàn đã verify ở trên)", () => {
+  const tb = lapTinhBan(SON_24["Nhâm"][0], 9);
+  const ketQua = thuSonXuatSat(tb);
+
+  it("trả về 8 cung (bỏ Trung Cung)", () => {
+    expect(ketQua).toHaveLength(8);
+  });
+
+  it("cung Nam (Sơn 9 VƯỢNG, Hướng 9 VƯỢNG) → cả 2 khuyến nghị đều THU SƠN", () => {
+    const nam = ketQua.find((k) => k.cung === "Nam")!;
+    expect(nam.tt_son).toBe("VƯỢNG");
+    expect(nam.tt_huong).toBe("VƯỢNG");
+    expect(nam.khuyen_nghi[0]).toMatch(/^THU SƠN/);
+    expect(nam.khuyen_nghi[1]).toMatch(/^THU SƠN/);
+  });
+
+  it("cung Tây Nam (Sơn 7 TỬ, Hướng 2 TỬ\\/XA) → cả 2 khuyến nghị đều XUẤT SÁT", () => {
+    const tayNam = ketQua.find((k) => k.cung === "Tây Nam")!;
+    expect(tayNam.khuyen_nghi[0]).toMatch(/^XUẤT SÁT/);
+    expect(tayNam.khuyen_nghi[1]).toMatch(/^XUẤT SÁT/);
+  });
+});
+
+describe("Thành Môn — trường mới (Chân/Giả) nhất quán với engine nội bộ", () => {
+  const tb = lapTinhBan(SON_24["Nhâm"][0], 9);
+  const ds = timThanhMon(tb);
+
+  it("mỗi mục có son_tinh_tai_do khớp đúng Sơn Bàn tại cung đó", () => {
+    for (const tm of ds) {
+      const cung = Object.entries(CUNG_INFO).find(([, v]) => v.ten === tm.cung)![0];
+      expect(tm.son_tinh_tai_do).toBe(tb.son_ban[Number(cung)]);
+    }
+  });
+
+  it("Tuất (Tây Bắc, Thành Môn Chính) — sao về không phải vượng tinh 9 → kha_dung=false (điều kiện 1 fail)", () => {
+    const tuat = ds.find((tm) => tm.son === "Tuất")!;
+    expect(tuat.sao_ve_cung).not.toBe(9);
+    expect(tuat.kha_dung).toBe(false);
+  });
+
+  it("Sửu (Đông Bắc, Thành Môn Phụ) — cũng không phải vượng tinh 9 → kha_dung=false", () => {
+    const suu = ds.find((tm) => tm.son === "Sửu")!;
+    expect(suu.sao_ve_cung).not.toBe(9);
+    expect(suu.kha_dung).toBe(false);
   });
 });
