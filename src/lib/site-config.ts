@@ -22,7 +22,7 @@ export const siteConfig = {
 export type NavItem = {
   label: string;
   href: string;
-  children?: { label: string; href: string; group?: string }[];
+  children?: { label: string; href: string; group?: string; groupHref?: string }[];
 };
 
 export const mainNav: NavItem[] = [
@@ -52,8 +52,8 @@ export const mainNav: NavItem[] = [
     href: "/dai-cat-loi",
     children: [
       { label: "Đại Cát Lợi", href: "/dai-cat-loi" },
-      { label: "Xem phong thủy nhà (Huyền Không Phi Tinh)", href: "/dai-cat-loi/huyen-khong-phi-tinh", group: "Phong thủy chính phái" },
-      { label: "Xem hướng nhà Bát Trạch", href: "/dai-cat-loi/xem-huong-nha-bat-trach", group: "Phong thủy chính phái" },
+      { label: "Xem phong thủy nhà (Huyền Không Phi Tinh)", href: "/dai-cat-loi/huyen-khong-phi-tinh", group: "Phong thủy chính phái", groupHref: "/dai-cat-loi/phong-thuy-chinh-phai" },
+      { label: "Xem hướng nhà Bát Trạch", href: "/dai-cat-loi/xem-huong-nha-bat-trach", group: "Phong thủy chính phái", groupHref: "/dai-cat-loi/phong-thuy-chinh-phai" },
       { label: "Lập lá số Bát Tự", href: "/lap-la-so-bat-tu" },
       { label: "Lập quẻ Kinh Dịch", href: "/gieo-que-kinh-dich" },
       { label: "Lập lá số Tử Vi", href: "/lap-la-so-tu-vi" },
