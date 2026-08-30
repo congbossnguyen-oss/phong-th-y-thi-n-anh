@@ -10,9 +10,11 @@ import {
   CUNG_INFO,
   SON_24,
   bayTinh,
+  canhBaoDaKiep,
   chinhLinhThan,
   kiemTraSon,
   lapTinhBan,
+  nhanDienCachCuc,
   nienTinhNhapTrung,
   phanLoaiDoLech,
   phanTichCung,
@@ -434,5 +436,48 @@ describe("xetMoCuaPhu — liệt kê thêm cung có Hướng tinh THẬT vốn �
         }
       }
     }
+  });
+});
+
+describe("Thất Tinh Đả Kiếp / Tam Ban Xảo Quái — cập nhật 31/8/2026 (k-cac-cach-cuc-tot-nhat.md)", () => {
+  it("bất biến: chỉ xuất hiện khi có Song Tinh Đáo Hướng/Tọa; đúng cung đích → đúng tên loại", () => {
+    let daThayLy = false, daThayKham = false, daThayXaoQuai = false;
+    for (const van of [1, 2, 3, 4, 5, 6, 7, 8, 9]) {
+      for (const son of Object.keys(SON_24)) {
+        const tb = lapTinhBan(SON_24[son][0], van);
+        const cc = nhanDienCachCuc(tb);
+        const laSongTinhHuong = cc.some(([ten]) => ten === "Song Tinh Đáo Hướng");
+        const laSongTinhToa = cc.some(([ten]) => ten === "Song Tinh Đáo Tọa");
+        const dk = cc.find(([ten]) => ten.includes("ĐẢ KIẾP") || ten.includes("XẢO QUÁI"));
+
+        if (!laSongTinhHuong && !laSongTinhToa) {
+          expect(dk).toBeUndefined();
+          continue;
+        }
+        expect(dk).toBeDefined();
+        expect(dk![1]).toBe("ĐẠI CÁT — CÓ ĐIỀU KIỆN");
+        const cungDich = laSongTinhHuong ? tb.cung_huong : tb.cung_toa;
+        if ([9, 3, 6].includes(cungDich)) {
+          expect(dk![0]).toBe("LY CUNG ĐẢ KIẾP (ĐẢ KIẾP THẬT)");
+          daThayLy = true;
+        } else if ([1, 4, 7].includes(cungDich)) {
+          expect(dk![0]).toBe("KHẢM CUNG ĐẢ KIẾP (ĐẢ KIẾP GIẢ)");
+          daThayKham = true;
+        } else {
+          expect(dk![0]).toBe("TAM BAN XẢO QUÁI");
+          daThayXaoQuai = true;
+        }
+      }
+    }
+    // Đảm bảo cả 3 loại đều xuất hiện ít nhất 1 lần trong toàn bộ 216 tổ hợp (van x son) —
+    // nếu không thì test trên chỉ đang kiểm chứng nhánh else một cách vô nghĩa.
+    expect(daThayLy).toBe(true);
+    expect(daThayKham).toBe(true);
+    expect(daThayXaoQuai).toBe(true);
+  });
+
+  it("canhBaoDaKiep() vẫn trả về ghi chú riêng (CẦN NGƯỜI LUẬN TỰ XÉT) về bộ số tam ban cấu trúc, không phải điều kiện phân biệt Đả Kiếp", () => {
+    const [, tc] = canhBaoDaKiep();
+    expect(tc).toBe("CẦN NGƯỜI LUẬN TỰ XÉT");
   });
 });

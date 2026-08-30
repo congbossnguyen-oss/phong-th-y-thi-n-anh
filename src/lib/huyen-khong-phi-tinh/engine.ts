@@ -121,7 +121,7 @@ export const DAO_HOA: Record<string, string> = Object.fromEntries(CHI_12.map((c,
 export const THIEN_HY: Record<string, string> = Object.fromEntries(CHI_12.map((c, i) => [c, THIEN_HY_VALS[i]]));
 export const HONG_LOAN: Record<string, string> = Object.fromEntries(CHI_12.map((c, i) => [c, HONG_LOAN_VALS[i]]));
 
-export type MucCatHung = "CÁT" | "HUNG" | "ĐẠI HUNG" | "ĐẠI CÁT" | "TÙY LOAN ĐẦU" | "QUAN SÁT" | "LƯU Ý" | "CẦN NGƯỜI LUẬN TỰ XÉT";
+export type MucCatHung = "CÁT" | "HUNG" | "ĐẠI HUNG" | "ĐẠI CÁT" | "ĐẠI CÁT — CÓ ĐIỀU KIỆN" | "TÙY LOAN ĐẦU" | "QUAN SÁT" | "LƯU Ý" | "CẦN NGƯỜI LUẬN TỰ XÉT";
 
 // Song Tinh Danh Cục (song-tinh-danh-cuc.md) — khoá bằng cặp KHÔNG PHÂN THỨ TỰ
 const DANH_CUC: Record<string, [string, MucCatHung, string]> = {
@@ -580,9 +580,43 @@ export function nhanDienCachCuc(tb: TinhBan): CachCuc[] {
       "Hướng tinh hợp thập với Vận tinh ở mọi cung — cách cục bền."]);
   }
 
-  // --- PHỤ MẪU TAM BAN / ĐẢ KIẾP: ENGINE KHÔNG TỰ NHẬN DIỆN ---
+  // --- THẤT TINH ĐẢ KIẾP / TAM BAN XẢO QUÁI ---
+  // Điều kiện PHÂN BIỆT thật (k-cac-cach-cuc-tot-nhat.md, nguồn MV_HKPT1 mục III-IV, cập nhật
+  // 31/8/2026 theo skill mới anh Công gửi): "Bố cục Thất Xích Tinh Đả Kiếp CHỈ tồn tại khi Song
+  // Tinh Hội Tọa hoặc Song Tinh Hội Hướng" — đây là điều kiện còn thiếu trước đây (riêng bộ số tam
+  // ban 1-4-7/2-5-8/3-6-9 thì luôn thỏa với MỌI tinh bàn — xem canhBaoDaKiep() bên dưới, vẫn giữ
+  // làm ghi chú riêng cho phần đó).
+  const laSongTinh = kq.some(([ten]) => ten.includes("Song Tinh"));
+  if (laSongTinh) {
+    const cungDich = kq.some(([ten]) => ten.includes("Đáo Hướng")) ? ch : ct;
+    let tenDk: string;
+    let manh: string;
+    if (cungDich === 9 || cungDich === 3 || cungDich === 6) {
+      tenDk = "LY CUNG ĐẢ KIẾP (ĐẢ KIẾP THẬT)";
+      manh = "Mạnh nhất. Vượng tinh đáo hướng trong cung Ly là đả kiếp THẬT, hiệu quả lớn hơn đả kiếp giả.";
+    } else if (cungDich === 1 || cungDich === 4 || cungDich === 7) {
+      tenDk = "KHẢM CUNG ĐẢ KIẾP (ĐẢ KIẾP GIẢ)";
+      manh = "Vượng tinh đáo hướng trong cung Khảm là đả kiếp GIẢ, hiệu quả kém hơn đả kiếp thật.";
+    } else {
+      tenDk = "TAM BAN XẢO QUÁI";
+      manh = "Yếu nhất trong 3 loại tam ban.";
+    }
+    const baCung = cungDich === 9 || cungDich === 3 || cungDich === 6
+      ? "Ly - Chấn - Càn (Nam, Đông, Tây Bắc)"
+      : cungDich === 1 || cungDich === 4 || cungDich === 7
+      ? "Khảm - Tốn - Đoài (Bắc, Đông Nam, Tây)"
+      : "Cấn - Trung - Khôn (Đông Bắc, Trung Cung, Tây Nam)";
+    kq.push([tenDk, "ĐẠI CÁT — CÓ ĐIỀU KIỆN",
+      `Ba cung: ${baCung}. ${manh} ⚠ ĐIỀU KIỆN BẮT BUỘC: CẢ BA cung phải THÔNG KHÍ (có cửa/cửa ` +
+      `sổ/đường/hành lang/cầu thang), trong đó ÍT NHẤT 1 cung phải có CỬA CHÍNH. Chỉ cần MỘT ` +
+      `trong ba cung không thông khí thì đả kiếp KHÔNG THÀNH và biến thành cách cục "hạ thủy" — ` +
+      `TỔN NHÂN ĐINH. Engine không biết thực địa nên KHÔNG thể xác nhận điều kiện này; người luận ` +
+      `phải tự kiểm tra.`]);
+  }
+
+  // --- Ghi chú riêng về bộ số tam ban (KHÔNG phải điều kiện phân biệt Đả Kiếp) ---
   // Xem canhBaoDaKiep() — mô tả nguồn đã kiểm chứng đúng 54/54 tổ hợp -> tính chất
-  // cấu trúc Lạc Thư, không phải điều kiện phân biệt. Không tự suy ra điều kiện đầy đủ.
+  // cấu trúc Lạc Thư, không phải điều kiện phân biệt Đả Kiếp (điều kiện thật ở trên).
 
   // --- Quan sát bổ sung: từng cung có bộ 3 số tam ban / liên châu ---
   // LƯU Ý: nguồn KHÔNG đặt tên cho dạng này (nguồn dành tên "Phụ Mẫu Tam Ban" cho dạng
@@ -659,14 +693,13 @@ export function kiemTraSon(tenSon: string, van: number, vanBan: Record<number, n
 /** Thông báo về Phụ Mẫu Tam Ban / Đả Kiếp — engine cố tình không tự nhận diện. */
 export function canhBaoDaKiep(): CachCuc {
   return [
-    "Phụ Mẫu Tam Ban / Thất Tinh Đả Kiếp",
+    "Ghi chú về bộ số Tam Ban",
     "CẦN NGƯỜI LUẬN TỰ XÉT",
-    "Engine KHÔNG tự nhận diện cách cục này. Lý do: mô tả trong nguồn của skill " +
-    "('3 cung Ly-Chấn-Càn đủ bộ 1-4-7/2-5-8/3-6-9') đã được kiểm chứng bằng code là " +
-    "ĐÚNG với mọi tinh bàn (54/54 tổ hợp) — tức là tính chất cấu trúc của Lạc Thư, " +
-    "không phải điều kiện phân biệt. Muốn engine tự tính, cần bổ sung điều kiện đầy đủ " +
-    "(thường liên quan quan hệ giữa Vận, Hướng tinh tại cung Hướng và tọa-hướng cụ thể). " +
-    "Hiện tại: người luận tự xét theo phái mình dùng.",
+    "Bộ số 1-4-7 / 2-5-8 / 3-6-9 trên 3 nhóm cung cố định LUÔN thỏa với mọi tinh bàn " +
+    "(đã kiểm chứng 54/54 tổ hợp) — đó là tính chất cấu trúc Lạc Thư, không phải điều kiện " +
+    "phân biệt Thất Tinh Đả Kiếp. Điều kiện phân biệt THẬT của Đả Kiếp là phải có SONG TINH HỘI " +
+    "TỌA/HƯỚNG (nguồn k-cac-cach-cuc-tot-nhat.md, MV_HKPT1 mục III) — engine đã dùng đúng điều " +
+    "kiện này (xem mục cách cục 'LY/KHẢM CUNG ĐẢ KIẾP' hoặc 'TAM BAN XẢO QUÁI' phía trên nếu có).",
   ];
 }
 

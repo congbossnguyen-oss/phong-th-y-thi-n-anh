@@ -172,6 +172,7 @@ Khi Công chỉ hỏi nhanh 1 điểm (không luận toàn bàn) → dùng **mô
 | Quy trình 10 bước đầy đủ | `quy-trinh-luan-khi-co-tinh-ban.md` |
 | **Ý nghĩa 81 cặp sao** + kích hoạt/hóa giải từng sao | `h-81-cap-sao-va-hoa-giai.md` |
 | **Thu Sơn Xuất Sát, luận cửa chính, đường khí, Chính-Linh-Chiếu Thần** | `i-thu-son-xuat-sat-cua-chinh-duong-khi.md` |
+| **Xếp hạng cách cục tốt nhất + Thất Tinh Đả Kiếp đầy đủ** | `k-cac-cach-cuc-tot-nhat.md` |
 
 ## Giới hạn dữ liệu chung
 
