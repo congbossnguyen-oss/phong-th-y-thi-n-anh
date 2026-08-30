@@ -347,6 +347,11 @@ const choDoiTuongKhac = dungThanHintFor(question.category).kind === "the-hao";
                   </div>
                   ${ai.phuong_phap_hoa_giai && ai.phuong_phap_hoa_giai.length
                     ? `<div class="qs-sect"><h4>Cách hóa giải</h4><ul style="margin:0;padding-left:1.1rem;line-height:1.75;">${li(ai.phuong_phap_hoa_giai)}</ul></div>`
+                    : data.hoaGiaiBiKhoa
+                    ? `<div class="qs-sect"><h4>🔒 Cách hóa giải</h4>
+                        <p style="margin:0 0 0.6rem;color:var(--qs-muted);line-height:1.7;">Quẻ này có chỉ dấu cần hóa giải — phương pháp cụ thể chỉ mở cho gói Cao cấp.</p>
+                        <a href="/quan-su/goi-thue-bao" class="qs-btn" style="text-decoration:none;display:inline-flex;">Nâng cấp gói Cao cấp</a>
+                      </div>`
                     : ""}
                   ${ai.thoi_diem_khuyen_nghi ? `<div class="qs-sect"><h4>Thời điểm</h4><p style="margin:0;line-height:1.75;">${esc(ai.thoi_diem_khuyen_nghi)}</p></div>` : ""}`
                 : `
