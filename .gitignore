@@ -18,6 +18,10 @@ pnpm-debug.log*
 # environment variables
 .env
 .env.production
+# secrets cục bộ cho `wrangler dev`/`astro preview` (Cloudflare) — KHÔNG bị .env ở trên che vì đây
+# là quy ước riêng của Wrangler, khác cơ chế đọc .env của Astro/Vite. Phát hiện khi test Giai Đoạn A
+# 31/8/2026: file này trước đó KHÔNG có trong .gitignore dù cùng bản chất với .env.
+.dev.vars
 
 # macOS-specific files
 .DS_Store
