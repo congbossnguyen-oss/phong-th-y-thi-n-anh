@@ -253,12 +253,30 @@ export async function tinhVanKhi(input: VanKhiInput): Promise<VanKhiOutput> {
   const chiTietDaiVanIndex = input.chiTietDaiVanIndex ?? idxMacDinh;
 
   // 4) Với mỗi Đại Vận: tổng quan (luôn tính) + Lưu Niên chi tiết (chỉ Đại Vận đang chọn).
+  //
+  // Xác định TRƯỚC có cần Đại Vận KẾ TIẾP không (mục 5, "5 năm tới" vắt qua ranh giới) — rồi gọi AI
+  // cho Đại Vận đang chọn VÀ Đại Vận kế tiếp SONG SONG (Promise.all) thay vì đợi xong cái này mới
+  // gọi cái kia. 2 Đại Vận có Can/Chi khác nhau nên không chia sẻ được tiền tố prompt (lợi ích cache
+  // tiền tố vốn chỉ có giữa 2 lô CÙNG 1 Đại Vận, xem vietLoiLuanChoDanhSachNam) — chạy song song không
+  // mất gì mà giảm gần một nửa thời gian chờ trang (đo thật 31/8/2026: anh Công báo "load lâu quá,
+  // khách sẽ bỏ ra" — 1 lần xem hết ~90s tuần tự cho 4 lô, còn lại ~45-50s khi 2 Đại Vận chạy song song).
+  const dvHienTai = chart.daiVan[chiTietDaiVanIndex];
+  const namCuoiDaiVanHienTai = dvHienTai ? dvHienTai.startDate.y + 9 : 0;
+  const canDaiVanKeTiep = !!dvHienTai && nowYear + 4 > namCuoiDaiVanHienTai && chiTietDaiVanIndex + 1 < chart.daiVan.length;
+
+  const [luuNienDvHienTai, luuNienDvKeTiep] = await Promise.all([
+    dvHienTai ? layHoacTinhLuuNien(chiTietDaiVanIndex, dvHienTai, tt, vsGoc, dtGoc, input) : Promise.resolve<LuuNienKhi[]>([]),
+    canDaiVanKeTiep
+      ? layHoacTinhLuuNien(chiTietDaiVanIndex + 1, chart.daiVan[chiTietDaiVanIndex + 1]!, tt, vsGoc, dtGoc, input)
+      : Promise.resolve<LuuNienKhi[]>([]),
+  ]);
+
   const danhSachDaiVan: DaiVanKhi[] = [];
   for (let i = 0; i < chart.daiVan.length; i++) {
     const dv = chart.daiVan[i]!;
     const { diem: tongQuan } = tinhTongQuanDaiVan(tt, vsGoc, dtGoc, dv, input.gender);
 
-    const luuNien: LuuNienKhi[] = i === chiTietDaiVanIndex ? await layHoacTinhLuuNien(i, dv, tt, vsGoc, dtGoc, input) : [];
+    const luuNien: LuuNienKhi[] = i === chiTietDaiVanIndex ? luuNienDvHienTai : [];
 
     danhSachDaiVan.push({
       canChi: `${dv.can} ${dv.chi}`, tuoiBatDau: dv.startAge, tuoiKetThuc: dv.endAge, namBatDau: dv.startDate.y,
@@ -268,18 +286,12 @@ export async function tinhVanKhi(input: VanKhiInput): Promise<VanKhiOutput> {
 
   // 5) "5 năm tới" TÍNH TỪ NĂM HIỆN TẠI — app chưa có nút đổi Đại Vận nên ai đã đi sâu vào Đại Vận
   // đang chọn (vd 8/10 năm) chỉ còn 2 năm thật sự tương lai trong luuNien ở trên. Vắt qua Đại Vận kế
-  // tiếp nếu cần, tái dùng ĐÚNG cơ chế cache theo Đại Vận (không tính 2 lần, không tốn AI ngoài dự kiến).
-  const dvHienTai = chart.daiVan[chiTietDaiVanIndex];
+  // tiếp nếu cần — đã tính song song ở trên, ở đây chỉ lọc/ghép lại, không gọi AI thêm.
   let nam5NamToi: LuuNienKhi[] = [];
   if (dvHienTai) {
-    const luuNienHienTai = danhSachDaiVan[chiTietDaiVanIndex]!.luuNien;
-    nam5NamToi = luuNienHienTai.filter((ln) => ln.nam >= nowYear && ln.nam < nowYear + 5);
-
-    const namCuoiDaiVanHienTai = dvHienTai.startDate.y + 9;
-    if (nowYear + 4 > namCuoiDaiVanHienTai && chiTietDaiVanIndex + 1 < chart.daiVan.length) {
-      const dvKeTiep = chart.daiVan[chiTietDaiVanIndex + 1]!;
-      const luuNienKeTiep = await layHoacTinhLuuNien(chiTietDaiVanIndex + 1, dvKeTiep, tt, vsGoc, dtGoc, input);
-      nam5NamToi = [...nam5NamToi, ...luuNienKeTiep.filter((ln) => ln.nam >= nowYear && ln.nam < nowYear + 5)];
+    nam5NamToi = luuNienDvHienTai.filter((ln) => ln.nam >= nowYear && ln.nam < nowYear + 5);
+    if (canDaiVanKeTiep) {
+      nam5NamToi = [...nam5NamToi, ...luuNienDvKeTiep.filter((ln) => ln.nam >= nowYear && ln.nam < nowYear + 5)];
     }
     nam5NamToi.sort((a, b) => a.nam - b.nam);
   }
