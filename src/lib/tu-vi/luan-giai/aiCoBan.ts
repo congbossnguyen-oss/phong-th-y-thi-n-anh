@@ -165,7 +165,9 @@ export async function luanCoBan(duLieu: DuLieuLaSoTuVi): Promise<{ ketQua: KetQu
     userMessage: dungUserPrompt(duLieu),
     toolName: "tra_ve_luan_giai_co_ban",
     schema: SCHEMA,
-    maxTokens: 8000,
+    // ⚠️ 31/8/2026: chuyển DeepSeek, đo thật thấy JSON bị cắt cụt giữa chừng ("Unterminated string")
+    // với 8000 — DeepSeek viết dài hơn Anthropic cho cùng schema. Tăng lên để có đủ chỗ viết hết.
+    maxTokens: 16000,
     // ⚠️ 31/8/2026: cắt Anthropic, chuyển DeepSeek — deepseek-v4-flash mặc định là model "thinking",
     // từ chối tool_choice ép buộc mà goiAiToolUse luôn dùng, PHẢI ép deepseek-chat (non-thinking).
     modelOverride: { "openai-tuong-thich": "deepseek-chat" },
