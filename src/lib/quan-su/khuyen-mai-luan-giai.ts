@@ -13,6 +13,13 @@
  * thật) — không phải "10 lượt dùng bao giờ hết thì thôi", mà là "hết cả 2 điều kiện (đủ 10 lượt
  * HOẶC hết hạn 1 tháng) thì dừng, cái nào tới trước tính cái đó".
  *
+ * SAU KHI HẾT HẠN: tài khoản trở về y hệt tài khoản bình thường, KHÔNG có gì "còn sót lại" — module
+ * này CHƯA BAO GIỜ tạo bản ghi `subscriptions` cho các tài khoản khuyến mãi (chỉ đọc `users`, xem
+ * `duocKhuyenMai()` bên dưới), nên khi `duocKhuyenMai()` trả về false, `luan.ts` tự rơi thẳng về
+ * nhánh `coQuyenTruyCap()` bình thường — không có gói nào đang hoạt động thì bắt buộc mua gói mới
+ * dùng được, đúng yêu cầu (anh Công 31/8/2026: "sau 1 tháng thì như tài khoản bình thường hết...
+ * phải mua gói mới được").
+ *
  * Chỉ ảnh hưởng ĐÚNG 1 chỗ: hạn mức luận giải Kinh Dịch (tốn AI thật) ở luan.ts — mọi tính năng
  * khác trong Quân Sư không đụng tới, tự nhiên "dùng thoải mái" vì các trang/API đó không gọi hàm
  * này. Tài khoản đủ điều kiện vẫn phải đăng nhập bình thường như mọi khách (không cần gói thuê bao)
