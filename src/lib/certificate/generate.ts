@@ -4,6 +4,7 @@ import { BeVietnamProRegularBase64 } from "./fonts/BeVietnamPro-Regular";
 import { BeVietnamProSemiBoldBase64 } from "./fonts/BeVietnamPro-SemiBold";
 import { BeVietnamProBoldBase64 } from "./fonts/BeVietnamPro-Bold";
 import { BeVietnamProItalicBase64 } from "./fonts/BeVietnamPro-Italic";
+import { LogoThienAnhBase64 } from "../dai-cat-loi/assets/logo-thien-anh";
 
 const COLOR = {
   ink: rgb(0x24 / 255, 0x1a / 255, 0x15 / 255),
@@ -37,11 +38,12 @@ export async function generateCertificatePdf(params: CertificateParams): Promise
   const doc = await PDFDocument.create();
   doc.registerFontkit(fontkit);
 
-  const [regular, semibold, bold, italic] = await Promise.all([
+  const [regular, semibold, bold, italic, logo] = await Promise.all([
     doc.embedFont(Buffer.from(BeVietnamProRegularBase64, "base64")),
     doc.embedFont(Buffer.from(BeVietnamProSemiBoldBase64, "base64")),
     doc.embedFont(Buffer.from(BeVietnamProBoldBase64, "base64")),
     doc.embedFont(Buffer.from(BeVietnamProItalicBase64, "base64")),
+    doc.embedPng(Buffer.from(LogoThienAnhBase64, "base64")),
   ]);
 
   const width = 841.89; // A4 landscape (pt)
@@ -79,6 +81,15 @@ export async function generateCertificatePdf(params: CertificateParams): Promise
   ]) {
     page.drawCircle({ x: cx, y: cy, size: 3, color: COLOR.gold500 });
   }
+
+  // Logo — huy hiệu vàng, canh giữa phía trên tên công ty.
+  const logoSize = 38;
+  page.drawImage(logo, {
+    x: width / 2 - logoSize / 2,
+    y: height - innerMargin - 6 - logoSize,
+    width: logoSize,
+    height: logoSize,
+  });
 
   centeredText(page, "PHONG THỦY THIÊN ANH", { y: height - 100, size: 15, font: bold, color: COLOR.cinnabar });
 
