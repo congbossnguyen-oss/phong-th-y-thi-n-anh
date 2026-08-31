@@ -1,0 +1,37 @@
+{
+  "name": "@thien-anh/duongtrach-engine",
+  "version": "0.1.0",
+  "description": "Dương Trạch Engine: luận nhà theo độ số la bàn — vòng 60 phân kim/thấu địa long, cửu cung, Ngũ hổ độn dùng chung. Module đầu tiên: Khai Môn Điểm Thần Sát. Chỉ dữ kiện đã tính, không luận giải tự do, không AI.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@thien-anh/calendar-core": "*",
+    "@thien-anh/rule-engine": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4"
+  },
+  "keywords": [
+    "duong-trach",
+    "khai-mon-diem-than-sat"
+  ],
+  "license": "UNLICENSED",
+  "private": true
+}
