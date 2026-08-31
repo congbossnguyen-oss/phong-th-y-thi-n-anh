@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { getOrderByCode } from "../../../../lib/db/orders";
-import { jsonResponse, TOOL_SLUG_CO_BAN, TOOL_SLUG_NANG_CAO } from "./_chung";
+import { jsonResponse, TOOL_SLUG_TOAN_DIEN, TOOL_SLUG_CO_BAN, TOOL_SLUG_NANG_CAO } from "./_chung";
 import { checkRateLimit } from "../../../../lib/rate-limit";
 
 export const prerender = false;
@@ -18,7 +18,8 @@ export const GET: APIRoute = async ({ url, request, clientAddress, locals }) => 
   if (!orderCode) return jsonResponse({ ok: false, error: "Thiếu mã đơn hàng." }, 400);
 
   const order = await getOrderByCode(orderCode);
-  if (!order || order.orderType !== "tool" || (order.toolSlug !== TOOL_SLUG_CO_BAN && order.toolSlug !== TOOL_SLUG_NANG_CAO)) {
+  const slugHopLe = order?.toolSlug === TOOL_SLUG_TOAN_DIEN || order?.toolSlug === TOOL_SLUG_CO_BAN || order?.toolSlug === TOOL_SLUG_NANG_CAO;
+  if (!order || order.orderType !== "tool" || !slugHopLe) {
     return jsonResponse({ ok: false, error: "Không tìm thấy đơn hàng." }, 404);
   }
   if (!locals.user || order.userId !== locals.user.id) {

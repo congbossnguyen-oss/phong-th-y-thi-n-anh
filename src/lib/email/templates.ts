@@ -436,6 +436,69 @@ export function batTuToanDienNangCaoPdfEmail(params: {
   };
 }
 
+/** Gói duy nhất 700k (1/9/2026) — thay 2 template rời (Cơ Bản/Nâng Cao) ở trên. */
+export function batTuToanDienPdfEmail(params: {
+  orderCode: string;
+  customerName: string;
+}): { subject: string; html: string } {
+  const bodyHtml = `
+    <p>Kính gửi ${escapeHtml(params.customerName)},</p>
+    <p>
+      Bản Luận Giải Bát Tự Toàn Diện được đính kèm dưới dạng PDF trong email này, gồm đủ 12 giai đoạn:
+      nền tảng lá số, tính cách, Thập Thần, Thần Sát, Mộ Khố, gia đình - lục thân, nghề nghiệp - tài - quan,
+      hôn nhân, sức khỏe, ngũ hành thực hành, và trọn vẹn các giai đoạn Đại Vận từ nhỏ đến già.
+    </p>
+    <table role="presentation" width="100%" style="margin-top:16px;border-top:1px solid #e8dfcd;padding-top:12px;">
+      ${infoRow("Mã đơn hàng", params.orderCode)}
+    </table>
+    <p style="margin-top:20px;">
+      Kết quả cần chuyên gia đối chiếu thêm về Dụng Thần, vượng suy, cách cục trước khi kết luận cát hung.
+      Cần trao đổi thêm, xin liên hệ hotline ${siteConfig.hotline}.
+    </p>
+  `;
+
+  return {
+    subject: `Luận Giải Bát Tự Toàn Diện — đơn ${params.orderCode}`,
+    html: layout({
+      previewText: "Bản Luận Giải Bát Tự Toàn Diện được đính kèm trong email này.",
+      title: "Luận Giải Bát Tự Toàn Diện",
+      bodyHtml,
+    }),
+  };
+}
+
+/** Gói duy nhất 500k (1/9/2026) — thay 2 template rời (Cơ Bản/Nâng Cao) ở dưới. */
+export function luanGiaiTuViToanDienPdfEmail(params: {
+  orderCode: string;
+  customerName: string;
+}): { subject: string; html: string } {
+  const bodyHtml = `
+    <p>Kính gửi ${escapeHtml(params.customerName)},</p>
+    <p>
+      Bản Luận Giải Tử Vi được đính kèm dưới dạng PDF trong email này, gồm: tổng quan lá số, luận
+      Thiên Bàn, các chủ đề chính (học vấn, nghề nghiệp, tài chính, hôn nhân, sức khỏe), luận đầy đủ
+      12 cung theo phương pháp Tử Vi Đẩu Số Nam Phái, cộng thêm Đại Hạn hiện tại, Tiểu Hạn năm nay
+      và năm sau, và Tổng kết chiến lược sống dài hạn.
+    </p>
+    <table role="presentation" width="100%" style="margin-top:16px;border-top:1px solid #e8dfcd;padding-top:12px;">
+      ${infoRow("Mã đơn hàng", params.orderCode)}
+    </table>
+    <p style="margin-top:20px;">
+      Kết quả tham khảo theo phương pháp truyền thống, không thay thế tư vấn trực tiếp. Cần trao đổi
+      thêm, xin liên hệ hotline ${siteConfig.hotline}.
+    </p>
+  `;
+
+  return {
+    subject: `Luận Giải Tử Vi — đơn ${params.orderCode}`,
+    html: layout({
+      previewText: "Bản Luận Giải Tử Vi được đính kèm trong email này.",
+      title: "Luận Giải Tử Vi",
+      bodyHtml,
+    }),
+  };
+}
+
 export function luanGiaiTuViCoBanPdfEmail(params: {
   orderCode: string;
   customerName: string;

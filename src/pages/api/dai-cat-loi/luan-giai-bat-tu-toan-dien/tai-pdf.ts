@@ -1,10 +1,10 @@
 import type { APIRoute } from "astro";
 import { getAllConfirmedToolOrdersForUser } from "../../../../lib/db/orders";
 import { taoBaoCaoCoBan, taoBaoCaoNangCao } from "../../../../lib/luan-giai-toan-dien/orchestrator";
-import { generateBatTuCoBanPdf, generateBatTuNangCaoPdf } from "../../../../lib/dai-cat-loi/bat-tu-toan-dien-pdf";
+import { generateBatTuToanDienPdf } from "../../../../lib/dai-cat-loi/bat-tu-toan-dien-pdf";
 import { hashLaSo, cacheCoBan, cacheNangCao } from "../../../../lib/luan-giai-toan-dien/cache";
 import { checkRateLimit } from "../../../../lib/rate-limit";
-import { jsonResponse, TOOL_SLUG_CO_BAN, TOOL_SLUG_NANG_CAO } from "./_chung";
+import { jsonResponse, TOOL_SLUG_TOAN_DIEN, TOOL_SLUG_CO_BAN, TOOL_SLUG_NANG_CAO } from "./_chung";
 import type { BatTuInput } from "../../../../lib/bat-tu";
 
 export const prerender = false;
@@ -15,54 +15,51 @@ export const prerender = false;
  * trong orders.ts cũng bị bỏ qua theo — xem project_anthropic_credit_va_chi_phi_ai). Nút này cho
  * khách tự tải lại bất cứ lúc nào, không cần đợi/nhờ gửi lại email.
  *
- * Lấy đơn CONFIRMED gần nhất của tài khoản cho đúng tầng (co_ban/nang_cao) — khớp đúng dữ liệu
- * đang hiện trên trang (banner "Đã mua..." cũng dựa trên đơn gần nhất, xem luan-giai-bat-tu-toan-
- * dien.astro). Dùng lại cache theo hash lá số — không tính lại nếu vừa tính (đỡ tốn AI).
+ * Từ 1/9/2026 chỉ còn 1 gói (700k, đủ 12 giai đoạn) — trả về PDF gộp. Khách mua slug CŨ (chỉ Cơ
+ * Bản hoặc chỉ Nâng Cao, trước khi gộp gói) vẫn được coi là đã mua đủ gói mới (anh Công chốt
+ * 1/9/2026: "coi như đã mua đủ gói mới"), nên vẫn nhận được bản gộp đầy đủ ở đây.
  */
-export const GET: APIRoute = async ({ url, request, clientAddress, locals }) => {
+export const GET: APIRoute = async ({ request, clientAddress, locals }) => {
   const limited = checkRateLimit({ request, clientAddress }, { key: "tai-pdf-bat-tu-toan-dien", max: 20, windowMs: 60_000 });
   if (limited) return limited;
 
   if (!locals.user) return jsonResponse({ ok: false, error: "Vui lòng đăng nhập." }, 401);
 
-  const tang = url.searchParams.get("tang");
-  if (tang !== "co_ban" && tang !== "nang_cao") {
-    return jsonResponse({ ok: false, error: "Tầng luận giải không hợp lệ." }, 400);
-  }
-  const toolSlug = tang === "co_ban" ? TOOL_SLUG_CO_BAN : TOOL_SLUG_NANG_CAO;
-
-  const dons = await getAllConfirmedToolOrdersForUser(locals.user.id, toolSlug);
-  const don = dons[0];
+  const [donsToanDien, donsCoBan, donsNangCao] = await Promise.all([
+    getAllConfirmedToolOrdersForUser(locals.user.id, TOOL_SLUG_TOAN_DIEN),
+    getAllConfirmedToolOrdersForUser(locals.user.id, TOOL_SLUG_CO_BAN),
+    getAllConfirmedToolOrdersForUser(locals.user.id, TOOL_SLUG_NANG_CAO),
+  ]);
+  // Gần nhất trong CẢ 3 nguồn — đơn mới (1 gói) và đơn cũ (grandfather) đều cho quyền như nhau.
+  const don = [...donsToanDien, ...donsCoBan, ...donsNangCao].sort(
+    (a, b) => (b.createdAt?.getTime() ?? 0) - (a.createdAt?.getTime() ?? 0),
+  )[0];
   if (!don?.toolInputSnapshot) {
-    return jsonResponse({ ok: false, error: `Bạn chưa mua ${tang === "co_ban" ? "Luận Cơ Bản" : "Luận Trọn Đời"}.` }, 403);
+    return jsonResponse({ ok: false, error: "Bạn chưa mua Luận Giải Bát Tự Toàn Diện." }, 403);
   }
 
   try {
     const input = JSON.parse(don.toolInputSnapshot) as BatTuInput;
     const key = hashLaSo(input);
 
-    let pdfBytes: Uint8Array;
-    if (tang === "co_ban") {
-      let baoCao = cacheCoBan.get(key);
-      if (!baoCao) {
-        baoCao = await taoBaoCaoCoBan(input);
-        cacheCoBan.set(key, baoCao);
-      }
-      pdfBytes = await generateBatTuCoBanPdf(baoCao, don.customerName);
-    } else {
-      let baoCao = cacheNangCao.get(key);
-      if (!baoCao) {
-        baoCao = await taoBaoCaoNangCao(input);
-        cacheNangCao.set(key, baoCao);
-      }
-      pdfBytes = await generateBatTuNangCaoPdf(baoCao, don.customerName);
-    }
+    let baoCaoCoBan = cacheCoBan.get(key);
+    let baoCaoNangCao = cacheNangCao.get(key);
+    const [tinhCoBan, tinhNangCao] = await Promise.all([
+      baoCaoCoBan ? Promise.resolve(baoCaoCoBan) : taoBaoCaoCoBan(input),
+      baoCaoNangCao ? Promise.resolve(baoCaoNangCao) : taoBaoCaoNangCao(input),
+    ]);
+    baoCaoCoBan = tinhCoBan;
+    baoCaoNangCao = tinhNangCao;
+    cacheCoBan.set(key, baoCaoCoBan);
+    cacheNangCao.set(key, baoCaoNangCao);
+
+    const pdfBytes = await generateBatTuToanDienPdf(baoCaoCoBan, baoCaoNangCao, don.customerName);
 
     return new Response(pdfBytes, {
       status: 200,
       headers: {
         "Content-Type": "application/pdf",
-        "Content-Disposition": `attachment; filename="${toolSlug}-${don.orderCode}.pdf"`,
+        "Content-Disposition": `attachment; filename="luan-giai-bat-tu-toan-dien-${don.orderCode}.pdf"`,
       },
     });
   } catch (err) {

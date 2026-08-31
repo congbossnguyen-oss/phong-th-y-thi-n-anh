@@ -5,6 +5,9 @@
  */
 import type { LuanGiaiTuViInput } from "../../../../lib/tu-vi/luan-giai/taoLuanGiaiTuVi";
 
+/** Gói duy nhất bán từ 1/9/2026 — 500k, đủ nội dung (trước đây tách Cơ Bản/Nâng Cao). */
+export const TOOL_SLUG_TOAN_DIEN = "luan-giai-tu-vi-toan-dien" as const;
+/** 2 slug CŨ — không còn bán mới, chỉ dùng để nhận diện đơn cũ (grandfather quyền truy cập đủ). */
 export const TOOL_SLUG_CO_BAN = "luan-giai-tu-vi-co-ban" as const;
 export const TOOL_SLUG_NANG_CAO = "luan-giai-tu-vi-nang-cao" as const;
 

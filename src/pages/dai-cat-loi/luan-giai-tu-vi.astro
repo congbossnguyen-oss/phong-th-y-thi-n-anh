@@ -1,7 +1,8 @@
 ---
-// TRANG "Luận Giải Tử Vi" — 2 tầng trả phí: Cơ Bản 149k (đủ 12 cung) → Nâng Cao 299k (thêm Đại
-// Hạn/Tiểu Hạn/Tổng kết). Tầng Free (Mệnh/Thân/Cục sơ bộ) sống ở /lap-la-so-tu-vi — trang đó dẫn
-// khách sang đây kèm sẵn ngày giờ sinh qua query string, nên trang này KHÔNG có form nhập lại.
+// TRANG "Luận Giải Tử Vi" — 1 gói trả phí duy nhất 500k, đủ 12 cung + Đại Hạn/Tiểu Hạn/Tổng kết
+// (trước 1/9/2026 tách Cơ Bản/Nâng Cao, xem lý do gộp ở gia-cong-cu.ts). Tầng Free (Mệnh/Thân/Cục
+// sơ bộ) sống ở /lap-la-so-tu-vi — trang đó dẫn khách sang đây kèm sẵn ngày giờ sinh qua query
+// string, nên trang này KHÔNG có form nhập lại.
 //
 // Kiến trúc BẮT BUỘC đăng nhập, quyền gắn theo tài khoản (không theo orderCode) — cùng lý do và
 // đúng mẫu luan-giai-bat-tu-toan-dien.astro: AI tốn ~20-40s/lượt, cache theo hash lá số phải gắn
@@ -28,15 +29,20 @@ import LaSoTuViGrid from "../../components/tu-vi/LaSoTuViGrid.astro";
 
 export const prerender = false;
 
-const TOOL_SLUG_CO_BAN = "luan-giai-tu-vi-co-ban" as const;
-const TOOL_SLUG_NANG_CAO = "luan-giai-tu-vi-nang-cao" as const;
-const GIA_CO_BAN = GIA_CONG_CU[TOOL_SLUG_CO_BAN];
-const GIA_NANG_CAO = GIA_CONG_CU[TOOL_SLUG_NANG_CAO];
+// Gói duy nhất 500k từ 1/9/2026 (trước đây tách Cơ Bản 200k / Nâng Cao 500k — gộp lại cùng lý do
+// và cùng đợt với Bát Tự Toàn Diện, xem gia-cong-cu.ts). Khi tính báo cáo, LUÔN dùng goi:"nang_cao"
+// vì taoLuanGiaiTuVi() đã tự ghép sẵn Cơ Bản + Nâng Cao trong kết quả đó (không cần 2 lượt gọi).
+const TOOL_SLUG_TOAN_DIEN = "luan-giai-tu-vi-toan-dien" as const;
+// 2 slug CŨ — không còn bán mới, chỉ dùng để nhận diện khách đã mua TRƯỚC 1/9/2026 (grandfather:
+// coi như đã mua đủ gói mới, không bắt mua lại).
+const TOOL_SLUG_CO_BAN_CU = "luan-giai-tu-vi-co-ban" as const;
+const TOOL_SLUG_NANG_CAO_CU = "luan-giai-tu-vi-nang-cao" as const;
+const GIA_TOAN_DIEN = GIA_CONG_CU[TOOL_SLUG_TOAN_DIEN];
 
 const user = Astro.locals.user;
 const laQuanTri = user?.isAdmin === true;
 // ⚠️ Đang KHÓA thu phí để thử nghiệm (anh Công chốt 27/8/2026) — chốt chặn thật ở checkout API.
-const khoaThuNghiem = dangKhoaThuNghiem(TOOL_SLUG_CO_BAN) && !laQuanTri;
+const khoaThuNghiem = dangKhoaThuNghiem(TOOL_SLUG_TOAN_DIEN) && !laQuanTri;
 const q = Astro.url.searchParams;
 
 const soTuQuery = (ten: string): number | null => {
@@ -62,8 +68,10 @@ if (coDuLieuNgaySinh) {
 let baoCaoCoBan: Awaited<ReturnType<typeof taoLuanGiaiTuVi>> | null = null;
 let baoCaoNangCao: Awaited<ReturnType<typeof taoLuanGiaiTuVi>> | null = null;
 let loiTinhBaoCao: string | null = null;
-let coDonCoBanChuaHienThi = false;
-let coDonNangCaoChuaHienThi = false;
+let coDonChuaHienThi = false;
+// Tên + ngày sinh của đơn đang hiện — hiện rõ ra trên trang để không lẫn lộn lá số của ai (cùng
+// bug/cùng cách sửa với luan-giai-bat-tu-toan-dien.astro).
+let donDangHienThi: { customerName: string; day: number; month: number; year: number; hour: number } | null = null;
 
 // So khớp đơn với ĐÚNG lá số hiện tại (không chỉ "user này có ít nhất 1 đơn") — bug đã gặp
 // 31/8/2026: khách/admin nhập lá số KHÁC (xem hộ người khác) vẫn bị báo "đã mua", chặn hẳn không
@@ -79,41 +87,45 @@ function khopLaSo(snapshotJson: string | null, input: typeof inputDaMua): boolea
 }
 
 if (user) {
-  const donsCoBan = await getAllConfirmedToolOrdersForUser(user.id, TOOL_SLUG_CO_BAN);
-  const donsNangCao = await getAllConfirmedToolOrdersForUser(user.id, TOOL_SLUG_NANG_CAO);
+  const [donsToanDien, donsCoBanCu, donsNangCaoCu] = await Promise.all([
+    getAllConfirmedToolOrdersForUser(user.id, TOOL_SLUG_TOAN_DIEN),
+    getAllConfirmedToolOrdersForUser(user.id, TOOL_SLUG_CO_BAN_CU),
+    getAllConfirmedToolOrdersForUser(user.id, TOOL_SLUG_NANG_CAO_CU),
+  ]);
+  const donsGop = [...donsToanDien, ...donsCoBanCu, ...donsNangCaoCu].sort(
+    (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
+  );
 
-  // Có lá số trong URL (?ngay=...) → chỉ coi "đã mua" nếu tìm được đúng đơn khớp lá số này. Không
-  // có lá số trong URL (mới vào trang) → giữ hành vi cũ: lấy đơn gần nhất để "xem lại".
-  const donCoBan = coDuLieuNgaySinh
-    ? donsCoBan.find((d) => khopLaSo(d.toolInputSnapshot, inputDaMua)) ?? null
-    : donsCoBan[0] ?? null;
-  const donNangCao = coDuLieuNgaySinh
-    ? donsNangCao.find((d) => khopLaSo(d.toolInputSnapshot, inputDaMua)) ?? null
-    : donsNangCao[0] ?? null;
+  // Có lá số trong URL (?ngay=...) → chỉ coi "đã mua" nếu tìm được đúng đơn khớp lá số này (gộp cả
+  // 3 nguồn: gói mới + 2 slug cũ). Không có lá số trong URL (mới vào trang) → lấy đơn gần nhất
+  // trong CẢ 3 nguồn để "xem lại".
+  const don = coDuLieuNgaySinh
+    ? donsGop.find((d) => khopLaSo(d.toolInputSnapshot, inputDaMua)) ?? null
+    : donsGop[0] ?? null;
 
-  if (donCoBan?.toolInputSnapshot) coDonCoBanChuaHienThi = true;
-  if (donNangCao?.toolInputSnapshot) coDonNangCaoChuaHienThi = true;
+  if (don?.toolInputSnapshot) {
+    coDonChuaHienThi = true;
+    const vt = JSON.parse(don.toolInputSnapshot) as { day: number; month: number; year: number; hour: number };
+    donDangHienThi = { customerName: don.customerName, day: vt.day, month: vt.month, year: vt.year, hour: vt.hour };
+  }
 
-  if (user.isAdmin) {
+  if (user.isAdmin && don?.toolInputSnapshot) {
     // taoLuanGiaiTuVi() tự kiểm tra cache theo hash lá số bên trong (cache.ts) — không cần dò
-    // cache thủ công ở đây, khác bat-tu-toan-dien vốn để trang tự quản cache.
+    // cache thủ công ở đây, khác bat-tu-toan-dien vốn để trang tự quản cache. Luôn gọi goi:"nang_cao"
+    // vì kết quả đó đã ghép sẵn Cơ Bản + Nâng Cao — dùng chung 1 object cho cả 2 biến bên dưới.
     try {
-      if (donCoBan?.toolInputSnapshot) {
-        const input = JSON.parse(donCoBan.toolInputSnapshot) as Omit<LuanGiaiTuViInput, "goi">;
-        baoCaoCoBan = await taoLuanGiaiTuVi({ ...input, goi: "co_ban" });
-      }
-      if (donNangCao?.toolInputSnapshot) {
-        const input = JSON.parse(donNangCao.toolInputSnapshot) as Omit<LuanGiaiTuViInput, "goi">;
-        baoCaoNangCao = await taoLuanGiaiTuVi({ ...input, goi: "nang_cao" });
-      }
+      const input = JSON.parse(don.toolInputSnapshot) as Omit<LuanGiaiTuViInput, "goi">;
+      const baoCao = await taoLuanGiaiTuVi({ ...input, goi: "nang_cao" });
+      baoCaoCoBan = baoCao;
+      baoCaoNangCao = baoCao;
     } catch (err) {
       loiTinhBaoCao = err instanceof Error ? err.message : "Không tính được báo cáo.";
     }
   }
 }
 
-const daMuaCoBan = coDonCoBanChuaHienThi;
-const daMuaNangCao = coDonNangCaoChuaHienThi;
+const daMuaCoBan = coDonChuaHienThi;
+const daMuaNangCao = coDonChuaHienThi;
 
 /** % vị trí trên thanh tiến trình tuổi 0-90 — dùng cho thanh Đại Hạn trực quan. */
 function phanTramTuoi(tuoi: number): number {
@@ -129,7 +141,7 @@ function phanTramTuoi(tuoi: number): number {
   <PageHero
     eyebrow="⭐ Dịch vụ VIP · Đang thử nghiệm"
     title="Luận Giải Tử Vi"
-    description={`Luận Cơ Bản ${dinhDangTien(GIA_CO_BAN)} (đủ 12 cung) — Luận Trọn Đời ${dinhDangTien(GIA_NANG_CAO)} (thêm Đại Hạn, Tiểu Hạn, Tổng kết chiến lược). Mua thẳng Nâng Cao cũng được, không cần mua Cơ Bản trước.`}
+    description={`Gói Luận Giải Tử Vi ${dinhDangTien(GIA_TOAN_DIEN)} — đủ 12 cung, cộng Đại Hạn, Tiểu Hạn, Tổng kết chiến lược, kèm PDF gửi email.`}
     breadcrumbs={[
       { label: "Trang chủ", href: "/" },
       { label: "Đại Cát Lợi", href: "/dai-cat-loi" },
@@ -157,7 +169,7 @@ function phanTramTuoi(tuoi: number): number {
       ) : !coDuLieuNgaySinh && !daMuaCoBan && !daMuaNangCao ? (
         <div class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6 text-center">
           <p class="font-medium text-(--color-ink-800)">Chưa có ngày giờ sinh để luận giải.</p>
-          <p class="mt-2 text-sm text-(--color-ink-600)">Vui lòng lập lá số Tử Vi trước, rồi bấm nút "Xem luận giải 12 cung" hoặc "Xem trọn vận trình" ở đó.</p>
+          <p class="mt-2 text-sm text-(--color-ink-600)">Vui lòng lập lá số Tử Vi trước, rồi bấm nút "Xem luận giải đầy đủ" ở đó.</p>
           <a href="/lap-la-so-tu-vi" class="mt-4 inline-flex items-center justify-center rounded-(--radius-control) bg-(--color-gold-500) px-5 py-2.5 text-sm font-semibold text-white hover:opacity-90">Lập lá số Tử Vi</a>
         </div>
       ) : (
@@ -178,32 +190,28 @@ function phanTramTuoi(tuoi: number): number {
             </div>
           )}
 
-          {/* --- Đã mua Cơ Bản nhưng KHÔNG phải admin: không hiện trực tiếp, báo đã gửi qua email --- */}
+          {/* --- Đã mua nhưng KHÔNG phải admin: không hiện trực tiếp, báo đã gửi qua email --- */}
           {daMuaCoBan && !baoCaoCoBan?.coBan && (
             <div class="mb-8 rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-6 text-sm text-(--color-ink-800)">
-              <p class="font-display text-lg font-bold text-(--color-ink-950)">✅ Đã mua Luận Cơ Bản</p>
+              <p class="font-display text-lg font-bold text-(--color-ink-950)">✅ Đã mua Luận Giải Tử Vi</p>
               <p class="mt-2">Bản luận giải đầy đủ (PDF) đã được gửi tới email tài khoản của bạn ngay sau khi thanh toán thành công (thường mất khoảng 30-60 giây để AI xử lý xong). Vui lòng kiểm tra hộp thư, kể cả mục Spam/Quảng cáo.</p>
               {/* Phòng khi email chưa tới (mạng lỗi, rơi spam...) — tải trực tiếp không cần chờ email. */}
-              <a href="/api/dai-cat-loi/luan-giai-tu-vi/tai-pdf?tang=co_ban" class="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-(--color-gold-700) hover:underline">📄 Tải PDF</a>
-              {/* BUG đã sửa: nút mua Nâng Cao trước đây chỉ nằm trong khối báo cáo admin-only (baoCaoCoBan?.coBan),
-                  nên khách thường đã mua Cơ Bản không có cách nào bấm mua Nâng Cao trên trang. */}
-              {!daMuaNangCao && (
-                <div class="mt-4 border-t border-(--color-gold-400)/30 pt-4">
-                  <p>Muốn biết vận trình 10 năm tới đang thuận hay khó, và nên làm gì trong giai đoạn hiện tại?</p>
-                  {!khoaThuNghiem && (<Button id="tvlg-mua-nang-cao" size="md" class="mt-3">Xem Luận Trọn Đời — {dinhDangTien(GIA_NANG_CAO)}</Button>)}
-                  {khoaThuNghiem && (<p class="mt-3 text-sm font-semibold text-(--color-gold-700)">⏳ Bản Trọn Đời đang được hoàn thiện, sẽ mở trong ít ngày tới.</p>)}
-                </div>
-              )}
+              <a href="/api/dai-cat-loi/luan-giai-tu-vi/tai-pdf" class="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-(--color-gold-700) hover:underline">📄 Tải PDF</a>
             </div>
           )}
 
-          {/* --- Báo cáo Cơ Bản (chỉ admin xem trực tiếp) --- */}
+          {/* --- Báo cáo (chỉ admin xem trực tiếp) --- */}
           {baoCaoCoBan?.coBan && baoCaoCoBan.duLieu && (
             <section class="mb-8 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
               <div class="flex flex-wrap items-center justify-between gap-2">
-                <h2 class="font-display text-2xl font-bold text-(--color-ink-950)">Luận Cơ Bản</h2>
-                <a href="/api/dai-cat-loi/luan-giai-tu-vi/tai-pdf?tang=co_ban" class="inline-flex items-center gap-1.5 rounded-(--radius-control) border border-(--color-gold-400)/50 bg-(--color-gold-400)/10 px-3 py-1.5 text-xs font-medium text-(--color-gold-700)">📄 Tải PDF</a>
+                <h2 class="font-display text-2xl font-bold text-(--color-ink-950)">Luận Giải Tử Vi</h2>
+                <a href="/api/dai-cat-loi/luan-giai-tu-vi/tai-pdf" class="inline-flex items-center gap-1.5 rounded-(--radius-control) border border-(--color-gold-400)/50 bg-(--color-gold-400)/10 px-3 py-1.5 text-xs font-medium text-(--color-gold-700)">📄 Tải PDF</a>
               </div>
+              {donDangHienThi && (
+                <p class="mt-1 rounded-(--radius-control) bg-(--color-danger-500)/10 px-3 py-1.5 text-xs font-bold text-(--color-danger-500)">
+                  ⚠️ Lá số của: {donDangHienThi.customerName} — sinh {donDangHienThi.day}/{donDangHienThi.month}/{donDangHienThi.year}, {donDangHienThi.hour}h (đơn mua gần nhất)
+                </p>
+              )}
               <p class="mt-1 text-xs text-(--color-ink-500)">
                 {baoCaoCoBan.duLieu.hoTen} · {baoCaoCoBan.duLieu.gioiTinh} · {baoCaoCoBan.duLieu.ngaySinhDuong} giờ {baoCaoCoBan.duLieu.gioSinh}h ·
                 {" "}{baoCaoCoBan.duLieu.banMenhNapAm} · {baoCaoCoBan.duLieu.cucName}
@@ -283,32 +291,13 @@ function phanTramTuoi(tuoi: number): number {
                 })}
               </div>
 
-              {!daMuaNangCao && (
-                <div class="mt-6 rounded-(--radius-control) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-4 text-sm text-(--color-ink-800)">
-                  <p>Muốn biết vận trình 10 năm tới đang thuận hay khó, và nên làm gì trong giai đoạn hiện tại?</p>
-                  {!khoaThuNghiem && (<Button id="tvlg-mua-nang-cao" size="md" class="mt-3">Xem Luận Trọn Đời — {dinhDangTien(GIA_NANG_CAO)}</Button>)}
-                  {khoaThuNghiem && (<p class="mt-3 text-sm font-semibold text-(--color-gold-700)">⏳ Bản Trọn Đời đang được hoàn thiện, sẽ mở trong ít ngày tới.</p>)}
-                </div>
-              )}
             </section>
           )}
 
-          {/* --- Đã mua Nâng Cao nhưng KHÔNG phải admin --- */}
-          {daMuaNangCao && !baoCaoNangCao?.nangCao && (
-            <div class="mb-8 rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-6 text-sm text-(--color-ink-800)">
-              <p class="font-display text-lg font-bold text-(--color-ink-950)">✅ Đã mua Luận Trọn Đời</p>
-              <p class="mt-2">Bản luận giải đầy đủ (PDF, gồm cả phần Cơ Bản) đã được gửi tới email tài khoản của bạn ngay sau khi thanh toán thành công. Vui lòng kiểm tra hộp thư, kể cả mục Spam/Quảng cáo.</p>
-              <a href="/api/dai-cat-loi/luan-giai-tu-vi/tai-pdf?tang=nang_cao" class="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-(--color-gold-700) hover:underline">📄 Tải PDF</a>
-            </div>
-          )}
-
-          {/* --- Báo cáo Nâng Cao (chỉ admin) --- */}
+          {/* --- Vận trình (Đại Hạn/Tiểu Hạn/Tổng kết) — tiếp nối cùng báo cáo ở trên, chỉ admin xem trực tiếp --- */}
           {baoCaoNangCao?.nangCao && baoCaoNangCao.duLieu && (
             <section class="mb-8 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
-              <div class="flex flex-wrap items-center justify-between gap-2">
-                <h2 class="font-display text-2xl font-bold text-(--color-ink-950)">Luận Trọn Đời</h2>
-                <a href="/api/dai-cat-loi/luan-giai-tu-vi/tai-pdf?tang=nang_cao" class="inline-flex items-center gap-1.5 rounded-(--radius-control) border border-(--color-gold-400)/50 bg-(--color-gold-400)/10 px-3 py-1.5 text-xs font-medium text-(--color-gold-700)">📄 Tải PDF</a>
-              </div>
+              <h2 class="font-display text-2xl font-bold text-(--color-ink-950)">Vận trình — Đại Hạn / Tiểu Hạn</h2>
 
               {baoCaoNangCao.duLieu.daiHanHienTai && (
                 <div class="mt-4 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4">
@@ -383,22 +372,16 @@ function phanTramTuoi(tuoi: number): number {
               <p class="text-sm text-(--color-ink-600)">
                 Lá số của <strong class="text-(--color-ink-900)">{inputDaMua.hoTen || "bạn"}</strong> — {inputDaMua.day}/{inputDaMua.month}/{inputDaMua.year}, giờ {inputDaMua.hour}h, {inputDaMua.gender}.
               </p>
-              <div class="mt-4 grid gap-4 sm:grid-cols-2">
-                <div class="flex flex-col rounded-(--radius-card) border-2 border-(--color-cinnabar-400)/40 bg-(--color-ivory-50) p-5">
-                  <p class="font-display text-lg font-bold text-(--color-cinnabar-400)">Luận Cơ Bản</p>
-                  <p class="mt-1 text-sm text-(--color-ink-700)">Luận đủ 12 cung, mỗi cung 7 phần: kết luận nhanh, phân tích, điểm mạnh/yếu, nguyên nhân, khả năng ứng nghiệm, khuyến nghị.</p>
-                  <p class="mt-3 font-display text-xl font-bold text-(--color-ink-950)">{dinhDangTien(GIA_CO_BAN)}</p>
-                  {!khoaThuNghiem && (<Button id="tvlg-mua-co-ban" size="lg" class="mt-3">Mua Luận Cơ Bản</Button>)}
+              <div class="mt-4">
+                <div class="flex flex-col rounded-(--radius-card) border-2 border-(--color-gold-400)/60 bg-(--color-gold-400)/10 p-5">
+                  <p class="font-display text-lg font-bold text-(--color-gold-600)">Luận Giải Tử Vi</p>
+                  <p class="mt-1 text-sm text-(--color-ink-700)">Luận đủ 12 cung (kết luận nhanh, phân tích, điểm mạnh/yếu, nguyên nhân, khả năng ứng nghiệm, khuyến nghị), cộng thêm Đại Hạn hiện tại, Tiểu Hạn năm nay và năm sau, Tổng kết chiến lược dài hạn.</p>
+                  <p class="mt-3 font-display text-xl font-bold text-(--color-ink-950)">{dinhDangTien(GIA_TOAN_DIEN)}</p>
+                  {!khoaThuNghiem && (<Button id="tvlg-mua-toan-dien" size="lg" class="mt-3">Mua Luận Giải Tử Vi</Button>)}
                   {khoaThuNghiem && (<p class="mt-3 rounded-(--radius-control) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 px-4 py-3 text-sm font-semibold text-(--color-gold-700)">⏳ Bản luận giải đầy đủ đang được hoàn thiện, sẽ mở bán trong ít ngày tới. Phần xem trước ở trên vẫn dùng thoải mái, miễn phí.</p>)}
                 </div>
-                <div class="flex flex-col rounded-(--radius-card) border-2 border-(--color-gold-400)/60 bg-(--color-gold-400)/10 p-5">
-                  <p class="font-display text-lg font-bold text-(--color-gold-600)">Luận Trọn Đời</p>
-                  <p class="mt-1 text-sm text-(--color-ink-700)">Trọn gói Cơ Bản, cộng thêm Đại Hạn hiện tại, Tiểu Hạn năm nay và năm sau, Tổng kết chiến lược dài hạn.</p>
-                  <p class="mt-3 font-display text-xl font-bold text-(--color-ink-950)">{dinhDangTien(GIA_NANG_CAO)}</p>
-                  <Button id="tvlg-mua-nang-cao-thang" size="lg" class="mt-3">Mua Luận Trọn Đời</Button>
-                </div>
               </div>
-              <div class="mt-4"><MaKhuyenMai idPrefix="tvlg-ma" toolSlug={TOOL_SLUG_CO_BAN} giaGoc={GIA_CO_BAN} /></div>
+              {!khoaThuNghiem && (<div class="mt-4"><MaKhuyenMai idPrefix="tvlg-ma" toolSlug={TOOL_SLUG_TOAN_DIEN} giaGoc={GIA_TOAN_DIEN} /></div>)}
             </section>
           )}
 
@@ -458,13 +441,13 @@ function phanTramTuoi(tuoi: number): number {
     }
   }
 
-  async function muaTang(tang) {
+  async function mua() {
     const dauVao = window.__tvlgInput;
     if (!dauVao) return baoLoi("Thiếu ngày giờ sinh — vui lòng lập lá số lại từ /lap-la-so-tu-vi.");
 
     const payload = {
       ngay: dauVao.day, thang: dauVao.month, nam: dauVao.year, gio: dauVao.hour, gioiTinh: dauVao.gender,
-      hoTen: dauVao.hoTen, tang, maKhuyenMai: maInput?.value?.trim() || undefined,
+      hoTen: dauVao.hoTen, maKhuyenMai: maInput?.value?.trim() || undefined,
     };
     dangChayEl?.classList.remove("hidden");
     loiEl?.classList.add("hidden");
@@ -491,7 +474,5 @@ function phanTramTuoi(tuoi: number): number {
     }
   }
 
-  document.getElementById("tvlg-mua-co-ban")?.addEventListener("click", () => muaTang("co_ban"));
-  document.getElementById("tvlg-mua-nang-cao")?.addEventListener("click", () => muaTang("nang_cao"));
-  document.getElementById("tvlg-mua-nang-cao-thang")?.addEventListener("click", () => muaTang("nang_cao"));
+  document.getElementById("tvlg-mua-toan-dien")?.addEventListener("click", () => mua());
 </script>

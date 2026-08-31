@@ -161,6 +161,48 @@ export async function generateBatTuCoBanPdf(baoCao: BaoCaoCoBan, customerName: s
   return doc.save();
 }
 
+/** Gói duy nhất 700k (1/9/2026) — 1 PDF gộp đủ 12 giai đoạn Cơ Bản + Nâng Cao, thay 2 hàm rời ở trên. */
+export async function generateBatTuToanDienPdf(
+  baoCaoCoBan: BaoCaoCoBan,
+  baoCaoNangCao: BaoCaoNangCao,
+  customerName: string,
+): Promise<Uint8Array> {
+  const { doc, f, b } = await taoTaiLieuPdf();
+  await veDauTrang(doc, b, f, {
+    tieuDe: "Luận Giải Bát Tự Toàn Diện",
+    phuDe: "12 giai đoạn luận giải trọn vẹn",
+  });
+
+  b.dongGiua(`Kính gửi: ${customerName}`, { size: 12, font: f.dam });
+  b.xuong(6);
+
+  veLaSo(b, f, baoCaoCoBan.laSo);
+  b.doan(baoCaoCoBan.disclaimerDauBai, { size: 8.5, font: f.nghieng, mau: MAU.mucNhat });
+  b.xuong(6);
+
+  b.muc("Luận giải chi tiết");
+  for (const gd of baoCaoCoBan.giaiDoan) veGiaiDoan(b, f, gd.ma, gd.tieuDe, gd.noiDung);
+  for (const gd of baoCaoNangCao.giaiDoan) {
+    veGiaiDoan(b, f, gd.ma, gd.tieuDe, gd.noiDung);
+    if (gd.ma === "K") {
+      veBieuDoGiaiDoan(
+        b, f, "Đồ hình Đại Vận trọn đời",
+        `So với Dụng Thần ${baoCaoNangCao.laSo.dungThan} · Hỷ Thần ${baoCaoNangCao.laSo.hyThan} · Kỵ Thần ${baoCaoNangCao.laSo.kyThan}`,
+        baoCaoNangCao.daiVanBieuDo,
+      );
+      veBieuDoGiaiDoan(
+        b, f, "Đồ hình Lưu Niên — 10 năm tới",
+        `Từ năm ${baoCaoNangCao.luuNienBieuDo[0]?.nhan ?? ""} đến ${baoCaoNangCao.luuNienBieuDo.at(-1)?.nhan ?? ""}`,
+        baoCaoNangCao.luuNienBieuDo,
+      );
+    }
+  }
+
+  veLuuYVaLienHe(b, f, baoCaoNangCao.disclaimerCuoiBai);
+  veChanTrang(doc, f);
+  return doc.save();
+}
+
 export async function generateBatTuNangCaoPdf(baoCao: BaoCaoNangCao, customerName: string): Promise<Uint8Array> {
   const { doc, f, b } = await taoTaiLieuPdf();
   await veDauTrang(doc, b, f, {

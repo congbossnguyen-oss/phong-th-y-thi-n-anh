@@ -13,8 +13,10 @@ import {
   kyMonMenhPdfEmail,
   batTuToanDienCoBanPdfEmail,
   batTuToanDienNangCaoPdfEmail,
+  batTuToanDienPdfEmail,
   luanGiaiTuViCoBanPdfEmail,
   luanGiaiTuViNangCaoPdfEmail,
+  luanGiaiTuViToanDienPdfEmail,
 } from "./templates";
 
 // Gửi email không được phép làm sập luồng nghiệp vụ chính (vd webhook thanh toán phải trả 200
@@ -218,6 +220,19 @@ export async function sendBatTuToanDienNangCaoPdfEmail(params: {
   ]);
 }
 
+/** Gửi PDF Luận Giải Bát Tự Toàn Diện — gói duy nhất 700k (1/9/2026) kèm email. Dùng safeSend — lỗi chỉ log. */
+export async function sendBatTuToanDienPdfEmail(params: {
+  to: string;
+  orderCode: string;
+  customerName: string;
+  pdfBytes: Uint8Array;
+}) {
+  const { subject, html } = batTuToanDienPdfEmail(params);
+  await safeSend(params.to, subject, html, [
+    { filename: `luan-giai-bat-tu-toan-dien-${params.orderCode}.pdf`, content: Buffer.from(params.pdfBytes) },
+  ]);
+}
+
 /** Gửi PDF Luận Giải Tử Vi — Cơ Bản kèm email. Dùng safeSend — lỗi chỉ log. */
 export async function sendLuanGiaiTuViCoBanPdfEmail(params: {
   to: string;
@@ -241,5 +256,18 @@ export async function sendLuanGiaiTuViNangCaoPdfEmail(params: {
   const { subject, html } = luanGiaiTuViNangCaoPdfEmail(params);
   await safeSend(params.to, subject, html, [
     { filename: `luan-giai-tu-vi-nang-cao-${params.orderCode}.pdf`, content: Buffer.from(params.pdfBytes) },
+  ]);
+}
+
+/** Gửi PDF Luận Giải Tử Vi — gói duy nhất 500k (1/9/2026) kèm email. Dùng safeSend — lỗi chỉ log. */
+export async function sendLuanGiaiTuViToanDienPdfEmail(params: {
+  to: string;
+  orderCode: string;
+  customerName: string;
+  pdfBytes: Uint8Array;
+}) {
+  const { subject, html } = luanGiaiTuViToanDienPdfEmail(params);
+  await safeSend(params.to, subject, html, [
+    { filename: `luan-giai-tu-vi-toan-dien-${params.orderCode}.pdf`, content: Buffer.from(params.pdfBytes) },
   ]);
 }

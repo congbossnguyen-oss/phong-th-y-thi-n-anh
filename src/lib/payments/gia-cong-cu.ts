@@ -41,17 +41,30 @@ export const GIA_CONG_CU = {
   "ngay-ky-hop-dong-cao-cap": 300000,
   "ky-mon-menh-chi-tiet": 300000,
 
-  // ─ Luận mệnh trọn đời — 2 bậc CƠ BẢN / TRỌN ĐỜI (anh Công chốt 27/8/2026) ────────────────────
-  // Bài luận rất dài (12 giai đoạn + Đại Vận trọn đời + Lưu Niên 10 năm, kèm PDF gửi email) nên
-  // tách 2 bậc rõ ràng thay vì "cơ bản/nâng cao" mơ hồ:
-  //   · CƠ BẢN  — đọc nền tảng lá số, đủ để hiểu mình.
-  //   · TRỌN ĐỜI — thêm trọn vẹn vận trình từ nhỏ đến già; đây là sản phẩm đầu bảng của mảng luận mệnh.
-  // ⚠️ GIỮ NGUYÊN slug "…-nang-cao" dù nhãn hiển thị đổi thành "Trọn Đời": slug đã nằm trong
-  // `orders.toolSlug` của các đơn CŨ, đổi slug sẽ làm mất quyền truy cập của khách đã mua.
+  // ─ Luận Giải Bát Tự Toàn Diện — 1 GÓI DUY NHẤT (anh Công chốt 1/9/2026) ─────────────────────
+  // Trước đây tách 2 bậc Cơ Bản 300k / Trọn Đời 700k, nhưng gây 2 bug: (1) khách mua Cơ Bản cho
+  // người MỚI không thấy nút mua Nâng Cao nếu tài khoản từng mua Nâng Cao cho người KHÁC trước đó
+  // (gate tính theo "đơn Nâng Cao gần nhất" chứ không theo đúng lá số); (2) trang admin có thể hiện
+  // ĐỒNG THỜI báo cáo Cơ Bản của người A và báo cáo Nâng Cao của người B (2 luồng đơn độc lập, có
+  // thể là 2 người khác nhau) → "lẫn lộn ngày sinh của anh và của khách". Gộp về 1 gói loại bỏ cả
+  // 2 bug vì chỉ còn 1 luồng đơn duy nhất. Khách đã mua CHỈ Cơ Bản trước đây (slug "…-co-ban")
+  // được coi như đã mua đủ gói mới — xem logic grandfather ở luan-giai-bat-tu-toan-dien.astro.
+  "luan-giai-bat-tu-toan-dien": 700000,
+  // ⚠️ 2 slug dưới đây KHÔNG còn bán mới (checkout chỉ tạo đơn "…-toan-dien" ở trên) — GIỮ LẠI
+  // trong bảng giá vì đơn CŨ trong DB vẫn tham chiếu đúng các slug này (đổi/xoá sẽ làm vỡ kiểu
+  // ToolSlug ở những chỗ đọc lại đơn cũ, xem orders.ts + luan-giai-bat-tu-toan-dien.astro).
   "luan-giai-bat-tu-co-ban": 300000,
-  "luan-giai-bat-tu-nang-cao": 700000, // nhãn hiển thị: "Trọn Đời"
+  "luan-giai-bat-tu-nang-cao": 700000,
+
+  // ─ Luận Giải Tử Vi — 1 GÓI DUY NHẤT (anh Công chốt 1/9/2026, cùng đợt và cùng lý do Bát Tự ở
+  // trên) — phát hiện thêm 1 bug khi gộp: checkout.ts CŨ có 1 chốt chặn RIÊNG "chỉ admin được mua"
+  // sót lại từ hồi 26/8/2026 (trước khi MODULE_KHOA_THU_NGHIEM gỡ khoá 31/8/2026), khiến TÀI KHOẢN
+  // KHÁCH THẬT không tạo được đơn dù module đã mở bán — đã gỡ chốt đó cùng lúc gộp gói.
+  "luan-giai-tu-vi-toan-dien": 500000,
+  // ⚠️ 2 slug dưới đây KHÔNG còn bán mới — GIỮ LẠI vì đơn CŨ trong DB vẫn tham chiếu đúng các slug
+  // này (xem orders.ts + luan-giai-tu-vi.astro).
   "luan-giai-tu-vi-co-ban": 200000,
-  "luan-giai-tu-vi-nang-cao": 500000, // nhãn hiển thị: "Trọn Đời"
+  "luan-giai-tu-vi-nang-cao": 500000,
 
   // ─ Cửa vào — cho khách chưa từng mua ─────────────────────────────────────────────────────────
   "ky-mon-hoi-dap": 200000,

@@ -17,9 +17,9 @@ const labelClass = "text-sm font-medium text-(--color-ink-800)";
 const VIEWING_YEAR_MIN = 1900;
 const VIEWING_YEAR_MAX = new Date().getFullYear() + 10;
 
-// Module đang KHOÁ thu phí để thử nghiệm (27/8/2026) — vẫn giới thiệu 2 gói cho khách biết
+// Module đang KHOÁ thu phí để thử nghiệm (27/8/2026) — vẫn giới thiệu gói cho khách biết
 // sắp có gì, nhưng KHÔNG mời bấm mua.
-const khoaTuVi = dangKhoaThuNghiem("luan-giai-tu-vi-co-ban");
+const khoaTuVi = dangKhoaThuNghiem("luan-giai-tu-vi-toan-dien");
 ---
 
 <BaseLayout
@@ -126,30 +126,18 @@ const khoaTuVi = dangKhoaThuNghiem("luan-giai-tu-vi-co-ban");
           <p class="mt-4 text-sm leading-relaxed text-(--color-ink-800)" id="tv-lsb-chot"></p>
         </div>
 
-        {/* ---- Điều hướng sang 2 gói trả phí ---- */}
-        <div class="mt-5 grid gap-4 sm:grid-cols-2">
-          <div class="flex flex-col rounded-(--radius-card) border-2 border-(--color-cinnabar-400)/40 bg-(--color-ivory-50) p-5">
-            <p class="font-display text-lg font-bold text-(--color-cinnabar-400)">Luận Tử Vi Cơ Bản</p>
-            <p class="mt-1 text-sm text-(--color-ink-700)">
-              Luận đủ <strong>12 cung</strong> — mỗi cung có kết luận nhanh, phân tích cấu trúc, điểm mạnh,
-              điểm yếu, nguyên nhân, khả năng ứng nghiệm và khuyến nghị. Kèm bánh xe Cát – Hung đầy đủ.
-            </p>
-            <p class="mt-3 font-display text-xl font-bold text-(--color-ink-950)">{dinhDangTien(GIA_CONG_CU["luan-giai-tu-vi-co-ban"])}</p>
-            {!khoaTuVi && (<a id="tv-cta-co-ban" href="/dai-cat-loi/luan-giai-tu-vi" class="mt-3 inline-flex items-center justify-center rounded-(--radius-control) bg-(--color-cinnabar-400) px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90">
-              Xem luận giải 12 cung →
-            </a>)}
-            {khoaTuVi && (<p class="mt-3 text-sm font-semibold text-(--color-gold-700)">⏳ Sắp mở — đang hoàn thiện</p>)}
-          </div>
-
+        {/* ---- Điều hướng sang gói trả phí (1 gói duy nhất, gộp 1/9/2026) ---- */}
+        <div class="mt-5">
           <div class="flex flex-col rounded-(--radius-card) border-2 border-(--color-gold-400)/60 bg-(--color-gold-400)/10 p-5">
-            <p class="font-display text-lg font-bold text-(--color-gold-600)">Luận Tử Vi Trọn Đời</p>
+            <p class="font-display text-lg font-bold text-(--color-gold-600)">Luận Giải Tử Vi</p>
             <p class="mt-1 text-sm text-(--color-ink-700)">
-              Bao gồm trọn gói Cơ Bản, cộng thêm <strong>Đại Hạn hiện tại + Tiểu Hạn năm nay và năm sau</strong>,
-              dòng thời gian Đại Vận, radar 6 lĩnh vực và tổng kết chiến lược dài hạn.
+              Luận đủ <strong>12 cung</strong> (kết luận nhanh, phân tích cấu trúc, điểm mạnh, điểm yếu, nguyên
+              nhân, khả năng ứng nghiệm, khuyến nghị), cộng thêm <strong>Đại Hạn hiện tại + Tiểu Hạn năm nay và
+              năm sau</strong>, dòng thời gian Đại Vận, radar 6 lĩnh vực và tổng kết chiến lược dài hạn.
             </p>
-            <p class="mt-3 font-display text-xl font-bold text-(--color-ink-950)">{dinhDangTien(GIA_CONG_CU["luan-giai-tu-vi-nang-cao"])}</p>
-            {!khoaTuVi && (<a id="tv-cta-nang-cao" href="/dai-cat-loi/luan-giai-tu-vi" class="mt-3 inline-flex items-center justify-center rounded-(--radius-control) bg-(--color-gold-500) px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90">
-              Xem trọn vận trình →
+            <p class="mt-3 font-display text-xl font-bold text-(--color-ink-950)">{dinhDangTien(GIA_CONG_CU["luan-giai-tu-vi-toan-dien"])}</p>
+            {!khoaTuVi && (<a id="tv-cta-toan-dien" href="/dai-cat-loi/luan-giai-tu-vi" class="mt-3 inline-flex items-center justify-center rounded-(--radius-control) bg-(--color-gold-500) px-4 py-2.5 text-sm font-semibold text-white hover:opacity-90">
+              Xem luận giải đầy đủ →
             </a>)}
             {khoaTuVi && (<p class="mt-3 text-sm font-semibold text-(--color-gold-700)">⏳ Sắp mở — đang hoàn thiện</p>)}
           </div>
@@ -242,8 +230,7 @@ const khoaTuVi = dangKhoaThuNghiem("luan-giai-tu-vi-co-ban");
 
     document.getElementById("tv-lsb-chot")!.textContent = r.cauChot;
 
-    // Mang sẵn ngày giờ sinh + tên sang /dai-cat-loi/luan-giai-tu-vi — trang đó hiện cả 2 lựa chọn
-    // Cơ Bản/Nâng Cao trên cùng 1 màn nên cả 2 nút CTA dùng chung 1 query string.
+    // Mang sẵn ngày giờ sinh + tên sang /dai-cat-loi/luan-giai-tu-vi.
     const qs = new URLSearchParams({
       ngay: String(sinh.day),
       thang: String(sinh.month),
@@ -252,10 +239,8 @@ const khoaTuVi = dangKhoaThuNghiem("luan-giai-tu-vi-co-ban");
       gioiTinh: sinh.gender,
       ...(name ? { ten: name } : {}),
     });
-    const ctaCoBan = document.getElementById("tv-cta-co-ban") as HTMLAnchorElement | null;
-    const ctaNangCao = document.getElementById("tv-cta-nang-cao") as HTMLAnchorElement | null;
-    if (ctaCoBan) ctaCoBan.href = `/dai-cat-loi/luan-giai-tu-vi?${qs.toString()}`;
-    if (ctaNangCao) ctaNangCao.href = `/dai-cat-loi/luan-giai-tu-vi?${qs.toString()}`;
+    const ctaToanDien = document.getElementById("tv-cta-toan-dien") as HTMLAnchorElement | null;
+    if (ctaToanDien) ctaToanDien.href = `/dai-cat-loi/luan-giai-tu-vi?${qs.toString()}`;
 
     wrap.classList.remove("hidden");
   }
