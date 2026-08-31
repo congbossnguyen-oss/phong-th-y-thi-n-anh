@@ -149,7 +149,7 @@ export async function viecGiaiDoan(cfg: GiaiDoanConfig, laSo: unknown, findings:
   const system = buildSystemPrompt(cfg, laSoJSON, findingsJSON);
   const userMessage = `Hãy viết đoạn văn cho giai đoạn "${cfg.ten}" (${cfg.ma}) theo đúng dữ liệu và nguyên tắc đã nêu ở system prompt.`;
 
-  const { input, usage, model } = await goiClaudeToolUse(system, userMessage, TOOL_NAME, SCHEMA, 2000);
+  const { input, usage, model } = await goiClaudeToolUse(system, userMessage, TOOL_NAME, SCHEMA, 2000, "bat-tu-giai-doan", { "openai-tuong-thich": "deepseek-chat" });
   ghiLogChiPhi(`Luận giải Bát Tự — Giai đoạn ${cfg.ma}`, model ?? DEFAULT_MODEL, usage);
   if (!input) return null;
   const noiDung = typeof input.noi_dung === "string" ? xoaTheLaConSot(input.noi_dung.trim()) : "";

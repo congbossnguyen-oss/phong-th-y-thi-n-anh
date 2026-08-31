@@ -153,6 +153,9 @@ export async function luanNangCao(
     toolName: "tra_ve_luan_giai_nang_cao",
     schema: SCHEMA,
     maxTokens: 6000,
+    // ⚠️ 31/8/2026: cắt Anthropic, chuyển DeepSeek — deepseek-v4-flash mặc định là model "thinking",
+    // từ chối tool_choice ép buộc mà goiAiToolUse luôn dùng, PHẢI ép deepseek-chat (non-thinking).
+    modelOverride: { "openai-tuong-thich": "deepseek-chat" },
   });
 
   if (!kq.input) return { ketQua: null, usage: kq.usage };
