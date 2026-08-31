@@ -77,9 +77,9 @@ export async function conLuotHoiKhong(userId: string, tier: SubscriptionTier, is
 }
 
 /**
- * Tổng lượt hỏi đã dùng CỘNG DỒN MỌI THÁNG (không reset) — dùng riêng cho tài khoản test Quân Sư
- * (xem `TAI_KHOAN_TEST_QUAN_SU` trong `quan-su/test-accounts.ts`, 31/8/2026), KHÁC hẳn
- * `conLuotHoiKhong()` ở trên (đếm theo tháng dương lịch, dành cho gói trả tiền/dùng thử thật).
+ * Tổng lượt hỏi đã dùng CỘNG DỒN MỌI THÁNG (không reset) — dùng riêng cho khuyến mãi "20 tài khoản
+ * đăng ký sớm nhất" (xem `quan-su/khuyen-mai-luan-giai.ts`, 31/8/2026), KHÁC hẳn `conLuotHoiKhong()`
+ * ở trên (đếm theo tháng dương lịch, dành cho gói trả tiền/dùng thử thật).
  */
 export async function tongLuotDaDung(userId: string): Promise<number> {
   const [row] = await db
