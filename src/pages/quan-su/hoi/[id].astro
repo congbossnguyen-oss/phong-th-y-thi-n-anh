@@ -4,6 +4,7 @@ import BottomNav from "../../../components/quan-su/BottomNav.astro";
 import "../../../styles/quan-su.css";
 import { getQuestion, getCategory } from "../../../lib/quan-su";
 import { dungThanHintFor } from "../../../lib/quan-su/divination";
+import { siteConfig } from "../../../lib/site-config";
 
 export const prerender = false;
 
@@ -102,7 +103,7 @@ const choDoiTuongKhac = dungThanHintFor(question.category).kind === "the-hao";
             <button class="qs-btn qs-btn-ghost" id="qs-lai" type="button" style="display:none;">Làm lại</button>
           </div>
 
-          <div class="qs-result qs-hidden" id="qs-result"></div>
+          <div class="qs-result qs-hidden" id="qs-result" data-zalo={siteConfig.social.zalo}></div>
 
           <script type="application/json" id="qs-question" set:html={JSON.stringify(question)}></script>
           <script>
@@ -115,6 +116,7 @@ const choDoiTuongKhac = dungThanHintFor(question.category).kind === "the-hao";
             const gieoBtn = document.getElementById("qs-gieo");
             const laiBtn = document.getElementById("qs-lai");
             const resultEl = document.getElementById("qs-result");
+            const ZALO_HREF = resultEl?.dataset.zalo || "";
             const methodsEl = document.getElementById("qs-methods");
             const seriField = document.getElementById("qs-seri-field");
             const stepSub = document.getElementById("qs-step-sub");
@@ -346,7 +348,11 @@ const choDoiTuongKhac = dungThanHintFor(question.category).kind === "the-hao";
                     <ul style="margin:0;padding-left:1.1rem;line-height:1.75;">${li(ai.quan_su_khuyen)}</ul>
                   </div>
                   ${ai.phuong_phap_hoa_giai && ai.phuong_phap_hoa_giai.length
-                    ? `<div class="qs-sect"><h4>Cách hóa giải</h4><ul style="margin:0;padding-left:1.1rem;line-height:1.75;">${li(ai.phuong_phap_hoa_giai)}</ul></div>`
+                    ? `<div class="qs-sect"><h4>Cách hóa giải</h4>
+                        <ul style="margin:0;padding-left:1.1rem;line-height:1.75;">${li(ai.phuong_phap_hoa_giai)}</ul>
+                        <p style="margin:0.7rem 0 0;color:var(--qs-muted);font-size:0.8rem;line-height:1.6;">Cách hóa giải trên chỉ mang tính tham khảo, không đảm bảo hiệu quả 100% — hóa giải cần có sự linh ứng, kết hợp đúng thiên thời - địa lợi - nhân hòa, an vị vật phẩm hoặc khai quang đúng cách. Để được tư vấn chuyên sâu và thực hiện đúng, anh/chị nên liên hệ trực tiếp.</p>
+                        ${ZALO_HREF ? `<a href="${ZALO_HREF}" target="_blank" rel="noopener" class="qs-btn" style="text-decoration:none;display:inline-flex;margin-top:0.6rem;">Liên hệ trợ lý Thầy Zhi Gong (Zalo)</a>` : ""}
+                      </div>`
                     : data.hoaGiaiBiKhoa
                     ? `<div class="qs-sect"><h4>🔒 Cách hóa giải</h4>
                         <p style="margin:0 0 0.6rem;color:var(--qs-muted);line-height:1.7;">Quẻ này có chỉ dấu cần hóa giải — phương pháp cụ thể chỉ mở cho gói Cao cấp.</p>

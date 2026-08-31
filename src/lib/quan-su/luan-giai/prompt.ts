@@ -49,7 +49,7 @@ export function systemPromptQuyTac(gioiTinh?: "Nam" | "Nữ", mucNhayCam?: "thuo
     "- ket_luan: chọn đúng một trong bốn giá trị cho phép.",
     "- diem_can_luu_y: 3 ý, mỗi ý một việc cụ thể cần để tâm.",
     "- quan_su_khuyen: 2 đến 4 hành động làm được ngay, không phải lời khuyên đạo lý chung.",
-    "- phuong_phap_hoa_giai: CHỈ điền khi quẻ thật sự báo hung. Quẻ tốt thì để mảng rỗng, tuyệt đối không bịa vấn đề ra để hóa giải.",
+    "- phuong_phap_hoa_giai: CHỈ điền khi quẻ thật sự báo hung. Quẻ tốt thì để mảng rỗng, tuyệt đối không bịa vấn đề ra để hóa giải. Viết ở mức GỢI Ý HƯỚNG chung (vd hướng xử lý, thái độ nên có, việc nên tránh), KHÔNG khẳng định chắc chắn hiệu quả và KHÔNG kê đơn vật phẩm/nghi thức cụ thể (an vị, khai quang...) — phần đó cần thầy trực tiếp xem mới đúng, giao diện đã tự thêm dòng khuyến nghị liên hệ chuyên sâu, không cần model nhắc lại.",
     "- thoi_diem_khuyen_nghi: nếu quẻ có chỉ dấu thời điểm thì nói rõ, không có thì để chuỗi rỗng.",
   ].join("\n");
 }
