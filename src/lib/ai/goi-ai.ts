@@ -55,18 +55,27 @@ export type TinhNangAi =
  * chuẩn hơn (30/8/2026) — đổi biến này là đổi được toàn site, không cần sửa từng dòng trong bảng.
  */
 const BANG_NHA_CUNG_CAP: Record<TinhNangAi, NhaCungCap> = {
-  "bat-tu-giai-doan": "anthropic",
+  // ⚠️ 31/8/2026 anh Công: "cắt hẳn luận giải qua console.anthropic.com" (tài khoản Anthropic hết
+  // credit lần 2, xem [[project_anthropic_credit_va_chi_phi_ai]]) — chuyển hết Bát Tự/Tử Vi/Nghề
+  // Nghiệp sang DeepSeek, không còn tính năng nào dùng Anthropic. Mọi tinhNang chuyển sang
+  // "openai-tuong-thich" ở đây ĐỀU PHẢI có modelOverride ép "deepseek-chat" ở nơi gọi (xem ghi chú
+  // MODEL_MAC_DINH bên dưới — deepseek-v4-flash mặc định là model "thinking", từ chối tool_choice
+  // ép buộc mà goiAiToolUse luôn dùng, gọi thất bại 100% nếu quên).
+  "bat-tu-giai-doan": "openai-tuong-thich",
   "bat-tu-cham-diem": "openai-tuong-thich",
   "bat-tu-kiem-duyet": "openai-tuong-thich",
   "quan-su-kinh-dich": "openai-tuong-thich",
   "quan-su-van-khi": "openai-tuong-thich",
+  // 3 dòng dưới đây CHƯA đấu nối thật — chart-profile/llm.ts, chart-profile/llm-tu-vi.ts,
+  // nghe-nghiep/llm-luan-van.ts đều gọi THẲNG Anthropic (hardcode), không qua goiAiToolUse/bảng này,
+  // nên đổi giá trị ở đây KHÔNG ảnh hưởng hành vi thật của 3 tính năng đó (đo được 31/8/2026 khi rà
+  // để cắt Anthropic cho Bát Tự/Tử Vi). 3 file trên đang có sửa dở của 1 phiên khác — CHƯA di chuyển
+  // sang goiAiToolUse để tránh xung đột, cần làm riêng sau.
   "chart-profile-bat-tu": "anthropic",
   "chart-profile-tu-vi": "anthropic",
   "nghe-nghiep-luan-van": "anthropic",
-  // Gói 149k/299k, khách đọc kỹ và trả tiền cao — giữ Anthropic cho chắc chất lượng.
-  "luan-giai-tu-vi-co-ban": "anthropic",
-  "luan-giai-tu-vi-nang-cao": "anthropic",
-  // Đang test nội bộ (chưa chốt giá) — anh Công 30/8/2026: "anh vẫn đang dùng bên DeepSeek".
+  "luan-giai-tu-vi-co-ban": "openai-tuong-thich",
+  "luan-giai-tu-vi-nang-cao": "openai-tuong-thich",
   "huyen-khong-luan-chi-tiet": "openai-tuong-thich",
 };
 
