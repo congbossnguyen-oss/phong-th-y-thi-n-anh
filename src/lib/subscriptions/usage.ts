@@ -77,6 +77,19 @@ export async function conLuotHoiKhong(userId: string, tier: SubscriptionTier, is
 }
 
 /**
+ * Tổng lượt hỏi đã dùng CỘNG DỒN MỌI THÁNG (không reset) — dùng riêng cho tài khoản test Quân Sư
+ * (xem `TAI_KHOAN_TEST_QUAN_SU` trong `quan-su/test-accounts.ts`, 31/8/2026), KHÁC hẳn
+ * `conLuotHoiKhong()` ở trên (đếm theo tháng dương lịch, dành cho gói trả tiền/dùng thử thật).
+ */
+export async function tongLuotDaDung(userId: string): Promise<number> {
+  const [row] = await db
+    .select({ tong: sql<number>`coalesce(sum(${quanSuUsage.soLuotDaDung}), 0)` })
+    .from(quanSuUsage)
+    .where(eq(quanSuUsage.userId, userId));
+  return Number(row?.tong ?? 0);
+}
+
+/**
  * Ghi nhận 1 lượt hỏi đã dùng (upsert theo user+tháng, tăng dần) — gọi SAU KHI luận giải thành công,
  * không tính lượt cho request lỗi đầu vào (400) hay lỗi hệ thống (500) — khách không nhận được gì thì
  * không nên bị trừ lượt.

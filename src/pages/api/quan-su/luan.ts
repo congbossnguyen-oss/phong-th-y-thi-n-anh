@@ -6,7 +6,8 @@ import { runQuanSu, type CastingMethod, type NgaySinhInput } from "../../../lib/
 import type { DoiTuongHoi } from "../../../lib/quan-su/divination";
 import { getQuestion } from "../../../lib/quan-su";
 import { coQuyenTruyCap, hangYeuCauTheoCauHoi, layGoiDangHoatDong } from "../../../lib/subscriptions/access";
-import { conLuotHoiKhong, ghiNhanLuotHoi } from "../../../lib/subscriptions/usage";
+import { conLuotHoiKhong, ghiNhanLuotHoi, tongLuotDaDung } from "../../../lib/subscriptions/usage";
+import { laTaiKhoanTest, TONG_LUOT_TOI_DA_TAI_KHOAN_TEST } from "../../../lib/quan-su/test-accounts";
 import { checkRateLimit } from "../../../lib/rate-limit";
 import type { CoinLineValue } from "../../../lib/luc-hao";
 
@@ -55,16 +56,29 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
   if (!locals.user) {
     return json({ error: "Vui lòng đăng nhập để xem luận giải." }, 401);
   }
+  const laTkTest = laTaiKhoanTest(locals.user.email);
   const hangYeuCau = hangYeuCauTheoCauHoi(question.pricing_tier);
-  if (!(await coQuyenTruyCap(locals.user.id, hangYeuCau, locals.user.isAdmin))) {
+  if (!laTkTest && !(await coQuyenTruyCap(locals.user.id, hangYeuCau, locals.user.isAdmin))) {
     const tenHang = hangYeuCau === "cao_cap" ? "Cao cấp" : "Cơ bản";
     return json({ error: `Câu hỏi này cần gói ${tenHang} đang hoạt động. Hãy đăng ký gói chính thức.` }, 403);
   }
 
-  // DÙNG THỬ KHÔNG ĐƯỢC HỎI QUÂN SƯ (anh Công quyết định 27/8/2026, xem dung-thu.ts) — chặn ở đây
-  // là lớp phòng thủ thứ 2 (endpoint tạo trial đã ngưng cấp mới), phòng trường hợp còn bản ghi
-  // subscriptions isTrial=true cũ từ lúc trial còn hoạt động (test nội bộ trước 27/8/2026).
-  if (locals.user.isAdmin !== true) {
+  // TÀI KHOẢN TEST (31/8/2026, xem test-accounts.ts): bỏ qua hẳn 2 lớp kiểm tra "gói thuê bao" bên
+  // dưới (không có bản ghi subscriptions nên "goi" luôn null với tài khoản này) — thay bằng đúng 1
+  // hạn mức TỔNG (không reset theo tháng) riêng, giữ tách biệt hoàn toàn khỏi hạn mức/tháng của gói
+  // trả tiền/dùng thử thật để không ảnh hưởng khách thật.
+  if (laTkTest) {
+    const daDung = await tongLuotDaDung(locals.user.id);
+    if (daDung >= TONG_LUOT_TOI_DA_TAI_KHOAN_TEST) {
+      return json(
+        { error: `Tài khoản test đã dùng hết ${TONG_LUOT_TOI_DA_TAI_KHOAN_TEST} lượt luận giải được cấp (đã dùng ${daDung}/${TONG_LUOT_TOI_DA_TAI_KHOAN_TEST}).` },
+        429,
+      );
+    }
+  } else if (locals.user.isAdmin !== true) {
+    // DÙNG THỬ KHÔNG ĐƯỢC HỎI QUÂN SƯ (anh Công quyết định 27/8/2026, xem dung-thu.ts) — chặn ở đây
+    // là lớp phòng thủ thứ 2 (endpoint tạo trial đã ngưng cấp mới), phòng trường hợp còn bản ghi
+    // subscriptions isTrial=true cũ từ lúc trial còn hoạt động (test nội bộ trước 27/8/2026).
     const goi = await layGoiDangHoatDong(locals.user.id);
     if (goi?.isTrial) {
       return json({ error: "Bản dùng thử không bao gồm tính năng hỏi Quân Sư (dùng AI thật) — vui lòng đăng ký gói chính thức." }, 403);
@@ -143,7 +157,7 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
     // bị khóa lại kèm gợi ý nâng cấp. Đọc GÓI THẬT của tài khoản (không phải pricing_tier của câu
     // hỏi) — 1 câu hỏi Cơ bản do khách gói Cao cấp hỏi vẫn phải thấy đủ hóa giải.
     let hoaGiaiBiKhoa = false;
-    if (locals.user.isAdmin !== true && result.luanAI && result.luanAI.phuong_phap_hoa_giai.length > 0) {
+    if (locals.user.isAdmin !== true && !laTkTest && result.luanAI && result.luanAI.phuong_phap_hoa_giai.length > 0) {
       const goiThat = await layGoiDangHoatDong(locals.user.id);
       if (goiThat?.tier !== "cao_cap") {
         hoaGiaiBiKhoa = true;

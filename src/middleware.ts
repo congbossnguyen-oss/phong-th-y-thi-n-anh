@@ -1,6 +1,7 @@
 import { defineMiddleware } from "astro:middleware";
 import { SESSION_COOKIE_NAME, validateSessionToken } from "./lib/auth/session";
 import { getClientIp } from "./lib/auth/client-ip";
+import { laTaiKhoanTest } from "./lib/quan-su/test-accounts";
 
 export const onRequest = defineMiddleware(async (context, next) => {
   context.locals.user = null;
@@ -25,15 +26,16 @@ export const onRequest = defineMiddleware(async (context, next) => {
     }
   }
 
-  // GIAI ĐOẠN THỬ NGHIỆM NỘI BỘ — cả khu Quân Sư (app trả phí) CHỈ mở cho admin. Khách thường (kể
-  // cả chưa đăng nhập) vào /quan-su/* bị đưa về trang chủ, coi như khu này chưa tồn tại. Cho phép
-  // test trên trang thật mà không lộ cho khách. KHI MỞ BÁN: xóa nguyên khối này (một chỗ duy nhất).
+  // GIAI ĐOẠN THỬ NGHIỆM NỘI BỘ — cả khu Quân Sư (app trả phí) CHỈ mở cho admin + danh sách tài
+  // khoản test (31/8/2026, xem test-accounts.ts). Khách thường (kể cả chưa đăng nhập) vào
+  // /quan-su/* bị đưa về trang chủ, coi như khu này chưa tồn tại. KHI MỞ BÁN: xóa nguyên khối này
+  // (một chỗ duy nhất) — nhớ xóa luôn phần tài khoản test ở luan.ts nếu đợt test đã kết thúc.
   //
   // KHÔNG chặn ở đây: /api/thong-bao/* (service worker + cron phải gọi được, không có đăng nhập) và
   // /api/quan-su/* (đã có auth riêng: đăng nhập + gói). Chỉ khóa các TRANG hiển thị của Quân Sư.
   const path = context.url.pathname;
   if (path === "/quan-su" || path.startsWith("/quan-su/")) {
-    if (!context.locals.user?.isAdmin) {
+    if (!context.locals.user?.isAdmin && !laTaiKhoanTest(context.locals.user?.email)) {
       return context.redirect("/");
     }
   }
