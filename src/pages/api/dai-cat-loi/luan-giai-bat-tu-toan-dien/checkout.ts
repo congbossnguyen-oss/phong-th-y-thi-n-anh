@@ -1,14 +1,14 @@
 import type { APIRoute } from "astro";
 import { taoDonCongCu } from "../../../../lib/payments/checkout-cong-cu";
 import { checkRateLimit } from "../../../../lib/rate-limit";
-import { docInput, jsonResponse, TOOL_SLUG_CO_BAN, TOOL_SLUG_NANG_CAO } from "./_chung";
+import { docInput, jsonResponse, TOOL_SLUG_TOAN_DIEN } from "./_chung";
 import { thongBaoLoiAnToan } from "../../../../lib/loi-an-toan";
 
 export const prerender = false;
 
 /**
- * Tạo đơn cho module Luận Giải Bát Tự Toàn Diện — 2 tầng độc lập (Cơ Bản / Nâng Cao), mỗi tầng 1
- * đơn riêng, mua thêm tầng kia sau vẫn được.
+ * Tạo đơn cho module Luận Giải Bát Tự Toàn Diện — 1 GÓI DUY NHẤT 700k, đủ 12 giai đoạn (gộp từ
+ * 2 tầng Cơ Bản/Nâng Cao cũ, xem lý do ở gia-cong-cu.ts).
  *
  * KHÁC MỌI module "tool" khác trong repo: BẮT BUỘC đăng nhập (SPEC mục 0.4) — báo cáo AI tốn nhiều
  * lệnh gọi, cache theo tài khoản để khách xem lại không mất phí, và quyền truy cập phải gắn chắc
@@ -26,11 +26,7 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
   if (!body || typeof body !== "object") return jsonResponse({ ok: false, error: "Dữ liệu gửi lên không hợp lệ." }, 400);
   const b = body as Record<string, unknown>;
 
-  const tang = b.tang;
-  if (tang !== "co_ban" && tang !== "nang_cao") {
-    return jsonResponse({ ok: false, error: "Tầng luận giải không hợp lệ." }, 400);
-  }
-  const toolSlug = tang === "co_ban" ? TOOL_SLUG_CO_BAN : TOOL_SLUG_NANG_CAO;
+  const toolSlug = TOOL_SLUG_TOAN_DIEN;
 
   const docKq = docInput(body);
   if (!docKq.ok) return jsonResponse({ ok: false, error: docKq.error }, 400);

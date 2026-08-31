@@ -1,7 +1,8 @@
 ---
-// TRANG "Luận Giải Bát Tự Toàn Diện" — 12 giai đoạn A-L, 3 tầng: Free (không AI) → Luận Cơ Bản (trả
-// phí lần 1) → Luận Nâng Cao (trả phí lần 2). 2 tầng trả phí BẮT BUỘC đăng nhập (khác mọi công cụ
-// khác trong repo — SPEC mục 0.4), quyền truy cập gắn theo TÀI KHOẢN, không theo orderCode.
+// TRANG "Luận Giải Bát Tự Toàn Diện" — 12 giai đoạn A-L, 2 tầng: Free (không AI) → Luận Toàn Diện
+// (1 gói duy nhất 700k, trả phí 1 lần — trước 1/9/2026 tách 2 tầng Cơ Bản/Nâng Cao, xem lý do gộp
+// ở gia-cong-cu.ts). Tầng trả phí BẮT BUỘC đăng nhập (khác mọi công cụ khác trong repo — SPEC mục
+// 0.4), quyền truy cập gắn theo TÀI KHOẢN, không theo orderCode.
 //
 // ⚠️ CHƯA PUBLISH: trang KHÔNG được gắn link ở bất kỳ menu/nav nào — chỉ truy cập qua URL trực tiếp
 // để anh Công test. Khi test xong, gỡ dòng này và thêm vào /dai-cat-loi + menu Công cụ.
@@ -20,63 +21,71 @@ import type { BatTuInput } from "../../lib/bat-tu";
 
 export const prerender = false;
 
-const TOOL_SLUG_CO_BAN = "luan-giai-bat-tu-co-ban" as const;
-const TOOL_SLUG_NANG_CAO = "luan-giai-bat-tu-nang-cao" as const;
-const GIA_CO_BAN = GIA_CONG_CU[TOOL_SLUG_CO_BAN];
-const GIA_NANG_CAO = GIA_CONG_CU[TOOL_SLUG_NANG_CAO];
+// Gói duy nhất 700k từ 1/9/2026 (trước đây tách Cơ Bản 300k / Nâng Cao 700k — gộp lại vì gây 2
+// bug: nút mua Nâng Cao bị ẩn nhầm khi tài khoản từng mua cho NGƯỜI KHÁC, và trang admin có thể
+// hiện đồng thời 2 lá số của 2 người khác nhau. Xem lý do đầy đủ ở gia-cong-cu.ts).
+const TOOL_SLUG_TOAN_DIEN = "luan-giai-bat-tu-toan-dien" as const;
+// 2 slug CŨ — không còn bán mới, chỉ dùng để nhận diện khách đã mua TRƯỚC 1/9/2026 (grandfather:
+// coi như đã mua đủ gói mới, không bắt mua lại — anh Công chốt 1/9/2026).
+const TOOL_SLUG_CO_BAN_CU = "luan-giai-bat-tu-co-ban" as const;
+const TOOL_SLUG_NANG_CAO_CU = "luan-giai-bat-tu-nang-cao" as const;
+const GIA_TOAN_DIEN = GIA_CONG_CU[TOOL_SLUG_TOAN_DIEN];
 
 const user = Astro.locals.user;
 
 let baoCaoCoBan: Awaited<ReturnType<typeof taoBaoCaoCoBan>> | null = null;
 let baoCaoNangCao: Awaited<ReturnType<typeof taoBaoCaoNangCao>> | null = null;
 let loiTinhBaoCao: string | null = null;
+// Tên + ngày sinh của đơn đang hiện ở khối admin — hiện rõ ra trên trang để không còn lẫn lộn lá số
+// của ai (bug báo 1/9/2026: "cứ lầm lẫn giữa ngày sinh của anh và ngày sinh của khách"), vì khối
+// admin luôn hiện đơn MUA GẦN NHẤT chứ không phải lá số vừa gõ ở form bên dưới.
+let donDangHienThi: { customerName: string; day: number; month: number; year: number; hour: number; minute?: number } | null = null;
 // Đã mua nhưng KHÔNG phải admin → không hiện báo cáo trực tiếp trên trang (đang tối ưu tốc độ hiển
 // thị, ~30s/lần tải là chưa đạt). Khách vẫn nhận đủ nội dung qua email (đã gửi tự động lúc thanh
 // toán xong, xem orders.ts). Admin (Công) vẫn xem trực tiếp trên trang để tự kiểm tra chất lượng.
-let coDonCoBanChuaHienThi = false;
-let coDonNangCaoChuaHienThi = false;
-// Vân tay (day/month/year/hour/minute/gender) của TOÀN BỘ lá số đã mua — form nhập lá số sống ở
-// CLIENT (không qua URL, cố ý để không lộ ngày sinh vào lịch sử trình duyệt/Referer), nên SSR
-// không biết trước khách sắp nhập lá số nào. Đẩy danh sách này xuống client để JS tự so khớp SAU
-// khi khách submit, quyết định hiện nút mua hay báo "đã mua" — bug đã gặp 31/8/2026: trước đây gate
-// "đã mua" tính 1 lần lúc SSR theo đơn MỚI NHẤT bất kể lá số nào, nên nhập lá số KHÁC (xem hộ người
-// khác) vẫn bị chặn không cho mua tiếp.
+let coDonChuaHienThi = false;
+// Vân tay (day/month/year/hour/minute/gender) của TOÀN BỘ lá số đã mua (gói mới + 2 slug cũ gộp
+// chung) — form nhập lá số sống ở CLIENT (không qua URL, cố ý để không lộ ngày sinh vào lịch sử
+// trình duyệt/Referer), nên SSR không biết trước khách sắp nhập lá số nào. Đẩy danh sách này xuống
+// client để JS tự so khớp SAU khi khách submit, quyết định hiện nút mua hay báo "đã mua" — bug đã
+// gặp 31/8/2026: trước đây gate "đã mua" tính 1 lần lúc SSR theo đơn MỚI NHẤT bất kể lá số nào, nên
+// nhập lá số KHÁC (xem hộ người khác) vẫn bị chặn không cho mua tiếp.
 type VanTayLaSo = { day: number; month: number; year: number; hour: number; minute: number; gender: string };
-let vanTayDaMuaCoBan: VanTayLaSo[] = [];
-let vanTayDaMuaNangCao: VanTayLaSo[] = [];
+let vanTayDaMua: VanTayLaSo[] = [];
 
 if (user) {
-  const donsCoBan = await getAllConfirmedToolOrdersForUser(user.id, TOOL_SLUG_CO_BAN);
-  const donsNangCao = await getAllConfirmedToolOrdersForUser(user.id, TOOL_SLUG_NANG_CAO);
-  const donCoBan = donsCoBan[0] ?? null; // gần nhất — dùng cho banner đầu trang + admin xem lại khi mới vào trang.
-  const donNangCao = donsNangCao[0] ?? null;
+  const [donsToanDien, donsCoBanCu, donsNangCaoCu] = await Promise.all([
+    getAllConfirmedToolOrdersForUser(user.id, TOOL_SLUG_TOAN_DIEN),
+    getAllConfirmedToolOrdersForUser(user.id, TOOL_SLUG_CO_BAN_CU),
+    getAllConfirmedToolOrdersForUser(user.id, TOOL_SLUG_NANG_CAO_CU),
+  ]);
+  const donsGop = [...donsToanDien, ...donsCoBanCu, ...donsNangCaoCu].sort(
+    (a, b) => b.createdAt.getTime() - a.createdAt.getTime(),
+  );
+  const donGanNhat = donsGop[0] ?? null; // gần nhất trong CẢ 3 nguồn — dùng cho banner + admin xem lại khi mới vào trang.
 
-  vanTayDaMuaCoBan = donsCoBan.flatMap((d) => (d.toolInputSnapshot ? [JSON.parse(d.toolInputSnapshot) as VanTayLaSo] : []));
-  vanTayDaMuaNangCao = donsNangCao.flatMap((d) => (d.toolInputSnapshot ? [JSON.parse(d.toolInputSnapshot) as VanTayLaSo] : []));
+  vanTayDaMua = donsGop.flatMap((d) => (d.toolInputSnapshot ? [JSON.parse(d.toolInputSnapshot) as VanTayLaSo] : []));
 
-  if (donCoBan?.toolInputSnapshot) coDonCoBanChuaHienThi = true;
-  if (donNangCao?.toolInputSnapshot) coDonNangCaoChuaHienThi = true;
+  if (donGanNhat?.toolInputSnapshot) {
+    coDonChuaHienThi = true;
+    const vt = JSON.parse(donGanNhat.toolInputSnapshot) as VanTayLaSo;
+    donDangHienThi = { customerName: donGanNhat.customerName, day: vt.day, month: vt.month, year: vt.year, hour: vt.hour, minute: vt.minute };
+  }
 
-  if (user.isAdmin) {
+  if (user.isAdmin && donGanNhat?.toolInputSnapshot) {
     try {
-      if (donCoBan?.toolInputSnapshot) {
-        const input = JSON.parse(donCoBan.toolInputSnapshot) as BatTuInput;
-        const key = hashLaSo(input);
-        baoCaoCoBan = cacheCoBan.get(key);
-        if (!baoCaoCoBan) {
-          baoCaoCoBan = await taoBaoCaoCoBan(input);
-          cacheCoBan.set(key, baoCaoCoBan);
-        }
-      }
-      if (donNangCao?.toolInputSnapshot) {
-        const input = JSON.parse(donNangCao.toolInputSnapshot) as BatTuInput;
-        const key = hashLaSo(input);
-        baoCaoNangCao = cacheNangCao.get(key);
-        if (!baoCaoNangCao) {
-          baoCaoNangCao = await taoBaoCaoNangCao(input);
-          cacheNangCao.set(key, baoCaoNangCao);
-        }
-      }
+      const input = JSON.parse(donGanNhat.toolInputSnapshot) as BatTuInput;
+      const key = hashLaSo(input);
+      baoCaoCoBan = cacheCoBan.get(key) ?? null;
+      baoCaoNangCao = cacheNangCao.get(key) ?? null;
+      const [tinhCoBan, tinhNangCao] = await Promise.all([
+        baoCaoCoBan ? Promise.resolve(baoCaoCoBan) : taoBaoCaoCoBan(input),
+        baoCaoNangCao ? Promise.resolve(baoCaoNangCao) : taoBaoCaoNangCao(input),
+      ]);
+      baoCaoCoBan = tinhCoBan;
+      baoCaoNangCao = tinhNangCao;
+      cacheCoBan.set(key, baoCaoCoBan);
+      cacheNangCao.set(key, baoCaoNangCao);
     } catch (err) {
       loiTinhBaoCao = err instanceof Error ? err.message : "Không tính được báo cáo.";
     }
@@ -94,7 +103,7 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
   <PageHero
     eyebrow="⭐ Dịch vụ VIP · Đang thử nghiệm"
     title="Luận Giải Bát Tự Toàn Diện"
-    description={`Báo cáo luận giải Bát Tự đầy đủ theo 12 giai đoạn — mở đầu miễn phí, Luận Cơ Bản ${dinhDangTien(GIA_CO_BAN)}, Luận Nâng Cao ${dinhDangTien(GIA_NANG_CAO)} (mua thêm sau vẫn được).`}
+    description={`Báo cáo luận giải Bát Tự đầy đủ theo 12 giai đoạn — mở đầu miễn phí, gói Luận Toàn Diện ${dinhDangTien(GIA_TOAN_DIEN)} nhận đủ nội dung, kèm PDF gửi email.`}
     breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Đại Cát Lợi", href: "/dai-cat-loi" }, { label: "Luận Giải Bát Tự Toàn Diện" }]}
   />
 
@@ -106,87 +115,61 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
         </div>
       )}
 
-      {/* --- Đã mua Cơ Bản nhưng KHÔNG phải admin: không hiện trực tiếp, báo đã gửi qua email --- */}
-      {coDonCoBanChuaHienThi && !baoCaoCoBan && (
+      {/* --- Đã mua nhưng KHÔNG phải admin: không hiện trực tiếp, báo đã gửi qua email --- */}
+      {coDonChuaHienThi && !baoCaoCoBan && !baoCaoNangCao && (
         <div class="mb-10 rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-6 text-sm text-(--color-ink-800)">
-          <p class="font-display text-lg font-bold text-(--color-ink-950)">✅ Đã mua Luận Cơ Bản</p>
+          <p class="font-display text-lg font-bold text-(--color-ink-950)">✅ Đã mua Luận Toàn Diện</p>
           <p class="mt-2">Bản luận giải đầy đủ (PDF) đã được gửi tới email tài khoản của bạn ngay sau khi thanh toán thành công. Vui lòng kiểm tra hộp thư (kể cả mục Spam/Quảng cáo).</p>
           {/* Phòng khi email chưa tới (mạng lỗi, rơi spam...) — tải trực tiếp không cần chờ email. */}
-          <a href="/api/dai-cat-loi/luan-giai-bat-tu-toan-dien/tai-pdf?tang=co_ban" class="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-(--color-gold-700) hover:underline">📄 Tải PDF</a>
-          {/* BUG đã sửa: nút mua Nâng Cao trước đây chỉ nằm trong khối báo cáo admin-only (baoCaoCoBan),
-              nên khách thường đã mua Cơ Bản không có cách nào bấm mua Nâng Cao trên trang. */}
-          {!coDonNangCaoChuaHienThi && (
-            <div class="mt-4 border-t border-(--color-gold-400)/30 pt-4">
-              <p>Bản Luận Nâng Cao sẽ đi sâu vào Thần Sát, gia đình - lục thân, sức khỏe, và trọn vẹn các giai đoạn vận trình từ nhỏ đến già.</p>
-              <Button id="ldbtd-mua-nang-cao" size="md" class="mt-3">Xem Luận Nâng Cao — {dinhDangTien(GIA_NANG_CAO)}</Button>
-            </div>
-          )}
+          <a href="/api/dai-cat-loi/luan-giai-bat-tu-toan-dien/tai-pdf" class="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-(--color-gold-700) hover:underline">📄 Tải PDF</a>
         </div>
       )}
 
-      {/* --- Đã có báo cáo Cơ Bản (chỉ admin xem trực tiếp trên trang) --- */}
-      {baoCaoCoBan && (
+      {/* --- Đã có báo cáo (chỉ admin xem trực tiếp trên trang) — gộp Cơ Bản + Nâng Cao thành 1 khối
+          đủ 12 giai đoạn. Hiện rõ TÊN + NGÀY SINH của đơn đang xem để không lẫn lộn lá số của ai
+          (đơn gần nhất có thể là của khách, không phải của admin đang gõ thử ở form bên dưới). --- */}
+      {(baoCaoCoBan || baoCaoNangCao) && (
         <section class="mb-10 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
           <div class="flex flex-wrap items-center justify-between gap-2">
-            <h2 class="font-display text-2xl font-bold text-(--color-ink-950)">Luận Cơ Bản</h2>
-            <a href="/api/dai-cat-loi/luan-giai-bat-tu-toan-dien/tai-pdf?tang=co_ban" class="inline-flex items-center gap-1.5 rounded-(--radius-control) border border-(--color-gold-400)/50 bg-(--color-gold-400)/10 px-3 py-1.5 text-xs font-medium text-(--color-gold-700)">📄 Tải PDF</a>
+            <h2 class="font-display text-2xl font-bold text-(--color-ink-950)">Luận Toàn Diện</h2>
+            <a href="/api/dai-cat-loi/luan-giai-bat-tu-toan-dien/tai-pdf" class="inline-flex items-center gap-1.5 rounded-(--radius-control) border border-(--color-gold-400)/50 bg-(--color-gold-400)/10 px-3 py-1.5 text-xs font-medium text-(--color-gold-700)">📄 Tải PDF</a>
           </div>
-          <p class="mt-2 text-xs text-(--color-ink-500)">{baoCaoCoBan.disclaimerDauBai}</p>
-          <div class="mt-4 grid grid-cols-2 gap-2 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4 text-sm sm:grid-cols-4">
-            {baoCaoCoBan.laSo.tuTru.map((t) => (
-              <div class="text-center">
-                <p class="text-xs text-(--color-ink-500)">{t.tru}</p>
-                <p class="font-bold text-(--color-ink-900)">{t.can} {t.chi}</p>
+          {donDangHienThi && (
+            <p class="mt-1 rounded-(--radius-control) bg-(--color-danger-500)/10 px-3 py-1.5 text-xs font-bold text-(--color-danger-500)">
+              ⚠️ Lá số của: {donDangHienThi.customerName} — sinh {donDangHienThi.day}/{donDangHienThi.month}/{donDangHienThi.year}, {donDangHienThi.hour}h{donDangHienThi.minute ? `${donDangHienThi.minute}` : "00"} (đơn mua gần nhất)
+            </p>
+          )}
+          {baoCaoCoBan && <p class="mt-2 text-xs text-(--color-ink-500)">{baoCaoCoBan.disclaimerDauBai}</p>}
+          {baoCaoCoBan && (
+            <>
+              <div class="mt-4 grid grid-cols-2 gap-2 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4 text-sm sm:grid-cols-4">
+                {baoCaoCoBan.laSo.tuTru.map((t) => (
+                  <div class="text-center">
+                    <p class="text-xs text-(--color-ink-500)">{t.tru}</p>
+                    <p class="font-bold text-(--color-ink-900)">{t.can} {t.chi}</p>
+                  </div>
+                ))}
               </div>
-            ))}
-          </div>
-          <div class="mt-3 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4 text-sm">
-            <p><span class="font-bold text-(--color-ink-900)">Nhật Chủ:</span> {baoCaoCoBan.laSo.nhatChu} — <span class="font-bold text-(--color-ink-900)">Vượng Suy:</span> {baoCaoCoBan.laSo.capDoVuongSuy}</p>
-            <p class="mt-1"><span class="font-bold text-(--color-ink-900)">Dụng Thần:</span> {baoCaoCoBan.laSo.dungThan} · <span class="font-bold text-(--color-ink-900)">Hỷ Thần:</span> {baoCaoCoBan.laSo.hyThan} · <span class="font-bold text-(--color-ink-900)">Kỵ Thần:</span> {baoCaoCoBan.laSo.kyThan}</p>
-            {baoCaoCoBan.laSo.dieuHauNote && <p class="mt-1 text-(--color-gold-700)">🌡️ Điều Hậu: {baoCaoCoBan.laSo.dieuHauNote}</p>}
-          </div>
+              <div class="mt-3 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4 text-sm">
+                <p><span class="font-bold text-(--color-ink-900)">Nhật Chủ:</span> {baoCaoCoBan.laSo.nhatChu} — <span class="font-bold text-(--color-ink-900)">Vượng Suy:</span> {baoCaoCoBan.laSo.capDoVuongSuy}</p>
+                <p class="mt-1"><span class="font-bold text-(--color-ink-900)">Dụng Thần:</span> {baoCaoCoBan.laSo.dungThan} · <span class="font-bold text-(--color-ink-900)">Hỷ Thần:</span> {baoCaoCoBan.laSo.hyThan} · <span class="font-bold text-(--color-ink-900)">Kỵ Thần:</span> {baoCaoCoBan.laSo.kyThan}</p>
+                {baoCaoCoBan.laSo.dieuHauNote && <p class="mt-1 text-(--color-gold-700)">🌡️ Điều Hậu: {baoCaoCoBan.laSo.dieuHauNote}</p>}
+              </div>
+            </>
+          )}
           <div class="mt-6 space-y-6" id="ldbtd-cobantoanbo">
-            {baoCaoCoBan.giaiDoan.length === 0 && (
+            {baoCaoCoBan && baoCaoCoBan.giaiDoan.length === 0 && (
               <p class="text-sm text-(--color-ink-600)">⚠️ Phần luận AI chưa chạy được (chưa cấu hình khoá AI trên máy chủ).</p>
             )}
-            {baoCaoCoBan.giaiDoan.map((gd, i) => (
+            {baoCaoCoBan?.giaiDoan.map((gd, i) => (
               <div>
                 <h3 class="font-display text-lg font-bold text-(--color-gold-600)">{gd.tieuDe}</h3>
                 <p id={`ldbtd-cb-p-${i}`} class="mt-1.5 whitespace-pre-line text-sm leading-relaxed text-(--color-ink-800)">{gd.noiDung}</p>
               </div>
             ))}
           </div>
-          <p class="mt-6 text-xs text-(--color-ink-500)">{baoCaoCoBan.disclaimerCuoiBai}</p>
-          {!coDonNangCaoChuaHienThi && (
-            <div class="mt-6 rounded-(--radius-control) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-4 text-sm text-(--color-ink-800)">
-              <p>{baoCaoCoBan.ctaNangCao}</p>
-              <Button id="ldbtd-mua-nang-cao" size="md" class="mt-3">Xem Luận Nâng Cao — {dinhDangTien(GIA_NANG_CAO)}</Button>
-            </div>
-          )}
-        </section>
-      )}
-
-      {/* --- Đã mua Nâng Cao nhưng KHÔNG phải admin: không hiện trực tiếp, báo đã gửi qua email --- */}
-      {coDonNangCaoChuaHienThi && !baoCaoNangCao && (
-        <div class="mb-10 rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-6 text-sm text-(--color-ink-800)">
-          <p class="font-display text-lg font-bold text-(--color-ink-950)">✅ Đã mua Luận Nâng Cao</p>
-          <p class="mt-2">Bản luận giải đầy đủ (PDF) đã được gửi tới email tài khoản của bạn ngay sau khi thanh toán thành công. Vui lòng kiểm tra hộp thư (kể cả mục Spam/Quảng cáo).</p>
-          <a href="/api/dai-cat-loi/luan-giai-bat-tu-toan-dien/tai-pdf?tang=nang_cao" class="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-(--color-gold-700) hover:underline">📄 Tải PDF</a>
-        </div>
-      )}
-
-      {/* --- Đã có báo cáo Nâng Cao (chỉ admin xem trực tiếp trên trang) --- */}
-      {baoCaoNangCao && (
-        <section class="mb-10 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
-          <div class="flex flex-wrap items-center justify-between gap-2">
-            <h2 class="font-display text-2xl font-bold text-(--color-ink-950)">Luận Nâng Cao</h2>
-            <a href="/api/dai-cat-loi/luan-giai-bat-tu-toan-dien/tai-pdf?tang=nang_cao" class="inline-flex items-center gap-1.5 rounded-(--radius-control) border border-(--color-gold-400)/50 bg-(--color-gold-400)/10 px-3 py-1.5 text-xs font-medium text-(--color-gold-700)">📄 Tải PDF</a>
-          </div>
           <div class="mt-6 space-y-6" id="ldbtd-nangcaotoanbo">
-            {baoCaoNangCao.giaiDoan.length === 0 && (
-              <p class="text-sm text-(--color-ink-600)">⚠️ Phần luận AI chưa chạy được (chưa cấu hình khoá AI trên máy chủ).</p>
-            )}
-            {baoCaoNangCao.giaiDoan.map((gd, i) => (
+            {baoCaoNangCao?.giaiDoan.map((gd, i) => (
               <div>
                 <h3 class="font-display text-lg font-bold text-(--color-gold-600)">{gd.tieuDe}</h3>
                 <p id={`ldbtd-nc-p-${i}`} class="mt-1.5 whitespace-pre-line text-sm leading-relaxed text-(--color-ink-800)">{gd.noiDung}</p>
@@ -207,14 +190,14 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
               </div>
             ))}
           </div>
-          <p class="mt-6 text-xs text-(--color-ink-500)">{baoCaoNangCao.disclaimerCuoiBai}</p>
+          <p class="mt-6 text-xs text-(--color-ink-500)">{(baoCaoNangCao ?? baoCaoCoBan)?.disclaimerCuoiBai}</p>
         </section>
       )}
 
       {/* --- Form nhập ngày sinh + xem trước Free --- */}
       <section class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
         <h2 class="font-display text-xl font-bold text-(--color-ink-950)">
-          {coDonCoBanChuaHienThi ? "Lập lá số khác" : "Lập lá số — xem gợi mở miễn phí"}
+          {coDonChuaHienThi ? "Lập lá số khác" : "Lập lá số — xem gợi mở miễn phí"}
         </h2>
         <form id="ldbtd-form" class="mt-4 flex flex-col gap-4">
           <DateSelect idPrefix="ldbtd-sinh" label="Ngày sinh (dương lịch)" required yearsBack={90} yearsForward={0} />
@@ -272,15 +255,15 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
             )}
             {user && (
               <div id="ldbtd-khoi-mua">
-                <MaKhuyenMai idPrefix="ldbtd-ma" toolSlug={TOOL_SLUG_CO_BAN} giaGoc={GIA_CO_BAN} />
-                <Button id="ldbtd-mua-co-ban" size="lg" class="mt-4 w-full sm:w-auto">Xem Luận Cơ Bản — {dinhDangTien(GIA_CO_BAN)}</Button>
+                <MaKhuyenMai idPrefix="ldbtd-ma" toolSlug={TOOL_SLUG_TOAN_DIEN} giaGoc={GIA_TOAN_DIEN} />
+                <Button id="ldbtd-mua-toan-dien" size="lg" class="mt-4 w-full sm:w-auto">Xem Luận Toàn Diện — {dinhDangTien(GIA_TOAN_DIEN)}</Button>
               </div>
             )}
             {/* Ẩn mặc định — JS chỉ hiện khi lá số vừa xem trước KHỚP đúng 1 đơn đã mua (so ở client vì
                 form nhập lá số không qua URL, SSR không biết trước khách sắp nhập lá số nào). */}
             {user && (
               <div id="ldbtd-da-mua-lasos-nay" class="hidden text-sm text-(--color-ink-700)">
-                <p class="font-bold text-(--color-ink-950)">✅ Đã mua Luận Cơ Bản cho lá số này</p>
+                <p class="font-bold text-(--color-ink-950)">✅ Đã mua Luận Toàn Diện cho lá số này</p>
                 <p class="mt-1">Bản luận giải đầy đủ (PDF) đã được gửi tới email tài khoản của bạn. Vui lòng kiểm tra hộp thư (kể cả mục Spam/Quảng cáo).</p>
               </div>
             )}
@@ -301,10 +284,9 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
   </Container>
 </BaseLayout>
 
-<script define:vars={{ daDangNhap: !!user, vanTayDaMuaCoBan, vanTayDaMuaNangCao }}>
+<script define:vars={{ daDangNhap: !!user, vanTayDaMua }}>
   window.__ldbtdDaDangNhap = daDangNhap;
-  window.__ldbtdVanTayCoBan = vanTayDaMuaCoBan;
-  window.__ldbtdVanTayNangCao = vanTayDaMuaNangCao;
+  window.__ldbtdVanTay = vanTayDaMua;
 </script>
 <script>
   import { readDateSelects } from "../../lib/date-select";
@@ -420,8 +402,7 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
     const orderCodeEl = document.getElementById("ldbtd-order-code")!;
     const trangThaiEl = document.getElementById("ldbtd-trang-thai")!;
     const soTienEl = document.getElementById("ldbtd-so-tien")!;
-    const nutMuaCoBan = document.getElementById("ldbtd-mua-co-ban") as HTMLButtonElement | null;
-    const nutMuaNangCao = document.getElementById("ldbtd-mua-nang-cao") as HTMLButtonElement | null;
+    const nutMuaToanDien = document.getElementById("ldbtd-mua-toan-dien") as HTMLButtonElement | null;
 
     let pollTimer: ReturnType<typeof setInterval> | null = null;
     let dangHoi = false;
@@ -457,7 +438,7 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
     const khoiMuaEl = document.getElementById("ldbtd-khoi-mua");
     const daMuaLaSoNayEl = document.getElementById("ldbtd-da-mua-lasos-nay");
     function capNhatTrangThaiDaMua(dauVao: Record<string, unknown>) {
-      const daMua = khopVanTay(dauVao, (window as unknown as { __ldbtdVanTayCoBan: VanTay[] }).__ldbtdVanTayCoBan ?? []);
+      const daMua = khopVanTay(dauVao, (window as unknown as { __ldbtdVanTay: VanTay[] }).__ldbtdVanTay ?? []);
       khoiMuaEl?.classList.toggle("hidden", daMua);
       daMuaLaSoNayEl?.classList.toggle("hidden", !daMua);
     }
@@ -480,11 +461,11 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
       }
     }
 
-    async function muaTang(tang: "co_ban" | "nang_cao") {
+    async function mua() {
       const dauVao = docDauVao();
       if (!dauVao) return;
 
-      const payload = { ...dauVao, tang, maKhuyenMai: doc("ldbtd-ma-input") || undefined };
+      const payload = { ...dauVao, maKhuyenMai: doc("ldbtd-ma-input") || undefined };
       dangChayEl.classList.remove("hidden");
       loiEl.classList.add("hidden");
       try {
@@ -511,8 +492,7 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
       }
     }
 
-    nutMuaCoBan?.addEventListener("click", () => muaTang("co_ban"));
-    nutMuaNangCao?.addEventListener("click", () => muaTang("nang_cao"));
+    nutMuaToanDien?.addEventListener("click", () => mua());
 
     form.addEventListener("submit", async (e) => {
       e.preventDefault();

@@ -2,7 +2,7 @@ import type { APIRoute } from "astro";
 import { docInput, jsonResponse } from "./_chung";
 import { checkRateLimit } from "../../../../lib/rate-limit";
 import { laSoVaPhanTich } from "../../../../lib/luan-giai-toan-dien/orchestrator";
-import { taoGoiMoFree } from "../../../../lib/luan-giai-toan-dien/free-template";
+import { taoGoiMoFree, taoDuLieuDoHinhFree } from "../../../../lib/luan-giai-toan-dien/free-template";
 
 export const prerender = false;
 
@@ -22,6 +22,7 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   try {
     const { chart, analysis } = laSoVaPhanTich(docKq.input);
     const goiMo = taoGoiMoFree(chart, analysis);
+    const doHinh = taoDuLieuDoHinhFree(chart, analysis, docKq.input.year);
     return jsonResponse({
       ok: true,
       goiMo,
@@ -30,7 +31,11 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
         nhatChu: `${chart.day.can} (${chart.nhatChu.nguHanh}, ${chart.nhatChu.amDuong})`,
         capDoVuongSuy: analysis.vuongSuy.capDo,
         dungThan: analysis.dungThan.dungThan,
+        hyThan: analysis.dungThan.hyThan,
+        kyThan: analysis.dungThan.kyThan,
+        dieuHauNote: analysis.dungThan.dieuHauNote ?? null,
       },
+      doHinh,
     }, 200);
   } catch (err) {
     return jsonResponse({ ok: false, error: err instanceof Error ? err.message : "Không lập được lá số." }, 400);

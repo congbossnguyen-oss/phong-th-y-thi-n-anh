@@ -4,6 +4,9 @@
  */
 import type { BatTuInput } from "../../../../lib/bat-tu";
 
+/** Gói duy nhất bán từ 1/9/2026 — 700k, đủ 12 giai đoạn (trước đây tách Cơ Bản/Nâng Cao). */
+export const TOOL_SLUG_TOAN_DIEN = "luan-giai-bat-tu-toan-dien" as const;
+/** 2 slug CŨ — không còn bán mới, chỉ dùng để nhận diện đơn cũ (grandfather quyền truy cập đủ). */
 export const TOOL_SLUG_CO_BAN = "luan-giai-bat-tu-co-ban" as const;
 export const TOOL_SLUG_NANG_CAO = "luan-giai-bat-tu-nang-cao" as const;
 

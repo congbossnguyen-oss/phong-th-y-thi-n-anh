@@ -56,6 +56,16 @@ describe("bảng giá — khoá hành vi", () => {
     }
   });
 
+  it("Luận Giải Bát Tự Toàn Diện là 1 gói duy nhất 700k (gộp từ 1/9/2026, thay Cơ Bản/Nâng Cao)", () => {
+    expect(GIA_CONG_CU["luan-giai-bat-tu-toan-dien"]).toBe(700000);
+    expect(dangKhoaThuNghiem("luan-giai-bat-tu-toan-dien"), "gói mới không được khoá").toBe(false);
+  });
+
+  it("Luận Giải Tử Vi là 1 gói duy nhất 500k (gộp từ 1/9/2026, thay Cơ Bản/Nâng Cao)", () => {
+    expect(GIA_CONG_CU["luan-giai-tu-vi-toan-dien"]).toBe(500000);
+    expect(dangKhoaThuNghiem("luan-giai-tu-vi-toan-dien"), "gói mới không được khoá").toBe(false);
+  });
+
   it("module KHÁC không bị khoá nhầm", () => {
     for (const slug of ["hop-hon", "xem-ngay-cao-cap", "trach-nhat-sinh-no", "ky-mon-hoi-dap"] as ToolSlug[]) {
       expect(dangKhoaThuNghiem(slug), `${slug} KHÔNG được khoá`).toBe(false);

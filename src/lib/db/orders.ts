@@ -16,8 +16,10 @@ import {
   sendKyMonMenhPdfEmail,
   sendBatTuToanDienCoBanPdfEmail,
   sendBatTuToanDienNangCaoPdfEmail,
+  sendBatTuToanDienPdfEmail,
   sendLuanGiaiTuViCoBanPdfEmail,
   sendLuanGiaiTuViNangCaoPdfEmail,
+  sendLuanGiaiTuViToanDienPdfEmail,
 } from "../email/send";
 import { taoHoSoTangLe, type DauVaoHoSo } from "../dai-cat-loi/tao-ho-so-tang-le";
 import { taoHoSoNghe, type NgheInput } from "../nghe-nghiep/tao-ho-so-nghe";
@@ -30,7 +32,7 @@ import { generateHopHonPdf } from "../dai-cat-loi/hop-hon-pdf";
 import { lapLaBan, luanGiaiMenh, luanGiaiMenhChiTiet } from "../kymon";
 import { generateKyMonMenhPdf } from "../dai-cat-loi/ky-mon-menh-pdf";
 import { taoBaoCaoCoBan, taoBaoCaoNangCao } from "../luan-giai-toan-dien/orchestrator";
-import { generateBatTuCoBanPdf, generateBatTuNangCaoPdf } from "../dai-cat-loi/bat-tu-toan-dien-pdf";
+import { generateBatTuCoBanPdf, generateBatTuNangCaoPdf, generateBatTuToanDienPdf } from "../dai-cat-loi/bat-tu-toan-dien-pdf";
 import type { BatTuInput } from "../bat-tu";
 import { taoLuanGiaiTuVi, type LuanGiaiTuViInput } from "../tu-vi/luan-giai/taoLuanGiaiTuVi";
 import { generateTuViCoBanPdf, generateTuViNangCaoPdf } from "../tu-vi/luan-giai/pdf";
@@ -599,6 +601,9 @@ async function _markOrderPaidAndFulfillNoiBo(orderId: string) {
     }
 
     // Luận Giải Bát Tự Toàn Diện — Nâng Cao: cùng logic như Cơ Bản ở trên.
+    // ⚠️ 2 nhánh Cơ Bản/Nâng Cao ở trên KHÔNG còn tạo được đơn mới từ 1/9/2026 (checkout chỉ tạo
+    // slug "luan-giai-bat-tu-toan-dien" ở nhánh dưới) — giữ lại 2 nhánh này CHỈ để không vỡ nếu có
+    // đơn cũ đang chờ webhook xác nhận đúng lúc chuyển đổi, không xoá vì vô hại.
     if (order.toolSlug === "luan-giai-bat-tu-nang-cao" && order.customerEmail && order.toolInputSnapshot) {
       try {
         const input = JSON.parse(order.toolInputSnapshot) as BatTuInput;
@@ -612,6 +617,24 @@ async function _markOrderPaidAndFulfillNoiBo(orderId: string) {
         });
       } catch (err) {
         console.error(`[luan-giai-bat-tu-nang-cao] Lỗi dựng/gửi PDF cho đơn ${order.orderCode}:`, err);
+      }
+    }
+
+    // Luận Giải Bát Tự Toàn Diện — gói duy nhất 700k (1/9/2026, thay 2 tầng Cơ Bản/Nâng Cao ở
+    // trên): tính đủ 12 giai đoạn (2 hàm chạy song song, độc lập nhau), gộp 1 PDF, gửi 1 email.
+    if (order.toolSlug === "luan-giai-bat-tu-toan-dien" && order.customerEmail && order.toolInputSnapshot) {
+      try {
+        const input = JSON.parse(order.toolInputSnapshot) as BatTuInput;
+        const [baoCaoCoBan, baoCaoNangCao] = await Promise.all([taoBaoCaoCoBan(input), taoBaoCaoNangCao(input)]);
+        const pdf = await generateBatTuToanDienPdf(baoCaoCoBan, baoCaoNangCao, order.customerName);
+        await sendBatTuToanDienPdfEmail({
+          to: order.customerEmail,
+          orderCode: order.orderCode,
+          customerName: order.customerName,
+          pdfBytes: pdf,
+        });
+      } catch (err) {
+        console.error(`[luan-giai-bat-tu-toan-dien] Lỗi dựng/gửi PDF cho đơn ${order.orderCode}:`, err);
       }
     }
 
@@ -640,6 +663,8 @@ async function _markOrderPaidAndFulfillNoiBo(orderId: string) {
 
     // Luận Giải Tử Vi — Nâng Cao: taoLuanGiaiTuVi() tự đảm bảo Cơ Bản đã tính (cache hoặc gọi mới)
     // trước khi ghép Nâng Cao — PDF xuất ra là "Cơ Bản đầy đủ + Nâng Cao nối tiếp" trong 1 file.
+    // ⚠️ Nhánh này KHÔNG còn tạo được đơn mới từ 1/9/2026 (checkout chỉ tạo slug "…-toan-dien" ở
+    // dưới) — giữ lại chỉ để không vỡ nếu có đơn cũ đang chờ webhook xác nhận đúng lúc chuyển đổi.
     if (order.toolSlug === "luan-giai-tu-vi-nang-cao" && order.customerEmail && order.toolInputSnapshot) {
       try {
         const input = JSON.parse(order.toolInputSnapshot) as Omit<LuanGiaiTuViInput, "goi">;
@@ -657,6 +682,28 @@ async function _markOrderPaidAndFulfillNoiBo(orderId: string) {
         }
       } catch (err) {
         console.error(`[luan-giai-tu-vi-nang-cao] Lỗi dựng/gửi PDF cho đơn ${order.orderCode}:`, err);
+      }
+    }
+
+    // Luận Giải Tử Vi — gói duy nhất 500k (1/9/2026, thay 2 tầng Cơ Bản/Nâng Cao ở trên): luôn tính
+    // "nang_cao" vì taoLuanGiaiTuVi() đã tự ghép sẵn Cơ Bản + Nâng Cao trong kết quả đó.
+    if (order.toolSlug === "luan-giai-tu-vi-toan-dien" && order.customerEmail && order.toolInputSnapshot) {
+      try {
+        const input = JSON.parse(order.toolInputSnapshot) as Omit<LuanGiaiTuViInput, "goi">;
+        const kq = await taoLuanGiaiTuVi({ ...input, goi: "nang_cao" });
+        if (kq.hopLe && kq.coBan && kq.nangCao && kq.duLieu) {
+          const pdf = await generateTuViNangCaoPdf(kq.coBan, kq.nangCao, kq.duLieu, order.customerName);
+          await sendLuanGiaiTuViToanDienPdfEmail({
+            to: order.customerEmail,
+            orderCode: order.orderCode,
+            customerName: order.customerName,
+            pdfBytes: pdf,
+          });
+        } else {
+          console.error(`[luan-giai-tu-vi-toan-dien] Không tính được luận giải cho đơn ${order.orderCode}: ${kq.loi ?? "AI chưa trả kết quả"}`);
+        }
+      } catch (err) {
+        console.error(`[luan-giai-tu-vi-toan-dien] Lỗi dựng/gửi PDF cho đơn ${order.orderCode}:`, err);
       }
     }
   }
