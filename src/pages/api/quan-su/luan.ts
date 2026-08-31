@@ -7,7 +7,7 @@ import type { DoiTuongHoi } from "../../../lib/quan-su/divination";
 import { getQuestion } from "../../../lib/quan-su";
 import { coQuyenTruyCap, hangYeuCauTheoCauHoi, layGoiDangHoatDong } from "../../../lib/subscriptions/access";
 import { conLuotHoiKhong, ghiNhanLuotHoi, tongLuotDaDung } from "../../../lib/subscriptions/usage";
-import { laTaiKhoanTest, TONG_LUOT_TOI_DA_TAI_KHOAN_TEST } from "../../../lib/quan-su/test-accounts";
+import { duocKhuyenMai, TONG_LUOT_MIEN_PHI_KHUYEN_MAI } from "../../../lib/quan-su/khuyen-mai-luan-giai";
 import { checkRateLimit } from "../../../lib/rate-limit";
 import type { CoinLineValue } from "../../../lib/luc-hao";
 
@@ -56,22 +56,21 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
   if (!locals.user) {
     return json({ error: "Vui lòng đăng nhập để xem luận giải." }, 401);
   }
-  const laTkTest = laTaiKhoanTest(locals.user.email);
+  // KHUYẾN MÃI 20 tài khoản đăng ký sớm nhất (31/8/2026, xem khuyen-mai-luan-giai.ts) — được luận
+  // giải MIỄN PHÍ (không cần gói thuê bao) trong hạn mức TỔNG riêng, tách biệt hoàn toàn khỏi hạn
+  // mức/tháng của gói trả tiền/dùng thử thật.
+  const coKhuyenMai = await duocKhuyenMai(locals.user.id);
   const hangYeuCau = hangYeuCauTheoCauHoi(question.pricing_tier);
-  if (!laTkTest && !(await coQuyenTruyCap(locals.user.id, hangYeuCau, locals.user.isAdmin))) {
+  if (!coKhuyenMai && !(await coQuyenTruyCap(locals.user.id, hangYeuCau, locals.user.isAdmin))) {
     const tenHang = hangYeuCau === "cao_cap" ? "Cao cấp" : "Cơ bản";
     return json({ error: `Câu hỏi này cần gói ${tenHang} đang hoạt động. Hãy đăng ký gói chính thức.` }, 403);
   }
 
-  // TÀI KHOẢN TEST (31/8/2026, xem test-accounts.ts): bỏ qua hẳn 2 lớp kiểm tra "gói thuê bao" bên
-  // dưới (không có bản ghi subscriptions nên "goi" luôn null với tài khoản này) — thay bằng đúng 1
-  // hạn mức TỔNG (không reset theo tháng) riêng, giữ tách biệt hoàn toàn khỏi hạn mức/tháng của gói
-  // trả tiền/dùng thử thật để không ảnh hưởng khách thật.
-  if (laTkTest) {
+  if (coKhuyenMai) {
     const daDung = await tongLuotDaDung(locals.user.id);
-    if (daDung >= TONG_LUOT_TOI_DA_TAI_KHOAN_TEST) {
+    if (daDung >= TONG_LUOT_MIEN_PHI_KHUYEN_MAI) {
       return json(
-        { error: `Tài khoản test đã dùng hết ${TONG_LUOT_TOI_DA_TAI_KHOAN_TEST} lượt luận giải được cấp (đã dùng ${daDung}/${TONG_LUOT_TOI_DA_TAI_KHOAN_TEST}).` },
+        { error: `Bạn đã dùng hết ${TONG_LUOT_MIEN_PHI_KHUYEN_MAI} lượt luận giải miễn phí (đã dùng ${daDung}/${TONG_LUOT_MIEN_PHI_KHUYEN_MAI}). Vui lòng đăng ký gói chính thức để tiếp tục.` },
         429,
       );
     }
@@ -157,7 +156,7 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
     // bị khóa lại kèm gợi ý nâng cấp. Đọc GÓI THẬT của tài khoản (không phải pricing_tier của câu
     // hỏi) — 1 câu hỏi Cơ bản do khách gói Cao cấp hỏi vẫn phải thấy đủ hóa giải.
     let hoaGiaiBiKhoa = false;
-    if (locals.user.isAdmin !== true && !laTkTest && result.luanAI && result.luanAI.phuong_phap_hoa_giai.length > 0) {
+    if (locals.user.isAdmin !== true && !coKhuyenMai && result.luanAI && result.luanAI.phuong_phap_hoa_giai.length > 0) {
       const goiThat = await layGoiDangHoatDong(locals.user.id);
       if (goiThat?.tier !== "cao_cap") {
         hoaGiaiBiKhoa = true;
