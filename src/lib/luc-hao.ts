@@ -973,3 +973,25 @@ export function seriTienCast(serial: string, input: CastInput): FullCastResult {
 export function soDienThoaiCast(phone: string, input: CastInput): FullCastResult {
   return queFromNumberString(phone, input, "Số điện thoại");
 }
+
+// --- Phương pháp 5: Lập quẻ bằng 3 số tự nhiên — KHÁC seri tiền/số điện thoại ở trên: đây là 3 chữ
+// số ĐỘC LẬP (không chia nửa, không cộng tổng). Số thứ nhất :8 = quẻ thượng, số thứ hai :8 = quẻ hạ,
+// số thứ ba :6 = hào động — đúng theo yêu cầu gốc (Công, 29/8/2026), verify khớp ví dụ "768" → Cấn
+// (thượng) + Khảm (hạ) = Sơn Thủy Mông, hào động 2 (8 mod 6 = 2).
+export function queTu3SoCast(raw: string, input: CastInput): FullCastResult {
+  const digits = raw.trim();
+  if (!/^\d{3}$/.test(digits)) throw new Error("Vui lòng nhập đúng 3 chữ số từ 0 đến 9.");
+  const [d1, d2, d3] = digits.split("").map(Number);
+
+  let queThuong = d1 % 8;
+  if (queThuong === 0) queThuong = 8;
+  let queHa = d2 % 8;
+  if (queHa === 0) queHa = 8;
+  let haoDong = d3 % 6;
+  if (haoDong === 0) haoDong = 6;
+
+  const upper = trigramById(queThuong);
+  const lower = trigramById(queHa);
+  const note = `3 số tự nhiên "${digits}" — số 1 "${d1}" (quẻ thượng số ${queThuong}), số 2 "${d2}" (quẻ hạ số ${queHa}), số 3 "${d3}" (hào động số ${haoDong}).`;
+  return finalizeCast(lower, upper, [haoDong], input, note);
+}

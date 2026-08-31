@@ -60,6 +60,21 @@ describe("Orchestrator — chạy đầu-cuối", () => {
     await expect(runQuanSu({ question_id: "khong-co-that", tosses: TOSSES, boQuaAI: true })).rejects.toThrow();
   });
 
+  it("gieo quẻ bằng 3 số tự nhiên (768) → Sơn Thủy Mông, hào động 2 (đúng ví dụ gốc)", async () => {
+    const r = await runQuanSu({ question_id: "xin-viec", castingMethod: "3-so", soTuNhien: "768", boQuaAI: true });
+    expect(r.que.chinh.upper.name).toBe("Cấn");
+    expect(r.que.chinh.lower.name).toBe("Khảm");
+    expect(r.que.chinh.name).toBe("Sơn Thủy Mông");
+    expect(r.que.dongPositions).toEqual([2]);
+  });
+
+  it("3 số tự nhiên thiếu/sai định dạng → báo lỗi rõ ràng", async () => {
+    await expect(runQuanSu({ question_id: "xin-viec", castingMethod: "3-so", soTuNhien: "12", boQuaAI: true })).rejects.toThrow(
+      /3 chữ số/,
+    );
+    await expect(runQuanSu({ question_id: "xin-viec", castingMethod: "3-so", boQuaAI: true })).rejects.toThrow(/3 chữ số/);
+  });
+
   it("hỏi sức khỏe cho cha/mẹ (doiTuong) → chấm theo Phụ Mẫu, KHÔNG chạy vận trình của người đăng nhập", async () => {
     // Có ngaySinh (hồ sơ người dùng) nhưng doiTuong khác chính mình → vanTrinh phải null, vì vận
     // trình Bát Tự tính từ ngày sinh CHỦ TÀI KHOẢN, không phải của cha/mẹ đang được hỏi tới.

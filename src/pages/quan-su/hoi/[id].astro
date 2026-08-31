@@ -73,7 +73,7 @@ const choDoiTuongKhac = dungThanHintFor(question.category).kind === "the-hao";
           )}
 
           <p class="qs-eyebrow">Bước 3 · Cách lập quẻ</p>
-          <p class="qs-sub">Chọn 1 trong 3 cách lập quẻ Kinh Dịch — kết quả luận giải như nhau, chỉ khác cách nhập.</p>
+          <p class="qs-sub">Chọn 1 trong 4 cách lập quẻ Kinh Dịch — kết quả luận giải như nhau, chỉ khác cách nhập.</p>
           <div class="qs-methods" id="qs-methods">
             <button type="button" class="qs-method active" data-method="gieo-tay">
               <span class="ti">Gieo đồng xu</span>
@@ -87,12 +87,22 @@ const choDoiTuongKhac = dungThanHintFor(question.category).kind === "the-hao";
               <span class="ti">Seri tiền</span>
               <span class="de">Tĩnh tâm, rút 1 tờ tiền, nhập số seri</span>
             </button>
+            <button type="button" class="qs-method" data-method="3-so">
+              <span class="ti">3 số tự nhiên</span>
+              <span class="de">Tĩnh tâm, tự chọn hoặc nhập ngẫu nhiên đúng 3 chữ số từ 0-9</span>
+            </button>
           </div>
 
           <div class="qs-field qs-hidden" id="qs-seri-field">
             <label for="f-seri-tien">Seri tiền</label>
             <input class="qs-input" id="f-seri-tien" type="text" inputmode="numeric" placeholder="Ví dụ: AB 12345678" />
             <div class="help">Tĩnh tâm nghĩ về việc đang phân vân, rút ngẫu nhiên 1 tờ tiền đang có trong người, rồi nhập đúng dãy số seri trên tờ đó.</div>
+          </div>
+
+          <div class="qs-field qs-hidden" id="qs-3so-field">
+            <label for="f-3-so">3 số tự nhiên</label>
+            <input class="qs-input" id="f-3-so" type="text" inputmode="numeric" maxlength="3" placeholder="Ví dụ: 768" />
+            <div class="help">Tĩnh tâm nghĩ về việc đang phân vân, rồi tự chọn hoặc nhập ngẫu nhiên đúng 3 chữ số từ 0 đến 9 (số thứ nhất = quẻ thượng, số thứ hai = quẻ hạ, số thứ ba = hào động).</div>
           </div>
 
           <p class="qs-eyebrow">Bước 4 · An quẻ</p>
@@ -119,6 +129,7 @@ const choDoiTuongKhac = dungThanHintFor(question.category).kind === "the-hao";
             const ZALO_HREF = resultEl?.dataset.zalo || "";
             const methodsEl = document.getElementById("qs-methods");
             const seriField = document.getElementById("qs-seri-field");
+            const so3Field = document.getElementById("qs-3so-field");
             const stepSub = document.getElementById("qs-step-sub");
             let castingMethod = "gieo-tay";
             const HAO_TEN = { 6: "Thượng", 5: "Ngũ", 4: "Tứ", 3: "Tam", 2: "Nhị", 1: "Sơ" };
@@ -127,6 +138,7 @@ const choDoiTuongKhac = dungThanHintFor(question.category).kind === "the-hao";
               "gieo-tay": "Thành tâm nghĩ về việc muốn hỏi, tự gieo 3 đồng xu (hoặc vật tương đương) 6 lần từ hào 1 đến hào 6, rồi chọn đúng Âm/Dương và đánh dấu hào động (nếu có) vào bảng dưới.",
               "mai-hoa": "Quân Sư lập quẻ theo đúng thời điểm anh/chị bấm — không cần thao tác gì thêm.",
               "seri-tien": "Tĩnh tâm nghĩ về điều anh/chị đang phân vân, rút ngẫu nhiên 1 tờ tiền, rồi nhập seri của tờ đó.",
+              "3-so": "Tĩnh tâm nghĩ về điều anh/chị đang phân vân, rồi tự chọn hoặc nhập ngẫu nhiên đúng 3 chữ số từ 0 đến 9.",
             };
             const METHOD_BTN_LABEL = { "gieo-tay": "Xem kết quả" };
 
@@ -184,6 +196,7 @@ const choDoiTuongKhac = dungThanHintFor(question.category).kind === "the-hao";
               btn.classList.add("active");
               castingMethod = btn.dataset.method;
               seriField.classList.toggle("qs-hidden", castingMethod !== "seri-tien");
+              so3Field.classList.toggle("qs-hidden", castingMethod !== "3-so");
               resultEl.classList.add("qs-hidden");
               laiBtn.style.display = "none";
               gieoBtn.textContent = METHOD_BTN_LABEL[castingMethod] || "Lập quẻ";
@@ -212,6 +225,7 @@ const choDoiTuongKhac = dungThanHintFor(question.category).kind === "the-hao";
                     castingMethod: opts.castingMethod,
                     tosses: opts.tosses,
                     seriTien: opts.seriTien,
+                    soTuNhien: opts.soTuNhien,
                     moTa: moTaEl ? moTaEl.value : undefined,
                     doiTuong: doiTuongEl ? doiTuongEl.value : undefined,
                   }),
@@ -408,6 +422,10 @@ const choDoiTuongKhac = dungThanHintFor(question.category).kind === "the-hao";
                 const v = (document.getElementById("f-seri-tien")?.value || "").trim();
                 if (v.replace(/\D/g, "").length < 2) { alert("Vui lòng nhập seri tiền (ít nhất 2 chữ số)."); return; }
               }
+              if (castingMethod === "3-so") {
+                const v = (document.getElementById("f-3-so")?.value || "").trim();
+                if (!/^\d{3}$/.test(v)) { alert("Vui lòng nhập đúng 3 chữ số từ 0 đến 9."); return; }
+              }
               resultEl.classList.add("qs-hidden");
               gieoBtn.disabled = true;
               laiBtn.style.display = "";
@@ -416,6 +434,8 @@ const choDoiTuongKhac = dungThanHintFor(question.category).kind === "the-hao";
                 submit({ castingMethod, tosses: collectManualTosses() });
               } else if (castingMethod === "seri-tien") {
                 submit({ castingMethod, seriTien: document.getElementById("f-seri-tien").value.trim() });
+              } else if (castingMethod === "3-so") {
+                submit({ castingMethod, soTuNhien: document.getElementById("f-3-so").value.trim() });
               } else {
                 submit({ castingMethod });
               }

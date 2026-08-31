@@ -18,7 +18,7 @@ function json(body: unknown, status: number): Response {
 }
 
 const VALID_TOSS = new Set([6, 7, 8, 9]);
-const VALID_CASTING_METHODS = new Set<CastingMethod>(["gieo-tay", "mai-hoa", "seri-tien"]);
+const VALID_CASTING_METHODS = new Set<CastingMethod>(["gieo-tay", "mai-hoa", "seri-tien", "3-so"]);
 const VALID_DOI_TUONG = new Set<DoiTuongHoi>(["chinh-toi", "cha-me", "con", "vo", "chong", "anh-chi-em", "nguoi-khac"]);
 
 export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
@@ -39,6 +39,7 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
     castingMethod?: unknown;
     tosses?: unknown;
     seriTien?: unknown;
+    soTuNhien?: unknown;
     moTa?: unknown;
     doiTuong?: unknown;
   };
@@ -100,7 +101,7 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
   let castingMethod: CastingMethod | undefined;
   if (body.castingMethod !== undefined) {
     if (typeof body.castingMethod !== "string" || !VALID_CASTING_METHODS.has(body.castingMethod as CastingMethod)) {
-      return json({ error: "castingMethod phải là một trong: gieo-tay, mai-hoa, seri-tien." }, 400);
+      return json({ error: "castingMethod phải là một trong: gieo-tay, mai-hoa, seri-tien, 3-so." }, 400);
     }
     castingMethod = body.castingMethod as CastingMethod;
   }
@@ -119,6 +120,13 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
   if (body.seriTien !== undefined) {
     if (typeof body.seriTien !== "string") return json({ error: "seriTien phải là chuỗi." }, 400);
     seriTien = body.seriTien;
+  }
+
+  // soTuNhien (tùy chọn) — chỉ cần khi castingMethod="3-so"; orchestrator tự kiểm tra đúng 3 chữ số.
+  let soTuNhien: string | undefined;
+  if (body.soTuNhien !== undefined) {
+    if (typeof body.soTuNhien !== "string") return json({ error: "soTuNhien phải là chuỗi." }, 400);
+    soTuNhien = body.soTuNhien;
   }
 
   // doiTuong (tùy chọn) — hỏi việc cho ai; mặc định "chinh-toi" ở orchestrator nếu bỏ trống.
@@ -144,6 +152,7 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
       castingMethod,
       tosses,
       seriTien,
+      soTuNhien,
       ngaySinh,
       moTa: typeof body.moTa === "string" ? body.moTa : undefined,
       doiTuong,

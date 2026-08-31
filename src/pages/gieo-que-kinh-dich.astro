@@ -15,19 +15,19 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
 ---
 
 <BaseLayout
-  title="Lập quẻ Kinh Dịch — Mai Hoa, Lục Hào, Seri tiền"
-  description="Lập quẻ Kinh Dịch đầy đủ theo 3 phương pháp: Mai Hoa Dịch Số, Lục Hào (gieo đồng xu), Seri tiền — luận giải Nạp Giáp, Lục Thân, Lục Thú, Thế Ứng, Tuần Không."
+  title="Lập quẻ Kinh Dịch — Mai Hoa, Lục Hào, Seri tiền, 3 số tự nhiên"
+  description="Lập quẻ Kinh Dịch đầy đủ theo 4 phương pháp: Mai Hoa Dịch Số, Lục Hào (gieo đồng xu), Seri tiền, 3 số tự nhiên — luận giải Nạp Giáp, Lục Thân, Lục Thú, Thế Ứng, Tuần Không."
 >
   <PageHero
     eyebrow="Công cụ"
     title="Lập quẻ Kinh Dịch"
-    description="Chọn 1 trong 3 phương pháp lập quẻ bên dưới. Kết quả hiển thị đầy đủ: quẻ chính, quẻ biến (nếu có hào động), Nạp Giáp Can Chi từng hào, Lục Thân, Lục Thú, Thế/Ứng và Tuần Không."
+    description="Chọn 1 trong 4 phương pháp lập quẻ bên dưới. Kết quả hiển thị đầy đủ: quẻ chính, quẻ biến (nếu có hào động), Nạp Giáp Can Chi từng hào, Lục Thân, Lục Thú, Thế/Ứng và Tuần Không."
     breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Lập quẻ Kinh Dịch" }]}
   />
 
   <Container class="py-16">
     <div class="mx-auto max-w-5xl">
-      <div id="kd-tabs" class="mx-auto grid grid-cols-1 gap-5 sm:grid-cols-3">
+      <div id="kd-tabs" class="mx-auto grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
         <button type="button" data-tab="maihoa" class="kd-tab-btn flex h-full flex-col items-center rounded-(--radius-card) border p-6 text-center transition">
           <span class="size-14 shrink-0 overflow-hidden rounded-full border border-(--color-gold-400)/30">
             <img src="/images/tools/mai-hoa.jpg" alt="Mai Hoa Dịch Số" class="size-full object-cover" />
@@ -48,6 +48,13 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
           </span>
           <span class="mt-4 flex min-h-[2.75rem] items-center justify-center font-display text-base font-semibold text-(--color-ink-950)">Seri tiền</span>
           <span class="mt-2 flex-1 text-sm leading-relaxed text-(--color-ink-600)">Lập quẻ từ dãy số Seri trên tờ tiền — theo cách "số linh quẻ" ứng dụng Mai Hoa Dịch Số.</span>
+        </button>
+        <button type="button" data-tab="3so" class="kd-tab-btn flex h-full flex-col items-center rounded-(--radius-card) border p-6 text-center transition">
+          <span class="size-14 shrink-0 overflow-hidden rounded-full border border-(--color-gold-400)/30">
+            <img src="/images/tools/so-dien-thoai.jpg" alt="3 số tự nhiên" class="size-full object-cover" />
+          </span>
+          <span class="mt-4 flex min-h-[2.75rem] items-center justify-center font-display text-base font-semibold text-(--color-ink-950)">3 số tự nhiên</span>
+          <span class="mt-2 flex-1 text-sm leading-relaxed text-(--color-ink-600)">Tĩnh tâm, tự chọn hoặc nhập ngẫu nhiên đúng 3 chữ số từ 0-9 để lập quẻ.</span>
         </button>
       </div>
 
@@ -216,6 +223,55 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
         </div>
       </div>
 
+      <!-- 3 số tự nhiên -->
+      <div id="panel-3so" class="kd-panel mt-6 hidden">
+        <button type="button" class="kd-back-link mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-(--color-gold-300) hover:underline">← Đổi phương pháp lập quẻ</button>
+        <form id="form-3so" class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6 sm:p-8">
+          <h2 class="font-display text-2xl font-bold text-(--color-ink-950)">Lập quẻ bằng 3 số tự nhiên</h2>
+          <div class="mt-5 border-t border-(--color-ivory-300) pt-5">
+            <label for="tn-label" class={labelClass}>Việc cần xem</label>
+            <input id="tn-label" type="text" placeholder="Việc cần xem...." class={inputClass} />
+          </div>
+          <div class="mt-4">
+            <label for="tn-so" class={labelClass}>3 chữ số tự nhiên (0-9): <span class="text-(--color-cinnabar-400)">*</span></label>
+            <input id="tn-so" type="text" inputmode="numeric" maxlength="3" placeholder="768" required class={inputClass} />
+            <p class="mt-1.5 text-xs text-(--color-ink-500)">Số thứ nhất = quẻ Thượng, số thứ hai = quẻ Hạ, số thứ ba = hào động.</p>
+          </div>
+          <div class="mt-4">
+            <p class={labelClass}>Ngày lập quẻ:</p>
+            <div class="mt-1.5 grid grid-cols-3 gap-3">
+              <select id="tn-day" class={selectClass}></select>
+              <select id="tn-month" class={selectClass}></select>
+              <select id="tn-year" class={selectClass}></select>
+            </div>
+          </div>
+          <div class="mt-4">
+            <p class={labelClass}>Giờ lập quẻ:</p>
+            <div class="mt-1.5 flex flex-wrap items-center gap-2">
+              <select id="tn-hour" class={`${selectClass} w-24`}></select>
+              <span class="text-sm text-(--color-ink-600)">Giờ</span>
+              <select id="tn-minute" class={`${selectClass} w-24`}></select>
+              <span class="text-sm text-(--color-ink-600)">Phút</span>
+            </div>
+          </div>
+          <label class="mt-4 flex items-center gap-2 text-sm text-(--color-ink-700)">
+            <input id="tn-lunar" type="checkbox" class="size-4 rounded border-(--color-ivory-300)" /> Ngày Âm lịch
+          </label>
+          <p class="mt-4 text-xs text-(--color-ink-500)">
+            Tĩnh tâm nghĩ về việc đang phân vân, rồi tự chọn hoặc nhập ngẫu nhiên đúng 3 chữ số từ 0 đến 9. Số thứ nhất chia dư 8 ra quẻ Thượng, số thứ hai chia dư 8 ra quẻ Hạ, số thứ ba chia dư 6 ra hào động.
+          </p>
+          <Button type="submit" size="lg" class="mt-5 w-full sm:w-auto">Lập quẻ</Button>
+        </form>
+        <div id="result-3so" class="mt-8 hidden">
+          <div class="pointer-events-none h-0 overflow-hidden"><div id="tn-card"></div></div>
+          <img id="tn-preview-img" alt="Quẻ Kinh Dịch" class="w-full rounded-2xl border-2 border-(--color-gold-400)/60" />
+          <div class="mt-4 flex flex-wrap items-center gap-3">
+            <Button id="tn-save-image" type="button" variant="secondary">Lưu ảnh</Button>
+            <p class="text-xs text-(--color-ink-500)">Chuột phải (máy tính) / nhấn giữ (điện thoại) vào ảnh để lưu trực tiếp.</p>
+          </div>
+        </div>
+      </div>
+
       <div class="mt-10 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-6">
         <h2 class="font-display text-lg font-semibold text-(--color-ink-950)">Lưu ý về công cụ này</h2>
         <p class="mt-2 text-sm leading-relaxed text-(--color-ink-600)">
@@ -251,6 +307,7 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
   import {
     maiHoaCast,
     lucHaoCastManual,
+    queTu3SoCast,
     seriTienCast,
     type FullCastResult,
     type QueDayDu,
@@ -267,6 +324,7 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
     maihoa: document.getElementById("panel-maihoa")!,
     luchao: document.getElementById("panel-luchao")!,
     serial: document.getElementById("panel-serial")!,
+    "3so": document.getElementById("panel-3so")!,
   };
   function activateTab(tab: string) {
     tabButtons.forEach((btn) => btn.classList.toggle("active", btn.dataset.tab === tab));
@@ -293,7 +351,7 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
   const HOUR_OPTIONS: [number, string][] = Array.from({ length: 24 }, (_, i) => [i, String(i).padStart(2, "0")]);
   const MINUTE_OPTIONS: [number, string][] = Array.from({ length: 60 }, (_, i) => [i, String(i).padStart(2, "0")]);
 
-  const PREFIXES = ["mh", "lh", "sr"];
+  const PREFIXES = ["mh", "lh", "sr", "tn"];
   const now = new Date();
   PREFIXES.forEach((p) => {
     const daySel = document.getElementById(`${p}-day`) as HTMLSelectElement;
@@ -797,6 +855,25 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
     } catch (err) {
       console.error(err);
       if (!handleLunarError(err)) alert("Vui lòng nhập số Seri hợp lệ (ít nhất 2 chữ số).");
+    } finally {
+      setFormBusy(form, false);
+    }
+  });
+
+  // --- 3 số tự nhiên ---
+  document.getElementById("form-3so")?.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const form = e.currentTarget as HTMLFormElement;
+    const label = (document.getElementById("tn-label") as HTMLInputElement).value.trim();
+    const soTuNhien = (document.getElementById("tn-so") as HTMLInputElement).value.trim();
+    setFormBusy(form, true);
+    try {
+      const input = readCastInput("tn");
+      const cast = queTu3SoCast(soTuNhien, input);
+      await renderExportCard("tn", "result-3so", cast, `Lập quẻ bằng 3 số tự nhiên - ${soTuNhien}`, label, formatTimeLabel(input), `3-so-${fileDateSlug(input)}`);
+    } catch (err) {
+      console.error(err);
+      if (!handleLunarError(err)) alert("Vui lòng nhập đúng 3 chữ số từ 0 đến 9.");
     } finally {
       setFormBusy(form, false);
     }

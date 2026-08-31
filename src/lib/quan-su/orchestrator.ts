@@ -10,6 +10,7 @@ import {
   castLucHaoFromTosses,
   castLucHaoRandom,
   castMaiHoa,
+  castQueTu3So,
   castSeriTien,
   type DoiTuongHoi,
   type QuanSuInterpretationPayload,
@@ -36,8 +37,9 @@ export interface NgaySinhInput {
  * - "gieo-tay": tự gieo 3 đồng xu 6 lần (mặc định, cách truyền thống) — dùng `tosses`.
  * - "mai-hoa": Mai Hoa Dịch Số theo giờ hỏi việc — không cần input thêm.
  * - "seri-tien": từ dãy số Seri trên tờ tiền — cần `seriTien`.
+ * - "3-so": từ 3 chữ số tự nhiên do người dùng chọn/nhập (0-9) — cần `soTuNhien`.
  */
-export type CastingMethod = "gieo-tay" | "mai-hoa" | "seri-tien";
+export type CastingMethod = "gieo-tay" | "mai-hoa" | "seri-tien" | "3-so";
 
 export interface RunQuanSuInput {
   question_id: string;
@@ -47,6 +49,8 @@ export interface RunQuanSuInput {
   tosses?: CoinLineValue[];
   /** Dãy số Seri trên tờ tiền — bắt buộc khi castingMethod="seri-tien". */
   seriTien?: string;
+  /** 3 chữ số tự nhiên (0-9) — bắt buộc khi castingMethod="3-so". */
+  soTuNhien?: string;
   /** Ngày sinh — bắt buộc nếu câu hỏi có dùng Bát Tự/Tử Vi (vẽ vận trình). */
   ngaySinh?: NgaySinhInput;
   /** Mô tả tình huống người dùng nhập (chỉ đưa vào ngữ cảnh, không ảnh hưởng quẻ). */
@@ -104,6 +108,12 @@ export async function runQuanSu(input: RunQuanSuInput): Promise<QuanSuResult> {
     }
     cast = castSeriTien(input.seriTien, castInput);
     method = "seri-tien";
+  } else if (castingMethod === "3-so") {
+    if (!input.soTuNhien || !/^\d{3}$/.test(input.soTuNhien.trim())) {
+      throw new Error("Cần nhập đúng 3 chữ số từ 0 đến 9 để lập quẻ theo 3 số tự nhiên.");
+    }
+    cast = castQueTu3So(input.soTuNhien.trim(), castInput);
+    method = "3-so";
   } else if (input.tosses && input.tosses.length === 6) {
     cast = castLucHaoFromTosses(input.tosses, castInput);
     method = "luc-hao-tosses";

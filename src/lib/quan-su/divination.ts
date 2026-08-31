@@ -14,6 +14,7 @@ import {
   lucHaoCastFromTosses,
   lucHaoCastRandom,
   maiHoaCast,
+  queTu3SoCast,
   seriTienCast,
   type CastInput,
   type CoinLineValue,
@@ -188,6 +189,14 @@ export function castSeriTien(serial: string, input: CastInput = castInputNow()):
   return seriTienCast(serial, input);
 }
 
+/**
+ * Lập quẻ từ 3 chữ số tự nhiên do người dùng chọn/nhập (0-9, ví dụ "768"). Tái dùng `queTu3SoCast`
+ * (Công chốt 29/8/2026) — KHÔNG tự tính.
+ */
+export function castQueTu3So(threeDigits: string, input: CastInput = castInputNow()): FullCastResult {
+  return queTu3SoCast(threeDigits, input);
+}
+
 // ---------------------------------------------------------------------------------------------
 // Vận trình (Bát Tự/Tử Vi) do engine current-luck.ts trích (Phase 4). Ở đây chỉ dùng làm slot trong
 // payload — engine thật nằm ở current-luck.ts (tinhVanTrinhHienTai).
@@ -222,7 +231,7 @@ export interface QuanSuInterpretationPayload {
   tam_hop_cuc: KetQuaTamHopCuc;
   meta: {
     castAtISO: string;
-    method: "luc-hao-tosses" | "luc-hao-random" | "mai-hoa" | "seri-tien";
+    method: "luc-hao-tosses" | "luc-hao-random" | "mai-hoa" | "seri-tien" | "3-so";
   };
 }
 
