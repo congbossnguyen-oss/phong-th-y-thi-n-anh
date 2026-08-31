@@ -548,11 +548,15 @@ const {
      ép RIÊNG (không ăn theo dải cha) để luôn đứng trục dọc dù rơi vào dải trên/dưới (nằm ngang)
      hay dải trái/phải (đã dọc sẵn) — anh Công 28/8/2026: "mã tinh khi an vào cung nào em cũng
      cho nó đứng thẳng theo trục dọc". Cỡ chữ tăng thêm 31/8/2026 (anh Công: "mã tinh cũng cho to
-     lên chút"). */
+     lên chút", rồi "con ngựa đang bị lộn ngược rồi em, cho nó to tra chút nữa"). */
   .km-lbl-ma {
     display: inline-block; writing-mode: vertical-rl; text-orientation: upright;
-    margin-left: 0.2em; font-size: 0.95rem; vertical-align: middle;
+    margin-left: 0.2em; font-size: 1.15rem; vertical-align: middle;
   }
+  /* Cùng lý do/cách sửa như .km-lbl-l .km-lbl-kv bên dưới: dải trái (.km-lbl-l) tự xoay 180° cả
+     dải nên con ngựa 🐴 lồng bên trong bị ăn theo, lộn ngược — xoay ngược lại 1 lần nữa để đứng
+     thẳng đúng chiều (anh Công báo 31/8/2026, quên áp dụng cùng lúc với KV). */
+  .km-lbl-l .km-lbl-ma { transform: rotate(180deg); }
   /* KV (Không Vong) — gắn ngay sau CHÍNH chi bị không vong trên viền ngoài. SỬA 31/8/2026 (anh
      Công, kèm ảnh chụp KV ở cung Thìn-Tị bị lộn đầu): bỏ writing-mode dọc từng ép riêng cho KV
      (khác Mã — Mã vẫn giữ dọc theo đúng ý ở trên) — giờ KV LUÔN NẰM NGANG, đọc xuôi bình thường.
@@ -838,7 +842,7 @@ const {
 
     /* Dải nhãn hướng/địa chi bám theo --km-vien nên tự mỏng theo, chỉ cần hạ cỡ chữ. */
     .km-lbl { font-size: 0.52rem; }
-    .km-lbl-ma { font-size: 0.68rem; }
+    .km-lbl-ma { font-size: 0.82rem; }
     .km-lbl-kv { font-size: 0.58rem; margin-left: 0.1em; }
 
     /* Bát Thần giờ neo góc trên-phải bằng tên viết tắt ngắn ("B.Hổ") thay vì tên đầy đủ ("Bạch
