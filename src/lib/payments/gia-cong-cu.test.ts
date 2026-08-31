@@ -43,16 +43,16 @@ describe("bảng giá — khoá hành vi", () => {
     }
   });
 
-  it("4 module Bát Tự/Tử Vi ĐANG KHÓA thu phí (anh Công yêu cầu test kỹ trước khi mở)", () => {
-    // Nếu ai đó gỡ khoá, test này đỏ để buộc phải xác nhận lại với anh Công — tránh vô tình
-    // mở bán khi chưa test xong.
+  it("4 module Bát Tự/Tử Vi ĐÃ GỠ KHÓA thu phí (anh Công chốt 31/8/2026: mở ra để test tổng thể)", () => {
+    // Trước đó (27/8) 4 module này bị khoá cố ý — nay anh Công đã yêu cầu mở lại. Nếu ai đó khoá
+    // nhầm trở lại, test này đỏ để buộc xác nhận lại lý do.
     for (const slug of [
       "luan-giai-bat-tu-co-ban",
       "luan-giai-bat-tu-nang-cao",
       "luan-giai-tu-vi-co-ban",
       "luan-giai-tu-vi-nang-cao",
     ] as ToolSlug[]) {
-      expect(dangKhoaThuNghiem(slug), `${slug} phải đang khoá`).toBe(true);
+      expect(dangKhoaThuNghiem(slug), `${slug} không được khoá`).toBe(false);
     }
   });
 
@@ -60,6 +60,6 @@ describe("bảng giá — khoá hành vi", () => {
     for (const slug of ["hop-hon", "xem-ngay-cao-cap", "trach-nhat-sinh-no", "ky-mon-hoi-dap"] as ToolSlug[]) {
       expect(dangKhoaThuNghiem(slug), `${slug} KHÔNG được khoá`).toBe(false);
     }
-    expect(MODULE_KHOA_THU_NGHIEM.length).toBe(4);
+    expect(MODULE_KHOA_THU_NGHIEM.length).toBe(0);
   });
 });

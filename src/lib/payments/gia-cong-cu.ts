@@ -65,14 +65,10 @@ export const GIA_CONG_CU = {
  * kỹ đã"* (Luận Giải Bát Tự Toàn Diện + Luận Giải Tử Vi). Vừa đổi giá và làm sâu bản xem trước nên
  * cần chạy thử kỹ trước khi mở cho khách.
  *
+ * **GỠ KHÓA 31/8/2026** (anh Công: "em cứ mở ra luôn để anh test tổng thể") — danh sách để rỗng.
  * Gỡ khóa = xoá slug khỏi danh sách này. KHÔNG cần sửa chỗ nào khác.
  */
-export const MODULE_KHOA_THU_NGHIEM: readonly ToolSlug[] = [
-  "luan-giai-bat-tu-co-ban",
-  "luan-giai-bat-tu-nang-cao",
-  "luan-giai-tu-vi-co-ban",
-  "luan-giai-tu-vi-nang-cao",
-] as const;
+export const MODULE_KHOA_THU_NGHIEM: readonly ToolSlug[] = [] as const;
 
 /** true = module đang khóa, khách thường không được tạo đơn (admin vẫn chạy thử được). */
 export function dangKhoaThuNghiem(slug: ToolSlug): boolean {
