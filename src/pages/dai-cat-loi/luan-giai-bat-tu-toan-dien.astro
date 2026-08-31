@@ -113,9 +113,6 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
         <section class="mb-10 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <h2 class="font-display text-2xl font-bold text-(--color-ink-950)">Luận Cơ Bản</h2>
-            {baoCaoCoBan.giaiDoan.length > 0 && (
-              <button type="button" class="ldbtd-tts-btn shrink-0 rounded-full border border-(--color-gold-400)/50 bg-(--color-gold-400)/10 px-3 py-1.5 text-xs font-medium text-(--color-gold-700)" data-tts-target="ldbtd-cobantoanbo">🔊 Nghe toàn bộ</button>
-            )}
           </div>
           <p class="mt-2 text-xs text-(--color-ink-500)">{baoCaoCoBan.disclaimerDauBai}</p>
           <div class="mt-4 grid grid-cols-2 gap-2 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4 text-sm sm:grid-cols-4">
@@ -137,10 +134,7 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
             )}
             {baoCaoCoBan.giaiDoan.map((gd, i) => (
               <div>
-                <div class="flex items-center gap-2">
-                  <h3 class="font-display text-lg font-bold text-(--color-gold-600)">{gd.tieuDe}</h3>
-                  <button type="button" class="ldbtd-tts-btn text-sm text-(--color-gold-600)" data-tts-target={`ldbtd-cb-p-${i}`} aria-label={`Nghe ${gd.tieuDe}`}>🔊</button>
-                </div>
+                <h3 class="font-display text-lg font-bold text-(--color-gold-600)">{gd.tieuDe}</h3>
                 <p id={`ldbtd-cb-p-${i}`} class="mt-1.5 whitespace-pre-line text-sm leading-relaxed text-(--color-ink-800)">{gd.noiDung}</p>
               </div>
             ))}
@@ -168,9 +162,6 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
         <section class="mb-10 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <h2 class="font-display text-2xl font-bold text-(--color-ink-950)">Luận Nâng Cao</h2>
-            {baoCaoNangCao.giaiDoan.length > 0 && (
-              <button type="button" class="ldbtd-tts-btn shrink-0 rounded-full border border-(--color-gold-400)/50 bg-(--color-gold-400)/10 px-3 py-1.5 text-xs font-medium text-(--color-gold-700)" data-tts-target="ldbtd-nangcaotoanbo">🔊 Nghe toàn bộ</button>
-            )}
           </div>
           <div class="mt-6 space-y-6" id="ldbtd-nangcaotoanbo">
             {baoCaoNangCao.giaiDoan.length === 0 && (
@@ -178,10 +169,7 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
             )}
             {baoCaoNangCao.giaiDoan.map((gd, i) => (
               <div>
-                <div class="flex items-center gap-2">
-                  <h3 class="font-display text-lg font-bold text-(--color-gold-600)">{gd.tieuDe}</h3>
-                  <button type="button" class="ldbtd-tts-btn text-sm text-(--color-gold-600)" data-tts-target={`ldbtd-nc-p-${i}`} aria-label={`Nghe ${gd.tieuDe}`}>🔊</button>
-                </div>
+                <h3 class="font-display text-lg font-bold text-(--color-gold-600)">{gd.tieuDe}</h3>
                 <p id={`ldbtd-nc-p-${i}`} class="mt-1.5 whitespace-pre-line text-sm leading-relaxed text-(--color-ink-800)">{gd.noiDung}</p>
                 {gd.ma === "K" && (
                   <div class="mt-4 space-y-4">
@@ -252,9 +240,8 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
 
           <div id="ldbtd-free-luunien" class="mt-4 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3"></div>
 
-          <div class="mt-4 flex items-center justify-between gap-2">
+          <div class="mt-4">
             <p class="text-xs font-medium text-(--color-ink-600)">Gợi mở miễn phí</p>
-            <button type="button" class="ldbtd-tts-btn shrink-0 rounded-full border border-(--color-gold-400)/50 bg-(--color-gold-400)/10 px-3 py-1.5 text-xs font-medium text-(--color-gold-700)" data-tts-target="ldbtd-free-text">🔊 Nghe thử</button>
           </div>
           <p id="ldbtd-free-text" class="mt-1.5 whitespace-pre-line text-sm leading-relaxed text-(--color-ink-800)"></p>
 
@@ -513,85 +500,4 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
       }
     });
   }
-</script>
-
-<script>
-  // Nghe bằng giọng đọc có sẵn của trình duyệt (Web Speech API) — miễn phí, không cần API key/backend.
-  // Chất lượng giọng phụ thuộc thiết bị của khách; ưu tiên giọng tiếng Việt (vi-VN) nếu máy có.
-  const tongHopGiong = window.speechSynthesis;
-  let nutDangDoc: HTMLButtonElement | null = null;
-  let danhSachGiong: SpeechSynthesisVoice[] = [];
-
-  // Chrome/Edge tải danh sách giọng KHÔNG đồng bộ — lần gọi getVoices() đầu tiên (đặc biệt trước khi
-  // trang tương tác) rất hay trả về mảng rỗng, khiến code rơi về giọng mặc định (thường là tiếng Anh)
-  // dù máy khách THỰC SỰ có giọng tiếng Việt. Phải nghe sự kiện "voiceschanged" để lấy đúng danh sách.
-  function capNhatDanhSachGiong() {
-    const v = tongHopGiong.getVoices();
-    if (v.length > 0) danhSachGiong = v;
-  }
-  capNhatDanhSachGiong();
-  tongHopGiong.addEventListener("voiceschanged", capNhatDanhSachGiong);
-
-  function timGiongTiengViet(): SpeechSynthesisVoice | undefined {
-    const vi = danhSachGiong.filter((v) => v.lang === "vi-VN" || v.lang.startsWith("vi"));
-    if (vi.length === 0) return undefined;
-    return (
-      vi.find((v) => /nữ|female|women/i.test(v.name)) ??
-      vi.find((v) => !/nam\b|male|men\b/i.test(v.name)) ??
-      vi[0]
-    );
-  }
-
-  function dungDoc() {
-    tongHopGiong.cancel();
-    if (nutDangDoc) { nutDangDoc.textContent = nutDangDoc.dataset.nhanGoc ?? "🔊"; nutDangDoc = null; }
-  }
-
-  function docVanBan(btn: HTMLButtonElement, text: string) {
-    const utter = new SpeechSynthesisUtterance(text);
-    const giong = timGiongTiengViet();
-    if (giong) utter.voice = giong;
-    utter.lang = "vi-VN";
-    utter.rate = 0.95;
-    utter.onend = () => { if (nutDangDoc === btn) dungDoc(); };
-    utter.onerror = () => { if (nutDangDoc === btn) dungDoc(); };
-
-    btn.dataset.nhanGoc = btn.dataset.nhanGoc ?? btn.textContent ?? "🔊";
-    btn.textContent = btn.dataset.nhanGoc?.includes("toàn bộ") ? "⏸ Dừng" : "⏸";
-    nutDangDoc = btn;
-    tongHopGiong.speak(utter);
-  }
-
-  document.addEventListener("click", (e) => {
-    const btn = (e.target as HTMLElement)?.closest<HTMLButtonElement>(".ldbtd-tts-btn");
-    if (!btn) return;
-    const targetId = btn.dataset.ttsTarget;
-    const target = targetId ? document.getElementById(targetId) : null;
-    if (!target) return;
-
-    const dangDocDungNut = nutDangDoc === btn;
-    dungDoc();
-    if (dangDocDungNut) return; // bấm lại nút đang đọc → chỉ dừng.
-
-    const text = target.innerText.trim();
-    if (!text) return;
-
-    // Nếu danh sách giọng chưa kịp tải (mảng rỗng), đợi 1 nhịp "voiceschanged" rồi mới đọc — tránh
-    // đọc nhầm giọng mặc định trước khi kịp biết máy khách có giọng tiếng Việt hay không.
-    if (danhSachGiong.length === 0) {
-      let daDoc = false;
-      const cho = () => {
-        if (daDoc) return;
-        daDoc = true;
-        tongHopGiong.removeEventListener("voiceschanged", cho);
-        docVanBan(btn, text);
-      };
-      tongHopGiong.addEventListener("voiceschanged", cho);
-      setTimeout(cho, 300); // phòng khi trình duyệt không bắn sự kiện (Safari) — vẫn đọc sau tối đa 300ms.
-      return;
-    }
-    docVanBan(btn, text);
-  });
-
-  document.addEventListener("astro:before-swap", dungDoc);
 </script>
