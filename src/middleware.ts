@@ -36,6 +36,11 @@ export const onRequest = defineMiddleware(async (context, next) => {
   // laQuanTri riêng của từng trang; gói thuê bao chưa mở bán qua checkout.ts; dùng thử đã ngưng vĩnh
   // viễn qua dung-thu.ts) — những cổng đó là quyết định kinh doanh RIÊNG, không nằm trong phạm vi
   // "App Quân Sư chưa launch" mà khối này từng đại diện.
+  //
+  // KHÔNG cần cổng riêng cho tài khoản test (31/8/2026) — /quan-su/* đã public cho MỌI người rồi
+  // (đang trong giai đoạn anh Công dùng để test trước khi đẩy app lên App Store), tài khoản test chỉ
+  // cần đăng nhập bình thường là vào được. Giới hạn thật cho tài khoản test nằm ở luan.ts (chặn đúng
+  // chỗ tốn AI: hạn mức TỔNG 10 lượt, xem test-accounts.ts) — không đụng gì tới middleware này.
   const path = context.url.pathname;
 
   // "Xem hướng nhà Bát Trạch" (30/8/2026, anh Công: "để ra ngoài như mục huyền không phi tinh") —
