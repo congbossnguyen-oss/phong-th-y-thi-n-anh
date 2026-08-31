@@ -30,7 +30,20 @@ const { slug, lyDo, nhanNut = "Xem bản đầy đủ", tieuDe = "Muốn đi sâ
 
 const dangKhoa = dangKhoaThuNghiem(slug);
 const gia = GIA_CONG_CU[slug];
-const href = `/dai-cat-loi/${slug}`;
+
+/**
+ * Hầu hết slug = đúng tên trang (`/dai-cat-loi/<slug>`), TRỪ 4 slug này — 2 tầng Cơ Bản/Trọn Đời
+ * dùng CHUNG 1 trang (chọn tầng ngay trong trang, không phải URL riêng). Suy thẳng href từ slug đã
+ * ra link 404 âm thầm suốt thời gian module bị khóa (không lộ vì lúc đó chỉ hiện "sắp mở", không có
+ * link) — anh Công báo lỗi 404 ngay sau khi gỡ khóa 31/8/2026 mới phát hiện ra.
+ */
+const TRANG_KHAC_SLUG: Partial<Record<ToolSlug, string>> = {
+  "luan-giai-bat-tu-co-ban": "luan-giai-bat-tu-toan-dien",
+  "luan-giai-bat-tu-nang-cao": "luan-giai-bat-tu-toan-dien",
+  "luan-giai-tu-vi-co-ban": "luan-giai-tu-vi",
+  "luan-giai-tu-vi-nang-cao": "luan-giai-tu-vi",
+};
+const href = `/dai-cat-loi/${TRANG_KHAC_SLUG[slug] ?? slug}`;
 ---
 
 <aside class="mt-10 rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-6">
