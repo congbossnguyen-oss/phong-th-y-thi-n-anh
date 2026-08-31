@@ -19,7 +19,7 @@ import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
 import MaKhuyenMai from "../../components/ui/MaKhuyenMai.astro";
 import { GIA_CONG_CU, dinhDangTien, dangKhoaThuNghiem } from "../../lib/payments/gia-cong-cu";
-import { getConfirmedToolOrderForUser } from "../../lib/db/orders";
+import { getAllConfirmedToolOrdersForUser } from "../../lib/db/orders";
 import { taoLuanGiaiTuVi, type LuanGiaiTuViInput } from "../../lib/tu-vi/luan-giai/taoLuanGiaiTuVi";
 import { TEN_CUNG_HIEN_THI, TEN_CUNG_SNAKE } from "../../lib/tu-vi/luan-giai/aiCoBan";
 import { nhanDiem } from "../../lib/tu-vi/luan-giai/chamDiem";
@@ -65,9 +65,31 @@ let loiTinhBaoCao: string | null = null;
 let coDonCoBanChuaHienThi = false;
 let coDonNangCaoChuaHienThi = false;
 
+// So khớp đơn với ĐÚNG lá số hiện tại (không chỉ "user này có ít nhất 1 đơn") — bug đã gặp
+// 31/8/2026: khách/admin nhập lá số KHÁC (xem hộ người khác) vẫn bị báo "đã mua", chặn hẳn không
+// cho mua tiếp, vì trước đây chỉ nhìn đơn MỚI NHẤT bất kể lá số nào.
+function khopLaSo(snapshotJson: string | null, input: typeof inputDaMua): boolean {
+  if (!snapshotJson || !input) return false;
+  try {
+    const s = JSON.parse(snapshotJson) as { day?: number; month?: number; year?: number; hour?: number; gender?: string };
+    return s.day === input.day && s.month === input.month && s.year === input.year && s.hour === input.hour && s.gender === input.gender;
+  } catch {
+    return false;
+  }
+}
+
 if (user) {
-  const donCoBan = await getConfirmedToolOrderForUser(user.id, TOOL_SLUG_CO_BAN);
-  const donNangCao = await getConfirmedToolOrderForUser(user.id, TOOL_SLUG_NANG_CAO);
+  const donsCoBan = await getAllConfirmedToolOrdersForUser(user.id, TOOL_SLUG_CO_BAN);
+  const donsNangCao = await getAllConfirmedToolOrdersForUser(user.id, TOOL_SLUG_NANG_CAO);
+
+  // Có lá số trong URL (?ngay=...) → chỉ coi "đã mua" nếu tìm được đúng đơn khớp lá số này. Không
+  // có lá số trong URL (mới vào trang) → giữ hành vi cũ: lấy đơn gần nhất để "xem lại".
+  const donCoBan = coDuLieuNgaySinh
+    ? donsCoBan.find((d) => khopLaSo(d.toolInputSnapshot, inputDaMua)) ?? null
+    : donsCoBan[0] ?? null;
+  const donNangCao = coDuLieuNgaySinh
+    ? donsNangCao.find((d) => khopLaSo(d.toolInputSnapshot, inputDaMua)) ?? null
+    : donsNangCao[0] ?? null;
 
   if (donCoBan?.toolInputSnapshot) coDonCoBanChuaHienThi = true;
   if (donNangCao?.toolInputSnapshot) coDonNangCaoChuaHienThi = true;

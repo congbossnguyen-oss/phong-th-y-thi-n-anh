@@ -307,6 +307,23 @@ export function getConfirmedToolOrderForUser(userId: string, toolSlug: string) {
 }
 
 /**
+ * TOÀN BỘ đơn đã xác nhận của 1 người cho 1 tool (không chỉ đơn mới nhất) — dùng khi cần biết đã
+ * mua CHO ĐÚNG LÁ SỐ nào (vd Bát Tự Toàn Diện, Tử Vi: khách "xem hộ người khác" nhập lá số MỚI, phải
+ * phân biệt được với lá số đã mua trước đó, không thể coi "có ít nhất 1 đơn" là đã mua lá số hiện
+ * tại — bug thật đã gặp 31/8/2026: khách/admin nhập lá số khác hẳn vẫn bị báo "đã mua", không cho
+ * mua tiếp, vì `getConfirmedToolOrderForUser` chỉ nhìn đơn MỚI NHẤT bất kể lá số nào).
+ */
+export function getAllConfirmedToolOrdersForUser(userId: string, toolSlug: string) {
+  return boiLoiHeThong("getAllConfirmedToolOrdersForUser", "Có lỗi hệ thống, vui lòng thử lại sau.", async () => {
+    return db
+      .select()
+      .from(orders)
+      .where(and(eq(orders.userId, userId), eq(orders.toolSlug, toolSlug), eq(orders.status, "confirmed")))
+      .orderBy(desc(orders.createdAt));
+  });
+}
+
+/**
  * Đánh dấu đơn hàng đã thanh toán (gọi từ webhook SePay sau khi đối soát số tiền khớp) —
  * với đơn khóa học, tự động tạo lượt đăng ký (course_enrollments) và gửi email xác nhận.
  */
