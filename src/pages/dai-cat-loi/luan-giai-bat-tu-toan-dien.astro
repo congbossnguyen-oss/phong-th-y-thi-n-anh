@@ -13,7 +13,7 @@ import DateSelect from "../../components/ui/DateSelect.astro";
 import MaKhuyenMai from "../../components/ui/MaKhuyenMai.astro";
 import BieuDoGiaiDoanVan from "../../components/luan-giai-toan-dien/BieuDoGiaiDoanVan.astro";
 import { GIA_CONG_CU, dinhDangTien } from "../../lib/payments/gia-cong-cu";
-import { getConfirmedToolOrderForUser } from "../../lib/db/orders";
+import { getAllConfirmedToolOrdersForUser } from "../../lib/db/orders";
 import { taoBaoCaoCoBan, taoBaoCaoNangCao } from "../../lib/luan-giai-toan-dien/orchestrator";
 import { hashLaSo, cacheCoBan, cacheNangCao } from "../../lib/luan-giai-toan-dien/cache";
 import type { BatTuInput } from "../../lib/bat-tu";
@@ -35,10 +35,24 @@ let loiTinhBaoCao: string | null = null;
 // toán xong, xem orders.ts). Admin (Công) vẫn xem trực tiếp trên trang để tự kiểm tra chất lượng.
 let coDonCoBanChuaHienThi = false;
 let coDonNangCaoChuaHienThi = false;
+// Vân tay (day/month/year/hour/minute/gender) của TOÀN BỘ lá số đã mua — form nhập lá số sống ở
+// CLIENT (không qua URL, cố ý để không lộ ngày sinh vào lịch sử trình duyệt/Referer), nên SSR
+// không biết trước khách sắp nhập lá số nào. Đẩy danh sách này xuống client để JS tự so khớp SAU
+// khi khách submit, quyết định hiện nút mua hay báo "đã mua" — bug đã gặp 31/8/2026: trước đây gate
+// "đã mua" tính 1 lần lúc SSR theo đơn MỚI NHẤT bất kể lá số nào, nên nhập lá số KHÁC (xem hộ người
+// khác) vẫn bị chặn không cho mua tiếp.
+type VanTayLaSo = { day: number; month: number; year: number; hour: number; minute: number; gender: string };
+let vanTayDaMuaCoBan: VanTayLaSo[] = [];
+let vanTayDaMuaNangCao: VanTayLaSo[] = [];
 
 if (user) {
-  const donCoBan = await getConfirmedToolOrderForUser(user.id, TOOL_SLUG_CO_BAN);
-  const donNangCao = await getConfirmedToolOrderForUser(user.id, TOOL_SLUG_NANG_CAO);
+  const donsCoBan = await getAllConfirmedToolOrdersForUser(user.id, TOOL_SLUG_CO_BAN);
+  const donsNangCao = await getAllConfirmedToolOrdersForUser(user.id, TOOL_SLUG_NANG_CAO);
+  const donCoBan = donsCoBan[0] ?? null; // gần nhất — dùng cho banner đầu trang + admin xem lại khi mới vào trang.
+  const donNangCao = donsNangCao[0] ?? null;
+
+  vanTayDaMuaCoBan = donsCoBan.flatMap((d) => (d.toolInputSnapshot ? [JSON.parse(d.toolInputSnapshot) as VanTayLaSo] : []));
+  vanTayDaMuaNangCao = donsNangCao.flatMap((d) => (d.toolInputSnapshot ? [JSON.parse(d.toolInputSnapshot) as VanTayLaSo] : []));
 
   if (donCoBan?.toolInputSnapshot) coDonCoBanChuaHienThi = true;
   if (donNangCao?.toolInputSnapshot) coDonNangCaoChuaHienThi = true;
@@ -251,9 +265,19 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
                 Cần <a href="/hoc-vien/dang-nhap" class="font-bold text-(--color-gold-600) hover:underline">đăng nhập</a> để mua bản luận giải đầy đủ (báo cáo gắn theo tài khoản, xem lại không mất phí).
               </p>
             )}
-            {user && !coDonCoBanChuaHienThi && <MaKhuyenMai idPrefix="ldbtd-ma" toolSlug={TOOL_SLUG_CO_BAN} giaGoc={GIA_CO_BAN} />}
-            {user && !coDonCoBanChuaHienThi && (
-              <Button id="ldbtd-mua-co-ban" size="lg" class="mt-4 w-full sm:w-auto">Xem Luận Cơ Bản — {dinhDangTien(GIA_CO_BAN)}</Button>
+            {user && (
+              <div id="ldbtd-khoi-mua">
+                <MaKhuyenMai idPrefix="ldbtd-ma" toolSlug={TOOL_SLUG_CO_BAN} giaGoc={GIA_CO_BAN} />
+                <Button id="ldbtd-mua-co-ban" size="lg" class="mt-4 w-full sm:w-auto">Xem Luận Cơ Bản — {dinhDangTien(GIA_CO_BAN)}</Button>
+              </div>
+            )}
+            {/* Ẩn mặc định — JS chỉ hiện khi lá số vừa xem trước KHỚP đúng 1 đơn đã mua (so ở client vì
+                form nhập lá số không qua URL, SSR không biết trước khách sắp nhập lá số nào). */}
+            {user && (
+              <div id="ldbtd-da-mua-lasos-nay" class="hidden text-sm text-(--color-ink-700)">
+                <p class="font-bold text-(--color-ink-950)">✅ Đã mua Luận Cơ Bản cho lá số này</p>
+                <p class="mt-1">Bản luận giải đầy đủ (PDF) đã được gửi tới email tài khoản của bạn. Vui lòng kiểm tra hộp thư (kể cả mục Spam/Quảng cáo).</p>
+              </div>
             )}
           </div>
         </div>
@@ -272,8 +296,10 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
   </Container>
 </BaseLayout>
 
-<script define:vars={{ daDangNhap: !!user }}>
+<script define:vars={{ daDangNhap: !!user, vanTayDaMuaCoBan, vanTayDaMuaNangCao }}>
   window.__ldbtdDaDangNhap = daDangNhap;
+  window.__ldbtdVanTayCoBan = vanTayDaMuaCoBan;
+  window.__ldbtdVanTayNangCao = vanTayDaMuaNangCao;
 </script>
 <script>
   import { readDateSelects } from "../../lib/date-select";
@@ -414,6 +440,23 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
       };
     }
 
+    // So khớp lá số vừa xem trước với danh sách đã mua (đẩy từ server, xem ghi chú ở
+    // define:vars phía trên) — quyết định hiện nút mua hay báo "đã mua cho lá số này". Phải làm ở
+    // CLIENT vì form nhập lá số không đi qua URL (cố ý không lộ ngày sinh vào lịch sử trình duyệt).
+    type VanTay = { day: number; month: number; year: number; hour: number; minute: number; gender: string };
+    function khopVanTay(dauVao: Record<string, unknown>, ds: VanTay[]): boolean {
+      const ns = dauVao.ngaySinh as { year: number; month: number; day: number };
+      const phut = typeof dauVao.phut === "number" ? dauVao.phut : 0;
+      return ds.some((v) => v.day === ns.day && v.month === ns.month && v.year === ns.year && v.hour === dauVao.gio && v.minute === phut && v.gender === dauVao.gioiTinh);
+    }
+    const khoiMuaEl = document.getElementById("ldbtd-khoi-mua");
+    const daMuaLaSoNayEl = document.getElementById("ldbtd-da-mua-lasos-nay");
+    function capNhatTrangThaiDaMua(dauVao: Record<string, unknown>) {
+      const daMua = khopVanTay(dauVao, (window as unknown as { __ldbtdVanTayCoBan: VanTay[] }).__ldbtdVanTayCoBan ?? []);
+      khoiMuaEl?.classList.toggle("hidden", daMua);
+      daMuaLaSoNayEl?.classList.toggle("hidden", !daMua);
+    }
+
     async function kiemTra(orderCode: string) {
       if (dangHoi) return;
       dangHoi = true;
@@ -493,6 +536,7 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
           renderDaiVanSong(data.doHinh.daiVan);
           renderLuuNienFree(data.doHinh.luuNien);
         }
+        capNhatTrangThaiDaMua(dauVao);
         freeResultEl.classList.remove("hidden");
         freeResultEl.scrollIntoView({ behavior: "smooth", block: "start" });
       } catch {
