@@ -17,12 +17,25 @@ function chiTietLoi(err: unknown): string {
   const parts: string[] = [];
   let cur: unknown = err;
   let depth = 0;
-  while (cur instanceof Error && depth < 5) {
-    const e = cur as Error & { code?: string; detail?: string; table?: string; constraint?: string };
-    parts.push(`[${depth}] ${e.name}: ${e.message}` + (e.code ? ` code=${e.code}` : "") + (e.detail ? ` detail=${e.detail}` : "") + (e.table ? ` table=${e.table}` : "") + (e.constraint ? ` constraint=${e.constraint}` : ""));
-    cur = e.cause;
+  while (cur != null && depth < 5) {
+    if (cur instanceof Error) {
+      const e = cur as Error & { code?: string; detail?: string; table?: string; constraint?: string };
+      // In hết TOÀN BỘ property riêng (không chỉ 4 field đoán trước) — phòng trường hợp cause không
+      // phải lỗi Postgres chuẩn (vd TypeError của chính fetch() trong Workers) mà vẫn có field lạ.
+      const extra = Object.getOwnPropertyNames(e)
+        .filter((k) => !["name", "message", "stack", "cause"].includes(k))
+        .map((k) => `${k}=${String((e as unknown as Record<string, unknown>)[k])}`)
+        .join(" ");
+      parts.push(`[${depth}] ${e.name}: ${e.message}` + (extra ? ` | ${extra}` : ""));
+      cur = e.cause;
+    } else {
+      // cause không phải Error instance (vd object thường, string) — vẫn in ra để không mất manh mối.
+      parts.push(`[${depth}] (không phải Error) typeof=${typeof cur}: ${JSON.stringify(cur)?.slice(0, 500)}`);
+      cur = null;
+    }
     depth++;
   }
+  if (parts.length === 0) parts.push("(không có chi tiết — err rỗng)");
   return parts.join(" <- cause: ");
 }
 
