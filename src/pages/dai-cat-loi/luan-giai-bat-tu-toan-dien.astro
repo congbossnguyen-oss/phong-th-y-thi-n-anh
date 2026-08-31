@@ -123,6 +123,8 @@ function mauTheoDiemMoi(diem: number): string {
         <div class="mb-10 rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-6 text-sm text-(--color-ink-800)">
           <p class="font-display text-lg font-bold text-(--color-ink-950)">✅ Đã mua Luận Cơ Bản</p>
           <p class="mt-2">Bản luận giải đầy đủ (PDF) đã được gửi tới email tài khoản của bạn ngay sau khi thanh toán thành công. Vui lòng kiểm tra hộp thư (kể cả mục Spam/Quảng cáo).</p>
+          {/* Phòng khi email chưa tới (mạng lỗi, rơi spam...) — tải trực tiếp không cần chờ email. */}
+          <a href="/api/dai-cat-loi/luan-giai-bat-tu-toan-dien/tai-pdf?tang=co_ban" class="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-(--color-gold-700) hover:underline">📄 Tải PDF</a>
           {/* BUG đã sửa: nút mua Nâng Cao trước đây chỉ nằm trong khối báo cáo admin-only (baoCaoCoBan),
               nên khách thường đã mua Cơ Bản không có cách nào bấm mua Nâng Cao trên trang. */}
           {!coDonNangCaoChuaHienThi && (
@@ -140,6 +142,7 @@ function mauTheoDiemMoi(diem: number): string {
         <section class="mb-10 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <h2 class="font-display text-2xl font-bold text-(--color-ink-950)">Luận Cơ Bản</h2>
+            <a href="/api/dai-cat-loi/luan-giai-bat-tu-toan-dien/tai-pdf?tang=co_ban" class="inline-flex items-center gap-1.5 rounded-(--radius-control) border border-(--color-gold-400)/50 bg-(--color-gold-400)/10 px-3 py-1.5 text-xs font-medium text-(--color-gold-700)">📄 Tải PDF</a>
           </div>
           <p class="mt-2 text-xs text-(--color-ink-500)">{baoCaoCoBan.disclaimerDauBai}</p>
           <div class="mt-4 grid grid-cols-2 gap-2 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4 text-sm sm:grid-cols-4">
@@ -215,6 +218,7 @@ function mauTheoDiemMoi(diem: number): string {
         <div class="mb-10 rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-6 text-sm text-(--color-ink-800)">
           <p class="font-display text-lg font-bold text-(--color-ink-950)">✅ Đã mua Luận Trọn Đời</p>
           <p class="mt-2">Bản luận giải đầy đủ (PDF) đã được gửi tới email tài khoản của bạn ngay sau khi thanh toán thành công. Vui lòng kiểm tra hộp thư (kể cả mục Spam/Quảng cáo).</p>
+          <a href="/api/dai-cat-loi/luan-giai-bat-tu-toan-dien/tai-pdf?tang=nang_cao" class="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-(--color-gold-700) hover:underline">📄 Tải PDF</a>
         </div>
       )}
 
@@ -223,6 +227,7 @@ function mauTheoDiemMoi(diem: number): string {
         <section class="mb-10 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
           <div class="flex flex-wrap items-center justify-between gap-2">
             <h2 class="font-display text-2xl font-bold text-(--color-ink-950)">Luận Trọn Đời</h2>
+            <a href="/api/dai-cat-loi/luan-giai-bat-tu-toan-dien/tai-pdf?tang=nang_cao" class="inline-flex items-center gap-1.5 rounded-(--radius-control) border border-(--color-gold-400)/50 bg-(--color-gold-400)/10 px-3 py-1.5 text-xs font-medium text-(--color-gold-700)">📄 Tải PDF</a>
           </div>
           <div class="mt-6 space-y-6" id="ldbtd-nangcaotoanbo">
             {baoCaoNangCao.giaiDoan.length === 0 && (
