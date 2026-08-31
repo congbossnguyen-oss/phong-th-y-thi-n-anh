@@ -1,0 +1,1128 @@
+[
+  {
+    "name": "vd-cong-binh-dan-dinh-mui",
+    "input": {
+      "toaDeg": 40,
+      "monDeg": 208
+    },
+    "expect": {
+      "toa": {
+        "canChi": "Bính Dần",
+        "stt": 3,
+        "gap": 2.5
+      },
+      "mon": {
+        "canChi": "Đinh Mùi",
+        "stt": 44,
+        "gap": 2.5
+      },
+      "monCung": "Khôn",
+      "monHuong": "Tây Nam",
+      "nguHoDonKhoi": "Canh Dần",
+      "diaBan": {
+        "Dần": {
+          "canChi": "Canh Dần",
+          "stt": 27,
+          "buoc": 43,
+          "cung": "Chấn",
+          "napAm": "Tùng Bách Mộc",
+          "hanh": "Mộc"
+        },
+        "Mão": {
+          "canChi": "Tân Mão",
+          "stt": 28,
+          "buoc": 44,
+          "cung": "Tốn",
+          "napAm": "Tùng Bách Mộc",
+          "hanh": "Mộc"
+        },
+        "Thìn": {
+          "canChi": "Nhâm Thìn",
+          "stt": 29,
+          "buoc": 45,
+          "cung": "Trung cung",
+          "napAm": "Trường Lưu Thủy",
+          "hanh": "Thủy"
+        },
+        "Tị": {
+          "canChi": "Quý Tị",
+          "stt": 30,
+          "buoc": 46,
+          "cung": "Càn",
+          "napAm": "Trường Lưu Thủy",
+          "hanh": "Thủy"
+        },
+        "Ngọ": {
+          "canChi": "Giáp Ngọ",
+          "stt": 31,
+          "buoc": 47,
+          "cung": "Đoài",
+          "napAm": "Sa Trung Kim",
+          "hanh": "Kim"
+        },
+        "Mùi": {
+          "canChi": "Ất Mùi",
+          "stt": 32,
+          "buoc": 48,
+          "cung": "Cấn",
+          "napAm": "Sa Trung Kim",
+          "hanh": "Kim"
+        },
+        "Thân": {
+          "canChi": "Bính Thân",
+          "stt": 33,
+          "buoc": 49,
+          "cung": "Ly",
+          "napAm": "Sơn Hạ Hỏa",
+          "hanh": "Hỏa"
+        },
+        "Dậu": {
+          "canChi": "Đinh Dậu",
+          "stt": 34,
+          "buoc": 50,
+          "cung": "Khảm",
+          "napAm": "Sơn Hạ Hỏa",
+          "hanh": "Hỏa"
+        },
+        "Tuất": {
+          "canChi": "Mậu Tuất",
+          "stt": 35,
+          "buoc": 51,
+          "cung": "Khôn",
+          "napAm": "Bình Địa Mộc",
+          "hanh": "Mộc"
+        },
+        "Hợi": {
+          "canChi": "Kỷ Hợi",
+          "stt": 36,
+          "buoc": 52,
+          "cung": "Chấn",
+          "napAm": "Bình Địa Mộc",
+          "hanh": "Mộc"
+        },
+        "Tý": {
+          "canChi": "Canh Tý",
+          "stt": 37,
+          "buoc": 53,
+          "cung": "Tốn",
+          "napAm": "Bích Thượng Thổ",
+          "hanh": "Thổ"
+        },
+        "Sửu": {
+          "canChi": "Tân Sửu",
+          "stt": 38,
+          "buoc": 54,
+          "cung": "Trung cung",
+          "napAm": "Bích Thượng Thổ",
+          "hanh": "Thổ"
+        }
+      },
+      "thanSat": [
+        {
+          "ten": "Dương Quý nhân",
+          "chi": "Hợi",
+          "canChi": "Kỷ Hợi",
+          "napAm": "Bình Địa Mộc",
+          "hanh": "Mộc",
+          "cung": "Chấn",
+          "huong": "Đông",
+          "quanHe": "Đồng khí với cung",
+          "luc": "VƯỢNG",
+          "lamMon": false
+        },
+        {
+          "ten": "Thiên Hình",
+          "chi": "Sửu",
+          "canChi": "Tân Sửu",
+          "napAm": "Bích Thượng Thổ",
+          "hanh": "Thổ",
+          "cung": "Trung cung",
+          "huong": "Tâm nhà",
+          "quanHe": "Đồng khí với cung",
+          "luc": "VƯỢNG",
+          "lamMon": false
+        },
+        {
+          "ten": "Thiên Hình",
+          "chi": "Tuất",
+          "canChi": "Mậu Tuất",
+          "napAm": "Bình Địa Mộc",
+          "hanh": "Mộc",
+          "cung": "Khôn",
+          "huong": "Tây Nam",
+          "quanHe": "Nạp âm Mộc khắc cung Thổ",
+          "luc": "bị tiết lực",
+          "lamMon": false
+        },
+        {
+          "ten": "Thiên Lộc",
+          "chi": "Ngọ",
+          "canChi": "Giáp Ngọ",
+          "napAm": "Sa Trung Kim",
+          "hanh": "Kim",
+          "cung": "Đoài",
+          "huong": "Tây",
+          "quanHe": "Đồng khí với cung",
+          "luc": "VƯỢNG",
+          "lamMon": false
+        },
+        {
+          "ten": "Thiên Mã",
+          "chi": "Tị",
+          "canChi": "Quý Tị",
+          "napAm": "Trường Lưu Thủy",
+          "hanh": "Thủy",
+          "cung": "Càn",
+          "huong": "Tây Bắc",
+          "quanHe": "Cung Kim sinh nạp âm Thủy",
+          "luc": "MẠNH",
+          "lamMon": false
+        },
+        {
+          "ten": "Âm Quý nhân",
+          "chi": "Dậu",
+          "canChi": "Đinh Dậu",
+          "napAm": "Sơn Hạ Hỏa",
+          "hanh": "Hỏa",
+          "cung": "Khảm",
+          "huong": "Bắc",
+          "quanHe": "Cung Thủy khắc nạp âm Hỏa",
+          "luc": "bị tiết lực",
+          "lamMon": false
+        },
+        {
+          "ten": "Đào hoa",
+          "chi": "Tý",
+          "canChi": "Canh Tý",
+          "napAm": "Bích Thượng Thổ",
+          "hanh": "Thổ",
+          "cung": "Tốn",
+          "huong": "Đông Nam",
+          "quanHe": "Cung Mộc khắc nạp âm Thổ",
+          "luc": "bị tiết lực",
+          "lamMon": false
+        },
+        {
+          "ten": "Đại Sát",
+          "chi": "Tuất",
+          "canChi": "Mậu Tuất",
+          "napAm": "Bình Địa Mộc",
+          "hanh": "Mộc",
+          "cung": "Khôn",
+          "huong": "Tây Nam",
+          "quanHe": "Nạp âm Mộc khắc cung Thổ",
+          "luc": "bị tiết lực",
+          "lamMon": false
+        },
+        {
+          "ten": "Độc Hoả",
+          "chi": "Ngọ",
+          "canChi": "Giáp Ngọ",
+          "napAm": "Sa Trung Kim",
+          "hanh": "Kim",
+          "cung": "Đoài",
+          "huong": "Tây",
+          "quanHe": "Đồng khí với cung",
+          "luc": "VƯỢNG",
+          "lamMon": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "canh-ty-canh-ngo",
+    "input": {
+      "toaDeg": 0,
+      "monDeg": 160
+    },
+    "expect": {
+      "toa": {
+        "canChi": "Canh Tý",
+        "stt": 37,
+        "gap": 1.5
+      },
+      "mon": {
+        "canChi": "Canh Ngọ",
+        "stt": 7,
+        "gap": 2.5
+      },
+      "monCung": "Ly",
+      "monHuong": "Nam",
+      "nguHoDonKhoi": "Mậu Dần",
+      "diaBan": {
+        "Dần": {
+          "canChi": "Mậu Dần",
+          "stt": 15,
+          "buoc": 8,
+          "cung": "Tốn",
+          "napAm": "Thành Đầu Thổ",
+          "hanh": "Thổ"
+        },
+        "Mão": {
+          "canChi": "Kỷ Mão",
+          "stt": 16,
+          "buoc": 9,
+          "cung": "Trung cung",
+          "napAm": "Thành Đầu Thổ",
+          "hanh": "Thổ"
+        },
+        "Thìn": {
+          "canChi": "Canh Thìn",
+          "stt": 17,
+          "buoc": 10,
+          "cung": "Càn",
+          "napAm": "Bạch Lạp Kim",
+          "hanh": "Kim"
+        },
+        "Tị": {
+          "canChi": "Tân Tị",
+          "stt": 18,
+          "buoc": 11,
+          "cung": "Đoài",
+          "napAm": "Bạch Lạp Kim",
+          "hanh": "Kim"
+        },
+        "Ngọ": {
+          "canChi": "Nhâm Ngọ",
+          "stt": 19,
+          "buoc": 12,
+          "cung": "Cấn",
+          "napAm": "Dương Liễu Mộc",
+          "hanh": "Mộc"
+        },
+        "Mùi": {
+          "canChi": "Quý Mùi",
+          "stt": 20,
+          "buoc": 13,
+          "cung": "Ly",
+          "napAm": "Dương Liễu Mộc",
+          "hanh": "Mộc"
+        },
+        "Thân": {
+          "canChi": "Giáp Thân",
+          "stt": 21,
+          "buoc": 14,
+          "cung": "Khảm",
+          "napAm": "Tuyền Trung Thủy",
+          "hanh": "Thủy"
+        },
+        "Dậu": {
+          "canChi": "Ất Dậu",
+          "stt": 22,
+          "buoc": 15,
+          "cung": "Khôn",
+          "napAm": "Tuyền Trung Thủy",
+          "hanh": "Thủy"
+        },
+        "Tuất": {
+          "canChi": "Bính Tuất",
+          "stt": 23,
+          "buoc": 16,
+          "cung": "Chấn",
+          "napAm": "Ốc Thượng Thổ",
+          "hanh": "Thổ"
+        },
+        "Hợi": {
+          "canChi": "Đinh Hợi",
+          "stt": 24,
+          "buoc": 17,
+          "cung": "Tốn",
+          "napAm": "Ốc Thượng Thổ",
+          "hanh": "Thổ"
+        },
+        "Tý": {
+          "canChi": "Mậu Tý",
+          "stt": 25,
+          "buoc": 18,
+          "cung": "Trung cung",
+          "napAm": "Tích Lịch Hỏa",
+          "hanh": "Hỏa"
+        },
+        "Sửu": {
+          "canChi": "Kỷ Sửu",
+          "stt": 26,
+          "buoc": 19,
+          "cung": "Càn",
+          "napAm": "Tích Lịch Hỏa",
+          "hanh": "Hỏa"
+        }
+      },
+      "thanSat": [
+        {
+          "ten": "Dương Quý nhân",
+          "chi": "Dần",
+          "canChi": "Mậu Dần",
+          "napAm": "Thành Đầu Thổ",
+          "hanh": "Thổ",
+          "cung": "Tốn",
+          "huong": "Đông Nam",
+          "quanHe": "Cung Mộc khắc nạp âm Thổ",
+          "luc": "bị tiết lực",
+          "lamMon": false
+        },
+        {
+          "ten": "Thiên Hình",
+          "chi": "Ngọ",
+          "canChi": "Nhâm Ngọ",
+          "napAm": "Dương Liễu Mộc",
+          "hanh": "Mộc",
+          "cung": "Cấn",
+          "huong": "Đông Bắc",
+          "quanHe": "Nạp âm Mộc khắc cung Thổ",
+          "luc": "bị tiết lực",
+          "lamMon": false
+        },
+        {
+          "ten": "Thiên Lộc",
+          "chi": "Thân",
+          "canChi": "Giáp Thân",
+          "napAm": "Tuyền Trung Thủy",
+          "hanh": "Thủy",
+          "cung": "Khảm",
+          "huong": "Bắc",
+          "quanHe": "Đồng khí với cung",
+          "luc": "VƯỢNG",
+          "lamMon": false
+        },
+        {
+          "ten": "Thiên Mã",
+          "chi": "Thân",
+          "canChi": "Giáp Thân",
+          "napAm": "Tuyền Trung Thủy",
+          "hanh": "Thủy",
+          "cung": "Khảm",
+          "huong": "Bắc",
+          "quanHe": "Đồng khí với cung",
+          "luc": "VƯỢNG",
+          "lamMon": false
+        },
+        {
+          "ten": "Âm Quý nhân",
+          "chi": "Ngọ",
+          "canChi": "Nhâm Ngọ",
+          "napAm": "Dương Liễu Mộc",
+          "hanh": "Mộc",
+          "cung": "Cấn",
+          "huong": "Đông Bắc",
+          "quanHe": "Nạp âm Mộc khắc cung Thổ",
+          "luc": "bị tiết lực",
+          "lamMon": false
+        },
+        {
+          "ten": "Đào hoa",
+          "chi": "Mão",
+          "canChi": "Kỷ Mão",
+          "napAm": "Thành Đầu Thổ",
+          "hanh": "Thổ",
+          "cung": "Trung cung",
+          "huong": "Tâm nhà",
+          "quanHe": "Đồng khí với cung",
+          "luc": "VƯỢNG",
+          "lamMon": false
+        },
+        {
+          "ten": "Đại Sát",
+          "chi": "Sửu",
+          "canChi": "Kỷ Sửu",
+          "napAm": "Tích Lịch Hỏa",
+          "hanh": "Hỏa",
+          "cung": "Càn",
+          "huong": "Tây Bắc",
+          "quanHe": "Nạp âm Hỏa khắc cung Kim",
+          "luc": "bị tiết lực",
+          "lamMon": false
+        },
+        {
+          "ten": "Độc Hoả",
+          "chi": "Dậu",
+          "canChi": "Ất Dậu",
+          "napAm": "Tuyền Trung Thủy",
+          "hanh": "Thủy",
+          "cung": "Khôn",
+          "huong": "Tây Nam",
+          "quanHe": "Cung Thổ khắc nạp âm Thủy",
+          "luc": "bị tiết lực",
+          "lamMon": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "ky-hoi-binh-ngo-lam-mon",
+    "input": {
+      "toaDeg": 320,
+      "monDeg": 180
+    },
+    "expect": {
+      "toa": {
+        "canChi": "Kỷ Hợi",
+        "stt": 36,
+        "gap": 0.5
+      },
+      "mon": {
+        "canChi": "Bính Ngọ",
+        "stt": 43,
+        "gap": 1.5
+      },
+      "monCung": "Ly",
+      "monHuong": "Nam",
+      "nguHoDonKhoi": "Bính Dần",
+      "diaBan": {
+        "Dần": {
+          "canChi": "Bính Dần",
+          "stt": 3,
+          "buoc": 20,
+          "cung": "Đoài",
+          "napAm": "Lư Trung Hỏa",
+          "hanh": "Hỏa"
+        },
+        "Mão": {
+          "canChi": "Đinh Mão",
+          "stt": 4,
+          "buoc": 21,
+          "cung": "Cấn",
+          "napAm": "Lư Trung Hỏa",
+          "hanh": "Hỏa"
+        },
+        "Thìn": {
+          "canChi": "Mậu Thìn",
+          "stt": 5,
+          "buoc": 22,
+          "cung": "Ly",
+          "napAm": "Đại Lâm Mộc",
+          "hanh": "Mộc"
+        },
+        "Tị": {
+          "canChi": "Kỷ Tị",
+          "stt": 6,
+          "buoc": 23,
+          "cung": "Khảm",
+          "napAm": "Đại Lâm Mộc",
+          "hanh": "Mộc"
+        },
+        "Ngọ": {
+          "canChi": "Canh Ngọ",
+          "stt": 7,
+          "buoc": 24,
+          "cung": "Khôn",
+          "napAm": "Lộ Bàng Thổ",
+          "hanh": "Thổ"
+        },
+        "Mùi": {
+          "canChi": "Tân Mùi",
+          "stt": 8,
+          "buoc": 25,
+          "cung": "Chấn",
+          "napAm": "Lộ Bàng Thổ",
+          "hanh": "Thổ"
+        },
+        "Thân": {
+          "canChi": "Nhâm Thân",
+          "stt": 9,
+          "buoc": 26,
+          "cung": "Tốn",
+          "napAm": "Kiếm Phong Kim",
+          "hanh": "Kim"
+        },
+        "Dậu": {
+          "canChi": "Quý Dậu",
+          "stt": 10,
+          "buoc": 27,
+          "cung": "Trung cung",
+          "napAm": "Kiếm Phong Kim",
+          "hanh": "Kim"
+        },
+        "Tuất": {
+          "canChi": "Giáp Tuất",
+          "stt": 11,
+          "buoc": 28,
+          "cung": "Càn",
+          "napAm": "Sơn Đầu Hỏa",
+          "hanh": "Hỏa"
+        },
+        "Hợi": {
+          "canChi": "Ất Hợi",
+          "stt": 12,
+          "buoc": 29,
+          "cung": "Đoài",
+          "napAm": "Sơn Đầu Hỏa",
+          "hanh": "Hỏa"
+        },
+        "Tý": {
+          "canChi": "Bính Tý",
+          "stt": 13,
+          "buoc": 30,
+          "cung": "Cấn",
+          "napAm": "Giản Hạ Thủy",
+          "hanh": "Thủy"
+        },
+        "Sửu": {
+          "canChi": "Đinh Sửu",
+          "stt": 14,
+          "buoc": 31,
+          "cung": "Ly",
+          "napAm": "Giản Hạ Thủy",
+          "hanh": "Thủy"
+        }
+      },
+      "thanSat": [
+        {
+          "ten": "Dương Quý nhân",
+          "chi": "Dậu",
+          "canChi": "Quý Dậu",
+          "napAm": "Kiếm Phong Kim",
+          "hanh": "Kim",
+          "cung": "Trung cung",
+          "huong": "Tâm nhà",
+          "quanHe": "Cung Thổ sinh nạp âm Kim",
+          "luc": "MẠNH",
+          "lamMon": false
+        },
+        {
+          "ten": "Thiên Hình",
+          "chi": "Ngọ",
+          "canChi": "Canh Ngọ",
+          "napAm": "Lộ Bàng Thổ",
+          "hanh": "Thổ",
+          "cung": "Khôn",
+          "huong": "Tây Nam",
+          "quanHe": "Đồng khí với cung",
+          "luc": "VƯỢNG",
+          "lamMon": false
+        },
+        {
+          "ten": "Thiên Lộc",
+          "chi": "Tị",
+          "canChi": "Kỷ Tị",
+          "napAm": "Đại Lâm Mộc",
+          "hanh": "Mộc",
+          "cung": "Khảm",
+          "huong": "Bắc",
+          "quanHe": "Cung Thủy sinh nạp âm Mộc",
+          "luc": "MẠNH",
+          "lamMon": false
+        },
+        {
+          "ten": "Thiên Mã",
+          "chi": "Thân",
+          "canChi": "Nhâm Thân",
+          "napAm": "Kiếm Phong Kim",
+          "hanh": "Kim",
+          "cung": "Tốn",
+          "huong": "Đông Nam",
+          "quanHe": "Nạp âm Kim khắc cung Mộc",
+          "luc": "bị tiết lực",
+          "lamMon": false
+        },
+        {
+          "ten": "Âm Quý nhân",
+          "chi": "Hợi",
+          "canChi": "Ất Hợi",
+          "napAm": "Sơn Đầu Hỏa",
+          "hanh": "Hỏa",
+          "cung": "Đoài",
+          "huong": "Tây",
+          "quanHe": "Nạp âm Hỏa khắc cung Kim",
+          "luc": "bị tiết lực",
+          "lamMon": false
+        },
+        {
+          "ten": "Đào hoa",
+          "chi": "Mão",
+          "canChi": "Đinh Mão",
+          "napAm": "Lư Trung Hỏa",
+          "hanh": "Hỏa",
+          "cung": "Cấn",
+          "huong": "Đông Bắc",
+          "quanHe": "Nạp âm Hỏa sinh cung Thổ",
+          "luc": "bị tiết lực",
+          "lamMon": false
+        },
+        {
+          "ten": "Đại Sát",
+          "chi": "Sửu",
+          "canChi": "Đinh Sửu",
+          "napAm": "Giản Hạ Thủy",
+          "hanh": "Thủy",
+          "cung": "Ly",
+          "huong": "Nam",
+          "quanHe": "Nạp âm Thủy khắc cung Hỏa",
+          "luc": "bị tiết lực",
+          "lamMon": false
+        },
+        {
+          "ten": "Độc Hoả",
+          "chi": "Dậu",
+          "canChi": "Quý Dậu",
+          "napAm": "Kiếm Phong Kim",
+          "hanh": "Kim",
+          "cung": "Trung cung",
+          "huong": "Tâm nhà",
+          "quanHe": "Cung Thổ sinh nạp âm Kim",
+          "luc": "MẠNH",
+          "lamMon": false
+        }
+      ]
+    }
+  },
+  {
+    "name": "pdf-vd1-lam-mon",
+    "input": {
+      "toaDeg": 358,
+      "monDeg": 136
+    },
+    "expect": {
+      "toa": {
+        "canChi": "Canh Tý",
+        "stt": 37,
+        "gap": 2.5
+      },
+      "mon": {
+        "canChi": "Tân Tị",
+        "stt": 18,
+        "gap": 2.5
+      },
+      "monCung": "Tốn",
+      "monHuong": "Đông Nam",
+      "nguHoDonKhoi": "Mậu Dần",
+      "diaBan": {
+        "Dần": {
+          "canChi": "Mậu Dần",
+          "stt": 15,
+          "buoc": 57,
+          "cung": "Cấn",
+          "napAm": "Thành Đầu Thổ",
+          "hanh": "Thổ"
+        },
+        "Mão": {
+          "canChi": "Kỷ Mão",
+          "stt": 16,
+          "buoc": 58,
+          "cung": "Ly",
+          "napAm": "Thành Đầu Thổ",
+          "hanh": "Thổ"
+        },
+        "Thìn": {
+          "canChi": "Canh Thìn",
+          "stt": 17,
+          "buoc": 59,
+          "cung": "Khảm",
+          "napAm": "Bạch Lạp Kim",
+          "hanh": "Kim"
+        },
+        "Tị": {
+          "canChi": "Tân Tị",
+          "stt": 18,
+          "buoc": 0,
+          "cung": "Trung cung",
+          "napAm": "Bạch Lạp Kim",
+          "hanh": "Kim"
+        },
+        "Ngọ": {
+          "canChi": "Nhâm Ngọ",
+          "stt": 19,
+          "buoc": 1,
+          "cung": "Càn",
+          "napAm": "Dương Liễu Mộc",
+          "hanh": "Mộc"
+        },
+        "Mùi": {
+          "canChi": "Quý Mùi",
+          "stt": 20,
+          "buoc": 2,
+          "cung": "Đoài",
+          "napAm": "Dương Liễu Mộc",
+          "hanh": "Mộc"
+        },
+        "Thân": {
+          "canChi": "Giáp Thân",
+          "stt": 21,
+          "buoc": 3,
+          "cung": "Cấn",
+          "napAm": "Tuyền Trung Thủy",
+          "hanh": "Thủy"
+        },
+        "Dậu": {
+          "canChi": "Ất Dậu",
+          "stt": 22,
+          "buoc": 4,
+          "cung": "Ly",
+          "napAm": "Tuyền Trung Thủy",
+          "hanh": "Thủy"
+        },
+        "Tuất": {
+          "canChi": "Bính Tuất",
+          "stt": 23,
+          "buoc": 5,
+          "cung": "Khảm",
+          "napAm": "Ốc Thượng Thổ",
+          "hanh": "Thổ"
+        },
+        "Hợi": {
+          "canChi": "Đinh Hợi",
+          "stt": 24,
+          "buoc": 6,
+          "cung": "Khôn",
+          "napAm": "Ốc Thượng Thổ",
+          "hanh": "Thổ"
+        },
+        "Tý": {
+          "canChi": "Mậu Tý",
+          "stt": 25,
+          "buoc": 7,
+          "cung": "Chấn",
+          "napAm": "Tích Lịch Hỏa",
+          "hanh": "Hỏa"
+        },
+        "Sửu": {
+          "canChi": "Kỷ Sửu",
+          "stt": 26,
+          "buoc": 8,
+          "cung": "Tốn",
+          "napAm": "Tích Lịch Hỏa",
+          "hanh": "Hỏa"
+        }
+      },
+      "thanSat": [
+        {
+          "ten": "Dương Quý nhân",
+          "chi": "Ngọ",
+          "canChi": "Nhâm Ngọ",
+          "napAm": "Dương Liễu Mộc",
+          "hanh": "Mộc",
+          "cung": "Càn",
+          "huong": "Tây Bắc",
+          "quanHe": "Cung Kim khắc nạp âm Mộc",
+          "luc": "bị tiết lực",
+          "lamMon": false
+        },
+        {
+          "ten": "Thiên Hình",
+          "chi": "Dần",
+          "canChi": "Mậu Dần",
+          "napAm": "Thành Đầu Thổ",
+          "hanh": "Thổ",
+          "cung": "Cấn",
+          "huong": "Đông Bắc",
+          "quanHe": "Đồng khí với cung",
+          "luc": "VƯỢNG",
+          "lamMon": false
+        },
+        {
+          "ten": "Thiên Hình",
+          "chi": "Thân",
+          "canChi": "Giáp Thân",
+          "napAm": "Tuyền Trung Thủy",
+          "hanh": "Thủy",
+          "cung": "Cấn",
+          "huong": "Đông Bắc",
+          "quanHe": "Cung Thổ khắc nạp âm Thủy",
+          "luc": "bị tiết lực",
+          "lamMon": false
+        },
+        {
+          "ten": "Thiên Lộc",
+          "chi": "Dậu",
+          "canChi": "Ất Dậu",
+          "napAm": "Tuyền Trung Thủy",
+          "hanh": "Thủy",
+          "cung": "Ly",
+          "huong": "Nam",
+          "quanHe": "Nạp âm Thủy khắc cung Hỏa",
+          "luc": "bị tiết lực",
+          "lamMon": false
+        },
+        {
+          "ten": "Thiên Mã",
+          "chi": "Hợi",
+          "canChi": "Đinh Hợi",
+          "napAm": "Ốc Thượng Thổ",
+          "hanh": "Thổ",
+          "cung": "Khôn",
+          "huong": "Tây Nam",
+          "quanHe": "Đồng khí với cung",
+          "luc": "VƯỢNG",
+          "lamMon": false
+        },
+        {
+          "ten": "Âm Quý nhân",
+          "chi": "Dần",
+          "canChi": "Mậu Dần",
+          "napAm": "Thành Đầu Thổ",
+          "hanh": "Thổ",
+          "cung": "Cấn",
+          "huong": "Đông Bắc",
+          "quanHe": "Đồng khí với cung",
+          "luc": "VƯỢNG",
+          "lamMon": false
+        },
+        {
+          "ten": "Đào hoa",
+          "chi": "Ngọ",
+          "canChi": "Nhâm Ngọ",
+          "napAm": "Dương Liễu Mộc",
+          "hanh": "Mộc",
+          "cung": "Càn",
+          "huong": "Tây Bắc",
+          "quanHe": "Cung Kim khắc nạp âm Mộc",
+          "luc": "bị tiết lực",
+          "lamMon": false
+        },
+        {
+          "ten": "Đại Sát",
+          "chi": "Thìn",
+          "canChi": "Canh Thìn",
+          "napAm": "Bạch Lạp Kim",
+          "hanh": "Kim",
+          "cung": "Khảm",
+          "huong": "Bắc",
+          "quanHe": "Nạp âm Kim sinh cung Thủy",
+          "luc": "bị tiết lực",
+          "lamMon": false
+        },
+        {
+          "ten": "Độc Hoả",
+          "chi": "Tị",
+          "canChi": "Tân Tị",
+          "napAm": "Bạch Lạp Kim",
+          "hanh": "Kim",
+          "cung": "Trung cung",
+          "huong": "Tâm nhà",
+          "quanHe": "Cung Thổ sinh nạp âm Kim",
+          "luc": "MẠNH",
+          "lamMon": true
+        }
+      ]
+    }
+  },
+  {
+    "name": "pdf-vd2",
+    "input": {
+      "toaDeg": 358,
+      "monDeg": 148
+    },
+    "expect": {
+      "toa": {
+        "canChi": "Canh Tý",
+        "stt": 37,
+        "gap": 2.5
+      },
+      "mon": {
+        "canChi": "Ất Tị",
+        "stt": 42,
+        "gap": 2.5
+      },
+      "monCung": "Tốn",
+      "monHuong": "Đông Nam",
+      "nguHoDonKhoi": "Mậu Dần",
+      "diaBan": {
+        "Dần": {
+          "canChi": "Mậu Dần",
+          "stt": 15,
+          "buoc": 33,
+          "cung": "Khôn",
+          "napAm": "Thành Đầu Thổ",
+          "hanh": "Thổ"
+        },
+        "Mão": {
+          "canChi": "Kỷ Mão",
+          "stt": 16,
+          "buoc": 34,
+          "cung": "Chấn",
+          "napAm": "Thành Đầu Thổ",
+          "hanh": "Thổ"
+        },
+        "Thìn": {
+          "canChi": "Canh Thìn",
+          "stt": 17,
+          "buoc": 35,
+          "cung": "Tốn",
+          "napAm": "Bạch Lạp Kim",
+          "hanh": "Kim"
+        },
+        "Tị": {
+          "canChi": "Tân Tị",
+          "stt": 18,
+          "buoc": 36,
+          "cung": "Trung cung",
+          "napAm": "Bạch Lạp Kim",
+          "hanh": "Kim"
+        },
+        "Ngọ": {
+          "canChi": "Nhâm Ngọ",
+          "stt": 19,
+          "buoc": 37,
+          "cung": "Càn",
+          "napAm": "Dương Liễu Mộc",
+          "hanh": "Mộc"
+        },
+        "Mùi": {
+          "canChi": "Quý Mùi",
+          "stt": 20,
+          "buoc": 38,
+          "cung": "Đoài",
+          "napAm": "Dương Liễu Mộc",
+          "hanh": "Mộc"
+        },
+        "Thân": {
+          "canChi": "Giáp Thân",
+          "stt": 21,
+          "buoc": 39,
+          "cung": "Cấn",
+          "napAm": "Tuyền Trung Thủy",
+          "hanh": "Thủy"
+        },
+        "Dậu": {
+          "canChi": "Ất Dậu",
+          "stt": 22,
+          "buoc": 40,
+          "cung": "Ly",
+          "napAm": "Tuyền Trung Thủy",
+          "hanh": "Thủy"
+        },
+        "Tuất": {
+          "canChi": "Bính Tuất",
+          "stt": 23,
+          "buoc": 41,
+          "cung": "Khảm",
+          "napAm": "Ốc Thượng Thổ",
+          "hanh": "Thổ"
+        },
+        "Hợi": {
+          "canChi": "Đinh Hợi",
+          "stt": 24,
+          "buoc": 42,
+          "cung": "Khôn",
+          "napAm": "Ốc Thượng Thổ",
+          "hanh": "Thổ"
+        },
+        "Tý": {
+          "canChi": "Mậu Tý",
+          "stt": 25,
+          "buoc": 43,
+          "cung": "Chấn",
+          "napAm": "Tích Lịch Hỏa",
+          "hanh": "Hỏa"
+        },
+        "Sửu": {
+          "canChi": "Kỷ Sửu",
+          "stt": 26,
+          "buoc": 44,
+          "cung": "Tốn",
+          "napAm": "Tích Lịch Hỏa",
+          "hanh": "Hỏa"
+        }
+      },
+      "thanSat": [
+        {
+          "ten": "Dương Quý nhân",
+          "chi": "Thân",
+          "canChi": "Giáp Thân",
+          "napAm": "Tuyền Trung Thủy",
+          "hanh": "Thủy",
+          "cung": "Cấn",
+          "huong": "Đông Bắc",
+          "quanHe": "Cung Thổ khắc nạp âm Thủy",
+          "luc": "bị tiết lực",
+          "lamMon": false
+        },
+        {
+          "ten": "Thiên Hình",
+          "chi": "Dần",
+          "canChi": "Mậu Dần",
+          "napAm": "Thành Đầu Thổ",
+          "hanh": "Thổ",
+          "cung": "Khôn",
+          "huong": "Tây Nam",
+          "quanHe": "Đồng khí với cung",
+          "luc": "VƯỢNG",
+          "lamMon": false
+        },
+        {
+          "ten": "Thiên Hình",
+          "chi": "Thân",
+          "canChi": "Giáp Thân",
+          "napAm": "Tuyền Trung Thủy",
+          "hanh": "Thủy",
+          "cung": "Cấn",
+          "huong": "Đông Bắc",
+          "quanHe": "Cung Thổ khắc nạp âm Thủy",
+          "luc": "bị tiết lực",
+          "lamMon": false
+        },
+        {
+          "ten": "Thiên Lộc",
+          "chi": "Mão",
+          "canChi": "Kỷ Mão",
+          "napAm": "Thành Đầu Thổ",
+          "hanh": "Thổ",
+          "cung": "Chấn",
+          "huong": "Đông",
+          "quanHe": "Cung Mộc khắc nạp âm Thổ",
+          "luc": "bị tiết lực",
+          "lamMon": false
+        },
+        {
+          "ten": "Thiên Mã",
+          "chi": "Hợi",
+          "canChi": "Đinh Hợi",
+          "napAm": "Ốc Thượng Thổ",
+          "hanh": "Thổ",
+          "cung": "Khôn",
+          "huong": "Tây Nam",
+          "quanHe": "Đồng khí với cung",
+          "luc": "VƯỢNG",
+          "lamMon": false
+        },
+        {
+          "ten": "Âm Quý nhân",
+          "chi": "Tý",
+          "canChi": "Mậu Tý",
+          "napAm": "Tích Lịch Hỏa",
+          "hanh": "Hỏa",
+          "cung": "Chấn",
+          "huong": "Đông",
+          "quanHe": "Cung Mộc sinh nạp âm Hỏa",
+          "luc": "MẠNH",
+          "lamMon": false
+        },
+        {
+          "ten": "Đào hoa",
+          "chi": "Ngọ",
+          "canChi": "Nhâm Ngọ",
+          "napAm": "Dương Liễu Mộc",
+          "hanh": "Mộc",
+          "cung": "Càn",
+          "huong": "Tây Bắc",
+          "quanHe": "Cung Kim khắc nạp âm Mộc",
+          "luc": "bị tiết lực",
+          "lamMon": false
+        },
+        {
+          "ten": "Đại Sát",
+          "chi": "Thìn",
+          "canChi": "Canh Thìn",
+          "napAm": "Bạch Lạp Kim",
+          "hanh": "Kim",
+          "cung": "Tốn",
+          "huong": "Đông Nam",
+          "quanHe": "Nạp âm Kim khắc cung Mộc",
+          "luc": "bị tiết lực",
+          "lamMon": false
+        },
+        {
+          "ten": "Độc Hoả",
+          "chi": "Tị",
+          "canChi": "Tân Tị",
+          "napAm": "Bạch Lạp Kim",
+          "hanh": "Kim",
+          "cung": "Trung cung",
+          "huong": "Tâm nhà",
+          "quanHe": "Cung Thổ sinh nạp âm Kim",
+          "luc": "MẠNH",
+          "lamMon": false
+        }
+      ]
+    }
+  }
+]

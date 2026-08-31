@@ -10,7 +10,7 @@
   ],
   "scripts": {
     "dev": "astro dev",
-    "build:packages": "npm run build -w packages/calendar-core && npm run build -w packages/engine-contract && npm run build -w packages/rule-engine && npm run build -w packages/trachnhat-engine && npm run build -w packages/phone-energy-engine && npm run build -w packages/tinhdanh-engine",
+    "build:packages": "npm run build -w packages/calendar-core && npm run build -w packages/engine-contract && npm run build -w packages/rule-engine && npm run build -w packages/trachnhat-engine && npm run build -w packages/phone-energy-engine && npm run build -w packages/tinhdanh-engine && npm run build -w packages/duongtrach-engine",
     "build": "npm run build:packages && astro build",
     "preview": "astro preview",
     "start": "node ./dist/server/entry.mjs",
@@ -37,7 +37,8 @@
     "pdf-lib": "^1.17.1",
     "resend": "^6.18.1",
     "tailwindcss": "^4.3.3",
-    "wrangler": "^4.125.0"
+    "wrangler": "^4.125.0",
+    "@thien-anh/duongtrach-engine": "*"
   },
   "devDependencies": {
     "drizzle-kit": "^0.31.10",

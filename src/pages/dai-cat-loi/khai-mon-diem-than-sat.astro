@@ -1,0 +1,462 @@
+---
+// TRANG "Khai Môn Điểm Thần Sát" — CÔNG CỤ NỘI BỘ cho chủ site tự dùng (README-CLAUDE-CODE.md,
+// gói khai-mon-module Công cung cấp 31/8/2026): KHÔNG phải trang bán cho khách — không phân tầng
+// Free/Cơ Bản/Nâng Cao, không thanh toán, không email, không PDF, admin-gated như kiem-chung.astro.
+//
+// Bố cục/cách trình bày PORT NGUYÊN VẸN từ reference/khai-mon-diem-than-sat.html (prototype đã
+// duyệt) — chỉ đổi phần tính toán: gọi thẳng tinhKhaiMon() thật từ @thien-anh/duongtrach-engine
+// thay vì bản JS thuần tự viết lại trong prototype (không dựng engine song song).
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Container from "../../components/ui/Container.astro";
+
+export const prerender = false;
+
+if (Astro.locals.user?.isAdmin !== true) {
+  return Astro.redirect("/");
+}
+---
+
+<BaseLayout title="Khai Môn Điểm Thần Sát (nội bộ)" description="Bàn tính nội bộ — không dùng cho khách.">
+  <Container class="py-6">
+    <div id="km-app" class="km-root">
+      <header class="km-header">
+        <div class="km-bar">
+          <div class="km-brandwrap">
+            <h1>🔧 Khai Môn Điểm Thần Sát</h1>
+            <div class="km-sub">Bàn tính nội bộ · Trần Mạnh Linh · admin-only</div>
+          </div>
+          <div class="km-field">
+            <label for="km-toa">Toạ (độ)</label>
+            <input id="km-toa" type="number" step="0.1" value="315" />
+            <div class="km-pk" id="km-pkToa"></div>
+          </div>
+          <div class="km-field">
+            <label for="km-mon">Môn khí (độ)</label>
+            <input id="km-mon" type="number" step="0.1" value="180" />
+            <div class="km-pk" id="km-pkMon"></div>
+          </div>
+          <div class="km-field">
+            <label for="km-hn">Hôn nhân gia chủ</label>
+            <select id="km-hn">
+              <option value="?">chưa rõ</option>
+              <option value="co">đã lập gia đình</option>
+              <option value="chua">chưa lập gia đình</option>
+            </select>
+            <div class="km-pk"></div>
+          </div>
+        </div>
+      </header>
+
+      <main class="km-main">
+        <div class="km-rail">
+          <section class="km-section">
+            <h2>La kinh</h2>
+            <div id="km-dial"></div>
+          </section>
+          <section class="km-section">
+            <h2>Tự kiểm</h2>
+            <div class="km-checks" id="km-checks"></div>
+            <div style="margin-top:10px" id="km-ngh"></div>
+          </section>
+        </div>
+
+        <div>
+          <div id="km-alerts"></div>
+
+          <section class="km-section">
+            <h2>Bàn cửu cung</h2>
+            <div class="km-ban" id="km-ban"></div>
+          </section>
+
+          <section class="km-section">
+            <h2>Cách cục đại môn</h2>
+            <div id="km-door"></div>
+          </section>
+
+          <section class="km-section">
+            <h2>Địa bàn &amp; phi Lường Thiên Xích</h2>
+            <table id="km-db"></table>
+          </section>
+
+          <section class="km-section">
+            <h2>Luận từng cung</h2>
+            <div id="km-luan"></div>
+          </section>
+
+          <section class="km-section">
+            <h2>Quét 60 phân kim cổng</h2>
+            <div class="km-btnrow">
+              <button id="km-btnScanAll" type="button">Tất cả phương án sạch</button>
+              <button id="km-btnScanNone" class="on" type="button">Ẩn</button>
+            </div>
+            <div id="km-scan" class="km-hide"></div>
+          </section>
+
+          <section class="km-section">
+            <h2>Xuất văn bản</h2>
+            <div class="km-btnrow"><button id="km-btnCopy" type="button">Chép vào clipboard</button></div>
+            <textarea id="km-out" readonly></textarea>
+          </section>
+        </div>
+      </main>
+      <div class="km-foot">
+        Cấp 3 trong thang địa lý (Bát Trạch → Huyền Không → Khai môn điểm thần sát → Tam quái). Cách cục Huyền Không là bình chứa, thần sát là rượu — bàn này chỉ là một tầng.
+      </div>
+    </div>
+  </Container>
+</BaseLayout>
+
+<style>
+  .km-root {
+    --paper: #e4e9e1; --card: #f2f4ee; --card-2: #eaeee6;
+    --ink: #1b1915; --ink-2: #565349; --ink-3: #8a877c;
+    --rule: #c3cabb; --rule-2: #d6dcd0;
+    --brass: #8e7327; --cinnabar: #a4322a; --jade: #2e6a50;
+    --moc: #3d7a4c; --hoa: #b04530; --tho: #93732f; --kim: #6c7076; --thuy: #2a4a6b;
+    background: var(--paper); color: var(--ink);
+    font-family: "Be Vietnam Pro", system-ui, sans-serif; font-size: 14px; line-height: 1.55;
+    border-radius: 4px; overflow: hidden;
+  }
+  .km-root .mono { font-family: "JetBrains Mono", ui-monospace, monospace; font-variant-numeric: tabular-nums; }
+  .km-root h1, .km-root h2, .km-root h3 { font-family: "Source Serif 4", Georgia, serif; font-weight: 600; margin: 0; letter-spacing: -0.01em; }
+
+  .km-header { border-bottom: 1px solid var(--rule); background: var(--card); }
+  .km-bar { padding: 14px 18px; display: flex; gap: 22px; align-items: flex-end; flex-wrap: wrap; }
+  .km-brandwrap { margin-right: auto; }
+  .km-header h1 { font-size: 18px; line-height: 1.2; }
+  .km-sub { font-size: 11px; color: var(--ink-3); letter-spacing: 0.09em; text-transform: uppercase; margin-top: 3px; }
+
+  .km-field { display: flex; flex-direction: column; gap: 5px; }
+  .km-field label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--ink-2); }
+  .km-field input, .km-field select {
+    font-family: "JetBrains Mono", monospace; font-size: 16px; font-weight: 600;
+    background: var(--paper); border: 1px solid var(--rule); border-radius: 2px;
+    padding: 7px 10px; width: 110px; color: var(--ink);
+  }
+  .km-field input:focus, .km-field select:focus { outline: 2px solid var(--brass); outline-offset: 1px; }
+  .km-pk { font-size: 12px; color: var(--brass); font-family: "JetBrains Mono", monospace; height: 15px; }
+
+  .km-main { padding: 18px; display: grid; grid-template-columns: 320px 1fr; gap: 18px; align-items: start; }
+  @media (max-width: 1000px) { .km-main { grid-template-columns: 1fr; } }
+  .km-rail { position: sticky; top: 12px; }
+  @media (max-width: 1000px) { .km-rail { position: static; } }
+
+  .km-section { background: var(--card); border: 1px solid var(--rule); border-radius: 2px; padding: 14px 16px; margin-bottom: 14px; }
+  .km-section h2 {
+    font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink-2);
+    border-bottom: 1px solid var(--rule-2); padding-bottom: 8px; margin-bottom: 12px; font-family: "Be Vietnam Pro", sans-serif; font-weight: 600;
+  }
+
+  .km-root :global(.warn) { border-left: 3px solid var(--cinnabar); background: #f6eae6; padding: 9px 12px; margin-bottom: 9px; font-size: 13px; border-radius: 0 2px 2px 0; }
+  .km-root :global(.note) { border-left: 3px solid var(--brass); background: #f4f0e1; padding: 9px 12px; margin-bottom: 9px; font-size: 13px; border-radius: 0 2px 2px 0; }
+  .km-root :global(.warn b), .km-root :global(.note b) { font-weight: 600; }
+
+  .km-ban { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; }
+  .km-root :global(.cung) { background: var(--card-2); border: 1px solid var(--rule-2); padding: 10px 11px; min-height: 110px; position: relative; border-radius: 2px; }
+  .km-root :global(.cung.door) { border: 2px solid var(--cinnabar); background: #f7eeec; }
+  .km-root :global(.cung.center) { background: #e3e7de; }
+  .km-root :global(.ch) { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; margin-bottom: 7px; }
+  .km-root :global(.ch .h) { font-family: "Source Serif 4", serif; font-size: 15px; font-weight: 600; }
+  .km-root :global(.ch .q) { font-size: 10.5px; color: var(--ink-3); letter-spacing: 0.06em; }
+  .km-root :global(.doorflag) { display: inline-block; font-size: 9.5px; letter-spacing: 0.11em; background: var(--cinnabar); color: #fff; padding: 1px 6px; border-radius: 2px; margin-bottom: 6px; }
+  .km-root :global(.ts) { margin-bottom: 6px; padding-left: 8px; border-left: 2px solid var(--rule); }
+  .km-root :global(.ts.cat) { border-left-color: var(--jade); }
+  .km-root :global(.ts.hung) { border-left-color: var(--cinnabar); }
+  .km-root :global(.ts .n) { font-weight: 600; font-size: 13px; }
+  .km-root :global(.ts .m) { font-size: 11px; color: var(--ink-2); font-family: "JetBrains Mono", monospace; }
+  .km-root :global(.luc) { display: inline-block; font-size: 9.5px; letter-spacing: 0.08em; padding: 0 5px; border-radius: 2px; vertical-align: 1px; margin-left: 4px; }
+  .km-root :global(.luc.up) { background: #dde9df; color: var(--jade); }
+  .km-root :global(.luc.dn) { background: #e3e5e0; color: var(--ink-3); }
+  .km-root :global(.empty) { color: var(--ink-3); font-size: 12px; font-style: italic; }
+
+  .km-root :global(.hanh) { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 4px; vertical-align: -1px; }
+  .km-root :global(.h-Mộc) { background: var(--moc); } .km-root :global(.h-Hỏa) { background: var(--hoa); } .km-root :global(.h-Thổ) { background: var(--tho); }
+  .km-root :global(.h-Kim) { background: var(--kim); } .km-root :global(.h-Thủy) { background: var(--thuy); }
+
+  .km-root table { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+  .km-root th { text-align: left; font-size: 10.5px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--ink-3); font-weight: 600; padding: 5px 8px; border-bottom: 1px solid var(--rule); }
+  .km-root td { padding: 5px 8px; border-bottom: 1px solid var(--rule-2); }
+  .km-root tr:last-child td { border-bottom: none; }
+  .km-root :global(td.num) { font-family: "JetBrains Mono", monospace; text-align: right; color: var(--ink-2); }
+  .km-root :global(tr.hl) td { background: #efe9d8; }
+
+  .km-checks { display: flex; gap: 7px; flex-wrap: wrap; font-size: 11.5px; }
+  .km-root :global(.chk) { padding: 3px 9px; border-radius: 2px; font-family: "JetBrains Mono", monospace; }
+  .km-root :global(.chk.ok) { background: #dde9df; color: var(--jade); }
+  .km-root :global(.chk.no) { background: #f3e2df; color: var(--cinnabar); }
+
+  .km-root :global(.cungblock) { padding: 12px 0; border-bottom: 1px solid var(--rule-2); }
+  .km-root :global(.cungblock:last-child) { border-bottom: none; }
+  .km-root :global(.cbh) { display: flex; align-items: baseline; gap: 9px; margin-bottom: 5px; flex-wrap: wrap; }
+  .km-root :global(.cbh .t) { font-family: "Source Serif 4", serif; font-size: 16px; font-weight: 600; }
+  .km-root :global(.cbh .s) { font-size: 11px; color: var(--ink-3); }
+  .km-root :global(.rx) { font-size: 12.5px; color: var(--ink-2); margin: 3px 0 0 0; }
+  .km-root :global(.rx b) { color: var(--ink); }
+  .km-root :global(.do) { font-size: 12.5px; margin-top: 4px; }
+  .km-root :global(.do .lab) { font-size: 10px; letter-spacing: 0.09em; text-transform: uppercase; color: var(--ink-3); margin-right: 5px; }
+
+  .km-root button {
+    font-family: "Be Vietnam Pro", sans-serif; font-size: 12px; font-weight: 500;
+    background: var(--paper); border: 1px solid var(--rule); color: var(--ink);
+    padding: 6px 13px; border-radius: 2px; cursor: pointer;
+  }
+  .km-root button:hover { background: var(--card-2); border-color: var(--brass); }
+  .km-root button.on { background: var(--brass); color: #fff; border-color: var(--brass); }
+  .km-btnrow { display: flex; gap: 7px; flex-wrap: wrap; margin-bottom: 12px; }
+  .km-hide { display: none; }
+  .km-root textarea { width: 100%; height: 320px; font-family: "JetBrains Mono", monospace; font-size: 11.5px; border: 1px solid var(--rule); background: var(--paper); padding: 11px; border-radius: 2px; color: var(--ink); }
+  .km-foot { padding: 0 18px 24px; font-size: 11.5px; color: var(--ink-3); }
+</style>
+
+<script>
+  import { KhaiMon } from "@thien-anh/duongtrach-engine";
+  import type { KhaiMonResult, ThanSat } from "@thien-anh/duongtrach-engine";
+
+  const { tinhKhaiMon } = KhaiMon;
+
+  const $ = <T extends HTMLElement = HTMLElement>(id: string) => document.getElementById(id) as T;
+  const chip = (h: string) => `<span class="hanh h-${h}"></span>`;
+
+  // Bảng NÊN/KỴ + văn "ra chính môn" — data/02-than-sat-va-y-nghia.md mục 4-5 (Công cung cấp).
+  const UD: Record<string, { nen: string; ky: string }> = {
+    "Thiên Lộc": { nen: "Cửa chính, cửa phụ, bếp, phòng khách, phòng làm việc, bàn thờ, giường — được lộc đều tốt", ky: "—" },
+    "Thiên Mã": { nen: "Cửa chính, cửa phụ, phòng khách, phòng làm việc, cầu thang, bàn thờ, bếp", ky: "Giường ngủ của nữ giới" },
+    "Âm Quý nhân": { nen: "BÀN THỜ — ưu tiên số 1. Cửa, cầu thang, buồng ngủ, bếp", ky: "Tuyệt đối không WC / phòng tắm" },
+    "Dương Quý nhân": { nen: "Cửa chính, cửa phụ, phòng khách, phòng làm việc, cầu thang, bàn thờ, buồng ngủ, bếp", ky: "Không WC / phòng tắm" },
+    "Đào hoa": { nen: "Người chưa lập gia đình: cửa, bàn làm việc, bếp", ky: "Người đã có gia đình; bàn thờ; giường" },
+    "Độc Hoả": { nen: "Công năng khác châm chước được", ky: "Cửa, bếp, bàn thờ" },
+    "Thiên Hình": { nen: "WC / phòng tắm để yểm trấn", ky: "Cửa, bàn thờ, giường & bàn học của trẻ" },
+    "Đại Sát": { nen: "Chỉ được WC / phòng tắm", ky: "Tối kỵ bàn thờ; giường & bàn học của trẻ; cửa" },
+  };
+  const RAMON: Record<string, string> = {
+    "Thiên Lộc": "Lộc ra chính môn — cát khánh, rất tốt: may mắn tiền bạc, gia sản tăng tiến, điền trang hưng vượng.",
+    "Thiên Mã": "Mã ra chính môn — gia trạch gặp may mắn, phát tài nhanh, mọi việc trôi chảy, thuận xuất ngoại.",
+    "Âm Quý nhân": "Chính môn ra Quý — đại cát khánh, gia đạo bình an, gặp việc có người giúp, gặp hung hoá cát.",
+    "Dương Quý nhân": "Chính môn ra Quý — đại cát khánh, sự nghiệp hiển vinh, công danh sớm đạt, thi cử tốt đẹp.",
+    "Đào hoa": "Đào hoa ra môn — hỷ khí, sớm thành đạt, được nhiều người giúp. Kỵ với người đã có gia đình.",
+    "Độc Hoả": "Độc Hoả lâm môn — hoả khí vượng, dễ hoả tai, sinh người nóng tính liều lĩnh; hoả khắc kim tiền nên chủ thoái tài.",
+    "Thiên Hình": "Chính môn ra Hình — hại vô cùng: gia đạo gặp hoạ, dễ thương tật và kiện tụng, trai khắc vợ gái sát chồng.",
+    "Đại Sát": "Chính môn ra Sát — cách hung hoạ nhất: tai nạn, bệnh tật, ly tán, cô quả. Nhà này không thể ở lâu, phải sửa trị kịp thời.",
+  };
+
+  const CHI_ORDER = ["Dần", "Mão", "Thìn", "Tị", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi", "Tý", "Sửu"] as const;
+  const GRID_ORDER = ["Tốn", "Ly", "Khôn", "Chấn", "Trung cung", "Đoài", "Cấn", "Khảm", "Càn"] as const;
+
+  function norm(d: number) { return ((d % 360) + 360) % 360; }
+
+  function dial(result: KhaiMonResult): string {
+    const R = 145, cx = 155, cy = 155;
+    const pol = (a: number, rad: number): [number, number] => [cx + rad * Math.sin((a * Math.PI) / 180), cy - rad * Math.cos((a * Math.PI) / 180)];
+    let s = `<svg viewBox="0 0 310 310" width="100%" style="display:block">`;
+    s += `<circle cx="${cx}" cy="${cy}" r="${R}" fill="none" stroke="var(--rule)"/>`;
+    s += `<circle cx="${cx}" cy="${cy}" r="${R - 26}" fill="none" stroke="var(--rule)"/>`;
+    s += `<circle cx="${cx}" cy="${cy}" r="${R - 54}" fill="none" stroke="var(--rule-2)"/>`;
+    for (const [a0, col] of [[result.toa.start, "var(--brass)"], [result.mon.start, "var(--cinnabar)"]] as const) {
+      const a1 = a0 + 6;
+      const [ax, ay] = pol(a0, R - 26), [bx, by] = pol(a1, R - 26), [cx2, cy2] = pol(a1, R), [dx, dy] = pol(a0, R);
+      s += `<path d="M${ax},${ay} A${R - 26},${R - 26} 0 0 1 ${bx},${by} L${cx2},${cy2} A${R},${R} 0 0 0 ${dx},${dy} Z" fill="${col}" opacity=".55"/>`;
+    }
+    const HUONG_START: Record<string, number> = { Khảm: 337.5, Cấn: 22.5, Chấn: 67.5, Tốn: 112.5, Ly: 157.5, Khôn: 202.5, Đoài: 247.5, Càn: 292.5 };
+    for (const [ten, start] of Object.entries(HUONG_START)) {
+      const [x1, y1] = pol(start, R - 54), [x2, y2] = pol(start, R);
+      s += `<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="var(--ink-3)" stroke-width=".9"/>`;
+      const mid = start + 22.5, [tx, ty] = pol(mid, R - 40);
+      s += `<text x="${tx}" y="${ty + 3}" text-anchor="middle" font-size="9.5" fill="var(--ink-2)" font-family="Be Vietnam Pro">${ten}</text>`;
+    }
+    for (const [d, col, lb] of [[result.toa.deg, "var(--brass)", "T"], [result.mon.deg, "var(--cinnabar)", "M"]] as const) {
+      const [x, y] = pol(d, R - 56), [x0, y0] = pol(d, 24);
+      s += `<line x1="${x0}" y1="${y0}" x2="${x}" y2="${y}" stroke="${col}" stroke-width="2"/>`;
+      s += `<circle cx="${x}" cy="${y}" r="4" fill="${col}"/>`;
+      const [lx, ly] = pol(d, R - 70);
+      s += `<text x="${lx}" y="${ly + 4}" text-anchor="middle" font-size="11" font-weight="700" fill="${col}" font-family="JetBrains Mono">${lb}</text>`;
+    }
+    s += `<circle cx="${cx}" cy="${cy}" r="3" fill="var(--ink)"/></svg>`;
+    s += `<div style="display:flex;gap:14px;font-size:11.5px;margin-top:8px;color:var(--ink-2)">
+      <span><b style="color:var(--brass)">T</b> toạ ${result.toa.can} ${result.toa.chi}</span>
+      <span><b style="color:var(--cinnabar)">M</b> môn ${result.mon.can} ${result.mon.chi}</span></div>`;
+    return s;
+  }
+
+  function render() {
+    const toaD = parseFloat($<HTMLInputElement>("km-toa").value);
+    const monD = parseFloat($<HTMLInputElement>("km-mon").value);
+    if (Number.isNaN(toaD) || Number.isNaN(monD)) return;
+    const hn = $<HTMLSelectElement>("km-hn").value;
+
+    const r = tinhKhaiMon({ toaDeg: toaD, monDeg: monD });
+
+    $("km-pkToa").textContent = `${r.toa.can} ${r.toa.chi} · cách ranh ${r.toa.gap}°`;
+    $("km-pkMon").textContent = `${r.mon.can} ${r.mon.chi} · cách ranh ${r.mon.gap}°`;
+    $("km-dial").innerHTML = dial(r);
+
+    // cảnh báo — engine đã tính sẵn canhBao[], chỉ đổi màu theo muc + gộp riêng khối lâm môn.
+    let A = "";
+    for (const c of r.canhBao) {
+      if (c.ma === "LAM_MON") continue; // vẽ riêng bên dưới, chi tiết hơn.
+      A += `<div class="${c.muc === "nặng" ? "warn" : "note"}"><b>${c.noiDung}</b></div>`;
+    }
+    if (r.cachCucDaiMon.caTreo) {
+      const lm = r.cachCucDaiMon.theoLamMon;
+      const dts = r.cachCucDaiMon.theoCungVatLy;
+      A += `<div class="warn"><b>CA LÂM MÔN — toạ và môn cùng một độn.</b> Ô ${r.mon.chi} của địa bàn đúng bằng ${r.mon.can} ${r.mon.chi}, trùng Can Chi của cửa.
+        <br>· Đọc theo lâm môn: cửa ra <b>${lm.map((t) => t.ten).join(", ")}</b>
+        <br>· Đọc theo cung vật lý (${r.monHuong}): ${dts.length ? "cửa ra <b>" + dts.map((t) => t.ten).join(", ") + "</b>" : "<b>cửa vô cách</b>"}
+        <br>Hai cách đọc chưa chốt — bàn này hiện cả hai.</div>`;
+    }
+    $("km-alerts").innerHTML = A;
+
+    // bàn cửu cung
+    $("km-ban").innerHTML = GRID_ORDER.map((n) => {
+      const v = r.banCuuCung[n];
+      const isDoor = n === r.monCung;
+      let h = `<div class="cung${isDoor ? " door" : ""}${n === "Trung cung" ? " center" : ""}">`;
+      if (isDoor) h += `<span class="doorflag">CỬA</span>`;
+      h += `<div class="ch"><span class="h">${v.huong}</span><span class="q">${n} ${chip(v.hanh)}${v.hanh}</span></div>`;
+      if (!v.thanSat.length) h += `<div class="empty">trống thần sát</div>`;
+      for (const t of v.thanSat) {
+        h += `<div class="ts ${t.loai === "hung" ? "hung" : "cat"}"><div class="n">${t.ten}
+          <span class="luc ${t.manhLen ? "up" : "dn"}">${t.luc}</span></div>
+          <div class="m">${chip(t.hanh)}${t.napAm}</div></div>`;
+      }
+      if (n === "Trung cung" && v.thanSat.length) h += `<div class="empty" style="margin-top:5px">Để trống thoáng — không xử lý</div>`;
+      return h + `</div>`;
+    }).join("");
+
+    // cách cục đại môn (đọc theo cung vật lý — ca lâm môn đã có khối riêng ở trên)
+    const dts = r.cachCucDaiMon.theoCungVatLy;
+    let D = `<div class="rx">Cửa đứng vật lý ở cung <b>${r.monCung} — ${r.monHuong}</b> (phân kim ${r.mon.can} ${r.mon.chi}, ${r.mon.deg}°).</div>`;
+    if (!dts.length) D += `<div class="rx" style="margin-top:7px"><b>Cửa vô cách</b> — không bắt được thần sát nào. Không hung, nhưng bỏ mất cung giá trị nhất trong 9 cung.</div>`;
+    else for (const t of dts) {
+      D += `<div class="rx" style="margin-top:9px"><b>${t.ten}</b> ${chip(t.hanh)}${t.napAm} · ${t.quanHe} → <b>${t.luc}</b>
+        <div style="margin-top:3px">${RAMON[t.ten] ?? ""}</div>
+        <div class="do"><span class="lab">xử lý</span>${t.donThuoc}</div></div>`;
+    }
+    $("km-door").innerHTML = D;
+
+    // địa bàn
+    $("km-db").innerHTML = `<tr><th>Chi</th><th>Can Chi</th><th>#</th><th>Bước</th><th>Cung</th><th>Hướng</th><th>Nạp âm</th></tr>` +
+      CHI_ORDER.map((z) => {
+        const c = r.diaBan[z as keyof typeof r.diaBan];
+        const on = r.thanSat.some((t) => t.chiDiaBan === z);
+        return `<tr class="${on ? "hl" : ""}"><td>${z}</td><td>${c.canChi}</td><td class="num">${c.stt}</td>
+          <td class="num">${c.buoc}</td><td>${c.cung}</td><td>${c.huong}</td><td>${chip(c.hanh)}${c.napAm}</td></tr>`;
+      }).join("");
+
+    // tự kiểm — dùng batBienOk đã tính sẵn, kèm 3 cặp riêng để hiện tick/chéo từng cặp.
+    const pair = (a: string, b: string) => r.diaBan[a as keyof typeof r.diaBan].cung === r.diaBan[b as keyof typeof r.diaBan].cung;
+    const P: Array<[string, boolean]> = [["Dần–Hợi", pair("Dần", "Hợi")], ["Mão–Tý", pair("Mão", "Tý")], ["Thìn–Sửu", pair("Thìn", "Sửu")]];
+    $("km-checks").innerHTML = P.map(([n, ok]) => `<span class="chk ${ok ? "ok" : "no"}">${n} ${ok ? "✓" : "✗"}</span>`).join("") +
+      (r.batBienOk ? "" : `<span class="chk no">vòng 60 bị cắt</span>`);
+    $("km-ngh").innerHTML = `<div class="rx">Ngũ hổ độn: Can toạ <b>${r.toa.can}</b> → khởi <b>${r.nguHoDonKhoi}</b>.
+      Địa bàn = Hoa Giáp #${r.diaBan.Dần.stt}–${r.diaBan.Sửu.stt}.</div>` +
+      (r.batBienOk ? "" : `<div class="rx" style="margin-top:5px;color:var(--cinnabar)">Môn khí nằm trong dải địa bàn nên ba bất biến không áp dụng — đây là ca lâm môn.</div>`);
+
+    // luận từng cung — sắp theo độ ưu tiên xử lý: hung mạnh trước, hung yếu, cát, cuối cùng trống.
+    const rank = (n: (typeof GRID_ORDER)[number]) => {
+      const v = r.banCuuCung[n];
+      if (!v.thanSat.length) return 9;
+      const hu = v.thanSat.filter((t) => t.loai === "hung");
+      if (hu.length) return hu.some((t) => t.manhLen) ? 0 : 1;
+      return v.thanSat.some((t) => t.manhLen) ? 2 : 3;
+    };
+    $("km-luan").innerHTML = [...GRID_ORDER].sort((a, b) => rank(a) - rank(b) || GRID_ORDER.indexOf(a) - GRID_ORDER.indexOf(b)).map((n) => {
+      const v = r.banCuuCung[n];
+      let h = `<div class="cungblock"><div class="cbh"><span class="t">${v.huong}</span>
+        <span class="s">${n} · ${chip(v.hanh)}${v.hanh} · chi ${v.chiChua.join(", ")}${n === r.monCung ? " · CỬA" : ""}</span></div>`;
+      if (!v.thanSat.length) return h + `<div class="rx">Trống thần sát — dùng cho công năng trung tính.</div></div>`;
+      for (const t of v.thanSat) {
+        h += `<div class="rx" style="margin-top:6px"><b>${t.ten}</b> (${t.loai}) — ${t.canChi} · ${chip(t.hanh)}${t.napAm}
+          <br>${t.quanHe} → <b>${t.luc}</b>
+          <div class="do"><span class="lab">nên</span>${UD[t.ten]?.nen ?? ""}</div>
+          <div class="do"><span class="lab">kỵ</span>${UD[t.ten]?.ky ?? ""}</div>`;
+        if (n !== "Trung cung") h += `<div class="do"><span class="lab">ngũ hành</span>${t.donThuoc}</div>`;
+        h += `</div>`;
+      }
+      if (n === "Trung cung") h += `<div class="rx" style="margin-top:6px;color:var(--ink-2)">Tâm nhà để trống thoáng cho khí lưu thông — <b>không xử lý</b>, chỉ nêu ra. Cảnh báo không phạm vào: tủ gầm cầu thang, non bộ hay tủ trang trí ở giếng trời.</div>`;
+      if (v.honHop) h += `<div class="rx" style="margin-top:6px;color:var(--brass)">Cung có cả cát và hung → hung đã được hoá giải phần nào. Hoá hung trước; nếu kích cát sẽ nuôi hung thì giữ nguyên.</div>`;
+      if (v.thanSat.some((t) => t.ten === "Đào hoa") && hn !== "?")
+        h += `<div class="rx" style="margin-top:5px">Gia chủ ${hn === "co" ? "đã lập gia đình → Đào hoa ở đây là bất lợi, tránh giường và bàn thờ." : "chưa lập gia đình → Đào hoa ở đây là lợi thế, đặt bàn làm việc rất tốt."}</div>`;
+      return h + `</div>`;
+    }).join("");
+
+    // quét 60 phân kim cổng — giữ nguyên toạ, thử 2 điểm/ô (start+1.5, start+4.5) vì 4 phân kim Tứ Mộ vắt ranh giới.
+    type ScanRow = { pk: string; deg: string; huong: string; got: string; strong: boolean };
+    const rows: ScanRow[] = [];
+    const seen = new Set<string>();
+    for (let base = 0; base < 360; base += 6) {
+      for (const midOffset of [1.5, 4.5]) {
+        const mid = base + midOffset;
+        const rr = tinhKhaiMon({ toaDeg: toaD, monDeg: mid });
+        const d = rr.cachCucDaiMon.theoCungVatLy;
+        const cat = d.filter((t) => t.loai !== "hung");
+        const hung = d.filter((t) => t.loai === "hung");
+        if (cat.length && !hung.length) {
+          const strong = cat.some((t) => t.manhLen);
+          const pk = `${rr.mon.can} ${rr.mon.chi}`;
+          const key = pk + rr.monHuong;
+          if (seen.has(key)) continue;
+          seen.add(key);
+          rows.push({ pk, deg: `${Math.round(norm(mid) * 10) / 10}°`, huong: rr.monHuong, got: cat.map((t) => `${t.ten} (${t.luc})`).join(" + "), strong });
+        }
+      }
+    }
+    rows.sort((a, b) => Number(b.strong) - Number(a.strong));
+    $("km-scan").innerHTML = `<div class="rx" style="margin-bottom:9px">Giữ nguyên toạ ${toaD}°, thử toàn bộ 60 phân kim cổng. Chỉ liệt kê phương án cửa <b>bắt được cát thần và không dính hung thần</b> — ${rows.length} phương án.</div>` +
+      `<table><tr><th>Phân kim</th><th>Độ tham chiếu</th><th>Cửa ở</th><th>Cửa nhận</th></tr>` +
+      rows.map((x) => `<tr class="${x.strong ? "hl" : ""}"><td>${x.pk}</td><td class="num">${x.deg}</td><td>${x.huong}</td><td>${x.got}</td></tr>`).join("") + `</table>`;
+
+    // xuất văn bản
+    let T = `KHAI MÔN ĐIỂM THẦN SÁT\n`;
+    T += `Toạ ${r.toa.deg}° → ${r.toa.can} ${r.toa.chi} (#${r.toa.stt}), cách ranh ${r.toa.gap}°\n`;
+    T += `Hướng ${r.huong.deg}° → ${r.huong.can} ${r.huong.chi}\n`;
+    T += `Môn khí ${r.mon.deg}° → ${r.mon.can} ${r.mon.chi} (#${r.mon.stt}), cách ranh ${r.mon.gap}° — cửa ở ${r.monCung} (${r.monHuong})\n`;
+    T += `Ngũ hổ độn: ${r.toa.can} → khởi ${r.nguHoDonKhoi}. Địa bàn #${r.diaBan.Dần.stt}–${r.diaBan.Sửu.stt}\n\n`;
+    T += `ĐỊA BÀN\n`;
+    for (const z of CHI_ORDER) {
+      const c = r.diaBan[z as keyof typeof r.diaBan];
+      T += `  ${z.padEnd(5)} ${c.canChi.padEnd(11)} #${String(c.stt).padStart(2)}  bước ${String(c.buoc).padStart(2)}  ${c.cung.padEnd(11)} ${c.napAm}\n`;
+    }
+    T += `\nBÀN CỬU CUNG\n`;
+    for (const n of GRID_ORDER) {
+      const v = r.banCuuCung[n];
+      T += `  ${v.huong.padEnd(10)} ${n === r.monCung ? "[CỬA] " : ""}`;
+      T += v.thanSat.length ? v.thanSat.map((t: ThanSat) => `${t.ten} (${t.napAm} ${t.hanh}, ${t.luc})`).join("; ") : "trống";
+      T += `\n`;
+    }
+    T += `\nCÁCH CỤC ĐẠI MÔN\n  `;
+    T += dts.length ? dts.map((t) => `${t.ten} — ${t.quanHe} → ${t.luc}`).join("\n  ") : "vô cách";
+    if (r.cachCucDaiMon.caTreo) T += `\n  [LÂM MÔN] ${r.cachCucDaiMon.theoLamMon.map((t) => t.ten).join(", ")} trùng Can Chi môn khí — hai cách đọc chưa chốt`;
+    T += `\n\nĐƠN THUỐC\n`;
+    for (const n of GRID_ORDER) {
+      const v = r.banCuuCung[n];
+      if (!v.thanSat.length || n === "Trung cung") continue;
+      for (const t of v.thanSat) T += `  ${v.huong}: ${t.ten} → ${t.donThuoc}\n`;
+    }
+    if (r.banCuuCung["Trung cung"].thanSat.length) T += `  Tâm nhà: ${r.banCuuCung["Trung cung"].thanSat.map((t) => t.ten).join(", ")} → để trống thoáng, không xử lý\n`;
+    $<HTMLTextAreaElement>("km-out").value = T;
+  }
+
+  ["km-toa", "km-mon", "km-hn"].forEach((id) => $(id).addEventListener("input", render));
+  $("km-btnScanAll").addEventListener("click", () => {
+    $("km-scan").classList.remove("km-hide");
+    $("km-btnScanAll").classList.add("on");
+    $("km-btnScanNone").classList.remove("on");
+  });
+  $("km-btnScanNone").addEventListener("click", () => {
+    $("km-scan").classList.add("km-hide");
+    $("km-btnScanNone").classList.add("on");
+    $("km-btnScanAll").classList.remove("on");
+  });
+  $("km-btnCopy").addEventListener("click", async () => {
+    const btn = $<HTMLButtonElement>("km-btnCopy");
+    try {
+      await navigator.clipboard.writeText($<HTMLTextAreaElement>("km-out").value);
+      btn.textContent = "Đã chép";
+      setTimeout(() => (btn.textContent = "Chép vào clipboard"), 1400);
+    } catch {
+      $<HTMLTextAreaElement>("km-out").select();
+    }
+  });
+
+  render();
+</script>
