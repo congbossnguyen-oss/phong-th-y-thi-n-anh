@@ -27,7 +27,13 @@ async function safeSend(
   cc?: string,
 ) {
   try {
-    await getResendClient().emails.send({
+    // ⚠️ SDK Resend KHÔNG throw khi API từ chối gửi (vd vượt giới hạn dung lượng đính kèm, rate
+    // limit, domain gửi chưa xác minh...) — trả về { data, error } thay vì ném lỗi. Code cũ chỉ có
+    // try/catch mà bỏ qua `.error` của kết quả trả về nên gửi thất bại kiểu này bị NUỐT HOÀN TOÀN,
+    // không log gì — phát hiện 31/8/2026 khi khách (đơn thật) báo không nhận được email dù đơn đã
+    // "confirmed". Giờ log rõ `.error` nếu có, để lần sau biết đúng lý do thay vì đoán mò.
+    const attSize = (attachments ?? []).reduce((s, a) => s + a.content.length, 0);
+    const ket = await getResendClient().emails.send({
       from: getFromAddress(),
       to,
       cc,
@@ -35,8 +41,13 @@ async function safeSend(
       html,
       attachments,
     });
+    if (ket.error) {
+      console.error(
+        `[email] Resend từ chối gửi tới ${to} (đính kèm ${attachments?.length ?? 0} file, ~${Math.round(attSize / 1024)}KB): ${ket.error.name} — ${ket.error.message}`,
+      );
+    }
   } catch (err) {
-    console.error("[email] Gửi email thất bại:", err);
+    console.error("[email] Gửi email thất bại (ném lỗi):", err instanceof Error ? `${err.name}: ${err.message}` : err);
   }
 }
 
