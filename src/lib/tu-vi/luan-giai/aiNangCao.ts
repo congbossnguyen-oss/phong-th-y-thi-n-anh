@@ -152,7 +152,9 @@ export async function luanNangCao(
     userMessage: dungUserPrompt(duLieu, coBan),
     toolName: "tra_ve_luan_giai_nang_cao",
     schema: SCHEMA,
-    maxTokens: 6000,
+    // ⚠️ 31/8/2026: chuyển DeepSeek, đo thật thấy JSON bị cắt cụt giữa chừng với 6000 — cùng lý do
+    // như aiCoBan.ts, xem ghi chú ở đó. Tăng lên để có đủ chỗ viết hết.
+    maxTokens: 12000,
     // ⚠️ 31/8/2026: cắt Anthropic, chuyển DeepSeek — deepseek-v4-flash mặc định là model "thinking",
     // từ chối tool_choice ép buộc mà goiAiToolUse luôn dùng, PHẢI ép deepseek-chat (non-thinking).
     modelOverride: { "openai-tuong-thich": "deepseek-chat" },
