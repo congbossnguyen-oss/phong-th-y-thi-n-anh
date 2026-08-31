@@ -6,6 +6,27 @@ import { vanKhiCache } from "../../../db/schema";
 import type { LuuNienKhi } from "../quan-su/luan-van-khi";
 
 /**
+ * `console.error(..., err)` trên Cloudflare Workers (wrangler tail) chỉ in `err.message` của lỗi
+ * NGOÀI CÙNG — drizzle-orm bọc lỗi Neon gốc thành 1 Error mới ("Failed query: ...") và giữ lỗi thật
+ * ở `.cause`, nhưng `.cause` KHÔNG hiện trong log mặc định → không thấy được lý do thật (vd
+ * foreign key, cột sai kiểu, bảng thiếu...). Hàm này bung hết `.cause` + các field lỗi Postgres
+ * (code/detail/table/constraint) ra text để log đọc được, xem sự cố 31/8/2026: 2 lần thử vẫn chỉ
+ * thấy "Failed query" trơ trọi, không tự sửa được vì thiếu chi tiết.
+ */
+function chiTietLoi(err: unknown): string {
+  const parts: string[] = [];
+  let cur: unknown = err;
+  let depth = 0;
+  while (cur instanceof Error && depth < 5) {
+    const e = cur as Error & { code?: string; detail?: string; table?: string; constraint?: string };
+    parts.push(`[${depth}] ${e.name}: ${e.message}` + (e.code ? ` code=${e.code}` : "") + (e.detail ? ` detail=${e.detail}` : "") + (e.table ? ` table=${e.table}` : "") + (e.constraint ? ` constraint=${e.constraint}` : ""));
+    cur = e.cause;
+    depth++;
+  }
+  return parts.join(" <- cause: ");
+}
+
+/**
  * Đọc cache — trả null nếu chưa từng tính, dữ liệu lưu bị hỏng, HOẶC truy vấn lỗi (vd bảng chưa
  * được tạo trên môi trường này). Cache là phần TỐI ƯU, không phải điều kiện đủ để trang chạy được
  * — lỗi ở đây tuyệt đối không được làm sập cả trang Xem Thời Vận, chỉ coi như "chưa có cache" và để
@@ -22,7 +43,7 @@ export async function getVanKhiCache(userId: string, daiVanIndex: number): Promi
     const parsed = JSON.parse(rows[0]!.luuNienJson);
     return Array.isArray(parsed) ? (parsed as LuuNienKhi[]) : null;
   } catch (err) {
-    console.error(`[van-khi-cache] Đọc cache thất bại (coi như chưa có cache):`, err);
+    console.error(`[van-khi-cache] Đọc cache thất bại (coi như chưa có cache): ${chiTietLoi(err)}`);
     return null;
   }
 }
@@ -39,6 +60,6 @@ export async function saveVanKhiCache(userId: string, daiVanIndex: number, luuNi
         set: { luuNienJson: JSON.stringify(luuNien) },
       });
   } catch (err) {
-    console.error(`[van-khi-cache] Ghi cache thất bại (bỏ qua, khách vẫn xem được kết quả):`, err);
+    console.error(`[van-khi-cache] Ghi cache thất bại (bỏ qua, khách vẫn xem được kết quả): ${chiTietLoi(err)}`);
   }
 }
