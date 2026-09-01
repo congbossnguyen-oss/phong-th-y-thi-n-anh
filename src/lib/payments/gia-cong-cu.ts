@@ -22,6 +22,9 @@ export const GIA_CONG_CU = {
   // Hợp Hôn: cần ĐỦ 2 lá số (gấp đôi dữ liệu đầu vào so với mọi module khác), chạy 6 tầng qua cả
   // Bát Tự lẫn Tử Vi, phục vụ quyết định lớn nhất đời người.
   "hop-hon": 1000000,
+  // Bản ĐỘC LẬP cho app Quân Sư (từ 1/9/2026, xem project_quan_su_tach_doc_lap_khoi_web) — cùng
+  // giá, cùng engine `tinhHopHon`, chỉ khác toolSlug để tách bạch đơn hàng web/app trong thống kê.
+  "hop-hon-qs": 1000000,
 
   // ─ Hạng 500.000đ — việc lớn ──────────────────────────────────────────────────────────────────
   "gio-liem-ha-huyet": 500000, // = bậc CƠ BẢN; bậc đầy đủ 1.000.000đ xem GIA_GIO_LIEM_HA_HUYET

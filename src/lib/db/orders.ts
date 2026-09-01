@@ -559,6 +559,24 @@ async function _markOrderPaidAndFulfillNoiBo(orderId: string) {
       }
     }
 
+    // Hợp Hôn — bản ĐỘC LẬP cho app Quân Sư (toolSlug `hop-hon-qs`, từ 1/9/2026). Tái dùng đúng
+    // engine/PDF/email đã import ở trên cho bản web — chỉ khác toolSlug để tách bạch thống kê.
+    if (order.toolSlug === "hop-hon-qs" && order.customerEmail && order.toolInputSnapshot) {
+      try {
+        const input = JSON.parse(order.toolInputSnapshot) as DauVaoHopHon;
+        const ketQua = tinhHopHon(input);
+        const pdf = await generateHopHonPdf(ketQua, order.customerName);
+        await sendHopHonPdfEmail({
+          to: order.customerEmail,
+          orderCode: order.orderCode,
+          customerName: order.customerName,
+          pdfBytes: pdf,
+        });
+      } catch (err) {
+        console.error(`[hop-hon-qs] Lỗi dựng/gửi PDF cho đơn ${order.orderCode}:`, err);
+      }
+    }
+
     // Luận Giải Kỳ Môn Mệnh (chi tiết): thuần công thức (không AI) — dựng PDF rồi gửi kèm email
     // khách. Bọc try/catch riêng cùng lý do các module khác: hỏng khâu này đơn vẫn ghi nhận đã
     // thanh toán, khách còn xem lại kết quả trên trang bằng mã đơn.
