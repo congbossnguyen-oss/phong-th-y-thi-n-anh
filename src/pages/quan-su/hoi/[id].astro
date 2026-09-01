@@ -97,6 +97,14 @@ const choDoiTuongKhac = dungThanHintFor(question.category).kind === "the-hao";
             <label for="f-seri-tien">Seri tiền</label>
             <input class="qs-input" id="f-seri-tien" type="text" inputmode="numeric" placeholder="Ví dụ: AB 12345678" />
             <div class="help">Tĩnh tâm nghĩ về việc đang phân vân, rút ngẫu nhiên 1 tờ tiền đang có trong người, rồi nhập đúng dãy số seri trên tờ đó.</div>
+            <details class="qs-detail">
+              <summary>Xem hướng dẫn gieo quẻ bằng Seri tiền</summary>
+              <div class="body">
+                Hãy giữ tâm bình tĩnh và tập trung suy nghĩ về <strong>một việc cần hỏi</strong>. Một việc nên tập trung hỏi một câu rõ ràng, không nên hỏi nhiều việc cùng lúc.<br /><br />
+                Sau đó, hãy <strong>rút một tờ tiền bất kỳ hiện đang có bên mình</strong>, nhập <strong>dãy số seri trên tờ tiền</strong> vào ô bên trên và nhấn <strong>Xem kết quả</strong>.<br /><br />
+                Hệ thống sẽ tự động lập quẻ và đưa ra kết quả.
+              </div>
+            </details>
           </div>
 
           <div class="qs-field qs-hidden" id="qs-3so-field">
@@ -107,6 +115,21 @@ const choDoiTuongKhac = dungThanHintFor(question.category).kind === "the-hao";
 
           <p class="qs-eyebrow">Bước 4 · An quẻ</p>
           <p class="qs-sub" id="qs-step-sub">Thành tâm nghĩ về việc muốn hỏi, tự gieo 3 đồng xu (hoặc vật tương đương) 6 lần từ hào 1 đến hào 6, rồi chọn đúng Âm/Dương và đánh dấu hào động (nếu có) vào bảng dưới.</p>
+          <details class="qs-detail" id="qs-gieo-tay-huong-dan">
+            <summary>Xem hướng dẫn gieo xu Lục Hào</summary>
+            <div class="body">
+              Trước khi gieo quẻ, hãy giữ tâm bình tĩnh và tập trung suy nghĩ về <strong>một việc cần hỏi</strong>. Một việc nên tập trung hỏi một câu rõ ràng, không nên hỏi nhiều việc cùng lúc.<br /><br />
+              Chuẩn bị <strong>3 đồng xu</strong>.<br /><br />
+              <strong>Quy ước:</strong> mặt có nhiều chữ là <strong>Âm</strong>, mặt có ít chữ là <strong>Dương</strong>.<br /><br />
+              <strong>Cách xác định hào:</strong><br />
+              2 Dương 1 Âm = <strong>Hào Âm</strong><br />
+              2 Âm 1 Dương = <strong>Hào Dương</strong><br />
+              3 Dương = <strong>Hào Dương động</strong><br />
+              3 Âm = <strong>Hào Âm động</strong><br /><br />
+              Khi gieo, <strong>nam xóc 7 lần, nữ xóc 9 lần</strong>, sau đó thả 3 đồng xu xuống đĩa và ghi nhận kết quả. Thực hiện liên tục <strong>6 lần</strong>.<br /><br />
+              Điền kết quả lần lượt <strong>từ dưới lên trên</strong>, lần gieo đầu tiên là <strong>Hào 1</strong>, lần cuối cùng là <strong>Hào 6</strong>. Nếu xuất hiện <strong>Hào động</strong>, hãy tích chọn vào ô <strong>Động</strong> tương ứng.
+            </div>
+          </details>
           <div class="qs-hao-table" id="qs-toss-picker"></div>
           <div class="qs-row" style="max-width:420px;">
             <button class="qs-btn" id="qs-gieo" type="button" disabled>Xem kết quả</button>
@@ -130,6 +153,7 @@ const choDoiTuongKhac = dungThanHintFor(question.category).kind === "the-hao";
             const methodsEl = document.getElementById("qs-methods");
             const seriField = document.getElementById("qs-seri-field");
             const so3Field = document.getElementById("qs-3so-field");
+            const gieoTayHuongDan = document.getElementById("qs-gieo-tay-huong-dan");
             const stepSub = document.getElementById("qs-step-sub");
             let castingMethod = "gieo-tay";
             const HAO_TEN = { 6: "Thượng", 5: "Ngũ", 4: "Tứ", 3: "Tam", 2: "Nhị", 1: "Sơ" };
@@ -197,6 +221,7 @@ const choDoiTuongKhac = dungThanHintFor(question.category).kind === "the-hao";
               castingMethod = btn.dataset.method;
               seriField.classList.toggle("qs-hidden", castingMethod !== "seri-tien");
               so3Field.classList.toggle("qs-hidden", castingMethod !== "3-so");
+              gieoTayHuongDan.classList.toggle("qs-hidden", castingMethod !== "gieo-tay");
               resultEl.classList.add("qs-hidden");
               laiBtn.style.display = "none";
               gieoBtn.textContent = METHOD_BTN_LABEL[castingMethod] || "Lập quẻ";

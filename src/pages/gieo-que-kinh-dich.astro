@@ -132,6 +132,30 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
             <input id="lh-lunar" type="checkbox" class="size-4 rounded border-(--color-ivory-300)" /> Ngày Âm lịch
           </label>
 
+          <details class="mt-4 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-100) p-3">
+            <summary class="cursor-pointer text-sm font-medium text-(--color-gold-300)">Xem hướng dẫn gieo xu Lục Hào</summary>
+            <div class="mt-2 space-y-2 text-xs leading-relaxed text-(--color-ink-600)">
+              <p>Trước khi gieo quẻ, hãy giữ tâm bình tĩnh và tập trung suy nghĩ về <strong>một việc cần hỏi</strong>. Một việc nên tập trung hỏi một câu rõ ràng, không nên hỏi nhiều việc cùng lúc.</p>
+              <p>Chuẩn bị <strong>3 đồng xu</strong>.</p>
+              <p class="font-medium text-(--color-ink-700)">Quy ước:</p>
+              <ul class="list-disc space-y-1 pl-5">
+                <li>Mặt có nhiều chữ là <strong>Âm</strong></li>
+                <li>Mặt có ít chữ là <strong>Dương</strong></li>
+              </ul>
+              <p class="font-medium text-(--color-ink-700)">Cách xác định hào:</p>
+              <ul class="list-disc space-y-1 pl-5">
+                <li>2 Dương 1 Âm = <strong>Hào Âm</strong></li>
+                <li>2 Âm 1 Dương = <strong>Hào Dương</strong></li>
+                <li>3 Dương = <strong>Hào Dương động</strong></li>
+                <li>3 Âm = <strong>Hào Âm động</strong></li>
+              </ul>
+              <p>Khi gieo, <strong>nam xóc 7 lần, nữ xóc 9 lần</strong>, sau đó thả 3 đồng xu xuống đĩa và ghi nhận kết quả.</p>
+              <p>Thực hiện liên tục <strong>6 lần</strong>.</p>
+              <p>Điền kết quả lần lượt <strong>từ dưới lên trên</strong>, lần gieo đầu tiên là <strong>Hào 1</strong>, lần cuối cùng là <strong>Hào 6</strong>.</p>
+              <p>Nếu xuất hiện <strong>Hào động</strong>, hãy tích chọn vào ô <strong>Hào động</strong> tương ứng.</p>
+            </div>
+          </details>
+
           <div class="mt-6 overflow-x-auto rounded-(--radius-control) border border-(--color-ivory-300)">
             <table class="w-full border-collapse text-sm">
               <thead>
@@ -184,6 +208,15 @@ const haoPositionName: Record<number, string> = { 1: "Sơ", 2: "Nhị", 3: "Tam"
             <label for="sr-label" class={labelClass}>Việc cần xem</label>
             <input id="sr-label" type="text" placeholder="Việc cần xem...." class={inputClass} />
           </div>
+          <details class="mt-4 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-100) p-3">
+            <summary class="cursor-pointer text-sm font-medium text-(--color-gold-300)">Xem hướng dẫn gieo quẻ bằng Seri tiền</summary>
+            <div class="mt-2 space-y-2 text-xs leading-relaxed text-(--color-ink-600)">
+              <p>Hãy giữ tâm bình tĩnh và tập trung suy nghĩ về <strong>một việc cần hỏi</strong>. Một việc nên tập trung hỏi một câu rõ ràng, không nên hỏi nhiều việc cùng lúc.</p>
+              <p>Sau đó, hãy <strong>rút một tờ tiền bất kỳ hiện đang có bên mình</strong>, nhập <strong>dãy số seri trên tờ tiền</strong> vào ô bên dưới và nhấn <strong>Lập Quẻ</strong>.</p>
+              <p>Hệ thống sẽ tự động lập quẻ và đưa ra kết quả.</p>
+            </div>
+          </details>
+
           <div class="mt-4">
             <label for="sr-serial" class={labelClass}>Số Serial Tiền: <span class="text-(--color-cinnabar-400)">*</span></label>
             <input id="sr-serial" type="text" inputmode="numeric" placeholder="19228888" required class={inputClass} />
