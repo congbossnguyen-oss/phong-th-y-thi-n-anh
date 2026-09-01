@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { VIP_SLUG_THEO_GOI } from "./vip-slugs";
 import { GIA_CONG_CU, type ToolSlug } from "./gia-cong-cu";
 
-// Bảo vệ danh sách dịch vụ VIP được miễn phí theo gói Cao Cấp: đúng 20, loại sim + dinh-huong.
+// Bảo vệ danh sách dịch vụ VIP được miễn phí theo gói Cao Cấp: đúng 21, loại sim + dinh-huong.
 describe("Gating dịch vụ VIP theo gói Cao Cấp — VIP_SLUG_THEO_GOI", () => {
   const CAN_MIEN_PHI: ToolSlug[] = [
     "gio-liem-ha-huyet",
@@ -27,10 +27,11 @@ describe("Gating dịch vụ VIP theo gói Cao Cấp — VIP_SLUG_THEO_GOI", () 
     "trach-cat-ky-mon-qs",
     "dat-ten-cho-con-qs",
     "gio-liem-ha-huyet-qs",
+    "xem-ngay-cao-cap-qs",
   ];
 
-  it("đúng 20 dịch vụ VIP được miễn phí theo gói", () => {
-    expect(VIP_SLUG_THEO_GOI.size).toBe(20);
+  it("đúng 21 dịch vụ VIP được miễn phí theo gói", () => {
+    expect(VIP_SLUG_THEO_GOI.size).toBe(21);
     for (const s of CAN_MIEN_PHI) expect(VIP_SLUG_THEO_GOI.has(s)).toBe(true);
   });
 

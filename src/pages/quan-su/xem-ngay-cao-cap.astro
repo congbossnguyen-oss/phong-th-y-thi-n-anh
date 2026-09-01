@@ -1,10 +1,14 @@
 ---
 // Ban in-app cua dich vu VIP "Xem Ngày Cao Cấp – Động Thổ / Nhập Trạch" — TU CHUA trong app Quan Su (App Store, khong link ra web).
+//
+// Từ 1/9/2026: dùng bản component ĐỘC LẬP `components/quan-su/tools/XemNgayCaoCap.astro` (toolSlug
+// `xem-ngay-cao-cap-qs`, API riêng `/api/quan-su/vip/xem-ngay-cao-cap-qs/*`) thay vì component
+// dùng chung với web — module 12/12 (module CUỐI CÙNG) trong việc tách Quân Sư khỏi web.
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import BottomNav from "../../components/quan-su/BottomNav.astro";
 import VipQuyenBanner from "../../components/quan-su/VipQuyenBanner.astro";
-import XemNgayCaoCap from "../../components/tools/XemNgayCaoCap.astro";
+import XemNgayCaoCap from "../../components/quan-su/tools/XemNgayCaoCap.astro";
 
 export const prerender = false;
 ---

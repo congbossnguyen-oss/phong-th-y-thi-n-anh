@@ -12,6 +12,7 @@ export const TEN_CONG_CU_HIEN_THI: Record<string, string> = {
   "gio-liem-ha-huyet": "Giờ Liệm – Hạ Huyệt",
   "gio-liem-ha-huyet-qs": "Giờ Liệm – Hạ Huyệt (app Quân Sư)",
   "xem-ngay-cao-cap": "Xem Ngày Cao Cấp (Động Thổ / Nhập Trạch)",
+  "xem-ngay-cao-cap-qs": "Xem Ngày Cao Cấp (Động Thổ / Nhập Trạch) (app Quân Sư)",
   "ngay-ky-hop-dong-cao-cap": "Ngày Giờ Ký Kết Hợp Đồng",
   "ngay-ky-hop-dong-cao-cap-qs": "Ngày Giờ Ký Kết Hợp Đồng (app Quân Sư)",
   "ngay-cuoi-hoi": "Xem Ngày Cưới Hỏi Trọn Gói",
