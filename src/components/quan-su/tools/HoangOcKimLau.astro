@@ -1,0 +1,232 @@
+---
+// Bản ĐỘC LẬP cho app Quân Sư của "Hoàng Ốc – Kim Lâu – Tam Tai" (anh Công chốt 1/9/2026: Quân Sư
+// không đấu nối code với web nữa). CỐ Ý gần như y hệt `src/components/tools/HoangOcKimLau.astro`
+// — chấp nhận trùng lặp UI/routing. Vẫn dùng CHUNG engine tính toán. Gọi API riêng ở
+// `/api/quan-su/hoang-oc-kim-lau`. Module miễn phí, không toolSlug/thanh toán.
+//
+// CTA cuối trang mời nâng cấp KHÁC NHAU giữa web/app (anh Công 29/8/2026: 2 nhánh tính tiền khác
+// nhau — web bán lẻ từng công cụ, app bán thuê bao) — `laApp` chọn đúng component.
+import Container from "../../ui/Container.astro";
+import Button from "../../ui/Button.astro";
+import GoiYNangCap from "../../ui/GoiYNangCap.astro";
+import GoiYNangCapApp from "../../quan-su/GoiYNangCapApp.astro";
+
+interface Props {
+  /** true = hiện app Quân Sư (mời nâng cấp gói Cao Cấp) thay vì mời mua lẻ như bản web. */
+  laApp?: boolean;
+}
+const { laApp = false } = Astro.props;
+---
+
+<Container class="py-16">
+  <div class="mx-auto max-w-2xl">
+    <div class="mb-4 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-4 text-xs text-(--color-ink-600)">
+      Công thức Hoàng Ốc dùng theo cách tính dân gian phổ biến nhất (tuổi mụ chia 6 dư mấy ứng với cung đó) — chưa
+      đối chiếu được với 1 nguồn sách cụ thể. Kim Lâu và Tam Tai dùng đúng bảng đã có trong hệ thống.
+    </div>
+
+    <div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+      <div class="flex gap-2 border-b border-(--color-ivory-300) pb-3">
+        <button type="button" id="tab-mot-nam" class="rounded-(--radius-pill) bg-(--color-gold-400) px-4 py-2 text-sm font-semibold text-(--color-on-accent)">
+          Xem 1 năm
+        </button>
+        <button type="button" id="tab-quet-nam" class="rounded-(--radius-pill) border border-(--color-ivory-400) px-4 py-2 text-sm font-semibold text-(--color-ink-600) hover:bg-(--color-ivory-200)">
+          Tìm năm tốt
+        </button>
+      </div>
+
+      <form id="form-mot-nam" class="mt-4 flex flex-col gap-3">
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label for="mn-nam-sinh" class="text-xs font-medium text-(--color-ink-600)">Năm sinh</label>
+            <input type="number" id="mn-nam-sinh" min="1900" max="2100" required placeholder="1988" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+          </div>
+          <div>
+            <label for="mn-nam-xem" class="text-xs font-medium text-(--color-ink-600)">Năm cần xem</label>
+            <input type="number" id="mn-nam-xem" min="1900" max="2100" required placeholder="2026" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+          </div>
+        </div>
+        <Button type="submit" size="lg">Xem</Button>
+      </form>
+
+      <form id="form-quet-nam" class="mt-4 hidden flex-col gap-3">
+        <div class="grid grid-cols-3 gap-2">
+          <div>
+            <label for="qn-nam-sinh" class="text-xs font-medium text-(--color-ink-600)">Năm sinh</label>
+            <input type="number" id="qn-nam-sinh" min="1900" max="2100" required placeholder="1988" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+          </div>
+          <div>
+            <label for="qn-tu-nam" class="text-xs font-medium text-(--color-ink-600)">Từ năm</label>
+            <input type="number" id="qn-tu-nam" min="1900" max="2100" required placeholder="2026" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+          </div>
+          <div>
+            <label for="qn-den-nam" class="text-xs font-medium text-(--color-ink-600)">Đến năm</label>
+            <input type="number" id="qn-den-nam" min="1900" max="2100" required placeholder="2040" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+          </div>
+        </div>
+        <p class="text-xs text-(--color-ink-400)">Tối đa 30 năm mỗi lượt quét.</p>
+        <Button type="submit" size="lg">Tìm năm tốt</Button>
+      </form>
+
+      <div id="loi" class="mt-3 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-3 text-sm text-(--color-danger-500)"></div>
+
+      <div id="ket-qua-mot-nam" class="mt-4 hidden rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200) p-5">
+        <p id="mn-tieu-de" class="text-sm text-(--color-ink-500)"></p>
+        <p id="mn-ket-luan" class="mt-1 font-display text-xl font-bold text-(--color-ink-950)"></p>
+        <div class="mt-3 grid grid-cols-3 gap-2 border-t border-(--color-ivory-300) pt-3 text-center">
+          <div>
+            <p class="text-[11px] uppercase tracking-wide text-(--color-ink-500)">Hoàng Ốc</p>
+            <p id="mn-hoang-oc" class="mt-0.5 text-sm font-semibold"></p>
+          </div>
+          <div>
+            <p class="text-[11px] uppercase tracking-wide text-(--color-ink-500)">Kim Lâu</p>
+            <p id="mn-kim-lau" class="mt-0.5 text-sm font-semibold"></p>
+          </div>
+          <div>
+            <p class="text-[11px] uppercase tracking-wide text-(--color-ink-500)">Tam Tai</p>
+            <p id="mn-tam-tai" class="mt-0.5 text-sm font-semibold"></p>
+          </div>
+        </div>
+      </div>
+
+      <div id="ket-qua-quet-nam" class="mt-4 hidden space-y-2"></div>
+    </div>
+  </div>
+  {laApp ? (
+    <GoiYNangCapApp lyDo="Tránh được Hoàng Ốc – Kim Lâu rồi, bước kế là chọn đúng ngày giờ động thổ hợp với tọa hướng nhà và mệnh chủ." tieuDe="Chuẩn bị làm nhà?" />
+  ) : (
+    <GoiYNangCap slug="xem-ngay-cao-cap" lyDo="Tránh được Hoang Ốc – Kim Lâu rồi, bước kế là chọn đúng ngày giờ động thổ hợp với tọa hướng nhà và mệnh chủ." nhanNut="Xem Ngày Cao Cấp" tieuDe="Chuẩn bị làm nhà?" />
+  )}
+</Container>
+
+<script>
+  // Chấm màu CSS tự vẽ thay cho emoji tròn màu (🟢🟡🟠🔴) trong nhãn "nhan" — emoji phụ thuộc font
+  // từng máy, có thể khiến vàng/cam trông gần giống nhau ở cỡ nhỏ. Dùng hex cố định để tương phản rõ.
+  const EMOJI_DOT_COLOR: Record<string, string> = { "⭐": "#7c3aed", "🟢": "#16a34a", "🟡": "#eab308", "🟠": "#c2410c", "🔴": "#dc2626" };
+  function nhanDotHtml(nhan: string): string {
+    const m = nhan.match(/^(\S+)\s*([\s\S]*)$/);
+    const color = m ? EMOJI_DOT_COLOR[m[1]] : undefined;
+    if (!color || !m) return nhan;
+    return `<span class="inline-flex items-center gap-1.5"><span class="inline-block size-2.5 shrink-0 rounded-full" style="background:${color};"></span>${m[2]}</span>`;
+  }
+
+  interface HoangOcResult { cung: string; ten: string; tot: boolean }
+  interface KimLauResult { loai: string; ten: string; pham: boolean }
+  interface TamTaiResult { pham: boolean; nhomTuoi?: string[] }
+  interface KetLuan { mucDo: string; nhan: string; soYeuToXau: number }
+  interface HoangOcKimLauResult {
+    namSinh: number;
+    namXem: number;
+    tuoiMu: number;
+    hoangOc: HoangOcResult;
+    kimLau: KimLauResult;
+    tamTai: TamTaiResult;
+    ketLuan: KetLuan;
+  }
+
+  const tabMotNam = document.getElementById("tab-mot-nam") as HTMLButtonElement;
+  const tabQuetNam = document.getElementById("tab-quet-nam") as HTMLButtonElement;
+  const formMotNam = document.getElementById("form-mot-nam") as HTMLFormElement;
+  const formQuetNam = document.getElementById("form-quet-nam") as HTMLFormElement;
+  const loiEl = document.getElementById("loi")!;
+  const ketQuaMotNamEl = document.getElementById("ket-qua-mot-nam")!;
+  const ketQuaQuetNamEl = document.getElementById("ket-qua-quet-nam")!;
+
+  const TAB_ACTIVE = "rounded-(--radius-pill) bg-(--color-gold-400) px-4 py-2 text-sm font-semibold text-(--color-on-accent)";
+  const TAB_INACTIVE = "rounded-(--radius-pill) border border-(--color-ivory-400) px-4 py-2 text-sm font-semibold text-(--color-ink-600) hover:bg-(--color-ivory-200)";
+
+  function showTab(which: "mot-nam" | "quet-nam") {
+    loiEl.classList.add("hidden");
+    ketQuaMotNamEl.classList.add("hidden");
+    ketQuaQuetNamEl.classList.add("hidden");
+    if (which === "mot-nam") {
+      tabMotNam.className = TAB_ACTIVE;
+      tabQuetNam.className = TAB_INACTIVE;
+      formMotNam.classList.remove("hidden");
+      formMotNam.classList.add("flex");
+      formQuetNam.classList.add("hidden");
+      formQuetNam.classList.remove("flex");
+    } else {
+      tabQuetNam.className = TAB_ACTIVE;
+      tabMotNam.className = TAB_INACTIVE;
+      formQuetNam.classList.remove("hidden");
+      formQuetNam.classList.add("flex");
+      formMotNam.classList.add("hidden");
+      formMotNam.classList.remove("flex");
+    }
+  }
+  tabMotNam.addEventListener("click", () => showTab("mot-nam"));
+  tabQuetNam.addEventListener("click", () => showTab("quet-nam"));
+
+  function renderMotNam(r: HoangOcKimLauResult) {
+    document.getElementById("mn-tieu-de")!.textContent = `Năm sinh ${r.namSinh} — Năm xem ${r.namXem} — Tuổi mụ ${r.tuoiMu}`;
+    document.getElementById("mn-ket-luan")!.textContent = r.ketLuan.nhan;
+    const hoangOcEl = document.getElementById("mn-hoang-oc")!;
+    hoangOcEl.textContent = r.hoangOc.ten;
+    hoangOcEl.className = `mt-0.5 text-sm font-semibold ${r.hoangOc.tot ? "text-(--color-success-500)" : "text-(--color-cinnabar-500)"}`;
+    const kimLauEl = document.getElementById("mn-kim-lau")!;
+    kimLauEl.textContent = r.kimLau.ten;
+    kimLauEl.className = `mt-0.5 text-sm font-semibold ${r.kimLau.pham ? "text-(--color-cinnabar-500)" : "text-(--color-success-500)"}`;
+    const tamTaiEl = document.getElementById("mn-tam-tai")!;
+    tamTaiEl.textContent = r.tamTai.pham ? "Phạm Tam Tai" : "Không phạm";
+    tamTaiEl.className = `mt-0.5 text-sm font-semibold ${r.tamTai.pham ? "text-(--color-cinnabar-500)" : "text-(--color-success-500)"}`;
+    ketQuaMotNamEl.classList.remove("hidden");
+  }
+
+  formMotNam.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    loiEl.classList.add("hidden");
+    ketQuaMotNamEl.classList.add("hidden");
+    const namSinh = (document.getElementById("mn-nam-sinh") as HTMLInputElement).value;
+    const namXem = (document.getElementById("mn-nam-xem") as HTMLInputElement).value;
+    try {
+      const res = await fetch(`/api/quan-su/hoang-oc-kim-lau?namSinh=${namSinh}&namXem=${namXem}`);
+      const data = await res.json();
+      if (!res.ok) {
+        loiEl.textContent = data.error ?? "Không tính được.";
+        loiEl.classList.remove("hidden");
+        return;
+      }
+      renderMotNam(data.result as HoangOcKimLauResult);
+    } catch {
+      loiEl.textContent = "Không tải được dữ liệu.";
+      loiEl.classList.remove("hidden");
+    }
+  });
+
+  formQuetNam.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    loiEl.classList.add("hidden");
+    ketQuaQuetNamEl.classList.add("hidden");
+    const namSinh = (document.getElementById("qn-nam-sinh") as HTMLInputElement).value;
+    const tuNam = (document.getElementById("qn-tu-nam") as HTMLInputElement).value;
+    const denNam = (document.getElementById("qn-den-nam") as HTMLInputElement).value;
+    try {
+      const res = await fetch(`/api/quan-su/hoang-oc-kim-lau?namSinh=${namSinh}&tuNam=${tuNam}&denNam=${denNam}`);
+      const data = await res.json();
+      if (!res.ok) {
+        loiEl.textContent = data.error ?? "Không tính được.";
+        loiEl.classList.remove("hidden");
+        return;
+      }
+      const results = data.results as HoangOcKimLauResult[];
+      const HUY_CHUONG = ["🥇", "🥈", "🥉"];
+      ketQuaQuetNamEl.innerHTML = results
+        .map((r, i) => {
+          const huyChuong = HUY_CHUONG[i] ?? `${i + 1}.`;
+          return `<div class="flex items-center justify-between rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-200) p-3">
+            <div>
+              <p class="font-display text-base font-bold text-(--color-ink-950)">${huyChuong} Năm ${r.namXem} <span class="text-xs font-normal text-(--color-ink-500)">(tuổi mụ ${r.tuoiMu})</span></p>
+              <p class="text-xs text-(--color-ink-500)">${r.hoangOc.ten} · ${r.kimLau.ten} · ${r.tamTai.pham ? "Phạm Tam Tai" : "Không phạm Tam Tai"}</p>
+            </div>
+            <span class="text-sm font-semibold">${nhanDotHtml(r.ketLuan.nhan)}</span>
+          </div>`;
+        })
+        .join("");
+      ketQuaQuetNamEl.classList.remove("hidden");
+    } catch {
+      loiEl.textContent = "Không tải được dữ liệu.";
+      loiEl.classList.remove("hidden");
+    }
+  });
+</script>
