@@ -601,6 +601,27 @@ async function _markOrderPaidAndFulfillNoiBo(orderId: string) {
       }
     }
 
+    // Luận Giải Kỳ Môn Mệnh (chi tiết) — bản ĐỘC LẬP cho app Quân Sư (toolSlug
+    // `ky-mon-menh-chi-tiet-qs`, từ 1/9/2026). Tái dùng đúng engine/PDF/email đã import ở trên cho
+    // bản web — chỉ khác toolSlug để tách bạch thống kê.
+    if (order.toolSlug === "ky-mon-menh-chi-tiet-qs" && order.customerEmail && order.toolInputSnapshot) {
+      try {
+        const input = JSON.parse(order.toolInputSnapshot) as { nam: number; thang: number; ngay: number; gio: number; phut: number };
+        const laBan = await lapLaBan({ cheDo: "menh", ...input });
+        const free = luanGiaiMenh(laBan);
+        const chiTiet = luanGiaiMenhChiTiet(laBan);
+        const pdf = await generateKyMonMenhPdf(free, chiTiet, order.customerName);
+        await sendKyMonMenhPdfEmail({
+          to: order.customerEmail,
+          orderCode: order.orderCode,
+          customerName: order.customerName,
+          pdfBytes: pdf,
+        });
+      } catch (err) {
+        console.error(`[ky-mon-menh-chi-tiet-qs] Lỗi dựng/gửi PDF cho đơn ${order.orderCode}:`, err);
+      }
+    }
+
     // Luận Giải Bát Tự Toàn Diện — Cơ Bản: gọi AI dựng báo cáo rồi xuất PDF gửi kèm email khách.
     // Bọc try/catch riêng cùng lý do các module khác: hỏng khâu này đơn vẫn ghi nhận đã thanh toán,
     // khách còn xem lại trên trang kết quả (báo cáo tính lại/lấy từ cache theo hash lá số).

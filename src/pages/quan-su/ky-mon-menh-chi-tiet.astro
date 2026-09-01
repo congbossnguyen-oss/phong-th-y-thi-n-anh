@@ -1,11 +1,15 @@
 ---
 // Bản in-app của "Luận Giải Kỳ Môn Mệnh chi tiết" — thuộc nhóm KỲ MÔN ĐỘN GIÁP trong app Quân Sư
 // (không phải nhóm Dịch vụ VIP), vào từ /quan-su/ky-mon.
+//
+// Từ 1/9/2026: dùng bản component ĐỘC LẬP `components/quan-su/tools/KyMonMenhChiTiet.astro`
+// (toolSlug `ky-mon-menh-chi-tiet-qs`, API riêng `/api/quan-su/vip/ky-mon-menh-chi-tiet-qs/*`) thay
+// vì component dùng chung với web — module 2/12 trong việc tách Quân Sư khỏi web.
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import BottomNav from "../../components/quan-su/BottomNav.astro";
 import VipQuyenBanner from "../../components/quan-su/VipQuyenBanner.astro";
-import KyMonMenhChiTiet from "../../components/tools/KyMonMenhChiTiet.astro";
+import KyMonMenhChiTiet from "../../components/quan-su/tools/KyMonMenhChiTiet.astro";
 import SapRaMat from "../../components/quan-su/SapRaMat.astro";
 
 export const prerender = false;

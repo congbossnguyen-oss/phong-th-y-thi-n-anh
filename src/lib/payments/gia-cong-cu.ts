@@ -43,6 +43,9 @@ export const GIA_CONG_CU = {
   "ngay-khai-truong-cao-cap": 300000,
   "ngay-ky-hop-dong-cao-cap": 300000,
   "ky-mon-menh-chi-tiet": 300000,
+  // Bản ĐỘC LẬP cho app Quân Sư (từ 1/9/2026, xem project_quan_su_tach_doc_lap_khoi_web) — cùng
+  // giá, cùng engine `lapLaBan`/`luanGiaiMenh`, chỉ khác toolSlug để tách bạch đơn hàng web/app.
+  "ky-mon-menh-chi-tiet-qs": 300000,
   // Đẩu Thủ Chọn Ngày — hệ đối chiếu chéo/thay thế cho Xem Ngày Cao Cấp (HKĐQ), phạm vi tương
   // đương "chọn ngày theo tọa" chứ không phải quyết định cả đời như HKĐQ → giá 300.000đ (chủ dự
   // án chốt 1/9/2026, giá thẳng khi giao việc, chưa qua vòng đối chiếu tầng giá như bảng trên).
