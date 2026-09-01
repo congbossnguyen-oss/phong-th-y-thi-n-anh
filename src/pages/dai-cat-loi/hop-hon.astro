@@ -3,8 +3,8 @@
 // breadcrumbs); toàn bộ logic form/thanh toán/kết quả nằm ở component dùng chung `HopHon.astro`,
 // cũng được bản in-app Quân Sư (`/quan-su/hop-hon`) tái sử dụng y hệt.
 //
-// ⏸️ THỬ NGHIỆM NỘI BỘ: khoá admin nằm TRONG component (và trong API checkout) — mở bán thì gỡ ở
-// cả hai chỗ đó, không phải ở trang này.
+// ✅ ĐÃ MỞ BÁN (1/9/2026) — khoá admin trước đây nằm trong component + API checkout, đã gỡ ở cả
+// hai chỗ đó.
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import { GIA_CONG_CU, dinhDangTien } from "../../lib/payments/gia-cong-cu";

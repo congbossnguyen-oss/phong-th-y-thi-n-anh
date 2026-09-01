@@ -6,8 +6,8 @@
 //  - Chưa có ?orderCode → FORM nhập ngày giờ sinh của CẢ HAI người + thanh toán QR.
 //  - Có ?orderCode đã confirmed → server tính (tinhHopHon, thuần công thức) và hiện bản đồ 5 trục.
 //
-// ⏸️ THỬ NGHIỆM NỘI BỘ: chủ đề nhạy cảm nhất trong bộ — khách thường thấy thông báo, chỉ admin dùng
-// được. Cả component này và API checkout đều khóa; mở bán thì gỡ ở CẢ HAI chỗ.
+// ✅ MỞ BÁN (anh Công chốt 1/9/2026) — trước đó thử nghiệm nội bộ, khoá cả component này lẫn API
+// checkout chỉ cho admin dùng; đã gỡ khoá ở CẢ HAI chỗ.
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
 import MaKhuyenMai from "../../components/ui/MaKhuyenMai.astro";
@@ -18,7 +18,6 @@ import type { DauVaoHopHon } from "../../pages/api/dai-cat-loi/hop-hon/checkout"
 
 export const prerender = false;
 
-const laQuanTri = Astro.locals.user?.isAdmin === true;
 const TOOL_SLUG = "hop-hon";
 const TOOL_PRICE = GIA_CONG_CU[TOOL_SLUG];
 const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
@@ -105,28 +104,14 @@ const radarSvg = ketQua ? veRadarSvg(ketQua) : "";
 <Container class="py-10">
   <div class="mx-auto max-w-4xl">
 
-    {!laQuanTri && (
-      <div class="rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-6">
-        <p class="font-display text-xl font-bold text-(--color-ink-950)">Dịch vụ đang hoàn thiện</p>
-        <p class="mt-2 text-sm leading-relaxed text-(--color-ink-800)">
-          Hợp Hôn là dịch vụ nhạy cảm nhất trong bộ công cụ của Thiên Anh, nên chúng tôi đang kiểm chứng
-          kỹ trước khi mở rộng. Trong lúc chờ, mời bạn liên hệ hotline để được chuyên gia luận trực tiếp
-          trên chính hai lá số của hai bạn.
-        </p>
-        <a href="/dai-cat-loi/chon-tuoi-ket-hon" class="mt-4 inline-flex rounded-(--radius-control) border border-(--color-gold-400) px-4 py-2.5 text-sm font-semibold text-(--color-gold-400) hover:bg-(--color-gold-400)/10">
-          Xem trước công cụ Chọn Tuổi Kết Hôn (miễn phí, theo năm sinh)
-        </a>
-      </div>
-    )}
-
-    {laQuanTri && loiTinh && (
+    {loiTinh && (
       <div class="mb-6 rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm text-(--color-danger-500)">
         {loiTinh}
       </div>
     )}
 
     {/* ---------------- KẾT QUẢ ---------------- */}
-    {laQuanTri && ketQua && (
+    {ketQua && (
       <div>
         {/* Tổng quan */}
         <div class="rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-gold-400)/8 p-6">
@@ -238,7 +223,7 @@ const radarSvg = ketQua ? veRadarSvg(ketQua) : "";
     )}
 
     {/* ---------------- FORM ---------------- */}
-    {laQuanTri && !ketQua && (
+    {!ketQua && (
       <div>
         <div class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-5">
           <p class="font-display text-lg font-semibold text-(--color-ink-950)">Dịch vụ này cho bạn gì?</p>
