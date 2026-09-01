@@ -1,10 +1,14 @@
 ---
 // Ban in-app cua dich vu VIP "Chọn Ngày Giờ Nhận Chức" — TU CHUA trong app Quan Su (App Store, khong link ra web).
+//
+// Từ 1/9/2026: dùng bản component ĐỘC LẬP `components/quan-su/tools/NhanChuc.astro` (toolSlug
+// `nhan-chuc-qs`, API riêng `/api/quan-su/vip/nhan-chuc-qs/*`) thay vì component dùng chung với
+// web — module 5/12 trong việc tách Quân Sư khỏi web.
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import BottomNav from "../../components/quan-su/BottomNav.astro";
 import VipQuyenBanner from "../../components/quan-su/VipQuyenBanner.astro";
-import NhanChuc from "../../components/tools/NhanChuc.astro";
+import NhanChuc from "../../components/quan-su/tools/NhanChuc.astro";
 
 export const prerender = false;
 ---

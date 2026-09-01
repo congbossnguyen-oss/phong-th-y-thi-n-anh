@@ -31,6 +31,10 @@ export const GIA_CONG_CU = {
   "ngay-cuoi-hoi": 500000,
   "dat-ten-cho-con": 500000,
   "nhan-chuc": 500000,
+  // Bản ĐỘC LẬP cho app Quân Sư (từ 1/9/2026, xem project_quan_su_tach_doc_lap_khoi_web) — cùng
+  // giá, cùng engine `calculateNhanChuc`, chỉ khác toolSlug để tách bạch đơn hàng web/app. Bản
+  // web có bug không gửi PDF/email cho khách — bản này CỐ Ý COPY ĐÚNG hành vi đó, không tự vá.
+  "nhan-chuc-qs": 500000,
   "dinh-huong-nghe-nghiep": 500000,
   // Bản ĐỘC LẬP cho app Quân Sư (từ 1/9/2026, xem project_quan_su_tach_doc_lap_khoi_web) — cùng
   // giá, cùng engine `castBatTuFacts`/`taoHoSoNghe`, chỉ khác toolSlug để tách bạch đơn hàng.
