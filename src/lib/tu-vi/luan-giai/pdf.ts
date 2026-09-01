@@ -76,8 +76,11 @@ function veCoBan(b: But, f: Fonts, coBan: KetQuaCoBan, duLieu: DuLieuLaSoTuVi): 
   }
 }
 
+// ⚠️ PHẢI dùng doan() (tự xuống dòng) chứ không phải dong() (1 dòng, cắt cụt + "…" nếu quá dài) —
+// bug thật 1/9/2026: các câu AI viết cho "Tổng kết toàn bộ lá số" (5 điểm mạnh/yếu, Nên/Không nên ở
+// veHan) đủ dài để bị cắt cụt giữa câu khi dùng dong(), anh Công báo lỗi kèm ảnh chụp PDF.
 function veLoiKhuyen(b: But, f: Fonts, danh: string[], mau = MAU.luc): void {
-  for (const s of danh) b.dong(`• ${s}`, { size: 9, mau, x: 60 });
+  for (const s of danh) b.doan(`• ${s}`, { size: 9, mau, x: 60 });
 }
 
 function veHan(b: But, f: Fonts, tieuDe: string, h: LuanHan): void {
