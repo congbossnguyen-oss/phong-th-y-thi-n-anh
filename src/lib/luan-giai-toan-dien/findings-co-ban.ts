@@ -4,13 +4,32 @@
 // Nguyên tắc: CHỈ xác định sự thật cấu trúc (structural findings), KHÔNG viết văn. Đọc lại
 // content/bat-tu/data/ (Loại 1) — không hardcode nội dung diễn giải.
 import type { BatTuChart, PillarInfo } from "../bat-tu";
-import { CHI_NGU_HANH, CAN_NGU_HANH } from "../bat-tu";
+import { CHI_NGU_HANH, CAN_NGU_HANH, tinhLuuNien } from "../bat-tu";
 import type { BatTuAnalysis, Hanh } from "../bat-tu-engine/engine";
+import { hanhCan, hanhChi } from "../bat-tu-engine/engine";
 import { docData } from "./content-loader";
 import { tinhMatTacDungTheoTru, type LyDoMatTacDung } from "./than-sat-mat-tac-dung";
 import type { GiaiDoanFindings } from "./types";
 
 type PillarKey = "year" | "month" | "day" | "hour";
+
+// Lĩnh vực đời sống + vùng cơ thể theo cung vị từng trụ (bu-khuyet-ngu-hanh.md mục B + benh-tat.md
+// mục 1) — dùng khi trụ đó có Hình/Xung/Hại, để gợi ý HÀNH VI đúng chỗ (không phải vật phẩm).
+const LINH_VUC_THEO_TRU: Record<PillarKey, string> = {
+  year: "cha mẹ / tổ nghiệp",
+  month: "anh chị em / sự nghiệp trung niên",
+  day: "hôn nhân / bản thân",
+  hour: "con cái / hậu vận",
+};
+const VUNG_CO_THE_THEO_TRU: Record<PillarKey, string> = {
+  year: "đỉnh đầu đến vai, hệ thần kinh não",
+  month: "vai đến eo, cánh tay, lồng ngực",
+  day: "eo đến háng, bụng, hệ tiêu hóa, sinh sản, bài tiết",
+  hour: "háng đến bàn chân, chi dưới, hệ bài tiết",
+};
+const TEN_TRU_BU_KHUYET: Record<PillarKey, "Nam" | "Thang" | "Ngay" | "Gio"> = {
+  year: "Nam", month: "Thang", day: "Ngay", hour: "Gio",
+};
 
 interface DungThanData {
   ngheNghiepTheoHanh: Record<Hanh, string[]>;
@@ -197,10 +216,57 @@ export function findingsH(chart: BatTuChart, analysis: BatTuAnalysis, matTacDung
   };
 }
 
-// --- J. Ngũ hành thực hành ---
-export function findingsJ(chart: BatTuChart, analysis: BatTuAnalysis): GiaiDoanFindings {
+// --- J. Ngũ hành thực hành (kèm Bù Khuyết Ngũ Hành — mở rộng, xem bu-khuyet-ngu-hanh.md + SPEC) ---
+// matTacDung: nguồn Hình/Xung/Hại DÙNG CHUNG (tinhMatTacDungTheoTru) — KHÔNG tính lại (tránh lỗi 2
+// nguồn lệch nhau như Việc 1). namSinh: để liệt kê Lưu Niên 10 năm tới; namXem mặc định năm hiện tại.
+export function findingsJ(
+  chart: BatTuChart,
+  analysis: BatTuAnalysis,
+  matTacDung?: Record<PillarKey, LyDoMatTacDung>,
+  namSinh?: number,
+  namXem?: number,
+): GiaiDoanFindings {
   const data = docData<DungThanData>("dung-than-nghe-nghiep-phuong-huong.json");
   const dt = analysis.dungThan;
+  const mat = matTacDung ?? tinhMatTacDungTheoTru(chart);
+
+  // Nhóm 1: Điều Hậu — đọc THẲNG cờ từ engine, KHÔNG tự suy diễn lại (SPEC + bu-khuyet mục C).
+  const coDieuHau = !!dt.dieuHauNote;
+
+  // Nhóm 2: mức độ ưu tiên theo Đại Vận + Lưu Niên (Kỵ Thần/Cừu Thần xuất hiện). hanhCan/hanhChi
+  // của engine đã chuẩn hoá chi (an toàn Tị/Tỵ).
+  const phanLoai = (canH: Hanh, chiH: Hanh): "nang_nhat" | "vua" | "nhe_hon" | "thuan_loi" | "trung_tinh" => {
+    const laKy = (h: Hanh) => h === dt.kyThan;
+    const laCuu = (h: Hanh) => h === dt.cuuThan;
+    const laTot = (h: Hanh) => h === dt.dungThan || h === dt.hyThan;
+    if (laKy(canH) && laKy(chiH)) return "nang_nhat";
+    if (laKy(canH) || laKy(chiH)) return "vua";
+    if (laCuu(canH) || laCuu(chiH)) return "nhe_hon";
+    if (laTot(canH) && laTot(chiH)) return "thuan_loi";
+    return "trung_tinh";
+  };
+
+  const mucDoUuTien: { loai: "DaiVan" | "LuuNien"; canChi: string; namHoacTuoi: string; mucDo: string }[] = [];
+  for (const dv of chart.daiVan) {
+    mucDoUuTien.push({ loai: "DaiVan", canChi: `${dv.can} ${dv.chi}`, namHoacTuoi: `${dv.startAge}-${dv.endAge} tuổi`, mucDo: phanLoai(hanhCan(dv.can), hanhChi(dv.chi)) });
+  }
+  if (namSinh) {
+    const nam0 = namXem ?? new Date().getFullYear();
+    for (const n of tinhLuuNien(nam0, namSinh, 10)) {
+      mucDoUuTien.push({ loai: "LuuNien", canChi: `${n.can} ${n.chi}`, namHoacTuoi: `${n.year}`, mucDo: phanLoai(hanhCan(n.can), hanhChi(n.chi)) });
+    }
+  }
+
+  // Nhóm 3: vấn đề cấu trúc Hình/Xung/Hại — LẤY từ nguồn chung, gắn lĩnh vực + vùng cơ thể theo trụ.
+  const vanDeCauTruc: { tru: string; loaiQuanHe: "Hinh" | "Xung" | "Hai"; doiTac: string[]; linhVucAnhHuong: string; vungCoThe: string }[] = [];
+  for (const key of ["year", "month", "day", "hour"] as const) {
+    const l = mat[key];
+    const chung = { tru: TEN_TRU_BU_KHUYET[key], linhVucAnhHuong: LINH_VUC_THEO_TRU[key], vungCoThe: VUNG_CO_THE_THEO_TRU[key] };
+    if (l.hinh) vanDeCauTruc.push({ ...chung, loaiQuanHe: "Hinh", doiTac: l.hinhVoi });
+    if (l.xung) vanDeCauTruc.push({ ...chung, loaiQuanHe: "Xung", doiTac: l.xungVoi });
+    if (l.hai) vanDeCauTruc.push({ ...chung, loaiQuanHe: "Hai", doiTac: l.haiVoi });
+  }
+
   return {
     maGiaiDoan: "J",
     tenGiaiDoan: "Ngũ hành thực hành",
@@ -208,13 +274,21 @@ export function findingsJ(chart: BatTuChart, analysis: BatTuAnalysis): GiaiDoanF
       dungThan: { hanh: dt.dungThan, ...data.phuongHuongMauSac[dt.dungThan] },
       hyThan: { hanh: dt.hyThan, ...data.phuongHuongMauSac[dt.hyThan] },
       kyThan: { hanh: dt.kyThan },
+      // Bù Khuyết Ngũ Hành (mở rộng) — 3 nhóm theo SPEC.
+      buKhuyet: {
+        coDieuHau,
+        dieuHauNote: dt.dieuHauNote ?? null,
+        mucDoUuTien,
+        vanDeCauTruc,
+        luuY: "buKhuyet: mucDoUuTien = mức cần chú ý theo thời gian (nang_nhat/vua/nhe_hon/thuan_loi/trung_tinh); vanDeCauTruc = Hình/Xung/Hại cố định (CHỈ hỗ trợ bằng hành vi/thói quen, KHÔNG vật phẩm). Vật phẩm/màu/hướng chỉ dùng cho phần bù hành thiếu (Dụng/Hỷ), không dùng cho vanDeCauTruc.",
+      },
     },
-    canCu: ["data/dung-than-nghe-nghiep-phuong-huong.json"],
+    canCu: ["data/dung-than-nghe-nghiep-phuong-huong.json", "knowledge/bu-khuyet-ngu-hanh.md", "than-sat-mat-tac-dung.ts (Hình/Xung/Hại)", "knowledge/benh-tat.md (mục 1)"],
   };
 }
 
-export function taoFindingsCoBan(chart: BatTuChart, analysis: BatTuAnalysis): GiaiDoanFindings[] {
-  // Tính quan hệ Hình/Xung/Hại 1 LẦN, dùng chung cho H (và cùng nguồn với D/F/I ở tầng Nâng Cao).
+export function taoFindingsCoBan(chart: BatTuChart, analysis: BatTuAnalysis, namSinh?: number): GiaiDoanFindings[] {
+  // Tính quan hệ Hình/Xung/Hại 1 LẦN, dùng chung cho H và J (cùng nguồn với D/F/I ở tầng Nâng Cao).
   const matTacDung = tinhMatTacDungTheoTru(chart);
-  return [findingsA(chart, analysis), findingsB(chart, analysis), findingsC(chart, analysis), findingsG(chart, analysis), findingsH(chart, analysis, matTacDung), findingsJ(chart, analysis)];
+  return [findingsA(chart, analysis), findingsB(chart, analysis), findingsC(chart, analysis), findingsG(chart, analysis), findingsH(chart, analysis, matTacDung), findingsJ(chart, analysis, matTacDung, namSinh)];
 }
