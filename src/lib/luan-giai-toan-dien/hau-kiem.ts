@@ -3,7 +3,17 @@
 import { quetHauKiem } from "./content-safety";
 import { quetSaiSinhKhac, chiDanSuaSinhKhac } from "./kiem-sinh-khac";
 import { viecGiaiDoan, kiemDuyetDoanVan, type GiaiDoanConfig } from "./ai-narrative";
+import type { Hanh } from "../bat-tu-engine/engine";
 import type { GiaiDoanFindings, GiaiDoanNoiDung } from "./types";
+
+const HANH_HOP_LE: Hanh[] = ["Kim", "Mộc", "Thủy", "Hỏa", "Thổ"];
+
+/** Rút hành Nhật Chủ từ laSo (LaSoHienThi.nhatChu = "Quý (Thủy, Âm)") để guard sinh-khắc hiểu "bản mệnh". */
+function layNhatChuHanh(laSo: unknown): Hanh | undefined {
+  const s = (laSo as { nhatChu?: unknown } | null)?.nhatChu;
+  if (typeof s !== "string") return undefined;
+  return HANH_HOP_LE.find((h) => s.includes(h));
+}
 
 const THAY_KHI_CHAN = "Phần này cần xem thêm cùng chuyên gia.";
 
@@ -45,14 +55,15 @@ async function suaSaiSinhKhac(
   findingsPhu: GiaiDoanFindings[] | undefined,
   doanVanGoc: string,
 ): Promise<string> {
-  const loi = quetSaiSinhKhac(doanVanGoc);
+  const ctx = { nhatChu: layNhatChuHanh(laSo) };
+  const loi = quetSaiSinhKhac(doanVanGoc, ctx);
   if (loi.length === 0) return doanVanGoc;
 
   console.error(`[hau-kiem] Giai đoạn ${cfg.ma} SAI CHIỀU Ngũ Hành: ${loi.map((l) => l.cum).join(" || ")} — viết lại kèm chỉ dẫn.`);
   const vietLai = await viecGiaiDoan(cfg, laSo, findings, findingsPhu, chiDanSuaSinhKhac(loi));
   if (!vietLai) return doanVanGoc; // AI lỗi lượt viết lại → giữ bản gốc còn hơn mất nội dung.
 
-  const loiConLai = quetSaiSinhKhac(vietLai);
+  const loiConLai = quetSaiSinhKhac(vietLai, ctx);
   if (loiConLai.length > 0) {
     console.error(`[hau-kiem] Giai đoạn ${cfg.ma} VẪN sai chiều Ngũ Hành sau khi viết lại: ${loiConLai.map((l) => l.cum).join(" || ")} — GIỮ bản viết lại (không chặn), cần rà tay.`);
   }

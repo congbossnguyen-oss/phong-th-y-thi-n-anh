@@ -65,4 +65,24 @@ describe("quetSaiSinhKhac — phát hiện câu sai chiều Ngũ Hành", () => {
   it("bắt đúng chiều 'hại' hợp lệ: 'Mộc hao tổn Thủy' đúng (Thủy sinh Mộc → Mộc rút khí Thủy)", () => {
     expect(quetSaiSinhKhac("Mộc hao tổn Thủy vì Thủy phải sinh Mộc.")).toEqual([]);
   });
+
+  // --- Với ctx.nhatChu: bắt câu sai chiều diễn đạt gián tiếp qua "bản mệnh"/"Nhật Chủ" ---
+  it("bắt lỗi Giai đoạn L 'Hỏa làm suy yếu ... bản mệnh' (Nhật Chủ Thủy → Hỏa không hại Thủy)", () => {
+    const cau = "cần tránh Hỏa làm suy yếu cường độ bản mệnh trong giai đoạn này.";
+    expect(quetSaiSinhKhac(cau)).toEqual([]); // không có ctx → không bắt (bản mệnh chưa resolve)
+    expect(quetSaiSinhKhac(cau, { nhatChu: "Thủy" }).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("bắt lỗi Giai đoạn I 'Hỏa ... xung khắc ... Thủy' (Hỏa khắc Kim, không khắc Thủy)", () => {
+    const cau = "Hỏa là Kỵ thần, giúp giảm bớt áp lực xung khắc lên hành Thủy của Nhật Chủ.";
+    expect(quetSaiSinhKhac(cau, { nhatChu: "Thủy" }).length).toBeGreaterThanOrEqual(1);
+  });
+
+  it("KHÔNG báo nhầm 'Nhật Chủ Quý Thủy trung hòa' (không có động từ quan hệ)", () => {
+    expect(quetSaiSinhKhac("Nhật Chủ Quý Thủy trung hòa, cần Kim nâng đỡ.", { nhatChu: "Thủy" })).toEqual([]);
+  });
+
+  it("KHÔNG báo 'Kim sinh Thủy nuôi dưỡng bản mệnh' (đúng — Kim sinh Thủy)", () => {
+    expect(quetSaiSinhKhac("Kim sinh Thủy, nuôi dưỡng bản mệnh vững vàng.", { nhatChu: "Thủy" })).toEqual([]);
+  });
 });

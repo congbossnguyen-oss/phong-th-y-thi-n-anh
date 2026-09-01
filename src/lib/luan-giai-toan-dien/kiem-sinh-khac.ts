@@ -18,6 +18,11 @@ import { SINH_MAP, KHAC_MAP, hanhSinhCho, hanhKhacX, type Hanh } from "../bat-tu
 
 const HANH_ALT = "Kim|Mộc|Thủy|Hỏa|Thổ";
 const RE_HANH = new RegExp(HANH_ALT, "g");
+// Các cụm chỉ CHÍNH Nhật Chủ (bản mệnh) — khi có ctx.nhatChu, coi các cụm này như 1 "hành" = nhatChu,
+// để bắt được câu sai chiều diễn đạt gián tiếp (vd "Hỏa làm suy yếu bản mệnh" với Nhật Chủ = Thủy →
+// tương đương "Hỏa hại Thủy", sai chiều). CỐ Ý không thêm "thân" trần (đụng "bản thân/người thân").
+const DONG_NGHIA_NHAT_CHU = "bản mệnh|nhật chủ|mệnh chủ|nhật can";
+const RE_NHAT_CHU = new RegExp(DONG_NGHIA_NHAT_CHU, "gi");
 
 // 3 nhóm động từ quan hệ Ngũ Hành cần kiểm. CỐ Ý bỏ "tiết" (dễ đụng "tiết chế" = điều tiết, KHÔNG
 // phải 泄 tiết khí), bỏ "hao" trần (đụng "tiêu hao"/"hao hụt"). Chỉ giữ các cụm rõ nghĩa quan hệ.
@@ -81,14 +86,22 @@ function tachMenhDe(vanBan: string): { text: string; base: number }[] {
  * lấy "gần nhất 2 phía" nên đảm bảo KHÔNG có hành thứ 3 chen giữa — đúng 1 quan hệ X–verb–Y. Sau đó
  * đối chiếu chiều với SINH_MAP/KHAC_MAP.
  */
-export function quetSaiSinhKhac(vanBan: string): LoiSinhKhac[] {
+export function quetSaiSinhKhac(vanBan: string, ctx?: { nhatChu?: Hanh }): LoiSinhKhac[] {
   const loi: LoiSinhKhac[] = [];
   for (const { text: cau, base } of tachMenhDe(vanBan)) {
-    // Vị trí mọi hành trong mệnh đề.
-    RE_HANH.lastIndex = 0;
+    // Vị trí mọi "thực thể hành" trong mệnh đề: tên Ngũ Hành (viết hoa) + (nếu có ctx.nhatChu) các
+    // cụm đồng nghĩa Nhật Chủ. Hành khớp phân biệt hoa/thường (tránh "kim loại"); đồng nghĩa Nhật Chủ
+    // khớp không phân biệt hoa/thường.
     const hanhPos: { hanh: Hanh; start: number; end: number }[] = [];
+    RE_HANH.lastIndex = 0;
     let hm: RegExpExecArray | null;
     while ((hm = RE_HANH.exec(cau)) !== null) hanhPos.push({ hanh: hm[0] as Hanh, start: hm.index, end: hm.index + hm[0].length });
+    if (ctx?.nhatChu) {
+      RE_NHAT_CHU.lastIndex = 0;
+      let nm: RegExpExecArray | null;
+      while ((nm = RE_NHAT_CHU.exec(cau)) !== null) hanhPos.push({ hanh: ctx.nhatChu, start: nm.index, end: nm.index + nm[0].length });
+      hanhPos.sort((a, b) => a.start - b.start);
+    }
     if (hanhPos.length < 2) continue;
 
     for (const { loai, alt } of DONG_TU) {
