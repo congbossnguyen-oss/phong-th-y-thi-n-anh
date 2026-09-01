@@ -18,6 +18,7 @@ export const TEN_CONG_CU_HIEN_THI: Record<string, string> = {
   "nhan-chuc-qs": "Chọn Ngày Giờ Nhận Chức (app Quân Sư)",
   "dat-ten-cho-con": "Đặt Tên Cho Con (Việt Danh Học)",
   "ngay-khai-truong-cao-cap": "Ngày Khai Trương Cao Cấp (Bát Tự mệnh chủ)",
+  "ngay-khai-truong-cao-cap-qs": "Ngày Khai Trương Cao Cấp (Bát Tự mệnh chủ) (app Quân Sư)",
   "dinh-huong-nghe-nghiep": "Định Hướng Nghề Nghiệp (Bát Tự × Tử Vi)",
   "dinh-huong-nghe-nghiep-qs": "Định Hướng Nghề Nghiệp (Bát Tự × Tử Vi) (app Quân Sư)",
   "trach-nhat-sinh-no": "Trạch Nhật Sinh Nở (Chọn Ngày Giờ Sinh Cho Bé)",

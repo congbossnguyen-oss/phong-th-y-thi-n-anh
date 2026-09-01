@@ -20,6 +20,9 @@ export const VIP_SLUG_THEO_GOI: ReadonlySet<ToolSlug> = new Set([
   // có gói Cao Cấp trong app sẽ bị thu tiền dù đáng lẽ được miễn phí theo gói.
   "nhan-chuc-qs",
   "ngay-khai-truong-cao-cap",
+  // Bản ĐỘC LẬP cho app Quân Sư (từ 1/9/2026) của ngay-khai-truong-cao-cap — PHẢI có mặt ở đây,
+  // nếu không khách có gói Cao Cấp trong app sẽ bị thu tiền dù đáng lẽ được miễn phí theo gói.
+  "ngay-khai-truong-cao-cap-qs",
   "trach-nhat-sinh-no",
   // Bản ĐỘC LẬP cho app Quân Sư (từ 1/9/2026) của trach-nhat-sinh-no — PHẢI có mặt ở đây, nếu
   // không khách có gói Cao Cấp trong app sẽ bị thu tiền dù đáng lẽ được miễn phí theo gói.
