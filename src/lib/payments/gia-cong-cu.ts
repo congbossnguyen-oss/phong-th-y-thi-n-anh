@@ -33,6 +33,9 @@ export const GIA_CONG_CU = {
   // giá, cùng engine `calculateCuoiHoiTronGoi`, chỉ khác toolSlug để tách bạch đơn hàng.
   "ngay-cuoi-hoi-qs": 500000,
   "dat-ten-cho-con": 500000,
+  // Bản ĐỘC LẬP cho app Quân Sư (từ 1/9/2026, xem project_quan_su_tach_doc_lap_khoi_web) — cùng
+  // giá, cùng engine `@thien-anh/tinhdanh-engine`, chỉ khác toolSlug để tách bạch đơn hàng.
+  "dat-ten-cho-con-qs": 500000,
   "nhan-chuc": 500000,
   // Bản ĐỘC LẬP cho app Quân Sư (từ 1/9/2026, xem project_quan_su_tach_doc_lap_khoi_web) — cùng
   // giá, cùng engine `calculateNhanChuc`, chỉ khác toolSlug để tách bạch đơn hàng web/app. Bản
