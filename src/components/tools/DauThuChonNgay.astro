@@ -135,18 +135,6 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
           <p class="text-xs text-(--color-ink-500)">Tối đa 400 ngày cho một lần tìm.</p>
         </div>
 
-        <div class="border-t border-(--color-ivory-300) pt-4">
-          <p class="text-sm font-medium text-(--color-ink-800)">Thông tin liên hệ (để nhận kết quả sau khi thanh toán)</p>
-          <div class="mt-2 grid gap-3">
-            <input type="text" id="dtcn-ten" placeholder="Họ tên" required
-              class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
-            <input type="tel" id="dtcn-sdt" placeholder="Số điện thoại" required
-              class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
-            <input type="email" id="dtcn-email" placeholder="Email (tùy chọn)"
-              class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
-          </div>
-        </div>
-
         <MaKhuyenMai idPrefix="dtcn-ma" toolSlug={TOOL_SLUG} giaGoc={TOOL_PRICE} />
 
         <Button type="submit" size="lg">Xem kết quả Đẩu Thủ</Button>
@@ -435,9 +423,6 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           ...payload,
-          customerName: doc("dtcn-ten"),
-          customerPhone: doc("dtcn-sdt"),
-          ...(doc("dtcn-email") ? { customerEmail: doc("dtcn-email") } : {}),
           ...(doc("dtcn-ma-input") ? { maKhuyenMai: doc("dtcn-ma-input") } : {}),
         }),
       });
