@@ -32,6 +32,7 @@ import { generateHopHonPdf } from "../dai-cat-loi/hop-hon-pdf";
 import { lapLaBan, luanGiaiMenh, luanGiaiMenhChiTiet } from "../kymon";
 import { generateKyMonMenhPdf } from "../dai-cat-loi/ky-mon-menh-pdf";
 import { taoBaoCaoCoBan, taoBaoCaoNangCao } from "../luan-giai-toan-dien/orchestrator";
+import { GIAI_DOAN_CO_BAN, GIAI_DOAN_NANG_CAO } from "../luan-giai-toan-dien/ai-narrative";
 import { generateBatTuCoBanPdf, generateBatTuNangCaoPdf, generateBatTuToanDienPdf } from "../dai-cat-loi/bat-tu-toan-dien-pdf";
 import type { BatTuInput } from "../bat-tu";
 import { taoLuanGiaiTuVi, type LuanGiaiTuViInput } from "../tu-vi/luan-giai/taoLuanGiaiTuVi";
@@ -622,17 +623,36 @@ async function _markOrderPaidAndFulfillNoiBo(orderId: string) {
 
     // Luận Giải Bát Tự Toàn Diện — gói duy nhất 700k (1/9/2026, thay 2 tầng Cơ Bản/Nâng Cao ở
     // trên): tính đủ 12 giai đoạn (2 hàm chạy song song, độc lập nhau), gộp 1 PDF, gửi 1 email.
+    //
+    // ⚠️ Mỗi giai đoạn tự gọi AI RIÊNG và ĐỘC LẬP (taoNoiDungGiaiDoanAnToan trả null nếu lỗi, orchestrator
+    // lọc bỏ null) — khác Tử Vi (fail 1 bước là chặn hẳn cả báo cáo), Bát Tự có thể "thành công" mà
+    // THIẾU MẤT 1-2 GIAI ĐOẠN nếu đúng giai đoạn đó lỗi cả 2 lần thử (goiAiToolUseVoiRetry) — báo cáo
+    // vẫn coi là hopLe, PDF vẫn dựng, mail vẫn gửi, nhưng khách nhận bản THIẾU mà không ai biết. Anh
+    // Công báo lỗi thật 1/9/2026 ("thấy ngắn quá"). Chặn theo đúng đủ số giai đoạn trước khi gửi —
+    // giống hệt cách Tử Vi đang an toàn (không gửi bản thiếu, khách bấm "Tải PDF" thử lại được).
     if (order.toolSlug === "luan-giai-bat-tu-toan-dien" && order.customerEmail && order.toolInputSnapshot) {
       try {
         const input = JSON.parse(order.toolInputSnapshot) as BatTuInput;
         const [baoCaoCoBan, baoCaoNangCao] = await Promise.all([taoBaoCaoCoBan(input), taoBaoCaoNangCao(input)]);
-        const pdf = await generateBatTuToanDienPdf(baoCaoCoBan, baoCaoNangCao, order.customerName);
-        await sendBatTuToanDienPdfEmail({
-          to: order.customerEmail,
-          orderCode: order.orderCode,
-          customerName: order.customerName,
-          pdfBytes: pdf,
-        });
+        const thieuCoBan = GIAI_DOAN_CO_BAN.length - baoCaoCoBan.giaiDoan.length;
+        const thieuNangCao = GIAI_DOAN_NANG_CAO.length - baoCaoNangCao.giaiDoan.length;
+        if (thieuCoBan > 0 || thieuNangCao > 0) {
+          const coDay = new Set(baoCaoCoBan.giaiDoan.map((g) => g.ma));
+          const ncDay = new Set(baoCaoNangCao.giaiDoan.map((g) => g.ma));
+          const thieuMa = [
+            ...GIAI_DOAN_CO_BAN.filter((c) => !coDay.has(c.ma)).map((c) => c.ma),
+            ...GIAI_DOAN_NANG_CAO.filter((c) => !ncDay.has(c.ma)).map((c) => c.ma),
+          ];
+          console.error(`[luan-giai-bat-tu-toan-dien] Đơn ${order.orderCode} THIẾU giai đoạn ${thieuMa.join(", ")} (đủ ${GIAI_DOAN_CO_BAN.length + GIAI_DOAN_NANG_CAO.length}, chỉ có ${baoCaoCoBan.giaiDoan.length + baoCaoNangCao.giaiDoan.length}) — KHÔNG gửi bản thiếu, chờ tính lại.`);
+        } else {
+          const pdf = await generateBatTuToanDienPdf(baoCaoCoBan, baoCaoNangCao, order.customerName);
+          await sendBatTuToanDienPdfEmail({
+            to: order.customerEmail,
+            orderCode: order.orderCode,
+            customerName: order.customerName,
+            pdfBytes: pdf,
+          });
+        }
       } catch (err) {
         console.error(`[luan-giai-bat-tu-toan-dien] Lỗi dựng/gửi PDF cho đơn ${order.orderCode}:`, err);
       }

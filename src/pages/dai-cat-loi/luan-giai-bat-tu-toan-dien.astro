@@ -17,6 +17,7 @@ import { GIA_CONG_CU, dinhDangTien, dangKhoaThuNghiem } from "../../lib/payments
 import { getAllConfirmedToolOrdersForUser } from "../../lib/db/orders";
 import { taoBaoCaoCoBan, taoBaoCaoNangCao } from "../../lib/luan-giai-toan-dien/orchestrator";
 import { hashLaSo, cacheCoBan, cacheNangCao } from "../../lib/luan-giai-toan-dien/cache";
+import { GIAI_DOAN_CO_BAN, GIAI_DOAN_NANG_CAO } from "../../lib/luan-giai-toan-dien/ai-narrative";
 import type { BatTuInput } from "../../lib/bat-tu";
 
 export const prerender = false;
@@ -41,6 +42,10 @@ const khoaThuNghiem = dangKhoaThuNghiem(TOOL_SLUG_TOAN_DIEN) && !laQuanTri;
 let baoCaoCoBan: Awaited<ReturnType<typeof taoBaoCaoCoBan>> | null = null;
 let baoCaoNangCao: Awaited<ReturnType<typeof taoBaoCaoNangCao>> | null = null;
 let loiTinhBaoCao: string | null = null;
+// Danh sách mã giai đoạn bị THIẾU (AI lỗi cả 2 lần thử ở đúng giai đoạn đó) — mỗi giai đoạn tự gọi
+// AI độc lập nên có thể "thành công" mà vẫn thiếu 1-2 phần, không phải lỗi cứng như loiTinhBaoCao.
+// Hiện rõ ra để admin biết ngay khi thấy báo cáo "ngắn hơn bình thường" (bug thật 1/9/2026).
+let giaiDoanThieu: string[] = [];
 // Tên + ngày sinh của đơn đang hiện ở khối admin — hiện rõ ra trên trang để không còn lẫn lộn lá số
 // của ai (bug báo 1/9/2026: "cứ lầm lẫn giữa ngày sinh của anh và ngày sinh của khách"), vì khối
 // admin luôn hiện đơn MUA GẦN NHẤT chứ không phải lá số vừa gõ ở form bên dưới.
@@ -89,8 +94,18 @@ if (user) {
       ]);
       baoCaoCoBan = tinhCoBan;
       baoCaoNangCao = tinhNangCao;
-      cacheCoBan.set(key, baoCaoCoBan);
-      cacheNangCao.set(key, baoCaoNangCao);
+      const coDay = new Set(baoCaoCoBan.giaiDoan.map((g) => g.ma));
+      const ncDay = new Set(baoCaoNangCao.giaiDoan.map((g) => g.ma));
+      giaiDoanThieu = [
+        ...GIAI_DOAN_CO_BAN.filter((c) => !coDay.has(c.ma)).map((c) => c.ma),
+        ...GIAI_DOAN_NANG_CAO.filter((c) => !ncDay.has(c.ma)).map((c) => c.ma),
+      ];
+      // Chỉ cache bản ĐỦ — bản thiếu mà cache lại thì mọi lượt xem/tải sau cứ đọc đúng bản thiếu đó
+      // mãi, không bao giờ tính lại (xem ghi chú cùng đợt sửa ở orders.ts + tai-pdf.ts).
+      if (giaiDoanThieu.length === 0) {
+        cacheCoBan.set(key, baoCaoCoBan);
+        cacheNangCao.set(key, baoCaoNangCao);
+      }
     } catch (err) {
       loiTinhBaoCao = err instanceof Error ? err.message : "Không tính được báo cáo.";
     }
@@ -149,6 +164,11 @@ function mauTheoDiemMoi(diem: number): string {
           {donDangHienThi && (
             <p class="mt-1 rounded-(--radius-control) bg-(--color-danger-500)/10 px-3 py-1.5 text-xs font-bold text-(--color-danger-500)">
               ⚠️ Lá số của: {donDangHienThi.customerName} — sinh {donDangHienThi.day}/{donDangHienThi.month}/{donDangHienThi.year}, {donDangHienThi.hour}h{donDangHienThi.minute ? `${donDangHienThi.minute}` : "00"} (đơn mua gần nhất)
+            </p>
+          )}
+          {giaiDoanThieu.length > 0 && (
+            <p class="mt-1 rounded-(--radius-control) bg-(--color-danger-500)/10 px-3 py-1.5 text-xs font-bold text-(--color-danger-500)">
+              ⚠️ THIẾU giai đoạn {giaiDoanThieu.join(", ")} (AI lỗi khi tính — bản này KHÔNG được lưu cache, KHÔNG được gửi mail/tải PDF cho khách). Tải lại trang hoặc bấm "Tải PDF" để thử tính lại.
             </p>
           )}
           {baoCaoCoBan && <p class="mt-2 text-xs text-(--color-ink-500)">{baoCaoCoBan.disclaimerDauBai}</p>}
