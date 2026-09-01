@@ -6,6 +6,7 @@ import { goiAiToolUseVoiRetry } from "../../ai/goi-ai";
 import { docNhieuKnowledge } from "./contentLoader";
 import { serializeDuLieuChoPrompt, type DuLieuLaSoTuVi } from "./adapter";
 import { TEN_CUNG_HIEN_THI, TEN_CUNG_SNAKE, type KetQuaCoBan } from "./aiCoBan";
+import { coTruongRong } from "./kiemTraDayDu";
 
 /** Khuôn Đại Hạn/Tiểu Hạn đầy đủ (mục c chỉ có ở Đại Hạn) — SPEC.md mục 3. */
 export type LuanHan = {
@@ -141,65 +142,78 @@ function dungUserPrompt(duLieu: DuLieuLaSoTuVi, coBan: KetQuaCoBan): string {
   ].join("\n");
 }
 
+/** Số lần thử lại khi JSON hợp lệ (parse OK) nhưng nội dung còn trường rỗng — xem kiemTraDayDu.ts. */
+const SO_LAN_THU_KHI_THIEU_NOI_DUNG = 2;
+
 export async function luanNangCao(
   duLieu: DuLieuLaSoTuVi,
   coBan: KetQuaCoBan,
 ): Promise<{ ketQua: KetQuaNangCao | null; usage?: unknown }> {
-  const kq = await goiAiToolUseVoiRetry({
-    tinhNang: "luan-giai-tu-vi-nang-cao",
-    systemCoDinh: SYSTEM_CO_DINH,
-    systemThayDoi: undefined,
-    userMessage: dungUserPrompt(duLieu, coBan),
-    toolName: "tra_ve_luan_giai_nang_cao",
-    schema: SCHEMA,
-    // ⚠️ 31/8/2026: chuyển DeepSeek, đo thật thấy JSON bị cắt cụt giữa chừng với 6000 — cùng lý do
-    // như aiCoBan.ts, xem ghi chú ở đó. Tăng lên để có đủ chỗ viết hết.
-    maxTokens: 12000,
-    // ⚠️ 31/8/2026: cắt Anthropic, chuyển DeepSeek — deepseek-v4-flash mặc định là model "thinking",
-    // từ chối tool_choice ép buộc mà goiAiToolUse luôn dùng, PHẢI ép deepseek-chat (non-thinking).
-    modelOverride: { "openai-tuong-thich": "deepseek-chat" },
-  });
+  let usageCuoi: unknown;
 
-  if (!kq.input) return { ketQua: null, usage: kq.usage };
+  for (let lan = 1; lan <= SO_LAN_THU_KHI_THIEU_NOI_DUNG; lan++) {
+    const kq = await goiAiToolUseVoiRetry({
+      tinhNang: "luan-giai-tu-vi-nang-cao",
+      systemCoDinh: SYSTEM_CO_DINH,
+      systemThayDoi: undefined,
+      userMessage: dungUserPrompt(duLieu, coBan),
+      toolName: "tra_ve_luan_giai_nang_cao",
+      schema: SCHEMA,
+      // ⚠️ 31/8/2026: chuyển DeepSeek, đo thật thấy JSON bị cắt cụt giữa chừng với 6000 — cùng lý do
+      // như aiCoBan.ts, xem ghi chú ở đó. Tăng lên để có đủ chỗ viết hết.
+      maxTokens: 12000,
+      // ⚠️ 31/8/2026: cắt Anthropic, chuyển DeepSeek — deepseek-v4-flash mặc định là model "thinking",
+      // từ chối tool_choice ép buộc mà goiAiToolUse luôn dùng, PHẢI ép deepseek-chat (non-thinking).
+      modelOverride: { "openai-tuong-thich": "deepseek-chat" },
+    });
+    usageCuoi = kq.usage;
 
-  const raw = kq.input as {
-    dai_han: Record<string, unknown>;
-    tieu_han_nam_nay: Record<string, unknown>;
-    tieu_han_nam_sau: Record<string, unknown>;
-    tong_ket: Record<string, unknown>;
-  };
+    if (!kq.input) continue;
 
-  const chuyenHan = (o: Record<string, unknown>): LuanHan => ({
-    doanMoDau: (o.doan_mo_dau as string) ?? "",
-    quanTamNhieuNhat: (o.quan_tam_nhieu_nhat as string) ?? "",
-    suKienQuanTrong: {
-      congViec: ((o.su_kien_quan_trong as Record<string, string>)?.cong_viec) ?? "",
-      taiBach: ((o.su_kien_quan_trong as Record<string, string>)?.tai_bach) ?? "",
-      tinhCam: ((o.su_kien_quan_trong as Record<string, string>)?.tinh_cam) ?? "",
-      conCai: ((o.su_kien_quan_trong as Record<string, string>)?.con_cai) ?? "",
-      sucKhoe: ((o.su_kien_quan_trong as Record<string, string>)?.suc_khoe) ?? "",
-    },
-    toXauSoVoiHanKhac: o.to_xau_so_voi_han_khac as string | undefined,
-    loiKhuyenNen: Array.isArray(o.loi_khuyen_nen) ? (o.loi_khuyen_nen as string[]) : [],
-    loiKhuyenKhongNen: Array.isArray(o.loi_khuyen_khong_nen) ? (o.loi_khuyen_khong_nen as string[]) : [],
-    chotLai: (o.chot_lai as string) ?? "",
-  });
+    const raw = kq.input as {
+      dai_han: Record<string, unknown>;
+      tieu_han_nam_nay: Record<string, unknown>;
+      tieu_han_nam_sau: Record<string, unknown>;
+      tong_ket: Record<string, unknown>;
+    };
 
-  const tk = raw.tong_ket ?? {};
-  const ketQua: KetQuaNangCao = {
-    daiHan: chuyenHan(raw.dai_han ?? {}),
-    tieuHanNamNay: chuyenHan(raw.tieu_han_nam_nay ?? {}),
-    tieuHanNamSau: chuyenHan(raw.tieu_han_nam_sau ?? {}),
-    tongKet: {
-      diemManh: Array.isArray(tk.diem_manh) ? (tk.diem_manh as string[]) : [],
-      diemYeu: Array.isArray(tk.diem_yeu) ? (tk.diem_yeu as string[]) : [],
-      giaiDoanPhatTrienNhat: (tk.giai_doan_phat_trien_nhat as string) ?? "",
-      giaiDoanCanCanTrong: (tk.giai_doan_can_can_trong as string) ?? "",
-      nganhNghePhuHop: (tk.nganh_nghe_phu_hop as string) ?? "",
-      dieuNenTranh: (tk.dieu_nen_tranh as string) ?? "",
-      chienLuocDaiHan: (tk.chien_luoc_dai_han as string) ?? "",
-    },
-  };
+    const chuyenHan = (o: Record<string, unknown>): LuanHan => ({
+      doanMoDau: (o.doan_mo_dau as string) ?? "",
+      quanTamNhieuNhat: (o.quan_tam_nhieu_nhat as string) ?? "",
+      suKienQuanTrong: {
+        congViec: ((o.su_kien_quan_trong as Record<string, string>)?.cong_viec) ?? "",
+        taiBach: ((o.su_kien_quan_trong as Record<string, string>)?.tai_bach) ?? "",
+        tinhCam: ((o.su_kien_quan_trong as Record<string, string>)?.tinh_cam) ?? "",
+        conCai: ((o.su_kien_quan_trong as Record<string, string>)?.con_cai) ?? "",
+        sucKhoe: ((o.su_kien_quan_trong as Record<string, string>)?.suc_khoe) ?? "",
+      },
+      toXauSoVoiHanKhac: o.to_xau_so_voi_han_khac as string | undefined,
+      loiKhuyenNen: Array.isArray(o.loi_khuyen_nen) ? (o.loi_khuyen_nen as string[]) : [],
+      loiKhuyenKhongNen: Array.isArray(o.loi_khuyen_khong_nen) ? (o.loi_khuyen_khong_nen as string[]) : [],
+      chotLai: (o.chot_lai as string) ?? "",
+    });
 
-  return { ketQua, usage: kq.usage };
+    const tk = raw.tong_ket ?? {};
+    const ketQua: KetQuaNangCao = {
+      daiHan: chuyenHan(raw.dai_han ?? {}),
+      tieuHanNamNay: chuyenHan(raw.tieu_han_nam_nay ?? {}),
+      tieuHanNamSau: chuyenHan(raw.tieu_han_nam_sau ?? {}),
+      tongKet: {
+        diemManh: Array.isArray(tk.diem_manh) ? (tk.diem_manh as string[]) : [],
+        diemYeu: Array.isArray(tk.diem_yeu) ? (tk.diem_yeu as string[]) : [],
+        giaiDoanPhatTrienNhat: (tk.giai_doan_phat_trien_nhat as string) ?? "",
+        giaiDoanCanCanTrong: (tk.giai_doan_can_can_trong as string) ?? "",
+        nganhNghePhuHop: (tk.nganh_nghe_phu_hop as string) ?? "",
+        dieuNenTranh: (tk.dieu_nen_tranh as string) ?? "",
+        chienLuocDaiHan: (tk.chien_luoc_dai_han as string) ?? "",
+      },
+    };
+
+    if (!coTruongRong(ketQua)) return { ketQua, usage: kq.usage };
+    console.error(
+      `[luan-giai-tu-vi] Nâng Cao: lần ${lan}/${SO_LAN_THU_KHI_THIEU_NOI_DUNG} JSON hợp lệ nhưng còn trường rỗng — thử lại.`,
+    );
+  }
+
+  return { ketQua: null, usage: usageCuoi };
 }

@@ -9,6 +9,7 @@
 import { goiAiToolUseVoiRetry } from "../../ai/goi-ai";
 import { docNhieuKnowledge } from "./contentLoader";
 import { serializeDuLieuChoPrompt, type DuLieuLaSoTuVi } from "./adapter";
+import { coTruongRong } from "./kiemTraDayDu";
 
 const TEN_CUNG_SNAKE = [
   "phu_mau", "phuc_duc", "dien_trach", "quan_loc", "no_boc", "thien_di",
@@ -156,58 +157,74 @@ function dungUserPrompt(duLieu: DuLieuLaSoTuVi): string {
   ].join("\n");
 }
 
+/** Số lần thử lại khi JSON hợp lệ (parse OK) nhưng nội dung còn trường rỗng — xem kiemTraDayDu.ts. */
+const SO_LAN_THU_KHI_THIEU_NOI_DUNG = 2;
+
 /** Gọi AI cho Tầng Cơ Bản. Trả null nếu lỗi (bên gọi tự quyết định fallback). */
 export async function luanCoBan(duLieu: DuLieuLaSoTuVi): Promise<{ ketQua: KetQuaCoBan | null; usage?: unknown }> {
-  const kq = await goiAiToolUseVoiRetry({
-    tinhNang: "luan-giai-tu-vi-co-ban",
-    systemCoDinh: SYSTEM_CO_DINH,
-    systemThayDoi: undefined,
-    userMessage: dungUserPrompt(duLieu),
-    toolName: "tra_ve_luan_giai_co_ban",
-    schema: SCHEMA,
-    // ⚠️ 31/8/2026: chuyển DeepSeek, đo thật thấy JSON bị cắt cụt giữa chừng ("Unterminated string")
-    // với 8000 — DeepSeek viết dài hơn Anthropic cho cùng schema. Tăng lên để có đủ chỗ viết hết.
-    maxTokens: 16000,
-    // ⚠️ 31/8/2026: cắt Anthropic, chuyển DeepSeek — deepseek-v4-flash mặc định là model "thinking",
-    // từ chối tool_choice ép buộc mà goiAiToolUse luôn dùng, PHẢI ép deepseek-chat (non-thinking).
-    modelOverride: { "openai-tuong-thich": "deepseek-chat" },
-  });
+  let usageCuoi: unknown;
 
-  if (!kq.input) return { ketQua: null, usage: kq.usage };
+  for (let lan = 1; lan <= SO_LAN_THU_KHI_THIEU_NOI_DUNG; lan++) {
+    const kq = await goiAiToolUseVoiRetry({
+      tinhNang: "luan-giai-tu-vi-co-ban",
+      systemCoDinh: SYSTEM_CO_DINH,
+      systemThayDoi: undefined,
+      userMessage: dungUserPrompt(duLieu),
+      toolName: "tra_ve_luan_giai_co_ban",
+      schema: SCHEMA,
+      // ⚠️ 31/8/2026: chuyển DeepSeek, đo thật thấy JSON bị cắt cụt giữa chừng ("Unterminated string")
+      // với 8000 — DeepSeek viết dài hơn Anthropic cho cùng schema. Tăng lên để có đủ chỗ viết hết.
+      maxTokens: 16000,
+      // ⚠️ 31/8/2026: cắt Anthropic, chuyển DeepSeek — deepseek-v4-flash mặc định là model "thinking",
+      // từ chối tool_choice ép buộc mà goiAiToolUse luôn dùng, PHẢI ép deepseek-chat (non-thinking).
+      modelOverride: { "openai-tuong-thich": "deepseek-chat" },
+    });
+    usageCuoi = kq.usage;
 
-  const raw = kq.input as {
-    luan_thien_ban: string;
-    chu_de: Record<string, string>;
-    cung: Record<string, Record<string, string>>;
-  };
+    if (!kq.input) continue;
 
-  const chuyenCung = (o: Record<string, string>): LuanCung => ({
-    ketLuanNhanh: o.ket_luan_nhanh ?? "",
-    phanTichCauTruc: o.phan_tich_cau_truc ?? "",
-    diemManh: o.diem_manh ?? "",
-    diemYeu: o.diem_yeu ?? "",
-    nguyenNhan: o.nguyen_nhan ?? "",
-    khaNangUngNghiem: o.kha_nang_ung_nghiem ?? "",
-    khuyenNghi: o.khuyen_nghi ?? "",
-  });
+    const raw = kq.input as {
+      luan_thien_ban: string;
+      chu_de: Record<string, string>;
+      cung: Record<string, Record<string, string>>;
+    };
 
-  const ketQua: KetQuaCoBan = {
-    luanThienBan: raw.luan_thien_ban ?? "",
-    chuDe: {
-      hocVan: raw.chu_de?.hoc_van ?? "",
-      ngheNghiep: raw.chu_de?.nghe_nghiep ?? "",
-      taiChinh: raw.chu_de?.tai_chinh ?? "",
-      honNhan: raw.chu_de?.hon_nhan ?? "",
-      sucKhoe: raw.chu_de?.suc_khoe ?? "",
-      khoKhan: raw.chu_de?.kho_khan ?? "",
-      dinhHuong: raw.chu_de?.dinh_huong ?? "",
-    },
-    cung: Object.fromEntries(
-      TEN_CUNG_SNAKE.map((k) => [k, chuyenCung(raw.cung?.[k] ?? {})]),
-    ) as Record<KhoaCungSnake, LuanCung>,
-  };
+    const chuyenCung = (o: Record<string, string>): LuanCung => ({
+      ketLuanNhanh: o.ket_luan_nhanh ?? "",
+      phanTichCauTruc: o.phan_tich_cau_truc ?? "",
+      diemManh: o.diem_manh ?? "",
+      diemYeu: o.diem_yeu ?? "",
+      nguyenNhan: o.nguyen_nhan ?? "",
+      khaNangUngNghiem: o.kha_nang_ung_nghiem ?? "",
+      khuyenNghi: o.khuyen_nghi ?? "",
+    });
 
-  return { ketQua, usage: kq.usage };
+    const ketQua: KetQuaCoBan = {
+      luanThienBan: raw.luan_thien_ban ?? "",
+      chuDe: {
+        hocVan: raw.chu_de?.hoc_van ?? "",
+        ngheNghiep: raw.chu_de?.nghe_nghiep ?? "",
+        taiChinh: raw.chu_de?.tai_chinh ?? "",
+        honNhan: raw.chu_de?.hon_nhan ?? "",
+        sucKhoe: raw.chu_de?.suc_khoe ?? "",
+        khoKhan: raw.chu_de?.kho_khan ?? "",
+        dinhHuong: raw.chu_de?.dinh_huong ?? "",
+      },
+      cung: Object.fromEntries(
+        TEN_CUNG_SNAKE.map((k) => [k, chuyenCung(raw.cung?.[k] ?? {})]),
+      ) as Record<KhoaCungSnake, LuanCung>,
+    };
+
+    // ⚠️ 1/9/2026: bắt được thật — JSON hợp lệ (parse OK, đủ 92 trường theo schema) nhưng 11/12 cung
+    // toàn chuỗi rỗng, chỉ cung đầu tiên theo thứ tự prompt (Phụ Mẫu) có nội dung thật. Khách đã trả
+    // tiền, KHÔNG được để lọt báo cáo thiếu mục — coi như thất bại, thử lại thay vì trả về luôn.
+    if (!coTruongRong(ketQua)) return { ketQua, usage: kq.usage };
+    console.error(
+      `[luan-giai-tu-vi] Cơ Bản: lần ${lan}/${SO_LAN_THU_KHI_THIEU_NOI_DUNG} JSON hợp lệ nhưng còn trường rỗng — thử lại.`,
+    );
+  }
+
+  return { ketQua: null, usage: usageCuoi };
 }
 
 export { TEN_CUNG_SNAKE };
