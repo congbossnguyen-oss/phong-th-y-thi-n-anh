@@ -279,3 +279,26 @@ export async function goiAiToolUse(t: ThamSoGoiAi): Promise<KetQuaGoiAi> {
   const model = t.modelOverride?.[ncc]?.trim() || bienMoiTruong(BIEN_KIEU_OPENAI[ncc].model) || MODEL_MAC_DINH[ncc];
   return goiKieuOpenAi(t, model, ncc);
 }
+
+/**
+ * Bọc `goiAiToolUse` với RETRY khi thất bại (`input` null) — dùng cho các báo cáo trả phí (Bát Tự
+ * Toàn Diện, Tử Vi) hay gặp lỗi JSON bị cắt cụt/parse hỏng do DeepSeek đôi khi trả về ngắt giữa
+ * chừng (đo thật 1/9/2026: đơn `THA3ZNBB626TQ2H` — "Unterminated string in JSON" ở vị trí quá sớm để
+ * là do chạm giới hạn token, nhiều khả năng API chập chờn nhất thời). Khi bước này thất bại, luồng
+ * xác nhận đơn (orders.ts) coi như "chưa tính được" và ÂM THẦM bỏ qua cả PDF lẫn email — retry ở đây
+ * giảm hẳn khả năng khách thanh toán xong mà không nhận được gì.
+ *
+ * Không throw — hết `soLanThu` mà vẫn lỗi thì trả về y hệt `goiAiToolUse` (input: null), bên gọi tự
+ * xử lý như trước giờ.
+ */
+export async function goiAiToolUseVoiRetry(t: ThamSoGoiAi, soLanThu = 2): Promise<KetQuaGoiAi> {
+  let ketQua: KetQuaGoiAi | null = null;
+  for (let lan = 1; lan <= soLanThu; lan++) {
+    ketQua = await goiAiToolUse(t);
+    if (ketQua.input) return ketQua;
+    if (lan < soLanThu) {
+      console.error(`[goi-ai] ${t.tinhNang}: lần ${lan}/${soLanThu} thất bại, thử lại...`);
+    }
+  }
+  return ketQua!;
+}
