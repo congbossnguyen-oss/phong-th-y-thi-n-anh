@@ -1,4 +1,4 @@
-<!-- ĐỒNG BỘ TỪ SKILL luan-giai-bat-tu LÚC: 2026-09-01 (bản khôi phục sau khi phát hiện 13 file bị mất). -->
+<!-- ĐỒNG BỘ TỪ SKILL luan-giai-bat-tu LÚC: 2026-09-01 (cập nhật checklist Giai đoạn J — Bù Khuyết Ngũ Hành). -->
 
 # Quy Trình Luận Giải Bát Tự Toàn Diện (Dùng Cho Dịch Vụ Thu Phí)
 
@@ -39,6 +39,8 @@ Checklist đầy đủ — đi qua TẤT CẢ file references theo đúng thứ 
 
 ## GIAI ĐOẠN J — Ngũ Hành thực hành
 - [ ] J1. Phương hướng/màu sắc/quý nhân theo Dụng-Hỷ (`dung-than.md` mục 5) — ghi rõ "gợi ý theo hành, không phải quy tắc cứng".
+- [ ] J2. Nếu cần chi tiết hơn (vật phẩm, con số, ẩm thực...): dùng `bu-khuyet-ngu-hanh.md` mục A. Phân biệt rõ vấn đề THIẾU HÀNH (bù được bằng vật phẩm) với vấn đề CẤU TRÚC Hình/Xung/Hại (chỉ hành vi/thói quen mới hỗ trợ được, không vật phẩm nào giải quyết — xem mục B file đó).
+- [ ] J3. Nếu luận theo Đại Vận/Lưu Niên (Giai đoạn K): xếp mức độ ưu tiên theo `bu-khuyet-ngu-hanh.md` mục C (cả Can+Chi cùng Kỵ = nặng nhất; chỉ 1 trong 2 = vừa; Cừu Thần = nhẹ hơn nhưng vẫn lưu ý).
 
 ## GIAI ĐOẠN K — Đại Vận trọn đời & Lưu Niên trọng điểm
 - [ ] K1. Liệt kê ĐỦ Đại Vận từ nhỏ đến hết vòng đời (8-10 vận), không chỉ vận hiện tại. K2. Mỗi Đại Vận: tính lại vượng suy/Dụng Thần nếu Nhóm 1/2, áp Tầng Thứ (`quan-he-can-chi.md` mục 4). K3. 2-3 Lưu Niên trọng điểm mỗi Đại Vận theo `ung-ky.md`. K4. Đại Vận/Lưu Niên hiện tại luận kỹ nhất. K5. Câu hỏi lục thân theo thời gian: dùng đúng Thập Thần đại diện, không dùng Dụng Thần mệnh chủ.

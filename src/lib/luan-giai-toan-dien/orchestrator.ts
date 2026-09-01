@@ -46,7 +46,7 @@ export function laSoHienThi(chart: BatTuChart, analysis: BatTuAnalysis): LaSoHie
 
 export async function taoBaoCaoCoBan(input: BatTuInput): Promise<BaoCaoCoBan> {
   const { chart, analysis } = laSoVaPhanTich(input);
-  const findingsList = taoFindingsCoBan(chart, analysis);
+  const findingsList = taoFindingsCoBan(chart, analysis, input.year); // input.year = năm sinh, để J liệt kê Lưu Niên
   const laSo = laSoHienThi(chart, analysis);
 
   // ⚠️ 1/9/2026: Giai đoạn L PHẢI tổng hợp từ ĐỦ 11 giai đoạn A-K, không chỉ 6 giai đoạn Cơ Bản như
