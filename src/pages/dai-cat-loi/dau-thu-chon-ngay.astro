@@ -1,0 +1,31 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import VipQuyenBanner from "../../components/quan-su/VipQuyenBanner.astro";
+import DauThuChonNgay from "../../components/tools/DauThuChonNgay.astro";
+import { GIA_CONG_CU, dinhDangTien } from "../../lib/payments/gia-cong-cu";
+
+export const prerender = true;
+
+const TOOL_PRICE_LABEL = dinhDangTien(GIA_CONG_CU["dau-thu-chon-ngay"]);
+---
+
+<BaseLayout
+  title="Đẩu Thủ Chọn Ngày"
+  description="Chọn ngày theo phương pháp Đẩu Thủ — đánh giá Tứ Trụ của ngày so với Sơn Đầu (tọa nhà/mộ), độc lập với Huyền Không Đại Quái, dùng thay thế hoặc đối chiếu chéo."
+>
+  <PageHero
+    eyebrow="⭐ Dịch vụ VIP"
+    title="Đẩu Thủ Chọn Ngày"
+    description={`Đánh giá Tứ Trụ của ngày so với Sơn Đầu (tọa nhà/mộ, hoặc phương vị nơi tác động) theo phương pháp Đẩu Thủ — độc lập với Huyền Không Đại Quái. Phí ${TOOL_PRICE_LABEL}/lượt, thanh toán QR, không cần tạo tài khoản.`}
+    breadcrumbs={[
+      { label: "Trang chủ", href: "/" },
+      { label: "Đại Cát Lợi", href: "/dai-cat-loi" },
+      { label: "Dịch vụ VIP", href: "/dai-cat-loi/dich-vu-thu-phi" },
+      { label: "Đẩu Thủ Chọn Ngày" },
+    ]}
+  />
+  <VipQuyenBanner />
+
+  <DauThuChonNgay />
+</BaseLayout>

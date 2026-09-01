@@ -229,4 +229,12 @@ export const paidTools: PaidTool[] = [
     // Dịch vụ THỦ CÔNG (không phải công cụ tính tự động): chuyên gia tìm sim thật từ kho số theo
     // Bát Tự khách cung cấp — không có "kết quả" trả ngay như các công cụ khác. Xem _chung.ts.
   },
+  {
+    href: "/dai-cat-loi/dau-thu-chon-ngay",
+    icon: "🌗",
+    title: "Đẩu Thủ Chọn Ngày",
+    desc: "Đánh giá Tứ Trụ của ngày so với Sơn Đầu (tọa nhà/mộ, hoặc phương vị nơi tác động nếu sửa chữa cục bộ) theo phương pháp Đẩu Thủ — hệ độc lập với Huyền Không Đại Quái, dùng thay thế hoặc đối chiếu chéo. Xếp Tứ Trụ vào 5 vai Nguyên Thần/Tham Quan/Liêm Trinh/Võ Tài/Phá Quân, xét thêm vượng suy theo vòng Trường Sinh.",
+    priceLabel: "300.000đ / lượt",
+    // Mới thêm 1/9/2026 (anh Công cung cấp spec + duyệt code trước, chốt giá 300k).
+  },
 ];
