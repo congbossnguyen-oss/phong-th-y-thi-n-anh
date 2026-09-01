@@ -540,6 +540,25 @@ async function _markOrderPaidAndFulfillNoiBo(orderId: string) {
       }
     }
 
+    // Trạch Nhật Sinh Nở — bản ĐỘC LẬP cho app Quân Sư (toolSlug `trach-nhat-sinh-no-qs`, từ
+    // 1/9/2026). Tái dùng đúng engine/PDF/email đã import ở trên cho bản web — chỉ khác toolSlug
+    // để tách bạch thống kê.
+    if (order.toolSlug === "trach-nhat-sinh-no-qs" && order.customerEmail && order.toolInputSnapshot) {
+      try {
+        const input = JSON.parse(order.toolInputSnapshot) as BirthSelectionInput;
+        const ketQua = phanTichTrachNhatSinhNo(input);
+        const pdf = await generateTrachNhatSinhNoPdf(ketQua, order.customerName);
+        await sendTrachNhatSinhNoPdfEmail({
+          to: order.customerEmail,
+          orderCode: order.orderCode,
+          customerName: order.customerName,
+          pdfBytes: pdf,
+        });
+      } catch (err) {
+        console.error(`[trach-nhat-sinh-no-qs] Lỗi dựng/gửi PDF cho đơn ${order.orderCode}:`, err);
+      }
+    }
+
     // Hợp Hôn Bát Tự × Tử Vi: thuần công thức (không AI) — dựng PDF rồi gửi kèm email khách. Bọc
     // try/catch riêng cùng lý do các module khác: hỏng khâu này đơn vẫn ghi nhận đã thanh toán,
     // khách còn xem lại kết quả trên trang bằng mã đơn.

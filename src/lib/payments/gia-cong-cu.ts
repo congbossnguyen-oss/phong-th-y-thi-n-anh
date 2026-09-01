@@ -33,6 +33,9 @@ export const GIA_CONG_CU = {
   "nhan-chuc": 500000,
   "dinh-huong-nghe-nghiep": 500000,
   "trach-nhat-sinh-no": 500000,
+  // Bản ĐỘC LẬP cho app Quân Sư (từ 1/9/2026, xem project_quan_su_tach_doc_lap_khoi_web) — cùng
+  // giá, cùng engine `phanTichTrachNhatSinhNo`, chỉ khác toolSlug để tách bạch đơn hàng web/app.
+  "trach-nhat-sinh-no-qs": 500000,
   "trach-cat-ky-mon": 500000,
   // ⚠️ Trước 27/8/2026 để 999.999đ — con số này KHÔNG phải giá thật mà là số đặt tạm rồi quên (không
   // ai định giá lẻ tới hàng đơn vị). Chốt về 500.000đ: module luận số để khách quyết có nên bỏ vài

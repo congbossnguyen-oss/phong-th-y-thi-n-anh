@@ -15,6 +15,9 @@ export const VIP_SLUG_THEO_GOI: ReadonlySet<ToolSlug> = new Set([
   "nhan-chuc",
   "ngay-khai-truong-cao-cap",
   "trach-nhat-sinh-no",
+  // Bản ĐỘC LẬP cho app Quân Sư (từ 1/9/2026) của trach-nhat-sinh-no — PHẢI có mặt ở đây, nếu
+  // không khách có gói Cao Cấp trong app sẽ bị thu tiền dù đáng lẽ được miễn phí theo gói.
+  "trach-nhat-sinh-no-qs",
   // --- Nhóm KỲ MÔN ĐỘN GIÁP (chủ dự án chốt 27/8/2026: "các mục trong kỳ môn độn giáp này vào
   // gói") — thêm vào ĐỂ VIỆC ẨN GIÁ TRONG APP LÀ TRUNG THỰC: app Quân Sư không niêm yết giá lẻ
   // (prop `anGia`), nên nếu không cho vào gói thì khách bấm xong vẫn bị thu tiền mà không thấy giá.
