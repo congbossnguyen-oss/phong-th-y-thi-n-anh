@@ -213,6 +213,21 @@ export {
   type NgaySinhDayDu as NhanChucNgaySinhDayDu,
 } from "./processing/nhanChuc.js";
 
+// Đẩu Thủ Chọn Ngày (dịch vụ VIP) — hệ độc lập với HKĐQ, xem chú thích đầu file cho phạm vi/giới hạn.
+export {
+  tinhDauThuChonNgay,
+  type LoaiViecDauThu,
+  type DauThuChonNgayInput,
+  type DauThuChonNgayResult,
+  type TruDauThuKetQua,
+  type GioDauThu,
+} from "./processing/dauThuChonNgay.js";
+export {
+  timNgayDauThuChonNgay,
+  type DauThuTimNgayInput,
+  type DauThuNgayXepHang,
+} from "./processing/dauThuChonNgayTimNgay.js";
+
 export * from "./types.js";
 
 /** Version `@thien-anh/calendar-core` đang dùng — giữ đồng bộ tay với calendar-core/package.json. */

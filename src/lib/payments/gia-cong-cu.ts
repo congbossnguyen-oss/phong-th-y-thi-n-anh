@@ -40,6 +40,10 @@ export const GIA_CONG_CU = {
   "ngay-khai-truong-cao-cap": 300000,
   "ngay-ky-hop-dong-cao-cap": 300000,
   "ky-mon-menh-chi-tiet": 300000,
+  // Đẩu Thủ Chọn Ngày — hệ đối chiếu chéo/thay thế cho Xem Ngày Cao Cấp (HKĐQ), phạm vi tương
+  // đương "chọn ngày theo tọa" chứ không phải quyết định cả đời như HKĐQ → giá 300.000đ (chủ dự
+  // án chốt 1/9/2026, giá thẳng khi giao việc, chưa qua vòng đối chiếu tầng giá như bảng trên).
+  "dau-thu-chon-ngay": 300000,
 
   // ─ Luận Giải Bát Tự Toàn Diện — 1 GÓI DUY NHẤT (anh Công chốt 1/9/2026) ─────────────────────
   // Trước đây tách 2 bậc Cơ Bản 300k / Trọn Đời 700k, nhưng gây 2 bug: (1) khách mua Cơ Bản cho

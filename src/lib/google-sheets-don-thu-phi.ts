@@ -23,6 +23,7 @@ export const TEN_CONG_CU_HIEN_THI: Record<string, string> = {
   "trach-cat-ky-mon": "Trạch Cát Kỳ Môn (chọn ngày giờ theo bàn mệnh)",
   "sim-phong-thuy-khai-van": "Sim Phong Thủy Khai Vận Khí",
   "hop-hon": "Hợp Hôn Bát Tự × Tử Vi",
+  "dau-thu-chon-ngay": "Đẩu Thủ Chọn Ngày",
 };
 
 export interface DonThuPhiChoSheet {

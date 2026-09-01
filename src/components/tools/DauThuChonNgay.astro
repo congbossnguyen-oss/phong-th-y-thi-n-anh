@@ -1,0 +1,373 @@
+---
+// Than dich vu VIP tach dung chung cho web + in-app Quan Su (theo khuon NgayKyHopDongCaoCap.astro).
+import BottomNav from "../../components/quan-su/BottomNav.astro";
+import Container from "../../components/ui/Container.astro";
+import Button from "../../components/ui/Button.astro";
+import DateSelect from "../../components/ui/DateSelect.astro";
+import MaKhuyenMai from "../../components/ui/MaKhuyenMai.astro";
+import { GIA_CONG_CU, dinhDangTien } from "../../lib/payments/gia-cong-cu";
+
+// Không bắt đăng nhập, giống các module thu phí khác — orderCode làm vé.
+export const prerender = true;
+
+const SON_24 = [
+  "Tý", "Quý", "Sửu", "Cấn", "Dần", "Giáp", "Mão", "Ất", "Thìn", "Tốn", "Tỵ", "Bính",
+  "Ngọ", "Đinh", "Mùi", "Khôn", "Thân", "Canh", "Dậu", "Tân", "Tuất", "Càn", "Hợi", "Nhâm",
+];
+const CHI_12 = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"];
+const LOAI_VIEC = [
+  { value: "nhap_trach", label: "Nhập trạch" },
+  { value: "dong_tho", label: "Động thổ" },
+  { value: "sua_nha", label: "Sửa chữa cục bộ (bếp/cửa)" },
+  { value: "an_tang", label: "An táng" },
+  { value: "cai_tang", label: "Cải táng" },
+  { value: "khac", label: "Việc khác" },
+];
+
+const TOOL_SLUG = "dau-thu-chon-ngay";
+const TOOL_PRICE = GIA_CONG_CU[TOOL_SLUG];
+const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
+---
+
+  <Container class="py-16">
+    <div class="mx-auto max-w-2xl">
+      <div class="mb-6 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-4 text-sm text-(--color-ink-600)">
+        <p class="font-medium text-(--color-ink-800)">Phương pháp Đẩu Thủ là gì?</p>
+        <p class="mt-1">
+          Cách đánh giá Tứ Trụ của ngày so với <strong>Sơn Đầu</strong> (tọa nhà/mộ, hoặc phương vị nơi tác động nếu
+          sửa chữa cục bộ) — <strong>độc lập với Huyền Không Đại Quái</strong>, dùng thay thế hoặc đối chiếu chéo.
+          Ngũ hành Đẩu Thủ của sơn khác Chính Ngũ Hành thường; xếp Tứ Trụ vào 5 vai Nguyên Thần/Tham Quan/Liêm
+          Trinh/Võ Tài/Phá Quân rồi xét thêm vượng suy theo vòng Trường Sinh.
+        </p>
+        <p class="mt-2 text-xs text-(--color-ink-500)">
+          Chưa gồm tầng "Phiên Hóa Đẩu Thủ Ngũ Hành" bậc 2 (cách cục rất cao cấp) — nguồn chưa đủ tin cậy để tự
+          động hoá, hệ thống báo rõ trong kết quả nếu gặp trường hợp cần tầng này.
+        </p>
+      </div>
+
+      <form
+        id="dtcn-form"
+        class="flex flex-col gap-4 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6"
+      >
+        <div>
+          <p class="text-sm font-medium text-(--color-ink-800)">Chế độ</p>
+          <div class="mt-1.5 flex gap-4">
+            <label class="flex items-center gap-1.5 text-sm text-(--color-ink-700)">
+              <input type="radio" name="cheDo" value="giam_dinh" checked /> Giám định 1 ngày
+            </label>
+            <label class="flex items-center gap-1.5 text-sm text-(--color-ink-700)">
+              <input type="radio" name="cheDo" value="tim_ngay" /> Tìm ngày trong khoảng
+            </label>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="dtcn-toa" class="text-sm font-medium text-(--color-ink-800)">Tọa (Sơn Đầu)</label>
+            <select id="dtcn-toa" required class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)">
+              {SON_24.map((s) => <option value={s}>{s}</option>)}
+            </select>
+          </div>
+          <div>
+            <label for="dtcn-loai-viec" class="text-sm font-medium text-(--color-ink-800)">Loại việc</label>
+            <select id="dtcn-loai-viec" class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)">
+              {LOAI_VIEC.map((v) => <option value={v.value}>{v.label}</option>)}
+            </select>
+          </div>
+        </div>
+        <p class="-mt-2 text-xs text-(--color-ink-500)">
+          Nhập trạch/động thổ toàn nhà thì dùng thẳng tọa nhà. Sửa chữa cục bộ thì nhập phương vị nơi tác động
+          (đo từ tâm nhà), không phải tọa nhà.
+        </p>
+
+        <div>
+          <label for="dtcn-do-so" class="text-sm font-medium text-(--color-ink-800)">
+            Độ số la bàn (0–359.99) — bắt buộc nếu tọa là Cấn/Tốn/Khôn/Càn
+          </label>
+          <input
+            type="number"
+            id="dtcn-do-so"
+            step="0.01"
+            min="0"
+            max="359.99"
+            placeholder="vd. 318"
+            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"
+          />
+        </div>
+
+        <div id="dtcn-vung-giam-dinh">
+          <DateSelect idPrefix="dtcn-ngay" label="Ngày cần giám định (dương lịch)" yearsBack={1} yearsForward={5} />
+          <div class="mt-3">
+            <label for="dtcn-chi-gio" class="text-sm font-medium text-(--color-ink-800)">Giờ (không bắt buộc)</label>
+            <select id="dtcn-chi-gio" class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)">
+              <option value="">Chưa biết — tự lấy giờ tốt nhất</option>
+              {CHI_12.map((c) => <option value={c}>Giờ {c}</option>)}
+            </select>
+          </div>
+        </div>
+
+        <div id="dtcn-vung-tim-ngay" class="hidden space-y-3">
+          <DateSelect idPrefix="dtcn-tu" label="Tìm từ ngày (dương lịch)" yearsBack={1} yearsForward={5} />
+          <DateSelect idPrefix="dtcn-den" label="Đến ngày (dương lịch)" yearsBack={1} yearsForward={5} />
+          <p class="text-xs text-(--color-ink-500)">Tối đa 400 ngày cho một lần tìm.</p>
+        </div>
+
+        <div class="border-t border-(--color-ivory-300) pt-4">
+          <p class="text-sm font-medium text-(--color-ink-800)">Thông tin liên hệ (để nhận kết quả sau khi thanh toán)</p>
+          <div class="mt-2 grid gap-3">
+            <input type="text" id="dtcn-ten" placeholder="Họ tên" required
+              class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+            <input type="tel" id="dtcn-sdt" placeholder="Số điện thoại" required
+              class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+            <input type="email" id="dtcn-email" placeholder="Email (tùy chọn)"
+              class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+          </div>
+        </div>
+
+        <MaKhuyenMai idPrefix="dtcn-ma" toolSlug={TOOL_SLUG} giaGoc={TOOL_PRICE} />
+
+        <Button type="submit" size="lg">Xem kết quả Đẩu Thủ</Button>
+      </form>
+
+      <div id="dtcn-dang-chay" class="mt-4 hidden rounded-(--radius-card) border border-(--color-gold-500)/40 bg-(--color-gold-400)/10 p-4 text-sm text-(--color-ink-700)">
+        <p class="font-medium text-(--color-ink-900)">⏳ Đang tính…</p>
+      </div>
+
+      <div id="dtcn-loi" class="mt-4 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm text-(--color-danger-500)"></div>
+
+      <div id="dtcn-thanh-toan" class="mt-6 hidden space-y-4 rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-center text-(--color-ink-950) shadow-lg">
+        <p class="font-display text-lg font-bold">Quét mã QR để thanh toán <span id="dtcn-so-tien">{TOOL_PRICE_LABEL}</span></p>
+        <img id="dtcn-qr" src="" alt="Mã QR thanh toán" class="mx-auto h-64 w-64 rounded-xl border border-(--color-ivory-300)" />
+        <p class="text-sm text-(--color-ink-600)">Mã đơn hàng: <strong id="dtcn-order-code"></strong></p>
+        <p id="dtcn-trang-thai" class="text-sm font-medium text-(--color-gold-400)">Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)</p>
+      </div>
+
+      <div id="dtcn-ket-qua" class="mt-6 hidden space-y-4"></div>
+    </div>
+  </Container>
+  <BottomNav />
+
+<script>
+  import { readDateSelects } from "../../lib/date-select";
+
+  const form = document.getElementById("dtcn-form") as HTMLFormElement;
+  const loiEl = document.getElementById("dtcn-loi")!;
+  const ketQuaEl = document.getElementById("dtcn-ket-qua")!;
+  const dangChayEl = document.getElementById("dtcn-dang-chay")!;
+  const thanhToanEl = document.getElementById("dtcn-thanh-toan")!;
+  const qrImg = document.getElementById("dtcn-qr") as HTMLImageElement;
+  const orderCodeEl = document.getElementById("dtcn-order-code")!;
+  const trangThaiEl = document.getElementById("dtcn-trang-thai")!;
+  const soTienEl = document.getElementById("dtcn-so-tien")!;
+  const nutSubmit = form.querySelector('button[type="submit"]') as HTMLButtonElement | null;
+  const vungGiamDinh = document.getElementById("dtcn-vung-giam-dinh")!;
+  const vungTimNgay = document.getElementById("dtcn-vung-tim-ngay")!;
+
+  let pollTimer: ReturnType<typeof setInterval> | null = null;
+  let dangHoi = false;
+
+  const doc = (id: string) => (document.getElementById(id) as HTMLInputElement | null)?.value.trim() ?? "";
+
+  form.querySelectorAll<HTMLInputElement>('input[name="cheDo"]').forEach((r) => {
+    r.addEventListener("change", () => {
+      const laTimNgay = (form.querySelector('input[name="cheDo"]:checked') as HTMLInputElement).value === "tim_ngay";
+      vungGiamDinh.classList.toggle("hidden", laTimNgay);
+      vungTimNgay.classList.toggle("hidden", !laTimNgay);
+    });
+  });
+
+  const tatDangChay = () => {
+    dangChayEl.classList.add("hidden");
+    if (nutSubmit) nutSubmit.disabled = false;
+  };
+  const baoLoi = (msg: string) => {
+    tatDangChay();
+    loiEl.textContent = msg;
+    loiEl.classList.remove("hidden");
+  };
+  const dungCho = () => {
+    if (pollTimer) {
+      clearInterval(pollTimer);
+      pollTimer = null;
+    }
+  };
+
+  const esc = (s: unknown) =>
+    String(s).replace(/[&<>"']/g, (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!,
+    );
+
+  const VAI_MAU: Record<string, string> = {
+    "Nguyên Thần": "text-(--color-jade-400)",
+    "Võ Tài": "text-(--color-jade-400)",
+    "Liêm Trinh": "text-(--color-ink-600)",
+    "Tham Quan": "text-(--color-gold-400)",
+    "Phá Quân": "text-(--color-danger-500)",
+  };
+
+  function theTuTru(tuTru: any[]): string {
+    return `<div class="grid grid-cols-2 gap-2 sm:grid-cols-4">${tuTru
+      .map(
+        (t) => `<div class="rounded-lg border border-(--color-ivory-300) bg-(--color-ivory-50) p-2.5 text-center">
+          <p class="text-xs text-(--color-ink-500)">${esc(t.tru)}</p>
+          <p class="font-display text-sm font-bold text-(--color-ink-950)">${esc(t.can)} ${esc(t.chi)}</p>
+          <p class="mt-1 text-xs font-medium ${VAI_MAU[t.vaiTro] ?? ""}">${esc(t.vaiTro)}</p>
+          <p class="text-[11px] text-(--color-ink-500)">${esc(t.truongSinh)}</p>
+        </div>`,
+      )
+      .join("")}</div>`;
+  }
+
+  function theGioDeXuat(gio: any[]): string {
+    return `<p class="mt-2 text-sm text-(--color-ink-700)"><strong>Giờ đề xuất (top 3):</strong> ${gio
+      .slice(0, 3)
+      .map((g) => `${esc(g.chiGio)} (${esc(g.khungGio)}) — ${esc(g.vaiTro)}${g.laHoangDao ? " · Hoàng Đạo" : ""}`)
+      .join(" · ")}</p>`;
+  }
+
+  function theKetQuaGiamDinh(r: any): string {
+    const canhBao = (r.canhBao ?? []).map((c: string) => `<li>${esc(c)}</li>`).join("");
+    const thieu = (r.thieuDuLieu ?? []).map((c: string) => `<li>${esc(c)}</li>`).join("");
+    const cachCuc = (r.cachCuc ?? []).length ? r.cachCuc.map(esc).join(", ") : "Không đạt cách cục ưu tiên nào";
+    return `<div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+      <div class="flex flex-wrap items-baseline justify-between gap-2">
+        <p class="font-display text-lg font-bold">${esc(r.ngayDuongLich.ngay)}/${esc(r.ngayDuongLich.thang)}/${esc(r.ngayDuongLich.nam)}</p>
+        <p class="text-sm font-semibold text-(--color-ink-950)">${esc(r.diem)} điểm</p>
+      </div>
+      <p class="mt-1 text-xs text-(--color-ink-500)">Âm lịch ${esc(r.amLich.ngay)}/${esc(r.amLich.thang)}${r.amLich.nhuan ? " (nhuận)" : ""} · Sơn Đầu ${esc(r.sonDau.ten)} (Đẩu Thủ: ${esc(r.sonDau.hanh)})</p>
+      <p class="mt-2 text-sm"><strong>Cách cục:</strong> ${cachCuc}</p>
+      <div class="mt-3">${theTuTru(r.tuTru)}</div>
+      ${!r.gioHeadline.tuChon ? `<p class="mt-2 text-xs text-(--color-gold-400)">Chưa chọn giờ cụ thể — trụ Giờ đang lấy tự động (${esc(r.gioHeadline.chiGio)}, điểm cao nhất trong 12 giờ).</p>` : ""}
+      ${theGioDeXuat(r.gioDeXuat)}
+      ${canhBao ? `<div class="mt-3 rounded-lg border border-(--color-danger-500)/30 bg-(--color-danger-500)/5 p-3"><p class="text-xs font-medium text-(--color-danger-500)">Cảnh báo</p><ul class="mt-1 list-disc space-y-0.5 pl-4 text-xs text-(--color-ink-700)">${canhBao}</ul></div>` : ""}
+      ${thieu ? `<div class="mt-2 rounded-lg border border-(--color-ivory-300) bg-(--color-ivory-50) p-3"><p class="text-xs font-medium text-(--color-ink-600)">Cần lưu ý thêm</p><ul class="mt-1 list-disc space-y-0.5 pl-4 text-xs text-(--color-ink-600)">${thieu}</ul></div>` : ""}
+    </div>`;
+  }
+
+  function theNgayXepHang(n: any): string {
+    return `<div class="rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-100) p-4">
+      <div class="flex flex-wrap items-baseline justify-between gap-2">
+        <p class="font-display text-base font-bold text-(--color-ink-950)">
+          ${esc(n.ngayDuongLich.ngay)}/${esc(n.ngayDuongLich.thang)}/${esc(n.ngayDuongLich.nam)}
+          <span class="font-normal text-(--color-ink-500)">— ngày ${esc(n.canChiNgay)}</span>
+        </p>
+        <p class="text-sm font-semibold text-(--color-ink-950)">${esc(n.diem)} điểm</p>
+      </div>
+      <p class="mt-1 text-xs text-(--color-ink-500)">Âm lịch ${esc(n.amLich.ngay)}/${esc(n.amLich.thang)}${n.amLich.nhuan ? " (nhuận)" : ""}${n.loaiSomTrungNgay ? ` · <span class="text-(--color-danger-500)">Trụ Ngày Phá Quân, Sơn Đầu không được lệnh Tháng — cân nhắc kỹ</span>` : ""}</p>
+      <p class="mt-1 text-sm">${(n.cachCuc ?? []).length ? esc(n.cachCuc.join(", ")) : "Không đạt cách cục ưu tiên nào"}</p>
+      ${n.gioTot.length ? `<p class="mt-1 text-sm text-(--color-ink-700)"><strong>Giờ tốt:</strong> ${n.gioTot.map((g: any) => `${esc(g.chiGio)} (${esc(g.khungGio)})`).join(" · ")}</p>` : ""}
+    </div>`;
+  }
+
+  function render(cheDo: string, data: any) {
+    if (cheDo === "tim_ngay") {
+      if (!data.ketQua || data.ketQua.length === 0) {
+        ketQuaEl.innerHTML = `<div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+          <p class="font-display text-lg font-bold">Không tìm được ngày nào trong khoảng đã chọn</p>
+          <p class="mt-1 text-sm text-(--color-ink-600)">Đã quét ${esc(data.tongSoNgayQuet)} ngày. Thử nới rộng khoảng ngày.</p>
+        </div>`;
+      } else {
+        ketQuaEl.innerHTML = `<div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+          <p class="font-display text-lg font-bold">Top ${esc(data.ketQua.length)} ngày / ${esc(data.tongSoNgayQuet)} ngày đã quét</p>
+          <div class="mt-3 space-y-2">${data.ketQua.map(theNgayXepHang).join("")}</div>
+        </div>`;
+      }
+    } else {
+      ketQuaEl.innerHTML = theKetQuaGiamDinh(data.result);
+    }
+    ketQuaEl.classList.remove("hidden");
+    ketQuaEl.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  async function layKetQua(orderCode: string) {
+    if (dangHoi) return;
+    dangHoi = true;
+    try {
+      const res = await fetch(`/api/dai-cat-loi/dau-thu-chon-ngay/result?orderCode=${encodeURIComponent(orderCode)}`);
+      const data = await res.json();
+      if (!data.ok) return;
+      if (data.status === "cancelled") {
+        dungCho();
+        trangThaiEl.textContent = "Đơn hàng đã bị hủy.";
+        return;
+      }
+      if (data.status !== "confirmed") return;
+      dungCho();
+      dangChayEl.classList.add("hidden");
+      thanhToanEl.classList.add("hidden");
+      render(data.cheDo, data);
+    } catch {
+      // Mạng chập chờn — để nhịp sau thử lại.
+    } finally {
+      dangHoi = false;
+    }
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    loiEl.classList.add("hidden");
+    ketQuaEl.classList.add("hidden");
+
+    const cheDo = (form.querySelector('input[name="cheDo"]:checked') as HTMLInputElement).value;
+    const toaNha = doc("dtcn-toa");
+    const toaDoSo = doc("dtcn-do-so");
+    const loaiViec = doc("dtcn-loai-viec");
+
+    const payload: Record<string, unknown> = {
+      cheDo,
+      toaNha,
+      ...(toaDoSo ? { toaDoSo: Number(toaDoSo) } : {}),
+      ...(loaiViec ? { loaiViec } : {}),
+    };
+
+    if (cheDo === "giam_dinh") {
+      const ngay = readDateSelects("dtcn-ngay");
+      if (!ngay) return baoLoi("Vui lòng chọn ngày cần giám định.");
+      payload.ngayGiamDinh = { nam: ngay.year, thang: ngay.month, ngay: ngay.day };
+      const chiGio = doc("dtcn-chi-gio");
+      if (chiGio) payload.chiGio = chiGio;
+    } else {
+      const tu = readDateSelects("dtcn-tu");
+      const den = readDateSelects("dtcn-den");
+      if (!tu || !den) return baoLoi("Vui lòng chọn đầy đủ ngày bắt đầu và ngày kết thúc.");
+      payload.tuNgay = { nam: tu.year, thang: tu.month, ngay: tu.day };
+      payload.denNgay = { nam: den.year, thang: den.month, ngay: den.day };
+    }
+
+    dangChayEl.classList.remove("hidden");
+    if (nutSubmit) nutSubmit.disabled = true;
+
+    try {
+      const res = await fetch("/api/dai-cat-loi/dau-thu-chon-ngay/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...payload,
+          customerName: doc("dtcn-ten"),
+          customerPhone: doc("dtcn-sdt"),
+          ...(doc("dtcn-email") ? { customerEmail: doc("dtcn-email") } : {}),
+          ...(doc("dtcn-ma-input") ? { maKhuyenMai: doc("dtcn-ma-input") } : {}),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) return baoLoi(data.error ?? "Không tạo được đơn hàng.");
+      tatDangChay();
+      orderCodeEl.textContent = data.orderCode;
+
+      if (data.mienPhi) {
+        dangChayEl.classList.remove("hidden");
+        await layKetQua(data.orderCode);
+        return;
+      }
+
+      soTienEl.textContent = `${Number(data.totalAmount).toLocaleString("vi-VN")}đ`;
+      qrImg.src = data.qrUrl;
+      trangThaiEl.textContent = "Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)";
+      thanhToanEl.classList.remove("hidden");
+      thanhToanEl.scrollIntoView({ behavior: "smooth", block: "start" });
+      pollTimer = setInterval(() => layKetQua(data.orderCode), 3000);
+    } catch {
+      baoLoi("Không tính được. Vui lòng thử lại.");
+    }
+  });
+</script>
