@@ -82,8 +82,12 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
 
         <div>
           <label for="dtcn-do-so" class="text-sm font-medium text-(--color-ink-800)">
-            Độ số la bàn (0–359.99) — bắt buộc nếu tọa là Cấn/Tốn/Khôn/Càn
+            Độ số la bàn của <strong>Tọa</strong> (0–359.99) — bắt buộc nếu tọa là Cấn/Tốn/Khôn/Càn
           </label>
+          <p class="mt-1 text-xs text-(--color-ink-500)">
+            Là độ của <strong>lưng nhà</strong> (Tọa), không phải mặt nhà (Hướng). Nếu chỉ đo được độ Hướng thì
+            Tọa = Hướng + 180° (vd Hướng đo được 138° → Tọa = 318°).
+          </p>
           <input
             type="number"
             id="dtcn-do-so"
