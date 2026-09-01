@@ -47,8 +47,12 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
   const toaDoSo = b.toaDoSo !== undefined && b.toaDoSo !== "" ? Number(b.toaDoSo) : undefined;
   const loaiViec = typeof b.loaiViec === "string" && b.loaiViec ? b.loaiViec : undefined;
   const chiGio = typeof b.chiGio === "string" && b.chiGio ? b.chiGio : undefined;
-  const customerPhone = typeof b.customerPhone === "string" ? b.customerPhone.trim() : "";
-  const customerName = locals.user?.name ?? (typeof b.customerName === "string" ? b.customerName.trim() : "");
+  // Không bắt khách nhập tên/SĐT (anh Công chốt 1/9/2026: "đấu nối cho thanh toán là được") —
+  // orderCode đã là vé để lấy kết quả. Cột DB vẫn NOT NULL (dùng chung mọi loại đơn hàng) nên
+  // điền placeholder ngầm nếu khách không tự nguyện nhập, thay vì chặn thanh toán.
+  const customerPhone = (typeof b.customerPhone === "string" ? b.customerPhone.trim() : "") || "Không cung cấp";
+  const customerName =
+    locals.user?.name ?? ((typeof b.customerName === "string" ? b.customerName.trim() : "") || "Khách Đẩu Thủ Chọn Ngày");
   const customerEmail =
     locals.user?.email ??
     (typeof b.customerEmail === "string" && b.customerEmail.trim() ? b.customerEmail.trim() : null);
@@ -68,10 +72,6 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
   if (chiGio !== undefined && !CHI_HOP_LE.includes(chiGio)) {
     return jsonResponse({ ok: false, error: "Chi giờ không hợp lệ." }, 400);
   }
-  if (!customerName || !customerPhone) {
-    return jsonResponse({ ok: false, error: "Vui lòng nhập đầy đủ họ tên và số điện thoại liên hệ." }, 400);
-  }
-
   const chung = {
     toaNha: toaNha as DauThuChonNgayInput["toaNha"],
     ...(toaDoSo !== undefined ? { toaDoSo } : {}),
