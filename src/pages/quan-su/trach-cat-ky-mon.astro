@@ -3,11 +3,15 @@
 // ra web). Trước đây trang này CHƯA TỒN TẠI: nút "Trạch Cát Kỳ Môn" ở /quan-su/dich-vu-vip trỏ tới
 // /quan-su/trach-cat-ky-mon, rơi vào route bắt-tất [category].astro (dành cho nhóm câu hỏi Hỏi Đáp,
 // không phải danh mục dịch vụ VIP) rồi lặng lẽ redirect về /quan-su — khách bấm vào coi như vô hiệu.
+//
+// Từ 1/9/2026: dùng bản component ĐỘC LẬP `components/quan-su/tools/TrachCatKyMon.astro` (toolSlug
+// `trach-cat-ky-mon-qs`, API riêng `/api/quan-su/vip/trach-cat-ky-mon-qs/*`) thay vì component
+// dùng chung với web — module 9/12 trong việc tách Quân Sư khỏi web.
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import BottomNav from "../../components/quan-su/BottomNav.astro";
 import VipQuyenBanner from "../../components/quan-su/VipQuyenBanner.astro";
-import TrachCatKyMon from "../../components/tools/TrachCatKyMon.astro";
+import TrachCatKyMon from "../../components/quan-su/tools/TrachCatKyMon.astro";
 import SapRaMat from "../../components/quan-su/SapRaMat.astro";
 
 export const prerender = false;

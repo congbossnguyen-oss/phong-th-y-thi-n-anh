@@ -47,6 +47,9 @@ export const GIA_CONG_CU = {
   // giá, cùng engine `phanTichTrachNhatSinhNo`, chỉ khác toolSlug để tách bạch đơn hàng web/app.
   "trach-nhat-sinh-no-qs": 500000,
   "trach-cat-ky-mon": 500000,
+  // Bản ĐỘC LẬP cho app Quân Sư (từ 1/9/2026, xem project_quan_su_tach_doc_lap_khoi_web) — cùng
+  // giá, cùng engine `trachCat`/`chonGioTrongNgay`, chỉ khác toolSlug để tách bạch đơn hàng.
+  "trach-cat-ky-mon-qs": 500000,
   // ⚠️ Trước 27/8/2026 để 999.999đ — con số này KHÔNG phải giá thật mà là số đặt tạm rồi quên (không
   // ai định giá lẻ tới hàng đơn vị). Chốt về 500.000đ: module luận số để khách quyết có nên bỏ vài
   // triệu mua sim hay không, giá trị ngang các module "việc lớn" khác.
@@ -125,6 +128,7 @@ export function dangKhoaThuNghiem(slug: ToolSlug): boolean {
 export const GIA_GOC_HIEN_THI: Partial<Record<ToolSlug, number>> = {
   "ky-mon-hoi-dap": 400000, // giá thật 200.000đ → hiện "-50%"
   "trach-cat-ky-mon": 1000000, // giá thật 500.000đ → hiện "-50%"
+  "trach-cat-ky-mon-qs": 1000000, // bản app Quân Sư — cùng hiệu ứng -50% với bản web
 };
 
 export type ToolSlug = keyof typeof GIA_CONG_CU;
