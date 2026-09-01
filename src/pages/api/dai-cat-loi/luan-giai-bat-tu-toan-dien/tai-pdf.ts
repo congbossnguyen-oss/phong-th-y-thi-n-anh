@@ -1,6 +1,7 @@
 import type { APIRoute } from "astro";
 import { getAllConfirmedToolOrdersForUser } from "../../../../lib/db/orders";
 import { taoBaoCaoCoBan, taoBaoCaoNangCao } from "../../../../lib/luan-giai-toan-dien/orchestrator";
+import { GIAI_DOAN_CO_BAN, GIAI_DOAN_NANG_CAO } from "../../../../lib/luan-giai-toan-dien/ai-narrative";
 import { generateBatTuToanDienPdf } from "../../../../lib/dai-cat-loi/bat-tu-toan-dien-pdf";
 import { hashLaSo, cacheCoBan, cacheNangCao } from "../../../../lib/luan-giai-toan-dien/cache";
 import { checkRateLimit } from "../../../../lib/rate-limit";
@@ -42,6 +43,9 @@ export const GET: APIRoute = async ({ request, clientAddress, locals }) => {
     const input = JSON.parse(don.toolInputSnapshot) as BatTuInput;
     const key = hashLaSo(input);
 
+    // Cache CHỈ lưu bản ĐỦ giai đoạn — bản thiếu (AI lỗi vài giai đoạn) không được cache, nếu không
+    // sẽ "poison" cache: mọi lượt tải sau cứ đọc lại đúng bản thiếu đó mãi, không bao giờ tính lại
+    // (bug thật 1/9/2026, xem ghi chú ở orders.ts cùng đợt sửa).
     let baoCaoCoBan = cacheCoBan.get(key);
     let baoCaoNangCao = cacheNangCao.get(key);
     const [tinhCoBan, tinhNangCao] = await Promise.all([
@@ -50,6 +54,11 @@ export const GET: APIRoute = async ({ request, clientAddress, locals }) => {
     ]);
     baoCaoCoBan = tinhCoBan;
     baoCaoNangCao = tinhNangCao;
+    const dayDu = baoCaoCoBan.giaiDoan.length === GIAI_DOAN_CO_BAN.length && baoCaoNangCao.giaiDoan.length === GIAI_DOAN_NANG_CAO.length;
+    if (!dayDu) {
+      console.error(`[tai-pdf-bat-tu-toan-dien] Đơn ${don.orderCode} tính THIẾU giai đoạn (đủ ${GIAI_DOAN_CO_BAN.length + GIAI_DOAN_NANG_CAO.length}, chỉ có ${baoCaoCoBan.giaiDoan.length + baoCaoNangCao.giaiDoan.length}) — không trả PDF thiếu.`);
+      return jsonResponse({ ok: false, error: "Một vài phần luận giải chưa tính xong (AI đang chập chờn), vui lòng thử tải lại sau ít phút." }, 503);
+    }
     cacheCoBan.set(key, baoCaoCoBan);
     cacheNangCao.set(key, baoCaoNangCao);
 
