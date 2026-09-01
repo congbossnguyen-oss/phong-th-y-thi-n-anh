@@ -67,6 +67,7 @@ export interface BaoCaoNangCao {
 /** Lát cắt lá số dùng để hiển thị lại đầu báo cáo — không tính lại, lấy nguyên từ BatTuChart/BatTuAnalysis. */
 export interface LaSoHienThi {
   tuTru: { tru: string; can: string; chi: string }[];
+  gioiTinh: string;
   nhatChu: string;
   capDoVuongSuy: string;
   dungThan: string;

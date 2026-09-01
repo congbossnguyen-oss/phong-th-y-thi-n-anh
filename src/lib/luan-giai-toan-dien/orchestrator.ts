@@ -34,6 +34,7 @@ const TEN_TRU_TIENG_VIET: Record<"year" | "month" | "day" | "hour", string> = {
 export function laSoHienThi(chart: BatTuChart, analysis: BatTuAnalysis): LaSoHienThi {
   return {
     tuTru: (["year", "month", "day", "hour"] as const).map((k) => ({ tru: TEN_TRU_TIENG_VIET[k], can: chart[k].can, chi: chart[k].chi })),
+    gioiTinh: chart.gender,
     nhatChu: `${chart.day.can} (${chart.nhatChu.nguHanh}, ${chart.nhatChu.amDuong})`,
     capDoVuongSuy: analysis.vuongSuy.capDo,
     dungThan: analysis.dungThan.dungThan,

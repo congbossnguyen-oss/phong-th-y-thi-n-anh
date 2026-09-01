@@ -11,6 +11,7 @@ function veLaSo(b: But, f: Fonts, laSo: LaSoHienThi): void {
   b.muc("Lá số");
   const dongTuTru = laSo.tuTru.map((t) => `${t.tru}: ${t.can} ${t.chi}`).join("   ·   ");
   b.doan(dongTuTru, { size: 9.5, font: f.vua });
+  b.doan(`Giới tính: ${laSo.gioiTinh}`, { size: 9.5 });
   b.doan(`Nhật Chủ: ${laSo.nhatChu}  ·  Vượng Suy: ${laSo.capDoVuongSuy}`, { size: 9.5 });
 
   b.chua(16);
