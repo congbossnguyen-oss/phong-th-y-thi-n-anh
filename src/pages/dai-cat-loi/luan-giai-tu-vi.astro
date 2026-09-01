@@ -18,6 +18,7 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
+import DateSelect from "../../components/ui/DateSelect.astro";
 import MaKhuyenMai from "../../components/ui/MaKhuyenMai.astro";
 import { GIA_CONG_CU, dinhDangTien, dangKhoaThuNghiem } from "../../lib/payments/gia-cong-cu";
 import { getAllConfirmedToolOrdersForUser } from "../../lib/db/orders";
@@ -131,6 +132,8 @@ const daMuaNangCao = coDonChuaHienThi;
 function phanTramTuoi(tuoi: number): number {
   return Math.min(100, Math.max(0, (tuoi / 90) * 100));
 }
+
+const gioOptions = Array.from({ length: 24 }, (_, i) => i);
 ---
 
 <BaseLayout
@@ -397,12 +400,75 @@ function phanTramTuoi(tuoi: number): number {
           </div>
         </>
       )}
+
+      {/* --- Lập lá số mới — xem/mua cho người khác ngay tại trang này, không cần quay lại
+          /lap-la-so-tu-vi (anh Công yêu cầu 1/9/2026). Submit chỉ điều hướng sang chính trang này
+          kèm query string mới — toàn bộ logic tra đơn/hiện báo cáo ở trên đã tự xử lý theo lá số
+          trong URL, không cần thêm code riêng. --- */}
+      {user && (
+        <section id="tvlg-lap-moi" class="mt-10 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
+          <h2 class="font-display text-xl font-bold text-(--color-ink-950)">Lập lá số mới</h2>
+          <p class="mt-1 text-sm text-(--color-ink-600)">Xem hoặc mua luận giải cho người khác — nhập ngày giờ sinh mới bên dưới.</p>
+          <form id="tvlg-form-moi" class="mt-4 flex flex-col gap-4">
+            <div>
+              <label for="tvlg-ten-moi" class="text-xs font-medium text-(--color-ink-600)">Họ tên (không bắt buộc)</label>
+              <input id="tvlg-ten-moi" type="text" placeholder="Vô danh khách" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+            </div>
+            <DateSelect idPrefix="tvlg-sinh-moi" label="Ngày sinh (dương lịch)" required yearsBack={90} yearsForward={0} />
+            <div>
+              <label for="tvlg-gio-moi" class="text-xs font-medium text-(--color-ink-600)">Giờ sinh <span class="text-(--color-cinnabar-400)">*</span></label>
+              <select id="tvlg-gio-moi" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-2 py-2.5 text-sm text-(--color-ink-800)">
+                <option value="">Chọn giờ (0–23)</option>
+                {gioOptions.map((h) => <option value={h}>{`${h}h — ${h}:00–${h}:59`}</option>)}
+              </select>
+            </div>
+            <div>
+              <span class="text-xs font-medium text-(--color-ink-600)">Giới tính <span class="text-(--color-cinnabar-400)">*</span></span>
+              <div class="mt-1.5 flex gap-3">
+                <label class="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm font-medium text-(--color-ink-800) has-[:checked]:border-(--color-gold-500) has-[:checked]:bg-(--color-gold-400)/15">
+                  <input type="radio" name="tvlg-gioi-tinh-moi" value="Nam" /> Nam
+                </label>
+                <label class="flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm font-medium text-(--color-ink-800) has-[:checked]:border-(--color-gold-500) has-[:checked]:bg-(--color-gold-400)/15">
+                  <input type="radio" name="tvlg-gioi-tinh-moi" value="Nữ" /> Nữ
+                </label>
+              </div>
+            </div>
+            <div id="tvlg-loi-moi" class="hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-3 text-sm text-(--color-danger-500)"></div>
+            <Button type="submit" size="lg">Lập lá số</Button>
+          </form>
+        </section>
+      )}
     </div>
   </Container>
 </BaseLayout>
 
 <script define:vars={{ inputDaMua }}>
   window.__tvlgInput = inputDaMua;
+</script>
+<script>
+  import { readDateSelects } from "../../lib/date-select";
+
+  const formMoi = document.getElementById("tvlg-form-moi") as HTMLFormElement | null;
+  formMoi?.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const loiMoiEl = document.getElementById("tvlg-loi-moi")!;
+    const baoLoiMoi = (msg: string) => { loiMoiEl.textContent = msg; loiMoiEl.classList.remove("hidden"); };
+    loiMoiEl.classList.add("hidden");
+
+    const sinh = readDateSelects("tvlg-sinh-moi");
+    if (!sinh) return baoLoiMoi("Vui lòng chọn đầy đủ ngày, tháng, năm sinh.");
+    const gio = (document.getElementById("tvlg-gio-moi") as HTMLSelectElement).value;
+    if (gio === "") return baoLoiMoi("Vui lòng chọn giờ sinh.");
+    const gioiTinh = (document.querySelector('input[name="tvlg-gioi-tinh-moi"]:checked') as HTMLInputElement | null)?.value;
+    if (!gioiTinh) return baoLoiMoi("Vui lòng chọn giới tính.");
+    const ten = (document.getElementById("tvlg-ten-moi") as HTMLInputElement).value.trim();
+
+    const qs = new URLSearchParams({
+      ngay: String(sinh.day), thang: String(sinh.month), nam: String(sinh.year),
+      gio, gioiTinh, ...(ten ? { ten } : {}),
+    });
+    window.location.href = `/dai-cat-loi/luan-giai-tu-vi?${qs.toString()}`;
+  });
 </script>
 <script>
   const dangChayEl = document.getElementById("tvlg-dang-chay");

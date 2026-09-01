@@ -6,7 +6,7 @@
 // pháp trong content/tu-vi-luan-giai/knowledge/, và bám few-shot mẫu (vi-du-mau-luan-giai-day-du.md)
 // về văn phong/độ sâu.
 
-import { goiAiToolUse } from "../../ai/goi-ai";
+import { goiAiToolUseVoiRetry } from "../../ai/goi-ai";
 import { docNhieuKnowledge } from "./contentLoader";
 import { serializeDuLieuChoPrompt, type DuLieuLaSoTuVi } from "./adapter";
 
@@ -158,7 +158,7 @@ function dungUserPrompt(duLieu: DuLieuLaSoTuVi): string {
 
 /** Gọi AI cho Tầng Cơ Bản. Trả null nếu lỗi (bên gọi tự quyết định fallback). */
 export async function luanCoBan(duLieu: DuLieuLaSoTuVi): Promise<{ ketQua: KetQuaCoBan | null; usage?: unknown }> {
-  const kq = await goiAiToolUse({
+  const kq = await goiAiToolUseVoiRetry({
     tinhNang: "luan-giai-tu-vi-co-ban",
     systemCoDinh: SYSTEM_CO_DINH,
     systemThayDoi: undefined,

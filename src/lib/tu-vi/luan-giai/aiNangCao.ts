@@ -2,7 +2,7 @@
 // Tổng kết. Kế thừa toàn bộ Cơ Bản — nhận kèm kết quả Cơ Bản làm ngữ cảnh để Bước 8 (tổng kết) chắt
 // lọc lại đúng những gì đã nói ở Bước 2-7, không mâu thuẫn/lặp nguyên văn.
 
-import { goiAiToolUse } from "../../ai/goi-ai";
+import { goiAiToolUseVoiRetry } from "../../ai/goi-ai";
 import { docNhieuKnowledge } from "./contentLoader";
 import { serializeDuLieuChoPrompt, type DuLieuLaSoTuVi } from "./adapter";
 import { TEN_CUNG_HIEN_THI, TEN_CUNG_SNAKE, type KetQuaCoBan } from "./aiCoBan";
@@ -145,7 +145,7 @@ export async function luanNangCao(
   duLieu: DuLieuLaSoTuVi,
   coBan: KetQuaCoBan,
 ): Promise<{ ketQua: KetQuaNangCao | null; usage?: unknown }> {
-  const kq = await goiAiToolUse({
+  const kq = await goiAiToolUseVoiRetry({
     tinhNang: "luan-giai-tu-vi-nang-cao",
     systemCoDinh: SYSTEM_CO_DINH,
     systemThayDoi: undefined,
