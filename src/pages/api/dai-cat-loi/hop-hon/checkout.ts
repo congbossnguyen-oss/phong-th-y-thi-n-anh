@@ -45,21 +45,12 @@ export interface DauVaoHopHon {
 }
 
 /**
- * Tạo đơn Hợp Hôn Bát Tự × Tử Vi (999.000đ). Không bắt đăng nhập — orderCode làm "vé" mở kết quả,
- * giống các module VIP khác. Tài khoản QUẢN TRỊ đi luồng 0đ để kiểm thử trọn quy trình.
+ * Tạo đơn Hợp Hôn Bát Tự × Tử Vi (1.000.000đ, xem GIA_CONG_CU). Không bắt đăng nhập — orderCode làm
+ * "vé" mở kết quả, giống các module VIP khác. Tài khoản QUẢN TRỊ đi luồng 0đ để kiểm thử trọn quy trình.
  */
 export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
   const limited = checkRateLimit({ request, clientAddress }, { key: "checkout-hop-hon", max: 10, windowMs: 60_000 });
   if (limited) return limited;
-
-  // ⏸️ THỬ NGHIỆM NỘI BỘ — chủ đề nhạy cảm nhất trong bộ, chỉ admin dùng được cho tới khi anh Công
-  // kiểm chứng đủ ca thật rồi duyệt mở. Gỡ nguyên khối này khi mở bán.
-  if (locals.user?.isAdmin !== true) {
-    return jsonResponse(
-      { ok: false, error: "Dịch vụ Hợp Hôn đang trong giai đoạn thử nghiệm nội bộ, chưa mở cho khách. Vui lòng liên hệ hotline để được chuyên gia tư vấn trực tiếp." },
-      403,
-    );
-  }
 
   const body = await request.json().catch(() => null);
   if (!body || typeof body !== "object") return jsonResponse({ ok: false, error: "Dữ liệu gửi lên không hợp lệ." }, 400);
