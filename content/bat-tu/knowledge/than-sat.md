@@ -1,4 +1,4 @@
-<!-- ĐỒNG BỘ TỪ SKILL luan-giai-bat-tu LÚC: 2026-08-25. Nếu skill được cập nhật sau ngày này, chạy lại Bước 0 để đồng bộ file này. -->
+<!-- ĐỒNG BỘ TỪ SKILL luan-giai-bat-tu LÚC: 2026-09-01 (bản khôi phục sau khi phát hiện 13 file bị mất). -->
 
 # Bảng Tra Thần Sát
 
@@ -159,77 +159,6 @@ Nguồn: file `Phan_3-_Bat_tu_than_sat` (Vũ Thiện Minh). Tài liệu gốc gi
 
 **Ý nghĩa**: chủ phúc khí, bình an, KHÔNG chủ phú quý (khác Thiên Ất). Cấu trúc tốt thì đủ ăn đủ mặc, vô ưu vô lo. Vị trí có sắc thái khác nhau: ở Trụ Năm → tướng mạo phúc hậu, được kính mến; Trụ Tháng → thích tự do, hơi lãng mạn nhưng cuộc sống không ổn định; Trụ Ngày → cả đời không lo cơm áo; Trụ Giờ → cuối đời an nhàn.
 
-### Thiên Đức Hợp (Nguồn: Công bổ sung)
-**Xác định**: lấy Thiên Đức theo Chi Tháng (bảng ở mục Thiên Đức/Nguyệt Đức phía trên), rồi tìm Thiên Can Ngũ Hợp với Thiên Đức đó (Giáp-Kỷ, Ất-Canh, Bính-Tân, Đinh-Nhâm, Mậu-Quý).
-
-| Chi tháng | Dần | Mão | Thìn | Tị | Ngọ | Mùi | Thân | Dậu | Tuất | Hợi | Tý | Sửu |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Thiên Đức | Đinh | Thân(*) | Nhâm | Tân | Hợi(*) | Giáp | Quý | Dần(*) | Bính | Ất | Tị(*) | Canh |
-| Thiên Đức Hợp | Nhâm | — | Đinh | Bính | — | Kỷ | Mậu | — | Tân | Canh | — | Ất |
-
-(*) 4 tháng Mão/Ngọ/Dậu/Tý: Thiên Đức của tháng đó là 1 Địa Chi (không phải Thiên Can), nên KHÔNG áp được công thức "Ngũ Hợp Thiên Can" theo đúng nghĩa — 4 ô này bỏ trống, chưa có cách tính. Nếu Công có nguồn xử lý riêng cho 4 tháng này, gửi thêm để bổ sung.
-
-**Ý nghĩa** *(nguồn: Công cung cấp, dạng cô đọng — chưa có bản diễn giải chi tiết theo cung vị như các sao khác)*: đức khí, quý nhân, có khả năng hóa giải tai họa; gặp việc dữ thường có đường chuyển biến tốt hơn.
-
-### Nguyệt Đức Hợp (Nguồn: Công bổ sung)
-**Xác định** (tra Chi Tháng, theo nhóm Tam Hợp — Nguyệt Đức luôn là 1 Thiên Can, không có ngoại lệ như Thiên Đức):
-
-| Nguyệt Chi (nhóm Tam Hợp) | Nguyệt Đức | Nguyệt Đức Hợp |
-|---|---|---|
-| Dần – Ngọ – Tuất | Bính | **Tân** |
-| Thân – Tý – Thìn | Nhâm | **Đinh** |
-| Hợi – Mão – Mùi | Giáp | **Kỷ** |
-| Tị – Dậu – Sửu | Canh | **Ất** |
-
-*(Đã đối chiếu khớp với cách suy trực tiếp từ bảng Nguyệt Đức gốc + Ngũ Hợp Thiên Can — 2 nguồn cho cùng 1 kết quả.)*
-
-**Ý nghĩa** *(nguồn: Công cung cấp, dạng cô đọng)*: ôn hòa, có khả năng hòa giải mâu thuẫn, nhân hậu, dễ được người khác trợ lực khi cần.
-
-### Kim Quỹ (Nguồn: Công bổ sung)
-**Xác định** (tra Chi Năm, theo nhóm Tam Hợp): Thân/Tý/Thìn → Kim Quỹ tại Tý; Hợi/Mão/Mùi → tại Mão; Dần/Ngọ/Tuất → tại Ngọ; Tị/Dậu/Sửu → tại Dậu.
-
-**Ý nghĩa** *(nguồn: Công cung cấp, dạng cô đọng)*: chủ tài lộc, khả năng tích lũy, giỏi quản lý và giữ được của cải (khác với chỉ giỏi kiếm tiền).
-
-### Lục Tú (Nguồn: Công bổ sung)
-**Xác định**: Trụ Ngày là 1 trong 6 ngày: Bính Tý, Đinh Sửu, Mậu Dần, Kỷ Mão, Canh Ngọ, Tân Mùi.
-
-**Ý nghĩa** *(nguồn: Công cung cấp, dạng cô đọng)*: chủ văn tài, ham học, tư duy tốt, có khả năng sáng tạo.
-
-### Thập Linh (Nguồn: Công bổ sung)
-**Xác định**: Trụ Ngày là 1 trong 10 ngày: Giáp Thìn, Ất Hợi, Bính Thìn, Đinh Dậu, Mậu Ngọ, Canh Tuất, Canh Dần, Tân Hợi, Nhâm Dần, Quý Mùi. *(Chỉ xét Nhật Trụ — nếu tổ hợp Can-Chi trùng khớp xuất hiện ở Trụ Năm/Tháng/Giờ thì KHÔNG tính là Thập Linh, khác với các sao an theo cả 4 trụ như Thiên Ất Quý Nhân.)*
-
-**Ý nghĩa** *(nguồn: Công cung cấp, dạng cô đọng)*: chủ trực giác nhạy, khả năng cảm nhận/lĩnh hội vấn đề nhanh.
-
-### Tiến Thần (Nguồn: Công bổ sung)
-**Xác định**: Trụ Ngày là 1 trong 4 ngày: Giáp Tý, Giáp Ngọ, Kỷ Mão, Kỷ Dậu.
-
-**Ý nghĩa** *(nguồn: Công cung cấp, dạng cô đọng)*: chủ tính tiến thủ, quyết đoán, chủ động, ý chí mạnh.
-
----
-
-### Thiên Trù (Nguồn: Công bổ sung)
-**Xác định** (lấy Nhật Can làm chủ, tra Địa Chi tương ứng, rồi đối chiếu với Địa Chi của cả 4 trụ — trụ nào trùng Địa Chi đó thì Thiên Trù xuất hiện tại trụ đó):
-
-| Can Ngày | Giáp | Ất | Bính | Đinh | Mậu | Kỷ | Canh | Tân | Nhâm | Quý |
-|---|---|---|---|---|---|---|---|---|---|---|
-| Địa Chi Thiên Trù | Tị | Ngọ | Tị | Ngọ | Thân | Dậu | Hợi | Tý | Dần | Mão |
-
-*(Đây là phương án Công chọn làm chuẩn để an cho app — lấy Nhật Can tra ra 1 Địa Chi, rồi rà cả 4 trụ Năm/Tháng/Ngày/Giờ xem trụ nào có đúng Địa Chi đó. Nếu không trụ nào trùng thì mệnh không có Thiên Trù.)*
-
-**Ý nghĩa** *(nguồn: Công cung cấp, dạng cô đọng)*: chủ thực lộc, được hưởng lộc ăn uống, có phúc phần về vật chất/cuộc sống sung túc.
-
-### Củng Lộc (Nguồn: Tuệ Minh — Trung Cấp, mở rộng)
-**Xác định**: Trụ Ngày và Trụ Giờ phải **cùng Thiên Can**, và 2 Địa Chi (Chi Ngày + Chi Giờ) phải "kẹp" (củng) đúng Địa Chi Lộc (Lâm Quan) của Can đó ở giữa mà **không xuất hiện trực tiếp** trong tứ trụ. Ví dụ: Ngày Quý Sửu — Giờ Quý Hợi (hoặc ngược lại) → Quý Lộc tại Tý, Sửu-Hợi kẹp Tý ở giữa → "Củng Lộc tại Tý". Tương tự: Ngày Đinh Tị — Giờ Đinh Mùi → Củng Lộc tại Ngọ; Ngày Mậu Thìn — Giờ Mậu Ngọ → Củng Lộc tại Tị.
-
-**Ý nghĩa**: cách cục quý — được ví như "rương vàng hòm ngọc". Điều kiện để phát huy: (1) Địa Chi Lộc bị "củng" đó **không được xuất hiện thật** ở bất kỳ trụ nào khác (nếu xuất hiện thật gọi là "điền đầy" — hỏng cách, mất tác dụng, giống như cái cốc đã đầy không chứa thêm được); (2) không bị Hình/Xung/Hại, không bị Kình Dương/Thất Sát/Thương Quan phá; (3) tốt nhất nếu Nguyệt Lệnh (Chi Tháng) cũng phối hợp hài hòa. Nếu hội đủ điều kiện và thuần túy (không lẫn Tài/Ấn gây nhiễu) → mệnh phú quý cỡ lớn ("bậc vương hầu"). Nếu bị "điền đầy" hoặc phá cách → không còn ý nghĩa đặc biệt, không có danh lợi gì.
-**Phân biệt với Lộc Thần**: Lộc Thần (mục trên) là Địa Chi Lộc xuất hiện TRỰC TIẾP trong tứ trụ; Củng Lộc là Địa Chi Lộc bị 2 Chi khác "kẹp" ở giữa mà KHÔNG xuất hiện trực tiếp — đây là 2 cơ chế khác nhau, không nhầm lẫn.
-
----
-
-## PHẦN A.1 — CHƯA ĐỦ DỮ KIỆN (Nguồn: Công bổ sung, tạm để đây chờ bổ sung)
-
-- **Đức Tú** (Cát — căn cứ Nguyệt Chi + 4 Thiên Can): Công ghi "tìm Đức và Tú theo nhóm tam hợp" nhưng chưa có bảng cụ thể cho từng tháng/nhóm. Chưa tính được.
-
 ---
 
 ## PHẦN B — HUNG THẦN
@@ -336,50 +265,6 @@ Là Kị thần mà bị hình/xung, không có Quan Sát/Thực Thương chế 
 
 **Hỷ/Kị**: tọa Kị thần → dễ vì tình mà khuynh gia bại sản, đặc biệt nếu cùng trụ Dương Nhận/Thất Sát hoặc mệnh có Kim Thủy nhiều + Quan Sát hỗn tạp. Tọa Hỷ thần → có duyên khác giới theo nghĩa tích cực, ngoại hình/tính tình dễ mến. Tuế vận gặp Đào Hoa (gọi "Đào Hoa vận"): chưa lập gia đình dễ thành đôi; đã lập gia đình dễ phát sinh tình cảm ngoài luồng.
 
-### Giáp Sát (Nguồn: Tuệ Minh — Trung Cấp, mở rộng)
-**Xác định**: chỉ so **Chi Ngày với Chi Giờ** (không dùng Chi Năm). Chi Giờ tiến 2 vị so với Chi Ngày là phạm Giáp Sát: Tý→Dần; Sửu→Mão; Dần→Thìn; Mão→Tị; Thìn→Ngọ; Tị→Mùi; Ngọ→Thân; Mùi→Dậu; Thân→Tuất; Dậu→Hợi; Tuất→Tý; Hợi→Sửu.
-
-**Ý nghĩa**: dễ gặp tai họa bất ngờ hơn người khác — kiện tụng, tranh chấp, dính líu pháp luật, hao tài, bệnh tật, tốn của. Tài liệu lưu ý: vì Chi Giờ ở kế cận Chi Ngày ("Giáp là kế bên") nên tai họa thường đến bất ngờ, không báo trước; một số trường hợp Chi Ngày-Giờ-Tuế Vận tạo thành Tam Hội thì mức biến động càng lớn, cần đặc biệt đề phòng.
-
-### Cô Loan Sát (Nguồn: Tuệ Minh — Trung Cấp, mở rộng)
-**Xác định**: chỉ tra ở **Trụ Ngày** (Can-Chi Ngày). Trụ Ngày là 1 trong 8 tổ hợp: Ất Tị, Đinh Tị, Tân Hợi, Mậu Thân, Nhâm Dần, Mậu Ngọ, Nhâm Tý, Bính Ngọ.
-
-**Ý nghĩa**: chủ về hôn nhân không thuận — "Nam khắc vợ, Nữ khắc chồng". Tài liệu ghi nhận đây là thần sát còn nhiều tranh luận trong giới dự đoán (có người dùng, có người không dùng) — nên giới thiệu như một dấu hiệu tham khảo thêm, không nên dùng làm căn cứ duy nhất để kết luận hôn nhân xấu; luôn đối chiếu thêm với Thập Thần Phối Ngẫu (Quan Sát với Nữ, Tài với Nam) và các Thần Sát hôn nhân khác (Cô Thần-Quả Tú, Âm Dương Sai Thố) trước khi kết luận.
-
-### Tứ Phế (Nguồn: Tuệ Minh — Trung Cấp, mở rộng)
-**Xác định**: tra Can-Chi Trụ Ngày (có thể xét cả Năm/Tháng/Giờ) theo mùa sinh (dựa vào Chi Tháng):
-- Sinh mùa Xuân (Dần/Mão/Thìn): Canh Thân, Tân Dậu là Tứ Phế.
-- Sinh mùa Hạ (Tị/Ngọ/Mùi): Nhâm Tý, Quý Hợi là Tứ Phế.
-- Sinh mùa Thu (Thân/Dậu/Tuất): Giáp Dần, Ất Mão là Tứ Phế.
-- Sinh mùa Đông (Hợi/Tý/Sửu): Bính Thìn, Đinh Tị là Tứ Phế.
-
-**Ý nghĩa**: "Phế" = giam hãm, trì trệ — mệnh gặp Tứ Phế thì làm việc gì cũng "có đầu không có đuôi", khó thành trọn vẹn. Chủ về Thân yếu, nhiều bệnh, thiếu sức lực/thiếu quyết đoán. Nếu không được sinh/phù trợ mà còn bị khắc hại, Hung Sát áp chế → dễ thương tật, tàn tật, kiện tụng, thậm chí giam cầm, hoặc có xu hướng đi tu/xuất gia. Xuất hiện ở Trụ Ngày (Nhật Nguyên) là nặng nhất trong 4 trụ.
-
-### Phi Nhận (Nguồn: Công bổ sung)
-**Xác định** (tra Can Ngày, lấy Địa Chi xung với Dương Nhận của Can đó):
-
-| Nhật Can | Dương Nhận | Phi Nhận |
-|---|---|---|
-| Giáp | Mão | **Dậu** |
-| Ất | Dần | **Thân** |
-| Bính | Ngọ | **Tý** |
-| Mậu | Ngọ | **Tý** |
-| Đinh | Mùi | **Sửu** |
-| Kỷ | Mùi | **Sửu** |
-| Canh | Dậu | **Mão** |
-| Tân | Tuất | **Thìn** |
-| Nhâm | Tý | **Ngọ** |
-| Quý | Sửu | **Mùi** |
-
-*Ghi chú nguồn*: 5 Dương Can (Giáp/Bính/Mậu/Canh/Nhâm) khớp đúng với bảng Dương Nhận gốc đã có trong PHẦN B ở trên. 5 Âm Can (Ất/Đinh/Kỷ/Tân/Quý) dùng giá trị Dương Nhận riêng cho Âm Can do Công cung cấp — đây là điểm mà bảng Dương Nhận gốc trong skill từng ghi "còn tranh cãi trong tài liệu, không nên khẳng định chắc chắn". Coi bảng Phi Nhận này là 1 biến thể được chấp nhận cho cả 10 Can, tách riêng khỏi giới hạn 5 Dương Can của mục Dương Nhận gốc.
-
-**Ý nghĩa** *(nguồn: Công cung cấp, dạng cô đọng)*: chủ đột biến, va chạm, tranh đấu, dễ có thương tổn. (Khớp với suy đoán ban đầu từ tên gọi — nay đã có nguồn xác nhận, không còn là suy đoán.)
-
-### Lưu Hà (Nguồn: Công bổ sung)
-**Xác định** (tra Can Ngày): Giáp→Dậu; Ất→Tuất; Bính→Mùi; Đinh→Thân; Mậu→Tị; Kỷ→Ngọ; Canh→Thìn; Tân→Mão; Nhâm→Hợi; Quý→Dần.
-
-**Ý nghĩa** *(nguồn: Công cung cấp, dạng cô đọng)*: liên quan huyết khí, tai nạn, sông nước, dễ có biến động.
-
 ### Không Vong (Tuần Không)
 **Xác định** (tra theo Trụ Ngày hoặc Trụ Năm, theo "tuần Giáp" — 2 Địa Chi dư ra khi ghép 10 Thiên Can với 12 Địa Chi):
 
@@ -397,5 +282,4 @@ Là Kị thần mà bị hình/xung, không có Quan Sát/Thực Thương chế 
 
 1. Chỉ tra Thần Sát SAU KHI đã xác định xong Dụng thần, vượng suy, và Thập Thần theo cung (Bước 1–5 trong quy trình chính) — Thần Sát là lớp thông tin bổ trợ cuối cùng, không thay thế phân tích cốt lõi.
 2. Khi 1 Thần Sát không có trong danh sách trên (ví dụ người dùng hỏi về "Tứ Phế Nhật" — chỉ có tên trong danh sách tổng quan, không có bảng xác định trong tài liệu), nói rõ "tài liệu chưa cung cấp đủ dữ kiện xác định thần sát này", không tự bịa cách tra.
-3. **9 sao mở rộng** (Thiên Đức Hợp, Nguyệt Đức Hợp, Kim Quỹ, Lục Tú, Thập Linh, Tiến Thần, Thiên Trù, Phi Nhận, Lưu Hà) do Công bổ sung có phần Ý nghĩa dạng **cô đọng/từ khóa ngắn** (không có bản diễn giải theo cung vị/vượng suy chi tiết như 36 sao ở nguồn chính) — khi luận, có thể dùng làm gợi ý nhanh nhưng nên nói rõ mức độ chi tiết còn hạn chế nếu khách hỏi sâu. Riêng **Đức Tú** vẫn CHƯA có cả bảng an lẫn ý nghĩa — không tự bịa.
 3. Luôn đối chiếu điều kiện "mất tác dụng" (Không Vong, hình/xung/khắc/hại) trước khi kết luận Thần Sát đó phát huy ảnh hưởng.

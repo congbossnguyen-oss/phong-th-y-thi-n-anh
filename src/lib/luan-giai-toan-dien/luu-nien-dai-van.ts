@@ -19,6 +19,10 @@ import type { DiemGiaiDoanVan } from "./types";
 
 const KNOWLEDGE_FILES = ["ung-ky.md", "benh-tat.md", "tai-van.md", "quan-van.md", "cong-danh.md", "luc-than.md"];
 const TOM_TAT_KHONG_QUA = "Giai đoạn này cần tham khảo thêm cùng chuyên gia.";
+// ⚠️ CHỈ dùng khi lỗi KỸ THUẬT (API timeout/hết quota/JSON hỏng, đã thử lại vẫn không được) — KHÁC
+// TOM_TAT_KHONG_QUA (chỉ dành cho hậu kiểm chặn thật vì vi phạm an toàn nội dung). Không được dùng
+// lẫn 2 câu này, xem ghi chú ở chamDiemMotLo().
+const TOM_TAT_LOI_KY_THUAT = "Chưa tính được do lỗi kỹ thuật tạm thời, vui lòng tải lại trang để thử lại.";
 
 // ⚠️ Schema GIỐNG HỆT NHAU cho cả Đại Vận lẫn Lưu Niên — cố ý. `tools` được render TRƯỚC `system`
 // khi Anthropic khớp cache theo tiền tố, nên chỉ cần schema khác nhau là toàn bộ khối tri thức phía
@@ -168,6 +172,16 @@ async function chamDiemMotLo(laSo: unknown, muc: MucCanCham[], tenLoai: string, 
   const { input, usage, model } = await goiClaudeToolUse(system, userMessage, "tra_ve_diem_so", SCHEMA_DIEM, coChiTiet ? 8000 : 3000, "bat-tu-cham-diem", { "openai-tuong-thich": "deepseek-chat" });
   ghiLogChiPhi(`Luận giải Bát Tự — ${tenLoai}`, model ?? "claude-sonnet-5", usage);
 
+  // ⚠️ Bug thật 1/9/2026: khi CẢ LỆNH thất bại (input null, dù đã thử lại qua goiAiToolUseVoiRetry —
+  // xem ai-narrative.ts), TOÀN BỘ mục trong lô này rơi vào nhánh "!tomTat" bên dưới và bị gán CHUNG
+  // 1 câu TOM_TAT_KHONG_QUA — y hệt câu dùng khi hậu kiểm CHẶN THẬT vì vi phạm an toàn nội dung. 2
+  // nguyên nhân khác hẳn nhau (lỗi kỹ thuật vs bị chặn nội dung) nhưng khách/admin nhìn vào không
+  // phân biệt được. Tách rõ + log riêng để chẩn đoán đúng nguyên nhân khi gặp lại.
+  const loiKyThuatCaLo = input === null;
+  if (loiKyThuatCaLo) {
+    console.error(`[luu-nien-dai-van] ${tenLoai}: CẢ LÔ (${muc.length} mục) lỗi kỹ thuật (AI không trả kết quả dù đã thử lại) — KHÔNG phải bị hậu kiểm chặn nội dung. Các mục này sẽ hiện placeholder lỗi kỹ thuật riêng.`);
+  }
+
   const danhSach = Array.isArray(input?.danh_sach) ? (input!.danh_sach as Record<string, unknown>[]) : [];
   const theoChiSo = new Map(danhSach.map((d) => [Number(d.chi_so), d]));
 
@@ -179,11 +193,30 @@ async function chamDiemMotLo(laSo: unknown, muc: MucCanCham[], tenLoai: string, 
     };
     const lamSach = (v: unknown): string => (typeof v === "string" ? xoaTheLaConSot(v.trim()) : "");
 
-    let tomTat = lamSach(d?.tom_tat);
-    if (tomTat && quetHauKiem(tomTat).length > 0) tomTat = TOM_TAT_KHONG_QUA;
-    if (!tomTat) tomTat = TOM_TAT_KHONG_QUA;
+    let tomTat: string;
+    if (!d) {
+      // Không có dữ liệu cho đúng mục này. loiKyThuatCaLo=true → lỗi kỹ thuật (đã thử lại, vẫn hỏng),
+      // KHÔNG phải bị chặn nội dung — dùng placeholder RIÊNG, không dùng TOM_TAT_KHONG_QUA (câu đó
+      // CHỈ dành cho trường hợp hậu kiểm chặn thật, xem SPEC checklist mục K).
+      if (loiKyThuatCaLo) {
+        tomTat = TOM_TAT_LOI_KY_THUAT;
+      } else {
+        // Lệnh chạy được nhưng AI bỏ sót đúng mục này trong danh_sach (hiếm, lỗi định dạng đầu ra) —
+        // không phải lỗi kỹ thuật gọi API, cũng không hẳn là chặn nội dung, nhưng an toàn hơn khi coi
+        // như "cần xem thêm" thay vì hiện điểm số/tóm tắt bịa.
+        console.error(`[luu-nien-dai-van] ${tenLoai}: mục chi_so=${m.chiSo} (${m.nhan}) bị AI BỎ SÓT trong danh_sach dù lệnh chạy thành công — không phải lỗi kỹ thuật gọi API, cũng không phải hậu kiểm chặn.`);
+        tomTat = TOM_TAT_KHONG_QUA;
+      }
+    } else {
+      tomTat = lamSach(d.tom_tat);
+      if (tomTat && quetHauKiem(tomTat).length > 0) {
+        console.error(`[luu-nien-dai-van] ${tenLoai}: mục chi_so=${m.chiSo} (${m.nhan}) bị HẬU KIỂM CHẶN nội dung thật (vi phạm an toàn nội dung) — dùng placeholder chuẩn.`);
+        tomTat = TOM_TAT_KHONG_QUA;
+      }
+      if (!tomTat) tomTat = TOM_TAT_KHONG_QUA;
+    }
 
-    let chiTiet = coChiTiet ? lamSach(d?.chi_tiet) : "";
+    let chiTiet = coChiTiet && d ? lamSach(d?.chi_tiet) : "";
     if (chiTiet && quetHauKiem(chiTiet).length > 0) chiTiet = "";
 
     return {

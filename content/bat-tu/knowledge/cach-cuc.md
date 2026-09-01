@@ -1,4 +1,4 @@
-<!-- ĐỒNG BỘ TỪ SKILL luan-giai-bat-tu LÚC: 2026-08-25. Nếu skill được cập nhật sau ngày này, chạy lại Bước 0 để đồng bộ file này. -->
+<!-- ĐỒNG BỘ TỪ SKILL luan-giai-bat-tu LÚC: 2026-09-01 (bản khôi phục sau khi phát hiện 13 file bị mất). -->
 
 # Mười Cách Cục Tài Quan biến hóa
 

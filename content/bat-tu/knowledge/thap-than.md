@@ -1,8 +1,8 @@
-<!-- ĐỒNG BỘ TỪ SKILL luan-giai-bat-tu LÚC: 2026-08-25. Nếu skill được cập nhật sau ngày này, chạy lại Bước 0 để đồng bộ file này. -->
+<!-- ĐỒNG BỘ TỪ SKILL luan-giai-bat-tu LÚC: 2026-09-01 (bản khôi phục sau khi phát hiện 13 file bị mất). -->
 
 # Hàm Nghĩa Thập Thần
 
-Nguồn chính: Bát Tự Nền Tảng Phần 2, mục 3.2 "Ý nghĩa của Thập Thần (cơ bản)" — có đầy đủ hàm nghĩa cho cả 10 Thập Thần. Nguồn bổ sung 1 (chỉ có 6/10): file `Thập_thần_tinh_giải` — phân tích sâu 6 tầng (hàm nghĩa mở rộng, tác dụng với thập thần khác, tọa thập thần, đại biểu hỉ/kị, quan hệ lục thân chi tiết, gặp Đại Vận/Lưu Niên) cho **Chính Quan, Thất Sát, Chính Tài, Thiên Tài, Chính Ấn, Thiên Ấn**. Nguồn bổ sung 2: "Bát Tự Nâng Cao 1" Chương IX "Luận Cách Cục" — bổ sung góc nhìn **tính cách/nghề nghiệp khi 1 Thập Thần chiếm ưu thế trong mệnh cục** cho cả 10 Thập Thần (xem mục F dưới) — góc nhìn này KHÁC với 6 tầng ở trên (tập trung vào biểu hiện thực tế/nghề nghiệp hơn là quan hệ lục thân/Đại Vận).
+Nguồn chính: Bát Tự Nền Tảng Phần 2, mục 3.2 "Ý nghĩa của Thập Thần (cơ bản)" — có đầy đủ hàm nghĩa cho cả 10 Thập Thần. Nguồn bổ sung (chỉ có 6/10): file `Thập_thần_tinh_giải` — phân tích sâu 6 tầng (hàm nghĩa mở rộng, tác dụng với thập thần khác, tọa thập thần, đại biểu hỉ/kị, quan hệ lục thân chi tiết, gặp Đại Vận/Lưu Niên) cho **Chính Quan, Thất Sát, Chính Tài, Thiên Tài, Chính Ấn, Thiên Ấn**. Phần **Thực Thần, Thương Quan, Tỷ Kiên, Kiếp Tài chưa có bản phân tích 6 tầng này** trong tài liệu hiện có — khi luận các thần này chỉ dùng hàm nghĩa cơ bản dưới đây; nếu người dùng cần độ sâu tương đương 6 tầng cho 4 thần này, phải nói rõ "tài liệu chưa đề cập chi tiết ở mức này" thay vì tự suy diễn thêm.
 
 ## Nguyên tắc đọc mỗi Thập Thần
 
@@ -86,17 +86,17 @@ Mỗi Thập Thần có 2 mặt biểu hiện tâm tính hoàn toàn khác nhau 
 Áp dụng khi 1 Thập Thần rõ ràng chiếm ưu thế trong mệnh cục (lộ nhiều, được lệnh, hoặc là Dụng Thần chủ đạo) — mô tả xu hướng tính cách/nghề nghiệp thực tế, khác góc nhìn "quan hệ lục thân" ở các mục A-E.
 
 **Chính Quan**: có trách nhiệm cao, hợp quản lý/làm việc theo hệ thống của người khác; mở công ty riêng dễ thất bại. Gặp Thất Sát → dễ xung đột/lao tâm để giải quyết việc.
-**Thất Sát**: thích khám phá, quyết định nhanh, dám nhận thử thách, dễ gây chuyện; không muốn thua kém ai, thù dai, thích làm "anh hùng"/nắm quyền lực. Cần có Chính Ấn hóa giải hoặc Thực Thần chế (không cần Thương Quan). Thất Sát tàng trong Chi tốt hơn lộ trên Thiên Can. Có hơn 1 Thất Sát → thích khiêu khích, chọc tức người khác.
-**Chính Tài**: giỏi quản lý, có trách nhiệm cao — hợp làm quản lý cho công ty người khác hơn tự mở công ty (mở riêng dễ thất bại). Không nên gặp Kiếp Tài (khó giữ tiền). Có Thực Thần hỗ trợ → vừa kiếm được nhiều tiền vừa duy trì được. Không muốn Nhật Chủ quá vượng hoặc quá nhược.
-**Thiên Tài**: hợp làm doanh nhân/nhà đầu tư, dám chấp nhận rủi ro. Cần Nhật Chủ vượng. Có 1 Thất Sát → hợp thị trường/việc mạo hiểm ít người dám làm. Có Thực Thần/Thương Quan hỗ trợ (tốt nhất là Thực Thần) → phát huy tối đa khả năng kiếm tiền. Không muốn gặp Tỷ Kiếp/Kiếp Tài (bị chia sẻ lợi nhuận).
-**Chính Ấn**: tính tốt, nhưng trong mệnh chỉ nên có 1 Chính Ấn — có từ 2 trở lên dễ suy nghĩ quá nhiều, nhạy cảm, hay tự ái, tính khí thất thường. Thiên về phân tích, thu thập kiến thức, cầu toàn, chủ suy nghĩ hơn hành động. Gặp Thiên Ấn → hạn chế khả năng làm giàu. Gặp Tài → cân bằng lại, trở nên nhạy bén hơn. Gặp Chính Quan → dễ lười và chậm cả suy nghĩ lẫn hành động.
-**Thiên Ấn**: chủ về tư duy/nghiên cứu/chiến lược. Được Chính Quan hỗ trợ → biến suy nghĩ thành hành động có lợi. Có hơn 1 Thiên Ấn → dễ mê tín dị đoan, suy nghĩ về tâm linh thái quá, lập dị. Gặp Thất Sát → thiếu kiềm chế khi nóng giận, dễ làm chuyện có hại. Nhìn chung: sáng tạo, có ý tưởng độc đáo, nắm bắt nhanh.
-**Thực Thần**: thích hưởng thụ ăn uống, có gu; có tài năng sáng tạo (nếu lộ trên Thiên Can thì hữu dụng hơn); lòng nhân ái. Chỉ nên có 1 Thực Thần (nhiều quá dễ cầu toàn thái quá, hay bắt bẻ). Có tài nhưng làm việc tùy hứng, ì. Kết hợp Tài + Thất Sát → khả năng kiếm rất nhiều tiền. Gặp Thương Quan → giỏi giao tiếp/nghệ thuật nhưng cảm xúc thất thường, hay ghen, dễ dính thị phi.
-**Thương Quan**: chú trọng vẻ ngoài, chải chuốt, thích được chú ý. Nữ mệnh có Thương Quan → nhạy cảm, thu hút cả 2 giới. Có tính chiến đấu cao, không chịu thua, hay ganh. Thiếu Tài → khả năng không được công nhận. Gặp Thiên Tài → sức chịu đựng cao, đi đường dài tốt. Không muốn bị khắc (dễ khó khăn sự nghiệp).
-**Tỷ Kiên**: thương lượng tốt, hợp làm đại diện/trợ lý/giám đốc/thư ký. Gặp Thương Quan → phát huy tối đa. Nhiều Tài mà có Tỷ Kiên → bạn bè đến vì tiền. Không nên có Kiếp Tài (phá cách, khó ổn định sự nghiệp).
-**Kiếp Tài**: hài hước, thích làm tâm điểm, có sức hút đám đông, có tài lãnh đạo. Gặp Thực Thần → cách cục tốt, dễ tìm lợi ích từ giao tiếp. Quá nhiều Kiếp Tài → nóng tính, dễ bạo lực. Không nên gặp Tỷ Kiên (phá mất tính lãnh đạo). Gặp Thất Sát → giỏi kiếm tiền từ thị trường ít người dám làm. Không nên lộ trên Thiên Can (cản trở sự nghiệp). Gặp Chính Quan → cách xấu, dễ dính rắc rối pháp lý khi làm ăn.
+**Thất Sát**: thích khám phá, quyết định nhanh, dám nhận thử thách; không muốn thua kém ai, thù dai. Cần Chính Ấn hóa giải hoặc Thực Thần chế. Thất Sát tàng trong Chi tốt hơn lộ trên Thiên Can.
+**Chính Tài**: giỏi quản lý, hợp làm quản lý cho công ty người khác hơn tự mở công ty. Không nên gặp Kiếp Tài. Có Thực Thần hỗ trợ → vừa kiếm nhiều vừa duy trì được.
+**Thiên Tài**: hợp doanh nhân/nhà đầu tư, dám chấp nhận rủi ro. Cần Nhật Chủ vượng. Có Thực Thần/Thương Quan hỗ trợ → phát huy tối đa khả năng kiếm tiền. Không muốn gặp Tỷ Kiếp/Kiếp Tài.
+**Chính Ấn**: tính tốt nhưng chỉ nên có 1 — từ 2 trở lên dễ suy nghĩ quá nhiều, nhạy cảm. Thiên về phân tích, chủ suy nghĩ hơn hành động.
+**Thiên Ấn**: chủ tư duy/nghiên cứu/chiến lược. Có hơn 1 → dễ mê tín dị đoan, lập dị. Gặp Thất Sát → thiếu kiềm chế khi nóng giận.
+**Thực Thần**: thích hưởng thụ, có tài sáng tạo, lòng nhân ái. Chỉ nên có 1. Kết hợp Tài+Thất Sát → kiếm rất nhiều tiền.
+**Thương Quan**: chú trọng vẻ ngoài, thích được chú ý, tính chiến đấu cao. Thiếu Tài → khả năng không được công nhận.
+**Tỷ Kiên**: thương lượng tốt, hợp đại diện/trợ lý/giám đốc. Không nên có Kiếp Tài.
+**Kiếp Tài**: hài hước, sức hút đám đông, tài lãnh đạo. Quá nhiều → nóng tính, dễ bạo lực. Gặp Chính Quan → cách xấu, dễ rắc rối pháp lý.
 
-**Ứng dụng riêng cho mục F**: chỉ dùng khi 1 Thập Thần thực sự chiếm ưu thế rõ rệt (không phải mọi lá số đều có 1 thần trội hẳn) — nếu mệnh cục cân bằng nhiều Thập Thần, không gán ép theo mô tả 1 thần duy nhất ở đây.
+**Ứng dụng riêng mục F**: chỉ dùng khi 1 Thập Thần thực sự chiếm ưu thế rõ rệt — không gán ép nếu mệnh cục cân bằng nhiều Thập Thần.
 
 ---
 
