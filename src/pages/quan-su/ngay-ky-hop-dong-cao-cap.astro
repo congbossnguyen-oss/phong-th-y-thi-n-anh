@@ -1,10 +1,14 @@
 ---
 // Ban in-app cua dich vu VIP "Ngày Giờ Ký Kết Hợp Đồng – Bản Cao Cấp" — TU CHUA trong app Quan Su (App Store, khong link ra web).
+//
+// Từ 1/9/2026: dùng bản component ĐỘC LẬP `components/quan-su/tools/NgayKyHopDongCaoCap.astro`
+// (toolSlug `ngay-ky-hop-dong-cao-cap-qs`, API riêng `/api/quan-su/vip/ngay-ky-hop-dong-cao-cap-qs/*`)
+// thay vì component dùng chung với web — module 8/12 trong việc tách Quân Sư khỏi web.
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import BottomNav from "../../components/quan-su/BottomNav.astro";
 import VipQuyenBanner from "../../components/quan-su/VipQuyenBanner.astro";
-import NgayKyHopDongCaoCap from "../../components/tools/NgayKyHopDongCaoCap.astro";
+import NgayKyHopDongCaoCap from "../../components/quan-su/tools/NgayKyHopDongCaoCap.astro";
 
 export const prerender = false;
 ---

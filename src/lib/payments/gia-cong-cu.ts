@@ -58,6 +58,9 @@ export const GIA_CONG_CU = {
   // giá, cùng engine `calculateNgayKhaiTruongCaoCap`, chỉ khác toolSlug để tách bạch đơn hàng.
   "ngay-khai-truong-cao-cap-qs": 300000,
   "ngay-ky-hop-dong-cao-cap": 300000,
+  // Bản ĐỘC LẬP cho app Quân Sư (từ 1/9/2026, xem project_quan_su_tach_doc_lap_khoi_web) — cùng
+  // giá, cùng engine `calculateNgayKyHopDongCaoCap`, chỉ khác toolSlug để tách bạch đơn hàng.
+  "ngay-ky-hop-dong-cao-cap-qs": 300000,
   "ky-mon-menh-chi-tiet": 300000,
   // Bản ĐỘC LẬP cho app Quân Sư (từ 1/9/2026, xem project_quan_su_tach_doc_lap_khoi_web) — cùng
   // giá, cùng engine `lapLaBan`/`luanGiaiMenh`, chỉ khác toolSlug để tách bạch đơn hàng web/app.
