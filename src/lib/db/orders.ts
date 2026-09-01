@@ -521,6 +521,25 @@ async function _markOrderPaidAndFulfillNoiBo(orderId: string) {
       }
     }
 
+    // Định Hướng Nghề Nghiệp — bản ĐỘC LẬP cho app Quân Sư (toolSlug `dinh-huong-nghe-nghiep-qs`,
+    // từ 1/9/2026). Tái dùng đúng engine/PDF/email đã import ở trên cho bản web — chỉ khác toolSlug
+    // để tách bạch thống kê.
+    if (order.toolSlug === "dinh-huong-nghe-nghiep-qs" && order.customerEmail && order.toolInputSnapshot) {
+      try {
+        const input = JSON.parse(order.toolInputSnapshot) as NgheInput;
+        const ketQua = await taoHoSoNghe(input);
+        const pdf = await generateNghePdf(ketQua, order.customerName);
+        await sendNghePdfEmail({
+          to: order.customerEmail,
+          orderCode: order.orderCode,
+          customerName: order.customerName,
+          pdfBytes: pdf,
+        });
+      } catch (err) {
+        console.error(`[dinh-huong-nghe-nghiep-qs] Lỗi dựng/gửi PDF cho đơn ${order.orderCode}:`, err);
+      }
+    }
+
     // Trạch Nhật Sinh Nở: thuần công thức (không AI) — dựng PDF rồi gửi kèm email khách. Bọc
     // try/catch riêng cùng lý do các module khác: hỏng khâu này đơn vẫn ghi nhận đã thanh toán,
     // khách còn xem/tải lại từ trang kết quả bằng mã đơn.

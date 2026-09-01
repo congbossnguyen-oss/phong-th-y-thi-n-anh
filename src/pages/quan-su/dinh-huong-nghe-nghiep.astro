@@ -4,11 +4,15 @@
 // KHÔNG có mặt trong app: nó cố ý không nằm trong `paidTools` (xem ghi chú đầu danh sách đó) nên
 // trang /quan-su/dich-vu-vip — vốn dựng từ paidTools — cũng không liệt kê. Nay bổ sung thẳng vào
 // danh sách VIP của app cùng với trang này.
+//
+// Từ 1/9/2026: dùng bản component ĐỘC LẬP `components/quan-su/tools/DinhHuongNgheNghiep.astro`
+// (toolSlug `dinh-huong-nghe-nghiep-qs`, API riêng `/api/quan-su/vip/dinh-huong-nghe-nghiep-qs/*`)
+// thay vì component dùng chung với web — module 4/12 trong việc tách Quân Sư khỏi web.
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import BottomNav from "../../components/quan-su/BottomNav.astro";
 import VipQuyenBanner from "../../components/quan-su/VipQuyenBanner.astro";
-import DinhHuongNgheNghiep from "../../components/tools/DinhHuongNgheNghiep.astro";
+import DinhHuongNgheNghiep from "../../components/quan-su/tools/DinhHuongNgheNghiep.astro";
 
 export const prerender = false;
 ---
