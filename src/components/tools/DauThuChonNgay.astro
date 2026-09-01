@@ -339,9 +339,13 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
         </p>
         <p class="text-sm font-bold ${muc.chu}">${esc(n.diem)} điểm · ${muc.nhan}</p>
       </div>
-      <p class="mt-1 text-xs text-(--color-ink-500)">Âm lịch ${esc(n.amLich.ngay)}/${esc(n.amLich.thang)}${n.amLich.nhuan ? " (nhuận)" : ""}${n.loaiSomTrungNgay ? ` · <span class="font-medium text-(--color-danger-500)">Trụ Ngày Phá Quân, Sơn Đầu không được lệnh Tháng</span>` : ""}${n.soThanSatDanGian > 0 ? ` · <span class="font-medium text-(--color-danger-500)">⚠ ${n.soThanSatDanGian} thần sát dân gian</span>` : ""}</p>
+      <p class="mt-1 text-xs text-(--color-ink-500)">Âm lịch ${esc(n.amLich.ngay)}/${esc(n.amLich.thang)}${n.amLich.nhuan ? " (nhuận)" : ""}${n.loaiSomTrungNgay ? ` · <span class="font-medium text-(--color-danger-500)">Trụ Ngày Phá Quân, Sơn Đầu không được lệnh Tháng</span>` : ""}</p>
       <p class="mt-1 text-sm">${(n.cachCuc ?? []).length ? esc(n.cachCuc.join(", ")) : "Không đạt cách cục ưu tiên nào"}</p>
       ${n.gioTot.length ? `<p class="mt-1 text-sm text-(--color-ink-700)"><strong>Giờ tốt:</strong> ${n.gioTot.map((g: any) => `${esc(g.chiGio)} (${esc(g.khungGio)})`).join(" · ")}</p>` : ""}
+      ${(n.thanSatDanGian ?? []).length ? `<div class="mt-2 flex flex-wrap items-center gap-1.5">
+        <span class="text-xs font-semibold text-(--color-danger-500)">⚠ Dân gian:</span>
+        ${n.thanSatDanGian.map((t: any) => `<span class="rounded-full bg-(--color-danger-500)/20 px-2 py-0.5 text-[11px] font-medium text-(--color-danger-500)" title="${esc(t.moTa)}">${esc(t.ten)}</span>`).join("")}
+      </div>` : ""}
     </div>`;
   }
 

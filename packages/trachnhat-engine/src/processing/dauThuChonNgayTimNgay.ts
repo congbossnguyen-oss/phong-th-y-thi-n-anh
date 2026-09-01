@@ -18,6 +18,7 @@ import {
   type DauThuChonNgayInput,
   type DauThuChonNgayResult,
   type MucDauThu,
+  type ThanSatDanGian,
 } from "./dauThuChonNgay.js";
 
 export interface DauThuNgayXepHang {
@@ -28,7 +29,9 @@ export interface DauThuNgayXepHang {
   muc: MucDauThu;
   cachCuc: string[];
   loaiSomTrungNgay: boolean;
-  soThanSatDanGian: number;
+  /** Tên + mô tả từng thần sát dân gian phạm phải (rỗng = không phạm) — anh Công yêu cầu
+   * 1/9/2026: liệt kê rõ tên, không chỉ đếm số lượng. */
+  thanSatDanGian: ThanSatDanGian[];
   gioTot: { chiGio: string; khungGio: string; tenSao: string }[];
   chiTiet: DauThuChonNgayResult;
 }
@@ -87,7 +90,7 @@ export function timNgayDauThuChonNgay(input: DauThuTimNgayInput): {
       muc,
       cachCuc: kq.cachCuc,
       loaiSomTrungNgay: kq.loaiSomTrungNgay,
-      soThanSatDanGian: kq.thanSatDanGian.length,
+      thanSatDanGian: kq.thanSatDanGian,
       gioTot: kq.gioDeXuat.filter((g) => g.laHoangDao && (g.vaiTro === "Nguyên Thần" || g.vaiTro === "Võ Tài")).slice(0, 3)
         .map((g) => ({ chiGio: g.chiGio, khungGio: g.khungGio, tenSao: g.tenSao })),
       chiTiet: kq,
