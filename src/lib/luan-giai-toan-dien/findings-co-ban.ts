@@ -6,17 +6,15 @@
 import type { BatTuChart, PillarInfo } from "../bat-tu";
 import { CHI_NGU_HANH, CAN_NGU_HANH } from "../bat-tu";
 import type { BatTuAnalysis, Hanh } from "../bat-tu-engine/engine";
-import { coLucXung } from "../bat-tu-engine/engine";
 import { docData } from "./content-loader";
+import { tinhMatTacDungTheoTru, type LyDoMatTacDung } from "./than-sat-mat-tac-dung";
 import type { GiaiDoanFindings } from "./types";
+
+type PillarKey = "year" | "month" | "day" | "hour";
 
 interface DungThanData {
   ngheNghiepTheoHanh: Record<Hanh, string[]>;
   phuongHuongMauSac: Record<Hanh, { phuong: string; mauSac: string[] }>;
-}
-interface QuanHeCanChiData {
-  lucHai: [string, string][];
-  tuongHinh: { tamHinh: string[][]; tuongHinh2Chi: [string, string][]; tuHinh: string[] };
 }
 
 const CAN_NAMES = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"];
@@ -161,11 +159,14 @@ export function findingsG(chart: BatTuChart, analysis: BatTuAnalysis): GiaiDoanF
 }
 
 // --- H. Hôn nhân (mẫu computable: vị trí Thê Tài/Quan Sát + quan hệ với cung phối ngẫu = Chi trụ Ngày) ---
-export function findingsH(chart: BatTuChart, analysis: BatTuAnalysis): GiaiDoanFindings {
-  const quanHe = docData<QuanHeCanChiData>("quan-he-can-chi.json");
+// ⚠️ matTacDung PHẢI là object Hình/Xung/Hại/Không Vong dùng CHUNG (tinhMatTacDungTheoTru) — cùng
+// nguồn với D/F/I. TRƯỚC 1/9/2026, H tự so sánh chi RAW không qua chiChuan nên trượt Tị/Tỵ, kết luận
+// "cung phối ngẫu không bị hình/hại" NGƯỢC với I/F/L trong cùng báo cáo. Nay đọc chung 1 nguồn.
+export function findingsH(chart: BatTuChart, analysis: BatTuAnalysis, matTacDung?: Record<PillarKey, LyDoMatTacDung>): GiaiDoanFindings {
+  const mat = matTacDung ?? tinhMatTacDungTheoTru(chart);
   const gioiTinh = chart.gender;
   const cungPhoiNgau = chart.day.chi; // Chi trụ Ngày = "cung phối ngẫu" theo quy ước Tử Bình.
-  const cacChiKhac = [chart.year.chi, chart.month.chi, chart.hour.chi];
+  const dayLyDo = mat.day;
 
   // Nam xem Tài (Thê Tài/Chính Tài + Thiên Tài), Nữ xem Quan Sát (Chính Quan/Thất Sát).
   const thapThanCanXet = gioiTinh === "Nam" ? ["Chính Tài", "Thiên Tài"] : ["Chính Quan", "Thất Sát"];
@@ -176,10 +177,6 @@ export function findingsH(chart: BatTuChart, analysis: BatTuAnalysis): GiaiDoanF
     for (const tc of p.tangCan) if (thapThanCanXet.includes(tc.thapThan)) viTriXuatHien.push({ tru: key, can: tc.can, thapThan: tc.thapThan, laTangCan: true });
   }
 
-  const bixung = coLucXung(cungPhoiNgau, cacChiKhac);
-  const biHai = quanHe.lucHai.some(([a, b]) => (a === cungPhoiNgau && cacChiKhac.includes(b)) || (b === cungPhoiNgau && cacChiKhac.includes(a)));
-  const tamHinhList = quanHe.tuongHinh.tamHinh.filter((bo) => bo.includes(cungPhoiNgau)).flatMap((bo) => bo.filter((c) => cacChiKhac.includes(c)));
-
   return {
     maGiaiDoan: "H",
     tenGiaiDoan: "Hôn nhân",
@@ -188,11 +185,15 @@ export function findingsH(chart: BatTuChart, analysis: BatTuAnalysis): GiaiDoanF
       cungPhoiNgau,
       thapThanChinhXet: gioiTinh === "Nam" ? "Tài (Chính Tài/Thiên Tài)" : "Quan Sát (Chính Quan/Thất Sát)",
       viTriXuatHien,
-      cungPhoiNgauBiXung: bixung,
-      cungPhoiNgauBiHai: biHai,
-      cungPhoiNgauThamGiaTamHinh: tamHinhList.length > 0 ? tamHinhList : null,
+      cungPhoiNgauBiXung: dayLyDo.xung,
+      cungPhoiNgauXungVoi: dayLyDo.xungVoi.length > 0 ? dayLyDo.xungVoi : null,
+      cungPhoiNgauBiHai: dayLyDo.hai,
+      cungPhoiNgauHaiVoi: dayLyDo.haiVoi.length > 0 ? dayLyDo.haiVoi : null,
+      cungPhoiNgauBiHinh: dayLyDo.hinh,
+      cungPhoiNgauThamGiaTamHinh: dayLyDo.hinhVoi.length > 0 ? dayLyDo.hinhVoi : null,
+      luuY: "Các cờ Xung/Hình/Hại của cung phối ngẫu (trụ Ngày) đọc CHUNG từ nguồn Hình/Xung/Hại toàn cục — nhất quán với Giai đoạn D/F/I/L, không tính riêng.",
     },
-    canCu: ["knowledge/hon-nhan.md", "data/quan-he-can-chi.json"],
+    canCu: ["knowledge/hon-nhan.md", "than-sat-mat-tac-dung.ts (Hình/Xung/Hại toàn cục)"],
   };
 }
 
@@ -213,5 +214,7 @@ export function findingsJ(chart: BatTuChart, analysis: BatTuAnalysis): GiaiDoanF
 }
 
 export function taoFindingsCoBan(chart: BatTuChart, analysis: BatTuAnalysis): GiaiDoanFindings[] {
-  return [findingsA(chart, analysis), findingsB(chart, analysis), findingsC(chart, analysis), findingsG(chart, analysis), findingsH(chart, analysis), findingsJ(chart, analysis)];
+  // Tính quan hệ Hình/Xung/Hại 1 LẦN, dùng chung cho H (và cùng nguồn với D/F/I ở tầng Nâng Cao).
+  const matTacDung = tinhMatTacDungTheoTru(chart);
+  return [findingsA(chart, analysis), findingsB(chart, analysis), findingsC(chart, analysis), findingsG(chart, analysis), findingsH(chart, analysis, matTacDung), findingsJ(chart, analysis)];
 }

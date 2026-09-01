@@ -8,9 +8,10 @@ import { CAN_NGU_HANH } from "../bat-tu";
 import type { BatTuAnalysis, Hanh } from "../bat-tu-engine/engine";
 import { MO_KHO, hanhCan, chiChuan } from "../bat-tu-engine/engine";
 import { timThanSatBoSung } from "./than-sat-bo-sung";
-import { tinhMatTacDungTheoTru, coMatTacDung, moTaLyDo } from "./than-sat-mat-tac-dung";
+import { tinhMatTacDungTheoTru, coMatTacDung, moTaLyDo, type LyDoMatTacDung } from "./than-sat-mat-tac-dung";
 import type { GiaiDoanFindings } from "./types";
 
+type PillarKey = "year" | "month" | "day" | "hour";
 const CAN_NAMES = ["Giáp", "Ất", "Bính", "Đinh", "Mậu", "Kỷ", "Canh", "Tân", "Nhâm", "Quý"];
 
 function hyKyCuaHanh(h: Hanh, dt: BatTuAnalysis["dungThan"]): "dung_than" | "hy_than" | "ky_than" | "cuu_than" | "trung_tinh" {
@@ -40,14 +41,14 @@ function hyKyCuaHanh(h: Hanh, dt: BatTuAnalysis["dungThan"]): "dung_than" | "hy_
 // Mỗi sao tìm thấy được gắn kèm CÓ hay KHÔNG rơi vào điều kiện "mất tác dụng" (Không Vong/Xung/Hình/
 // Hại tại đúng trụ đó — xem than-sat-mat-tac-dung.ts) để Tầng 2 AI luận đúng mức độ, không mặc định
 // mọi sao tìm thấy đều phát huy trọn vẹn.
-export function findingsD(chart: BatTuChart): GiaiDoanFindings {
+export function findingsD(chart: BatTuChart, matTacDung?: Record<PillarKey, LyDoMatTacDung>): GiaiDoanFindings {
   const boSung = timThanSatBoSung(chart);
   const gopTatCa: Record<string, string[]> = { year: [], month: [], day: [], hour: [] };
   for (const tru of ["year", "month", "day", "hour"] as const) {
     gopTatCa[tru] = [...chart.thanSat[tru], ...boSung[tru]];
   }
 
-  const lyDoTheoTru = tinhMatTacDungTheoTru(chart);
+  const lyDoTheoTru = matTacDung ?? tinhMatTacDungTheoTru(chart);
   const danhSachSao = Object.entries(gopTatCa).flatMap(([tru, danhSach]) =>
     danhSach.map((ten) => ({ ten, tru, matTacDung: coMatTacDung(lyDoTheoTru[tru as keyof typeof lyDoTheoTru]), lyDo: moTaLyDo(lyDoTheoTru[tru as keyof typeof lyDoTheoTru]) })),
   );
@@ -104,9 +105,9 @@ export function findingsE(chart: BatTuChart, analysis: BatTuAnalysis): GiaiDoanF
 }
 
 // --- F. Lục Thân (mẫu computable: vị trí Thập Thần đại diện từng vai vế + quan hệ với trụ tương ứng) ---
-export function findingsF(chart: BatTuChart, analysis: BatTuAnalysis): GiaiDoanFindings {
+export function findingsF(chart: BatTuChart, analysis: BatTuAnalysis, matTacDung?: Record<PillarKey, LyDoMatTacDung>): GiaiDoanFindings {
   const dt = analysis.dungThan;
-  const lyDoTheoTru = tinhMatTacDungTheoTru(chart);
+  const lyDoTheoTru = matTacDung ?? tinhMatTacDungTheoTru(chart);
   const layThapThanOTru = (thapThanCanXet: string[]) => {
     const ketQua: { tru: string; can: string; thapThan: string; hyKy: string; laTangCan: boolean; truBiXungHinhHai: boolean; lyDo: string[] }[] = [];
     for (const key of ["year", "month", "day", "hour"] as const) {
@@ -181,7 +182,7 @@ export function findingsF(chart: BatTuChart, analysis: BatTuAnalysis): GiaiDoanF
 }
 
 // --- I. Sức khỏe (tối giản: tỷ trọng Ngũ Hành + hành nào dư/thiếu/bị khắc mạnh — AI tự đọc benh-tat.md) ---
-export function findingsI(chart: BatTuChart, analysis: BatTuAnalysis): GiaiDoanFindings {
+export function findingsI(chart: BatTuChart, analysis: BatTuAnalysis, matTacDung?: Record<PillarKey, LyDoMatTacDung>): GiaiDoanFindings {
   const cans = [chart.year.can, chart.month.can, chart.day.can, chart.hour.can];
   // Chỉ đếm trên Thiên Can (4 can) cho mục đích "dư/thiếu ngũ hành" gợi mở nhanh — không cần chính
   // xác tuyệt đối như vượng suy (đã tính đủ tàng can); luận chi tiết đọc knowledge/benh-tat.md.
@@ -193,7 +194,7 @@ export function findingsI(chart: BatTuChart, analysis: BatTuAnalysis): GiaiDoanF
   // Nhật Chủ (trụ Ngày) bị Không Vong/Xung/Hình/Hại — 1 dấu hiệu thường được nhắc trong benh-tat.md
   // khi luận sức khỏe (Nhật Chủ đại diện chính thân thể mệnh chủ, bị công phá trực tiếp đáng chú ý
   // hơn các trụ khác). Đây là SỰ KIỆN cấu trúc, không phải kết luận bệnh cụ thể.
-  const lyDoTheoTru = tinhMatTacDungTheoTru(chart);
+  const lyDoTheoTru = matTacDung ?? tinhMatTacDungTheoTru(chart);
   const nhatChuBiCongPha = coMatTacDung(lyDoTheoTru.day);
 
   return {
@@ -242,5 +243,7 @@ export function findingsK(chart: BatTuChart, analysis: BatTuAnalysis): GiaiDoanF
 }
 
 export function taoFindingsNangCao(chart: BatTuChart, analysis: BatTuAnalysis): GiaiDoanFindings[] {
-  return [findingsD(chart), findingsE(chart, analysis), findingsF(chart, analysis), findingsI(chart, analysis), findingsK(chart, analysis)];
+  // Tính quan hệ Hình/Xung/Hại 1 LẦN, dùng chung cho D/F/I (cùng nguồn với H ở tầng Cơ Bản).
+  const matTacDung = tinhMatTacDungTheoTru(chart);
+  return [findingsD(chart, matTacDung), findingsE(chart, analysis), findingsF(chart, analysis, matTacDung), findingsI(chart, analysis, matTacDung), findingsK(chart, analysis)];
 }

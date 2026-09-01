@@ -28,9 +28,19 @@ export interface LyDoMatTacDung {
   xung: boolean;
   hinh: boolean;
   hai: boolean;
+  // Chi (ở TRỤ KHÁC) tạo ra quan hệ tương ứng — dùng chi GỐC của lá số để hiển thị/luận. Rỗng nếu
+  // không có. Đây là phần chi tiết để Giai đoạn H (và mọi giai đoạn khác) đọc CHUNG, thay vì tự tính
+  // lại (bug thật 1/9/2026: H tự so sánh chi RAW không qua chiChuan nên trượt Tị/Tỵ, nói ngược với I/F/L).
+  xungVoi: string[];
+  hinhVoi: string[];
+  haiVoi: string[];
 }
 
-/** Với mỗi trụ, xác định lý do khiến sao đóng ở trụ đó có thể bị giảm/mất tác dụng (nếu có). */
+/**
+ * NGUỒN CHÂN LÝ DUY NHẤT về quan hệ Hình/Xung/Hại/Không Vong theo từng trụ — MỌI giai đoạn (D, F, I,
+ * H, và L khi tổng hợp) PHẢI đọc từ đây, KHÔNG tự tính lại. Chuẩn hoá chi qua chiChuan() để không lệ
+ * thuộc cách viết Tị/Tỵ trong dữ liệu vs lá số.
+ */
 export function tinhMatTacDungTheoTru(chart: BatTuChart): Record<PillarKey, LyDoMatTacDung> {
   const quanHe = docData<QuanHeCanChiData>("quan-he-can-chi.json");
   const truList: PillarKey[] = ["year", "month", "day", "hour"];
@@ -43,17 +53,36 @@ export function tinhMatTacDungTheoTru(chart: BatTuChart): Record<PillarKey, LyDo
   const ket = {} as Record<PillarKey, LyDoMatTacDung>;
   for (const tru of truList) {
     const chiXetChuan = chiChuan(chiTru[tru]);
-    const chiKhacChuan = truList.filter((t) => t !== tru).map((t) => chiChuan(chiTru[t]));
+    // Các trụ khác — giữ CẢ chi gốc (để hiển thị) LẪN chi chuẩn hoá (để đối chiếu dữ liệu).
+    const khac = truList.filter((t) => t !== tru).map((t) => ({ goc: chiTru[t], chuan: chiChuan(chiTru[t]) }));
 
     const khongVong = chiKhongVong.has(chiXetChuan);
-    const xung = coLucXung(chiXetChuan, chiKhacChuan);
-    const hai = quanHe.lucHai.some(([a, b]) => (a === chiXetChuan && chiKhacChuan.includes(b)) || (b === chiXetChuan && chiKhacChuan.includes(a)));
-    const hinh =
-      quanHe.tuongHinh.tamHinh.some((bo) => bo.includes(chiXetChuan) && bo.some((c) => c !== chiXetChuan && chiKhacChuan.includes(c))) ||
-      quanHe.tuongHinh.tuongHinh2Chi.some(([a, b]) => (a === chiXetChuan && chiKhacChuan.includes(b)) || (b === chiXetChuan && chiKhacChuan.includes(a))) ||
-      quanHe.tuongHinh.tuHinh.includes(chiXetChuan);
 
-    ket[tru] = { khongVong, xung, hinh, hai };
+    const xungVoi = khac.filter((o) => coLucXung(chiXetChuan, [o.chuan])).map((o) => o.goc);
+    const haiVoi = khac
+      .filter((o) => quanHe.lucHai.some(([a, b]) => (a === chiXetChuan && b === o.chuan) || (b === chiXetChuan && a === o.chuan)))
+      .map((o) => o.goc);
+
+    const hinhVoiSet = new Set<string>();
+    for (const bo of quanHe.tuongHinh.tamHinh) {
+      if (!bo.includes(chiXetChuan)) continue;
+      for (const o of khac) if (o.chuan !== chiXetChuan && bo.includes(o.chuan)) hinhVoiSet.add(o.goc);
+    }
+    for (const [a, b] of quanHe.tuongHinh.tuongHinh2Chi) {
+      for (const o of khac) if ((a === chiXetChuan && b === o.chuan) || (b === chiXetChuan && a === o.chuan)) hinhVoiSet.add(o.goc);
+    }
+    const tuHinh = quanHe.tuongHinh.tuHinh.includes(chiXetChuan);
+    const hinhVoi = [...hinhVoiSet];
+
+    ket[tru] = {
+      khongVong,
+      xung: xungVoi.length > 0,
+      hai: haiVoi.length > 0,
+      hinh: hinhVoi.length > 0 || tuHinh,
+      xungVoi,
+      hinhVoi,
+      haiVoi,
+    };
   }
   return ket;
 }
