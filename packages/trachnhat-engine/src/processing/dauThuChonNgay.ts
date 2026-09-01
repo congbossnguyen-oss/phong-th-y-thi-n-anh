@@ -18,7 +18,7 @@
  * GIỚI HẠN CHỦ ĐỘNG (theo SPEC): KHÔNG code tầng "Phiên Hóa Đẩu Thủ Ngũ Hành" bậc 2 — nguồn
  * chưa tổng quát hóa được thành quy trình đáng tin, báo `thieuDuLieu` nếu người dùng cần.
  */
-import { Calendar, Data, getCanChi, getGanzhiHour, getLunarDate } from "@thien-anh/calendar-core";
+import { Astronomy, Calendar, Data, getCanChi, getGanzhiHour, getLunarDate } from "@thien-anh/calendar-core";
 import { DauThu, TrachNhat, XemNgayCaoCap } from "@thien-anh/rule-engine";
 
 type Can = Data.Can;
@@ -75,6 +75,23 @@ export interface GioDauThu {
   diem: number;
 }
 
+/** 4 mức xếp hạng để giao diện tô màu — quy đổi tự chọn từ điểm tổng (không phải số liệu sách),
+ * cùng nguyên tắc với `xemNgayCaoCapTimNgay.ts`'s `MucChatLuong`. */
+export type MucDauThu = "rat_tot" | "kha" | "trung_binh" | "nen_tranh";
+
+export function xepMucDauThu(diem: number): MucDauThu {
+  if (diem >= 80) return "rat_tot";
+  if (diem >= 30) return "kha";
+  if (diem >= 0) return "trung_binh";
+  return "nen_tranh";
+}
+
+export interface ThanSatDanGian {
+  ten: string;
+  moTa: string;
+  diem: number;
+}
+
 export interface DauThuChonNgayResult {
   ngayDuongLich: { nam: number; thang: number; ngay: number };
   amLich: { ngay: number; thang: number; nam: number; nhuan: boolean };
@@ -90,10 +107,15 @@ export interface DauThuChonNgayResult {
   tuMo: { laTuMo: boolean; nuaDau: boolean | null };
   loaiSomTrungNgay: boolean;
   diem: number;
+  muc: MucDauThu;
   breakdown: { nhan: string; diem: number }[];
   canhBao: string[];
   thieuDuLieu: string[];
   gioDeXuat: GioDauThu[];
+  /** Lớp lọc thần sát dân gian TÙY CHỌN (Tam Nương/Nguyệt Kỵ/Nguyệt Tận/Tứ Ly Tứ Tuyệt/Trực Phá-Bế/
+   * Kim Thần Thất Sát/Sát Chủ/Niên Phá) — SPEC nói rõ "Đẩu Thủ tự nó là 1 hệ đánh giá đủ", lớp này
+   * chỉ CỘNG THÊM cảnh báo + trừ điểm nhẹ, không loại cứng ngày nào. Rỗng = không phạm. */
+  thanSatDanGian: ThanSatDanGian[];
 }
 
 function khungGioCuaChi(chiIndex: number): string {
@@ -115,6 +137,96 @@ function xacDinhNuaThangTuMo(jdUT: number, chiThang: Chi): { laTuMo: boolean; nu
   const endJd = Calendar.findSolarTermJd(endTerm.longitude, jdUT);
   const midJd = (startJd + endJd) / 2;
   return { laTuMo: true, nuaDau: jdUT < midJd };
+}
+
+// 4 mốc Tứ Ly (Phân/Chí, kỵ đúng NGÀY TRƯỚC mốc) và 4 mốc Tứ Tuyệt (Lập Xuân/Hạ/Thu/Đông, kỵ đúng
+// NGÀY TRƯỚC mốc) — theo `data/tang1-loc-than-sat-hung.md` mục A. Chưa có sẵn ở đâu trong repo,
+// viết mới bằng `Calendar.findSolarTermJd` (cùng công cụ đã dùng cho Tứ Mộ ở trên).
+const TU_LY_LONGITUDES = [0, 90, 180, 270]; // Xuân Phân, Hạ Chí, Thu Phân, Đông Chí
+const TU_TUYET_LONGITUDES = [315, 45, 135, 225]; // Lập Xuân, Lập Hạ, Lập Thu, Lập Đông
+
+// `jdUT` là JD của 12h TRƯA giờ địa phương (quy ước dùng xuyên suốt file này, xem `getCanChi`
+// gọi với hour:12) — nên [jdUT+0.5, jdUT+1.5) chính là cửa sổ 24h của NGÀY MAI theo giờ địa
+// phương. So khớp bằng cửa sổ này (thay vì làm tròn hiệu số JD) để không lệch ngày khi mốc tiết
+// khí rơi gần nửa đêm UTC — 1 mốc UTC muộn trong ngày có thể đã sang NGÀY KHÁC theo giờ VN.
+function laNgayTruocMocTietKhi(jdUT: number, longitudes: readonly number[]): boolean {
+  const batDauNgayMai = jdUT + 0.5;
+  const ketThucNgayMai = jdUT + 1.5;
+  return longitudes.some((lon) => {
+    const mocJd = Calendar.findSolarTermJd(lon, jdUT);
+    return mocJd >= batDauNgayMai && mocJd < ketThucNgayMai;
+  });
+}
+
+/** Ngày đang xét có phải ngày CUỐI CÙNG của tháng âm lịch không (Nguyệt Tận). */
+function laNguyetTan(nam: number, thang: number, ngay: number, timeZone: string): boolean {
+  const jdn = Astronomy.julianDayNumber(nam, thang, ngay) + 1;
+  const maiSau = Astronomy.julianDayNumberToCalendarDate(jdn);
+  const lunarMaiSau = getLunarDate({ year: maiSau.year, month: maiSau.month, day: maiSau.day, timeZone });
+  return lunarMaiSau.day === 1;
+}
+
+/** Chính Ngũ Hành của 1 Can (KHÁC hóa khí Ngũ Hợp dùng ở Bước 2-3 Đẩu Thủ — chỉ dùng riêng cho
+ * kiểm tra Thiên Khắc Địa Xung, đây là 1 khái niệm Bát Tự phổ thông độc lập với hệ Đẩu Thủ). */
+function chinhNguHanhCuaCan(can: Can): NguHanh {
+  return Data.CAN_NGU_HANH[Data.CAN.indexOf(can)]!;
+}
+
+const KHAC_CHINH_NGU_HANH: Readonly<Record<NguHanh, NguHanh>> = {
+  Mộc: "Thổ", Thổ: "Thủy", Thủy: "Hỏa", Hỏa: "Kim", Kim: "Mộc",
+};
+
+/** Thiên Khắc Địa Xung: Can 2 trụ khắc nhau (Chính Ngũ Hành, khắc chiều nào cũng tính) VÀ Chi 2
+ * trụ đồng thời Lục Xung — nặng hơn hẳn so với chỉ khắc Can hoặc chỉ xung Chi riêng lẻ. Khái niệm
+ * Bát Tự phổ thông, độc lập với hệ hóa khí Đẩu Thủ (không dùng KHAC/hóa khí ở Bước 2-3 phía trên).
+ * Anh Công yêu cầu 1/9/2026: xét cặp Ngày-Tháng và Ngày-Giờ. */
+function laThienKhacDiaXung(canA: Can, chiA: Chi, canB: Can, chiB: Chi): boolean {
+  const hanhA = chinhNguHanhCuaCan(canA);
+  const hanhB = chinhNguHanhCuaCan(canB);
+  const khac = KHAC_CHINH_NGU_HANH[hanhA] === hanhB || KHAC_CHINH_NGU_HANH[hanhB] === hanhA;
+  return khac && TrachNhat.isLucXung(CHI_12.indexOf(chiA), CHI_12.indexOf(chiB));
+}
+
+/** Lớp lọc thần sát dân gian TÙY CHỌN — cộng cảnh báo + trừ điểm nhẹ, không loại cứng ngày nào
+ * (khác nguyên tắc "loại thẳng" của module Xem Ngày Cao Cấp/HKĐQ). Tái dùng tối đa dữ liệu đã có
+ * sẵn trong `@thien-anh/rule-engine` (Tam Nương/Nguyệt Kỵ/Sát Chủ/Kim Thần Thất Sát/12 Trực/Lục
+ * Xung) — chỉ Tứ Ly/Tứ Tuyệt/Nguyệt Tận/Thiên Khắc Địa Xung là viết mới ở trên. */
+function locThanSatDanGian(params: {
+  nam: number; thang: number; ngay: number; timeZone: string;
+  jdUT: number; lunarDay: number; monthOrderIndex: number;
+  canNam: Can; chiNam: Chi;
+  canThang: Can; chiThang: Chi;
+  canNgay: Can; chiNgay: Chi;
+  canGio: Can; chiGio: Chi;
+  dayChiIndex: number;
+}): ThanSatDanGian[] {
+  const ds: ThanSatDanGian[] = [];
+  const them = (ten: string, moTa: string, diem: number) => ds.push({ ten, moTa, diem });
+
+  if (TrachNhat.isTamNuong(params.lunarDay)) them("Tam Nương Sát", `Mùng ${params.lunarDay} ÂL — 1 trong 6 ngày Tam Nương.`, -10);
+  if (TrachNhat.isNguyetKy(params.lunarDay)) them("Nguyệt Kỵ", `Mùng ${params.lunarDay} ÂL.`, -10);
+  if (laNguyetTan(params.nam, params.thang, params.ngay, params.timeZone)) them("Nguyệt Tận", "Ngày cuối cùng của tháng âm lịch.", -10);
+  if (laNgayTruocMocTietKhi(params.jdUT, TU_LY_LONGITUDES)) them("Tứ Ly", "1 ngày trước Xuân Phân/Hạ Chí/Thu Phân/Đông Chí.", -15);
+  if (laNgayTruocMocTietKhi(params.jdUT, TU_TUYET_LONGITUDES)) them("Tứ Tuyệt", "1 ngày trước Lập Xuân/Lập Hạ/Lập Thu/Lập Đông.", -15);
+
+  const truc = TrachNhat.getTruc(params.dayChiIndex, params.monthOrderIndex);
+  if (truc.name === "Phá") them("Trực Phá (Nguyệt Phá)", "Ngày xung Chi tháng theo vòng 12 Trực.", -15);
+  else if (truc.name === "Bế") them("Trực Bế", "Vòng 12 Trực.", -10);
+
+  if (TrachNhat.getChiNgayKyKimThanThatSatTheoNam(params.canNam).includes(params.chiNgay)) {
+    them("Kim Thần Thất Sát", "Không hóa giải được theo sách — kỵ động thổ, tu tạo.", -25);
+  }
+  if (TrachNhat.isSatChuNgay(params.chiNgay, params.monthOrderIndex)) them("Sát Chủ", "Sát Chủ theo mùa (Ngọc Hạp Thông Thư).", -10);
+  if (TrachNhat.getLucXungChi(params.chiNam) === params.chiNgay) them("Niên Phá (Tuế Phá đáo nhật)", "Chi ngày xung Chi năm.", -20);
+
+  if (laThienKhacDiaXung(params.canNgay, params.chiNgay, params.canThang as Can, params.chiThang)) {
+    them("Ngày-Tháng Thiên Khắc Địa Xung", "Can Ngày khắc/bị khắc Can Tháng, đồng thời Chi 2 trụ Lục Xung.", -20);
+  }
+  if (laThienKhacDiaXung(params.canNgay, params.chiNgay, params.canGio, params.chiGio)) {
+    them("Ngày-Giờ Thiên Khắc Địa Xung", "Can Ngày khắc/bị khắc Can Giờ, đồng thời Chi 2 trụ Lục Xung.", -20);
+  }
+
+  return ds;
 }
 
 function xayTru(tenTru: TruDauThuKetQua["tru"], can: Can, chi: Chi, napAm: string, hanhSonDau: NguHanh): TruDauThuKetQua {
@@ -199,6 +311,28 @@ export function tinhDauThuChonNgay(input: DauThuChonNgayInput): DauThuChonNgayRe
   }
   const truGio = xayTru("Giờ", truGioRaw.can, chiGioHeadline, truGioRaw.napAm, hanhSonDau);
   const tuTru = [truNam, truThang, truNgay, truGio];
+
+  // ----- Lớp lọc thần sát dân gian TÙY CHỌN (chủ dự án chốt 1/9/2026: thêm vào, không loại cứng) -----
+  const monthOrderIndex = Calendar.monthBoundaryOrderIndex(canChi.julianDay);
+  const thanSatDanGian = locThanSatDanGian({
+    nam, thang, ngay, timeZone,
+    jdUT: canChi.julianDay,
+    lunarDay: lunar.day,
+    monthOrderIndex,
+    canNam: canChi.year.can,
+    chiNam: canChi.year.chi,
+    canThang: truThang.can,
+    chiThang: truThang.chi,
+    canNgay: truNgay.can,
+    chiNgay: truNgay.chi,
+    canGio: truGio.can,
+    chiGio: truGio.chi,
+    dayChiIndex: canChi.day.chiIndex,
+  });
+  for (const ts of thanSatDanGian) {
+    them(`[Dân gian] ${ts.ten} — ${ts.moTa}`, ts.diem);
+    canhBao.push(`[Dân gian] Phạm ${ts.ten}: ${ts.moTa}`);
+  }
 
   // ----- Đếm vai trò -----
   const soLuongVai: Record<VaiLucThan, number> = { "Nguyên Thần": 0, "Tham Quan": 0, "Liêm Trinh": 0, "Võ Tài": 0, "Phá Quân": 0 };
@@ -331,9 +465,11 @@ export function tinhDauThuChonNgay(input: DauThuChonNgayInput): DauThuChonNgayRe
     tuMo,
     loaiSomTrungNgay,
     diem,
+    muc: xepMucDauThu(diem),
     breakdown,
     canhBao,
     thieuDuLieu,
     gioDeXuat,
+    thanSatDanGian,
   };
 }

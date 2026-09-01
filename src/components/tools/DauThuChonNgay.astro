@@ -233,12 +233,24 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
       ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!,
     );
 
-  const VAI_MAU: Record<string, string> = {
-    "Nguyên Thần": "text-(--color-jade-400)",
-    "Võ Tài": "text-(--color-jade-400)",
-    "Liêm Trinh": "text-(--color-ink-600)",
-    "Tham Quan": "text-(--color-gold-400)",
-    "Phá Quân": "text-(--color-danger-500)",
+  // Bảng màu vai Lục Thân: tốt = success (xanh lá), trung tính = ink, cảnh báo nhẹ = gold, xấu = danger.
+  const VAI_STYLE: Record<string, string> = {
+    "Nguyên Thần": "bg-(--color-success-500)/15 text-(--color-success-500) border border-(--color-success-500)/50",
+    "Võ Tài": "bg-(--color-success-500)/15 text-(--color-success-500) border border-(--color-success-500)/50",
+    "Liêm Trinh": "bg-(--color-ink-600)/10 text-(--color-ink-600) border border-(--color-ink-600)/30",
+    "Tham Quan": "bg-(--color-gold-400)/15 text-(--color-gold-400) border border-(--color-gold-400)/50",
+    "Phá Quân": "bg-(--color-danger-500)/15 text-(--color-danger-500) border border-(--color-danger-500)/50",
+  };
+  function badgeVai(vaiTro: string): string {
+    return `<span class="inline-block rounded-full px-2 py-0.5 text-[11px] font-semibold ${VAI_STYLE[vaiTro] ?? ""}">${esc(vaiTro)}</span>`;
+  }
+
+  // 4 mức xếp hạng (`muc` từ engine) — banner tổng quan + tô màu từng dòng ở chế độ tìm ngày.
+  const MUC_INFO: Record<string, { nhan: string; icon: string; nen: string; vien: string; chu: string }> = {
+    rat_tot: { nhan: "RẤT TỐT", icon: "🟢", nen: "bg-(--color-success-500)/20", vien: "border-(--color-success-500)", chu: "text-(--color-success-500)" },
+    kha: { nhan: "KHÁ", icon: "🟡", nen: "bg-(--color-gold-400)/15", vien: "border-(--color-gold-400)", chu: "text-(--color-gold-400)" },
+    trung_binh: { nhan: "TRUNG BÌNH", icon: "⚪", nen: "bg-(--color-ivory-300)/40", vien: "border-(--color-ink-500)/40", chu: "text-(--color-ink-700)" },
+    nen_tranh: { nhan: "NÊN TRÁNH", icon: "🔴", nen: "bg-(--color-danger-500)/15", vien: "border-(--color-danger-500)", chu: "text-(--color-danger-500)" },
   };
 
   function theTuTru(tuTru: any[]): string {
@@ -247,8 +259,8 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
         (t) => `<div class="rounded-lg border border-(--color-ivory-300) bg-(--color-ivory-50) p-2.5 text-center">
           <p class="text-xs text-(--color-ink-500)">${esc(t.tru)}</p>
           <p class="font-display text-sm font-bold text-(--color-ink-950)">${esc(t.can)} ${esc(t.chi)}</p>
-          <p class="mt-1 text-xs font-medium ${VAI_MAU[t.vaiTro] ?? ""}">${esc(t.vaiTro)}</p>
-          <p class="text-[11px] text-(--color-ink-500)">${esc(t.truongSinh)}</p>
+          <p class="mt-1.5">${badgeVai(t.vaiTro)}</p>
+          <p class="mt-1 text-[11px] text-(--color-ink-500)">${esc(t.truongSinh)}${t.dacVi ? " · đắc vị" : t.thatVi ? " · thất vị" : ""}</p>
         </div>`,
       )
       .join("")}</div>`;
@@ -257,39 +269,77 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
   function theGioDeXuat(gio: any[]): string {
     return `<p class="mt-2 text-sm text-(--color-ink-700)"><strong>Giờ đề xuất (top 3):</strong> ${gio
       .slice(0, 3)
-      .map((g) => `${esc(g.chiGio)} (${esc(g.khungGio)}) — ${esc(g.vaiTro)}${g.laHoangDao ? " · Hoàng Đạo" : ""}`)
-      .join(" · ")}</p>`;
+      .map((g) => `${esc(g.chiGio)} (${esc(g.khungGio)}) — ${badgeVai(g.vaiTro)}${g.laHoangDao ? ' <span class="text-(--color-success-500)">· Hoàng Đạo</span>' : ""}`)
+      .join(" &nbsp;·&nbsp; ")}</p>`;
+  }
+
+  function theThanSatDanGian(list: any[]): string {
+    if (!list.length) {
+      return `<div class="mt-3 rounded-lg border border-(--color-success-500)/40 bg-(--color-success-500)/10 px-3 py-2 text-xs font-medium text-(--color-success-500)">
+        ✓ Không phạm thần sát dân gian nào (Tam Nương/Nguyệt Kỵ/Nguyệt Tận/Tứ Ly Tứ Tuyệt/Trực Phá-Bế/Kim Thần Thất Sát/Sát Chủ/Niên Phá/Thiên Khắc Địa Xung).
+      </div>`;
+    }
+    return `<div class="mt-3 rounded-lg border-2 border-(--color-danger-500)/60 bg-(--color-danger-500)/10 p-3">
+      <p class="text-xs font-bold uppercase tracking-wide text-(--color-danger-500)">⚠ Phạm ${list.length} thần sát dân gian (lớp lọc tùy chọn, không loại cứng)</p>
+      <div class="mt-1.5 flex flex-wrap gap-1.5">${list
+        .map((t) => `<span class="rounded-full bg-(--color-danger-500)/20 px-2 py-0.5 text-[11px] font-medium text-(--color-danger-500)" title="${esc(t.moTa)}">${esc(t.ten)}</span>`)
+        .join("")}</div>
+    </div>`;
   }
 
   function theKetQuaGiamDinh(r: any): string {
-    const canhBao = (r.canhBao ?? []).map((c: string) => `<li>${esc(c)}</li>`).join("");
+    const canhBao = (r.canhBao ?? []).filter((c: string) => !c.startsWith("[Dân gian]")).map((c: string) => `<li>${esc(c)}</li>`).join("");
     const thieu = (r.thieuDuLieu ?? []).map((c: string) => `<li>${esc(c)}</li>`).join("");
     const cachCuc = (r.cachCuc ?? []).length ? r.cachCuc.map(esc).join(", ") : "Không đạt cách cục ưu tiên nào";
+    const muc = MUC_INFO[r.muc] ?? MUC_INFO.trung_binh;
     return `<div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
-      <div class="flex flex-wrap items-baseline justify-between gap-2">
+      <div class="rounded-xl border-2 ${muc.vien} ${muc.nen} px-4 py-3 flex flex-wrap items-center justify-between gap-2">
+        <span class="font-display text-lg font-bold ${muc.chu}">${muc.icon} ${muc.nhan}</span>
+        <span class="text-sm font-semibold ${muc.chu}">${esc(r.diem)} điểm</span>
+      </div>
+      <div class="mt-3 flex flex-wrap items-baseline justify-between gap-2">
         <p class="font-display text-lg font-bold">${esc(r.ngayDuongLich.ngay)}/${esc(r.ngayDuongLich.thang)}/${esc(r.ngayDuongLich.nam)}</p>
-        <p class="text-sm font-semibold text-(--color-ink-950)">${esc(r.diem)} điểm</p>
       </div>
       <p class="mt-1 text-xs text-(--color-ink-500)">Âm lịch ${esc(r.amLich.ngay)}/${esc(r.amLich.thang)}${r.amLich.nhuan ? " (nhuận)" : ""} · Sơn Đầu ${esc(r.sonDau.ten)} (Đẩu Thủ: ${esc(r.sonDau.hanh)})</p>
       <p class="mt-2 text-sm"><strong>Cách cục:</strong> ${cachCuc}</p>
       <div class="mt-3">${theTuTru(r.tuTru)}</div>
       ${!r.gioHeadline.tuChon ? `<p class="mt-2 text-xs text-(--color-gold-400)">Chưa chọn giờ cụ thể — trụ Giờ đang lấy tự động (${esc(r.gioHeadline.chiGio)}, điểm cao nhất trong 12 giờ).</p>` : ""}
       ${theGioDeXuat(r.gioDeXuat)}
-      ${canhBao ? `<div class="mt-3 rounded-lg border border-(--color-danger-500)/30 bg-(--color-danger-500)/5 p-3"><p class="text-xs font-medium text-(--color-danger-500)">Cảnh báo</p><ul class="mt-1 list-disc space-y-0.5 pl-4 text-xs text-(--color-ink-700)">${canhBao}</ul></div>` : ""}
+      ${theThanSatDanGian(r.thanSatDanGian ?? [])}
+      ${canhBao ? `<div class="mt-3 rounded-lg border border-(--color-danger-500)/30 bg-(--color-danger-500)/5 p-3"><p class="text-xs font-medium text-(--color-danger-500)">Cảnh báo (lõi Đẩu Thủ)</p><ul class="mt-1 list-disc space-y-0.5 pl-4 text-xs text-(--color-ink-700)">${canhBao}</ul></div>` : ""}
       ${thieu ? `<div class="mt-2 rounded-lg border border-(--color-ivory-300) bg-(--color-ivory-50) p-3"><p class="text-xs font-medium text-(--color-ink-600)">Cần lưu ý thêm</p><ul class="mt-1 list-disc space-y-0.5 pl-4 text-xs text-(--color-ink-600)">${thieu}</ul></div>` : ""}
     </div>`;
   }
 
+  function theThongKe(tk: { ratTot: number; kha: number; trungBinh: number; nenTranh: number }): string {
+    const o = [
+      ["rat_tot", tk.ratTot],
+      ["kha", tk.kha],
+      ["trung_binh", tk.trungBinh],
+      ["nen_tranh", tk.nenTranh],
+    ] as const;
+    return `<div class="grid grid-cols-4 gap-2">${o
+      .map(([muc, soLuong]) => {
+        const m = MUC_INFO[muc]!;
+        return `<div class="rounded-lg border-2 ${m.vien} ${m.nen} px-2 py-2.5 text-center">
+          <p class="font-display text-xl font-bold ${m.chu}">${soLuong}</p>
+          <p class="mt-0.5 text-[10px] font-semibold uppercase tracking-wide ${m.chu}">${m.icon} ${m.nhan}</p>
+        </div>`;
+      })
+      .join("")}</div>`;
+  }
+
   function theNgayXepHang(n: any): string {
-    return `<div class="rounded-xl border border-(--color-ivory-300) bg-(--color-ivory-100) p-4">
+    const muc = MUC_INFO[n.muc] ?? MUC_INFO.trung_binh;
+    return `<div class="rounded-xl border-2 ${muc.vien} ${muc.nen} p-4">
       <div class="flex flex-wrap items-baseline justify-between gap-2">
         <p class="font-display text-base font-bold text-(--color-ink-950)">
-          ${esc(n.ngayDuongLich.ngay)}/${esc(n.ngayDuongLich.thang)}/${esc(n.ngayDuongLich.nam)}
+          ${muc.icon} ${esc(n.ngayDuongLich.ngay)}/${esc(n.ngayDuongLich.thang)}/${esc(n.ngayDuongLich.nam)}
           <span class="font-normal text-(--color-ink-500)">— ngày ${esc(n.canChiNgay)}</span>
         </p>
-        <p class="text-sm font-semibold text-(--color-ink-950)">${esc(n.diem)} điểm</p>
+        <p class="text-sm font-bold ${muc.chu}">${esc(n.diem)} điểm · ${muc.nhan}</p>
       </div>
-      <p class="mt-1 text-xs text-(--color-ink-500)">Âm lịch ${esc(n.amLich.ngay)}/${esc(n.amLich.thang)}${n.amLich.nhuan ? " (nhuận)" : ""}${n.loaiSomTrungNgay ? ` · <span class="text-(--color-danger-500)">Trụ Ngày Phá Quân, Sơn Đầu không được lệnh Tháng — cân nhắc kỹ</span>` : ""}</p>
+      <p class="mt-1 text-xs text-(--color-ink-500)">Âm lịch ${esc(n.amLich.ngay)}/${esc(n.amLich.thang)}${n.amLich.nhuan ? " (nhuận)" : ""}${n.loaiSomTrungNgay ? ` · <span class="font-medium text-(--color-danger-500)">Trụ Ngày Phá Quân, Sơn Đầu không được lệnh Tháng</span>` : ""}${n.soThanSatDanGian > 0 ? ` · <span class="font-medium text-(--color-danger-500)">⚠ ${n.soThanSatDanGian} thần sát dân gian</span>` : ""}</p>
       <p class="mt-1 text-sm">${(n.cachCuc ?? []).length ? esc(n.cachCuc.join(", ")) : "Không đạt cách cục ưu tiên nào"}</p>
       ${n.gioTot.length ? `<p class="mt-1 text-sm text-(--color-ink-700)"><strong>Giờ tốt:</strong> ${n.gioTot.map((g: any) => `${esc(g.chiGio)} (${esc(g.khungGio)})`).join(" · ")}</p>` : ""}
     </div>`;
@@ -304,8 +354,10 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
         </div>`;
       } else {
         ketQuaEl.innerHTML = `<div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
-          <p class="font-display text-lg font-bold">Top ${esc(data.ketQua.length)} ngày / ${esc(data.tongSoNgayQuet)} ngày đã quét</p>
-          <div class="mt-3 space-y-2">${data.ketQua.map(theNgayXepHang).join("")}</div>
+          <p class="font-display text-lg font-bold">Đã quét ${esc(data.tongSoNgayQuet)} ngày</p>
+          <div class="mt-3">${theThongKe(data.thongKe)}</div>
+          <p class="mt-4 text-sm font-semibold text-(--color-ink-800)">Top ${esc(data.ketQua.length)} ngày tốt nhất</p>
+          <div class="mt-2 space-y-2">${data.ketQua.map(theNgayXepHang).join("")}</div>
         </div>`;
       }
     } else {

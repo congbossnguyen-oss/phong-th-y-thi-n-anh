@@ -216,16 +216,20 @@ export {
 // Đẩu Thủ Chọn Ngày (dịch vụ VIP) — hệ độc lập với HKĐQ, xem chú thích đầu file cho phạm vi/giới hạn.
 export {
   tinhDauThuChonNgay,
+  xepMucDauThu,
   type LoaiViecDauThu,
   type DauThuChonNgayInput,
   type DauThuChonNgayResult,
   type TruDauThuKetQua,
   type GioDauThu,
+  type MucDauThu,
+  type ThanSatDanGian,
 } from "./processing/dauThuChonNgay.js";
 export {
   timNgayDauThuChonNgay,
   type DauThuTimNgayInput,
   type DauThuNgayXepHang,
+  type ThongKeDauThu,
 } from "./processing/dauThuChonNgayTimNgay.js";
 
 export * from "./types.js";
