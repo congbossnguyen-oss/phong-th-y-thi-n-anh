@@ -110,4 +110,18 @@ describe("trachnhat-engine/processing/dauThuChonNgayTimNgay", () => {
       expect(result.ketQua[i]!.diem).toBeLessThanOrEqual(result.ketQua[i - 1]!.diem);
     }
   });
+
+  it("mỗi ngày trong kết quả nêu rõ TÊN từng thần sát dân gian đã phạm, không chỉ đếm số lượng", async () => {
+    const { timNgayDauThuChonNgay } = await import("../../../src/processing/dauThuChonNgayTimNgay.js");
+    // 13/9/2026 (mùng 3 ÂL, Tam Nương) nằm trong khoảng quét này (xem test tinhDauThuChonNgay ở trên).
+    const result = timNgayDauThuChonNgay({
+      toaNha: "Ngọ",
+      tuNgay: { nam: 2026, thang: 9, ngay: 10 },
+      denNgay: { nam: 2026, thang: 9, ngay: 16 },
+      soKetQua: 20,
+    });
+    const ngay13 = result.ketQua.find((n) => n.ngayDuongLich.ngay === 13);
+    expect(ngay13).toBeDefined();
+    expect(ngay13!.thanSatDanGian.some((t) => t.ten === "Tam Nương Sát")).toBe(true);
+  });
 });
