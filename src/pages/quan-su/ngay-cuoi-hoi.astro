@@ -1,10 +1,14 @@
 ---
 // Ban in-app cua dich vu VIP "Xem Ngày Cưới Hỏi Trọn Gói" — TU CHUA trong app Quan Su (App Store, khong link ra web).
+//
+// Từ 1/9/2026: dùng bản component ĐỘC LẬP `components/quan-su/tools/NgayCuoiHoi.astro` (toolSlug
+// `ngay-cuoi-hoi-qs`, API riêng `/api/quan-su/vip/ngay-cuoi-hoi-qs/*`) thay vì component dùng
+// chung với web — module 6/12 trong việc tách Quân Sư khỏi web.
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import BottomNav from "../../components/quan-su/BottomNav.astro";
 import VipQuyenBanner from "../../components/quan-su/VipQuyenBanner.astro";
-import NgayCuoiHoi from "../../components/tools/NgayCuoiHoi.astro";
+import NgayCuoiHoi from "../../components/quan-su/tools/NgayCuoiHoi.astro";
 
 export const prerender = false;
 ---
