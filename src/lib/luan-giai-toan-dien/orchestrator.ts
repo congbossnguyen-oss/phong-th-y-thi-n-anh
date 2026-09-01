@@ -4,6 +4,9 @@ import { tinhBatTu, type BatTuInput, type BatTuChart } from "../bat-tu";
 import { phanTichBatTu, type TuTruInput, type BatTuAnalysis } from "../bat-tu-engine/engine";
 import { taoFindingsCoBan } from "./findings-co-ban";
 import { taoFindingsNangCao } from "./findings-nang-cao";
+// ⚠️ Dùng LẠI y hệt findings-nang-cao.ts của tầng Nâng Cao — CHỈ để lấy findings THUẦN CODE (rẻ,
+// không gọi AI) cho Giai đoạn L tổng hợp đủ A-K. Việc VIẾT VĂN D,E,F,I,K vẫn nằm ở taoBaoCaoNangCao()
+// riêng, không đụng ở đây.
 import { GIAI_DOAN_CO_BAN, GIAI_DOAN_NANG_CAO } from "./ai-narrative";
 import { taoNoiDungGiaiDoanAnToan } from "./hau-kiem";
 import { layContentSafety } from "./content-safety";
@@ -45,10 +48,18 @@ export async function taoBaoCaoCoBan(input: BatTuInput): Promise<BaoCaoCoBan> {
   const findingsList = taoFindingsCoBan(chart, analysis);
   const laSo = laSoHienThi(chart, analysis);
 
-  // A, B, C, G, H, J, L chạy SONG SONG cả 7 — L (Kết luận) chỉ cần `findingsList` (đã tính xong bằng
-  // code phía trên, KHÔNG phải chờ AI viết xong 6 giai đoạn kia mới có), nên không có lý do kỹ thuật
-  // nào bắt L phải chạy tuần tự sau — trước đây làm tuần tự khiến tổng thời gian tải trang gần gấp
-  // đôi (~46-48s đo thực tế, gây cảm giác trang bị treo/lỗi). Gộp cả 7 vào 1 Promise.all giảm gần một
+  // ⚠️ 1/9/2026: Giai đoạn L PHẢI tổng hợp từ ĐỦ 11 giai đoạn A-K, không chỉ 6 giai đoạn Cơ Bản như
+  // trước (khi còn tách 2 gói, D/E/F/I/K "khách có thể chưa mua" nên L không được nhắc tới). Từ khi
+  // gộp về 1 gói duy nhất, khách LUÔN nhận đủ cả 12 giai đoạn nên L phải biết đủ A-K.
+  // taoFindingsNangCao() ở đây CHỈ lấy findings THUẦN CODE (rẻ, không gọi AI) — không tính lại phần
+  // AI viết văn D,E,F,I,K (việc đó vẫn ở taoBaoCaoNangCao() riêng, chạy song song, không trùng lặp).
+  const findingsNangCao = taoFindingsNangCao(chart, analysis);
+  const findingsDayDuChoL = [...findingsList, ...findingsNangCao];
+
+  // A, B, C, G, H, J, L chạy SONG SONG cả 7 — L (Kết luận) chỉ cần findings THUẦN CODE (đã tính xong
+  // ở trên, KHÔNG phải chờ AI viết xong các giai đoạn kia mới có), nên không có lý do kỹ thuật nào
+  // bắt L phải chạy tuần tự sau — trước đây làm tuần tự khiến tổng thời gian tải trang gần gấp đôi
+  // (~46-48s đo thực tế, gây cảm giác trang bị treo/lỗi). Gộp cả 7 vào 1 Promise.all giảm gần một
   // nửa thời gian chờ.
   const thuTuMa = ["A", "B", "C", "G", "H", "J"] as const;
   const findingsRongL = { maGiaiDoan: "L" as const, tenGiaiDoan: "Kết luận", ketQua: {}, canCu: [] };
@@ -60,7 +71,7 @@ export async function taoBaoCaoCoBan(input: BatTuInput): Promise<BaoCaoCoBan> {
       const findings = findingsList.find((f) => f.maGiaiDoan === ma)!;
       return taoNoiDungGiaiDoanAnToan(cfg, laSo, findings);
     }),
-    taoNoiDungGiaiDoanAnToan(cfgL, laSo, findingsRongL, findingsList),
+    taoNoiDungGiaiDoanAnToan(cfgL, laSo, findingsRongL, findingsDayDuChoL),
   ]);
 
   const giaiDoan = ketQuaSongSong.filter((x): x is NonNullable<typeof x> => x !== null);

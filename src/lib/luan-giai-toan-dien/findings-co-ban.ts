@@ -30,9 +30,31 @@ export function hyKyCuaHanh(h: Hanh, dt: BatTuAnalysis["dungThan"]): "dung_than"
   return "trung_tinh";
 }
 
+/**
+ * Hành mà Điều Hậu gợi ý thêm, suy trực tiếp từ nội dung `dieuHauNote` (bat-tu-engine/engine.ts chỉ
+ * ghi 2 dạng câu cố định: "...thêm Hỏa để điều hậu" cho sinh mùa Đông, "...thêm Thủy để điều hậu"
+ * cho sinh mùa Hè) — không tính lại mùa sinh ở đây, tránh trùng logic với engine.
+ */
+function dieuHauHanhGoiY(dieuHauNote: string | undefined): Hanh | null {
+  if (!dieuHauNote) return null;
+  if (dieuHauNote.includes("thêm Hỏa")) return "Hỏa";
+  if (dieuHauNote.includes("thêm Thủy")) return "Thủy";
+  return null;
+}
+
 // --- A. Nền tảng ---
 export function findingsA(chart: BatTuChart, analysis: BatTuAnalysis): GiaiDoanFindings {
   const { vuongSuy, dungThan } = analysis;
+
+  // Phát hiện Phù Ức và Điều Hậu chỉ ra 2 hướng khác nhau (vd Kỵ/Cừu Thần theo Phù Ức lại đúng là
+  // hành Điều Hậu gợi ý thêm do sinh mùa lạnh/nóng) — bug thật 1/9/2026: trước đây in cả dieuHauNote
+  // lẫn Kỵ Thần cạnh nhau mà không giải thích, đọc lên như tự mâu thuẫn. Nguyên tắc ưu tiên (đúng
+  // dung-than.md): Phù Ức là chính, Điều Hậu chỉ bổ sung song song KHI không mâu thuẫn — nếu mâu
+  // thuẫn thì Phù Ức vẫn thắng, nhưng Tầng 2 AI PHẢI giải thích rõ 1 câu vì sao (xem huongDanRieng
+  // Giai đoạn A trong ai-narrative.ts).
+  const hanhDieuHauGoiY = dieuHauHanhGoiY(dungThan.dieuHauNote);
+  const xungDotDieuHau = hanhDieuHauGoiY !== null && (hanhDieuHauGoiY === dungThan.kyThan || hanhDieuHauGoiY === dungThan.cuuThan);
+
   return {
     maGiaiDoan: "A",
     tenGiaiDoan: "Nền tảng",
@@ -41,11 +63,15 @@ export function findingsA(chart: BatTuChart, analysis: BatTuAnalysis): GiaiDoanF
       nhatChu: { can: chart.day.can, hanh: chart.nhatChu.nguHanh, amDuong: chart.nhatChu.amDuong },
       vuongSuy: { capDo: vuongSuy.capDo, diem: vuongSuy.diem, nhom: vuongSuy.nhom, dacLenh: vuongSuy.dacLenh },
       dungThan: { phuongPhap: dungThan.phuongPhap, dungThan: dungThan.dungThan, hyThan: dungThan.hyThan, kyThan: dungThan.kyThan, cuuThan: dungThan.cuuThan, dieuHauNote: dungThan.dieuHauNote ?? null },
+      xungDotDieuHau,
+      ...(xungDotDieuHau
+        ? { dieuHauLyDoUuTien: `Điều Hậu gợi ý thêm ${hanhDieuHauGoiY}, nhưng hành này lại trùng Kỵ/Cừu Thần theo Phù Ức — nguyên tắc dung-than.md: Phù Ức là chính, Điều Hậu chỉ bổ sung song song khi KHÔNG mâu thuẫn, nên Dụng Thần vẫn chốt theo Phù Ức (${dungThan.dungThan}).` }
+        : {}),
       // Cách Cục CHƯA code hóa điều kiện (nguồn: content-bat-tu/README "phần chưa làm") — để Tầng 2
       // AI tự đọc knowledge/cach-cuc.md + cach-cuc-dac-biet.md và tự nhận định, không ép code sai.
       cachCuc: { chuaXacDinh: true, ghiChu: "AI tự đọc cach-cuc.md/cach-cuc-dac-biet.md để nhận định, dựa trên vượng suy + Dụng Thần đã có." },
     },
-    canCu: ["bat-tu-engine (vuongSuy, dungThan)", "knowledge/cach-cuc.md", "knowledge/cach-cuc-dac-biet.md"],
+    canCu: ["bat-tu-engine (vuongSuy, dungThan)", "knowledge/cach-cuc.md", "knowledge/cach-cuc-dac-biet.md", "knowledge/dung-than.md (nguyên tắc ưu tiên Phù Ức)"],
   };
 }
 

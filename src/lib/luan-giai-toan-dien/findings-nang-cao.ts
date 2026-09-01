@@ -124,18 +124,57 @@ export function findingsF(chart: BatTuChart, analysis: BatTuAnalysis): GiaiDoanF
     return ketQua;
   };
 
+  // Tổ Nghiệp (mục 1.4 luc-than.md, gia sản/vận thế ông cha để lại) — 4 dấu hiệu computable rõ ràng
+  // trong knowledge, tính riêng ở đây thay vì để lẫn trong "chaMe" ở trên (chaMe xét VƯỢNG SUY của
+  // cha mẹ qua Thập Thần đại diện; Tổ Nghiệp là khái niệm KHÁC — xu hướng gia sản thừa kế, dựa trên
+  // vị trí Tài/Thực/Quan/Ấn tại Năm-Tháng + tình trạng Nguyệt Lệnh). Bug thật 1/9/2026: từng thiếu
+  // hẳn mục này trong findings, AI không có tín hiệu để viết.
+  const thapThanNamThang = (["year", "month"] as const).flatMap((key) => {
+    const p: PillarInfo = chart[key];
+    return [p.thapThan, ...p.tangCan.map((tc) => tc.thapThan)];
+  });
+  const coTaiThucONamThang = thapThanNamThang.some((tt) => ["Chính Tài", "Thiên Tài", "Thực Thần"].includes(tt));
+  const coQuanAnONamThang = thapThanNamThang.some((tt) => ["Chính Quan", "Thất Sát", "Chính Ấn", "Thiên Ấn"].includes(tt));
+  const canNamLaDungThan = CAN_NGU_HANH[CAN_NAMES.indexOf(chart.year.can)] === dt.dungThan;
+  const nguyetLenhBiXungKhac = coMatTacDung(lyDoTheoTru.month);
+  const toNghiep = {
+    coTaiThucONamThang,
+    coQuanAnONamThang,
+    canNamLaDungThan,
+    nguyetLenhBiXungKhac,
+    nguyetLenhLyDo: moTaLyDo(lyDoTheoTru.month),
+    luuY: "4 dấu hiệu computable theo luc-than.md mục 1.4 (\"Tổ nghiệp ông cha\") — coTaiThucONamThang/coQuanAnONamThang/canNamLaDungThan là dấu hiệu HƯNG THỊNH, nguyetLenhBiXungKhac là dấu hiệu SA SÚT. Có thể cùng lúc vừa có dấu hiệu hưng thịnh vừa có dấu hiệu sa sút (đọc kỹ mục 1.4 để cân đối), hoặc không có dấu hiệu nào rõ ràng (bỏ qua mục này, không suy diễn thêm).",
+  };
+
   // Quy ước phổ biến Tử Bình (nam mệnh xem theo Nhật Chủ; nữ mệnh 1 số phần đảo Tài/Ấn cho cha mẹ —
   // KHÔNG áp dụng đảo ở đây, để nguyên quy ước chung, đúng tinh thần "mẫu computable rõ ràng, phần
   // định tính/khác biệt trường phái để AI tự đọc luc-than.md" (SPEC mục 7).
+  const chaMe = { chinhAn: layThapThanOTru(["Chính Ấn"]), thienAn: layThapThanOTru(["Thiên Ấn"]), taiTinh_choCha: layThapThanOTru(["Chính Tài", "Thiên Tài"]) };
+  const anhChiEm = layThapThanOTru(["Tỷ Kiên", "Kiếp Tài"]);
+  const voChong = chart.gender === "Nam" ? layThapThanOTru(["Chính Tài", "Thiên Tài"]) : layThapThanOTru(["Chính Quan", "Thất Sát"]);
+  const conCai = chart.gender === "Nam" ? layThapThanOTru(["Chính Quan", "Thất Sát"]) : layThapThanOTru(["Thực Thần", "Thương Quan"]);
+
+  // 1/9/2026: đánh dấu RÕ mục nào không có dấu hiệu (mảng rỗng) — để Tầng 2 AI in ra 1 câu tường minh
+  // ("không đủ dấu hiệu rõ ràng ở mục X") thay vì im lặng bỏ qua như quy tắc chung của các giai đoạn
+  // khác. Lục Thân là 4 mục cố định khách luôn mong đọc đủ, im lặng bỏ qua dễ bị đọc nhầm là báo cáo
+  // thiếu sót (khác các giai đoạn khác, nơi bỏ qua khía cạnh thiếu dữ liệu là đúng).
+  const mucKhongDuDauHieu: string[] = [];
+  if (chaMe.chinhAn.length === 0 && chaMe.thienAn.length === 0 && chaMe.taiTinh_choCha.length === 0) mucKhongDuDauHieu.push("Cha mẹ");
+  if (anhChiEm.length === 0) mucKhongDuDauHieu.push("Anh chị em");
+  if (voChong.length === 0) mucKhongDuDauHieu.push("Vợ chồng");
+  if (conCai.length === 0) mucKhongDuDauHieu.push("Con cái");
+
   return {
     maGiaiDoan: "F",
     tenGiaiDoan: "Lục Thân",
     ketQua: {
-      chaMe: { chinhAn: layThapThanOTru(["Chính Ấn"]), thienAn: layThapThanOTru(["Thiên Ấn"]), taiTinh_choCha: layThapThanOTru(["Chính Tài", "Thiên Tài"]) },
-      anhChiEm: layThapThanOTru(["Tỷ Kiên", "Kiếp Tài"]),
-      voChong: chart.gender === "Nam" ? layThapThanOTru(["Chính Tài", "Thiên Tài"]) : layThapThanOTru(["Chính Quan", "Thất Sát"]),
-      conCai: chart.gender === "Nam" ? layThapThanOTru(["Chính Quan", "Thất Sát"]) : layThapThanOTru(["Thực Thần", "Thương Quan"]),
-      luuY: "Bảng trên là vị trí + Hỷ/Kỵ theo Thập Thần đại diện mỗi vai vế (quy ước Tử Bình phổ thông), kèm cờ truBiXungHinhHai đánh dấu trụ đó có bị Không Vong/Xung/Hình/Hại hay không (than-sat-mat-tac-dung.ts) — vị trí lục thân bị các quan hệ này thường gắn với xa cách/ít gắn bó theo luc-than.md. Phần diễn giải chi tiết theo knowledge/luc-than.md.",
+      chaMe,
+      toNghiep,
+      anhChiEm,
+      voChong,
+      conCai,
+      mucKhongDuDauHieu,
+      luuY: "Bảng trên là vị trí + Hỷ/Kỵ theo Thập Thần đại diện mỗi vai vế (quy ước Tử Bình phổ thông), kèm cờ truBiXungHinhHai đánh dấu trụ đó có bị Không Vong/Xung/Hình/Hại hay không (than-sat-mat-tac-dung.ts) — vị trí lục thân bị các quan hệ này thường gắn với xa cách/ít gắn bó theo luc-than.md. ĐỦ 4 mục: Cha mẹ (kèm Tổ Nghiệp riêng), Anh chị em, Vợ chồng, Con cái. mucKhongDuDauHieu liệt kê tên mục nào rỗng (không có dấu hiệu Thập Thần đại diện) — các mục này PHẢI được viết thành 1 câu tường minh, không được bỏ qua im lặng. Phần diễn giải chi tiết theo knowledge/luc-than.md.",
     },
     canCu: ["knowledge/luc-than.md", "than-sat-mat-tac-dung.ts (Không Vong/Xung/Hình/Hại)"],
   };

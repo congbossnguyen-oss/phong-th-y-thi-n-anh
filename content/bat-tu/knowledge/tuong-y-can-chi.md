@@ -1,4 +1,4 @@
-<!-- ĐỒNG BỘ TỪ SKILL luan-giai-bat-tu LÚC: 2026-08-25. Nếu skill được cập nhật sau ngày này, chạy lại Bước 0 để đồng bộ file này. -->
+<!-- ĐỒNG BỘ TỪ SKILL luan-giai-bat-tu LÚC: 2026-09-01 (bản khôi phục sau khi phát hiện 13 file bị mất). -->
 
 # Tượng Ý Thiên Can — Địa Chi
 
@@ -44,6 +44,6 @@ Nguồn: "Bát Tự Cơ Bản" (Tuệ Minh), Chương I mục IV-V. Đây là l�
 
 ## Ứng dụng khi luận
 
-- Dùng lớp thông tin này để **minh họa cụ thể hơn** cho kết luận đã rút ra từ Thập Thần/Dụng Thần — ví dụ: đã xác định Nhật Chủ là Giáp Mộc làm Dụng Thần và vượng, có thể nói thêm "tính cách kiểu cây đại thụ — cương trực, có nguyên tắc, che chở người khác" để lời luận sinh động hơn, không suy diễn tượng ý này thành kết luận cốt lõi thay cho Thập Thần.
-- Khi mô tả nghề nghiệp/không gian sống phù hợp (đặc biệt hữu ích cho tư vấn phong thủy kết hợp Bát Tự), có thể tham chiếu cột "hình tượng không gian/đồ vật" ở bảng Địa Chi.
-- Nội dung gốc là OCR từ tài liệu tổng hợp nhiều nguồn khác nhau ("tài liệu khác" được ghi chú xen kẽ trong bản gốc), có một số câu rời rạc/lặp ý — bảng trên đã được chọn lọc và hệ thống hóa, không phải bản dịch nguyên văn từng câu.
+- Dùng lớp thông tin này để **minh họa cụ thể hơn** cho kết luận đã rút ra từ Thập Thần/Dụng Thần — không suy diễn tượng ý này thành kết luận cốt lõi thay cho Thập Thần.
+- Khi mô tả nghề nghiệp/không gian sống phù hợp, có thể tham chiếu cột "hình tượng không gian/đồ vật" ở bảng Địa Chi.
+- Nội dung gốc là OCR từ tài liệu tổng hợp nhiều nguồn khác nhau, có một số câu rời rạc/lặp ý — bảng trên đã được chọn lọc và hệ thống hóa, không phải bản dịch nguyên văn từng câu.
