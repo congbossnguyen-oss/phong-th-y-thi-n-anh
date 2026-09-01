@@ -96,6 +96,11 @@ function buildSystemPrompt(cfg: GiaiDoanConfig, laSoJSON: string, findingsJSON: 
     "Quy tắc diễn đạt chung:",
     quyTacDienDatChungDangText(),
     "",
+    "## QUY TẮC NGŨ HÀNH SINH-KHẮC (BẮT BUỘC ĐÚNG CHIỀU — áp dụng cho MỌI câu có nhắc quan hệ 2 hành)",
+    "Vòng TƯƠNG SINH (A sinh ra B, nuôi B): Kim→Thủy→Mộc→Hỏa→Thổ→Kim. Tức: Kim sinh Thủy, Thủy sinh Mộc, Mộc sinh Hỏa, Hỏa sinh Thổ, Thổ sinh Kim.",
+    "Vòng TƯƠNG KHẮC (A khắc/khống chế/làm hao tổn B): Kim→Mộc→Thổ→Thủy→Hỏa→Kim. Tức: Kim khắc Mộc, Mộc khắc Thổ, Thổ khắc Thủy, Thủy khắc Hỏa, Hỏa khắc Kim.",
+    "TRƯỚC KHI viết bất kỳ câu nào dạng \"X sinh/khắc/hao tổn/hại Y\", PHẢI tra đúng 2 vòng trên. Sai chiều là lỗi kiến thức nghiêm trọng (vd: KHÔNG được viết \"Hỏa hao tổn Thủy\" — thực tế Thủy khắc Hỏa, Hỏa không đụng được Thủy; nếu Hỏa là Kỵ thì lý do là \"Hỏa khắc Kim (Dụng Thần)\"). Kỵ Thần theo định nghĩa là hành KHẮC Dụng Thần; muốn nói vì sao 1 hành có hại, hãy truy đúng nó khắc/bị rút khí bởi hành nào theo 2 vòng chuẩn.",
+    "",
     quyTacRiengGiaiDoanText,
     "",
     cfg.huongDanRieng ? `## Chỉ dẫn riêng cho giai đoạn này\n${cfg.huongDanRieng}` : "",
@@ -149,13 +154,15 @@ export async function goiClaudeToolUse(
  * Viết văn cho 1 giai đoạn. `findingsPhu` (chỉ dùng cho L): mảng findings của các giai đoạn khác
  * cần tổng hợp thêm ngoài findings chính truyền vào `findings`.
  */
-export async function viecGiaiDoan(cfg: GiaiDoanConfig, laSo: unknown, findings: GiaiDoanFindings, findingsPhu?: GiaiDoanFindings[]): Promise<string | null> {
+export async function viecGiaiDoan(cfg: GiaiDoanConfig, laSo: unknown, findings: GiaiDoanFindings, findingsPhu?: GiaiDoanFindings[], ghiChuSuaLoi?: string): Promise<string | null> {
   const laSoJSON = JSON.stringify(laSo, null, 2);
   const findingsGop = findingsPhu ? [findings, ...findingsPhu] : [findings];
   const findingsJSON = JSON.stringify(findingsGop.length === 1 ? findingsGop[0] : findingsGop, null, 2);
 
   const system = buildSystemPrompt(cfg, laSoJSON, findingsJSON);
-  const userMessage = `Hãy viết đoạn văn cho giai đoạn "${cfg.ten}" (${cfg.ma}) theo đúng dữ liệu và nguyên tắc đã nêu ở system prompt.`;
+  const userMessage = ghiChuSuaLoi
+    ? `Hãy viết đoạn văn cho giai đoạn "${cfg.ten}" (${cfg.ma}) theo đúng dữ liệu và nguyên tắc đã nêu ở system prompt.\n\n${ghiChuSuaLoi}`
+    : `Hãy viết đoạn văn cho giai đoạn "${cfg.ten}" (${cfg.ma}) theo đúng dữ liệu và nguyên tắc đã nêu ở system prompt.`;
 
   const { input, usage, model } = await goiClaudeToolUse(system, userMessage, TOOL_NAME, SCHEMA, 2000, "bat-tu-giai-doan", { "openai-tuong-thich": "deepseek-chat" });
   ghiLogChiPhi(`Luận giải Bát Tự — Giai đoạn ${cfg.ma}`, model ?? DEFAULT_MODEL, usage);
