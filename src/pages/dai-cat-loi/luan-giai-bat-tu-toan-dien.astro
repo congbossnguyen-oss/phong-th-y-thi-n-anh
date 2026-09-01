@@ -15,8 +15,9 @@ import MaKhuyenMai from "../../components/ui/MaKhuyenMai.astro";
 import BieuDoGiaiDoanVan from "../../components/luan-giai-toan-dien/BieuDoGiaiDoanVan.astro";
 import { GIA_CONG_CU, dinhDangTien } from "../../lib/payments/gia-cong-cu";
 import { getAllConfirmedToolOrdersForUser } from "../../lib/db/orders";
-import { taoBaoCaoCoBan, taoBaoCaoNangCao } from "../../lib/luan-giai-toan-dien/orchestrator";
+import type { taoBaoCaoCoBan, taoBaoCaoNangCao } from "../../lib/luan-giai-toan-dien/orchestrator";
 import { hashLaSo, cacheCoBan, cacheNangCao } from "../../lib/luan-giai-toan-dien/cache";
+import { taoBaoCaoCoBanChiTinh1Lan, taoBaoCaoNangCaoChiTinh1Lan } from "../../lib/luan-giai-toan-dien/tinh-1-lan";
 import { GIAI_DOAN_CO_BAN, GIAI_DOAN_NANG_CAO } from "../../lib/luan-giai-toan-dien/ai-narrative";
 import type { BatTuInput } from "../../lib/bat-tu";
 
@@ -45,10 +46,16 @@ let giaiDoanThieu: string[] = [];
 // của ai (bug báo 1/9/2026: "cứ lầm lẫn giữa ngày sinh của anh và ngày sinh của khách"), vì khối
 // admin luôn hiện đơn MUA GẦN NHẤT chứ không phải lá số vừa gõ ở form bên dưới.
 let donDangHienThi: { customerName: string; day: number; month: number; year: number; hour: number; minute?: number } | null = null;
-// Đã mua nhưng KHÔNG phải admin → không hiện báo cáo trực tiếp trên trang (đang tối ưu tốc độ hiển
-// thị, ~30s/lần tải là chưa đạt). Khách vẫn nhận đủ nội dung qua email (đã gửi tự động lúc thanh
-// toán xong, xem orders.ts). Admin (Công) vẫn xem trực tiếp trên trang để tự kiểm tra chất lượng.
+// Đã mua, có đơn — hiện block báo cáo/chờ bên dưới (khác `dangChoTinh`: cờ này chỉ nói "có đơn",
+// không nói báo cáo đã xong hay chưa).
 let coDonChuaHienThi = false;
+// 1/9/2026: khách thường (không phải admin) gặp cache MISS khi vừa thanh toán xong — báo cáo do
+// webhook (orders.ts) đang tính (~30-60s), CHƯA kịp lưu cache. Trang hiện banner "đang luận giải" +
+// JS tự poll result.ts, xong thì tự tải lại trang — thay vì trước đây chỉ báo "đã gửi email" và
+// KHÔNG BAO GIỜ hiện báo cáo trên web cho khách (anh Công yêu cầu 1/9/2026: "vẫn hiện phần luận giải
+// trên web, và vẫn gửi pdf về mail cho khách" — cả 2, không phải 1 trong 2). orderCode cần cho JS poll.
+let dangChoTinh = false;
+let orderCodeDangCho: string | null = null;
 // Vân tay (day/month/year/hour/minute/gender) của TOÀN BỘ lá số đã mua (gói mới + 2 slug cũ gộp
 // chung) — form nhập lá số sống ở CLIENT (không qua URL, cố ý để không lộ ngày sinh vào lịch sử
 // trình duyệt/Referer), nên SSR không biết trước khách sắp nhập lá số nào. Đẩy danh sách này xuống
@@ -77,29 +84,52 @@ if (user) {
     donDangHienThi = { customerName: donGanNhat.customerName, day: vt.day, month: vt.month, year: vt.year, hour: vt.hour, minute: vt.minute };
   }
 
-  if (user.isAdmin && donGanNhat?.toolInputSnapshot) {
+  // 1/9/2026: admin trước đây LUÔN tự tính ngay trên trang khi cache trống — với 12 giai đoạn hiện
+  // mất cả phút, mỗi lần vào trang (kể cả chỉ để lập lá số MỚI cho người khác) đều bị "đơ" chờ tính
+  // lại đúng đơn CŨ trước đó, rồi mới tới được form nhập ngày sinh mới. Từ nay admin dùng CHUNG cơ
+  // chế đọc cache nhanh + màn hình chờ như khách thường — checkout (nút mua, admin được miễn phí)
+  // đã tự tính VÀ lưu cache trong orders.ts, nên sau khi mua xong tải lại trang là có ngay, không
+  // phải tính 2 lần (1 lần lúc checkout, 1 lần lúc hiện trang) như trước. Cần xem lại đúng 1 đơn CŨ
+  // chưa từng cache (hoặc muốn ép tính lại sau khi sửa nội dung/prompt) thì thêm ?force=1 vào URL.
+  const epTinhLai = user?.isAdmin && Astro.url.searchParams.get("force") === "1";
+
+  if (donGanNhat?.toolInputSnapshot) {
     try {
       const input = JSON.parse(donGanNhat.toolInputSnapshot) as BatTuInput;
       const key = hashLaSo(input);
       baoCaoCoBan = cacheCoBan.get(key) ?? null;
       baoCaoNangCao = cacheNangCao.get(key) ?? null;
-      const [tinhCoBan, tinhNangCao] = await Promise.all([
-        baoCaoCoBan ? Promise.resolve(baoCaoCoBan) : taoBaoCaoCoBan(input),
-        baoCaoNangCao ? Promise.resolve(baoCaoNangCao) : taoBaoCaoNangCao(input),
-      ]);
-      baoCaoCoBan = tinhCoBan;
-      baoCaoNangCao = tinhNangCao;
-      const coDay = new Set(baoCaoCoBan.giaiDoan.map((g) => g.ma));
-      const ncDay = new Set(baoCaoNangCao.giaiDoan.map((g) => g.ma));
-      giaiDoanThieu = [
-        ...GIAI_DOAN_CO_BAN.filter((c) => !coDay.has(c.ma)).map((c) => c.ma),
-        ...GIAI_DOAN_NANG_CAO.filter((c) => !ncDay.has(c.ma)).map((c) => c.ma),
-      ];
-      // Chỉ cache bản ĐỦ — bản thiếu mà cache lại thì mọi lượt xem/tải sau cứ đọc đúng bản thiếu đó
-      // mãi, không bao giờ tính lại (xem ghi chú cùng đợt sửa ở orders.ts + tai-pdf.ts).
-      if (giaiDoanThieu.length === 0) {
-        cacheCoBan.set(key, baoCaoCoBan);
-        cacheNangCao.set(key, baoCaoNangCao);
+
+      if (baoCaoCoBan && baoCaoNangCao && !epTinhLai) {
+        // Cache đã có — đọc thẳng, không tính gì thêm (đường nhanh, áp dụng cho cả admin lẫn khách).
+      } else if (user.isAdmin) {
+        // Admin: chỉ tự tính khi cache trống VÀ chưa có gì để hiện, hoặc chủ động ép bằng ?force=1.
+        const [tinhCoBan, tinhNangCao] = await Promise.all([
+          taoBaoCaoCoBanChiTinh1Lan(input),
+          taoBaoCaoNangCaoChiTinh1Lan(input),
+        ]);
+        baoCaoCoBan = tinhCoBan;
+        baoCaoNangCao = tinhNangCao;
+        const coDay = new Set(baoCaoCoBan.giaiDoan.map((g) => g.ma));
+        const ncDay = new Set(baoCaoNangCao.giaiDoan.map((g) => g.ma));
+        giaiDoanThieu = [
+          ...GIAI_DOAN_CO_BAN.filter((c) => !coDay.has(c.ma)).map((c) => c.ma),
+          ...GIAI_DOAN_NANG_CAO.filter((c) => !ncDay.has(c.ma)).map((c) => c.ma),
+        ];
+        // Chỉ cache bản ĐỦ — bản thiếu mà cache lại thì mọi lượt xem/tải sau cứ đọc đúng bản thiếu đó
+        // mãi, không bao giờ tính lại (xem ghi chú cùng đợt sửa ở orders.ts + tai-pdf.ts).
+        if (giaiDoanThieu.length === 0) {
+          cacheCoBan.set(key, baoCaoCoBan);
+          cacheNangCao.set(key, baoCaoNangCao);
+        }
+      } else {
+        // Khách thường: TUYỆT ĐỐI KHÔNG tự tính ở đây (đua với webhook — xem ghi chú result.ts) —
+        // chỉ đọc cache. Cache trống nghĩa là webhook chưa tính xong (hoặc đang gặp lỗi), hiện màn
+        // hình chờ + poll thay vì tính lại tốn thêm AI.
+        baoCaoCoBan = null;
+        baoCaoNangCao = null;
+        dangChoTinh = true;
+        orderCodeDangCho = donGanNhat.orderCode;
       }
     } catch (err) {
       loiTinhBaoCao = err instanceof Error ? err.message : "Không tính được báo cáo.";
@@ -130,8 +160,19 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
         </div>
       )}
 
-      {/* --- Đã mua nhưng KHÔNG phải admin: không hiện trực tiếp, báo đã gửi qua email --- */}
-      {coDonChuaHienThi && !baoCaoCoBan && !baoCaoNangCao && (
+      {/* --- Đang tính (khách thường, cache trống lúc vừa thanh toán xong) — hiện chờ + tự poll, xong
+          thì tự tải lại trang để hiện báo cáo (khối bên dưới). PDF vẫn gửi mail song song (orders.ts),
+          không phụ thuộc vào việc khách có đang mở trang này hay không. --- */}
+      {dangChoTinh && (
+        <div id="ldbtd-cho-tinh" class="mb-10 rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-6 text-sm text-(--color-ink-800)" data-order-code={orderCodeDangCho}>
+          <p class="font-display text-lg font-bold text-(--color-ink-950)">⏳ Đang luận giải Bát Tự Toàn Diện...</p>
+          <p class="mt-2" id="ldbtd-cho-tinh-mota">AI đang tính đủ 12 giai đoạn (thường mất 30-60 giây), trang sẽ tự hiện báo cáo ngay khi xong — không cần tải lại thủ công. Bản PDF cũng sẽ được gửi tới email tài khoản của bạn.</p>
+          <a href="/api/dai-cat-loi/luan-giai-bat-tu-toan-dien/tai-pdf" class="mt-3 inline-flex items-center gap-1.5 text-sm font-semibold text-(--color-gold-700) hover:underline">📄 Tải PDF ngay (không cần chờ)</a>
+        </div>
+      )}
+
+      {/* --- Đã mua nhưng có sự cố khác (không phải đang chờ tính) — vd lỗi đọc dữ liệu đơn --- */}
+      {coDonChuaHienThi && !dangChoTinh && !baoCaoCoBan && !baoCaoNangCao && !loiTinhBaoCao && (
         <div class="mb-10 rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-6 text-sm text-(--color-ink-800)">
           <p class="font-display text-lg font-bold text-(--color-ink-950)">✅ Đã mua Luận Toàn Diện</p>
           <p class="mt-2">Bản luận giải đầy đủ (PDF) đã được gửi tới email tài khoản của bạn ngay sau khi thanh toán thành công. Vui lòng kiểm tra hộp thư (kể cả mục Spam/Quảng cáo).</p>
@@ -140,9 +181,10 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
         </div>
       )}
 
-      {/* --- Đã có báo cáo (chỉ admin xem trực tiếp trên trang) — gộp Cơ Bản + Nâng Cao thành 1 khối
-          đủ 12 giai đoạn. Hiện rõ TÊN + NGÀY SINH của đơn đang xem để không lẫn lộn lá số của ai
-          (đơn gần nhất có thể là của khách, không phải của admin đang gõ thử ở form bên dưới). --- */}
+      {/* --- Đã có báo cáo (đọc từ cache, admin hoặc khách thường đều thấy khi đã sẵn sàng) — gộp
+          Cơ Bản + Nâng Cao thành 1 khối đủ 12 giai đoạn. Hiện rõ TÊN + NGÀY SINH của đơn đang xem để
+          không lẫn lộn lá số của ai (đơn gần nhất có thể là của khách, không phải của admin đang gõ
+          thử ở form bên dưới). --- */}
       {(baoCaoCoBan || baoCaoNangCao) && (
         <section class="mb-10 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
           <div class="flex flex-wrap items-center justify-between gap-2">
@@ -548,5 +590,35 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
         baoLoi("Có lỗi xảy ra. Vui lòng thử lại.");
       }
     });
+  }
+</script>
+<script>
+  // Poll "báo cáo đã sẵn sàng chưa" cho khách thường (cache trống lúc mới thanh toán xong — xem
+  // ghi chú ở frontmatter + result.ts). Tự dừng poll sau ~2 phút để không gọi mãi nếu webhook gặp
+  // sự cố thật (khách vẫn còn nút "Tải PDF" để tự thử tính lại bất cứ lúc nào).
+  const choTinhEl = document.getElementById("ldbtd-cho-tinh");
+  const orderCode = choTinhEl?.dataset.orderCode;
+  if (choTinhEl && orderCode) {
+    const motaEl = document.getElementById("ldbtd-cho-tinh-mota");
+    let soLanHoi = 0;
+    const TOI_DA_LAN_HOI = 24; // 24 * 5s = 2 phút.
+    const timer = setInterval(async () => {
+      soLanHoi++;
+      try {
+        const res = await fetch(`/api/dai-cat-loi/luan-giai-bat-tu-toan-dien/result?orderCode=${encodeURIComponent(orderCode)}`);
+        const data = await res.json();
+        if (data.ok && data.baoCaoSan) {
+          clearInterval(timer);
+          window.location.reload();
+          return;
+        }
+      } catch {
+        // mạng chập chờn — nhịp sau thử lại
+      }
+      if (soLanHoi >= TOI_DA_LAN_HOI) {
+        clearInterval(timer);
+        if (motaEl) motaEl.textContent = "Việc luận giải đang mất nhiều thời gian hơn dự kiến. Bản PDF vẫn sẽ được gửi qua email khi xong — anh/chị có thể bấm \"Tải PDF ngay\" bên dưới để tự thử tính lại, hoặc tải lại trang sau ít phút.";
+      }
+    }, 5000);
   }
 </script>

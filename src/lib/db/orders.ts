@@ -31,8 +31,9 @@ import type { DauVaoHopHon } from "../../pages/api/dai-cat-loi/hop-hon/checkout"
 import { generateHopHonPdf } from "../dai-cat-loi/hop-hon-pdf";
 import { lapLaBan, luanGiaiMenh, luanGiaiMenhChiTiet } from "../kymon";
 import { generateKyMonMenhPdf } from "../dai-cat-loi/ky-mon-menh-pdf";
-import { taoBaoCaoCoBan, taoBaoCaoNangCao } from "../luan-giai-toan-dien/orchestrator";
 import { GIAI_DOAN_CO_BAN, GIAI_DOAN_NANG_CAO } from "../luan-giai-toan-dien/ai-narrative";
+import { hashLaSo, cacheCoBan, cacheNangCao } from "../luan-giai-toan-dien/cache";
+import { taoBaoCaoCoBanChiTinh1Lan, taoBaoCaoNangCaoChiTinh1Lan } from "../luan-giai-toan-dien/tinh-1-lan";
 import { generateBatTuCoBanPdf, generateBatTuNangCaoPdf, generateBatTuToanDienPdf } from "../dai-cat-loi/bat-tu-toan-dien-pdf";
 import type { BatTuInput } from "../bat-tu";
 import { taoLuanGiaiTuVi, type LuanGiaiTuViInput } from "../tu-vi/luan-giai/taoLuanGiaiTuVi";
@@ -588,7 +589,7 @@ async function _markOrderPaidAndFulfillNoiBo(orderId: string) {
     if (order.toolSlug === "luan-giai-bat-tu-co-ban" && order.customerEmail && order.toolInputSnapshot) {
       try {
         const input = JSON.parse(order.toolInputSnapshot) as BatTuInput;
-        const baoCao = await taoBaoCaoCoBan(input);
+        const baoCao = await taoBaoCaoCoBanChiTinh1Lan(input);
         const pdf = await generateBatTuCoBanPdf(baoCao, order.customerName);
         await sendBatTuToanDienCoBanPdfEmail({
           to: order.customerEmail,
@@ -608,7 +609,7 @@ async function _markOrderPaidAndFulfillNoiBo(orderId: string) {
     if (order.toolSlug === "luan-giai-bat-tu-nang-cao" && order.customerEmail && order.toolInputSnapshot) {
       try {
         const input = JSON.parse(order.toolInputSnapshot) as BatTuInput;
-        const baoCao = await taoBaoCaoNangCao(input);
+        const baoCao = await taoBaoCaoNangCaoChiTinh1Lan(input);
         const pdf = await generateBatTuNangCaoPdf(baoCao, order.customerName);
         await sendBatTuToanDienNangCaoPdfEmail({
           to: order.customerEmail,
@@ -633,7 +634,7 @@ async function _markOrderPaidAndFulfillNoiBo(orderId: string) {
     if (order.toolSlug === "luan-giai-bat-tu-toan-dien" && order.customerEmail && order.toolInputSnapshot) {
       try {
         const input = JSON.parse(order.toolInputSnapshot) as BatTuInput;
-        const [baoCaoCoBan, baoCaoNangCao] = await Promise.all([taoBaoCaoCoBan(input), taoBaoCaoNangCao(input)]);
+        const [baoCaoCoBan, baoCaoNangCao] = await Promise.all([taoBaoCaoCoBanChiTinh1Lan(input), taoBaoCaoNangCaoChiTinh1Lan(input)]);
         const thieuCoBan = GIAI_DOAN_CO_BAN.length - baoCaoCoBan.giaiDoan.length;
         const thieuNangCao = GIAI_DOAN_NANG_CAO.length - baoCaoNangCao.giaiDoan.length;
         if (thieuCoBan > 0 || thieuNangCao > 0) {
@@ -645,6 +646,13 @@ async function _markOrderPaidAndFulfillNoiBo(orderId: string) {
           ];
           console.error(`[luan-giai-bat-tu-toan-dien] Đơn ${order.orderCode} THIẾU giai đoạn ${thieuMa.join(", ")} (đủ ${GIAI_DOAN_CO_BAN.length + GIAI_DOAN_NANG_CAO.length}, chỉ có ${baoCaoCoBan.giaiDoan.length + baoCaoNangCao.giaiDoan.length}) — KHÔNG gửi bản thiếu, chờ tính lại.`);
         } else {
+          // 1/9/2026: lưu vào ĐÚNG cache mà trang kết quả/tai-pdf.ts đọc (hashLaSo) — để khách quay
+          // lại trang sau khi thanh toán thấy ngay bản luận giải trên web (không chỉ nằm trong PDF
+          // gửi email), không tính lại tốn thêm 1 lượt AI nữa (xem ghi chú ở .astro + result.ts).
+          const key = hashLaSo(input);
+          cacheCoBan.set(key, baoCaoCoBan);
+          cacheNangCao.set(key, baoCaoNangCao);
+
           const pdf = await generateBatTuToanDienPdf(baoCaoCoBan, baoCaoNangCao, order.customerName);
           await sendBatTuToanDienPdfEmail({
             to: order.customerEmail,
