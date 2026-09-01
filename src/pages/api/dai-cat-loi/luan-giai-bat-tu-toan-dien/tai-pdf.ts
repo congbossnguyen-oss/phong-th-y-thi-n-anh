@@ -1,9 +1,9 @@
 import type { APIRoute } from "astro";
 import { getAllConfirmedToolOrdersForUser } from "../../../../lib/db/orders";
-import { taoBaoCaoCoBan, taoBaoCaoNangCao } from "../../../../lib/luan-giai-toan-dien/orchestrator";
 import { GIAI_DOAN_CO_BAN, GIAI_DOAN_NANG_CAO } from "../../../../lib/luan-giai-toan-dien/ai-narrative";
 import { generateBatTuToanDienPdf } from "../../../../lib/dai-cat-loi/bat-tu-toan-dien-pdf";
 import { hashLaSo, cacheCoBan, cacheNangCao } from "../../../../lib/luan-giai-toan-dien/cache";
+import { taoBaoCaoCoBanChiTinh1Lan, taoBaoCaoNangCaoChiTinh1Lan } from "../../../../lib/luan-giai-toan-dien/tinh-1-lan";
 import { checkRateLimit } from "../../../../lib/rate-limit";
 import { jsonResponse, TOOL_SLUG_TOAN_DIEN, TOOL_SLUG_CO_BAN, TOOL_SLUG_NANG_CAO } from "./_chung";
 import type { BatTuInput } from "../../../../lib/bat-tu";
@@ -46,11 +46,14 @@ export const GET: APIRoute = async ({ request, clientAddress, locals }) => {
     // Cache CHỈ lưu bản ĐỦ giai đoạn — bản thiếu (AI lỗi vài giai đoạn) không được cache, nếu không
     // sẽ "poison" cache: mọi lượt tải sau cứ đọc lại đúng bản thiếu đó mãi, không bao giờ tính lại
     // (bug thật 1/9/2026, xem ghi chú ở orders.ts cùng đợt sửa).
+    // taoBaoCaoCoBanChiTinh1Lan/taoBaoCaoNangCaoChiTinh1Lan (single-flight): nếu webhook orders.ts
+    // ĐANG tính đúng lá số này (khách bấm "Tải PDF ngay" trong lúc trang còn hiện màn hình chờ), chờ
+    // chung kết quả đó thay vì tính lại — tránh tốn gấp đôi tiền AI cho cùng 1 lá số.
     let baoCaoCoBan = cacheCoBan.get(key);
     let baoCaoNangCao = cacheNangCao.get(key);
     const [tinhCoBan, tinhNangCao] = await Promise.all([
-      baoCaoCoBan ? Promise.resolve(baoCaoCoBan) : taoBaoCaoCoBan(input),
-      baoCaoNangCao ? Promise.resolve(baoCaoNangCao) : taoBaoCaoNangCao(input),
+      baoCaoCoBan ? Promise.resolve(baoCaoCoBan) : taoBaoCaoCoBanChiTinh1Lan(input),
+      baoCaoNangCao ? Promise.resolve(baoCaoNangCao) : taoBaoCaoNangCaoChiTinh1Lan(input),
     ]);
     baoCaoCoBan = tinhCoBan;
     baoCaoNangCao = tinhNangCao;

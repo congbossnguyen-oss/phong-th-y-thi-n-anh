@@ -2,13 +2,19 @@ import type { APIRoute } from "astro";
 import { getOrderByCode } from "../../../../lib/db/orders";
 import { jsonResponse, TOOL_SLUG_TOAN_DIEN, TOOL_SLUG_CO_BAN, TOOL_SLUG_NANG_CAO } from "./_chung";
 import { checkRateLimit } from "../../../../lib/rate-limit";
+import { cacheCoBan, cacheNangCao, hashCoBan, hashNangCao } from "../../../../lib/tu-vi/luan-giai/cache";
 
 export const prerender = false;
 
 /**
- * Endpoint POLL trạng thái đơn (nhẹ) cho trang thanh toán — KHÔNG tính luận giải ở đây (gọi AI
- * ~30s/lượt). Trang server-render tính khi khách vào lại (đã confirmed VÀ đúng chủ tài khoản),
- * có cache theo hash lá số — cùng mẫu luan-giai-bat-tu-toan-dien/result.ts.
+ * Endpoint POLL trạng thái đơn (nhẹ) cho trang thanh toán — trả pending/confirmed/cancelled, và khi
+ * confirmed thì kèm `baoCaoSan` (báo cáo đã có trong cache hay chưa).
+ *
+ * ⚠️ 1/9/2026: CHỈ ĐỌC cache (peek), TUYỆT ĐỐI KHÔNG tự tính luận giải ở đây — orders.ts (webhook
+ * xác nhận thanh toán) đã gọi taoLuanGiaiTuVi() và hàm đó tự ghi cache theo hash lá số (cache.ts).
+ * Nếu endpoint này cũng tự gọi taoLuanGiaiTuVi() khi cache trống thì sẽ ĐUA với chính webhook đang
+ * tính — tốn gấp đôi lệnh AI mỗi khi khách vào trang đúng lúc webhook chưa tính xong. Cùng nguyên
+ * tắc với luan-giai-bat-tu-toan-dien/result.ts.
  */
 export const GET: APIRoute = async ({ url, request, clientAddress, locals }) => {
   const limited = checkRateLimit({ request, clientAddress }, { key: "result-luan-giai-tu-vi", max: 60, windowMs: 60_000 });
@@ -28,5 +34,17 @@ export const GET: APIRoute = async ({ url, request, clientAddress, locals }) => 
 
   if (order.status === "cancelled") return jsonResponse({ ok: true, status: "cancelled" }, 200);
   if (order.status !== "confirmed") return jsonResponse({ ok: true, status: "pending" }, 200);
-  return jsonResponse({ ok: true, status: "confirmed" }, 200);
+
+  let baoCaoSan = false;
+  if (order.toolInputSnapshot) {
+    try {
+      const input = JSON.parse(order.toolInputSnapshot) as { day: number; month: number; year: number; hour: number; gender: string };
+      const coBanSan = !!cacheCoBan.get(hashCoBan(input));
+      const nangCaoSan = !!cacheNangCao.get(hashNangCao({ ...input, viewingYear: new Date().getFullYear() }));
+      baoCaoSan = coBanSan && nangCaoSan;
+    } catch {
+      // toolInputSnapshot hỏng — coi như chưa sẵn sàng, không chặn poll (client vẫn thấy "confirmed").
+    }
+  }
+  return jsonResponse({ ok: true, status: "confirmed", baoCaoSan }, 200);
 };

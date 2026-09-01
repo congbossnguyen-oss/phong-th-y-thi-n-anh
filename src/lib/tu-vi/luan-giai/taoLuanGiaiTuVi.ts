@@ -15,6 +15,20 @@ import { luanCoBan, type KetQuaCoBan } from "./aiCoBan";
 import { luanNangCao, type KetQuaNangCao } from "./aiNangCao";
 import { hauKiemCoBan, hauKiemNangCao, type CanhBaoHauKiem } from "./hauKiem";
 import { cacheCoBan, cacheNangCao, hashCoBan, hashNangCao } from "./cache";
+
+// Single-flight: nếu 2 nơi cùng lúc cần tính đúng 1 lá số (webhook orders.ts tính để gửi mail, khách
+// bấm "Tải PDF ngay" trong lúc trang đang chờ, admin xem trang) — chỉ gọi AI ĐÚNG 1 LẦN, lệnh gọi sau
+// chờ chung kết quả của lệnh gọi trước thay vì tính lại tốn thêm tiền (anh Công yêu cầu 1/9/2026).
+// Đặt Ở ĐÂY (không phải cache.ts) vì cần key riêng cho Cơ Bản/Nâng Cao giống hệt layCoBan/layNangCao.
+const dangTinhCoBan = new Map<string, Promise<KetQuaCoBan | null>>();
+const dangTinhNangCao = new Map<string, Promise<KetQuaNangCao | null>>();
+function chiTinh1Lan<T>(dangTinh: Map<string, Promise<T>>, key: string, tinh: () => Promise<T>): Promise<T> {
+  const dangChay = dangTinh.get(key);
+  if (dangChay) return dangChay;
+  const p = tinh().finally(() => dangTinh.delete(key));
+  dangTinh.set(key, p);
+  return p;
+}
 import { tongQuanFree, type KetQuaTongQuanFree } from "./tongQuanFree";
 
 export type GoiLuanGiai = "co_ban" | "nang_cao";
@@ -50,13 +64,21 @@ async function layCoBan(chart: TuViChart, duLieu: DuLieuLaSoTuVi, input: LuanGia
   const cached = cacheCoBan.get(key);
   if (cached) return cached;
 
-  const { ketQua } = await luanCoBan(duLieu);
-  if (!ketQua) return null;
+  return chiTinh1Lan(dangTinhCoBan, key, async () => {
+    // Kiểm tra lại cache SAU khi giành được lượt tính (có thể lệnh chạy trước vừa xong lúc mình chờ
+    // vào đây) — tránh 1 trường hợp hiếm: gọi vào đúng lúc promise cũ vừa `finally` xoá khỏi Map
+    // nhưng cache đã set xong, để không phải tính thêm 1 lần dư.
+    const cachedLai = cacheCoBan.get(key);
+    if (cachedLai) return cachedLai;
 
-  const { ketQua: daLoc, canhBao: cb } = hauKiemCoBan(ketQua, duLieu);
-  canhBao.push(...cb);
-  cacheCoBan.set(key, daLoc);
-  return daLoc;
+    const { ketQua } = await luanCoBan(duLieu);
+    if (!ketQua) return null;
+
+    const { ketQua: daLoc, canhBao: cb } = hauKiemCoBan(ketQua, duLieu);
+    canhBao.push(...cb);
+    cacheCoBan.set(key, daLoc);
+    return daLoc;
+  });
 }
 
 async function layNangCao(
@@ -71,13 +93,18 @@ async function layNangCao(
   const cached = cacheNangCao.get(key);
   if (cached) return cached;
 
-  const { ketQua } = await luanNangCao(duLieu, coBan);
-  if (!ketQua) return null;
+  return chiTinh1Lan(dangTinhNangCao, key, async () => {
+    const cachedLai = cacheNangCao.get(key);
+    if (cachedLai) return cachedLai;
 
-  const { ketQua: daLoc, canhBao: cb } = hauKiemNangCao(ketQua);
-  canhBao.push(...cb);
-  cacheNangCao.set(key, daLoc);
-  return daLoc;
+    const { ketQua } = await luanNangCao(duLieu, coBan);
+    if (!ketQua) return null;
+
+    const { ketQua: daLoc, canhBao: cb } = hauKiemNangCao(ketQua);
+    canhBao.push(...cb);
+    cacheNangCao.set(key, daLoc);
+    return daLoc;
+  });
 }
 
 export async function taoLuanGiaiTuVi(input: LuanGiaiTuViInput): Promise<KetQuaLuanGiaiTuVi> {
