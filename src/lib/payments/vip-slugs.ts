@@ -8,6 +8,9 @@ import type { ToolSlug } from "./gia-cong-cu";
 // Tách riêng khỏi checkout-cong-cu.ts để test được mà không kéo theo cả chuỗi import nặng (db, Sanity).
 export const VIP_SLUG_THEO_GOI: ReadonlySet<ToolSlug> = new Set([
   "gio-liem-ha-huyet",
+  // Bản ĐỘC LẬP cho app Quân Sư (từ 1/9/2026) của gio-liem-ha-huyet — PHẢI có mặt ở đây, nếu
+  // không khách có gói Cao Cấp trong app sẽ bị thu tiền dù đáng lẽ được miễn phí theo gói.
+  "gio-liem-ha-huyet-qs",
   "xem-ngay-cao-cap",
   "ngay-ky-hop-dong-cao-cap",
   // Bản ĐỘC LẬP cho app Quân Sư (từ 1/9/2026) của ngay-ky-hop-dong-cao-cap — PHẢI có mặt ở đây,

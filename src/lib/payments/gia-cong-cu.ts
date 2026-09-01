@@ -28,6 +28,9 @@ export const GIA_CONG_CU = {
 
   // ─ Hạng 500.000đ — việc lớn ──────────────────────────────────────────────────────────────────
   "gio-liem-ha-huyet": 500000, // = bậc CƠ BẢN; bậc đầy đủ 1.000.000đ xem GIA_GIO_LIEM_HA_HUYET
+  // Bản ĐỘC LẬP cho app Quân Sư (từ 1/9/2026, xem project_quan_su_tach_doc_lap_khoi_web) — cùng
+  // giá/2 bậc, cùng engine, chỉ khác toolSlug để tách bạch đơn hàng. Xem GIA_GIO_LIEM_HA_HUYET.
+  "gio-liem-ha-huyet-qs": 500000,
   "ngay-cuoi-hoi": 500000,
   // Bản ĐỘC LẬP cho app Quân Sư (từ 1/9/2026, xem project_quan_su_tach_doc_lap_khoi_web) — cùng
   // giá, cùng engine `calculateCuoiHoiTronGoi`, chỉ khác toolSlug để tách bạch đơn hàng.

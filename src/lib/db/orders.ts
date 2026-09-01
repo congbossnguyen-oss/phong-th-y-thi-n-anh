@@ -502,6 +502,29 @@ async function _markOrderPaidAndFulfillNoiBo(orderId: string) {
       }
     }
 
+    // Chọn Giờ Liệm – Hạ Huyệt — bản ĐỘC LẬP cho app Quân Sư (toolSlug `gio-liem-ha-huyet-qs`, từ
+    // 1/9/2026). Tái dùng đúng engine/PDF/email đã import ở trên cho bản web — chỉ khác toolSlug
+    // để tách bạch thống kê.
+    if (order.toolSlug === "gio-liem-ha-huyet-qs" && order.customerEmail && order.toolInputSnapshot) {
+      try {
+        const dauVao = JSON.parse(order.toolInputSnapshot) as DauVaoHoSo;
+        const hoSo = await taoHoSoTangLe(dauVao);
+        if (hoSo.taoDuoc) {
+          await sendHoSoTangLeEmail({
+            to: order.customerEmail,
+            orderCode: order.orderCode,
+            customerName: order.customerName,
+            hoTenNguoiMat: dauVao.hoTenNguoiMat ?? null,
+            pdfBytes: hoSo.pdf,
+          });
+        } else {
+          console.error(`[ho-so-tang-le-qs] Đơn ${order.orderCode} không dựng được hồ sơ: ${hoSo.lyDo}`);
+        }
+      } catch (err) {
+        console.error(`[ho-so-tang-le-qs] Lỗi dựng/gửi hồ sơ cho đơn ${order.orderCode}:`, err);
+      }
+    }
+
     // Định Hướng Nghề Nghiệp: dựng PDF (gọi AI luận Bát Tự nếu có key — cache theo hash lá số) rồi
     // gửi kèm email khách. Bọc try/catch riêng: dựng PDF/gọi AI nặng, hỏng khâu này thì đơn vẫn
     // được ghi nhận đã thanh toán, khách còn xem/tải lại được từ trang kết quả bằng mã đơn.
