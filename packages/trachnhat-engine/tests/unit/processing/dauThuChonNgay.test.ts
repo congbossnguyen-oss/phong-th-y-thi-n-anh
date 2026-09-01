@@ -54,6 +54,45 @@ describe("trachnhat-engine/processing/dauThuChonNgay", () => {
       expect(result.gioDeXuat[i]!.diem).toBeLessThanOrEqual(result.gioDeXuat[i - 1]!.diem);
     }
   });
+
+  it("lớp lọc dân gian tùy chọn: 13/9/2026 (mùng 3 ÂL) -> phạm Tam Nương Sát", () => {
+    const result = tinhDauThuChonNgay({
+      toaNha: "Ngọ",
+      ngayGiamDinh: { nam: 2026, thang: 9, ngay: 13 },
+    });
+    expect(result.amLich.ngay).toBe(3);
+    const tamNuong = result.thanSatDanGian.find((t) => t.ten === "Tam Nương Sát");
+    expect(tamNuong).toBeDefined();
+    expect(tamNuong!.diem).toBeLessThan(0);
+    expect(result.canhBao.some((c) => c.includes("Tam Nương Sát"))).toBe(true);
+    expect(result.breakdown.some((b) => b.nhan.includes("Tam Nương Sát"))).toBe(true);
+  });
+
+  it("Tứ Tuyệt: khớp NGÀY TRƯỚC Lập Xuân theo giờ VN (UTC+7), không lệch theo mốc UTC — Lập Xuân 2026 rơi 3/2 19:54 UTC = 4/2 02:54 giờ VN, nên ngày trước là 3/2 chứ không phải 2/2", () => {
+    const ngay2 = tinhDauThuChonNgay({ toaNha: "Ngọ", ngayGiamDinh: { nam: 2026, thang: 2, ngay: 2 } });
+    expect(ngay2.thanSatDanGian.some((t) => t.ten === "Tứ Tuyệt")).toBe(false);
+    const ngay3 = tinhDauThuChonNgay({ toaNha: "Ngọ", ngayGiamDinh: { nam: 2026, thang: 2, ngay: 3 } });
+    expect(ngay3.thanSatDanGian.some((t) => t.ten === "Tứ Tuyệt")).toBe(true);
+  });
+
+  it("Thiên Khắc Địa Xung Ngày-Tháng: 14/9/2026 -> Tháng Đinh Dậu, Ngày Tân Mão (Đinh Hỏa khắc Tân Kim, Dậu xung Mão)", () => {
+    const result = tinhDauThuChonNgay({ toaNha: "Ngọ", ngayGiamDinh: { nam: 2026, thang: 9, ngay: 14 }, chiGio: "Ngọ" });
+    expect(`${result.tuTru[1]!.can} ${result.tuTru[1]!.chi}`).toBe("Đinh Dậu");
+    expect(`${result.tuTru[2]!.can} ${result.tuTru[2]!.chi}`).toBe("Tân Mão");
+    expect(result.thanSatDanGian.some((t) => t.ten === "Ngày-Tháng Thiên Khắc Địa Xung")).toBe(true);
+  });
+
+  it("muc xếp hạng khớp với điểm (rat_tot >= 80 > kha >= 30 > trung_binh >= 0 > nen_tranh)", () => {
+    const result = tinhDauThuChonNgay({
+      toaNha: "Ngọ",
+      ngayGiamDinh: { nam: 2018, thang: 9, ngay: 18 },
+      chiGio: "Sửu",
+    });
+    if (result.diem >= 80) expect(result.muc).toBe("rat_tot");
+    else if (result.diem >= 30) expect(result.muc).toBe("kha");
+    else if (result.diem >= 0) expect(result.muc).toBe("trung_binh");
+    else expect(result.muc).toBe("nen_tranh");
+  });
 });
 
 describe("trachnhat-engine/processing/dauThuChonNgayTimNgay", () => {
@@ -65,6 +104,7 @@ describe("trachnhat-engine/processing/dauThuChonNgayTimNgay", () => {
       denNgay: { nam: 2018, thang: 9, ngay: 25 },
     });
     expect(result.tongSoNgayQuet).toBe(11);
+    expect(result.thongKe.ratTot + result.thongKe.kha + result.thongKe.trungBinh + result.thongKe.nenTranh).toBe(11);
     expect(result.ketQua.length).toBeGreaterThan(0);
     for (let i = 1; i < result.ketQua.length; i++) {
       expect(result.ketQua[i]!.diem).toBeLessThanOrEqual(result.ketQua[i - 1]!.diem);

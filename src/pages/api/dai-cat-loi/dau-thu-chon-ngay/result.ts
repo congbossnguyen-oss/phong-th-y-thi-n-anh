@@ -52,6 +52,7 @@ export const GET: APIRoute = async ({ url, request, clientAddress }) => {
           status: "confirmed",
           cheDo,
           tongSoNgayQuet: kq.tongSoNgayQuet,
+          thongKe: kq.thongKe,
           ketQua: kq.ketQua.map((n) => gonNgay(n as unknown as Record<string, unknown>)),
         },
         200,
