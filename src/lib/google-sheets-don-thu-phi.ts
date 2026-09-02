@@ -30,6 +30,7 @@ export const TEN_CONG_CU_HIEN_THI: Record<string, string> = {
   "ky-mon-menh-chi-tiet": "Luận Giải Kỳ Môn Mệnh (chi tiết)",
   "ky-mon-menh-chi-tiet-qs": "Luận Giải Kỳ Môn Mệnh (chi tiết) (app Quân Sư)",
   "ky-mon-hoi-dap": "Hỏi Đáp Kỳ Môn (1 sự việc cụ thể)",
+  "ky-mon-hoi-dap-qs": "Hỏi Đáp Kỳ Môn (1 sự việc cụ thể) (app Quân Sư)",
   "trach-cat-ky-mon": "Trạch Cát Kỳ Môn (chọn ngày giờ theo bàn mệnh)",
   "trach-cat-ky-mon-qs": "Trạch Cát Kỳ Môn (chọn ngày giờ theo bàn mệnh) (app Quân Sư)",
   "sim-phong-thuy-khai-van": "Sim Phong Thủy Khai Vận Khí",

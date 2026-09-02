@@ -48,6 +48,9 @@ export const VIP_SLUG_THEO_GOI: ReadonlySet<ToolSlug> = new Set([
   "ky-mon-hoi-dap",
   "ky-mon-menh-chi-tiet",
   "trach-cat-ky-mon",
+  // Bản ĐỘC LẬP cho app Quân Sư (từ 1/9/2026) của "ky-mon-hoi-dap" — PHẢI có mặt ở đây, nếu không
+  // khách có gói Cao Cấp trong app sẽ bị thu tiền dù đáng lẽ được miễn phí theo gói.
+  "ky-mon-hoi-dap-qs",
   // Bản ĐỘC LẬP cho app Quân Sư (từ 1/9/2026) của "ky-mon-menh-chi-tiet" — PHẢI có mặt ở đây, nếu
   // không khách có gói Cao Cấp trong app sẽ bị thu tiền dù đáng lẽ được miễn phí theo gói.
   "ky-mon-menh-chi-tiet-qs",

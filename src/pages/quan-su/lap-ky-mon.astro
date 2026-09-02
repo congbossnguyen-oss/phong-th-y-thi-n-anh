@@ -1,11 +1,12 @@
 ---
 // Bản in-app của công cụ "Lập Kỳ Môn Độn Giáp" — thuộc nhóm KỲ MÔN ĐỘN GIÁP trong app Quân Sư,
-// vào từ /quan-su/ky-mon. Dùng chung component với bản web nên lá bàn, Tam Thắng, lịch tháng,
-// luận giải Mệnh miễn phí và Hỏi Đáp Kỳ Môn đều y hệt trang phongthuythienanh.com/lap-ky-mon.
+// vào từ /quan-su/ky-mon. Dùng component ĐỘC LẬP (tách khỏi web 1/9/2026, xem
+// project_quan_su_tach_doc_lap_khoi_web.md) — lá bàn, Tam Thắng, lịch tháng, luận giải Mệnh miễn
+// phí và Hỏi Đáp Kỳ Môn (toolSlug "ky-mon-hoi-dap-qs") đều chạy trên route riêng của app.
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import BottomNav from "../../components/quan-su/BottomNav.astro";
-import LapKyMon from "../../components/tools/LapKyMon.astro";
+import LapKyMon from "../../components/quan-su/tools/LapKyMon.astro";
 import SapRaMat from "../../components/quan-su/SapRaMat.astro";
 
 export const prerender = false;

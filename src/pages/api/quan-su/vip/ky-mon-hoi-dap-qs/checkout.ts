@@ -1,0 +1,82 @@
+import type { APIRoute } from "astro";
+import { taoDonCongCu } from "../../../../../lib/payments/checkout-cong-cu";
+import { docInput, jsonResponse, TOOL_SLUG } from "./_chung";
+import { checkRateLimit } from "../../../../../lib/rate-limit";
+import { lapLaBan } from "../../../../../lib/kymon";
+import { luanHoiDap } from "../../../../../lib/kymon/hoiDap";
+import { thongBaoLoiAnToan } from "../../../../../lib/loi-an-toan";
+
+export const prerender = false;
+
+/**
+ * Bản ĐỘC LẬP cho app Quân Sư (tách khỏi web 1/9/2026, xem project_quan_su_tach_doc_lap_khoi_web.md)
+ * của src/pages/api/dai-cat-loi/ky-mon-hoi-dap/checkout.ts — toolSlug "ky-mon-hoi-dap-qs" để tách
+ * bạch đơn hàng web/app, dùng chung hàm tạo đơn/engine luận giải.
+ *
+ * Tạo đơn cho module Hỏi Đáp Kỳ Môn — 200.000đ/lượt hỏi (chế độ Thời Gian/Bốc Độn). KHÔNG bắt
+ * đăng nhập — kết quả truy cập bằng orderCode làm "vé", giống các module VIP khác.
+ */
+export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
+  const limited = checkRateLimit({ request, clientAddress }, { key: "checkout-ky-mon-hoi-dap-qs", max: 10, windowMs: 60_000 });
+  if (limited) return limited;
+
+  const body = await request.json().catch(() => null);
+  const doc = docInput(body);
+  if (!doc.ok) return jsonResponse({ ok: false, error: doc.error }, 400);
+
+  const b = (body ?? {}) as Record<string, unknown>;
+  const customerName = locals.user?.name ?? (typeof b.customerName === "string" ? b.customerName.trim() : "");
+  const customerEmail =
+    locals.user?.email ??
+    (typeof b.customerEmail === "string" && b.customerEmail.trim() ? b.customerEmail.trim() : null);
+  const customerPhone = typeof b.customerPhone === "string" ? b.customerPhone.trim() : "";
+
+  if (!customerName || !customerPhone) {
+    return jsonResponse({ ok: false, error: "Vui lòng nhập đầy đủ họ tên và số điện thoại liên hệ." }, 400);
+  }
+
+  // "Tính thử" trước khi tạo đơn — chặn 2 trường hợp không giao được hàng TRƯỚC khi thu tiền:
+  //   1. lá bàn không lập được (vd ngoài phạm vi dữ liệu km_data)
+  //   2. tình huống khách chọn chưa có luật luận giải (vẫn còn vài tình huống để trống có chủ đích)
+  try {
+    const laBan = await lapLaBan(doc.input.laBan);
+    const thu = luanHoiDap(
+      laBan,
+      doc.input.chuDeId,
+      doc.input.tinhHuongId,
+      doc.input.quanHe,
+      doc.input.thongTinBoSung ?? "",
+    );
+    if (!thu) {
+      return jsonResponse(
+        {
+          ok: false,
+          error:
+            "Tình huống này đang được hoàn thiện nên chưa trả lời tự động được — vui lòng chọn tình huống khác, hoặc liên hệ hotline để được thầy luận trực tiếp.",
+        },
+        400,
+      );
+    }
+  } catch (err) {
+    return jsonResponse({ ok: false, error: err instanceof Error ? err.message : "Không lập được lá bàn với dữ liệu này." }, 400);
+  }
+
+  try {
+    const kq = await taoDonCongCu({
+      toolSlug: TOOL_SLUG,
+      laQuanTri: locals.user?.isAdmin === true,
+      toolInput: doc.input,
+      userId: locals.user?.id ?? null,
+      customerName,
+      customerPhone,
+      customerEmail,
+      maKhuyenMai: typeof b.maKhuyenMai === "string" ? b.maKhuyenMai : "",
+    });
+    return jsonResponse(kq, kq.ok ? 200 : 400);
+  } catch (err) {
+    return jsonResponse(
+      { ok: false, error: thongBaoLoiAnToan(err, "Không tạo được đơn hàng, vui lòng thử lại sau.") },
+      400,
+    );
+  }
+};

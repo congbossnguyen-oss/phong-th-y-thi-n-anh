@@ -109,6 +109,9 @@ export const GIA_CONG_CU = {
 
   // ─ Cửa vào — cho khách chưa từng mua ─────────────────────────────────────────────────────────
   "ky-mon-hoi-dap": 200000,
+  // Bản ĐỘC LẬP cho app Quân Sư (từ 1/9/2026, xem project_quan_su_tach_doc_lap_khoi_web) — cùng
+  // giá, cùng engine `lapLaBan`/`luanHoiDap`, chỉ khác toolSlug để tách bạch đơn hàng web/app.
+  "ky-mon-hoi-dap-qs": 200000,
 } as const;
 
 /**
@@ -136,6 +139,7 @@ export function dangKhoaThuNghiem(slug: ToolSlug): boolean {
  */
 export const GIA_GOC_HIEN_THI: Partial<Record<ToolSlug, number>> = {
   "ky-mon-hoi-dap": 400000, // giá thật 200.000đ → hiện "-50%"
+  "ky-mon-hoi-dap-qs": 400000, // bản app Quân Sư — cùng hiệu ứng -50% với bản web
   "trach-cat-ky-mon": 1000000, // giá thật 500.000đ → hiện "-50%"
   "trach-cat-ky-mon-qs": 1000000, // bản app Quân Sư — cùng hiệu ứng -50% với bản web
 };
