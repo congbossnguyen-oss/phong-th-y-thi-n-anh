@@ -5,7 +5,7 @@
  * tom.qnt.world) chọn theo bảng BANG_NHA_CUNG_CAP ở đó bằng tinhNang "quan-su-kinh-dich", không
  * hard-code Anthropic ở đây nữa.
  */
-import { goiAiToolUse } from "../../ai/goi-ai";
+import { goiAiToolUseVoiRetry } from "../../ai/goi-ai";
 import { ghiLogChiPhi } from "../../chart-profile/ghi-log-chi-phi";
 
 const MAX_TOKENS = 3000;
@@ -56,7 +56,7 @@ export async function goiLuanGiaiKinhDich(
   promptQuyTac: string,
   promptNguoiDung: string,
 ): Promise<KetQuaLlm> {
-  const ket = await goiAiToolUse({
+  const ket = await goiAiToolUseVoiRetry({
     tinhNang: "quan-su-kinh-dich",
     systemCoDinh: promptTriThuc,
     systemThayDoi: promptQuyTac,
