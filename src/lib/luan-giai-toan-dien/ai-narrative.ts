@@ -160,9 +160,19 @@ export async function goiClaudeToolUse(
   return { input: kq.input, usage: kq.usage, model: kq.model };
 }
 
+/** Số lần thử lại khi AI trả `noi_dung` rỗng — xem ghi chú ở kiemTraDayDu.ts (tu-vi) và audit 1/9/2026. */
+const SO_LAN_THU_KHI_THIEU_NOI_DUNG = 2;
+
 /**
  * Viết văn cho 1 giai đoạn. `findingsPhu` (chỉ dùng cho L): mảng findings của các giai đoạn khác
  * cần tổng hợp thêm ngoài findings chính truyền vào `findings`.
+ *
+ * ⚠️ 1/9/2026: schema cho phép `noi_dung` rỗng "nếu findings không đủ căn cứ", nhưng THỰC TẾ mọi
+ * giai đoạn A-L luôn có findings khác rỗng (findings-co-ban.ts/findings-nang-cao.ts luôn tính ra ít
+ * nhất 1 field, trường hợp thiếu dấu hiệu được đánh dấu tường minh bằng cờ như `mucKhongDuDauHieu`
+ * chứ không để giai đoạn trống) — nên rỗng gần như luôn là dấu hiệu AI "hết sức" giữa chừng (đúng lỗi
+ * đã bắt thật ở Tử Vi/Kinh Dịch), không phải trường hợp thiết kế. Trước đây rỗng → trả `null` ngay,
+ * ÂM THẦM (không log) khiến cả giai đoạn biến mất khỏi báo cáo trả phí. Nay thử lại trước khi bỏ cuộc.
  */
 export async function viecGiaiDoan(cfg: GiaiDoanConfig, laSo: unknown, findings: GiaiDoanFindings, findingsPhu?: GiaiDoanFindings[], ghiChuSuaLoi?: string): Promise<string | null> {
   const laSoJSON = JSON.stringify(laSo, null, 2);
@@ -174,11 +184,17 @@ export async function viecGiaiDoan(cfg: GiaiDoanConfig, laSo: unknown, findings:
     ? `Hãy viết đoạn văn cho giai đoạn "${cfg.ten}" (${cfg.ma}) theo đúng dữ liệu và nguyên tắc đã nêu ở system prompt.\n\n${ghiChuSuaLoi}`
     : `Hãy viết đoạn văn cho giai đoạn "${cfg.ten}" (${cfg.ma}) theo đúng dữ liệu và nguyên tắc đã nêu ở system prompt.`;
 
-  const { input, usage, model } = await goiClaudeToolUse(system, userMessage, TOOL_NAME, SCHEMA, 2000, "bat-tu-giai-doan", { "openai-tuong-thich": "deepseek-chat" });
-  ghiLogChiPhi(`Luận giải Bát Tự — Giai đoạn ${cfg.ma}`, model ?? DEFAULT_MODEL, usage);
-  if (!input) return null;
-  const noiDung = typeof input.noi_dung === "string" ? xoaTheLaConSot(input.noi_dung.trim()) : "";
-  return noiDung.length > 0 ? noiDung : null;
+  for (let lan = 1; lan <= SO_LAN_THU_KHI_THIEU_NOI_DUNG; lan++) {
+    const { input, usage, model } = await goiClaudeToolUse(system, userMessage, TOOL_NAME, SCHEMA, 2000, "bat-tu-giai-doan", { "openai-tuong-thich": "deepseek-chat" });
+    ghiLogChiPhi(`Luận giải Bát Tự — Giai đoạn ${cfg.ma}`, model ?? DEFAULT_MODEL, usage);
+    const noiDung = input && typeof input.noi_dung === "string" ? xoaTheLaConSot(input.noi_dung.trim()) : "";
+    if (noiDung.length > 0) return noiDung;
+    if (lan < SO_LAN_THU_KHI_THIEU_NOI_DUNG) {
+      console.error(`[luan-giai-toan-dien] Giai đoạn ${cfg.ma}: lần ${lan}/${SO_LAN_THU_KHI_THIEU_NOI_DUNG} AI trả nội dung rỗng — thử lại.`);
+    }
+  }
+  console.error(`[luan-giai-toan-dien] Giai đoạn ${cfg.ma}: hết ${SO_LAN_THU_KHI_THIEU_NOI_DUNG} lần vẫn rỗng — giai đoạn này sẽ bị ẩn khỏi báo cáo.`);
+  return null;
 }
 
 const SCHEMA_KIEM_DUYET = {

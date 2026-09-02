@@ -154,6 +154,9 @@ async function chamDiemDanhSach(laSo: unknown, muc: MucCanCham[], tenLoai: strin
   return chamDiemMotLo(laSo, muc, tenLoai, coChiTiet);
 }
 
+/** Số lần thử lại CẢ LÔ khi JSON hợp lệ nhưng còn mục thiếu nội dung thật — xem audit 1/9/2026. */
+const SO_LAN_THU_KHI_THIEU_NOI_DUNG = 2;
+
 async function chamDiemMotLo(laSo: unknown, muc: MucCanCham[], tenLoai: string, coChiTiet: boolean): Promise<DiemGiaiDoanVan[]> {
   const laSoJSON = JSON.stringify(laSo, null, 2);
   const dsJSON = JSON.stringify(
@@ -169,70 +172,110 @@ async function chamDiemMotLo(laSo: unknown, muc: MucCanCham[], tenLoai: string, 
   const system = buildSystemPrompt(laSoJSON, dsJSON, tenLoai, coChiTiet);
   const userMessage = `Hãy phân tích đúng đủ ${muc.length} mục trong danh sách ${tenLoai} theo đúng dữ liệu và nguyên tắc đã nêu.`;
 
-  const { input, usage, model } = await goiClaudeToolUse(system, userMessage, "tra_ve_diem_so", SCHEMA_DIEM, coChiTiet ? 8000 : 3000, "bat-tu-cham-diem", { "openai-tuong-thich": "deepseek-chat" });
-  ghiLogChiPhi(`Luận giải Bát Tự — ${tenLoai}`, model ?? "claude-sonnet-5", usage);
+  const layDiem = (v: unknown): number => {
+    const n = Number(v);
+    return Number.isFinite(n) ? Math.max(-2, Math.min(2, Math.round(n))) : 0;
+  };
+  const lamSach = (v: unknown): string => (typeof v === "string" ? xoaTheLaConSot(v.trim()) : "");
 
-  // ⚠️ Bug thật 1/9/2026: khi CẢ LỆNH thất bại (input null, dù đã thử lại qua goiAiToolUseVoiRetry —
-  // xem ai-narrative.ts), TOÀN BỘ mục trong lô này rơi vào nhánh "!tomTat" bên dưới và bị gán CHUNG
-  // 1 câu TOM_TAT_KHONG_QUA — y hệt câu dùng khi hậu kiểm CHẶN THẬT vì vi phạm an toàn nội dung. 2
-  // nguyên nhân khác hẳn nhau (lỗi kỹ thuật vs bị chặn nội dung) nhưng khách/admin nhìn vào không
-  // phân biệt được. Tách rõ + log riêng để chẩn đoán đúng nguyên nhân khi gặp lại.
-  const loiKyThuatCaLo = input === null;
-  if (loiKyThuatCaLo) {
-    console.error(`[luu-nien-dai-van] ${tenLoai}: CẢ LÔ (${muc.length} mục) lỗi kỹ thuật (AI không trả kết quả dù đã thử lại) — KHÔNG phải bị hậu kiểm chặn nội dung. Các mục này sẽ hiện placeholder lỗi kỹ thuật riêng.`);
-  }
+  let ketQuaCuoi: DiemGiaiDoanVan[] = [];
 
-  const danhSach = Array.isArray(input?.danh_sach) ? (input!.danh_sach as Record<string, unknown>[]) : [];
-  const theoChiSo = new Map(danhSach.map((d) => [Number(d.chi_so), d]));
+  for (let lan = 1; lan <= SO_LAN_THU_KHI_THIEU_NOI_DUNG; lan++) {
+    const { input, usage, model } = await goiClaudeToolUse(system, userMessage, "tra_ve_diem_so", SCHEMA_DIEM, coChiTiet ? 8000 : 3000, "bat-tu-cham-diem", { "openai-tuong-thich": "deepseek-chat" });
+    ghiLogChiPhi(`Luận giải Bát Tự — ${tenLoai}`, model ?? "claude-sonnet-5", usage);
 
-  return muc.map((m) => {
-    const d = theoChiSo.get(m.chiSo);
-    const layDiem = (v: unknown): number => {
-      const n = Number(v);
-      return Number.isFinite(n) ? Math.max(-2, Math.min(2, Math.round(n))) : 0;
-    };
-    const lamSach = (v: unknown): string => (typeof v === "string" ? xoaTheLaConSot(v.trim()) : "");
-
-    let tomTat: string;
-    if (!d) {
-      // Không có dữ liệu cho đúng mục này. loiKyThuatCaLo=true → lỗi kỹ thuật (đã thử lại, vẫn hỏng),
-      // KHÔNG phải bị chặn nội dung — dùng placeholder RIÊNG, không dùng TOM_TAT_KHONG_QUA (câu đó
-      // CHỈ dành cho trường hợp hậu kiểm chặn thật, xem SPEC checklist mục K).
-      if (loiKyThuatCaLo) {
-        tomTat = TOM_TAT_LOI_KY_THUAT;
-      } else {
-        // Lệnh chạy được nhưng AI bỏ sót đúng mục này trong danh_sach (hiếm, lỗi định dạng đầu ra) —
-        // không phải lỗi kỹ thuật gọi API, cũng không hẳn là chặn nội dung, nhưng an toàn hơn khi coi
-        // như "cần xem thêm" thay vì hiện điểm số/tóm tắt bịa.
-        console.error(`[luu-nien-dai-van] ${tenLoai}: mục chi_so=${m.chiSo} (${m.nhan}) bị AI BỎ SÓT trong danh_sach dù lệnh chạy thành công — không phải lỗi kỹ thuật gọi API, cũng không phải hậu kiểm chặn.`);
-        tomTat = TOM_TAT_KHONG_QUA;
-      }
-    } else {
-      tomTat = lamSach(d.tom_tat);
-      if (tomTat && quetHauKiem(tomTat).length > 0) {
-        console.error(`[luu-nien-dai-van] ${tenLoai}: mục chi_so=${m.chiSo} (${m.nhan}) bị HẬU KIỂM CHẶN nội dung thật (vi phạm an toàn nội dung) — dùng placeholder chuẩn.`);
-        tomTat = TOM_TAT_KHONG_QUA;
-      }
-      if (!tomTat) tomTat = TOM_TAT_KHONG_QUA;
+    // ⚠️ Bug thật 1/9/2026: khi CẢ LỆNH thất bại (input null, dù đã thử lại qua goiAiToolUseVoiRetry —
+    // xem ai-narrative.ts), TOÀN BỘ mục trong lô này rơi vào nhánh "!tomTat" bên dưới và bị gán CHUNG
+    // 1 câu TOM_TAT_KHONG_QUA — y hệt câu dùng khi hậu kiểm CHẶN THẬT vì vi phạm an toàn nội dung. 2
+    // nguyên nhân khác hẳn nhau (lỗi kỹ thuật vs bị chặn nội dung) nhưng khách/admin nhìn vào không
+    // phân biệt được. Tách rõ + log riêng để chẩn đoán đúng nguyên nhân khi gặp lại.
+    const loiKyThuatCaLo = input === null;
+    if (loiKyThuatCaLo) {
+      console.error(`[luu-nien-dai-van] ${tenLoai}: lần ${lan}/${SO_LAN_THU_KHI_THIEU_NOI_DUNG} CẢ LÔ (${muc.length} mục) lỗi kỹ thuật (AI không trả kết quả dù đã thử lại) — KHÔNG phải bị hậu kiểm chặn nội dung.`);
     }
 
-    let chiTiet = coChiTiet && d ? lamSach(d?.chi_tiet) : "";
-    if (chiTiet && quetHauKiem(chiTiet).length > 0) chiTiet = "";
+    const danhSach = Array.isArray(input?.danh_sach) ? (input!.danh_sach as Record<string, unknown>[]) : [];
+    const theoChiSo = new Map(danhSach.map((d) => [Number(d.chi_so), d]));
 
-    return {
-      nhan: m.nhan,
-      canChi: m.canChi,
-      tuoi: m.tuoi,
-      sucKhoe: layDiem(d?.suc_khoe),
-      congViec: layDiem(d?.cong_viec),
-      taiLoc: layDiem(d?.tai_loc),
-      lucThan: layDiem(d?.luc_than),
-      tomTat,
-      dungThanVan: m.dungThanVan,
-      dungThanDoi: m.dungThanDoi,
-      ...(chiTiet ? { chiTiet } : {}),
-    };
-  });
+    // ⚠️ 1/9/2026: JSON có thể "hợp lệ" (lệnh chạy được, có object) nhưng 1 mục cụ thể lại có
+    // tom_tat/chi_tiet RỖNG dù không bị hậu kiểm chặn — đúng lỗi "AI hết sức giữa chừng" đã bắt ở
+    // Tử Vi/Kinh Dịch. `coThieuNoiDungThat` gom lại để quyết định có cần gọi lại CẢ LÔ hay không.
+    let coThieuNoiDungThat = false;
+
+    const ketQua = muc.map((m) => {
+      const d = theoChiSo.get(m.chiSo);
+
+      let tomTat: string;
+      if (!d) {
+        // Không có dữ liệu cho đúng mục này. loiKyThuatCaLo=true → lỗi kỹ thuật (đã thử lại, vẫn hỏng),
+        // KHÔNG phải bị chặn nội dung — dùng placeholder RIÊNG, không dùng TOM_TAT_KHONG_QUA (câu đó
+        // CHỈ dành cho trường hợp hậu kiểm chặn thật, xem SPEC checklist mục K).
+        if (loiKyThuatCaLo) {
+          tomTat = TOM_TAT_LOI_KY_THUAT;
+        } else {
+          // Lệnh chạy được nhưng AI bỏ sót đúng mục này trong danh_sach (hiếm, lỗi định dạng đầu ra) —
+          // không phải lỗi kỹ thuật gọi API, cũng không hẳn là chặn nội dung, coi như thiếu nội dung
+          // thật và thử lại cả lô thay vì âm thầm chấp nhận placeholder.
+          console.error(`[luu-nien-dai-van] ${tenLoai}: lần ${lan}/${SO_LAN_THU_KHI_THIEU_NOI_DUNG} mục chi_so=${m.chiSo} (${m.nhan}) bị AI BỎ SÓT trong danh_sach dù lệnh chạy thành công.`);
+          tomTat = TOM_TAT_KHONG_QUA;
+          coThieuNoiDungThat = true;
+        }
+      } else {
+        const tomTatGoc = lamSach(d.tom_tat);
+        if (tomTatGoc && quetHauKiem(tomTatGoc).length > 0) {
+          console.error(`[luu-nien-dai-van] ${tenLoai}: mục chi_so=${m.chiSo} (${m.nhan}) bị HẬU KIỂM CHẶN nội dung thật (vi phạm an toàn nội dung) — dùng placeholder chuẩn.`);
+          tomTat = TOM_TAT_KHONG_QUA;
+        } else if (!tomTatGoc) {
+          // Rỗng nhưng KHÔNG bị hậu kiểm chặn — không phải trường hợp thiết kế (tom_tat luôn bắt
+          // buộc phải có 1 câu), coi như AI làm biếng và thử lại cả lô.
+          console.error(`[luu-nien-dai-van] ${tenLoai}: lần ${lan}/${SO_LAN_THU_KHI_THIEU_NOI_DUNG} mục chi_so=${m.chiSo} (${m.nhan}) AI trả tom_tat RỖNG (không bị hậu kiểm chặn).`);
+          tomTat = TOM_TAT_KHONG_QUA;
+          coThieuNoiDungThat = true;
+        } else {
+          tomTat = tomTatGoc;
+        }
+      }
+
+      let chiTiet = "";
+      if (coChiTiet && d) {
+        const chiTietGoc = lamSach(d.chi_tiet);
+        if (chiTietGoc && quetHauKiem(chiTietGoc).length > 0) {
+          chiTiet = ""; // bị hậu kiểm chặn — bỏ hẳn phần chi tiết, không phải lỗi cần thử lại.
+        } else if (!chiTietGoc) {
+          // coChiTiet=true (Lưu Niên) BẮT BUỘC phải có 90-140 chữ — rỗng ở đây KHÔNG phải thiết kế
+          // (khác nhánh coChiTiet=false của Đại Vận, nơi rỗng là dặn AI trả rỗng cố ý).
+          if (!loiKyThuatCaLo) {
+            console.error(`[luu-nien-dai-van] ${tenLoai}: lần ${lan}/${SO_LAN_THU_KHI_THIEU_NOI_DUNG} mục chi_so=${m.chiSo} (${m.nhan}) AI trả chi_tiet RỖNG (bắt buộc 90-140 chữ).`);
+            coThieuNoiDungThat = true;
+          }
+        } else {
+          chiTiet = chiTietGoc;
+        }
+      }
+
+      return {
+        nhan: m.nhan,
+        canChi: m.canChi,
+        tuoi: m.tuoi,
+        sucKhoe: layDiem(d?.suc_khoe),
+        congViec: layDiem(d?.cong_viec),
+        taiLoc: layDiem(d?.tai_loc),
+        lucThan: layDiem(d?.luc_than),
+        tomTat,
+        dungThanVan: m.dungThanVan,
+        dungThanDoi: m.dungThanDoi,
+        ...(chiTiet ? { chiTiet } : {}),
+      };
+    });
+
+    ketQuaCuoi = ketQua;
+    if (!loiKyThuatCaLo && !coThieuNoiDungThat) return ketQuaCuoi;
+    if (lan < SO_LAN_THU_KHI_THIEU_NOI_DUNG) {
+      console.error(`[luu-nien-dai-van] ${tenLoai}: lần ${lan}/${SO_LAN_THU_KHI_THIEU_NOI_DUNG} còn thiếu nội dung thật — thử lại cả lô.`);
+    }
+  }
+
+  return ketQuaCuoi;
 }
 
 /** Dụng Thần riêng của từng Đại Vận (tính lại theo engine, có chốt chặn Nhóm 3). */
