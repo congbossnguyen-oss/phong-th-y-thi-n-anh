@@ -7,7 +7,7 @@ import type { KetQuaCoBan, LuanCung } from "./aiCoBan";
 import { TEN_CUNG_HIEN_THI, TEN_CUNG_SNAKE } from "./aiCoBan";
 import type { KetQuaNangCao, LuanHan } from "./aiNangCao";
 import type { DuLieuLaSoTuVi } from "./adapter";
-import { veRadarPdf, veThanhDaiHanPdf, veThanhDiem12CungPdf, veLaSoPdf } from "./bieuDoPdf";
+import { veRadarPdf, veThanhDaiHanPdf, veThanhDiem12CungPdf, veLaSoPdf, veDaiHanTronDoiPdf } from "./bieuDoPdf";
 
 function veCungLuan(b: But, f: Fonts, ten: string, diem: number, l: LuanCung): void {
   b.chua(60);
@@ -168,6 +168,13 @@ export async function generateTuViNangCaoPdf(
   b.dongGiua(`Kính gửi: ${customerName}`, { size: 12, font: f.dam });
   b.xuong(6);
   veCoBan(b, f, coBan, duLieu);
+  // Xu hướng Đại Hạn trọn đời (đường sóng qua 12 cung) — đồ hình trực quan như app, đặt trước phần
+  // luận Đại Hạn/Tiểu Hạn để khách nhìn tổng thể vận trình trước khi đọc chi tiết (anh Công 2/9/2026).
+  b.chua(60);
+  b.muc("Xu hướng Đại Hạn trọn đời");
+  b.doan("Điểm engine từng Đại Hạn (thang 0-5) nối theo tuổi — càng cao càng thuận. Vạch vàng đứt là Đại Hạn đang sống.", { size: 8, mau: MAU.mucNhat });
+  b.xuong(2);
+  veDaiHanTronDoiPdf(b, f, duLieu);
   if (duLieu.daiHanHienTai) {
     b.chua(60);
     b.muc("Vị trí Đại Hạn trên hành trình tuổi tác");

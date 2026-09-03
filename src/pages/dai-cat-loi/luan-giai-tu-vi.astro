@@ -424,8 +424,11 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
             </section>
           )}
 
-          <div id="tvlg-dang-chay" class="mt-4 hidden rounded-(--radius-card) border border-(--color-gold-500)/40 bg-(--color-gold-400)/10 p-4 text-sm text-(--color-ink-700)">
-            <p class="font-medium text-(--color-ink-900)">⏳ Đang tạo đơn hàng…</p>
+          {/* Nổi bật hẳn (nền vàng đậm, chữ to) — anh Công 2/9/2026: bản mờ cũ lẫn vào khung tối, khách
+              không thấy hệ thống đang xử lý. */}
+          <div id="tvlg-dang-chay" class="mt-4 hidden rounded-(--radius-card) border-2 border-(--color-gold-500) bg-(--color-gold-400)/25 p-5 text-center shadow-lg">
+            <p class="font-display text-lg font-bold text-(--color-ink-950)">⏳ Đang tạo đơn hàng</p>
+            <p class="mt-1 text-sm font-medium text-(--color-ink-800)">Quý khách vui lòng chờ trong ít phút…</p>
           </div>
           <div id="tvlg-loi" class="mt-4 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm text-(--color-danger-500)"></div>
           <div id="tvlg-thanh-toan" class="mt-6 hidden space-y-4 rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-center text-(--color-ink-950) shadow-lg">

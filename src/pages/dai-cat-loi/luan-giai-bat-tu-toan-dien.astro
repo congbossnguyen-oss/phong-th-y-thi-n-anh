@@ -315,10 +315,10 @@ function mauTheoDiemMoi(diem: number): string {
         </div>
 
         <form id="ldbtd-form" class="mt-4 flex flex-col gap-4">
-          <div>
-            <label for="ldbtd-hoten" class="text-xs font-medium text-(--color-ink-600)">Họ tên mệnh chủ (không bắt buộc)</label>
-            <input type="text" id="ldbtd-hoten" placeholder="Để trống nếu lập cho chính mình" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
-            <p class="mt-1 text-xs text-(--color-ink-500)">Dùng để ghi đúng tên trên PDF/email khi lập lá số cho người khác — bỏ trống thì dùng tên tài khoản của bạn.</p>
+          <div class="rounded-(--radius-control) border border-(--color-gold-400)/40 bg-(--color-gold-400)/5 p-3">
+            <label for="ldbtd-hoten" class="text-sm font-semibold text-(--color-ink-900)">Họ tên mệnh chủ (người được xem)</label>
+            <input type="text" id="ldbtd-hoten" placeholder="Nhập tên người được xem lá số" class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+            <p class="mt-1 text-xs text-(--color-ink-500)">⚠️ Tên này in trên PDF/email. Nếu lập cho người khác (vd khách hàng), nhớ nhập đúng tên họ — bỏ trống sẽ dùng tên tài khoản của bạn.</p>
           </div>
           <DateSelect idPrefix="ldbtd-sinh" label="Ngày sinh (dương lịch)" required yearsBack={90} yearsForward={0} />
           <div class="grid grid-cols-2 gap-3">
@@ -393,8 +393,10 @@ function mauTheoDiemMoi(diem: number): string {
           </div>
         </div>
 
-        <div id="ldbtd-dang-chay" class="mt-4 hidden rounded-(--radius-card) border border-(--color-gold-500)/40 bg-(--color-gold-400)/10 p-4 text-sm text-(--color-ink-700)">
-          <p class="font-medium text-(--color-ink-900)">⏳ Đang xử lý…</p>
+        {/* Nổi bật hẳn (đồng nhất với trang Tử Vi) — anh Công 2/9/2026: bản mờ cũ lẫn vào khung tối. */}
+        <div id="ldbtd-dang-chay" class="mt-4 hidden rounded-(--radius-card) border-2 border-(--color-gold-500) bg-(--color-gold-400)/25 p-5 text-center shadow-lg">
+          <p class="font-display text-lg font-bold text-(--color-ink-950)">⏳ Đang tạo đơn hàng</p>
+          <p class="mt-1 text-sm font-medium text-(--color-ink-800)">Quý khách vui lòng chờ trong ít phút…</p>
         </div>
         <div id="ldbtd-thanh-toan" class="mt-6 hidden space-y-4 rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-center text-(--color-ink-950) shadow-lg">
           <p class="font-display text-lg font-bold">Quét mã QR để thanh toán <span id="ldbtd-so-tien"></span></p>
@@ -407,10 +409,11 @@ function mauTheoDiemMoi(diem: number): string {
   </Container>
 </BaseLayout>
 
-<script define:vars={{ daDangNhap: !!user, vanTayDaMua, laQuanTri }}>
+<script define:vars={{ daDangNhap: !!user, vanTayDaMua, laQuanTri, tenTaiKhoan: user?.name ?? "" }}>
   window.__ldbtdDaDangNhap = daDangNhap;
   window.__ldbtdVanTay = vanTayDaMua;
   window.__ldbtdLaQuanTri = laQuanTri;
+  window.__ldbtdTenTaiKhoan = tenTaiKhoan;
 </script>
 <script>
   import { readDateSelects, ghiDateSelects } from "../../lib/date-select";
@@ -590,6 +593,22 @@ function mauTheoDiemMoi(diem: number): string {
     async function mua() {
       const dauVao = docDauVao();
       if (!dauVao) return;
+
+      // ⚠️ Bỏ trống họ tên mệnh chủ → báo cáo ghi tên tài khoản. Admin hay lập cho khách nên rất dễ
+      // quên điền tên (anh Công báo 2 lần: "đăng ký cho Mr Thắng mà ra tên tài khoản anh"). Hỏi lại
+      // dứt khoát trước khi tạo đơn thay vì âm thầm dùng nhầm tên.
+      if (!doc("ldbtd-hoten")) {
+        const tenTaiKhoan = (window as unknown as { __ldbtdTenTaiKhoan?: string }).__ldbtdTenTaiKhoan || "tài khoản của bạn";
+        const dongY = window.confirm(
+          `Bạn chưa nhập "Họ tên mệnh chủ".\n\nBáo cáo (PDF/email) sẽ ghi tên: ${tenTaiKhoan}.\n\n• Bấm OK nếu lập cho CHÍNH BẠN.\n• Bấm Cancel để quay lại nhập tên người khác (vd đang lập cho khách).`,
+        );
+        if (!dongY) {
+          const el = document.getElementById("ldbtd-hoten");
+          el?.scrollIntoView({ behavior: "smooth", block: "center" });
+          (el as HTMLInputElement | null)?.focus();
+          return;
+        }
+      }
 
       const payload = { ...dauVao, maKhuyenMai: doc("ldbtd-ma-input") || undefined };
       dangChayEl.classList.remove("hidden");

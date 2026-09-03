@@ -75,6 +75,52 @@ export function veThanhDiem12CungPdf(b: But, f: Fonts, cung: { ten: string; diem
   }
 }
 
+/** Đồ thị ĐƯỜNG xu hướng Đại Hạn trọn đời — 12 cung sắp theo tuổi khởi Đại Hạn, nối điểm engine
+ *  (0-5) thành đường sóng, chấm màu theo điểm, vạch vàng đứt đánh dấu Đại Hạn đang sống. Bản PDF
+ *  của biểu đồ sóng "Xu hướng Đại Vận theo tuổi" trong app (anh Công 2/9/2026: Tử Vi cũng nên có
+ *  đồ hình trực quan như Bát Tự). Dùng nguyên `cung` (mỗi cung 1 Đại Hạn ~10 năm) đã có sẵn. */
+export function veDaiHanTronDoiPdf(b: But, f: Fonts, duLieu: DuLieuLaSoTuVi): void {
+  const moc = [...duLieu.cung]
+    .filter((c) => Array.isArray(c.daiVanTuoi))
+    .sort((a, c) => a.daiVanTuoi[0] - c.daiVanTuoi[0]);
+  if (moc.length < 2) return;
+
+  const caoVe = 60;
+  const rongVe = A4.w - LE * 2;
+  const n = moc.length;
+  b.chua(caoVe + 30);
+  const yTop = b.y;
+  const yDay = yTop - caoVe;
+  const xTai = (i: number) => LE + (rongVe * i) / (n - 1);
+  const yTai = (diem: number) => yDay + (Math.max(0, Math.min(5, diem)) / 5) * caoVe;
+
+  // Đường nền giữa (điểm 3 = trung bình) + đường đáy mờ để mắt bám mức.
+  b.page.drawLine({ start: { x: LE, y: yTai(3) }, end: { x: LE + rongVe, y: yTai(3) }, thickness: 0.4, color: XAM_NHAT, opacity: 0.5 });
+
+  const diem = moc.map((c, i) => ({ x: xTai(i), y: yTai(c.diem), c }));
+  for (let i = 1; i < diem.length; i++) {
+    b.page.drawLine({ start: { x: diem[i - 1].x, y: diem[i - 1].y }, end: { x: diem[i].x, y: diem[i].y }, thickness: 1.5, color: hex("#ad8843") });
+  }
+  for (const p of diem) b.page.drawEllipse({ x: p.x, y: p.y, xScale: 2.6, yScale: 2.6, color: hex(mauTheoDiem(p.c.diem)) });
+
+  // Vạch đánh dấu Đại Hạn đang sống (nếu biết tuổi hiện tại).
+  if (duLieu.tuoiHienTai !== null) {
+    const idx = moc.findIndex((c) => duLieu.tuoiHienTai! >= c.daiVanTuoi[0] && duLieu.tuoiHienTai! <= c.daiVanTuoi[1]);
+    if (idx >= 0) {
+      const xt = xTai(idx);
+      b.page.drawLine({ start: { x: xt, y: yDay - 3 }, end: { x: xt, y: yTop + 2 }, thickness: 1, color: hex("#ad8843"), opacity: 0.6, dashArray: [2, 2] });
+    }
+  }
+
+  // Trục X: tuổi khởi mỗi Đại Hạn (giãn thưa nếu quá dày — 12 mốc thường vẫn đủ chỗ).
+  b.y = yDay - 4;
+  for (let i = 0; i < n; i++) {
+    const nhan = String(moc[i].daiVanTuoi[0]);
+    b.page.drawText(nhan, { x: xTai(i) - f.thuong.widthOfTextAtSize(nhan, 6) / 2, y: b.y, size: 6, font: f.thuong, color: MAU.mucNhat });
+  }
+  b.xuong(12);
+}
+
 /** Thanh tiến trình Đại Hạn trên trục tuổi 0-90 — dải màu highlight đúng khoảng tuổi Đại Hạn hiện tại,
  *  vạch đứng đánh dấu tuổi đang xem. */
 export function veThanhDaiHanPdf(

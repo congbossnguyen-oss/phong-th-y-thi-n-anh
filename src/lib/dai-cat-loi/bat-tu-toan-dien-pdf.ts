@@ -137,14 +137,18 @@ function veNguHanhPentagon(b: But, f: Fonts, tuTru: LaSoHienThi["tuTru"]): void 
  *  đổi sang thanh ngang cho PDF (an toàn hơn vẽ cung tròn bằng pdf-lib khi không xem trước được). */
 function veGaugeVuongSuy(b: But, f: Fonts, diem: number, capDo: string): void {
   const pct = Math.max(0, Math.min(100, Math.round(diem)));
-  b.chua(28);
-  b.dong(`Vượng Suy: ${pct}% — ${capDo}`, { size: 9, font: f.dam, mau: MAU.muc, dan: 4 });
-  const rong = A4.w - LE * 2;
   const cao = 8;
+  b.chua(cao + 30);
+  b.dong(`Vượng Suy: ${pct}% — ${capDo}`, { size: 9, font: f.dam, mau: MAU.muc, dan: 6 });
+  b.xuong(3); // tách nhãn ra khỏi thanh 1 chút cho thoáng.
+  const rong = A4.w - LE * 2;
   const yDay = b.y - cao;
   b.page.drawRectangle({ x: LE, y: yDay, width: rong, height: cao, color: XAM_NHAT, opacity: 0.4 });
   b.page.drawRectangle({ x: LE, y: yDay, width: (rong * pct) / 100, height: cao, color: MAU.vang });
-  b.xuong(cao + 6);
+  // ⚠️ Con trỏ dòng phải hạ xuống HẲN dưới đáy thanh (yDay), cộng thêm khoảng đệm — nếu chỉ b.xuong
+  // nhỏ thì dòng chữ kế (Điều Hậu) có phần thân chữ nhô lên đè vào thanh (anh Công báo 2/9/2026:
+  // "chữ điều hậu đang bị chèn bởi đồ hình"). Đặt b.y tuyệt đối theo đáy thanh cho chắc.
+  b.y = yDay - 12;
 }
 
 /** "05/03/1990, 10h20" — ghi rõ ngày sinh DƯƠNG LỊCH của mệnh chủ (anh Công yêu cầu 2/9/2026: nhiều
@@ -158,10 +162,12 @@ function ngaySinhDuongChu(ns: LaSoHienThi["ngaySinhDuong"]): string {
 function veLaSo(b: But, f: Fonts, laSo: LaSoHienThi): void {
   b.muc("Lá số");
   veLuoiTuTru(b, f, laSo.tuTru);
+  b.xuong(8); // tách lưới Tứ Trụ với dòng chữ bên dưới, tránh cảm giác bí bách (anh Công 2/9/2026).
 
   b.doan(`Ngày sinh (dương lịch): ${ngaySinhDuongChu(laSo.ngaySinhDuong)}  ·  Giới tính: ${laSo.gioiTinh}`, { size: 9.5, font: f.vua });
   b.doan(`Nhật Chủ: ${laSo.nhatChu}`, { size: 9.5 });
 
+  b.xuong(6); // hạ hàng pill Dụng/Hỷ/Kỵ Thần xuống 1 chút, tách khỏi dòng Nhật Chủ (anh Công 2/9/2026).
   b.chua(16);
   let x = LE;
   const nhanThan = (nhan: string, mau: RGB) => {
@@ -170,14 +176,17 @@ function veLaSo(b: But, f: Fonts, laSo: LaSoHienThi): void {
   nhanThan(`Dụng Thần ${laSo.dungThan}`, MAU.luc);
   nhanThan(`Hỷ Thần ${laSo.hyThan}`, MAU.lam);
   nhanThan(`Kỵ Thần ${laSo.kyThan}`, MAU.son);
-  b.xuong(20);
+  b.xuong(24);
 
   veNguHanhPentagon(b, f, laSo.tuTru);
-  b.xuong(6);
+  b.xuong(10);
   veGaugeVuongSuy(b, f, laSo.diemVuongSuy, laSo.capDoVuongSuy);
 
-  if (laSo.dieuHauNote) b.doan(`Điều Hậu: ${laSo.dieuHauNote}`, { size: 9.5, mau: MAU.vang });
-  b.xuong(4);
+  if (laSo.dieuHauNote) {
+    b.xuong(2);
+    b.doan(`Điều Hậu: ${laSo.dieuHauNote}`, { size: 9.5, mau: MAU.vang });
+  }
+  b.xuong(6);
 }
 
 const KHIA_CANH: { khoa: keyof Pick<DiemGiaiDoanVan, "sucKhoe" | "congViec" | "taiLoc" | "lucThan">; nhan: string; mau: RGB }[] = [
@@ -358,8 +367,9 @@ export async function generateBatTuCoBanPdf(baoCao: BaoCaoCoBan, customerName: s
     phuDe: "Bản Cơ Bản — 7 giai đoạn luận giải",
   });
 
+  b.xuong(18); // hạ dòng "Kính gửi" xuống cho cân đối với đầu trang (anh Công 2/9/2026, chỉnh thêm).
   b.dongGiua(`Kính gửi: ${customerName}`, { size: 12, font: f.dam });
-  b.xuong(6);
+  b.xuong(10);
 
   veLaSo(b, f, baoCao.laSo);
   b.doan(baoCao.disclaimerDauBai, { size: 8.5, font: f.nghieng, mau: MAU.mucNhat });
@@ -368,6 +378,7 @@ export async function generateBatTuCoBanPdf(baoCao: BaoCaoCoBan, customerName: s
   veMoiNangCap(b, f, baoCao.moiDaiVan, baoCao.moiLuuNien);
 
   b.muc("Luận giải chi tiết");
+  b.xuong(6); // tách gạch chân của mục với pill giai đoạn đầu tiên (Nền tảng) — anh Công 2/9/2026.
   for (const gd of baoCao.giaiDoan) veGiaiDoan(b, f, gd.ma, gd.tieuDe, gd.noiDung);
 
   veLuuYVaLienHe(b, f, baoCao.disclaimerCuoiBai);
@@ -388,14 +399,16 @@ export async function generateBatTuToanDienPdf(
     phuDe: "12 giai đoạn luận giải trọn vẹn",
   });
 
+  b.xuong(18); // hạ dòng "Kính gửi" xuống cho cân đối với đầu trang (anh Công 2/9/2026, chỉnh thêm).
   b.dongGiua(`Kính gửi: ${customerName}`, { size: 12, font: f.dam });
-  b.xuong(6);
+  b.xuong(10);
 
   veLaSo(b, f, baoCaoCoBan.laSo);
   b.doan(baoCaoCoBan.disclaimerDauBai, { size: 8.5, font: f.nghieng, mau: MAU.mucNhat });
   b.xuong(6);
 
   b.muc("Luận giải chi tiết");
+  b.xuong(6); // tách gạch chân của mục với pill giai đoạn đầu tiên (Nền tảng) — anh Công 2/9/2026.
   for (const gd of baoCaoCoBan.giaiDoan) veGiaiDoan(b, f, gd.ma, gd.tieuDe, gd.noiDung);
   for (const gd of baoCaoNangCao.giaiDoan) {
     veGiaiDoan(b, f, gd.ma, gd.tieuDe, gd.noiDung);
@@ -428,13 +441,15 @@ export async function generateBatTuNangCaoPdf(baoCao: BaoCaoNangCao, customerNam
     phuDe: "Bản Nâng Cao — Thần Sát, lục thân, sức khỏe, Đại Vận",
   });
 
+  b.xuong(18); // hạ dòng "Kính gửi" xuống cho cân đối với đầu trang (anh Công 2/9/2026, chỉnh thêm).
   b.dongGiua(`Kính gửi: ${customerName}`, { size: 12, font: f.dam });
-  b.xuong(6);
+  b.xuong(10);
 
   veLaSo(b, f, baoCao.laSo);
   b.xuong(6);
 
   b.muc("Luận giải chi tiết");
+  b.xuong(6); // tách gạch chân của mục với pill giai đoạn đầu tiên (Nền tảng) — anh Công 2/9/2026.
   for (const gd of baoCao.giaiDoan) {
     veGiaiDoan(b, f, gd.ma, gd.tieuDe, gd.noiDung);
     if (gd.ma === "K") {
