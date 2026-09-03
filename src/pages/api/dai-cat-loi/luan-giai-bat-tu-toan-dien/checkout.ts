@@ -41,7 +41,12 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
   const docKq = docInput(body);
   if (!docKq.ok) return jsonResponse({ ok: false, error: docKq.error }, 400);
 
-  const customerName = locals.user.name;
+  // ⚠️ Bug thật 2/9/2026: trước đây LUÔN lấy tên chủ tài khoản, kể cả khi admin lập lá số CHO NGƯỜI
+  // KHÁC (vd khách "Mr Thắng") — PDF/email/banner "Lá số của: ..." bị gắn nhầm tên chủ tài khoản
+  // thay vì tên mệnh chủ thật. Nay ưu tiên `hoTen` gửi từ form (trường "Họ tên mệnh chủ"), chỉ lùi
+  // về tên tài khoản khi khách không nhập (giữ đúng hành vi cũ cho trường hợp tự lập cho chính mình).
+  const hoTenNhap = typeof b.hoTen === "string" ? b.hoTen.trim() : "";
+  const customerName = hoTenNhap || locals.user.name;
   const customerEmail = locals.user.email;
 
   try {

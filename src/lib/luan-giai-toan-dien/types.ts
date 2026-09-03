@@ -75,4 +75,9 @@ export interface LaSoHienThi {
   kyThan: string;
   /** "Sinh mùa Đông/Hè — cân nhắc thêm Hỏa/Thủy để điều hậu." — chỉ có khi sinh tháng hàn/nhiệt (Hợi/Tý/Sửu hoặc Tị/Ngọ/Mùi). */
   dieuHauNote: string | null;
+  /** Điểm thô Vượng Suy (analysis.vuongSuy.diem) — dùng vẽ đồ hình gauge, cùng quy ước clamp 0-100 với renderGoiMoGauge() ở lap-la-so-bat-tu.astro. */
+  diemVuongSuy: number;
+  /** Ngày giờ sinh DƯƠNG LỊCH gốc (nguyên từ BatTuInput) — anh Công yêu cầu 2/9/2026: bản gửi khách
+   *  phải ghi rõ ngày sinh mệnh chủ, không chỉ Can Chi Tứ Trụ (dễ đọc nhầm giữa nhiều lá số). */
+  ngaySinhDuong: { day: number; month: number; year: number; hour: number; minute?: number };
 }

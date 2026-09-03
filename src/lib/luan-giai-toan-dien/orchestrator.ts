@@ -31,7 +31,7 @@ const TEN_TRU_TIENG_VIET: Record<"year" | "month" | "day" | "hour", string> = {
   year: "Năm", month: "Tháng", day: "Ngày", hour: "Giờ",
 };
 
-export function laSoHienThi(chart: BatTuChart, analysis: BatTuAnalysis): LaSoHienThi {
+export function laSoHienThi(chart: BatTuChart, analysis: BatTuAnalysis, input: BatTuInput): LaSoHienThi {
   return {
     tuTru: (["year", "month", "day", "hour"] as const).map((k) => ({ tru: TEN_TRU_TIENG_VIET[k], can: chart[k].can, chi: chart[k].chi })),
     gioiTinh: chart.gender,
@@ -41,13 +41,15 @@ export function laSoHienThi(chart: BatTuChart, analysis: BatTuAnalysis): LaSoHie
     hyThan: analysis.dungThan.hyThan,
     kyThan: analysis.dungThan.kyThan,
     dieuHauNote: analysis.dungThan.dieuHauNote ?? null,
+    diemVuongSuy: analysis.vuongSuy.diem,
+    ngaySinhDuong: { day: input.day, month: input.month, year: input.year, hour: input.hour, ...(input.minute !== undefined ? { minute: input.minute } : {}) },
   };
 }
 
 export async function taoBaoCaoCoBan(input: BatTuInput): Promise<BaoCaoCoBan> {
   const { chart, analysis } = laSoVaPhanTich(input);
   const findingsList = taoFindingsCoBan(chart, analysis, input.year); // input.year = năm sinh, để J liệt kê Lưu Niên
-  const laSo = laSoHienThi(chart, analysis);
+  const laSo = laSoHienThi(chart, analysis, input);
 
   // ⚠️ 1/9/2026: Giai đoạn L PHẢI tổng hợp từ ĐỦ 11 giai đoạn A-K, không chỉ 6 giai đoạn Cơ Bản như
   // trước (khi còn tách 2 gói, D/E/F/I/K "khách có thể chưa mua" nên L không được nhắc tới). Từ khi
@@ -99,7 +101,7 @@ export async function taoBaoCaoCoBan(input: BatTuInput): Promise<BaoCaoCoBan> {
 export async function taoBaoCaoNangCao(input: BatTuInput): Promise<BaoCaoNangCao> {
   const { chart, analysis, tt } = laSoVaPhanTich(input);
   const findingsList = taoFindingsNangCao(chart, analysis);
-  const laSo = laSoHienThi(chart, analysis);
+  const laSo = laSoHienThi(chart, analysis, input);
 
   // D, E, F, I, K (văn xuôi) chạy song song với nhóm chấm điểm đồ hình.
   //

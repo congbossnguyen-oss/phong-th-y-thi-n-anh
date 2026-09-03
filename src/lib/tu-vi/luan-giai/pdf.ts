@@ -146,6 +146,7 @@ const LUU_Y =
 
 export async function generateTuViCoBanPdf(coBan: KetQuaCoBan, duLieu: DuLieuLaSoTuVi, customerName: string): Promise<Uint8Array> {
   const { doc, f, b } = await taoTaiLieuPdf();
+  b.giaDong = 6; // giãn dòng cho báo cáo dài, đỡ căng mắt khi đọc trên giấy/PDF (anh Công yêu cầu 1/9/2026)
   await veDauTrang(doc, b, f, { tieuDe: "Luận Giải Tử Vi — Cơ Bản", phuDe: "Luận đủ 12 cung theo Tử Vi Đẩu Số Nam Phái" });
   b.dongGiua(`Kính gửi: ${customerName}`, { size: 12, font: f.dam });
   b.xuong(6);
@@ -162,6 +163,7 @@ export async function generateTuViNangCaoPdf(
   customerName: string,
 ): Promise<Uint8Array> {
   const { doc, f, b } = await taoTaiLieuPdf();
+  b.giaDong = 6; // giãn dòng cho báo cáo dài, đỡ căng mắt khi đọc trên giấy/PDF (anh Công yêu cầu 1/9/2026)
   await veDauTrang(doc, b, f, { tieuDe: "Luận Giải Tử Vi — Nâng Cao", phuDe: "Trọn bộ 12 cung + Đại Hạn + Tiểu Hạn + Tổng kết chiến lược" });
   b.dongGiua(`Kính gửi: ${customerName}`, { size: 12, font: f.dam });
   b.xuong(6);

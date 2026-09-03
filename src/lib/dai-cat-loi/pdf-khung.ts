@@ -48,6 +48,13 @@ export class But {
   page: PDFPage;
   y: number;
   private soTrang = 1;
+  /**
+   * Khoảng cách THÊM giữa các dòng trong `doan()` (đoạn văn tự xuống dòng), ngoài chiều cao font.
+   * Mặc định 3 (hành vi cũ, giữ nguyên cho mọi phiếu hiện có). Đổi giá trị này ngay sau khi tạo `But`
+   * để giãn dòng cho CẢ tài liệu — dùng cho báo cáo dài chữ dày đặc (Bát Tự/Tử Vi) đỡ căng mắt hơn,
+   * không đụng tới các phiếu ngắn khác đang dùng mặc định.
+   */
+  giaDong = 3;
 
   constructor(
     private doc: PDFDocument,
@@ -113,13 +120,37 @@ export class But {
     this.y -= size + (o.dan ?? 4);
   }
 
-  /** Vẽ đoạn dài, tự xuống dòng theo bề ngang. */
-  doan(text: string, o: { size?: number; font?: PDFFont; mau?: RGB; x?: number } = {}): void {
+  /** Vẽ đoạn dài, tự xuống dòng theo bề ngang. CHÚ Ý: gộp mọi khoảng trắng kể cả "\n" gốc trong
+   *  `text` (ngatDong tách theo \s+) — dùng cho văn xuôi liền mạch, không giữ được xuống dòng/gạch
+   *  đầu dòng có chủ đích. Nội dung có cấu trúc (nhiều đoạn/liệt kê) thì dùng `doanCoCauTruc`. */
+  doan(text: string, o: { size?: number; font?: PDFFont; mau?: RGB; x?: number; dan?: number } = {}): void {
     const size = o.size ?? 9;
     const font = o.font ?? this.f.thuong;
     const x = o.x ?? LE;
     for (const d of ngatDong(text, font, size, A4.w - x - LE)) {
-      this.dong(d, { ...o, size, font, x, dan: 3 });
+      this.dong(d, { ...o, size, font, x, dan: o.dan ?? this.giaDong });
+    }
+  }
+
+  /**
+   * Như `doan()` nhưng GIỮ NGUYÊN xuống dòng thật ("\n") trong `text` — mỗi dòng gốc tự xuống dòng
+   * riêng theo bề ngang (không gộp chung 1 khối). Dòng bắt đầu bằng "- " hoặc "•" được vẽ thành mục
+   * liệt kê thụt lề (đổi dấu về "•" thống nhất). Dùng cho nội dung AI viết theo cấu trúc "đoạn ngắn
+   * + liệt kê" (anh Công yêu cầu 2/9/2026, xem ai-narrative.ts "Yêu cầu định dạng") — trước đó mọi
+   * nội dung AI đều là 1 khối văn xuôi liền mạch nên chỉ cần `doan()` là đủ.
+   */
+  doanCoCauTruc(text: string, o: { size?: number; font?: PDFFont; mau?: RGB; x?: number } = {}): void {
+    const size = o.size ?? 9;
+    const font = o.font ?? this.f.thuong;
+    const xGoc = o.x ?? LE;
+    const dong = text
+      .split("\n")
+      .map((d) => d.trim())
+      .filter(Boolean);
+    for (const d of dong) {
+      const laGachDau = /^[-•]\s*/.test(d);
+      const noiDung = laGachDau ? `• ${d.replace(/^[-•]\s*/, "")}` : d;
+      this.doan(noiDung, { size, font, mau: o.mau, x: laGachDau ? xGoc + 10 : xGoc });
     }
   }
 

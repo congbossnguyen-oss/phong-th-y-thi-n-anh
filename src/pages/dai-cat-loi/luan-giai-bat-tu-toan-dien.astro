@@ -308,13 +308,18 @@ function mauTheoDiemMoi(diem: number): string {
         </h2>
         <div id="ldbtd-da-khoi-phuc" class="mt-3 hidden rounded-(--radius-control) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 px-4 py-3">
           <p class="text-sm font-semibold text-(--color-ink-900)">✅ Đã dùng lại lá số bạn vừa lập</p>
-          <p class="mt-1 text-xs text-(--color-ink-600)">Không cần nhập lại ngày giờ sinh. Nếu muốn xem cho người khác, bấm "Lập lá số khác".</p>
+          <p class="mt-1 text-xs text-(--color-ink-600)">Đang điền lại: <strong id="ldbtd-khoi-phuc-chi-tiet" class="text-(--color-ink-800)"></strong>. Nếu đây KHÔNG phải lá số bạn muốn (vd đang mua cho người khác), bấm "Lập lá số khác" trước khi tiếp tục.</p>
           <button type="button" id="ldbtd-la-so-khac" class="mt-2 inline-flex items-center rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-1.5 text-xs font-semibold text-(--color-ink-800) hover:bg-(--color-ivory-200)">
             ↻ Lập lá số khác
           </button>
         </div>
 
         <form id="ldbtd-form" class="mt-4 flex flex-col gap-4">
+          <div>
+            <label for="ldbtd-hoten" class="text-xs font-medium text-(--color-ink-600)">Họ tên mệnh chủ (không bắt buộc)</label>
+            <input type="text" id="ldbtd-hoten" placeholder="Để trống nếu lập cho chính mình" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+            <p class="mt-1 text-xs text-(--color-ink-500)">Dùng để ghi đúng tên trên PDF/email khi lập lá số cho người khác — bỏ trống thì dùng tên tài khoản của bạn.</p>
+          </div>
           <DateSelect idPrefix="ldbtd-sinh" label="Ngày sinh (dương lịch)" required yearsBack={90} yearsForward={0} />
           <div class="grid grid-cols-2 gap-3">
             <div>
@@ -402,9 +407,10 @@ function mauTheoDiemMoi(diem: number): string {
   </Container>
 </BaseLayout>
 
-<script define:vars={{ daDangNhap: !!user, vanTayDaMua }}>
+<script define:vars={{ daDangNhap: !!user, vanTayDaMua, laQuanTri }}>
   window.__ldbtdDaDangNhap = daDangNhap;
   window.__ldbtdVanTay = vanTayDaMua;
+  window.__ldbtdLaQuanTri = laQuanTri;
 </script>
 <script>
   import { readDateSelects, ghiDateSelects } from "../../lib/date-select";
@@ -542,6 +548,7 @@ function mauTheoDiemMoi(diem: number): string {
         gio: Number(gio),
         ...(doc("ldbtd-phut") ? { phut: Number(doc("ldbtd-phut")) } : {}),
         gioiTinh,
+        ...(doc("ldbtd-hoten") ? { hoTen: doc("ldbtd-hoten") } : {}),
       };
     }
 
@@ -616,17 +623,32 @@ function mauTheoDiemMoi(diem: number): string {
     // ─ KHÔI PHỤC lá số khách đã lập ở trang miễn phí ────────────────────────────────────────────
     // Anh Công phản ánh 27/8/2026: khách điền đủ ngày giờ sinh ở trang lập lá số → sang đây → bị bắt
     // đăng nhập → xong lại phải nhập lại từ đầu. Nay điền sẵn và chạy luôn để họ thấy ngay lá số cũ.
-    const daLuu = docLaSoTam("bat-tu");
+    //
+    // ⚠️ Bug thật 2/9/2026: admin lập lá số trả phí cho khách (vd "Mr Thắng") xong, lần vào trang
+    // SAU (trong vòng 24h, xem HAN_MS ở la-so-tam.ts) để lập tiếp cho MỘT NGƯỜI KHÁC lại bị tự động
+    // điền + tự nộp lại đúng lá số CŨ — nếu không để ý kỹ banner mà bấm mua luôn thì tạo nhầm đơn cho
+    // lá số cũ. Tính năng này vốn sinh ra cho đúng 1 tình huống: khách THƯỜNG tự lập cho CHÍNH MÌNH,
+    // bị bắt đăng nhập giữa chừng, quay lại thì khỏi nhập lại — KHÔNG phải cho admin lập hộ nhiều
+    // người liên tiếp. Tắt hẳn tự khôi phục cho admin (admin luôn phải tự tay nhập từng lá số mới);
+    // giữ nguyên cho khách thường, nhưng hiện RÕ chi tiết ngày giờ đã khôi phục để dễ nhận ra ngay.
+    const laQuanTriClient = (window as unknown as { __ldbtdLaQuanTri: boolean }).__ldbtdLaQuanTri;
+    const daLuu = laQuanTriClient ? null : docLaSoTam("bat-tu");
     if (daLuu) {
       const dienDuoc = ghiDateSelects("ldbtd-sinh", { year: daLuu.nam, month: daLuu.thang, day: daLuu.ngay });
       const gioEl = document.getElementById("ldbtd-gio") as HTMLSelectElement | null;
       const phutEl = document.getElementById("ldbtd-phut") as HTMLInputElement | null;
       const gtEl = document.querySelector(`input[name="ldbtd-gioi-tinh"][value="${daLuu.gioiTinh}"]`) as HTMLInputElement | null;
+      const hoTenEl = document.getElementById("ldbtd-hoten") as HTMLInputElement | null;
       if (gioEl) gioEl.value = String(daLuu.gio);
       if (phutEl && typeof daLuu.phut === "number") phutEl.value = String(daLuu.phut);
       if (gtEl) gtEl.checked = true;
+      if (hoTenEl && daLuu.hoTen) hoTenEl.value = daLuu.hoTen;
 
       if (dienDuoc && gioEl?.value && gtEl) {
+        const chiTietEl = document.getElementById("ldbtd-khoi-phuc-chi-tiet");
+        if (chiTietEl) {
+          chiTietEl.textContent = `${daLuu.hoTen ? `${daLuu.hoTen} — ` : ""}${String(daLuu.ngay).padStart(2, "0")}/${String(daLuu.thang).padStart(2, "0")}/${daLuu.nam}, ${daLuu.gio}h${typeof daLuu.phut === "number" ? String(daLuu.phut).padStart(2, "0") : "00"}, ${daLuu.gioiTinh}`;
+        }
         document.getElementById("ldbtd-da-khoi-phuc")?.classList.remove("hidden");
         // Chạy luôn để khách thấy lại lá số cũ mà không phải bấm thêm lần nữa.
         requestAnimationFrame(() => form.requestSubmit());
@@ -654,6 +676,7 @@ function mauTheoDiemMoi(diem: number): string {
         loai: "bat-tu", ngay: ns.day, thang: ns.month, nam: ns.year,
         gio: dauVao.gio as number, phut: dauVao.phut as number | undefined,
         gioiTinh: dauVao.gioiTinh as "Nam" | "Nữ",
+        ...(dauVao.hoTen ? { hoTen: dauVao.hoTen as string } : {}),
       });
 
       dangChayEl.classList.remove("hidden");

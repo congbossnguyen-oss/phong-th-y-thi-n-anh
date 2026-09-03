@@ -67,7 +67,11 @@ export const GIAI_DOAN_NANG_CAO: GiaiDoanConfig[] = [
 const SCHEMA = {
   type: "object",
   properties: {
-    noi_dung: { type: "string", description: "Đoạn văn xuôi hoàn chỉnh cho giai đoạn này. Để chuỗi rỗng nếu findings không đủ căn cứ để viết." },
+    noi_dung: {
+      type: "string",
+      description:
+        "Nội dung hoàn chỉnh cho giai đoạn này — đoạn mở đầu/diễn giải viết văn xuôi liền mạch, còn phần liệt kê nhiều ý cùng cấp thì mỗi ý 1 dòng bắt đầu bằng \"- \" (xem chi tiết ở mục Yêu cầu định dạng). Để chuỗi rỗng nếu findings không đủ căn cứ để viết.",
+    },
   },
   required: ["noi_dung"],
 } as const;
@@ -118,7 +122,12 @@ function buildSystemPrompt(cfg: GiaiDoanConfig, laSoJSON: string, findingsJSON: 
     "## Yêu cầu định dạng",
     "- Viết văn xuôi tiếng Việt tự nhiên, giọng điềm đạm, ấm áp, không giáo điều.",
     `- Độ dài: ${cfg.doDaiGoiY} (điều chỉnh theo lượng findings thực có, findings ít thì viết ngắn, không độn chữ).`,
-    "- Không dùng gạch đầu dòng liệt kê khô khan, viết thành đoạn văn liền mạch.",
+    // ⚠️ Đổi 2/9/2026 (anh Công phản ánh báo cáo "quá dày đặc chữ, đỡ ngại đọc"): TRƯỚC ĐÂY dặn
+    // "không gạch đầu dòng, viết liền mạch" — nay đổi ngược lại CHO PHẦN LIỆT KÊ (không áp dụng cho
+    // đoạn mở đầu/diễn giải thường). Đây là quy tắc VỀ BỐ CỤC ĐOẠN — khác hẳn quy tắc "không dùng
+    // dấu gạch ngang giữa câu để nối 2 vế" ở dưới (đó là lỗi văn phong lộ AI, không liên quan gạch
+    // đầu dòng ở ĐẦU 1 dòng liệt kê).
+    "- Khi có TỪ 2 Ý TRỞ LÊN cùng cấp (nhiều gợi ý, nhiều điểm mạnh/yếu, nhiều lưu ý, nhiều lựa chọn...), TÁCH RÕ mỗi ý thành 1 dòng riêng, bắt đầu bằng \"- \" và xuống dòng thật (ký tự \\n) giữa các dòng — KHÔNG dồn nhiều ý vào 1 câu dài nối bằng dấu phẩy/chữ \"và\". Đoạn mở đầu, phần diễn giải nguyên nhân, hay kết luận (không phải đang liệt kê nhiều ý ngang hàng) vẫn viết văn xuôi liền mạch bình thường, KHÔNG cần chẻ vụn thành gạch đầu dòng. Có thể xuống dòng (\\n\\n) giữa các đoạn ý khác chủ đề để tạo khoảng nghỉ mắt.",
     "- Không lặp lại nguyên văn thuật ngữ Hán Việt (Thất Sát, Kiếp Tài...) quá nhiều lần liên tiếp, xen kẽ diễn giải bằng ngôn ngữ đời thường.",
     "- TUYỆT ĐỐI KHÔNG dùng dấu gạch ngang \"-\" hay chấm phẩy \";\" để nối câu (đây là lỗi văn phong lộ rõ là AI viết) — thay bằng dấu phẩy, chấm câu, hoặc viết lại thành 2 câu riêng.",
     "- TUYỆT ĐỐI KHÔNG chèn bất kỳ thẻ/ký hiệu nào giống code hoặc XML (vd </noi_dung>, <invoke>, **, ##) vào NỘI DUNG văn xuôi — chỉ viết văn xuôi thuần tuý tiếng Việt, không có ký hiệu định dạng nào khác ngoài dấu câu thông thường.",
