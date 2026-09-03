@@ -266,6 +266,7 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
 
 <script>
   import { readDateSelects } from "../../lib/date-select";
+  import { trackPurchase } from "../../lib/analytics/ecommerce";
 
   const form = document.getElementById("dhn-form") as HTMLFormElement | null;
   if (form) {
@@ -280,6 +281,7 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
 
     let pollTimer: ReturnType<typeof setInterval> | null = null;
     let dangHoi = false;
+    let gaTongTien = 0;
     const doc = (id: string) => (document.getElementById(id) as HTMLInputElement | null)?.value.trim() ?? "";
 
     const tatDangChay = () => { dangChayEl.classList.add("hidden"); if (nutSubmit) nutSubmit.disabled = false; };
@@ -296,6 +298,11 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
         if (data.status === "cancelled") { dungCho(); trangThaiEl.textContent = "Đơn hàng đã bị hủy."; return; }
         if (data.status !== "confirmed") return;
         dungCho();
+        trackPurchase({
+          transactionId: orderCode,
+          value: gaTongTien,
+          items: [{ item_id: "dinh-huong-nghe-nghiep", item_name: "Định Hướng Nghề Nghiệp", price: gaTongTien, quantity: 1 }],
+        });
         // Đã thanh toán → vào lại CHÍNH trang đang mở với mã đơn để server tính & hiện kết quả.
         // Dùng pathname hiện tại (không hard-code /dai-cat-loi/...) vì component này dùng chung cho
         // cả bản web lẫn bản in-app Quân Sư — hard-code sẽ đá khách trong app văng ra ngoài web.
@@ -342,6 +349,7 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
         if (!res.ok || !data.ok) return baoLoi(data.error ?? "Không tạo được đơn hàng.");
         tatDangChay();
         orderCodeEl.textContent = data.orderCode;
+        gaTongTien = Number(data.totalAmount) || 0;
 
         if (data.mienPhi) { dangChayEl.classList.remove("hidden"); await kiemTra(data.orderCode); return; }
 
