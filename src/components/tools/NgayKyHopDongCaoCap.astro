@@ -125,6 +125,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
 
 <script>
   import { readDateSelects } from "../../lib/date-select";
+  import { trackPurchase } from "../../lib/analytics/ecommerce";
 
   const form = document.getElementById("nkhd-form") as HTMLFormElement;
   const loiEl = document.getElementById("nkhd-loi")!;
@@ -140,6 +141,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
   const TEST_MODE = form.dataset.testMode === "true";
 
   let pollTimer: ReturnType<typeof setInterval> | null = null;
+  let gaTongTien = 0;
   // Chặn 2 lượt hỏi kết quả chồng nhau — quét gần trăm ngày mất vài giây, nhịp hỏi chỉ 3 giây.
   let dangHoi = false;
 
@@ -234,6 +236,11 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
       dungCho();
       dangChayEl.classList.add("hidden");
       thanhToanEl.classList.add("hidden");
+      trackPurchase({
+        transactionId: orderCode,
+        value: gaTongTien,
+        items: [{ item_id: "ngay-ky-hop-dong-cao-cap", item_name: "Ngày Ký Hợp Đồng Cao Cấp", price: gaTongTien, quantity: 1 }],
+      });
       render(data.result);
     } catch {
       // Mạng chập chờn — để nhịp sau thử lại, không báo lỗi làm khách hoảng.
@@ -290,6 +297,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
       if (!res.ok || !data.ok) return baoLoi(data.error ?? "Không tạo được đơn hàng.");
       tatDangChay();
       orderCodeEl.textContent = data.orderCode;
+      gaTongTien = Number(data.totalAmount) || 0;
 
       // Mã miễn phí 100%: server đã xác nhận đơn luôn và trả qrUrl = null — không gán null vào thẻ
       // ảnh rồi bảo khách "đang chờ thanh toán".

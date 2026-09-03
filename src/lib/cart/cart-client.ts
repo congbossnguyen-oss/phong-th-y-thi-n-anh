@@ -2,6 +2,8 @@
 // Khi kết nối DB (Giai đoạn 3 đầy đủ), thay bằng API /api/cart/* ghi vào bảng orders/order_items,
 // giữ nguyên các hàm addItem/removeItem/updateQty để hạn chế phải sửa UI.
 
+import { trackAddToCart } from "../analytics/ecommerce";
+
 export interface CartItem {
   slug: string;
   name: string;
@@ -40,6 +42,7 @@ export function addItem(item: Omit<CartItem, "qty">, qty = 1) {
     items.push({ ...item, qty });
   }
   writeCart(items);
+  trackAddToCart({ item_id: item.slug, item_name: item.name, price: item.price, quantity: qty });
 }
 
 export function updateQty(slug: string, qty: number) {

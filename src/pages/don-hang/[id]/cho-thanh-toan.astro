@@ -30,6 +30,10 @@ const formatPrice = (price: number) =>
 
 const successRedirect =
   order.orderType === "course" && order.courseRef ? `/hoc-vien/khoa-hoc/${order.courseRef}` : `/don-hang/thanh-cong?orderId=${order.id}`;
+
+const gaItemName = course?.name ?? (order.orderType === "course" ? "Khóa học" : "Đơn hàng");
+const gaItemId = order.courseRef ?? order.orderCode;
+const gaValue = Number(order.totalAmount);
 ---
 
 <BaseLayout title="Chờ thanh toán" description="Quét mã QR để hoàn tất thanh toán." noIndex>
@@ -63,7 +67,7 @@ const successRedirect =
   </Container>
 </BaseLayout>
 
-<script define:vars={{ orderId: order.id, successRedirect }}>
+<script define:vars={{ orderId: order.id, successRedirect, orderCode: order.orderCode, gaItemName, gaItemId, gaValue }}>
   const badge = document.getElementById("status-badge");
 
   async function poll() {
@@ -74,6 +78,18 @@ const successRedirect =
         if (badge) {
           badge.textContent = "Thanh toán thành công! Đang chuyển hướng...";
           badge.className = "mt-4 flex items-center gap-2 rounded-full bg-(--color-success-500)/10 px-4 py-2 text-sm font-medium text-(--color-success-500)";
+        }
+        try {
+          if (typeof window.gtag === "function") {
+            window.gtag("event", "purchase", {
+              transaction_id: orderCode,
+              currency: "VND",
+              value: gaValue,
+              items: [{ item_id: gaItemId, item_name: gaItemName, price: gaValue, quantity: 1 }],
+            });
+          }
+        } catch {
+          // đo lường là phụ, không được chặn việc chuyển hướng khách sau khi đã thanh toán
         }
         window.location.href = successRedirect;
         return;

@@ -248,6 +248,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
 
 <script>
   import { readDateSelects } from "../../lib/date-select";
+  import { trackPurchase } from "../../lib/analytics/ecommerce";
 
   interface TruQue { can: string; chi: string; que: string; hknh: number; quaiVan: number }
   interface MenhChuQue { canChiNamSinh: string; que: string; hknh: number; quaiVan: number }
@@ -422,6 +423,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
   };
 
   let pollTimer: ReturnType<typeof setInterval> | null = null;
+  let gaTongTien = 0;
   // Chặn 2 lượt hỏi kết quả chồng nhau. Chế độ tìm tháng quét ~365 ngày mất 20-30 giây, mà nhịp
   // hỏi là 3 giây — không có cờ này thì mỗi nhịp lại châm thêm một lượt quét cả năm, chồng cả chục
   // lượt và làm nghẽn máy chủ.
@@ -634,6 +636,11 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
       dungCho();
       dangChayEl.classList.add("hidden");
       thanhToanEl.classList.add("hidden");
+      trackPurchase({
+        transactionId: orderCode,
+        value: gaTongTien,
+        items: [{ item_id: "xem-ngay-cao-cap", item_name: "Xem Ngày Cao Cấp", price: gaTongTien, quantity: 1 }],
+      });
       hienKetQua(data);
     } catch {
       // Mạng chập chờn — cứ để nhịp hỏi sau thử lại, không báo lỗi làm khách hoảng.
@@ -736,6 +743,7 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
       if (!res.ok || !data.ok) return baoLoi(data.error ?? "Không tạo được đơn hàng.");
       tatDangChay();
       orderCodeEl.textContent = data.orderCode;
+      gaTongTien = Number(data.totalAmount) || 0;
 
       // Mã miễn phí 100%: server đã xác nhận đơn luôn và trả qrUrl = null. Không gán null vào thẻ
       // ảnh (QR vỡ) rồi bảo khách "đang chờ thanh toán" — lấy kết quả về ngay.

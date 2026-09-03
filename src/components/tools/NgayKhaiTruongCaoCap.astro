@@ -110,6 +110,7 @@ const namNay = new Date().getFullYear();
 
 <script>
   import { readDateSelects } from "../../lib/date-select";
+  import { trackPurchase } from "../../lib/analytics/ecommerce";
 
   const form = document.getElementById("ktcc-form") as HTMLFormElement;
   const oLoi = document.getElementById("ktcc-loi")!;
@@ -161,6 +162,7 @@ const namNay = new Date().getFullYear();
   }
 
   let pollTimer: ReturnType<typeof setInterval> | null = null;
+  let gaTongTien = 0;
   function stopPolling() { if (pollTimer) clearInterval(pollTimer); pollTimer = null; }
 
   async function pollResult(orderCode: string) {
@@ -173,6 +175,11 @@ const namNay = new Date().getFullYear();
         trangThaiEl.textContent = "Đã thanh toán — kết quả hiển thị bên dưới.";
         oThanhToan.classList.add("hidden");
         form.classList.add("hidden");
+        trackPurchase({
+          transactionId: orderCode,
+          value: gaTongTien,
+          items: [{ item_id: "ngay-khai-truong-cao-cap", item_name: "Ngày Khai Trương Cao Cấp", price: gaTongTien, quantity: 1 }],
+        });
         oKetQua.innerHTML = veKetQua(data.result);
         oKetQua.classList.remove("hidden");
         oKetQua.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -217,6 +224,7 @@ const namNay = new Date().getFullYear();
       const data = await res.json();
       if (!res.ok || !data.ok) { oLoi.textContent = data.error || "Không tạo được đơn hàng."; oLoi.classList.remove("hidden"); return; }
 
+      gaTongTien = Number(data.totalAmount) || 0;
       if (data.mienPhi) { orderCodeEl.textContent = data.orderCode; await pollResult(data.orderCode); return; }
       qrImg.src = data.qrUrl;
       orderCodeEl.textContent = data.orderCode;
