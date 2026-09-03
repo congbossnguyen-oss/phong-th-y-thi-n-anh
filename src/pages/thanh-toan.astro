@@ -76,6 +76,7 @@ export const prerender = true;
 
 <script>
   import { getCart, clearCart } from "../lib/cart/cart-client";
+  import { trackBeginCheckout, trackGenerateLead } from "../lib/analytics/ecommerce";
 
   const emptyEl = document.getElementById("checkout-empty")!;
   const contentEl = document.getElementById("checkout-content")!;
@@ -99,6 +100,9 @@ export const prerender = true;
       summaryItemsEl.appendChild(li);
     });
     // Không hiện tổng tiền — báo giá diễn ra qua tư vấn (nhãn tĩnh "Sau khi tư vấn" đã đặt sẵn trong HTML).
+
+    const gaItems = items.map((i) => ({ item_id: i.slug, item_name: i.name, price: i.price, quantity: i.qty }));
+    trackBeginCheckout(gaItems, items.reduce((sum, i) => sum + i.price * i.qty, 0));
 
     const errorEl = document.getElementById("checkout-error")!;
     const submitBtn = document.getElementById("checkout-submit") as HTMLButtonElement;
@@ -136,6 +140,7 @@ export const prerender = true;
           return;
         }
 
+        trackGenerateLead(gaItems);
         clearCart();
 
         // Luôn về trang xác nhận đã nhận yêu cầu — không còn nhánh đi tới trang quét mã QR thanh toán.
