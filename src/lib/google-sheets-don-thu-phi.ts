@@ -37,6 +37,7 @@ export const TEN_CONG_CU_HIEN_THI: Record<string, string> = {
   "hop-hon": "Hợp Hôn Bát Tự × Tử Vi",
   "hop-hon-qs": "Hợp Hôn Bát Tự × Tử Vi (app Quân Sư)",
   "dau-thu-chon-ngay": "Đẩu Thủ Chọn Ngày",
+  "thuc-dinh-tai-quy": "Chọn Ngày Thúc Đinh · Tài · Quý",
 };
 
 export interface DonThuPhiChoSheet {
