@@ -3,12 +3,17 @@
 // không link ra web). Trước đây trang này CHƯA TỒN TẠI: mục Hợp Hôn ở /quan-su/dich-vu-vip trỏ tới
 // /quan-su/hop-hon, rơi vào route bắt-tất [category].astro rồi lặng lẽ redirect về /quan-su.
 //
-// ⏸️ THỬ NGHIỆM NỘI BỘ: khoá admin nằm trong component HopHon.astro (dùng chung với bản web).
+// ✅ ĐÃ MỞ BÁN (1/9/2026) — khoá admin trước đây nằm trong component HopHon.astro (dùng chung với
+// bản web), đã gỡ.
+//
+// Từ 1/9/2026: dùng bản component ĐỘC LẬP `components/quan-su/tools/HopHon.astro` (toolSlug
+// `hop-hon-qs`, API riêng `/api/quan-su/vip/hop-hon-qs/*`) thay vì component dùng chung với web —
+// theo chủ trương tách Quân Sư khỏi web để sau này dựng app riêng không phải đấu nối lại.
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import BottomNav from "../../components/quan-su/BottomNav.astro";
 import VipQuyenBanner from "../../components/quan-su/VipQuyenBanner.astro";
-import HopHon from "../../components/tools/HopHon.astro";
+import HopHon from "../../components/quan-su/tools/HopHon.astro";
 
 export const prerender = false;
 ---

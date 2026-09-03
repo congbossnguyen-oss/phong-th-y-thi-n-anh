@@ -1,0 +1,23 @@
+---
+// Bản in-app của dịch vụ VIP "Đẩu Thủ Chọn Ngày" — TỰ CHỨA trong app Quân Sư (App Store, không
+// link ra web). Thêm 4/9/2026 (bỏ sót lúc mở bán bản web 1/9 — khiến khách bấm vào module này
+// trong menu "Dịch vụ VIP" của app bị văng về trang chủ vì route chưa tồn tại).
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
+import VipQuyenBanner from "../../components/quan-su/VipQuyenBanner.astro";
+import DauThuChonNgay from "../../components/quan-su/tools/DauThuChonNgay.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout title="Đẩu Thủ Chọn Ngày — Quân Sư Thiên Anh" description="Đẩu Thủ Chọn Ngày trong app Quân Sư." appShell>
+  <PageHero
+    eyebrow="Dịch vụ VIP"
+    title="Đẩu Thủ Chọn Ngày"
+    breadcrumbs={[{ label: "Quân Sư", href: "/quan-su" }, { label: "Dịch vụ VIP", href: "/quan-su/dich-vu-vip" }, { label: "Đẩu Thủ Chọn Ngày" }]}
+  />
+  <VipQuyenBanner />
+  <DauThuChonNgay />
+  <BottomNav />
+</BaseLayout>

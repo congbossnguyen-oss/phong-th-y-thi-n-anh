@@ -1,0 +1,417 @@
+---
+// Bản ĐỘC LẬP cho app Quân Sư của "Chọn Ngày Giờ Nhận Chức" (anh Công chốt 1/9/2026: Quân Sư
+// không đấu nối code với web nữa). CỐ Ý gần như y hệt `src/components/tools/NhanChuc.astro` —
+// chấp nhận trùng lặp UI/routing thay vì import chéo sang component web. Vẫn dùng CHUNG engine
+// tính toán (`@thien-anh/trachnhat-engine`). Gọi API riêng ở `/api/quan-su/vip/nhan-chuc-qs/*`
+// (toolSlug `nhan-chuc-qs`).
+//
+// ⚠️ LƯU Ý: bản web có bug đã biết (không gửi PDF/email) — bản này CỐ Ý COPY ĐÚNG hành vi hiện tại,
+// vá bug đó nằm NGOÀI phạm vi tách module.
+import BottomNav from "../../quan-su/BottomNav.astro";
+import Container from "../../ui/Container.astro";
+import Button from "../../ui/Button.astro";
+import DateSelect from "../../ui/DateSelect.astro";
+import MaKhuyenMai from "../../ui/MaKhuyenMai.astro";
+import { GIA_CONG_CU, dinhDangTien } from "../../../lib/payments/gia-cong-cu";
+
+// Render phía máy chủ để đọc phiên đăng nhập — cần để nhận diện tài khoản QUẢN TRỊ. Prerender thì
+// `Astro.locals.user` luôn rỗng lúc build.
+export const prerender = false;
+
+// Đã BẬT THU PHÍ: khách phải thanh toán thật; riêng tài khoản QUẢN TRỊ đi luồng thật ở mức 0đ để
+// test trọn quy trình (tạo đơn → xác nhận → trả kết quả) mà không mất tiền.
+const laQuanTri = Astro.locals.user?.isAdmin === true;
+const TEST_MODE = false;
+
+const TOOL_SLUG = "nhan-chuc-qs";
+const TOOL_PRICE = GIA_CONG_CU[TOOL_SLUG];
+const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
+---
+
+  <Container class="py-16">
+    <div class="mx-auto max-w-2xl">
+      {laQuanTri && (
+        <div class="mb-4 rounded-(--radius-card) border-2 border-(--color-gold-400) bg-(--color-gold-400)/10 p-4 text-sm font-medium text-(--color-gold-600)">
+          🔒 CHẾ ĐỘ QUẢN TRỊ — đơn của bạn được tạo ở mức 0đ và tự xác nhận để test trọn luồng thu phí ({TOOL_PRICE_LABEL}/lượt với khách).
+        </div>
+      )}
+
+      <div class="mb-6 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-4 text-sm text-(--color-ink-600)">
+        <p class="font-medium text-(--color-ink-800)">Module này làm gì?</p>
+        <ul class="mt-1.5 list-disc space-y-1 pl-5">
+          <li><strong>Lọc hung sát trước tiên:</strong> ngày phạm Kim Thần Thất Sát, Sát Chủ, Thọ Tử, Trực Phá/Bế, hoặc Lục Xung trực tiếp với tuổi người nhận chức bị loại thẳng — cát tinh không cứu được.</li>
+          <li><strong>Ưu tiên công danh:</strong> Nhị Thập Bát Tú có 5 sao ghi nhận riêng cho nhận chức (Lâu, Vĩ, Chẩn tốt; Mão kỵ; Tinh có ngoại lệ tốt).</li>
+          <li><strong>Xét tuổi & mệnh:</strong> Lục Hợp/Tam Hợp với tuổi, Nạp Âm ngày sinh/khắc mệnh. Có đủ ngày sinh thì mở thêm lớp Thập Thần (ưu tiên ngày Chính Quan — quyền lực chính danh).</li>
+          <li><strong>Chọn luôn giờ nhận chức</strong> trong từng ngày được đề xuất.</li>
+        </ul>
+        <p class="mt-2 text-xs text-(--color-ink-500)">
+          Theo đúng nguyên tắc nghề: <strong>Hoàng Đạo chỉ là yếu tố hỗ trợ, không phải điều kiện đủ.</strong>
+          Một số mục cổ chưa có công thức tra cứu đủ tin cậy (Giờ Quý Nhân Đăng Thiên Môn đầy đủ, Cửu
+          Sửu, Diệt Một, Vãng Vong…) được hệ thống <strong>bỏ qua, không cho điểm đoán</strong> và liệt kê
+          minh bạch trong kết quả.
+        </p>
+      </div>
+
+      <form
+        id="nc-form"
+        data-test-mode={String(TEST_MODE)}
+        class="flex flex-col gap-4 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6"
+      >
+        <div>
+          <label for="nc-chuc-vu" class="text-sm font-medium text-(--color-ink-800)">Chức vụ nhận (tùy chọn)</label>
+          <input
+            type="text"
+            id="nc-chuc-vu"
+            placeholder="vd Giám đốc, Trưởng phòng, Bí thư…"
+            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"
+          />
+        </div>
+
+        <div>
+          <DateSelect idPrefix="nc-tu" label="Tìm từ ngày (dương lịch)" required yearsBack={1} yearsForward={5} />
+        </div>
+        <div>
+          <DateSelect idPrefix="nc-den" label="Đến ngày (dương lịch)" required yearsBack={1} yearsForward={5} />
+        </div>
+        <p class="-mt-1 text-xs text-(--color-ink-500)">Tối đa 92 ngày cho một lần tìm.</p>
+
+        <details class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3" open>
+          <summary class="cursor-pointer text-sm font-medium text-(--color-ink-800)">
+            Ngày sinh người nhận chức (nên có — mở khoá lớp Thập Thần & xét tuổi)
+          </summary>
+          <div class="mt-3">
+            <DateSelect idPrefix="nc-sinh" label="Ngày sinh dương lịch" yearsBack={90} yearsForward={0} />
+            <p class="mt-1.5 text-xs text-(--color-ink-500)">
+              Cần đủ ngày–tháng–năm vì Nhật Chủ lấy theo Can của trụ NGÀY sinh. Bỏ trống vẫn chạy được
+              (module không bắt buộc có giờ/ngày sinh), chỉ mất phần chấm điểm riêng theo người nhận chức.
+            </p>
+          </div>
+        </details>
+
+        <details class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3">
+          <summary class="cursor-pointer text-sm font-medium text-(--color-ink-800)">
+            Giữ khung giờ nhận chức (tùy chọn)
+          </summary>
+          <div class="mt-3 grid grid-cols-2 gap-3">
+            <div>
+              <label for="nc-gio-tu" class="text-xs text-(--color-ink-600)">Từ giờ</label>
+              <input type="number" id="nc-gio-tu" min="0" max="23" placeholder="vd 9" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2 text-sm text-(--color-ink-800)" />
+            </div>
+            <div>
+              <label for="nc-gio-den" class="text-xs text-(--color-ink-600)">Đến giờ</label>
+              <input type="number" id="nc-gio-den" min="1" max="24" placeholder="vd 11" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2 text-sm text-(--color-ink-800)" />
+            </div>
+          </div>
+          <p class="mt-1.5 text-xs text-(--color-ink-500)">Chỉ chọn ngày có giờ tốt nằm trong khung này (mục 29). Bỏ trống thì xét đủ 12 giờ.</p>
+        </details>
+
+        {!TEST_MODE && (
+        <>
+        <div class="border-t border-(--color-ivory-300) pt-4">
+          <p class="text-sm font-medium text-(--color-ink-800)">Thông tin liên hệ (để nhận kết quả sau khi thanh toán)</p>
+          <div class="mt-2 grid gap-3">
+            <input
+              type="text"
+              id="nc-ten"
+              placeholder="Họ tên"
+              required
+              class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"
+            />
+            <input
+              type="tel"
+              id="nc-sdt"
+              placeholder="Số điện thoại"
+              required
+              class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"
+            />
+            <input
+              type="email"
+              id="nc-email"
+              placeholder="Email (tùy chọn)"
+              class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"
+            />
+          </div>
+        </div>
+
+        <MaKhuyenMai idPrefix="nc-ma" toolSlug={TOOL_SLUG} giaGoc={TOOL_PRICE} />
+        </>
+        )}
+
+        <Button type="submit" size="lg">Tìm ngày giờ nhận chức tốt nhất</Button>
+      </form>
+
+      <div id="nc-dang-chay" class="mt-4 hidden rounded-(--radius-card) border border-(--color-gold-500)/40 bg-(--color-gold-400)/10 p-4 text-sm text-(--color-ink-700)">
+        <p class="font-medium text-(--color-ink-900)">⏳ Đang quét từng ngày trong khoảng đã chọn…</p>
+      </div>
+
+      <div id="nc-loi" class="mt-4 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm text-(--color-danger-500)"></div>
+
+      <div id="nc-thanh-toan" class="mt-6 hidden space-y-4 rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-center text-(--color-ink-950) shadow-lg">
+        <p class="font-display text-lg font-bold">Quét mã QR để thanh toán <span id="nc-so-tien">{TOOL_PRICE_LABEL}</span></p>
+        <img id="nc-qr" src="" alt="Mã QR thanh toán" class="mx-auto h-64 w-64 rounded-xl border border-(--color-ivory-300)" />
+        <p class="text-sm text-(--color-ink-600)">Mã đơn hàng: <strong id="nc-order-code"></strong></p>
+        <p id="nc-trang-thai" class="text-sm font-medium text-(--color-gold-400)">Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)</p>
+      </div>
+
+      <div id="nc-ket-qua" class="mt-6 hidden space-y-4"></div>
+    </div>
+  </Container>
+  <BottomNav />
+
+<script>
+  import { readDateSelects } from "../../../lib/date-select";
+
+  const form = document.getElementById("nc-form") as HTMLFormElement;
+  const loiEl = document.getElementById("nc-loi")!;
+  const ketQuaEl = document.getElementById("nc-ket-qua")!;
+  const dangChayEl = document.getElementById("nc-dang-chay")!;
+  const thanhToanEl = document.getElementById("nc-thanh-toan")!;
+  const qrImg = document.getElementById("nc-qr") as HTMLImageElement;
+  const orderCodeEl = document.getElementById("nc-order-code")!;
+  const trangThaiEl = document.getElementById("nc-trang-thai")!;
+  const soTienEl = document.getElementById("nc-so-tien")!;
+  const nutSubmit = form.querySelector('button[type="submit"]') as HTMLButtonElement | null;
+
+  const TEST_MODE = form.dataset.testMode === "true";
+
+  let pollTimer: ReturnType<typeof setInterval> | null = null;
+  let dangHoi = false;
+
+  const doc = (id: string) => (document.getElementById(id) as HTMLInputElement | null)?.value.trim() ?? "";
+
+  const tatDangChay = () => {
+    dangChayEl.classList.add("hidden");
+    if (nutSubmit) nutSubmit.disabled = false;
+  };
+  const baoLoi = (msg: string) => {
+    tatDangChay();
+    loiEl.textContent = msg;
+    loiEl.classList.remove("hidden");
+  };
+  const dungCho = () => {
+    if (pollTimer) {
+      clearInterval(pollTimer);
+      pollTimer = null;
+    }
+  };
+
+  const esc = (s: unknown) =>
+    String(s).replace(/[&<>"']/g, (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!,
+    );
+
+  // Mỗi mức xếp hạng một tông màu riêng cho bắt mắt.
+  const STATUS_STYLE: Record<string, { pill: string; score: string; bar: string; ring: string }> = {
+    "ĐẠI TỐT":    { pill: "bg-(--color-success-500) text-(--color-on-accent)", score: "text-(--color-success-500)", bar: "from-(--color-success-500) to-(--color-success-500)", ring: "ring-(--color-success-500)/40" },
+    "TỐT":        { pill: "bg-(--color-success-500)/70 text-(--color-on-accent)", score: "text-(--color-success-500)", bar: "from-(--color-success-500)/70 to-(--color-success-500)/40", ring: "ring-(--color-success-500)/25" },
+    "KHÁ":        { pill: "bg-(--color-gold-500) text-(--color-on-accent)", score: "text-(--color-gold-500)", bar: "from-(--color-gold-400) to-(--color-gold-500)", ring: "ring-(--color-gold-400)/30" },
+    "TRUNG BÌNH": { pill: "bg-(--color-gold-400)/70 text-(--color-on-accent)", score: "text-(--color-gold-400)", bar: "from-(--color-gold-300) to-(--color-gold-400)", ring: "ring-(--color-gold-300)/25" },
+    "XẤU":        { pill: "bg-(--color-cinnabar-500)/75 text-(--color-on-accent)", score: "text-(--color-cinnabar-500)", bar: "from-(--color-cinnabar-400) to-(--color-cinnabar-500)", ring: "ring-(--color-cinnabar-400)/30" },
+    "LOẠI":       { pill: "bg-(--color-cinnabar-500) text-(--color-on-accent)", score: "text-(--color-cinnabar-500)", bar: "from-(--color-cinnabar-500) to-(--color-cinnabar-700)", ring: "ring-(--color-cinnabar-500)/40" },
+  };
+  const HANG = ["🥇 TOP 1", "🥈 TOP 2", "🥉 TOP 3", "TOP 4", "TOP 5"];
+
+  function theGio(gio: any[]): string {
+    if (!gio || gio.length === 0) return "";
+    const chips = gio
+      .map((g, i) => {
+        const best = i === 0;
+        const cls = best ? "bg-(--color-gold-400) text-(--color-on-accent) ring-(--color-gold-500) shadow-sm" : "bg-(--color-gold-400)/15 text-(--color-gold-600) ring-(--color-gold-300)";
+        const nhan = best ? "★ Tốt nhất · " : `#${i + 1} · `;
+        const mauGio = best ? "text-(--color-gold-100)" : "text-(--color-gold-400)";
+        return `<span class="inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ring-1 ${cls}">🕐 ${nhan}${esc(g.chiGio)} <span class="font-normal ${mauGio}">${esc(g.khungGio)}</span></span>`;
+      })
+      .join(" ");
+    return `<div class="mt-3">
+      <p class="text-xs font-bold uppercase tracking-wide text-(--color-gold-500)">⏰ Giờ nên nhận chức <span class="font-normal normal-case text-(--color-ink-400)">(xếp theo tốt nhất)</span></p>
+      <div class="mt-1.5 flex flex-wrap gap-2">${chips}</div>
+    </div>`;
+  }
+
+  function theYeuTo(yeuTo: any[]): string {
+    return (yeuTo ?? [])
+      .slice(0, 8)
+      .map((y: any) => {
+        const d = Number(y.diem);
+        const tot = d >= 7.5;
+        const kha = d >= 5.5 && d < 7.5;
+        const mau = tot ? "text-(--color-success-500)" : kha ? "text-(--color-gold-300)" : d >= 4 ? "text-(--color-gold-500)" : "text-(--color-cinnabar-500)";
+        const iconMau = tot ? "text-(--color-success-500)" : kha ? "text-(--color-gold-300)" : d >= 4 ? "text-(--color-gold-400)" : "text-(--color-cinnabar-500)";
+        const icon = tot ? "✓" : kha ? "•" : "⚠";
+        // KHÔNG hiển thị ghiChu kỹ thuật (tham chiếu bảng chưa số hoá, tên config, "thieuDuLieu",
+        // "mục 15/35"…) cho khách — đây là ghi chú nội bộ, gây rối và lộ chi tiết engine.
+        return `<li class="flex gap-2">
+          <span class="${iconMau} font-bold leading-6">${icon}</span>
+          <span class="flex-1 leading-6"><span class="font-medium ${mau}">${esc(y.ten)}</span> <span class="text-xs font-bold text-(--color-ink-400)">(${esc(y.diem)}/10)</span></span>
+        </li>`;
+      })
+      .join("");
+  }
+
+  function theNgay(n: any, i: number): string {
+    const st = STATUS_STYLE[n.status] ?? STATUS_STYLE["TRUNG BÌNH"]!;
+    const hang = HANG[i] ?? `TOP ${i + 1}`;
+    const thapThan = n.thapThan
+      ? `<span class="inline-flex items-center rounded-full bg-(--color-gold-400)/15 px-2.5 py-0.5 text-xs font-bold text-(--color-ink-800) ring-1 ring-(--color-gold-400)/50">🔑 Thập Thần: <span class="ml-1 text-(--color-gold-500)">${esc(n.thapThan)}</span></span>`
+      : "";
+    return `<div class="overflow-hidden rounded-2xl border border-(--color-ivory-300) bg-(--color-ivory-100) shadow-sm ring-1 ${st.ring}">
+      <div class="h-1.5 w-full bg-gradient-to-r ${st.bar}"></div>
+      <div class="p-4 sm:p-5">
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <span class="inline-block rounded-full bg-(--color-gold-400) px-2.5 py-0.5 text-xs font-extrabold text-(--color-on-accent)">${hang}</span>
+            <p class="mt-2 font-display text-2xl font-extrabold leading-none text-(--color-ink-950)">${esc(n.solarDate.day)}/${esc(n.solarDate.month)}/${esc(n.solarDate.year)}</p>
+            <p class="mt-1 text-sm text-(--color-ink-500)">Ngày <span class="font-bold text-(--color-gold-500)">${esc(n.canChiNgay)}</span> <span class="text-(--color-ink-400)">·</span> <span class="italic">Âm lịch ${esc(n.lunarDate.day)}/${esc(n.lunarDate.month)}${n.lunarDate.isLeapMonth ? " nhuận" : ""}</span></p>
+          </div>
+          <div class="text-right">
+            <p class="font-display text-4xl font-extrabold leading-none ${st.score}">${esc(n.diem)}<span class="text-lg font-bold text-(--color-ink-400)">/10</span></p>
+            <span class="mt-1.5 inline-block rounded-full ${st.pill} px-3 py-1 text-xs font-extrabold uppercase tracking-wide shadow-sm">${esc(n.status)}</span>
+          </div>
+        </div>
+        ${n.thapThan ? `<div class="mt-2.5">${thapThan}</div>` : ""}
+        ${theGio(n.gioDeXuat)}
+        <details class="group mt-3 border-t border-(--color-ivory-200) pt-2.5">
+          <summary class="cursor-pointer text-xs font-bold text-(--color-gold-500) hover:underline">Vì sao ngày này? — xem chi tiết từng yếu tố ▾</summary>
+          <ul class="mt-2 space-y-1.5 text-sm text-(--color-ink-700)">${theYeuTo(n.yeuTo)}</ul>
+        </details>
+      </div>
+    </div>`;
+  }
+
+  function render(r: any) {
+    const chuc = r.tenChucVu ? ` để nhận chức <strong class="text-(--color-gold-500)">${esc(r.tenChucVu)}</strong>` : "";
+    if (r.soNgayDung === 0 || r.ketQua.length === 0) {
+      const lyDo = (r.lyDoLoaiPhoBien ?? [])
+        .map((l: any) => `<li><strong class="text-(--color-cinnabar-500)">${l.soNgay} ngày</strong> — ${esc(l.lyDo)}</li>`)
+        .join("");
+      ketQuaEl.innerHTML = `<div class="rounded-2xl border-2 border-(--color-gold-300) bg-gradient-to-br from-white to-(--color-gold-400)/10/50 p-6 text-(--color-ink-950) shadow-lg">
+        <p class="font-display text-lg font-extrabold">😕 Không có ngày nào dùng được trong khoảng đã quét</p>
+        <p class="mt-1 text-sm text-(--color-ink-600)">Đã quét <strong>${esc(r.tongSoNgayQuet)}</strong> ngày. Lý do bị loại nhiều nhất:</p>
+        <ul class="mt-2 list-disc space-y-1 pl-5 text-sm text-(--color-ink-700)">${lyDo}</ul>
+        <p class="mt-3 text-sm italic text-(--color-ink-600)">Thử nới rộng khoảng ngày, bỏ khung giờ, hoặc bỏ ngày sinh để xem ngày tốt chung.</p>
+      </div>`;
+    } else {
+      const nhatChu = r.nhatChu
+        ? `<p class="mt-1.5 text-sm text-(--color-ink-600)">Nhật Chủ người nhận chức: <strong class="text-(--color-gold-500)">${esc(r.nhatChu)}</strong> — đã áp dụng lớp <span class="font-medium">Thập Thần</span>.</p>`
+        : `<p class="mt-1.5 text-sm italic text-(--color-ink-500)">Chế độ chung (chưa nhập ngày sinh) — chưa áp dụng lớp Thập Thần & xét tuổi.</p>`;
+      // KHÔNG hiển thị mục "Cần xem xét thêm" (canXacNhan) cho khách — nội dung là ghi chú kỹ
+      // thuật nội bộ (tên config như SAT_NHAP_TRUNG_CUNG_CONFIG.enabled, "hard block"…), khó hiểu
+      // và không cần thiết với người dùng cuối.
+      ketQuaEl.innerHTML = `<div class="rounded-2xl border-2 border-(--color-gold-400)/50 bg-gradient-to-br from-white to-(--color-gold-400)/10/40 p-5 shadow-xl sm:p-6">
+        <div class="flex items-center gap-2">
+          <span class="text-2xl">🎖️</span>
+          <p class="font-display text-lg font-extrabold text-(--color-ink-950) sm:text-xl">Tìm được <span class="text-(--color-gold-400)">${esc(r.soNgayDung)}</span> ngày tốt${chuc} <span class="text-sm font-normal text-(--color-ink-400)">/ ${esc(r.tongSoNgayQuet)} ngày đã quét</span></p>
+        </div>
+        ${nhatChu}
+        <p class="mt-2 rounded-lg bg-(--color-ivory-200) px-3 py-2 text-xs text-(--color-ink-500)">💡 Điểm mỗi ngày (x/10) là <strong>trung bình có trọng số</strong> của các nhóm yếu tố (nên–kỵ theo việc, công danh, tuổi–mệnh, Thập Thần, hoàng/hắc đạo) — <strong>không phải cộng dồn</strong> từng dòng. Mở "Vì sao ngày này?" để xem điểm thành phần.</p>
+        <div class="mt-4 space-y-3">${r.ketQua.map(theNgay).join("")}</div>
+      </div>`;
+    }
+    ketQuaEl.classList.remove("hidden");
+    ketQuaEl.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  async function layKetQua(orderCode: string) {
+    if (dangHoi) return;
+    dangHoi = true;
+    try {
+      const res = await fetch(`/api/quan-su/vip/nhan-chuc-qs/result?orderCode=${encodeURIComponent(orderCode)}`);
+      const data = await res.json();
+      if (!data.ok) return;
+      if (data.status === "cancelled") {
+        dungCho();
+        trangThaiEl.textContent = "Đơn hàng đã bị hủy.";
+        return;
+      }
+      if (data.status !== "confirmed") return;
+      dungCho();
+      dangChayEl.classList.add("hidden");
+      thanhToanEl.classList.add("hidden");
+      render(data.result);
+    } catch {
+      // Mạng chập chờn — để nhịp sau thử lại.
+    } finally {
+      dangHoi = false;
+    }
+  }
+
+  function docKhungGio(): { start: number; end: number } | undefined {
+    const tuRaw = doc("nc-gio-tu");
+    const denRaw = doc("nc-gio-den");
+    if (!tuRaw || !denRaw) return undefined;
+    const start = Number(tuRaw);
+    const end = Number(denRaw);
+    if (!Number.isFinite(start) || !Number.isFinite(end) || end <= start) return undefined;
+    return { start, end };
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    loiEl.classList.add("hidden");
+    ketQuaEl.classList.add("hidden");
+
+    const tu = readDateSelects("nc-tu");
+    const den = readDateSelects("nc-den");
+    if (!tu || !den) return baoLoi("Vui lòng chọn đầy đủ ngày bắt đầu và ngày kết thúc.");
+
+    const sinh = readDateSelects("nc-sinh");
+    const khungGio = docKhungGio();
+    const payload: Record<string, unknown> = {
+      tuNgay: { year: tu.year, month: tu.month, day: tu.day },
+      denNgay: { year: den.year, month: den.month, day: den.day },
+      ...(sinh ? { ngaySinhNguoiNhanChuc: { year: sinh.year, month: sinh.month, day: sinh.day } } : {}),
+      ...(khungGio ? { khungGioUuTien: khungGio } : {}),
+      ...(doc("nc-chuc-vu") ? { tenChucVu: doc("nc-chuc-vu") } : {}),
+    };
+
+    dangChayEl.classList.remove("hidden");
+    if (nutSubmit) nutSubmit.disabled = true;
+
+    try {
+      if (TEST_MODE) {
+        const res = await fetch("/api/quan-su/vip/nhan-chuc-qs/test-calculate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.ok) return baoLoi(data.error ?? "Không tính được.");
+        tatDangChay();
+        render(data.result);
+        return;
+      }
+
+      const res = await fetch("/api/quan-su/vip/nhan-chuc-qs/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...payload,
+          customerName: doc("nc-ten"),
+          customerPhone: doc("nc-sdt"),
+          ...(doc("nc-email") ? { customerEmail: doc("nc-email") } : {}),
+          ...(doc("nc-ma-input") ? { maKhuyenMai: doc("nc-ma-input") } : {}),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) return baoLoi(data.error ?? "Không tạo được đơn hàng.");
+      tatDangChay();
+      orderCodeEl.textContent = data.orderCode;
+
+      // Mã miễn phí 100% / tài khoản quản trị: server xác nhận đơn luôn, qrUrl = null.
+      if (data.mienPhi) {
+        dangChayEl.classList.remove("hidden");
+        await layKetQua(data.orderCode);
+        return;
+      }
+
+      soTienEl.textContent = `${Number(data.totalAmount).toLocaleString("vi-VN")}đ`;
+      qrImg.src = data.qrUrl;
+      trangThaiEl.textContent = "Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)";
+      thanhToanEl.classList.remove("hidden");
+      thanhToanEl.scrollIntoView({ behavior: "smooth", block: "start" });
+      pollTimer = setInterval(() => layKetQua(data.orderCode), 3000);
+    } catch {
+      baoLoi("Không tính được. Vui lòng thử lại.");
+    }
+  });
+</script>

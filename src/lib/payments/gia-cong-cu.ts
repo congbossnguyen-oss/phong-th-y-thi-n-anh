@@ -19,18 +19,44 @@
 export const GIA_CONG_CU = {
   // ─ Hạng 1.000.000đ — việc cả đời ─────────────────────────────────────────────────────────────
   "xem-ngay-cao-cap": 1000000,
+  // Bản ĐỘC LẬP cho app Quân Sư (từ 1/9/2026, xem project_quan_su_tach_doc_lap_khoi_web) — cùng
+  // giá, cùng engine `calculateXemNgayCaoCap`, chỉ khác toolSlug để tách bạch đơn hàng.
+  "xem-ngay-cao-cap-qs": 1000000,
   // Hợp Hôn: cần ĐỦ 2 lá số (gấp đôi dữ liệu đầu vào so với mọi module khác), chạy 6 tầng qua cả
   // Bát Tự lẫn Tử Vi, phục vụ quyết định lớn nhất đời người.
   "hop-hon": 1000000,
+  // Bản ĐỘC LẬP cho app Quân Sư (từ 1/9/2026, xem project_quan_su_tach_doc_lap_khoi_web) — cùng
+  // giá, cùng engine `tinhHopHon`, chỉ khác toolSlug để tách bạch đơn hàng web/app trong thống kê.
+  "hop-hon-qs": 1000000,
 
   // ─ Hạng 500.000đ — việc lớn ──────────────────────────────────────────────────────────────────
   "gio-liem-ha-huyet": 500000, // = bậc CƠ BẢN; bậc đầy đủ 1.000.000đ xem GIA_GIO_LIEM_HA_HUYET
+  // Bản ĐỘC LẬP cho app Quân Sư (từ 1/9/2026, xem project_quan_su_tach_doc_lap_khoi_web) — cùng
+  // giá/2 bậc, cùng engine, chỉ khác toolSlug để tách bạch đơn hàng. Xem GIA_GIO_LIEM_HA_HUYET.
+  "gio-liem-ha-huyet-qs": 500000,
   "ngay-cuoi-hoi": 500000,
+  // Bản ĐỘC LẬP cho app Quân Sư (từ 1/9/2026, xem project_quan_su_tach_doc_lap_khoi_web) — cùng
+  // giá, cùng engine `calculateCuoiHoiTronGoi`, chỉ khác toolSlug để tách bạch đơn hàng.
+  "ngay-cuoi-hoi-qs": 500000,
   "dat-ten-cho-con": 500000,
+  // Bản ĐỘC LẬP cho app Quân Sư (từ 1/9/2026, xem project_quan_su_tach_doc_lap_khoi_web) — cùng
+  // giá, cùng engine `@thien-anh/tinhdanh-engine`, chỉ khác toolSlug để tách bạch đơn hàng.
+  "dat-ten-cho-con-qs": 500000,
   "nhan-chuc": 500000,
+  // Bản ĐỘC LẬP cho app Quân Sư (từ 1/9/2026, xem project_quan_su_tach_doc_lap_khoi_web) — cùng
+  // giá, cùng engine `calculateNhanChuc`, chỉ khác toolSlug để tách bạch đơn hàng web/app. Bản
+  // web có bug không gửi PDF/email cho khách — bản này CỐ Ý COPY ĐÚNG hành vi đó, không tự vá.
+  "nhan-chuc-qs": 500000,
   "dinh-huong-nghe-nghiep": 500000,
+  // Bản ĐỘC LẬP cho app Quân Sư (từ 1/9/2026, xem project_quan_su_tach_doc_lap_khoi_web) — cùng
+  // giá, cùng engine `castBatTuFacts`/`taoHoSoNghe`, chỉ khác toolSlug để tách bạch đơn hàng.
+  "dinh-huong-nghe-nghiep-qs": 500000,
   "trach-nhat-sinh-no": 500000,
+  // Bản ĐỘC LẬP cho app Quân Sư (từ 1/9/2026, xem project_quan_su_tach_doc_lap_khoi_web) — cùng
+  // giá, cùng engine `phanTichTrachNhatSinhNo`, chỉ khác toolSlug để tách bạch đơn hàng web/app.
+  "trach-nhat-sinh-no-qs": 500000,
   "trach-cat-ky-mon": 500000,
+  // "trach-cat-ky-mon-qs" CỐ Ý CHƯA thêm (nhóm Kỳ Môn, đợt sau) — xem ghi chú ở vip-slugs.ts.
   // ⚠️ Trước 27/8/2026 để 999.999đ — con số này KHÔNG phải giá thật mà là số đặt tạm rồi quên (không
   // ai định giá lẻ tới hàng đơn vị). Chốt về 500.000đ: module luận số để khách quyết có nên bỏ vài
   // triệu mua sim hay không, giá trị ngang các module "việc lớn" khác.
@@ -38,15 +64,28 @@ export const GIA_CONG_CU = {
 
   // ─ Hạng 300.000đ — việc thường ───────────────────────────────────────────────────────────────
   "ngay-khai-truong-cao-cap": 300000,
+  // Bản ĐỘC LẬP cho app Quân Sư (từ 1/9/2026, xem project_quan_su_tach_doc_lap_khoi_web) — cùng
+  // giá, cùng engine `calculateNgayKhaiTruongCaoCap`, chỉ khác toolSlug để tách bạch đơn hàng.
+  "ngay-khai-truong-cao-cap-qs": 300000,
   "ngay-ky-hop-dong-cao-cap": 300000,
+  // Bản ĐỘC LẬP cho app Quân Sư (từ 1/9/2026, xem project_quan_su_tach_doc_lap_khoi_web) — cùng
+  // giá, cùng engine `calculateNgayKyHopDongCaoCap`, chỉ khác toolSlug để tách bạch đơn hàng.
+  "ngay-ky-hop-dong-cao-cap-qs": 300000,
   "ky-mon-menh-chi-tiet": 300000,
+  // "ky-mon-menh-chi-tiet-qs" CỐ Ý CHƯA thêm (nhóm Kỳ Môn, đợt sau) — xem ghi chú ở vip-slugs.ts.
   // Đẩu Thủ Chọn Ngày — hệ đối chiếu chéo/thay thế cho Xem Ngày Cao Cấp (HKĐQ), phạm vi tương
   // đương "chọn ngày theo tọa" chứ không phải quyết định cả đời như HKĐQ → giá 300.000đ (chủ dự
   // án chốt 1/9/2026, giá thẳng khi giao việc, chưa qua vòng đối chiếu tầng giá như bảng trên).
   "dau-thu-chon-ngay": 300000,
+  // Bản ĐỘC LẬP cho app Quân Sư — cùng giá, cùng engine `tinhDauThuChonNgay`/`timNgayDauThuChonNgay`,
+  // chỉ khác toolSlug. Thêm 4/9/2026 (bỏ sót lúc mở bán bản web 1/9).
+  "dau-thu-chon-ngay-qs": 300000,
   // Thúc Đinh Tài Quý — cùng hạng với Đẩu Thủ: lớp xếp hạng ƯU TIÊN BỔ SUNG (không tự lọc hung
   // sát nền), phạm vi tương đương "chọn ngày theo tọa" → giá 300.000đ (chủ dự án chốt 3/9/2026).
   "thuc-dinh-tai-quy": 300000,
+  // Bản ĐỘC LẬP cho app Quân Sư — cùng giá, cùng engine `tinhThucDinhTaiQuy`, chỉ khác toolSlug.
+  // Thêm 4/9/2026 (cùng đợt sửa với dau-thu-chon-ngay-qs ở trên).
+  "thuc-dinh-tai-quy-qs": 300000,
 
   // ─ Luận Giải Bát Tự Toàn Diện — 1 GÓI DUY NHẤT (anh Công chốt 1/9/2026) ─────────────────────
   // Trước đây tách 2 bậc Cơ Bản 300k / Trọn Đời 700k, nhưng gây 2 bug: (1) khách mua Cơ Bản cho

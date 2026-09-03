@@ -1,0 +1,399 @@
+---
+// Bản ĐỘC LẬP của "Tính Trùng Tang" cho app Quân Sư (tách khỏi web 1/9/2026 — xem
+// project_quan_su_tach_doc_lap_khoi_web.md). KHÔNG còn dùng chung component/API với bản web
+// /tinh-trung-tang — chỉ còn dùng chung engine tính toán qua @thien-anh/trachnhat-engine.
+// Gọi API riêng /api/quan-su/tinh-trung-tang. Giữ nguyên giao diện + logic.
+import Container from "../../ui/Container.astro";
+import Button from "../../ui/Button.astro";
+
+const CHI_LIST = ["Tý", "Sửu", "Dần", "Mão", "Thìn", "Tỵ", "Ngọ", "Mùi", "Thân", "Dậu", "Tuất", "Hợi"];
+---
+
+  <Container class="py-16">
+    <div class="mx-auto max-w-2xl">
+      <div class="mb-6 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-4 text-sm text-(--color-ink-600)">
+        Cách tính dựa trên tư liệu dân gian tổng hợp (Chưởng pháp Trùng Tang, đối chiếu Hiệp Kỷ Biện Phương Thư), chỉ mang
+        tính chất tham khảo — sách gốc cũng ghi rõ có trường hợp tính trùng nhưng thực tế không trùng, và ngược lại.
+        Việc chọn giờ liệm/hạ huyệt tối ưu và hướng hóa giải cụ thể cần được tư vấn trực tiếp theo từng trường hợp.
+      </div>
+
+      <form id="trung-tang-form" class="flex flex-col gap-4 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
+        <div>
+          <p class="text-sm font-medium text-(--color-ink-800)">Giới tính người mất</p>
+          <div class="mt-1.5 flex gap-4">
+            <label class="flex items-center gap-1.5 text-sm text-(--color-ink-700)">
+              <input type="radio" name="gioiTinh" value="nam" checked /> Nam
+            </label>
+            <label class="flex items-center gap-1.5 text-sm text-(--color-ink-700)">
+              <input type="radio" name="gioiTinh" value="nu" /> Nữ
+            </label>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label for="tt-nam-sinh" class="text-sm font-medium text-(--color-ink-800)">Năm sinh (âm lịch)</label>
+            <input type="number" id="tt-nam-sinh" placeholder="vd. 1960" min="1900" max="2100" required class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+          </div>
+          <div>
+            <label for="tt-nam-mat" class="text-sm font-medium text-(--color-ink-800)">Năm mất (âm lịch)</label>
+            <input type="number" id="tt-nam-mat" placeholder="vd. 2025" min="1900" max="2100" required class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label for="tt-thang-mat" class="text-sm font-medium text-(--color-ink-800)">Tháng mất (âm lịch)</label>
+            <select id="tt-thang-mat" class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"></select>
+          </div>
+          <div>
+            <label for="tt-ngay-mat" class="text-sm font-medium text-(--color-ink-800)">Ngày mất (âm lịch)</label>
+            <select id="tt-ngay-mat" class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)"></select>
+          </div>
+          <div>
+            <label for="tt-gio-mat" class="text-sm font-medium text-(--color-ink-800)">Giờ mất</label>
+            <select id="tt-gio-mat" class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)">
+              <option value="">Không rõ</option>
+            </select>
+          </div>
+        </div>
+
+        <label class="flex items-center gap-1.5 text-sm text-(--color-ink-600)">
+          <input type="checkbox" id="tt-thang-nhuan" /> Tháng mất là tháng nhuận
+        </label>
+
+        <details class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3">
+          <summary class="cursor-pointer text-sm font-medium text-(--color-ink-800)">Thêm tuổi thân quyến (tùy chọn — để xét giờ liệm kỵ)</summary>
+          <div class="mt-3 grid grid-cols-3 gap-2">
+            <div>
+              <label for="tt-truong-nam" class="text-xs text-(--color-ink-600)">Tuổi (Chi) trưởng nam</label>
+              <select id="tt-truong-nam" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-2 py-2 text-sm text-(--color-ink-800)">
+                <option value="">Không rõ</option>
+              </select>
+            </div>
+            <div>
+              <label for="tt-con-dau-lon" class="text-xs text-(--color-ink-600)">Tuổi (Chi) con dâu lớn</label>
+              <select id="tt-con-dau-lon" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-2 py-2 text-sm text-(--color-ink-800)">
+                <option value="">Không rõ</option>
+              </select>
+            </div>
+            <div>
+              <label for="tt-chau-noi-lon" class="text-xs text-(--color-ink-600)">Tuổi (Chi) cháu nội lớn</label>
+              <select id="tt-chau-noi-lon" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-2 py-2 text-sm text-(--color-ink-800)">
+                <option value="">Không rõ</option>
+              </select>
+            </div>
+          </div>
+          <p class="mt-2 text-xs text-(--color-ink-500)">Nếu người mất không có con trai/dâu/cháu nội, có thể thay bằng tuổi anh trai lớn và cha mẹ — liên hệ trực tiếp để được tính đầy đủ.</p>
+        </details>
+
+        <Button type="submit" size="lg">Tính Trùng Tang</Button>
+      </form>
+
+      <div id="tt-loi" class="mt-4 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm text-(--color-danger-500)"></div>
+
+      <div id="tt-ket-qua" class="mt-6 hidden space-y-6">
+        <div id="tt-duoi-10-tuoi" class="hidden rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
+          <p class="text-sm">Người mất dưới 10 tuổi — theo sách nguồn <strong>không tính Trùng Tang</strong> cho trường hợp này.</p>
+        </div>
+
+        <div id="tt-noi-dung" class="hidden space-y-6">
+          <div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
+            <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Xét theo từng mốc thời gian</p>
+            <div class="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+              <div class="rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-center">
+                <p class="text-[11px] uppercase tracking-wide text-slate-500">Theo Năm mất</p>
+                <p id="tt-cung-tuoi" class="mt-0.5 font-display text-lg font-bold text-slate-900"></p>
+                <p id="tt-cung-tuoi-nhan" class="mt-0.5 text-xs font-semibold"></p>
+              </div>
+              <div class="rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-center">
+                <p class="text-[11px] uppercase tracking-wide text-slate-500">Theo Tháng</p>
+                <p id="tt-cung-thang" class="mt-0.5 font-display text-lg font-bold text-slate-900"></p>
+                <p id="tt-cung-thang-nhan" class="mt-0.5 text-xs font-semibold"></p>
+              </div>
+              <div class="rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-center">
+                <p class="text-[11px] uppercase tracking-wide text-slate-500">Theo Ngày</p>
+                <p id="tt-cung-ngay" class="mt-0.5 font-display text-lg font-bold text-slate-900"></p>
+                <p id="tt-cung-ngay-nhan" class="mt-0.5 text-xs font-semibold"></p>
+              </div>
+              <div class="rounded-xl border border-slate-200 bg-slate-50 p-2.5 text-center">
+                <p class="text-[11px] uppercase tracking-wide text-slate-500">Theo Giờ</p>
+                <p id="tt-cung-gio" class="mt-0.5 font-display text-lg font-bold text-slate-900"></p>
+                <p id="tt-cung-gio-nhan" class="mt-0.5 text-xs font-semibold"></p>
+              </div>
+            </div>
+
+            <div class="mt-4 border-t border-slate-200 pt-4">
+              <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Kết luận chung</p>
+              <p id="tt-ket-luan" class="mt-1 font-display text-2xl font-bold text-slate-900"></p>
+              <p id="tt-ket-luan-phu" class="mt-1 text-sm text-slate-600"></p>
+            </div>
+
+            <div class="mt-4 border-t border-slate-200 pt-4">
+              <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Thứ tự nặng nhẹ</p>
+              <p class="mt-1 text-sm text-slate-700">
+                Theo người xưa và sách vở ghi chép lại thì: <strong>Trùng tang Ngày</strong> là nặng nhất,
+                <strong>Trùng tang Tháng</strong> là nặng nhì, <strong>Trùng tang Giờ</strong> là nặng thứ ba,
+                <strong>Trùng tang Năm</strong> là nhẹ nhất.
+              </p>
+              <p class="mt-1 text-xs text-slate-500">
+                (Chú ý: Nếu xuất hiện nhiều trùng tang trong năm, tháng, ngày, giờ thì mức độ nặng tăng tương ứng.)
+              </p>
+            </div>
+
+            <div class="mt-4 border-t border-slate-200 pt-4">
+              <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Điều kiện tự hóa giải (sách có 2 cách hiểu)</p>
+              <p id="tt-hoa-giai-pho-bien" class="mt-1 text-sm text-slate-700"></p>
+              <p id="tt-hoa-giai-chat-che" class="mt-1 text-sm text-slate-700"></p>
+            </div>
+          </div>
+
+          <div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
+            <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Các ngày trùng kỵ theo Can Chi (ngày mất)</p>
+            <ul id="tt-ngay-trung-ky" class="mt-2 space-y-1 text-sm text-slate-700"></ul>
+          </div>
+
+          <div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
+            <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Tuổi cần tránh mặt lúc nhập quan / khâm liệm / đóng quan / hạ huyệt</p>
+            <p class="mt-1 text-xs text-slate-500">Chỉ áp dụng với người huyết thống trực hệ (cha mẹ, vợ/chồng, con, anh chị em ruột, cháu nội) — con dâu, con rể, cháu ngoại, người ngoài không chịu tác động.</p>
+            <div id="tt-tuoi-tranh" class="mt-3 space-y-2 text-sm text-slate-700"></div>
+          </div>
+
+          <div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
+            <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Hành Niên Tầm Thái Tuế Áp Tuế Chủ</p>
+            <p class="mt-1 text-xs text-slate-500">6 tuổi bị Thái Tuế áp trong năm mất — nên tránh xa lúc tẩm liệm và hạ huyệt.</p>
+            <div id="tt-hanh-nien" class="mt-2 flex flex-wrap gap-2"></div>
+          </div>
+
+          <div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
+            <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Ý nghĩa của Trùng tang, Nhập mộ, Thiên di</p>
+            <div class="mt-3 space-y-3 text-sm text-slate-700">
+              <p>
+                <strong class="text-emerald-600">Nhập mộ:</strong> Nghĩa là người chết bởi đến đó hết số rồi nên phải
+                chuyển kiếp. Người ra đi được nằm xuống vĩnh viễn, không còn vương vấn trần ai. Thể hiện sự an lành,
+                yên nghỉ. Chỉ cần khi tính trùng tang mà gặp năm tuổi là nhập mộ, nghĩa là người chết đã hết số, thì
+                không còn oan ức gì mấy, trùng tang được giảm nhẹ tối thiểu, tùy thuộc vào hạn trùng tang của người
+                chết trước đó trong dòng họ đã được hóa giải hay chưa. Người chết mà được năm, tháng, ngày, giờ đều
+                nhập mộ thì được coi là cái chết phúc đức để đời cho con cháu.
+              </p>
+              <p>
+                <strong class="text-slate-500">Thiên di:</strong> Là dấu hiệu ra đi số do "Trời định", người mất lúc
+                đó được trời đưa đi. Sự ra đi này nằm ngoài mong muốn của người mất, nhưng cũng là hợp với lẽ trời. Số
+                này thường được giải thích theo hai lý do là do kiếp trước hoặc là tiên, hoặc là quỷ sứ bị đầu thai
+                dáng làm kiếp người, hết thời gian tu luyện, bị Trời bắt đem về lại.
+              </p>
+              <p>
+                <strong class="text-(--color-cinnabar-500)">Trùng tang (kiếp sát):</strong> Là dấu hiệu ra đi không
+                hợp số phận, chưa tới số mà phải chết oan uổng, có sự oán thán nào đó của cõi âm, gây ảnh hưởng tới
+                người ở lại. Theo quan niệm xưa, nếu gặp phải trùng tang mà không có "Nhập mộ" nào thì cần phải làm lễ
+                "trấn trùng tang".
+              </p>
+            </div>
+          </div>
+
+          <div class="rounded-2xl border-2 border-amber-300 bg-white p-6 text-slate-900 shadow-lg">
+            <p class="text-xs font-bold uppercase tracking-wide text-amber-600">Hướng xử lý</p>
+            <ol class="mt-2 list-decimal space-y-2 pl-4 text-sm text-slate-700">
+              <li><strong>Gốc bền vững nhất:</strong> xem lại phong thủy nhà ở của người thân còn sống và mộ phần — theo chính sách nguồn, mất vào ngày trùng chỉ là "điều kiện cần", nhà/mộ có phạm cách suy nhân đinh mới là "điều kiện đủ". Đây là hướng xử lý gốc, lâu dài.</li>
+              <li><strong>Nghi lễ chính thống:</strong> gửi bát hương/vong lên chùa có uy tín, tụng kinh hồi hướng.</li>
+              <li>Trong 49-100 ngày: tránh tranh chấp, tránh quyết định tài chính lớn, cẩn thận khi đi lại — đây là lời khuyên thực tế, không mang yếu tố tâm linh.</li>
+            </ol>
+            <div class="mt-4 rounded-xl border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-4">
+              <p class="text-sm font-semibold text-(--color-ink-800)">Chọn giờ liệm/hạ huyệt cụ thể và phương án hóa giải phù hợp cần xét riêng từng trường hợp.</p>
+              <a
+                href="/lien-he?topic=trung-tang"
+                class="mt-3 inline-flex items-center justify-center gap-2 rounded-(--radius-pill) bg-(--color-gold-400) px-5 py-2.5 text-sm font-semibold text-(--color-on-accent) hover:bg-(--color-gold-300)"
+              >
+                Đặt lịch tư vấn trực tiếp
+              </a>
+            </div>
+          </div>
+
+          <p class="text-xs text-(--color-ink-500)">
+            Cách tính này chỉ mang tính chất tương đối — có trường hợp tính là phạm trùng nhưng thực tế không trùng, và
+            ngược lại. Đây không phải lời khẳng định chắc chắn về việc sẽ có người mất theo.
+          </p>
+        </div>
+      </div>
+    </div>
+  </Container>
+
+<script define:vars={{ CHI_LIST }}>
+  const thangSelect = document.getElementById("tt-thang-mat");
+  const ngaySelect = document.getElementById("tt-ngay-mat");
+  const gioSelect = document.getElementById("tt-gio-mat");
+  const truongNamSelect = document.getElementById("tt-truong-nam");
+  const conDauLonSelect = document.getElementById("tt-con-dau-lon");
+  const chauNoiLonSelect = document.getElementById("tt-chau-noi-lon");
+
+  for (let m = 1; m <= 12; m++) thangSelect.insertAdjacentHTML("beforeend", `<option value="${m}">Tháng ${m}</option>`);
+  for (let d = 1; d <= 30; d++) ngaySelect.insertAdjacentHTML("beforeend", `<option value="${d}">Ngày ${d}</option>`);
+  for (const chi of CHI_LIST) {
+    gioSelect.insertAdjacentHTML("beforeend", `<option value="${chi}">Giờ ${chi}</option>`);
+    truongNamSelect.insertAdjacentHTML("beforeend", `<option value="${chi}">${chi}</option>`);
+    conDauLonSelect.insertAdjacentHTML("beforeend", `<option value="${chi}">${chi}</option>`);
+    chauNoiLonSelect.insertAdjacentHTML("beforeend", `<option value="${chi}">${chi}</option>`);
+  }
+</script>
+
+<script>
+  interface CungDaXet { ten: string; chi: string; phanLoai: "nhap-mo" | "thien-di" | "trung-tang" }
+  interface MucDoKetQua {
+    cacCungDaXet: CungDaXet[];
+    soCungPham: number;
+    soCungDaXet: number;
+    mucDo: string;
+    tuHoaGiaiPhoBien: boolean;
+    tuHoaGiaiChatChe: boolean;
+  }
+  interface ThanTrungEntry { ten: string }
+  interface NgayTrungKyKetQua { trungNhat: boolean; phucNhat: boolean; kiepSat: boolean; thanTrung: ThanTrungEntry | null }
+  interface TuoiCanTranhKetQua {
+    nhom1LongHoKeXa: string[];
+    nhom2TamHopCungPham: string[];
+    nhom3TamHopTuoiVong: string[];
+    nhom4XungHinh: { xung: string; hinh: string[] };
+    nhom6GioLiemKyThanQuyen: string[];
+  }
+  interface BonCung { cungTuoi: string; cungThang: string; cungNgay: string; cungGio: string | null }
+  interface LuanKetQua {
+    duoi10Tuoi: boolean;
+    bonCung?: BonCung;
+    mucDo?: MucDoKetQua;
+    ngayTrungKy?: NgayTrungKyKetQua;
+    tuoiCanTranh?: TuoiCanTranhKetQua;
+    hanhNienThaiTue?: string[];
+    coPham?: boolean;
+  }
+  interface TrungTangOutput { tuoiMat: number; ketQua: LuanKetQua }
+
+  const NHAN_MUC_DO: Record<string, string> = {
+    "khong-pham": "🟢 Không phạm Trùng Tang",
+    "nhat-xa": "🟠 Trùng Tang — Nhất xa",
+    "nhi-xa": "🟠 Trùng Tang — Nhị xa",
+    "tam-xa": "🔴 Trùng Tang — Tam xa",
+    "that-xa": "🔴 Trùng Tang — Thất xa (nặng nhất)",
+    "khong-du-du-lieu": "🟡 Chưa đủ dữ liệu (thiếu giờ mất)",
+  };
+  const NHAN_PHAN_LOAI: Record<string, string> = { "nhap-mo": "Nhập Mộ", "thien-di": "Thiên Di", "trung-tang": "Trùng Tang" };
+  const MAU_PHAN_LOAI: Record<string, string> = { "nhap-mo": "text-emerald-600", "thien-di": "text-slate-500", "trung-tang": "text-(--color-cinnabar-500)" };
+
+  const form = document.getElementById("trung-tang-form") as HTMLFormElement;
+  const loiEl = document.getElementById("tt-loi")!;
+  const ketQuaEl = document.getElementById("tt-ket-qua")!;
+  const duoi10El = document.getElementById("tt-duoi-10-tuoi")!;
+  const noiDungEl = document.getElementById("tt-noi-dung")!;
+
+  function chiCell(id: string, chi: string | null, phanLoai?: string) {
+    const el = document.getElementById(id)!;
+    const nhanEl = document.getElementById(`${id}-nhan`);
+    el.textContent = chi ?? "—";
+    if (phanLoai) {
+      const mau = MAU_PHAN_LOAI[phanLoai] ?? "text-slate-900";
+      el.className = `mt-0.5 font-display text-lg font-bold ${mau}`;
+      if (nhanEl) {
+        nhanEl.textContent = NHAN_PHAN_LOAI[phanLoai] ?? "";
+        nhanEl.className = `mt-0.5 text-xs font-semibold ${mau}`;
+      }
+    } else if (nhanEl) {
+      nhanEl.textContent = "Chưa rõ (thiếu giờ mất)";
+      nhanEl.className = "mt-0.5 text-xs font-semibold text-slate-400";
+    }
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    loiEl.classList.add("hidden");
+    ketQuaEl.classList.add("hidden");
+    duoi10El.classList.add("hidden");
+    noiDungEl.classList.add("hidden");
+
+    const gioiTinh = (form.querySelector('input[name="gioiTinh"]:checked') as HTMLInputElement).value;
+    const namSinh = (document.getElementById("tt-nam-sinh") as HTMLInputElement).value;
+    const namMat = (document.getElementById("tt-nam-mat") as HTMLInputElement).value;
+    const thangMat = (document.getElementById("tt-thang-mat") as HTMLSelectElement).value;
+    const ngayMat = (document.getElementById("tt-ngay-mat") as HTMLSelectElement).value;
+    const gioMat = (document.getElementById("tt-gio-mat") as HTMLSelectElement).value;
+    const thangNhuan = (document.getElementById("tt-thang-nhuan") as HTMLInputElement).checked;
+    const truongNam = (document.getElementById("tt-truong-nam") as HTMLSelectElement).value;
+    const conDauLon = (document.getElementById("tt-con-dau-lon") as HTMLSelectElement).value;
+    const chauNoiLon = (document.getElementById("tt-chau-noi-lon") as HTMLSelectElement).value;
+
+    let qs = `gioiTinh=${gioiTinh}&namSinh=${namSinh}&namMat=${namMat}&thangMat=${thangMat}&ngayMat=${ngayMat}&thangNhuan=${thangNhuan}&timeZone=Asia/Ho_Chi_Minh`;
+    if (gioMat) qs += `&gioMat=${encodeURIComponent(gioMat)}`;
+    if (truongNam) qs += `&truongNam=${encodeURIComponent(truongNam)}`;
+    if (conDauLon) qs += `&conDauLon=${encodeURIComponent(conDauLon)}`;
+    if (chauNoiLon) qs += `&chauNoiLon=${encodeURIComponent(chauNoiLon)}`;
+
+    let result: TrungTangOutput;
+    try {
+      const res = await fetch(`/api/quan-su/tinh-trung-tang?${qs}`);
+      const data = await res.json();
+      if (!res.ok) {
+        loiEl.textContent = data.error ?? "Không tính được.";
+        loiEl.classList.remove("hidden");
+        return;
+      }
+      result = data;
+    } catch {
+      loiEl.textContent = "Không tải được dữ liệu.";
+      loiEl.classList.remove("hidden");
+      return;
+    }
+
+    ketQuaEl.classList.remove("hidden");
+
+    if (result.ketQua.duoi10Tuoi) {
+      duoi10El.classList.remove("hidden");
+      return;
+    }
+
+    const k = result.ketQua;
+    const mucDo = k.mucDo!;
+    const bonCung = k.bonCung!;
+
+    document.getElementById("tt-ket-luan")!.textContent = NHAN_MUC_DO[mucDo.mucDo] ?? mucDo.mucDo;
+    document.getElementById("tt-ket-luan-phu")!.textContent = `Tuổi mất (tuổi ta): ${result.tuoiMat} — phạm ${mucDo.soCungPham}/${mucDo.soCungDaXet} cung xét`;
+
+    chiCell("tt-cung-tuoi", bonCung.cungTuoi, mucDo.cacCungDaXet[0]?.phanLoai);
+    chiCell("tt-cung-thang", bonCung.cungThang, mucDo.cacCungDaXet[1]?.phanLoai);
+    chiCell("tt-cung-ngay", bonCung.cungNgay, mucDo.cacCungDaXet[2]?.phanLoai);
+    chiCell("tt-cung-gio", bonCung.cungGio, mucDo.cacCungDaXet[3]?.phanLoai);
+
+    document.getElementById("tt-hoa-giai-pho-bien")!.textContent =
+      `• Cách phổ biến (gặp 1 cung Nhập Mộ bất kỳ là cứu được): ${mucDo.tuHoaGiaiPhoBien ? "✅ Có thể tự hóa giải" : "❌ Chưa gặp cung Nhập Mộ nào"}`;
+    document.getElementById("tt-hoa-giai-chat-che")!.textContent =
+      `• Cách chặt chẽ hơn (chỉ tính nếu riêng cung Tuổi là Nhập Mộ): ${mucDo.tuHoaGiaiChatChe ? "✅ Có thể tự hóa giải" : "❌ Cung Tuổi không phải Nhập Mộ"}`;
+
+    const ngayTrungKy = k.ngayTrungKy!;
+    const dsNgayTrungKy: string[] = [];
+    dsNgayTrungKy.push(`${ngayTrungKy.trungNhat ? "🔴" : "🟢"} Trùng nhật (ngày Tỵ/Hợi): ${ngayTrungKy.trungNhat ? "Phạm" : "Không phạm"}`);
+    dsNgayTrungKy.push(`${ngayTrungKy.phucNhat ? "🔴" : "🟢"} Phục nhật: ${ngayTrungKy.phucNhat ? "Phạm" : "Không phạm"}`);
+    dsNgayTrungKy.push(`${ngayTrungKy.kiepSat ? "🟠" : "🟢"} Kiếp Sát (hiếm gặp): ${ngayTrungKy.kiepSat ? "Phạm" : "Không phạm"}`);
+    dsNgayTrungKy.push(`${ngayTrungKy.thanTrung ? "🟠" : "🟢"} Thần Trùng: ${ngayTrungKy.thanTrung ? `Phạm (${ngayTrungKy.thanTrung.ten})` : "Không phạm"}`);
+    document.getElementById("tt-ngay-trung-ky")!.innerHTML = dsNgayTrungKy.map((d) => `<li>${d}</li>`).join("");
+
+    const tuoiCanTranh = k.tuoiCanTranh!;
+    const nhomHtml = [
+      `<p><strong class="text-slate-600">Nhóm 1 (luôn tránh — Long/Hổ/Kê/Xà):</strong> tuổi ${tuoiCanTranh.nhom1LongHoKeXa.join(", ")}</p>`,
+      tuoiCanTranh.nhom2TamHopCungPham.length > 0
+        ? `<p><strong class="text-slate-600">Nhóm 2 (tam hợp cung phạm Trùng Tang):</strong> tuổi ${tuoiCanTranh.nhom2TamHopCungPham.join(", ")}</p>`
+        : "",
+      `<p><strong class="text-slate-600">Nhóm 3 (tam hợp tuổi vong):</strong> tuổi ${tuoiCanTranh.nhom3TamHopTuoiVong.join(", ")}</p>`,
+      `<p><strong class="text-slate-600">Nhóm 4 (xung/hình với vong):</strong> tuổi ${[tuoiCanTranh.nhom4XungHinh.xung, ...tuoiCanTranh.nhom4XungHinh.hinh].join(", ")}</p>`,
+      `<p><strong class="text-slate-600">Nhóm 6 (giờ liệm kỵ):</strong> giờ ${tuoiCanTranh.nhom6GioLiemKyThanQuyen.join(", ")}</p>`,
+      `<p class="text-xs text-slate-400">Riêng nhóm cung phi Bát Trạch xung khắc với vong cần lập cung mệnh riêng — liên hệ trực tiếp để được tính đầy đủ.</p>`,
+    ]
+      .filter(Boolean)
+      .join("");
+    document.getElementById("tt-tuoi-tranh")!.innerHTML = nhomHtml;
+
+    document.getElementById("tt-hanh-nien")!.innerHTML = k
+      .hanhNienThaiTue!.map(
+        (t) => `<span class="rounded-(--radius-pill) bg-(--color-ivory-200) px-3 py-1 text-sm text-(--color-ink-700)">${t}</span>`,
+      )
+      .join("");
+
+    noiDungEl.classList.remove("hidden");
+  });
+</script>

@@ -1,0 +1,23 @@
+---
+// Bản in-app của dịch vụ VIP "Chọn Ngày Thúc Đinh · Tài · Quý" — TỰ CHỨA trong app Quân Sư (App
+// Store, không link ra web). Thêm 4/9/2026 (bỏ sót lúc mở bán bản web 3/9 — khiến khách bấm vào
+// module này trong menu "Dịch vụ VIP" của app bị văng về trang chủ vì route chưa tồn tại).
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import BottomNav from "../../components/quan-su/BottomNav.astro";
+import VipQuyenBanner from "../../components/quan-su/VipQuyenBanner.astro";
+import ThucDinhTaiQuy from "../../components/quan-su/tools/ThucDinhTaiQuy.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout title="Chọn Ngày Thúc Đinh · Tài · Quý — Quân Sư Thiên Anh" description="Chọn Ngày Thúc Đinh · Tài · Quý trong app Quân Sư." appShell>
+  <PageHero
+    eyebrow="Dịch vụ VIP"
+    title="Chọn Ngày Thúc Đinh · Tài · Quý"
+    breadcrumbs={[{ label: "Quân Sư", href: "/quan-su" }, { label: "Dịch vụ VIP", href: "/quan-su/dich-vu-vip" }, { label: "Thúc Đinh Tài Quý" }]}
+  />
+  <VipQuyenBanner />
+  <ThucDinhTaiQuy />
+  <BottomNav />
+</BaseLayout>

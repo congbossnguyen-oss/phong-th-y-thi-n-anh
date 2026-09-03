@@ -10,21 +10,34 @@
 /** Tên hiển thị cho khách/anh Công đọc, thay vì slug kỹ thuật trong CSDL. */
 export const TEN_CONG_CU_HIEN_THI: Record<string, string> = {
   "gio-liem-ha-huyet": "Giờ Liệm – Hạ Huyệt",
+  "gio-liem-ha-huyet-qs": "Giờ Liệm – Hạ Huyệt (app Quân Sư)",
   "xem-ngay-cao-cap": "Xem Ngày Cao Cấp (Động Thổ / Nhập Trạch)",
+  "xem-ngay-cao-cap-qs": "Xem Ngày Cao Cấp (Động Thổ / Nhập Trạch) (app Quân Sư)",
   "ngay-ky-hop-dong-cao-cap": "Ngày Giờ Ký Kết Hợp Đồng",
+  "ngay-ky-hop-dong-cao-cap-qs": "Ngày Giờ Ký Kết Hợp Đồng (app Quân Sư)",
   "ngay-cuoi-hoi": "Xem Ngày Cưới Hỏi Trọn Gói",
+  "ngay-cuoi-hoi-qs": "Xem Ngày Cưới Hỏi Trọn Gói (app Quân Sư)",
   "nhan-chuc": "Chọn Ngày Giờ Nhận Chức",
+  "nhan-chuc-qs": "Chọn Ngày Giờ Nhận Chức (app Quân Sư)",
   "dat-ten-cho-con": "Đặt Tên Cho Con (Việt Danh Học)",
+  "dat-ten-cho-con-qs": "Đặt Tên Cho Con (Việt Danh Học) (app Quân Sư)",
   "ngay-khai-truong-cao-cap": "Ngày Khai Trương Cao Cấp (Bát Tự mệnh chủ)",
+  "ngay-khai-truong-cao-cap-qs": "Ngày Khai Trương Cao Cấp (Bát Tự mệnh chủ) (app Quân Sư)",
   "dinh-huong-nghe-nghiep": "Định Hướng Nghề Nghiệp (Bát Tự × Tử Vi)",
+  "dinh-huong-nghe-nghiep-qs": "Định Hướng Nghề Nghiệp (Bát Tự × Tử Vi) (app Quân Sư)",
   "trach-nhat-sinh-no": "Trạch Nhật Sinh Nở (Chọn Ngày Giờ Sinh Cho Bé)",
+  "trach-nhat-sinh-no-qs": "Trạch Nhật Sinh Nở (Chọn Ngày Giờ Sinh Cho Bé) (app Quân Sư)",
   "ky-mon-menh-chi-tiet": "Luận Giải Kỳ Môn Mệnh (chi tiết)",
   "ky-mon-hoi-dap": "Hỏi Đáp Kỳ Môn (1 sự việc cụ thể)",
   "trach-cat-ky-mon": "Trạch Cát Kỳ Môn (chọn ngày giờ theo bàn mệnh)",
+  // 3 slug "-qs" nhóm Kỳ Môn CỐ Ý CHƯA thêm — xem ghi chú ở vip-slugs.ts (đợt sau).
   "sim-phong-thuy-khai-van": "Sim Phong Thủy Khai Vận Khí",
   "hop-hon": "Hợp Hôn Bát Tự × Tử Vi",
+  "hop-hon-qs": "Hợp Hôn Bát Tự × Tử Vi (app Quân Sư)",
   "dau-thu-chon-ngay": "Đẩu Thủ Chọn Ngày",
+  "dau-thu-chon-ngay-qs": "Đẩu Thủ Chọn Ngày (app Quân Sư)",
   "thuc-dinh-tai-quy": "Chọn Ngày Thúc Đinh · Tài · Quý",
+  "thuc-dinh-tai-quy-qs": "Chọn Ngày Thúc Đinh · Tài · Quý (app Quân Sư)",
 };
 
 export interface DonThuPhiChoSheet {
