@@ -1,0 +1,15 @@
+{
+  "_nguon": "Chia đều 45 độ/quái theo Hậu Thiên Bát Quái chuẩn (Khảm=Bắc=0 độ) - không phải số liệu riêng của sách Chính Ngũ Hành Trạch Nhật Học, là kiến thức nền la kinh phổ thông",
+  "_doTinCay": "da-kiem-chung",
+  "_ghiChu": "canhBaoBienGioiDoRong: nếu toaDoSo cách biên +-1 độ, cần trả cờ canhBaoBienGioi=true, không tự chọn 1 trong 2 quái",
+  "quaiTheoDoSo": [
+    { "quai": "Khảm", "tuDo": 337.5, "denDo": 22.5, "quaBien360": true, "sonList": ["Nhâm", "Tý", "Quý"] },
+    { "quai": "Cấn", "tuDo": 22.5, "denDo": 67.5, "sonList": ["Sửu", "Cấn", "Dần"] },
+    { "quai": "Chấn", "tuDo": 67.5, "denDo": 112.5, "sonList": ["Giáp", "Mão", "Ất"] },
+    { "quai": "Tốn", "tuDo": 112.5, "denDo": 157.5, "sonList": ["Thìn", "Tốn", "Tỵ"] },
+    { "quai": "Ly", "tuDo": 157.5, "denDo": 202.5, "sonList": ["Bính", "Ngọ", "Đinh"] },
+    { "quai": "Khôn", "tuDo": 202.5, "denDo": 247.5, "sonList": ["Mùi", "Khôn", "Thân"] },
+    { "quai": "Đoài", "tuDo": 247.5, "denDo": 292.5, "sonList": ["Canh", "Dậu", "Tân"] },
+    { "quai": "Càn", "tuDo": 292.5, "denDo": 337.5, "sonList": ["Tuất", "Càn", "Hợi"] }
+  ]
+}

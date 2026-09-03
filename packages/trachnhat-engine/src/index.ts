@@ -232,6 +232,16 @@ export {
   type ThongKeDauThu,
 } from "./processing/dauThuChonNgayTimNgay.js";
 
+// Chọn Ngày Thúc Đinh · Tài · Quý (VIP, đang thử nghiệm nội bộ) — xem chú thích đầu file cho phạm vi.
+export {
+  tinhThucDinhTaiQuy,
+  type LoaiTrachThucDinh,
+  type ThucDinhTaiQuyInput,
+  type ThucDinhTaiQuyResult,
+  type KetQuaMotMucTieuThucDinh,
+  type NgayPhuHopThucDinh,
+} from "./processing/thucDinhTaiQuy.js";
+
 export * from "./types.js";
 
 /** Version `@thien-anh/calendar-core` đang dùng — giữ đồng bộ tay với calendar-core/package.json. */

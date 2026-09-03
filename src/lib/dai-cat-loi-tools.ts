@@ -248,4 +248,13 @@ export const paidTools: PaidTool[] = [
     priceLabel: "300.000đ / lượt",
     // Mới thêm 1/9/2026 (anh Công cung cấp spec + duyệt code trước, chốt giá 300k).
   },
+  {
+    href: "/dai-cat-loi/thuc-dinh-tai-quy",
+    icon: "🀄",
+    title: "Chọn Ngày Thúc Đinh · Tài · Quý",
+    desc: "Nạp Giáp Tiên Thiên — từ tọa (nhà/mộ/hạng mục), tra bộ mã 6 tổ can-chi của quái sơn (hoặc quái đối ứng/tiên thiên tùy mục tiêu) để tìm ngày thúc Tài (kinh doanh), thúc Đinh (sinh con/nhân khẩu) hoặc thúc Quý (công danh/học vấn). Lớp xếp hạng ưu tiên bổ sung, dùng sau các bước lọc hung sát nền.",
+    priceLabel: "Đang thử nghiệm nội bộ",
+    // ⏸️ THỬ NGHIỆM NỘI BỘ — anh Công cung cấp spec 3/9/2026, yêu cầu cho tự test trước khi chốt
+    // giá/mở bán. Khoá admin nằm TRONG component (ThucDinhTaiQuy.astro) + API test-calculate.ts.
+  },
 ];

@@ -1,0 +1,15 @@
+{
+  "_nguon": "Chính Ngũ Hành Trạch Nhật Học - Chương 10 Phần 3, đối chiếu kiến thức nền chuẩn Tiên Thiên Bát Quái đồ + Hậu Thiên Bát Quái đồ",
+  "_doTinCay": "da-kiem-chung",
+  "_ghiChu": "Dùng cho tính ngày THÚC QUÝ: quái sơn X (định vị theo Hậu Thiên, cách xác định quái sơn thông thường) -> tìm quái nào đứng CÙNG VỊ TRÍ đó trên đồ Tiên Thiên -> lấy nạp giáp của quái Tiên Thiên đó",
+  "capViTri": [
+    { "quaiHauThien": "Càn", "quaiTienThienCungViTri": "Cấn" },
+    { "quaiHauThien": "Khôn", "quaiTienThienCungViTri": "Tốn" },
+    { "quaiHauThien": "Chấn", "quaiTienThienCungViTri": "Ly" },
+    { "quaiHauThien": "Tốn", "quaiTienThienCungViTri": "Đoài" },
+    { "quaiHauThien": "Khảm", "quaiTienThienCungViTri": "Khôn" },
+    { "quaiHauThien": "Ly", "quaiTienThienCungViTri": "Càn" },
+    { "quaiHauThien": "Cấn", "quaiTienThienCungViTri": "Chấn" },
+    { "quaiHauThien": "Đoài", "quaiTienThienCungViTri": "Khảm" }
+  ]
+}

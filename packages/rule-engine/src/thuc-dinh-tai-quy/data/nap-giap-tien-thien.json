@@ -1,0 +1,110 @@
+{
+  "_nguon": "Chính Ngũ Hành Trạch Nhật Học - Chương 10, đối chiếu chuẩn nạp giáp Kinh Dịch (Càn nạp Giáp Nhâm, Khôn nạp Ất Quý, Chấn nạp Canh, Tốn nạp Tân, Khảm nạp Mậu, Ly nạp Kỷ, Cấn nạp Bính, Đoài nạp Đinh)",
+  "_doTinCay": "da-kiem-chung",
+  "quaiList": [
+    {
+      "quai": "Càn",
+      "sonList": ["Tuất", "Càn", "Hợi"],
+      "canNap": ["Giáp", "Nhâm"],
+      "boMaCanChi": [
+        { "can": "Giáp", "chi": "Tý" },
+        { "can": "Giáp", "chi": "Dần" },
+        { "can": "Giáp", "chi": "Thìn" },
+        { "can": "Nhâm", "chi": "Ngọ" },
+        { "can": "Nhâm", "chi": "Thân" },
+        { "can": "Nhâm", "chi": "Tuất" }
+      ]
+    },
+    {
+      "quai": "Khảm",
+      "sonList": ["Nhâm", "Tý", "Quý"],
+      "canNap": ["Mậu"],
+      "boMaCanChi": [
+        { "can": "Mậu", "chi": "Dần" },
+        { "can": "Mậu", "chi": "Thìn" },
+        { "can": "Mậu", "chi": "Ngọ" },
+        { "can": "Mậu", "chi": "Thân" },
+        { "can": "Mậu", "chi": "Tuất" },
+        { "can": "Mậu", "chi": "Tý" }
+      ]
+    },
+    {
+      "quai": "Cấn",
+      "sonList": ["Sửu", "Cấn", "Dần"],
+      "canNap": ["Bính"],
+      "boMaCanChi": [
+        { "can": "Bính", "chi": "Dần" },
+        { "can": "Bính", "chi": "Thìn" },
+        { "can": "Bính", "chi": "Ngọ" },
+        { "can": "Bính", "chi": "Thân" },
+        { "can": "Bính", "chi": "Tuất" },
+        { "can": "Bính", "chi": "Tý" }
+      ]
+    },
+    {
+      "quai": "Chấn",
+      "sonList": ["Giáp", "Mão", "Ất"],
+      "canNap": ["Canh"],
+      "boMaCanChi": [
+        { "can": "Canh", "chi": "Tý" },
+        { "can": "Canh", "chi": "Dần" },
+        { "can": "Canh", "chi": "Thìn" },
+        { "can": "Canh", "chi": "Ngọ" },
+        { "can": "Canh", "chi": "Thân" },
+        { "can": "Canh", "chi": "Tuất" }
+      ]
+    },
+    {
+      "quai": "Tốn",
+      "sonList": ["Thìn", "Tốn", "Tỵ"],
+      "canNap": ["Tân"],
+      "boMaCanChi": [
+        { "can": "Tân", "chi": "Sửu" },
+        { "can": "Tân", "chi": "Hợi" },
+        { "can": "Tân", "chi": "Dậu" },
+        { "can": "Tân", "chi": "Mùi" },
+        { "can": "Tân", "chi": "Tỵ" },
+        { "can": "Tân", "chi": "Mão" }
+      ]
+    },
+    {
+      "quai": "Ly",
+      "sonList": ["Bính", "Ngọ", "Đinh"],
+      "canNap": ["Kỷ"],
+      "boMaCanChi": [
+        { "can": "Kỷ", "chi": "Mão" },
+        { "can": "Kỷ", "chi": "Sửu" },
+        { "can": "Kỷ", "chi": "Hợi" },
+        { "can": "Kỷ", "chi": "Dậu" },
+        { "can": "Kỷ", "chi": "Mùi" },
+        { "can": "Kỷ", "chi": "Tỵ" }
+      ]
+    },
+    {
+      "quai": "Khôn",
+      "sonList": ["Mùi", "Khôn", "Thân"],
+      "canNap": ["Ất", "Quý"],
+      "boMaCanChi": [
+        { "can": "Ất", "chi": "Mùi" },
+        { "can": "Ất", "chi": "Tỵ" },
+        { "can": "Ất", "chi": "Mão" },
+        { "can": "Quý", "chi": "Sửu" },
+        { "can": "Quý", "chi": "Hợi" },
+        { "can": "Quý", "chi": "Dậu" }
+      ]
+    },
+    {
+      "quai": "Đoài",
+      "sonList": ["Canh", "Dậu", "Tân"],
+      "canNap": ["Đinh"],
+      "boMaCanChi": [
+        { "can": "Đinh", "chi": "Tỵ" },
+        { "can": "Đinh", "chi": "Mão" },
+        { "can": "Đinh", "chi": "Sửu" },
+        { "can": "Đinh", "chi": "Hợi" },
+        { "can": "Đinh", "chi": "Dậu" },
+        { "can": "Đinh", "chi": "Mùi" }
+      ]
+    }
+  ]
+}
