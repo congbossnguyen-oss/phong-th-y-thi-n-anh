@@ -180,70 +180,111 @@ function veLaSo(b: But, f: Fonts, laSo: LaSoHienThi): void {
   b.xuong(4);
 }
 
-const MAU_DIEM = [
-  rgb(0xb9 / 255, 0x1c / 255, 0x1c / 255), // -2
-  rgb(0xf0 / 255, 0xa8 / 255, 0x98 / 255), // -1
-  rgb(0xd8 / 255, 0xcd / 255, 0xb4 / 255), // 0
-  rgb(0xa8 / 255, 0xd5 / 255, 0xb0 / 255), // 1
-  rgb(0x16 / 255, 0x80 / 255, 0x3d / 255), // 2
+const KHIA_CANH: { khoa: keyof Pick<DiemGiaiDoanVan, "sucKhoe" | "congViec" | "taiLoc" | "lucThan">; nhan: string; mau: RGB }[] = [
+  // Màu 4 lĩnh vực đồng bộ với app "Xem Thời Vận" (MAU_LINH_VUC ở xem-thoi-van.astro) để 2 nơi nhìn nhất quán.
+  { khoa: "sucKhoe", nhan: "Sức khỏe", mau: hex("#7fb8a0") },
+  { khoa: "congViec", nhan: "Công việc", mau: hex("#8f6bff") },
+  { khoa: "taiLoc", nhan: "Tài lộc", mau: hex("#f1c85a") },
+  { khoa: "lucThan", nhan: "Lục thân", mau: hex("#e8a45c") },
 ];
-const mauTheoDiem = (diem: number) => MAU_DIEM[Math.max(-2, Math.min(2, Math.round(diem))) + 2];
 
-/** Chú giải màu -2..2 — anh Công phản ánh 2/9/2026: đồ hình có màu nhưng KHÔNG có chú thích màu
- *  nào tốt/xấu, khách/admin nhìn vào không đoán được ý nghĩa. 5 ô vuông màu đúng thang MAU_DIEM,
- *  kèm nhãn ngắn — đặt ngay dưới mô tả, phía trên lưới điểm, cùng chỗ với bản trên web. */
-const NHAN_MUC_DIEM = ["Rất bất lợi", "Bất lợi", "Trung tính", "Thuận lợi", "Rất thuận lợi"];
-function veChuGiaiMauDiem(b: But, f: Fonts): void {
-  let x = LE;
-  const o = 8;
-  for (let i = 0; i < MAU_DIEM.length; i++) {
-    b.page.drawRectangle({ x, y: b.y - o, width: o, height: o, color: MAU_DIEM[i] });
-    const nhan = NHAN_MUC_DIEM[i];
-    b.page.drawText(nhan, { x: x + o + 3, y: b.y - o + 1, size: 6.5, font: f.thuong, color: MAU.mucNhat });
-    x += o + 3 + f.thuong.widthOfTextAtSize(nhan, 6.5) + 10;
-  }
-  b.xuong(o + 4);
+/** Nhãn trục X ngắn gọn cho 1 mốc — Đại Vận lấy tuổi bắt đầu ("4-13" → "4"), Lưu Niên lấy nguyên nhãn (năm). */
+function nhanTrucX(d: DiemGiaiDoanVan): string {
+  return /^\d+\s*[-–]/.test(d.tuoi) ? d.tuoi.split(/[-–]/)[0].trim() : d.nhan;
 }
 
-const KHIA_CANH: { khoa: keyof Pick<DiemGiaiDoanVan, "sucKhoe" | "congViec" | "taiLoc" | "lucThan">; nhan: string }[] = [
-  { khoa: "sucKhoe", nhan: "Sức khỏe" },
-  { khoa: "congViec", nhan: "Công việc" },
-  { khoa: "taiLoc", nhan: "Tài lộc" },
-  { khoa: "lucThan", nhan: "Lục thân" },
-];
+/** Chú giải 4 lĩnh vực (chấm màu + tên) + ghi chú "cao = thuận lợi" — thay cho chú giải heatmap cũ. */
+function veChuGiaiLinhVuc(b: But, f: Fonts): void {
+  let x = LE;
+  const o = 7;
+  for (const kc of KHIA_CANH) {
+    b.page.drawEllipse({ x: x + o / 2, y: b.y - o / 2, xScale: o / 2, yScale: o / 2, color: kc.mau });
+    b.page.drawText(kc.nhan, { x: x + o + 3, y: b.y - o + 1, size: 6.5, font: f.thuong, color: MAU.mucNhat });
+    x += o + 3 + f.thuong.widthOfTextAtSize(kc.nhan, 6.5) + 12;
+  }
+  b.page.drawText("(đường/cột càng cao càng thuận lợi)", { x, y: b.y - o + 1, size: 6.5, font: f.nghieng, color: MAU.mucNhat });
+  b.xuong(o + 5);
+}
 
-/** Đồ hình bảng nhiệt (heatmap) 4 khía cạnh x N giai đoạn/năm — bản PDF của BieuDoGiaiDoanVan.astro. */
-function veBieuDoGiaiDoan(b: But, f: Fonts, tieuDe: string, moTa: string, danhSach: DiemGiaiDoanVan[]): void {
+/** Đồ thị ĐƯỜNG — 4 lĩnh vực xuyên suốt danh sách Đại Vận (small-multiples, mỗi lĩnh vực 1 dòng
+ *  sparkline). Bản PDF của "4 lĩnh vực xuyên suốt cả đời" trong app Xem Thời Vận. Điểm -2..2 map
+ *  vào chiều cao dòng; đường vàng đứt = mốc hiện tại thì không cần (PDF tĩnh). */
+function veDoThi4LinhVucDuong(b: But, f: Fonts, danhSach: DiemGiaiDoanVan[]): void {
+  const NHAN_RONG = 54;
+  const caoDong = 26;
+  const rongVe = A4.w - LE * 2 - NHAN_RONG;
+  const x0 = LE + NHAN_RONG;
+  const n = danhSach.length;
+  const xTai = (i: number) => (n === 1 ? x0 + rongVe / 2 : x0 + (rongVe * i) / (n - 1));
+  const yTai = (yTop: number, v: number) => yTop - caoDong / 2 - (Math.max(-2, Math.min(2, v)) / 2) * (caoDong / 2 - 2);
+
+  b.chua(caoDong * KHIA_CANH.length + 16);
+  for (const kc of KHIA_CANH) {
+    const yTop = b.y;
+    // Đường nền 0 (trung tính) mờ + tên lĩnh vực bên trái.
+    b.page.drawLine({ start: { x: x0, y: yTop - caoDong / 2 }, end: { x: x0 + rongVe, y: yTop - caoDong / 2 }, thickness: 0.4, color: XAM_NHAT, opacity: 0.5 });
+    b.page.drawText(kc.nhan, { x: LE, y: yTop - caoDong / 2 - 3, size: 7.5, font: f.vua, color: MAU.muc });
+    // Đường nối các điểm + chấm tròn mỗi mốc.
+    const diem = danhSach.map((d, i) => ({ x: xTai(i), y: yTai(yTop, d[kc.khoa]) }));
+    for (let i = 1; i < diem.length; i++) {
+      b.page.drawLine({ start: diem[i - 1], end: diem[i], thickness: 1.4, color: kc.mau });
+    }
+    for (const p of diem) b.page.drawEllipse({ x: p.x, y: p.y, xScale: 1.8, yScale: 1.8, color: kc.mau });
+    b.y = yTop - caoDong;
+  }
+
+  // Trục X: nhãn tuổi/năm ngay dưới dòng cuối.
+  for (let i = 0; i < n; i++) {
+    const nhan = nhanTrucX(danhSach[i]);
+    b.page.drawText(nhan, { x: xTai(i) - f.thuong.widthOfTextAtSize(nhan, 6) / 2, y: b.y, size: 6, font: f.thuong, color: MAU.mucNhat });
+  }
+  b.xuong(12);
+}
+
+/** Đồ hình CỘT NHÓM — mỗi mốc 1 cụm 4 cột (Sức khỏe/Công việc/Tài lộc/Lục thân). Bản PDF của
+ *  "Xu hướng 10 năm" trong app Xem Thời Vận. Dùng cho Lưu Niên. */
+function veBieuDoCot4LinhVuc(b: But, f: Fonts, danhSach: DiemGiaiDoanVan[]): void {
+  const caoVe = 42;
+  const rongVe = A4.w - LE * 2;
+  const n = danhSach.length || 1;
+  const nhomW = rongVe / n;
+  const cotW = (nhomW - 3) / KHIA_CANH.length;
+
+  b.chua(caoVe + 16);
+  const yDay = b.y - caoVe;
+  b.page.drawLine({ start: { x: LE, y: yDay }, end: { x: LE + rongVe, y: yDay }, thickness: 0.5, color: XAM_NHAT, opacity: 0.6 });
+
+  danhSach.forEach((d, i) => {
+    const x0 = LE + i * nhomW + 1.5;
+    KHIA_CANH.forEach((kc, j) => {
+      const v = Math.max(-2, Math.min(2, d[kc.khoa]));
+      const h = ((v + 2) / 4) * caoVe; // -2 → 0px, 2 → full — cột cao = thuận lợi.
+      b.page.drawRectangle({ x: x0 + j * cotW, y: yDay, width: cotW * 0.82, height: Math.max(h, 0.6), color: kc.mau });
+    });
+    const nhan = nhanTrucX(d);
+    b.page.drawText(nhan, { x: LE + i * nhomW + nhomW / 2 - f.thuong.widthOfTextAtSize(nhan, 6) / 2, y: yDay - 9, size: 6, font: f.thuong, color: MAU.mucNhat });
+  });
+  b.y = yDay - 12;
+  b.xuong(6);
+}
+
+/**
+ * Khối đồ hình Đại Vận / Lưu Niên. `kieu`: "duong" (biểu đồ đường 4 lĩnh vực xuyên suốt — dùng cho
+ * Đại Vận cả đời) hoặc "cot" (biểu đồ cột nhóm — dùng cho Lưu Niên). Anh Công 2/9/2026: PDF nên có
+ * đồ hình phong phú như app (Xem Thời Vận), bớt chữ — thay bảng nhiệt (heatmap) cũ bằng đúng 2 loại
+ * biểu đồ app đang dùng, chú giải màu theo LĨNH VỰC (không phải thang -2..2 như trước).
+ */
+function veBieuDoGiaiDoan(b: But, f: Fonts, tieuDe: string, moTa: string, danhSach: DiemGiaiDoanVan[], kieu: "duong" | "cot"): void {
   if (danhSach.length === 0) return;
-  const NHAN_RONG = 62;
-  const caoO = 13;
-  const rongCot = (A4.w - LE * 2 - NHAN_RONG) / danhSach.length;
-
-  // Giữ tiêu đề + mô tả + chú giải màu + lưới điểm cùng 1 trang — tránh tiêu đề bị mồ côi ở cuối
-  // trang trước còn lưới điểm rơi sang trang sau (chừa chỗ cho cả cụm trước khi vẽ bất kỳ phần nào).
-  b.chua(34 + 14 + 4 + 16 + caoO * (KHIA_CANH.length + 1) + 10);
+  b.chua(34 + 14 + 4 + 16 + (kieu === "duong" ? 26 * KHIA_CANH.length : 42) + 20);
   b.muc(tieuDe);
   b.doan(moTa, { size: 8, mau: MAU.mucNhat });
   b.xuong(4);
-  veChuGiaiMauDiem(b, f);
+  veChuGiaiLinhVuc(b, f);
 
-  let x = LE + NHAN_RONG;
-  for (const d of danhSach) {
-    b.page.drawText(catVua(d.nhan, f.dam, 6, rongCot - 2), { x, y: b.y, size: 6, font: f.dam, color: MAU.mucNhat });
-    x += rongCot;
-  }
-  b.y -= caoO;
-
-  for (const kc of KHIA_CANH) {
-    b.page.drawText(kc.nhan, { x: LE, y: b.y + 2, size: 7.5, font: f.vua, color: MAU.muc });
-    let x2 = LE + NHAN_RONG;
-    for (const d of danhSach) {
-      b.page.drawRectangle({ x: x2, y: b.y - 2, width: rongCot - 2, height: caoO - 3, color: mauTheoDiem(d[kc.khoa]) });
-      x2 += rongCot;
-    }
-    b.y -= caoO;
-  }
-  b.xuong(8);
+  if (kieu === "duong") veDoThi4LinhVucDuong(b, f, danhSach);
+  else veBieuDoCot4LinhVuc(b, f, danhSach);
+  b.xuong(4);
 
   for (const d of danhSach) {
     const nhanDungThan = d.dungThanVan
@@ -363,11 +404,13 @@ export async function generateBatTuToanDienPdf(
         b, f, "Đồ hình Đại Vận trọn đời",
         `So với Dụng Thần ${baoCaoNangCao.laSo.dungThan} · Hỷ Thần ${baoCaoNangCao.laSo.hyThan} · Kỵ Thần ${baoCaoNangCao.laSo.kyThan}`,
         baoCaoNangCao.daiVanBieuDo,
+        "duong",
       );
       veBieuDoGiaiDoan(
         b, f, "Đồ hình Lưu Niên — 10 năm tới",
         `Từ năm ${baoCaoNangCao.luuNienBieuDo[0]?.nhan ?? ""} đến ${baoCaoNangCao.luuNienBieuDo.at(-1)?.nhan ?? ""}`,
         baoCaoNangCao.luuNienBieuDo,
+        "cot",
       );
     }
   }
@@ -399,11 +442,13 @@ export async function generateBatTuNangCaoPdf(baoCao: BaoCaoNangCao, customerNam
         b, f, "Đồ hình Đại Vận trọn đời",
         `So với Dụng Thần ${baoCao.laSo.dungThan} · Hỷ Thần ${baoCao.laSo.hyThan} · Kỵ Thần ${baoCao.laSo.kyThan}`,
         baoCao.daiVanBieuDo,
+        "duong",
       );
       veBieuDoGiaiDoan(
         b, f, "Đồ hình Lưu Niên — 10 năm tới",
         `Từ năm ${baoCao.luuNienBieuDo[0]?.nhan ?? ""} đến ${baoCao.luuNienBieuDo.at(-1)?.nhan ?? ""}`,
         baoCao.luuNienBieuDo,
+        "cot",
       );
     }
   }
