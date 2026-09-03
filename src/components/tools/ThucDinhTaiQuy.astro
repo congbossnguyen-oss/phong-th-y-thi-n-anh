@@ -163,7 +163,52 @@ const SON_24 = [
     </div>`;
   }
 
-  function render(data: any) {
+  // Việc nên làm trong ngày đã chọn — theo SPEC mục 6.1: ngày chỉ phát tác khi CÓ hành động thực tế
+  // diễn ra đúng ngày, đúng tại tọa sơn đã nhập. Danh sách hành động giữ nguyên phạm vi sách nêu
+  // (động thổ/an táng/nhập trạch/đặt cửa/đặt bếp/đặt giường/tế lễ), không tự thêm việc ngoài sách.
+  const VIEC_NEN_LAM: Record<string, { tieuDe: string; viec: string[] }> = {
+    am: {
+      tieuDe: "Âm trạch (mộ) — việc nên làm đúng ngày này",
+      viec: [
+        "An táng / cải táng — hạ huyệt đúng ngày đã chọn",
+        "Động thổ xây, sửa mộ ngay tại tọa sơn đã nhập",
+        "Tế lễ tại mộ",
+      ],
+    },
+    duong: {
+      tieuDe: "Dương trạch (nhà) — việc nên làm đúng ngày này",
+      viec: [
+        "Động thổ: khởi công xây, sửa ngay tại tọa sơn đã nhập",
+        "Nhập trạch (dọn vào ở)",
+        "Đặt hoặc sửa cửa chính",
+        "Đặt bếp",
+        "Đặt giường",
+        "Tế lễ tại nhà",
+      ],
+    },
+  };
+
+  function theViecNenLam(loaiTrach: string, soNhanh: number): string {
+    const g = VIEC_NEN_LAM[loaiTrach] ?? VIEC_NEN_LAM.am!;
+    const canhBaoDaMucTieu =
+      soNhanh > 1
+        ? `<p class="mt-2 rounded-lg border border-(--color-gold-400)/50 bg-(--color-gold-400)/10 px-3 py-2 text-xs text-(--color-ink-700)">
+             Mỗi lần chỉ nên nhắm <strong>một</strong> mục tiêu. Ba bộ mã của cùng một quái sơn không trùng nhau, nên đừng dùng một ngày để cầu cả Tài – Đinh – Quý.
+           </p>`
+        : "";
+    return `<div class="rounded-2xl border-2 border-(--color-gold-400) bg-(--color-ivory-50) p-5">
+      <p class="font-display text-base font-bold text-(--color-ink-950)">${esc(g.tieuDe)}</p>
+      <ul class="mt-2 space-y-1.5">
+        ${g.viec.map((v) => `<li class="flex gap-2 text-sm text-(--color-ink-800)"><span class="text-(--color-gold-400)">✦</span><span>${esc(v)}</span></li>`).join("")}
+      </ul>
+      <p class="mt-3 rounded-lg border-2 border-(--color-danger-500)/50 bg-(--color-danger-500)/10 px-3 py-2 text-xs font-medium text-(--color-danger-500)">
+        ⚠ Ngày tốt <strong>không tự phát tác</strong>. Phải thực sự làm một trong các việc trên, đúng ngày đó và đúng tại tọa sơn đã nhập — trùng ngày trên lịch mà không có việc gì diễn ra thì không có tác dụng.
+      </p>
+      ${canhBaoDaMucTieu}
+    </div>`;
+  }
+
+  function render(data: any, loaiTrach: string) {
     if (!ketQuaEl) return;
     const r = data.result;
     const canhBao = r.canhBaoBienGioi
@@ -182,6 +227,7 @@ const SON_24 = [
       <p class="text-sm text-(--color-ink-600)">Quái sơn (Bước A): <strong class="text-(--color-ink-950)">${esc(r.quaiSon)}</strong> · Độ tin cậy công thức: <strong>${esc(r.doTinCay)}</strong></p>
       ${canhBao}
       ${ghiChuDuong}
+      ${theViecNenLam(loaiTrach, r.nhanh.length)}
       ${r.nhanh.map(theNhanh).join("")}
     </div>`;
     ketQuaEl.classList.remove("hidden");
@@ -235,7 +281,7 @@ const SON_24 = [
         loiEl.classList.remove("hidden");
         return;
       }
-      render(data);
+      render(data, loaiTrach);
     } catch {
       dangChayEl.classList.add("hidden");
       if (nutSubmit) nutSubmit.disabled = false;
