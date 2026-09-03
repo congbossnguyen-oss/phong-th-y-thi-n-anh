@@ -81,9 +81,16 @@ export const GIA_CONG_CU = {
   // đương "chọn ngày theo tọa" chứ không phải quyết định cả đời như HKĐQ → giá 300.000đ (chủ dự
   // án chốt 1/9/2026, giá thẳng khi giao việc, chưa qua vòng đối chiếu tầng giá như bảng trên).
   "dau-thu-chon-ngay": 300000,
+  // Bản ĐỘC LẬP cho app Quân Sư (xem project_quan_su_tach_doc_lap_khoi_web) — cùng giá, cùng
+  // engine `tinhDauThuChonNgay`/`timNgayDauThuChonNgay`, chỉ khác toolSlug. Thêm 4/9/2026 (bỏ sót
+  // lúc mở bán bản web 1/9 — khiến khách bấm vào trong app bị văng về trang chủ do route chưa có).
+  "dau-thu-chon-ngay-qs": 300000,
   // Thúc Đinh Tài Quý — cùng hạng với Đẩu Thủ: lớp xếp hạng ƯU TIÊN BỔ SUNG (không tự lọc hung
   // sát nền), phạm vi tương đương "chọn ngày theo tọa" → giá 300.000đ (chủ dự án chốt 3/9/2026).
   "thuc-dinh-tai-quy": 300000,
+  // Bản ĐỘC LẬP cho app Quân Sư — cùng giá, cùng engine `tinhThucDinhTaiQuy`, chỉ khác toolSlug.
+  // Thêm 4/9/2026 (cùng đợt sửa với dau-thu-chon-ngay-qs ở trên, cùng nguyên nhân bỏ sót).
+  "thuc-dinh-tai-quy-qs": 300000,
 
   // ─ Luận Giải Bát Tự Toàn Diện — 1 GÓI DUY NHẤT (anh Công chốt 1/9/2026) ─────────────────────
   // Trước đây tách 2 bậc Cơ Bản 300k / Trọn Đời 700k, nhưng gây 2 bug: (1) khách mua Cơ Bản cho

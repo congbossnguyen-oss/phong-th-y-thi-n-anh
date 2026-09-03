@@ -1,0 +1,347 @@
+---
+// Bản ĐỘC LẬP cho app Quân Sư của "Chọn Ngày Thúc Đinh · Tài · Quý" (anh Công chốt 1/9/2026: Quân
+// Sư không đấu nối code với web nữa). CỐ Ý gần như y hệt
+// `src/components/tools/ThucDinhTaiQuy.astro` — chấp nhận trùng lặp UI/routing thay vì import
+// chéo sang component web. Vẫn dùng CHUNG engine tính toán (`@thien-anh/trachnhat-engine`). Gọi
+// API riêng ở `/api/quan-su/vip/thuc-dinh-tai-quy-qs/*` (toolSlug `thuc-dinh-tai-quy-qs`). Thêm
+// 4/9/2026 (bỏ sót lúc mở bán bản web 3/9 — khiến khách bấm vào module này trong app bị văng về
+// trang chủ).
+import BottomNav from "../../quan-su/BottomNav.astro";
+import Container from "../../ui/Container.astro";
+import Button from "../../ui/Button.astro";
+import DateSelect from "../../ui/DateSelect.astro";
+import MaKhuyenMai from "../../ui/MaKhuyenMai.astro";
+import { GIA_CONG_CU, dinhDangTien } from "../../../lib/payments/gia-cong-cu";
+
+export const prerender = true;
+
+const SON_24 = [
+  "Tý", "Quý", "Sửu", "Cấn", "Dần", "Giáp", "Mão", "Ất", "Thìn", "Tốn", "Tỵ", "Bính",
+  "Ngọ", "Đinh", "Mùi", "Khôn", "Thân", "Canh", "Dậu", "Tân", "Tuất", "Càn", "Hợi", "Nhâm",
+];
+
+const TOOL_SLUG = "thuc-dinh-tai-quy-qs";
+const TOOL_PRICE = GIA_CONG_CU[TOOL_SLUG];
+const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
+---
+
+<Container class="py-10">
+  <div class="mx-auto max-w-2xl">
+    <div class="mb-6 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-4 text-sm text-(--color-ink-600)">
+      <p class="font-medium text-(--color-ink-800)">Phương pháp Nạp Giáp Tiên Thiên là gì?</p>
+      <p class="mt-1">
+        Từ tọa (nhà/mộ/hạng mục), xác định quái theo Hậu Thiên Bát Quái, rồi tra "bộ mã" 6 tổ can-chi
+        nạp giáp — đối chiếu ngày cụ thể với bộ mã để tìm ngày thúc <strong>Tài</strong> (kinh doanh),
+        <strong> Đinh</strong> (sinh con/nhân khẩu) hoặc <strong>Quý</strong> (công danh/học vấn).
+      </p>
+      <p class="mt-2 text-xs text-(--color-ink-500)">
+        Đây là lớp xếp hạng ưu tiên BỔ SUNG, chạy SAU khi ngày đã qua các bước lọc hung sát nền khác
+        (Tam Sát/Xung Sơn...) — không thay thế các bước lọc đó.
+      </p>
+    </div>
+
+    <form id="tdtq-form" class="flex flex-col gap-4 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
+      <div>
+        <label for="tdtq-son" class="text-sm font-medium text-(--color-ink-800)">Tọa (tên sơn)</label>
+        <select id="tdtq-son" class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)">
+          <option value="">Không dùng tên sơn — nhập độ số bên dưới</option>
+          {SON_24.map((s) => <option value={s}>{s}</option>)}
+        </select>
+      </div>
+
+      <div>
+        <label for="tdtq-do-so" class="text-sm font-medium text-(--color-ink-800)">Hoặc độ số la kinh của Tọa (0–359.99)</label>
+        <p class="mt-1 text-xs text-(--color-ink-500)">Là độ của lưng nhà/mộ (Tọa), không phải hướng. Bỏ trống nếu đã chọn tên sơn ở trên.</p>
+        <input type="number" id="tdtq-do-so" step="0.01" min="0" max="359.99" placeholder="vd. 23.3"
+          class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+      </div>
+
+      <div>
+        <p class="text-sm font-medium text-(--color-ink-800)">Mục tiêu</p>
+        <div class="mt-1.5 flex flex-wrap gap-4">
+          <label class="flex items-center gap-1.5 text-sm text-(--color-ink-700)"><input type="radio" name="mucTieu" value="tai" checked /> Tài</label>
+          <label class="flex items-center gap-1.5 text-sm text-(--color-ink-700)"><input type="radio" name="mucTieu" value="dinh" /> Đinh</label>
+          <label class="flex items-center gap-1.5 text-sm text-(--color-ink-700)"><input type="radio" name="mucTieu" value="quy" /> Quý</label>
+          <label class="flex items-center gap-1.5 text-sm text-(--color-ink-700)"><input type="radio" name="mucTieu" value="all" /> Cả 3 (xem riêng từng mục)</label>
+        </div>
+        <p class="mt-1 text-xs text-(--color-ink-500)">Nên chọn rõ 1 mục tiêu — 3 bộ mã không trùng nhau, hiếm khi 1 ngày phục vụ cả 3 cùng lúc.</p>
+      </div>
+
+      <div>
+        <p class="text-sm font-medium text-(--color-ink-800)">Loại trạch</p>
+        <div class="mt-1.5 flex gap-4">
+          <label class="flex items-center gap-1.5 text-sm text-(--color-ink-700)"><input type="radio" name="loaiTrach" value="am" checked /> Âm trạch (mộ)</label>
+          <label class="flex items-center gap-1.5 text-sm text-(--color-ink-700)"><input type="radio" name="loaiTrach" value="duong" /> Dương trạch (nhà/cửa/bếp/giường)</label>
+        </div>
+      </div>
+
+      <div>
+        <label for="tdtq-hanh-dong" class="text-sm font-medium text-(--color-ink-800)">Hành động cụ thể đúng ngày đó (không bắt buộc)</label>
+        <input type="text" id="tdtq-hanh-dong" placeholder="vd. động thổ, an táng, nhập trạch, đặt cửa, đặt bếp, đặt giường, tế lễ..."
+          class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+        <p class="mt-1 text-xs text-(--color-ink-500)">Module chỉ có ý nghĩa khi gắn với 1 sự kiện thật xảy ra đúng ngày đó tại đúng tọa — không phải chọn ngày rồi để đó.</p>
+      </div>
+
+      <details class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3">
+        <summary class="cursor-pointer text-sm font-medium text-(--color-ink-800)">Quét khoảng ngày cụ thể (không bắt buộc)</summary>
+        <div class="mt-3 space-y-3">
+          <DateSelect idPrefix="tdtq-tu" label="Từ ngày (dương lịch)" required={false} yearsBack={1} yearsForward={5} />
+          <DateSelect idPrefix="tdtq-den" label="Đến ngày (dương lịch)" required={false} yearsBack={1} yearsForward={5} />
+          <p class="text-xs text-(--color-ink-500)">Bỏ trống thì chỉ trả về công thức (bộ mã can-chi), không quét lịch. Tối đa 400 ngày mỗi lần.</p>
+        </div>
+      </details>
+
+      <MaKhuyenMai idPrefix="tdtq-ma" toolSlug={TOOL_SLUG} giaGoc={TOOL_PRICE} />
+
+      <Button type="submit" size="lg">Xem kết quả Thúc Đinh · Tài · Quý</Button>
+    </form>
+
+    <div id="tdtq-loi" class="mt-4 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm text-(--color-danger-500)"></div>
+    <div id="tdtq-dang-chay" class="mt-4 hidden rounded-(--radius-card) border border-(--color-gold-500)/40 bg-(--color-gold-400)/10 p-4 text-sm text-(--color-ink-700)">
+      <p class="font-medium text-(--color-ink-900)">⏳ Đang tính…</p>
+    </div>
+
+    <div id="tdtq-thanh-toan" class="mt-6 hidden space-y-4 rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-center text-(--color-ink-950) shadow-lg">
+      <p class="font-display text-lg font-bold">Quét mã QR để thanh toán <span id="tdtq-so-tien">{TOOL_PRICE_LABEL}</span></p>
+      <img id="tdtq-qr" src="" alt="Mã QR thanh toán" class="mx-auto h-64 w-64 rounded-xl border border-(--color-ivory-300)" />
+      <p class="text-sm text-(--color-ink-600)">Mã đơn hàng: <strong id="tdtq-order-code"></strong></p>
+      <p id="tdtq-trang-thai" class="text-sm font-medium text-(--color-gold-400)">Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)</p>
+    </div>
+
+    <div id="tdtq-ket-qua" class="mt-6 hidden space-y-4"></div>
+  </div>
+</Container>
+<BottomNav />
+
+<script>
+  import { readDateSelects } from "../../../lib/date-select";
+
+  const form = document.getElementById("tdtq-form") as HTMLFormElement;
+  const loiEl = document.getElementById("tdtq-loi")!;
+  const ketQuaEl = document.getElementById("tdtq-ket-qua")!;
+  const dangChayEl = document.getElementById("tdtq-dang-chay")!;
+  const thanhToanEl = document.getElementById("tdtq-thanh-toan")!;
+  const qrImg = document.getElementById("tdtq-qr") as HTMLImageElement;
+  const orderCodeEl = document.getElementById("tdtq-order-code")!;
+  const trangThaiEl = document.getElementById("tdtq-trang-thai")!;
+  const soTienEl = document.getElementById("tdtq-so-tien")!;
+  const nutSubmit = form.querySelector('button[type="submit"]') as HTMLButtonElement | null;
+
+  let pollTimer: ReturnType<typeof setInterval> | null = null;
+  let dangHoi = false;
+
+  const doc = (id: string) => (document.getElementById(id) as HTMLInputElement | null)?.value.trim() ?? "";
+
+  const tatDangChay = () => {
+    dangChayEl.classList.add("hidden");
+    if (nutSubmit) nutSubmit.disabled = false;
+  };
+  const baoLoi = (msg: string) => {
+    tatDangChay();
+    loiEl.textContent = msg;
+    loiEl.classList.remove("hidden");
+  };
+  const dungCho = () => {
+    if (pollTimer) {
+      clearInterval(pollTimer);
+      pollTimer = null;
+    }
+  };
+
+  const esc = (s: unknown) =>
+    String(s).replace(/[&<>"']/g, (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!,
+    );
+
+  const TEN_MUC_TIEU: Record<string, string> = { tai: "Tài", dinh: "Đinh", quy: "Quý" };
+  const MAU_PHAN_LOAI: Record<string, string> = {
+    chanTai: "bg-(--color-success-500)/15 text-(--color-success-500) border border-(--color-success-500)/50",
+    giaTai: "bg-(--color-gold-400)/15 text-(--color-gold-400) border border-(--color-gold-400)/50",
+  };
+  const TEN_PHAN_LOAI: Record<string, string> = { chanTai: "Chân Tài", giaTai: "Giả Tài" };
+
+  function theBoMa(boMa: any[]): string {
+    return `<div class="flex flex-wrap gap-1.5">${boMa
+      .map((cc) => `<span class="rounded-full bg-(--color-ivory-200) px-2 py-0.5 text-[11px] font-medium text-(--color-ink-700)">${esc(cc.can)} ${esc(cc.chi)}</span>`)
+      .join("")}</div>`;
+  }
+
+  function theNgayPhuHop(n: any): string {
+    const badge = n.phanLoaiTai
+      ? `<span class="inline-block rounded-full px-2 py-0.5 text-[11px] font-semibold ${MAU_PHAN_LOAI[n.phanLoaiTai] ?? ""}">${TEN_PHAN_LOAI[n.phanLoaiTai] ?? esc(n.phanLoaiTai)}</span>`
+      : `<span class="inline-block rounded-full bg-(--color-success-500)/15 px-2 py-0.5 text-[11px] font-semibold text-(--color-success-500) border border-(--color-success-500)/50">Khớp</span>`;
+    return `<div class="flex items-center justify-between gap-2 rounded-lg border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2">
+      <span class="text-sm text-(--color-ink-800)">${esc(n.ngayDuongLich.ngay)}/${esc(n.ngayDuongLich.thang)}/${esc(n.ngayDuongLich.nam)}
+        <span class="text-(--color-ink-500)">— ${esc(n.canChiNgay)} · ÂL ${esc(n.amLich.ngay)}/${esc(n.amLich.thang)}${n.amLich.nhuan ? " (nhuận)" : ""}</span></span>
+      ${badge}
+    </div>`;
+  }
+
+  function theNhanh(nhanh: any): string {
+    return `<div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+      <p class="font-display text-lg font-bold">Thúc ${TEN_MUC_TIEU[nhanh.mucTieuNhanh] ?? esc(nhanh.mucTieuNhanh)}</p>
+      <p class="mt-1 text-sm text-(--color-ink-600)">Quái dùng để tra bộ mã: <strong>${esc(nhanh.quaiDungDeTra)}</strong></p>
+      <div class="mt-3">
+        <p class="text-xs font-semibold uppercase tracking-wide text-(--color-ink-500)">Bộ mã (6 tổ can-chi)</p>
+        <div class="mt-1.5">${theBoMa(nhanh.boMa)}</div>
+      </div>
+      ${nhanh.ngayPhuHop.length ? `<div class="mt-4">
+        <p class="text-xs font-semibold uppercase tracking-wide text-(--color-ink-500)">${nhanh.ngayPhuHop.length} ngày phù hợp trong khoảng đã quét</p>
+        <div class="mt-1.5 space-y-1.5">${nhanh.ngayPhuHop.map(theNgayPhuHop).join("")}</div>
+      </div>` : `<p class="mt-3 text-xs text-(--color-ink-500)">Chưa nhập khoảng ngày để quét — chỉ hiện công thức (bộ mã) ở trên.</p>`}
+    </div>`;
+  }
+
+  const VIEC_NEN_LAM: Record<string, { tieuDe: string; viec: string[] }> = {
+    am: {
+      tieuDe: "Âm trạch (mộ) — việc nên làm đúng ngày này",
+      viec: [
+        "An táng / cải táng — hạ huyệt đúng ngày đã chọn",
+        "Động thổ xây, sửa mộ ngay tại tọa sơn đã nhập",
+        "Tế lễ tại mộ",
+      ],
+    },
+    duong: {
+      tieuDe: "Dương trạch (nhà) — việc nên làm đúng ngày này",
+      viec: [
+        "Động thổ: khởi công xây, sửa ngay tại tọa sơn đã nhập",
+        "Nhập trạch (dọn vào ở)",
+        "Đặt hoặc sửa cửa chính",
+        "Đặt bếp",
+        "Đặt giường",
+        "Tế lễ tại nhà",
+      ],
+    },
+  };
+
+  function theViecNenLam(loaiTrach: string, soNhanh: number): string {
+    const g = VIEC_NEN_LAM[loaiTrach] ?? VIEC_NEN_LAM.am!;
+    const canhBaoDaMucTieu =
+      soNhanh > 1
+        ? `<p class="mt-2 rounded-lg border border-(--color-gold-400)/50 bg-(--color-gold-400)/10 px-3 py-2 text-xs text-(--color-ink-700)">
+             Mỗi lần chỉ nên nhắm <strong>một</strong> mục tiêu. Ba bộ mã của cùng một quái sơn không trùng nhau, nên đừng dùng một ngày để cầu cả Tài – Đinh – Quý.
+           </p>`
+        : "";
+    return `<div class="rounded-2xl border-2 border-(--color-gold-400) bg-(--color-ivory-50) p-5">
+      <p class="font-display text-base font-bold text-(--color-ink-950)">${esc(g.tieuDe)}</p>
+      <ul class="mt-2 space-y-1.5">
+        ${g.viec.map((v) => `<li class="flex gap-2 text-sm text-(--color-ink-800)"><span class="text-(--color-gold-400)">✦</span><span>${esc(v)}</span></li>`).join("")}
+      </ul>
+      <p class="mt-3 rounded-lg border-2 border-(--color-danger-500)/50 bg-(--color-danger-500)/10 px-3 py-2 text-xs font-medium text-(--color-danger-500)">
+        ⚠ Ngày tốt <strong>không tự phát tác</strong>. Phải thực sự làm một trong các việc trên, đúng ngày đó và đúng tại tọa sơn đã nhập — trùng ngày trên lịch mà không có việc gì diễn ra thì không có tác dụng.
+      </p>
+      ${canhBaoDaMucTieu}
+    </div>`;
+  }
+
+  function render(data: any) {
+    const r = data.result;
+    const loaiTrach = data.loaiTrach as string;
+    const canhBao = r.canhBaoBienGioi
+      ? `<div class="rounded-lg border-2 border-(--color-danger-500)/60 bg-(--color-danger-500)/10 p-3 text-sm font-medium text-(--color-danger-500)">
+          ⚠ Độ số cách ranh giới 2 quái trong phạm vi ±1° — nên đo lại chính xác hơn (hoặc kiểm tra Không Vong) trước khi dùng kết quả này.
+        </div>`
+      : "";
+    const ghiChuDuong = r.ghiChuApDungDuongTrach
+      ? `<div class="rounded-lg border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-3 text-xs text-(--color-ink-700)">
+          <strong>Độ tin cậy (dương trạch):</strong> ${esc(r.ghiChuApDungDuongTrach)}
+        </div>`
+      : `<div class="rounded-lg border border-(--color-success-500)/40 bg-(--color-success-500)/10 p-3 text-xs text-(--color-success-500)">
+          Âm trạch — độ tin cậy cao nhất, có ví dụ thực tế đối chiếu trong sách gốc.
+        </div>`;
+    ketQuaEl.innerHTML = `<div class="space-y-3">
+      <p class="text-sm text-(--color-ink-600)">Quái sơn (Bước A): <strong class="text-(--color-ink-950)">${esc(r.quaiSon)}</strong> · Độ tin cậy công thức: <strong>${esc(r.doTinCay)}</strong></p>
+      ${canhBao}
+      ${ghiChuDuong}
+      ${theViecNenLam(loaiTrach, r.nhanh.length)}
+      ${r.nhanh.map(theNhanh).join("")}
+    </div>`;
+    ketQuaEl.classList.remove("hidden");
+    ketQuaEl.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  async function layKetQua(orderCode: string) {
+    if (dangHoi) return;
+    dangHoi = true;
+    try {
+      const res = await fetch(`/api/quan-su/vip/thuc-dinh-tai-quy-qs/result?orderCode=${encodeURIComponent(orderCode)}`);
+      const data = await res.json();
+      if (!data.ok) return;
+      if (data.status === "cancelled") {
+        dungCho();
+        trangThaiEl.textContent = "Đơn hàng đã bị hủy.";
+        return;
+      }
+      if (data.status !== "confirmed") return;
+      dungCho();
+      dangChayEl.classList.add("hidden");
+      thanhToanEl.classList.add("hidden");
+      render(data);
+    } catch {
+      // Mạng chập chờn — để nhịp sau thử lại.
+    } finally {
+      dangHoi = false;
+    }
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    loiEl.classList.add("hidden");
+    ketQuaEl.classList.add("hidden");
+
+    const sonName = doc("tdtq-son");
+    const toaDoSo = doc("tdtq-do-so");
+    if (!sonName && !toaDoSo) {
+      return baoLoi("Vui lòng chọn tên sơn hoặc nhập độ số la kinh.");
+    }
+    const mucTieu = (form.querySelector('input[name="mucTieu"]:checked') as HTMLInputElement).value;
+    const loaiTrach = (form.querySelector('input[name="loaiTrach"]:checked') as HTMLInputElement).value;
+
+    const payload: Record<string, unknown> = {
+      ...(sonName ? { sonName } : {}),
+      ...(toaDoSo ? { toaDoSo: Number(toaDoSo) } : {}),
+      mucTieu,
+      loaiTrach,
+    };
+
+    const tu = readDateSelects("tdtq-tu");
+    const den = readDateSelects("tdtq-den");
+    if (tu && den) {
+      payload.tuNgay = { nam: tu.year, thang: tu.month, ngay: tu.day };
+      payload.denNgay = { nam: den.year, thang: den.month, ngay: den.day };
+    }
+
+    dangChayEl.classList.remove("hidden");
+    if (nutSubmit) nutSubmit.disabled = true;
+
+    try {
+      const res = await fetch("/api/quan-su/vip/thuc-dinh-tai-quy-qs/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...payload,
+          ...(doc("tdtq-ma-input") ? { maKhuyenMai: doc("tdtq-ma-input") } : {}),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) return baoLoi(data.error ?? "Không tạo được đơn hàng.");
+      tatDangChay();
+      orderCodeEl.textContent = data.orderCode;
+
+      if (data.mienPhi) {
+        dangChayEl.classList.remove("hidden");
+        await layKetQua(data.orderCode);
+        return;
+      }
+
+      soTienEl.textContent = `${Number(data.totalAmount).toLocaleString("vi-VN")}đ`;
+      qrImg.src = data.qrUrl;
+      trangThaiEl.textContent = "Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)";
+      thanhToanEl.classList.remove("hidden");
+      thanhToanEl.scrollIntoView({ behavior: "smooth", block: "start" });
+      pollTimer = setInterval(() => layKetQua(data.orderCode), 3000);
+    } catch {
+      baoLoi("Không tính được. Vui lòng thử lại.");
+    }
+  });
+</script>
