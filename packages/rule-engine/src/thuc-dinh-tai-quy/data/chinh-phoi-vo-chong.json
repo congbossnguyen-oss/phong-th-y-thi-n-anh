@@ -1,0 +1,15 @@
+{
+  "_nguon": "Chính Ngũ Hành Trạch Nhật Học - Chương 10 Phần 2, đối chiếu kiến thức nền chuẩn bát quái chính phối",
+  "_doTinCay": "da-kiem-chung",
+  "_ghiChu": "Dùng cho tính ngày THÚC ĐINH: quái sơn X -> lấy nạp giáp của quái đối ứng (không phải của chính X)",
+  "capChinhPhoi": [
+    { "quai": "Càn", "doiUng": "Khôn" },
+    { "quai": "Khôn", "doiUng": "Càn" },
+    { "quai": "Chấn", "doiUng": "Tốn" },
+    { "quai": "Tốn", "doiUng": "Chấn" },
+    { "quai": "Khảm", "doiUng": "Ly" },
+    { "quai": "Ly", "doiUng": "Khảm" },
+    { "quai": "Cấn", "doiUng": "Đoài" },
+    { "quai": "Đoài", "doiUng": "Cấn" }
+  ]
+}

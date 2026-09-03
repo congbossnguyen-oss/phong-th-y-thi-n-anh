@@ -17,3 +17,4 @@ export * as XemTuoiXongDat from "./xem-tuoi-xong-dat/index.js";
 export * as XemNgayCaoCap from "./xem-ngay-cao-cap/index.js";
 export * as BatTrachNha from "./bat-trach-nha/index.js";
 export * as DauThu from "./dau-thu/index.js";
+export * as ThucDinhTaiQuy from "./thuc-dinh-tai-quy/index.js";
