@@ -154,7 +154,6 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
 
 <script>
   import { readDateSelects } from "../../lib/date-select";
-  import { trackPurchase } from "../../lib/analytics/ecommerce";
 
   const form = document.getElementById("nc-form") as HTMLFormElement;
   const loiEl = document.getElementById("nc-loi")!;
@@ -171,7 +170,6 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
 
   let pollTimer: ReturnType<typeof setInterval> | null = null;
   let dangHoi = false;
-  let gaTongTien = 0;
 
   const doc = (id: string) => (document.getElementById(id) as HTMLInputElement | null)?.value.trim() ?? "";
 
@@ -323,11 +321,6 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
       dungCho();
       dangChayEl.classList.add("hidden");
       thanhToanEl.classList.add("hidden");
-      trackPurchase({
-        transactionId: orderCode,
-        value: gaTongTien,
-        items: [{ item_id: "nhan-chuc", item_name: "Nhận Chức", price: gaTongTien, quantity: 1 }],
-      });
       render(data.result);
     } catch {
       // Mạng chập chờn — để nhịp sau thử lại.
@@ -397,7 +390,6 @@ const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
       if (!res.ok || !data.ok) return baoLoi(data.error ?? "Không tạo được đơn hàng.");
       tatDangChay();
       orderCodeEl.textContent = data.orderCode;
-      gaTongTien = Number(data.totalAmount) || 0;
 
       // Mã miễn phí 100% / tài khoản quản trị: server xác nhận đơn luôn, qrUrl = null.
       if (data.mienPhi) {

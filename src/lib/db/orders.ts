@@ -40,6 +40,7 @@ import { taoLuanGiaiTuVi, type LuanGiaiTuViInput } from "../tu-vi/luan-giai/taoL
 import { generateTuViCoBanPdf, generateTuViNangCaoPdf } from "../tu-vi/luan-giai/pdf";
 import { apDungMaKhiThanhToan } from "../payments/promo";
 import { ghiDonThuPhiLenSheet, TEN_CONG_CU_HIEN_THI } from "../google-sheets-don-thu-phi";
+import { trackServerPurchase } from "../analytics/measurement-protocol";
 import { ghiDonSimPhongThuyLenSheet } from "../google-sheets-sim-phong-thuy";
 import { NHAN_MONG_MUON, NHAN_MANG, NHAN_KHOANG_GIA, type SimPhongThuyInput } from "../sim-phong-thuy-khai-van/labels";
 import { Scoring } from "@thien-anh/rule-engine";
@@ -336,6 +337,40 @@ async function _markOrderPaidAndFulfillNoiBo(orderId: string) {
   if (!order || order.status === "confirmed") return;
 
   await db.update(orders).set({ status: "confirmed", paidAt: new Date() }).where(eq(orders.id, orderId));
+
+  // Báo doanh thu về Google Analytics NGAY TẠI ĐÂY — điểm DUY NHẤT mọi loại đơn (công cụ, khóa
+  // học, gói thuê bao Quân Sư) đều đi qua khi đã thật sự nhận tiền, nên phủ được cả web thường lẫn
+  // mọi bản "-qs" trong app Quân Sư mà không cần gắn tay từng trang. Không rethrow — lỗi đo lường
+  // (nếu có) không được phép chặn việc xác nhận đơn / gửi email cho khách bên dưới.
+  try {
+    let gaItemId = "vat-pham";
+    let gaItemName = "Vật phẩm phong thủy";
+    if (order.orderType === "tool" && order.toolSlug) {
+      gaItemId = order.toolSlug;
+      gaItemName = TEN_CONG_CU_HIEN_THI[order.toolSlug] ?? order.toolSlug;
+    } else if (order.orderType === "subscription") {
+      try {
+        const { tier, duration } = JSON.parse(order.toolInputSnapshot ?? "{}");
+        gaItemId = `subscription_${tier}_${duration}`;
+        gaItemName = `Gói thuê bao Quân Sư — ${tier === "cao_cap" ? "Cao cấp" : "Cơ bản"} (${duration})`;
+      } catch {
+        gaItemId = "subscription";
+        gaItemName = "Gói thuê bao Quân Sư";
+      }
+    } else if (order.orderType === "course" && order.courseRef) {
+      gaItemId = order.courseRef;
+      gaItemName = "Khóa học";
+    }
+    await trackServerPurchase({
+      orderId: order.id,
+      transactionId: order.orderCode,
+      value: Number(order.totalAmount),
+      itemId: gaItemId,
+      itemName: gaItemName,
+    });
+  } catch (err) {
+    console.error(`[ga4] Lỗi gửi purchase event cho đơn ${order.orderCode}:`, err);
+  }
 
   // Trừ lượt mã khuyến mãi ở ĐÂY chứ không phải lúc tạo đơn: đơn khách xem QR rồi bỏ ngang sẽ
   // không đốt mất mã. Đổi lại, về lý thuyết 2 người cùng giữ lượt cuối có thể cùng thanh toán —

@@ -400,7 +400,6 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
 
 <script>
   import { readDateSelects } from "../../lib/date-select";
-  import { trackPurchase } from "../../lib/analytics/ecommerce";
 
   // ⚠️ TẠM THỜI — true = bỏ qua thanh toán, gọi thẳng test-calculate.ts (test nội bộ, yêu cầu
   // Công 2026-08-14). Đổi lại `false` khi quay lại thu phí thật (và khôi phục nhánh checkout.ts
@@ -927,7 +926,6 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
   });
 
   let pollTimer: ReturnType<typeof setInterval> | null = null;
-  let gaTongTien = 0;
 
   function stopPolling() {
     if (pollTimer) clearInterval(pollTimer);
@@ -945,11 +943,6 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
         trangThaiEl.textContent = "Đã thanh toán — đang hiển thị kết quả bên dưới.";
         thanhToanEl.classList.add("hidden");
         form.classList.add("hidden"); // tránh gửi lại form (tạo đơn mới, thu phí lần nữa) sau khi đã có kết quả
-        trackPurchase({
-          transactionId: orderCode,
-          value: gaTongTien,
-          items: [{ item_id: "gio-liem-ha-huyet", item_name: "Giờ Liệm Hạ Huyệt", price: gaTongTien, quantity: 1 }],
-        });
         renderKetQua(data.result as GioLiemHaHuyetResult);
         if (data.phase2) renderPhase2(data.phase2);
         khoiPdfEl.classList.remove("hidden");
@@ -1140,8 +1133,6 @@ const TOOL_PRICE_LABEL = NHAN_GIA_CO_BAN;
 
       // Mã miễn phí 100%: server đã xác nhận đơn luôn và trả qrUrl = null. Không được gán null vào
       // thẻ ảnh (QR vỡ) rồi bảo khách "đang chờ thanh toán" — lấy kết quả về ngay.
-      gaTongTien = Number(data.totalAmount) || 0;
-
       if (data.mienPhi) {
         orderCodeEl.textContent = data.orderCode;
         await pollResult(data.orderCode);

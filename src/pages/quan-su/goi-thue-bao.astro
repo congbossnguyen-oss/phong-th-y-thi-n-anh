@@ -132,9 +132,6 @@ const DURATIONS: SubscriptionDuration[] = ["1_thang", "3_thang", "6_thang", "1_n
       const phoneInput = document.getElementById("phone");
       const resultEl = document.getElementById("qs-sub-result");
       let pollTimer = null;
-      let gaTongTien = 0;
-      let gaTenGoi = "";
-      let gaMaGoi = "";
 
       function esc(s) { const d = document.createElement("div"); d.textContent = s == null ? "" : String(s); return d.innerHTML; }
 
@@ -144,18 +141,6 @@ const DURATIONS: SubscriptionDuration[] = ["1_thang", "3_thang", "6_thang", "1_n
           const data = await res.json();
           if (data.status === "confirmed") {
             clearInterval(pollTimer);
-            try {
-              if (typeof window.gtag === "function") {
-                window.gtag("event", "purchase", {
-                  transaction_id: orderCode,
-                  currency: "VND",
-                  value: gaTongTien,
-                  items: [{ item_id: gaMaGoi, item_name: gaTenGoi, price: gaTongTien, quantity: 1 }],
-                });
-              }
-            } catch {
-              // đo lường là phụ, không được chặn việc báo khách kích hoạt thành công
-            }
             resultEl.innerHTML = '<div class="qs-notice" style="background:rgba(127,184,160,0.12);border-color:#7fb8a0;color:#a9e0c9;">✓ Kích hoạt thành công! Tải lại trang để xem gói mới.</div>';
           } else if (data.status === "cancelled") {
             clearInterval(pollTimer);
@@ -170,9 +155,6 @@ const DURATIONS: SubscriptionDuration[] = ["1_thang", "3_thang", "6_thang", "1_n
         const phone = (phoneInput?.value || "").trim();
         if (!phone) { alert("Vui lòng nhập số điện thoại liên hệ."); return; }
 
-        gaMaGoi = `${btn.dataset.tier}_${btn.dataset.duration}`;
-        gaTenGoi = `Quân Sư — ${btn.dataset.tier === "cao_cap" ? "Cao cấp" : "Cơ bản"} (${btn.dataset.duration})`;
-
         resultEl.classList.remove("qs-hidden");
         resultEl.innerHTML = '<p class="qs-sub">Đang tạo đơn…</p>';
 
@@ -184,7 +166,6 @@ const DURATIONS: SubscriptionDuration[] = ["1_thang", "3_thang", "6_thang", "1_n
           });
           const data = await res.json();
           if (!data.ok) { resultEl.innerHTML = `<div class="qs-notice">${esc(data.error || "Có lỗi xảy ra.")}</div>`; return; }
-          gaTongTien = Number(data.totalAmount) || 0;
 
           if (data.mienPhi) {
             resultEl.innerHTML = '<div class="qs-notice" style="background:rgba(127,184,160,0.12);border-color:#7fb8a0;color:#a9e0c9;">✓ Đơn thử nghiệm (0đ) đã kích hoạt. Tải lại trang để xem gói mới.</div>';

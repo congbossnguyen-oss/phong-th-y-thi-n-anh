@@ -410,7 +410,6 @@ const UU_TIEN = [
 
 <script>
   import { readDateSelects } from "../../lib/date-select";
-  import { trackPurchase } from "../../lib/analytics/ecommerce";
 
   const form = document.getElementById("tnsn-form") as HTMLFormElement | null;
   if (form) {
@@ -433,7 +432,6 @@ const UU_TIEN = [
 
     let pollTimer: ReturnType<typeof setInterval> | null = null;
     let dangHoi = false;
-    let gaTongTien = 0;
     const doc = (id: string) => (document.getElementById(id) as HTMLInputElement | null)?.value.trim() ?? "";
 
     const tatDangChay = () => { dangChayEl.classList.add("hidden"); if (nutSubmit) nutSubmit.disabled = false; };
@@ -450,11 +448,6 @@ const UU_TIEN = [
         if (data.status === "cancelled") { dungCho(); trangThaiEl.textContent = "Đơn hàng đã bị hủy."; return; }
         if (data.status !== "confirmed") return;
         dungCho();
-        trackPurchase({
-          transactionId: orderCode,
-          value: gaTongTien,
-          items: [{ item_id: "trach-nhat-sinh-no", item_name: "Trạch Nhật Sinh Nở", price: gaTongTien, quantity: 1 }],
-        });
         window.location.href = `/dai-cat-loi/trach-nhat-sinh-no?orderCode=${encodeURIComponent(orderCode)}`;
       } catch {
         // mạng chập chờn — nhịp sau thử lại
@@ -506,7 +499,6 @@ const UU_TIEN = [
         if (!res.ok || !data.ok) return baoLoi(data.error ?? "Không tạo được đơn hàng.");
         tatDangChay();
         orderCodeEl.textContent = data.orderCode;
-        gaTongTien = Number(data.totalAmount) || 0;
 
         if (data.mienPhi) { dangChayEl.classList.remove("hidden"); await kiemTra(data.orderCode); return; }
 
