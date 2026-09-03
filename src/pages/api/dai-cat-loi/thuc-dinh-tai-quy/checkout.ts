@@ -1,14 +1,17 @@
 import type { APIRoute } from "astro";
 import { tinhThucDinhTaiQuy, type ThucDinhTaiQuyInput } from "@thien-anh/trachnhat-engine";
+import { taoDonCongCu } from "../../../../lib/payments/checkout-cong-cu";
 import { checkRateLimit } from "../../../../lib/rate-limit";
+import { thongBaoLoiAnToan } from "../../../../lib/loi-an-toan";
 
 export const prerender = false;
 
 /**
- * ⏸️ THỬ NGHIỆM NỘI BỘ — module "Chọn Ngày Thúc Đinh · Tài · Quý" (gói zip chủ dự án cung cấp
- * 3/9/2026). Chưa có thanh toán/đơn hàng — CHỈ tài khoản quản trị được gọi API này để tự kiểm
- * chứng trước khi mở bán. Component `.astro` cũng khóa song song (2 lớp, giống hop-hon).
+ * Tạo đơn cho module Chọn Ngày Thúc Đinh · Tài · Quý. Cùng khuôn `dau-thu-chon-ngay/checkout.ts`:
+ * một giá cho mọi mục tiêu (tai/dinh/quy/all), không bắt đăng nhập (orderCode làm vé).
  */
+
+const TOOL_SLUG = "thuc-dinh-tai-quy";
 
 const SON_HOP_LE = [
   "Tý", "Quý", "Sửu", "Cấn", "Dần", "Giáp", "Mão", "Ất", "Thìn", "Tốn", "Tỵ", "Bính",
@@ -29,11 +32,7 @@ function docNgay(v: unknown): { nam: number; thang: number; ngay: number } | nul
 }
 
 export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
-  if (locals.user?.isAdmin !== true) {
-    return jsonResponse({ ok: false, error: "Module đang thử nghiệm nội bộ — chỉ tài khoản quản trị dùng được." }, 403);
-  }
-
-  const limited = checkRateLimit({ request, clientAddress }, { key: "testcalc-thuc-dinh-tai-quy", max: 30, windowMs: 60_000 });
+  const limited = checkRateLimit({ request, clientAddress }, { key: "checkout-thuc-dinh-tai-quy", max: 10, windowMs: 60_000 });
   if (limited) return limited;
 
   const body = await request.json().catch(() => null);
@@ -46,6 +45,14 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
   const toaDoSo = b.toaDoSo !== undefined && b.toaDoSo !== "" ? Number(b.toaDoSo) : undefined;
   const mucTieu = b.mucTieu;
   const loaiTrach = b.loaiTrach;
+  // Không bắt khách nhập tên/SĐT, giống Đẩu Thủ Chọn Ngày (anh Công 1/9/2026: "đấu nối cho thanh
+  // toán là được") — orderCode đã là vé để lấy kết quả. Cột DB vẫn NOT NULL nên điền placeholder.
+  const customerPhone = (typeof b.customerPhone === "string" ? b.customerPhone.trim() : "") || "Không cung cấp";
+  const customerName =
+    locals.user?.name ?? ((typeof b.customerName === "string" ? b.customerName.trim() : "") || "Khách Thúc Đinh Tài Quý");
+  const customerEmail =
+    locals.user?.email ??
+    (typeof b.customerEmail === "string" && b.customerEmail.trim() ? b.customerEmail.trim() : null);
 
   if (!sonName && toaDoSo === undefined) {
     return jsonResponse({ ok: false, error: "Cần nhập tên sơn hoặc độ số la kinh của tọa." }, 400);
@@ -73,7 +80,7 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
     khoangThoiGian = { tuNgay, denNgay };
   }
 
-  const input: ThucDinhTaiQuyInput = {
+  const snapshot: ThucDinhTaiQuyInput = {
     ...(sonName ? { sonName } : {}),
     ...(toaDoSo !== undefined ? { toaDoSo } : {}),
     mucTieu: mucTieu as ThucDinhTaiQuyInput["mucTieu"],
@@ -81,10 +88,29 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
     ...(khoangThoiGian ? { khoangThoiGian } : {}),
   };
 
+  // "Tính thử" trước để không thu tiền cho input không chạy được (giống Đẩu Thủ/Xem Ngày Cao Cấp).
   try {
-    const result = tinhThucDinhTaiQuy(input);
-    return jsonResponse({ ok: true, result }, 200);
+    tinhThucDinhTaiQuy(snapshot);
   } catch (err) {
-    return jsonResponse({ ok: false, error: err instanceof Error ? err.message : "Không tính được." }, 400);
+    return jsonResponse({ ok: false, error: err instanceof Error ? err.message : "Dữ liệu không hợp lệ." }, 400);
+  }
+
+  try {
+    const kq = await taoDonCongCu({
+      toolSlug: TOOL_SLUG,
+      laQuanTri: locals.user?.isAdmin === true,
+      toolInput: snapshot,
+      userId: locals.user?.id ?? null,
+      customerName,
+      customerPhone,
+      customerEmail,
+      maKhuyenMai: typeof b.maKhuyenMai === "string" ? b.maKhuyenMai : "",
+    });
+    return jsonResponse(kq, kq.ok ? 200 : 400);
+  } catch (err) {
+    return jsonResponse(
+      { ok: false, error: thongBaoLoiAnToan(err, "Không tạo được đơn hàng, vui lòng thử lại sau.") },
+      400,
+    );
   }
 };

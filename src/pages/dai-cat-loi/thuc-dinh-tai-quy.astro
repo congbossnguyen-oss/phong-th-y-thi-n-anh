@@ -1,25 +1,22 @@
 ---
 // TRANG DỊCH VỤ VIP "Chọn Ngày Thúc Đinh · Tài · Quý" — chỉ lo khung trang (SEO/PageHero/
-// breadcrumbs); toàn bộ logic form/kết quả nằm ở component dùng chung `ThucDinhTaiQuy.astro`.
-//
-// ⏸️ THỬ NGHIỆM NỘI BỘ: khoá admin nằm TRONG component (và trong API test-calculate) — mở bán
-// thì gỡ ở CẢ HAI chỗ đó (thêm cả checkout/result thật), không phải ở trang này.
+// breadcrumbs); toàn bộ logic form/thanh toán/kết quả nằm ở component dùng chung
+// `ThucDinhTaiQuy.astro`. Mở bán 3/9/2026, giá 300.000đ (cùng khuôn Đẩu Thủ Chọn Ngày).
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import ThucDinhTaiQuy from "../../components/tools/ThucDinhTaiQuy.astro";
 
-export const prerender = false;
+export const prerender = true;
 ---
 
 <BaseLayout
   title="Chọn Ngày Thúc Đinh · Tài · Quý"
   description="Từ tọa nhà/mộ, tra bộ mã nạp giáp tiên thiên để tìm ngày thúc Tài (kinh doanh), thúc Đinh (sinh con/nhân khẩu) hoặc thúc Quý (công danh/học vấn) — lớp xếp hạng ưu tiên bổ sung, dùng sau khi đã qua các bước lọc hung sát nền."
-  noIndex
 >
   <PageHero
     eyebrow="⭐ Dịch vụ VIP"
     title="Chọn Ngày Thúc Đinh · Tài · Quý"
-    description="Nạp Giáp Tiên Thiên — đối chiếu ngày với bộ mã can-chi của quái sơn (hoặc quái đối ứng/tiên thiên tùy mục tiêu) để tìm ngày thúc Tài/Đinh/Quý. Đang thử nghiệm nội bộ."
+    description="Nạp Giáp Tiên Thiên — đối chiếu ngày với bộ mã can-chi của quái sơn (hoặc quái đối ứng/tiên thiên tùy mục tiêu) để tìm ngày thúc Tài/Đinh/Quý."
     breadcrumbs={[
       { label: "Trang chủ", href: "/" },
       { label: "Đại Cát Lợi", href: "/dai-cat-loi" },
