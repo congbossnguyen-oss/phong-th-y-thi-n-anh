@@ -62,10 +62,10 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
 
     if (totalAmount === 0) {
       await markOrderPaidAndFulfill(orderId);
-      return jsonResponse({ ok: true, orderCode, mienPhi: true, qrUrl: null }, 200);
+      return jsonResponse({ ok: true, orderCode, mienPhi: true, qrUrl: null, totalAmount }, 200);
     }
 
-    return jsonResponse({ ok: true, orderCode, mienPhi: false, qrUrl: getSepayQrUrl({ amount: totalAmount, orderCode }) }, 200);
+    return jsonResponse({ ok: true, orderCode, mienPhi: false, qrUrl: getSepayQrUrl({ amount: totalAmount, orderCode }), totalAmount }, 200);
   } catch (err) {
     return jsonResponse(
       { ok: false, error: thongBaoLoiAnToan(err, "Không tạo được đơn hàng, vui lòng thử lại sau.") },
