@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { VIP_SLUG_THEO_GOI } from "./vip-slugs";
 import { GIA_CONG_CU, type ToolSlug } from "./gia-cong-cu";
 
-// Bảo vệ danh sách dịch vụ VIP được miễn phí theo gói Cao Cấp: đúng 22, loại sim + dinh-huong.
+// Bảo vệ danh sách dịch vụ VIP được miễn phí theo gói Cao Cấp: đúng 24, loại sim + dinh-huong.
 describe("Gating dịch vụ VIP theo gói Cao Cấp — VIP_SLUG_THEO_GOI", () => {
   const CAN_MIEN_PHI: ToolSlug[] = [
     "gio-liem-ha-huyet",
@@ -29,11 +29,25 @@ describe("Gating dịch vụ VIP theo gói Cao Cấp — VIP_SLUG_THEO_GOI", () 
     "dat-ten-cho-con-qs",
     "gio-liem-ha-huyet-qs",
     "xem-ngay-cao-cap-qs",
+    // Đẩu Thủ Chọn Ngày + Thúc Đinh Tài Quý: CHỈ bản "-qs" (app), KHÔNG có bản web — anh Công chốt
+    // 4/9/2026, xem ghi chú trong vip-slugs.ts.
+    "dau-thu-chon-ngay-qs",
+    "thuc-dinh-tai-quy-qs",
   ];
 
-  it("đúng 22 dịch vụ VIP được miễn phí theo gói", () => {
-    expect(VIP_SLUG_THEO_GOI.size).toBe(22);
+  it("đúng 24 dịch vụ VIP được miễn phí theo gói", () => {
+    expect(VIP_SLUG_THEO_GOI.size).toBe(24);
     for (const s of CAN_MIEN_PHI) expect(VIP_SLUG_THEO_GOI.has(s)).toBe(true);
+  });
+
+  // Đẩu Thủ/Thúc Đinh Tài Quý là 2 module DUY NHẤT chỉ miễn phí ở bản app, không phải bản web —
+  // khác mọi module VIP khác ở trên (miễn phí cả 2 bản). Khoá lại rõ để không ai "sửa cho nhất
+  // quán" rồi thêm nhầm bản web vào.
+  it("Đẩu Thủ/Thúc Đinh Tài Quý — CHỈ bản app miễn phí, bản web vẫn thu phí dù có gói", () => {
+    expect(VIP_SLUG_THEO_GOI.has("dau-thu-chon-ngay")).toBe(false);
+    expect(VIP_SLUG_THEO_GOI.has("thuc-dinh-tai-quy")).toBe(false);
+    expect(VIP_SLUG_THEO_GOI.has("dau-thu-chon-ngay-qs")).toBe(true);
+    expect(VIP_SLUG_THEO_GOI.has("thuc-dinh-tai-quy-qs")).toBe(true);
   });
 
   // Ẩn giá trong app (prop `anGia`) chỉ trung thực khi 3 mục Kỳ Môn thật sự nằm trong gói —

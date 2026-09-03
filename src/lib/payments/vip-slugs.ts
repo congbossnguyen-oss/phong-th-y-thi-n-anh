@@ -56,4 +56,10 @@ export const VIP_SLUG_THEO_GOI: ReadonlySet<ToolSlug> = new Set([
   "ky-mon-menh-chi-tiet-qs",
   // Bản ĐỘC LẬP cho app Quân Sư (từ 1/9/2026) của "trach-cat-ky-mon" — cùng lý do trên.
   "trach-cat-ky-mon-qs",
+  // Đẩu Thủ Chọn Ngày + Thúc Đinh Tài Quý: CHỈ miễn phí theo gói ở bản APP (anh Công chốt
+  // 4/9/2026: "khách cao cấp được dùng miễn phí trên app quân sư thôi") — CỐ Ý KHÔNG thêm 2 slug
+  // web gốc (dau-thu-chon-ngay, thuc-dinh-tai-quy) vào đây, khác mọi module VIP khác ở trên vốn
+  // miễn phí cả 2 bản web+app. Đừng "sửa cho nhất quán" mà thêm nhầm bản web vào.
+  "dau-thu-chon-ngay-qs",
+  "thuc-dinh-tai-quy-qs",
 ]);
