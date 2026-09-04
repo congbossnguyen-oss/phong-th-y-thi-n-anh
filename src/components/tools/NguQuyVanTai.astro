@@ -1,0 +1,476 @@
+---
+// "Ngũ Quỷ Vận Tài" — bố trí đá (Giáng Long)/nước (Giáng Thủy) theo Hướng Cửa, đối chiếu Huyền
+// Không Phi Tinh. Cùng khuôn Đẩu Thủ/Thúc Đinh Tài Quý (thanh toán QR SePay, không bắt đăng nhập,
+// orderCode làm vé). Xem `src/lib/ngu-quy-van-tai/engine.ts` cho công thức đầy đủ.
+import Container from "../../components/ui/Container.astro";
+import Button from "../../components/ui/Button.astro";
+import MaKhuyenMai from "../../components/ui/MaKhuyenMai.astro";
+import { GIA_CONG_CU, dinhDangTien } from "../../lib/payments/gia-cong-cu";
+
+export const prerender = true;
+
+const TOOL_SLUG = "ngu-quy-van-tai";
+const TOOL_PRICE = GIA_CONG_CU[TOOL_SLUG];
+const TOOL_PRICE_LABEL = dinhDangTien(TOOL_PRICE);
+---
+
+<Container class="py-10">
+  <div class="mx-auto max-w-3xl">
+    <div class="mb-6 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-4 text-sm text-(--color-ink-600)">
+      <p class="font-medium text-(--color-ink-800)">Ngũ Quỷ Vận Tài là gì?</p>
+      <p class="mt-1">
+        3 yếu tố phối hợp: <strong>Hướng Cửa</strong> — <strong>Giáng Long</strong> (vật/thế TĨNH, cao —
+        đá/núi/tượng đá) — <strong>Giáng Thủy</strong> (vật/thế ĐỘNG, có nước), theo chuỗi tương sinh
+        Hỏa → Thổ → Kim: Cửa+Thủy = Phúc Đức (Kim, tài lộc nhập nhà), Cửa+Long = Họa Hại (Thổ, mắt
+        xích trung gian), Long+Thủy = Ngũ Quỷ (Hỏa, sát khí gốc được "chế" hóa thành tài lộc).
+      </p>
+      <p class="mt-2 text-xs text-(--color-danger-500) font-medium">
+        Phải bố trí ĐỦ CẢ Giáng Long lẫn Giáng Thủy đúng vị trí CÙNG LÚC mới trọn vẹn cách cục —
+        thiếu 1 bên thì công thức chưa đủ.
+      </p>
+      <p class="mt-2 text-xs text-(--color-ink-500)">
+        Có thêm lớp đối chiếu Huyền Không Phi Tinh (không bắt buộc, nhưng khuyên dùng) — kiểm chứng
+        theo tinh bàn thật của chính căn nhà/phòng đó trong Vận hiện tại.
+      </p>
+    </div>
+
+    <form id="nqvt-form" class="flex flex-col gap-4 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
+      <div>
+        <p class="text-sm font-medium text-(--color-ink-800)">Cấp độ luận</p>
+        <div class="mt-1.5 flex gap-4">
+          <label class="flex items-center gap-1.5 text-sm text-(--color-ink-700)">
+            <input type="radio" name="capDo" value="nha" checked /> Toàn nhà
+          </label>
+          <label class="flex items-center gap-1.5 text-sm text-(--color-ink-700)">
+            <input type="radio" name="capDo" value="phong" /> 1 phòng cụ thể
+          </label>
+        </div>
+        <p id="nqvt-capdo-giaithich" class="mt-1 text-xs text-(--color-ink-500)">
+          Hướng Cửa = hướng cửa chính ra vào nhà (đo la kinh) → tra ra vị trí bố trí trong khuôn viên nhà/sân vườn.
+        </p>
+      </div>
+
+      <div>
+        <p class="text-sm font-medium text-(--color-ink-800)">Chiều tra</p>
+        <div class="mt-1.5 flex gap-4">
+          <label class="flex items-center gap-1.5 text-sm text-(--color-ink-700)">
+            <input type="radio" name="chieuTra" value="thuan" checked /> Đã biết Hướng Cửa → tìm vị trí Long/Thủy
+          </label>
+          <label class="flex items-center gap-1.5 text-sm text-(--color-ink-700)">
+            <input type="radio" name="chieuTra" value="nghich" /> Đã có sẵn thế đất Long/Thủy → tìm Hướng Cửa phù hợp
+          </label>
+        </div>
+      </div>
+
+      <div id="nqvt-vung-thuan">
+        <label for="nqvt-do-huong-cua" id="nqvt-label-huong-cua" class="text-sm font-medium text-(--color-ink-800)">Độ số la kinh của Hướng Cửa (0–359.99)</label>
+        <input type="number" id="nqvt-do-huong-cua" step="0.01" min="0" max="359.99" placeholder="vd. 180"
+          class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+      </div>
+
+      <div id="nqvt-vung-nghich" class="hidden space-y-3">
+        <div>
+          <label for="nqvt-do-diem-nghich" class="text-sm font-medium text-(--color-ink-800)">Độ số la kinh của thế đất đá/nước có sẵn (0–359.99)</label>
+          <input type="number" id="nqvt-do-diem-nghich" step="0.01" min="0" max="359.99" placeholder="vd. 45"
+            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+        </div>
+        <div>
+          <p class="text-sm font-medium text-(--color-ink-800)">Thế đất đó là</p>
+          <div class="mt-1.5 flex gap-4">
+            <label class="flex items-center gap-1.5 text-sm text-(--color-ink-700)"><input type="radio" name="loaiDiemNghich" value="long" checked /> Đá/núi (Giáng Long)</label>
+            <label class="flex items-center gap-1.5 text-sm text-(--color-ink-700)"><input type="radio" name="loaiDiemNghich" value="thuy" /> Nước (Giáng Thủy)</label>
+          </div>
+        </div>
+      </div>
+
+      <details class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3" open>
+        <summary class="cursor-pointer text-sm font-medium text-(--color-ink-800)">
+          Đối chiếu Huyền Không Phi Tinh (khuyên dùng — bỏ trống thì chỉ trả theo bảng gốc)
+        </summary>
+        <div class="mt-3 space-y-3">
+          <div>
+            <label for="nqvt-do-huong-nha" class="text-sm font-medium text-(--color-ink-800)">Độ số la kinh của Hướng Nhà</label>
+            <p class="mt-1 text-xs text-(--color-ink-500)">Bỏ trống thì mặc định lấy theo Hướng Cửa đã nhập ở trên (thường trùng nhau, chỉ khác khi cửa lệch góc so với mặt tiền chính).</p>
+            <input type="number" id="nqvt-do-huong-nha" step="0.01" min="0" max="359.99" placeholder="vd. 180"
+              class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label for="nqvt-van-nha" class="text-sm font-medium text-(--color-ink-800)">Vận Nhà (1–9)</label>
+              <input type="number" id="nqvt-van-nha" step="1" min="1" max="9" placeholder="vd. 9"
+                class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+            </div>
+            <div>
+              <label for="nqvt-nam-nhap-trach" class="text-sm font-medium text-(--color-ink-800)">Hoặc năm nhập trạch</label>
+              <input type="number" id="nqvt-nam-nhap-trach" step="1" min="1900" max="2100" placeholder="vd. 2015"
+                class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+            </div>
+          </div>
+          <div>
+            <label for="nqvt-van-hien-tai" class="text-sm font-medium text-(--color-ink-800)">Vận Hiện Tại (1–9)</label>
+            <p class="mt-1 text-xs text-(--color-ink-500)">Bỏ trống thì lấy Vận 9 (Vận đang chạy hiện nay).</p>
+            <input type="number" id="nqvt-van-hien-tai" step="1" min="1" max="9" value="9"
+              class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm text-(--color-ink-800)" />
+          </div>
+        </div>
+      </details>
+
+      <MaKhuyenMai idPrefix="nqvt-ma" toolSlug={TOOL_SLUG} giaGoc={TOOL_PRICE} />
+
+      <Button type="submit" size="lg">Xem kết quả Ngũ Quỷ Vận Tài</Button>
+    </form>
+
+    <div id="nqvt-loi" class="mt-4 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm text-(--color-danger-500)"></div>
+    <div id="nqvt-dang-chay" class="mt-4 hidden rounded-(--radius-card) border border-(--color-gold-500)/40 bg-(--color-gold-400)/10 p-4 text-sm text-(--color-ink-700)">
+      <p class="font-medium text-(--color-ink-900)">⏳ Đang tính…</p>
+    </div>
+
+    <div id="nqvt-thanh-toan" class="mt-6 hidden space-y-4 rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-center text-(--color-ink-950) shadow-lg">
+      <p class="font-display text-lg font-bold">Quét mã QR để thanh toán <span id="nqvt-so-tien">{TOOL_PRICE_LABEL}</span></p>
+      <img id="nqvt-qr" src="" alt="Mã QR thanh toán" class="mx-auto h-64 w-64 rounded-xl border border-(--color-ivory-300)" />
+      <p class="text-sm text-(--color-ink-600)">Mã đơn hàng: <strong id="nqvt-order-code"></strong></p>
+      <p id="nqvt-trang-thai" class="text-sm font-medium text-(--color-gold-400)">Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)</p>
+    </div>
+
+    <div id="nqvt-ket-qua" class="mt-6 hidden space-y-4"></div>
+  </div>
+</Container>
+
+<script>
+  const form = document.getElementById("nqvt-form") as HTMLFormElement;
+  const loiEl = document.getElementById("nqvt-loi")!;
+  const ketQuaEl = document.getElementById("nqvt-ket-qua")!;
+  const dangChayEl = document.getElementById("nqvt-dang-chay")!;
+  const thanhToanEl = document.getElementById("nqvt-thanh-toan")!;
+  const qrImg = document.getElementById("nqvt-qr") as HTMLImageElement;
+  const orderCodeEl = document.getElementById("nqvt-order-code")!;
+  const trangThaiEl = document.getElementById("nqvt-trang-thai")!;
+  const soTienEl = document.getElementById("nqvt-so-tien")!;
+  const nutSubmit = form.querySelector('button[type="submit"]') as HTMLButtonElement | null;
+  const vungThuan = document.getElementById("nqvt-vung-thuan")!;
+  const vungNghich = document.getElementById("nqvt-vung-nghich")!;
+  const labelHuongCua = document.getElementById("nqvt-label-huong-cua")!;
+  const capDoGiaiThich = document.getElementById("nqvt-capdo-giaithich")!;
+
+  let pollTimer: ReturnType<typeof setInterval> | null = null;
+  let dangHoi = false;
+
+  const doc = (id: string) => (document.getElementById(id) as HTMLInputElement | null)?.value.trim() ?? "";
+
+  form.querySelectorAll<HTMLInputElement>('input[name="capDo"]').forEach((r) => {
+    r.addEventListener("change", () => {
+      const laPhong = (form.querySelector('input[name="capDo"]:checked') as HTMLInputElement).value === "phong";
+      labelHuongCua.textContent = laPhong
+        ? "Độ số la kinh của hướng nhìn/hướng đầu nằm ngủ (thay vai Hướng Cửa)"
+        : "Độ số la kinh của Hướng Cửa (0–359.99)";
+      capDoGiaiThich.textContent = laPhong
+        ? "Cửa phòng đóng vai Giáng Thủy; hướng nằm ngủ đóng vai Hướng Cửa → tra ra vị trí Giáng Long cần đặt trong phạm vi phòng."
+        : "Hướng Cửa = hướng cửa chính ra vào nhà (đo la kinh) → tra ra vị trí bố trí trong khuôn viên nhà/sân vườn.";
+    });
+  });
+
+  form.querySelectorAll<HTMLInputElement>('input[name="chieuTra"]').forEach((r) => {
+    r.addEventListener("change", () => {
+      const laNghich = (form.querySelector('input[name="chieuTra"]:checked') as HTMLInputElement).value === "nghich";
+      vungThuan.classList.toggle("hidden", laNghich);
+      vungNghich.classList.toggle("hidden", !laNghich);
+    });
+  });
+
+  const tatDangChay = () => {
+    dangChayEl.classList.add("hidden");
+    if (nutSubmit) nutSubmit.disabled = false;
+  };
+  const baoLoi = (msg: string) => {
+    tatDangChay();
+    loiEl.textContent = msg;
+    loiEl.classList.remove("hidden");
+  };
+  const dungCho = () => {
+    if (pollTimer) {
+      clearInterval(pollTimer);
+      pollTimer = null;
+    }
+  };
+
+  const esc = (s: unknown) =>
+    String(s).replace(/[&<>"']/g, (c) =>
+      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!,
+    );
+
+  // 24 sơn theo độ tâm (khớp SON_24 trong huyen-khong-phi-tinh/engine.ts) — dùng để vẽ la bàn.
+  const SON_24_DO: Record<string, number> = {
+    "Nhâm": 345, "Tý": 0, "Quý": 15, "Sửu": 30, "Cấn": 45, "Dần": 60,
+    "Giáp": 75, "Mão": 90, "Ất": 105, "Thìn": 120, "Tốn": 135, "Tỵ": 150,
+    "Bính": 165, "Ngọ": 180, "Đinh": 195, "Mùi": 210, "Khôn": 225, "Thân": 240,
+    "Canh": 255, "Dậu": 270, "Tân": 285, "Tuất": 300, "Càn": 315, "Hợi": 330,
+  };
+  const DANH_SACH_SON = Object.keys(SON_24_DO);
+
+  // Hậu Thiên Bát Quái — 8 quái/hướng chính, độ tâm khớp cụm 3 sơn tương ứng trong SON_24_DO
+  // (vd Khảm 0° = cụm Nhâm/Tý/Quý). Vẽ thành vòng riêng giữa vòng 24 sơn và tâm, theo đúng bố cục
+  // la bàn phong thủy truyền thống (Bắc trên/Đông phải/Nam dưới/Tây trái — đã khớp toaDo() hiện có).
+  const BAT_QUAI = [
+    { ten: "Khảm", do: 0 },
+    { ten: "Cấn", do: 45 },
+    { ten: "Chấn", do: 90 },
+    { ten: "Tốn", do: 135 },
+    { ten: "Ly", do: 180 },
+    { ten: "Khôn", do: 225 },
+    { ten: "Đoài", do: 270 },
+    { ten: "Càn", do: 315 },
+  ];
+
+  const MAU_TRANG_THAI: Record<string, { nen: string; vien: string; chu: string; nhan: string }> = {
+    kich_duoc: { nen: "#dcfce7", vien: "#22c55e", chu: "#15803d", nhan: "Kích được" },
+    khong_nen_kich: { nen: "#fee2e2", vien: "#ef4444", chu: "#b91c1c", nhan: "Không nên kích" },
+    trung_tinh: { nen: "#fef9c3", vien: "#eab308", chu: "#a16207", nhan: "Trung tính" },
+    chua_doi_chieu: { nen: "#f1f5f9", vien: "#94a3b8", chu: "#475569", nhan: "Chưa đối chiếu" },
+  };
+
+  function toaDo(deg: number, r: number, cx = 260, cy = 260) {
+    const rad = (deg * Math.PI) / 180;
+    return { x: cx + r * Math.sin(rad), y: cy - r * Math.cos(rad) };
+  }
+
+  function veLaBan(sonHuongCua: string | undefined, phuongAnLong: any[], phuongAnThuy: any[]): string {
+    const cx = 260, cy = 260;
+    const rVongNgoai = 230, rTickMinor = 225, rTickMajor = 219, rDoSo = 211, rSonBien = 203, rTenSon = 180, rIcon = 152, rVachTrong = 130;
+
+    let svg = `<svg viewBox="0 0 520 520" class="mx-auto w-full max-w-md">`;
+    svg += `<circle cx="${cx}" cy="${cy}" r="${rVongNgoai}" fill="#faf7f0" stroke="#d6cba8" stroke-width="2" />`;
+    svg += `<circle cx="${cx}" cy="${cy}" r="${rVachTrong}" fill="#ffffff" stroke="#d6cba8" stroke-width="1.5" />`;
+    svg += `<circle cx="${cx}" cy="${cy}" r="${rSonBien}" fill="none" stroke="#d6cba8" stroke-width="1" />`;
+
+    // Thước độ số la kinh (0–359°, viền ngoài cùng) — vạch mỗi 5°, số mỗi 10°, giống bố cục la bàn
+    // phong thủy truyền thống (vòng số ngoài, vòng tên sơn bên trong).
+    for (let deg = 0; deg < 360; deg += 5) {
+      const laMoc10 = deg % 10 === 0;
+      const a = toaDo(deg, rVongNgoai);
+      const b = toaDo(deg, laMoc10 ? rTickMajor : rTickMinor);
+      svg += `<line x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}" stroke="#a8a29e" stroke-width="${laMoc10 ? 1 : 0.6}" />`;
+    }
+    for (let deg = 0; deg < 360; deg += 10) {
+      const p = toaDo(deg, rDoSo);
+      svg += `<text x="${p.x.toFixed(1)}" y="${p.y.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" font-size="7.5" fill="#78716c">${deg}</text>`;
+    }
+
+    // 24 vạch chia sơn (mỗi 15°, tại ranh giới giữa 2 sơn = độ tâm - 7.5)
+    for (let i = 0; i < 24; i++) {
+      const deg = i * 15 - 7.5;
+      const a = toaDo(deg, rVachTrong);
+      const b = toaDo(deg, rSonBien);
+      svg += `<line x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}" stroke="#d6cba8" stroke-width="1" />`;
+    }
+
+    // Tên 24 sơn
+    for (const son of DANH_SACH_SON) {
+      const p = toaDo(SON_24_DO[son], rTenSon);
+      const laHuongCua = son === sonHuongCua;
+      svg += `<text x="${p.x.toFixed(1)}" y="${p.y.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" font-size="${laHuongCua ? 13 : 11}" font-weight="${laHuongCua ? 700 : 500}" fill="${laHuongCua ? "#b45309" : "#57534e"}">${esc(son)}</text>`;
+    }
+
+    // Vòng 8 quái (Hậu Thiên Bát Quái) — giữa vòng 24 sơn và tâm, theo đúng la bàn phong thủy truyền thống.
+    const rBatQuaiTrong = 62, rTenQuai = 96;
+    svg += `<circle cx="${cx}" cy="${cy}" r="${rBatQuaiTrong}" fill="#ffffff" stroke="#d6cba8" stroke-width="1.5" />`;
+    for (let i = 0; i < 8; i++) {
+      const deg = i * 45 - 22.5;
+      const a = toaDo(deg, rBatQuaiTrong);
+      const b = toaDo(deg, rVachTrong);
+      svg += `<line x1="${a.x.toFixed(1)}" y1="${a.y.toFixed(1)}" x2="${b.x.toFixed(1)}" y2="${b.y.toFixed(1)}" stroke="#d6cba8" stroke-width="1" />`;
+    }
+    for (const q of BAT_QUAI) {
+      const p = toaDo(q.do, rTenQuai);
+      svg += `<text x="${p.x.toFixed(1)}" y="${p.y.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" font-size="12" font-weight="600" fill="#78716c">${esc(q.ten)}</text>`;
+    }
+
+    // Tâm — biểu tượng Âm Dương (☯), đúng quy ước la bàn phong thủy (thay cho icon nhà đơn giản).
+    svg += `<circle cx="${cx}" cy="${cy}" r="34" fill="#fff7ed" stroke="#d97706" stroke-width="2" />`;
+    svg += `<text x="${cx}" y="${cy}" text-anchor="middle" dominant-baseline="middle" font-size="30">☯</text>`;
+
+    // Mũi tên chỉ Hướng Cửa
+    if (sonHuongCua) {
+      const p = toaDo(SON_24_DO[sonHuongCua], rVachTrong + 6);
+      svg += `<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="10" fill="#fef3c7" stroke="#b45309" stroke-width="1.5" />`;
+      svg += `<text x="${p.x.toFixed(1)}" y="${p.y.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" font-size="12">🚪</text>`;
+    }
+
+    // Icon Giáng Long (núi) + Giáng Thủy (nước)
+    const veIcon = (p: any, icon: string) => {
+      const trang = MAU_TRANG_THAI[p.trangThaiPhiTinh] ?? MAU_TRANG_THAI.chua_doi_chieu;
+      const pos = toaDo(SON_24_DO[p.son], rIcon);
+      let s = `<circle cx="${pos.x.toFixed(1)}" cy="${pos.y.toFixed(1)}" r="16" fill="${trang.nen}" stroke="${trang.vien}" stroke-width="2" />`;
+      s += `<text x="${pos.x.toFixed(1)}" y="${pos.y.toFixed(1)}" text-anchor="middle" dominant-baseline="middle" font-size="16">${icon}</text>`;
+      return s;
+    };
+    for (const p of phuongAnLong) svg += veIcon(p, "⛰️");
+    for (const p of phuongAnThuy) svg += veIcon(p, "🌊");
+
+    svg += `</svg>`;
+    return svg;
+  }
+
+  // Vòng tròn quanh mỗi vị trí Long/Thủy trên la bàn tô màu theo trạng thái Phi Tinh RIÊNG của
+  // đúng sơn đó — KHÔNG phải màu cố định cho "Long" hay "Thủy". Vì vậy trong cùng 1 nhóm (vd Giáng
+  // Long) có thể vừa có sơn xanh vừa có sơn đỏ: đây là mục đích chính của lớp Phi Tinh — chỉ ra
+  // trong nhiều sơn mà bảng gốc liệt kê, sơn nào thực sự dùng tốt ở Vận hiện tại. Chú thích màu để
+  // khách khỏi hiểu lầm là lỗi hiển thị.
+  function theChuThich(): string {
+    const keys = ["kich_duoc", "khong_nen_kich", "trung_tinh"];
+    return `<div class="mt-3 flex flex-wrap items-center justify-center gap-x-4 gap-y-1 text-[11px] text-(--color-ink-600)">
+      ${keys
+        .map((key) => {
+          const t = MAU_TRANG_THAI[key];
+          return `<span class="flex items-center gap-1"><span class="inline-block h-3 w-3 rounded-full" style="background:${t.nen};border:2px solid ${t.vien}"></span>${esc(t.nhan)}</span>`;
+        })
+        .join("")}
+    </div>
+    <p class="mt-1 text-center text-[11px] text-(--color-ink-500)">Màu vòng tròn quanh mỗi vị trí Long/Thủy là trạng thái Phi Tinh RIÊNG của đúng sơn đó — cùng 1 nhóm Long hoặc Thủy có thể có cả xanh lẫn đỏ, không phải lỗi hiển thị.</p>`;
+  }
+
+  function theKhoangDo(khoangDoSo: { tu: number; den: number }): string {
+    return `${khoangDoSo.tu.toFixed(1)}° – ${khoangDoSo.den.toFixed(1)}°`;
+  }
+
+  function thePhuongAn(p: any, icon: string): string {
+    const trang = MAU_TRANG_THAI[p.trangThaiPhiTinh] ?? MAU_TRANG_THAI.chua_doi_chieu;
+    return `<div class="rounded-xl border-2 p-3" style="border-color:${trang.vien};background:${trang.nen}10">
+      <div class="flex items-center justify-between gap-2">
+        <p class="font-display text-base font-bold text-(--color-ink-950)">${icon} ${esc(p.son)} <span class="font-normal text-xs text-(--color-ink-500)">(${theKhoangDo(p.khoangDoSo)})</span></p>
+        <span class="rounded-full px-2 py-0.5 text-[11px] font-semibold" style="background:${trang.nen};color:${trang.chu};border:1px solid ${trang.vien}">${esc(trang.nhan)}</span>
+      </div>
+      ${p.giaiThichPhiTinh ? `<p class="mt-1 text-xs text-(--color-ink-600)">${esc(p.giaiThichPhiTinh)}</p>` : ""}
+      <div class="mt-2 flex flex-wrap gap-1">
+        ${p.vatPhamGoiY.map((v: string) => `<span class="rounded-full bg-(--color-ivory-200) px-2 py-0.5 text-[11px] text-(--color-ink-700)">${esc(v)}</span>`).join("")}
+      </div>
+    </div>`;
+  }
+
+  function renderThuan(r: any): string {
+    return `<div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+      <p class="text-sm text-(--color-ink-600)">Hướng Cửa xác định: <strong class="text-(--color-ink-950)">${esc(r.sonHuongCuaXacDinh)}</strong> (${Number(r.doHuongCuaDauVao).toFixed(2)}°) — cấp ${r.capDo === "phong" ? "phòng" : "toàn nhà"}</p>
+      ${veLaBan(r.sonHuongCuaXacDinh, r.phuongAnGiangLong, r.phuongAnGiangThuy)}
+      ${theChuThich()}
+      <p class="mt-4 rounded-lg border-2 border-(--color-danger-500)/50 bg-(--color-danger-500)/10 px-3 py-2 text-xs font-medium text-(--color-danger-500)">${esc(r.ghiChuBatBuocDuCaHaiBen)}</p>
+      <div class="mt-4">
+        <p class="text-sm font-semibold text-(--color-ink-800)">⛰️ Giáng Long — bố trí đá/vật tĩnh, cao (Cửa+Long = Họa Hại, mắt xích trung gian)</p>
+        <div class="mt-2 space-y-2">${r.phuongAnGiangLong.map((p: any) => thePhuongAn(p, "⛰️")).join("")}</div>
+      </div>
+      <div class="mt-4">
+        <p class="text-sm font-semibold text-(--color-ink-800)">🌊 Giáng Thủy — bố trí nước/vật động (Cửa+Thủy = Phúc Đức, tài lộc nhập nhà)</p>
+        <div class="mt-2 space-y-2">${r.phuongAnGiangThuy.map((p: any) => thePhuongAn(p, "🌊")).join("")}</div>
+      </div>
+      ${r.canhBao.length ? `<div class="mt-4 rounded-lg border border-(--color-gold-400)/50 bg-(--color-gold-400)/10 p-3"><p class="text-xs font-medium text-(--color-ink-700)">Lưu ý</p><ul class="mt-1 list-disc space-y-0.5 pl-4 text-xs text-(--color-ink-700)">${r.canhBao.map((c: string) => `<li>${esc(c)}</li>`).join("")}</ul></div>` : ""}
+      <p class="mt-4 text-xs text-(--color-ink-500) italic">${esc(r.ghiChuKetHopTruongPhaiKhac)}</p>
+    </div>`;
+  }
+
+  function renderNghich(r: any): string {
+    const loai = r.loaiDiemNghich === "long" ? "Giáng Long (đá/núi)" : "Giáng Thủy (nước)";
+    return `<div class="rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 text-(--color-ink-950) shadow-lg">
+      <p class="text-sm text-(--color-ink-600)">Thế đất đã có: <strong class="text-(--color-ink-950)">${esc(r.sonDiemNghichXacDinh)}</strong> (${Number(r.doDiemNghichDauVao).toFixed(2)}°) — đóng vai ${loai}</p>
+      ${r.phuongAnHuongCua.length === 0
+        ? `<p class="mt-3 text-sm text-(--color-danger-500)">Không tìm được Hướng Cửa nào phù hợp — kiểm tra lại độ số đã nhập.</p>`
+        : `<div class="mt-3">
+            <p class="text-sm font-semibold text-(--color-ink-800)">🚪 Hướng Cửa phù hợp</p>
+            <div class="mt-2 space-y-1.5">${r.phuongAnHuongCua.map((p: any) => `<div class="flex items-center justify-between gap-2 rounded-lg border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2"><span class="text-sm text-(--color-ink-800)">${esc(p.son)}</span><span class="text-xs text-(--color-ink-500)">${theKhoangDo(p.khoangDoSo)}</span></div>`).join("")}</div>
+          </div>`}
+      ${r.canhBao.length ? `<div class="mt-4 rounded-lg border border-(--color-gold-400)/50 bg-(--color-gold-400)/10 p-3"><ul class="list-disc space-y-0.5 pl-4 text-xs text-(--color-ink-700)">${r.canhBao.map((c: string) => `<li>${esc(c)}</li>`).join("")}</ul></div>` : ""}
+      <p class="mt-4 text-xs text-(--color-ink-500) italic">${esc(r.ghiChuKetHopTruongPhaiKhac)}</p>
+    </div>`;
+  }
+
+  function render(r: any) {
+    ketQuaEl.innerHTML = r.chieuTra === "nghich" ? renderNghich(r) : renderThuan(r);
+    ketQuaEl.classList.remove("hidden");
+    ketQuaEl.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  async function layKetQua(orderCode: string) {
+    if (dangHoi) return;
+    dangHoi = true;
+    try {
+      const res = await fetch(`/api/dai-cat-loi/ngu-quy-van-tai/result?orderCode=${encodeURIComponent(orderCode)}`);
+      const data = await res.json();
+      if (!data.ok) return;
+      if (data.status === "cancelled") {
+        dungCho();
+        trangThaiEl.textContent = "Đơn hàng đã bị hủy.";
+        return;
+      }
+      if (data.status !== "confirmed") return;
+      dungCho();
+      dangChayEl.classList.add("hidden");
+      thanhToanEl.classList.add("hidden");
+      render(data.result);
+    } catch {
+      // Mạng chập chờn — để nhịp sau thử lại.
+    } finally {
+      dangHoi = false;
+    }
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    loiEl.classList.add("hidden");
+    ketQuaEl.classList.add("hidden");
+
+    const capDo = (form.querySelector('input[name="capDo"]:checked') as HTMLInputElement).value;
+    const chieuTra = (form.querySelector('input[name="chieuTra"]:checked') as HTMLInputElement).value;
+
+    const payload: Record<string, unknown> = { capDo, chieuTra };
+
+    if (chieuTra === "thuan") {
+      const doHuongCua = doc("nqvt-do-huong-cua");
+      if (!doHuongCua) return baoLoi("Vui lòng nhập độ số Hướng Cửa (hoặc hướng nằm ngủ nếu luận cấp phòng).");
+      payload.doHuongCua = Number(doHuongCua);
+    } else {
+      const doDiemNghich = doc("nqvt-do-diem-nghich");
+      if (!doDiemNghich) return baoLoi("Vui lòng nhập độ số điểm Long/Thủy có sẵn.");
+      payload.doDiemNghich = Number(doDiemNghich);
+      payload.loaiDiemNghich = (form.querySelector('input[name="loaiDiemNghich"]:checked') as HTMLInputElement).value;
+    }
+
+    const doHuongNha = doc("nqvt-do-huong-nha");
+    if (doHuongNha) payload.doHuongNha = Number(doHuongNha);
+    const vanNha = doc("nqvt-van-nha");
+    if (vanNha) payload.vanNha = Number(vanNha);
+    const namNhapTrach = doc("nqvt-nam-nhap-trach");
+    if (namNhapTrach) payload.namNhapTrach = Number(namNhapTrach);
+    const vanHienTai = doc("nqvt-van-hien-tai");
+    if (vanHienTai) payload.vanHienTai = Number(vanHienTai);
+
+    dangChayEl.classList.remove("hidden");
+    if (nutSubmit) nutSubmit.disabled = true;
+
+    try {
+      const res = await fetch("/api/dai-cat-loi/ngu-quy-van-tai/checkout", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...payload,
+          ...(doc("nqvt-ma-input") ? { maKhuyenMai: doc("nqvt-ma-input") } : {}),
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) return baoLoi(data.error ?? "Không tạo được đơn hàng.");
+      tatDangChay();
+      orderCodeEl.textContent = data.orderCode;
+
+      if (data.mienPhi) {
+        dangChayEl.classList.remove("hidden");
+        await layKetQua(data.orderCode);
+        return;
+      }
+
+      soTienEl.textContent = `${Number(data.totalAmount).toLocaleString("vi-VN")}đ`;
+      qrImg.src = data.qrUrl;
+      trangThaiEl.textContent = "Đang chờ thanh toán... (tự động kiểm tra mỗi 3 giây)";
+      thanhToanEl.classList.remove("hidden");
+      thanhToanEl.scrollIntoView({ behavior: "smooth", block: "start" });
+      pollTimer = setInterval(() => layKetQua(data.orderCode), 3000);
+    } catch {
+      baoLoi("Không tính được. Vui lòng thử lại.");
+    }
+  });
+</script>

@@ -1,6 +1,8 @@
 // Danh sách 17 công cụ con của "Đại Cát Lợi" — tách ra file .ts riêng (thay vì khai báo trong
 // dai-cat-loi/index.astro) để api/search.ts (endpoint .ts thuần, không qua Astro compiler) import được an
 // toàn, tránh lỗi resolve module khi import trực tiếp từ file .astro.
+import { nhanGiaLuot } from "./payments/gia-cong-cu";
+
 export type DaiCatLoiTool = { href: string; icon: string; title: string; desc: string };
 
 // Các công cụ ĐỘC LẬP (không nằm trong nhóm Đại Cát Lợi) — khai báo ở đây làm nguồn duy nhất để trang chủ
@@ -256,5 +258,13 @@ export const paidTools: PaidTool[] = [
     priceLabel: "300.000đ / lượt",
     // Mở bán 3/9/2026 (anh Công cung cấp spec + tự test nội bộ trước, chốt giá 300k — cùng hạng
     // Đẩu Thủ Chọn Ngày). Khoá admin/test-calculate.ts đã gỡ, đi thẳng luồng thanh toán thật.
+  },
+  {
+    href: "/dai-cat-loi/ngu-quy-van-tai",
+    icon: "⛰️",
+    title: "Ngũ Quỷ Vận Tài",
+    desc: "Bố trí đá (Giáng Long)/nước (Giáng Thủy) theo Hướng Cửa để hóa Ngũ Quỷ (Hỏa) thành Phúc Đức (Kim) qua chuỗi tương sinh Hỏa→Thổ→Kim, đối chiếu thêm Huyền Không Phi Tinh theo tinh bàn thật của chính căn nhà/phòng — có đồ họa la bàn 24 sơn trực quan.",
+    priceLabel: nhanGiaLuot("ngu-quy-van-tai"),
+    // Mở bán 4/9/2026 (anh Công cung cấp bảng tra 24 sơn gốc, đã đối chiếu khớp ảnh chụp Excel).
   },
 ];
