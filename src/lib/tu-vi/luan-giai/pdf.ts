@@ -172,7 +172,7 @@ export async function generateTuViNangCaoPdf(
   // luận Đại Hạn/Tiểu Hạn để khách nhìn tổng thể vận trình trước khi đọc chi tiết (anh Công 2/9/2026).
   b.chua(60);
   b.muc("Xu hướng Đại Hạn trọn đời");
-  b.doan("Điểm engine từng Đại Hạn (thang 0-5) nối theo tuổi — càng cao càng thuận. Vạch vàng đứt là Đại Hạn đang sống.", { size: 8, mau: MAU.mucNhat });
+  b.doan("Điểm hệ thống từng Đại Hạn (thang 0-5) nối theo tuổi — càng cao càng thuận. Vạch vàng đứt là Đại Hạn đang sống.", { size: 8, mau: MAU.mucNhat });
   b.xuong(2);
   veDaiHanTronDoiPdf(b, f, duLieu);
   if (duLieu.daiHanHienTai) {

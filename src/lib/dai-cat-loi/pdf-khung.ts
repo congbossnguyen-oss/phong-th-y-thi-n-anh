@@ -320,7 +320,7 @@ export function veLuuYVaLienHe(b: But, f: Fonts, luuY: string): void {
   b.muc("Lưu ý");
   b.doan(luuY, { size: 9, font: f.thuong });
   b.doan(
-    "Kết quả được tính theo phương pháp trạch cát cổ truyền đã cấu hình trong hệ thống, mang tính tham khảo. " +
+    "Kết quả được tính theo phương pháp mệnh lý cổ truyền đã cấu hình trong hệ thống, mang tính tham khảo. " +
       "Với tình huống đặc biệt, xin trao đổi trực tiếp với chuyên gia trước khi quyết định.",
     { size: 9, mau: MAU.mucNhat },
   );

@@ -54,7 +54,7 @@ Xem bảng tóm tắt ở mục 1. Nguyên tắc chung khi xét ai thắng ai b�
 **Phân loại Lục xung theo tính chất** (7 loại — dùng để luận đoán cụ thể hơn "xung là xấu"):
 - Xung hung: gây họa thật sự.
 - Xung vượng: kích hoạt/tăng lực cho bên vượng hơn.
-- Xung động: chỉ đơn thuần kích hoạt sự việc chuyển động (không nhất thiất hung).
+- Xung động: chỉ đơn thuần kích hoạt sự việc chuyển động (không nhất thiết hung).
 - Xung khai: "mở" một Mộ Khố đang đóng (xem `mo-kho.md`).
 - Xung xuất: đẩy Can tàng ra ngoài phát huy tác dụng.
 - Xung phóng: giải phóng năng lượng bị dồn nén.

@@ -48,7 +48,7 @@ Mỗi tháng sau khi bắt đầu bằng 1 Tiết Khí, khí của tháng đó k
 
 ## 6. Bảng Địa Chi tàng Can (rút gọn theo nhóm)
 
-- **Tứ chính** (Tý Ngọ Mão Dậu): chỉ tàng 1 Can duy nhất, thuộc hành âm của chính khí (Tý tàng Quý, Ngọ tàng Đinh+Kỷ+Bính² thực tế Ngọ tàng Đinh là chính khí kèm Kỷ, Mão tàng Ất, Dậu tàng Tân).
+- **Tứ chính** (Tý Ngọ Mão Dậu): chỉ tàng 1 Can duy nhất, thuộc hành âm của chính khí (Tý tàng Quý, Ngọ tàng Đinh là chính khí kèm Kỷ, Mão tàng Ất, Dậu tàng Tân).
 - **Tứ sinh** (Dần Thân Tị Hợi): tàng 3 Can — Dần: Giáp-Bính-Mậu; Thân: Canh-Nhâm-Mậu; Tị: Bính-Canh-Mậu; Hợi: Nhâm-Giáp.
 - **Tứ mộ** (Thìn Tuất Sửu Mùi): tàng 3 Can, xem chi tiết đầy đủ ở `mo-kho.md` — Thìn: Mậu-Ất-Quý; Tuất: Mậu-Tân-Đinh; Sửu: Kỷ-Quý-Tân; Mùi: Kỷ-Đinh-Ất.
 

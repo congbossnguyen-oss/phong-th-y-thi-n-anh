@@ -17,7 +17,7 @@ Xem chi tiết đầy đủ tại `quan-he-can-chi.md` mục 4. Tóm tắt cơ c
 Một sự việc dự đoán (theo cách cục ở `cach-cuc.md`, theo Mộ Khố ở `mo-kho.md`, hoặc theo Thần Sát ở `than-sat.md`) có xu hướng ứng vào năm/giai đoạn mà Lưu Niên hoặc Đại Vận:
 
 - **Mang đến đúng hành Kị thần** (nếu là điềm xấu) hoặc đúng hành Hỷ/Dụng thần (nếu là điềm tốt) tác động trực tiếp vào vị trí liên quan trong mệnh cục.
-- **Xung** đúng Chi đang chứa Dụng thần/Kị thần/Mộ Khố liên quan — xung thường là "điểm rơi" rõ nhất của một biến cố (ví dụ ví dụ án lệ "năm Đinh Mão Hỏa vượng khắc Kim nên nhà máy phá sản" — Đinh Mão lưu niên khắc trực diện Kim là Dụng thần/căn cơ tài sản của mệnh chủ).
+- **Xung** đúng Chi đang chứa Dụng thần/Kị thần/Mộ Khố liên quan — xung thường là "điểm rơi" rõ nhất của một biến cố (ví dụ án lệ "năm Đinh Mão Hỏa vượng khắc Kim nên nhà máy phá sản" — Đinh Mão lưu niên khắc trực diện Kim là Dụng thần/căn cơ tài sản của mệnh chủ).
 - **Hợp** đúng vị trí Tài/Quan/Phu Thê (cung vị) — thường ứng các sự kiện hôn nhân, hợp tác, hoặc "hợp mất" (mất đi thứ bị hợp đi nếu Thập Thần đó là Hỷ thần).
 - **Tam hợp/Tam hội cục được bổ sung đủ** bởi Lưu Niên (thiếu 1 chân của cục, Lưu Niên mang đến đúng chân còn thiếu) — năm đó thường là năm cục phát huy tác dụng mạnh nhất.
 - **Mộ Khố bị xung mở (khai khố)** hoặc **Mộ Khố chuyển trạng thái** (xem `mo-kho.md` TH5/TH6) — thường là năm ứng các biến cố liên quan Tài/Quan/Ấn/lục thân bị chôn giữ.
