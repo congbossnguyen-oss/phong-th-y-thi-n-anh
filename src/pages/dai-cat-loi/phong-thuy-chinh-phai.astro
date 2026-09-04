@@ -3,32 +3,29 @@
 // nhà theo đúng trường phái cổ điển đã lập tinh bàn/cung phi thật (Huyền Không Phi Tinh, Bát
 // Trạch), tách khỏi các công cụ mệnh lý khác (Bát Tự, Tử Vi, Kỳ Môn...) trong dropdown Công cụ.
 //
-// Ngũ Quỷ Vận Tài (4/9/2026) là mục THU PHÍ đầu tiên ở trang này (2 mục kia miễn phí) — style card
-// hiện không có badge giá riêng nên ghi thẳng giá vào `desc` để khách biết trước khi bấm vào.
+// Từ 5/9/2026: đổi sang thẻ ảnh bìa riêng cho từng mục (giống hub VIP dich-vu-thu-phi.astro) thay
+// vì icon+chữ trên nền dùng chung — ảnh đã tự chứa tiêu đề, KHÔNG đè thêm chữ/lớp phủ (đúng quy
+// ước "ảnh bìa đã rõ nội dung" của site).
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
-import { GIA_CONG_CU, dinhDangTien } from "../../lib/payments/gia-cong-cu";
 
 export const prerender = true;
 
 const muc = [
   {
-    icon: "🧭",
     title: "Xem phong thủy nhà (Huyền Không Phi Tinh)",
-    desc: "Lập tinh bàn từ tọa độ la bàn và năm nhập trạch: cách cục, vượng suy 9 sao, cảnh báo Không Vong/Ngũ Hoàng, Thành Môn — tính khách quan theo Tam Nguyên Cửu Vận.",
+    anh: "/images/vip/huyen-khong-phi-tinh.webp",
     href: "/dai-cat-loi/huyen-khong-phi-tinh",
   },
   {
-    icon: "🏠",
     title: "Xem hướng nhà Bát Trạch",
-    desc: "Xem hướng nhà hợp mệnh, cá nhân hóa theo Cung Phi gia chủ — Đông/Tây Tứ Trạch, Du Niên Bát Quái, Dương Trạch Tam Yếu (Cửa–Chủ–Bếp).",
+    anh: "/images/vip/bat-trach-chan-phap.webp",
     href: "/dai-cat-loi/xem-huong-nha-bat-trach",
   },
   {
-    icon: "⛰️",
     title: "Ngũ Quỷ Vận Tài",
-    desc: `Bố trí đá (Giáng Long)/nước (Giáng Thủy) theo Hướng Cửa, đối chiếu Huyền Không Phi Tinh — có đồ họa la bàn trực quan. ${dinhDangTien(GIA_CONG_CU["ngu-quy-van-tai"])} / lượt.`,
+    anh: "/images/vip/ngu-quy-van-tai.webp",
     href: "/dai-cat-loi/ngu-quy-van-tai",
   },
 ];
@@ -55,13 +52,10 @@ const muc = [
         muc.map((m) => (
           <a
             href={m.href}
-            class="relative flex flex-col gap-2 overflow-hidden rounded-2xl border-2 border-(--color-gold-300) bg-cover bg-center p-6 text-white shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl"
-            style="background-image:url('/nen%205.png')"
+            aria-label={m.title}
+            class="block overflow-hidden rounded-2xl border-2 border-(--color-gold-300) shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl"
           >
-            <span class="absolute inset-0 bg-black/55" />
-            <span class="relative text-3xl">{m.icon}</span>
-            <span class="relative font-display text-lg font-bold text-white">{m.title}</span>
-            <span class="relative text-sm text-white/85">{m.desc}</span>
+            <img src={m.anh} alt={m.title} class="block h-auto w-full" loading="lazy" />
           </a>
         ))
       }
