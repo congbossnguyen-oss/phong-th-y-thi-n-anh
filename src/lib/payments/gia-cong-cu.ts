@@ -91,6 +91,10 @@ export const GIA_CONG_CU = {
   // Bản ĐỘC LẬP cho app Quân Sư — cùng giá, cùng engine `tinhThucDinhTaiQuy`, chỉ khác toolSlug.
   // Thêm 4/9/2026 (cùng đợt sửa với dau-thu-chon-ngay-qs ở trên, cùng nguyên nhân bỏ sót).
   "thuc-dinh-tai-quy-qs": 300000,
+  // Ngũ Quỷ Vận Tài — bố trí đá (Giáng Long)/nước (Giáng Thủy) theo Hướng Cửa, đối chiếu thêm
+  // Huyền Không Phi Tinh (thuSonXuatSat theo tinh bàn thật của nhà). Cùng hạng "chọn theo tọa/
+  // hướng" như Đẩu Thủ/Thúc Đinh Tài Quý → 300.000đ (chủ dự án chốt 4/9/2026).
+  "ngu-quy-van-tai": 300000,
 
   // ─ Luận Giải Bát Tự Toàn Diện — 1 GÓI DUY NHẤT (anh Công chốt 1/9/2026) ─────────────────────
   // Trước đây tách 2 bậc Cơ Bản 300k / Trọn Đời 700k, nhưng gây 2 bug: (1) khách mua Cơ Bản cho

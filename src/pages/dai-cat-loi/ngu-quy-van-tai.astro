@@ -1,0 +1,29 @@
+---
+// TRANG DỊCH VỤ "Ngũ Quỷ Vận Tài" — thuộc mục "Phong thủy chính phái" (4/9/2026). Chỉ lo khung
+// trang (SEO/PageHero/breadcrumbs); toàn bộ logic form/thanh toán/kết quả nằm ở component dùng
+// chung `NguQuyVanTai.astro`.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import NguQuyVanTai from "../../components/tools/NguQuyVanTai.astro";
+
+export const prerender = true;
+---
+
+<BaseLayout
+  title="Ngũ Quỷ Vận Tài"
+  description="Bố trí đá (Giáng Long)/nước (Giáng Thủy) theo Hướng Cửa để hóa Ngũ Quỷ (Hỏa) thành Phúc Đức (Kim) qua chuỗi tương sinh Hỏa→Thổ→Kim, đối chiếu thêm Huyền Không Phi Tinh — có đồ họa la bàn trực quan."
+>
+  <PageHero
+    eyebrow="Phong thủy chính phái"
+    title="Ngũ Quỷ Vận Tài"
+    description="Hướng Cửa — Giáng Long (đá/vật tĩnh, cao) — Giáng Thủy (nước/vật động) phối theo chuỗi tương sinh Hỏa→Thổ→Kim, kèm đối chiếu Huyền Không Phi Tinh theo tinh bàn thật của chính căn nhà/phòng."
+    breadcrumbs={[
+      { label: "Trang chủ", href: "/" },
+      { label: "Đại Cát Lợi", href: "/dai-cat-loi" },
+      { label: "Phong thủy chính phái", href: "/dai-cat-loi/phong-thuy-chinh-phai" },
+      { label: "Ngũ Quỷ Vận Tài" },
+    ]}
+  />
+
+  <NguQuyVanTai />
+</BaseLayout>

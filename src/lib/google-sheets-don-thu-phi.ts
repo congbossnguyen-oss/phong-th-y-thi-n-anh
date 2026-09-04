@@ -40,6 +40,7 @@ export const TEN_CONG_CU_HIEN_THI: Record<string, string> = {
   "dau-thu-chon-ngay-qs": "Đẩu Thủ Chọn Ngày (app Quân Sư)",
   "thuc-dinh-tai-quy": "Chọn Ngày Thúc Đinh · Tài · Quý",
   "thuc-dinh-tai-quy-qs": "Chọn Ngày Thúc Đinh · Tài · Quý (app Quân Sư)",
+  "ngu-quy-van-tai": "Ngũ Quỷ Vận Tài",
 };
 
 export interface DonThuPhiChoSheet {
