@@ -246,15 +246,7 @@ export const paidTools: PaidTool[] = [
     // Mở bán 3/9/2026 (anh Công cung cấp spec + tự test nội bộ trước, chốt giá 300k — cùng hạng
     // Đẩu Thủ Chọn Ngày). Khoá admin/test-calculate.ts đã gỡ, đi thẳng luồng thanh toán thật.
   },
-  {
-    href: "/dai-cat-loi/ngu-quy-van-tai",
-    icon: "⛰️",
-    title: "Ngũ Quỷ Vận Tài",
-    desc: "Bố trí đá (Giáng Long)/nước (Giáng Thủy) theo Hướng Cửa để hóa Ngũ Quỷ (Hỏa) thành Phúc Đức (Kim) qua chuỗi tương sinh Hỏa→Thổ→Kim, đối chiếu thêm Huyền Không Phi Tinh theo tinh bàn thật của chính căn nhà/phòng — có đồ họa la bàn 24 sơn trực quan.",
-    priceLabel: "300.000đ / lượt",
-    // Mở bán 4/9/2026 (anh Công cung cấp bảng tra 24 sơn gốc, đã đối chiếu khớp ảnh chụp Excel).
-    // Thuộc mục "Phong thủy chính phái" (/dai-cat-loi/phong-thuy-chinh-phai), KHÔNG chỉ hub VIP
-    // chung — cũng hiện ở đó để tối đa khả năng khách tìm thấy. CHƯA có bản -qs cho app Quân Sư,
-    // đã loại khỏi dich-vu-vip.astro (xem BO_KHOI_APP ở đó).
-  },
+  // Ngũ Quỷ Vận Tài (300k, mở bán 4/9/2026) CỐ Ý không nằm trong paidTools — chủ dự án chốt
+  // 5/9/2026 chỉ để 1 bản duy nhất trong "Phong thủy chính phái" (/dai-cat-loi/phong-thuy-chinh-phai),
+  // tránh hiện trùng 2 nơi. Xem GIA_CONG_CU["ngu-quy-van-tai"] cho giá.
 ];

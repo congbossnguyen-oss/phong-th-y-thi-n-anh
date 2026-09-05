@@ -16,11 +16,7 @@ export const prerender = false;
 //   - sim-phong-thuy-khai-van : quyết định của chủ dự án 25/8/2026.
 //   - trach-cat-ky-mon        : đã chuyển sang mục lớn "Kỳ Môn Độn Giáp" (/quan-su/ky-mon) theo
 //                               yêu cầu 27/8/2026 — để cả 4 phần Kỳ Môn nằm chung một chỗ.
-//   - ngu-quy-van-tai         : CHƯA có bản -qs riêng cho app (route/component/API độc lập) —
-//                               thêm 4/9/2026 cùng lúc launch bản web, RÚT KINH NGHIỆM từ lỗi
-//                               Đẩu Thủ/Thúc Đinh Tài Quý (văng trang chủ vì thiếu route -qs).
-//                               Gỡ khỏi danh sách này NGAY khi dựng xong bản -qs riêng.
-const BO_KHOI_APP = new Set(["/dai-cat-loi/sim-phong-thuy-khai-van", "/dai-cat-loi/trach-cat-ky-mon", "/dai-cat-loi/ngu-quy-van-tai"]);
+const BO_KHOI_APP = new Set(["/dai-cat-loi/sim-phong-thuy-khai-van", "/dai-cat-loi/trach-cat-ky-mon"]);
 
 // "Định Hướng Nghề Nghiệp" CỐ Ý không nằm trong paidTools (xem ghi chú đầu danh sách đó: bản web
 // chỉ vào qua menu chính để khỏi hiện trùng 2 nơi) — nhưng app Quân Sư không có menu đó, nên phải
