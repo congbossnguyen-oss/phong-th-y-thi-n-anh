@@ -1,5 +1,10 @@
 import type { APIRoute } from "astro";
-import { calculateXemNgayCaoCap, type XemNgayCaoCapInput } from "@thien-anh/trachnhat-engine";
+import {
+  calculateXemNgayCaoCap,
+  timNgayXemNgayCaoCap,
+  timThangTrongNam,
+  type XemNgayCaoCapInput,
+} from "@thien-anh/trachnhat-engine";
 import { taoDonCongCu } from "../../../../lib/payments/checkout-cong-cu";
 import { checkRateLimit } from "../../../../lib/rate-limit";
 import { thongBaoLoiAnToan } from "../../../../lib/loi-an-toan";
@@ -14,6 +19,14 @@ export const prerender = false;
  *
  * Module này BẮT ĐĂNG NHẬP (khác module Giờ Liệm – Hạ Huyệt): khách chủ động chọn ngày, không gấp,
  * nên gắn đơn vào tài khoản để xem lại kết quả về sau là hợp lý.
+ *
+ * ⚠️ CHỐT 5/9/2026 (anh Công phát hiện): 2 chế độ TÌM KIẾM (tìm tháng/tìm ngày trong khoảng) chạy
+ * quét THẬT ngay tại đây (miễn phí) và CHỈ tạo đơn thu tiền nếu tìm được ≥1 kết quả — quét ra 0
+ * ngày/tháng dùng được thì không thu tiền (khách không mất tiền cho 1 kết quả rỗng). Trước đây chỉ
+ * "tính thử" 1 ngày để kiểm tra input hợp lệ, KHÔNG kiểm tra thật xem cả năm/khoảng có ra kết quả
+ * không — thu tiền xong khách mới biết 0 kết quả là không công bằng.
+ * Chế độ GIÁM ĐỊNH 1 NGÀY giữ nguyên như cũ (thu tiền trước): đánh giá 1 ngày cụ thể luôn ra được
+ * kết luận (tốt hoặc xấu), không có khái niệm "0 kết quả" nên không cần đổi.
  */
 
 const TOOL_SLUG = "xem-ngay-cao-cap";
@@ -100,40 +113,68 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
 
   // `snapshot` là thứ được lưu vào đơn; sau khi thanh toán, result.ts tính lại kết quả từ đây.
   let snapshot: Record<string, unknown>;
-  // Ngày dùng để "tính thử" xem bộ input có chạy được không (xem giải thích bên dưới).
-  let ngayThu: { nam: number; thang: number; ngay: number };
 
   if (cheDo === "giam_dinh") {
     const ngay = docNgay(b.ngayGiamDinh);
     if (!ngay) return jsonResponse({ ok: false, error: "Vui lòng chọn đầy đủ ngày cần giám định." }, 400);
+
+    // Giám định 1 ngày LUÔN ra được kết luận (tốt hoặc xấu) — không có khái niệm "0 kết quả", nên
+    // chỉ cần tính thử để lộ lỗi đầu vào (tọa/độ số/năm sinh/ngoài phạm vi bảng Cửu Cung) trước khi
+    // tạo đơn.
+    try {
+      calculateXemNgayCaoCap({ ...chung, ngayGiamDinh: ngay });
+    } catch (err) {
+      return jsonResponse({ ok: false, error: err instanceof Error ? err.message : "Dữ liệu không hợp lệ." }, 400);
+    }
     snapshot = { cheDo, ...chung, ngayGiamDinh: ngay };
-    ngayThu = ngay;
   } else if (cheDo === "tim_thang") {
     const namDuongLich = Number(b.namDuongLich);
     if (!Number.isInteger(namDuongLich) || namDuongLich < 1968 || namDuongLich > 2068) {
       return jsonResponse({ ok: false, error: "Năm cần tìm phải trong khoảng 1968-2068 (phạm vi bảng Cửu Cung)." }, 400);
     }
+
+    // Quét THẬT cả năm ngay tại đây (miễn phí) — chỉ tạo đơn thu tiền nếu có ít nhất 1 tháng tìm
+    // được ngày dùng được. Việc quét mất 20-30 giây (đã báo rõ cho khách ở phía giao diện).
+    let ketQuaThang: ReturnType<typeof timThangTrongNam>;
+    try {
+      ketQuaThang = timThangTrongNam({ ...chung, namDuongLich });
+    } catch (err) {
+      return jsonResponse({ ok: false, error: err instanceof Error ? err.message : "Dữ liệu không hợp lệ." }, 400);
+    }
+    if (!ketQuaThang.some((t) => t.ngayTotNhat)) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: `Không tìm được ngày phù hợp trong cả năm ${namDuongLich} với tọa/hướng và loại việc này — vui lòng thử năm khác hoặc dùng chế độ Giám Định 1 Ngày để xem chi tiết từng ngày.`,
+        },
+        200,
+      );
+    }
     snapshot = { cheDo, ...chung, namDuongLich };
-    ngayThu = { nam: namDuongLich, thang: 1, ngay: 15 };
   } else {
     const tuNgay = docNgay(b.tuNgay);
     const denNgay = docNgay(b.denNgay);
     if (!tuNgay || !denNgay) {
       return jsonResponse({ ok: false, error: "Vui lòng chọn đầy đủ ngày bắt đầu và ngày kết thúc." }, 400);
     }
-    snapshot = { cheDo, ...chung, tuNgay, denNgay };
-    ngayThu = tuNgay;
-  }
 
-  // "Tính thử" để không thu tiền cho bộ input không chạy được.
-  //
-  // CHỈ tính thử ĐÚNG 1 NGÀY, kể cả với 2 chế độ tìm kiếm: quét cả năm mất 20-30 giây, chạy thêm
-  // một lượt nữa chỉ để kiểm tra là lãng phí gấp đôi và bắt khách chờ vô ích. Mọi lỗi đầu vào
-  // (tọa/độ số/năm sinh/ngoài phạm vi bảng Cửu Cung) đều lộ ra ngay ở 1 ngày duy nhất này.
-  try {
-    calculateXemNgayCaoCap({ ...chung, ngayGiamDinh: ngayThu });
-  } catch (err) {
-    return jsonResponse({ ok: false, error: err instanceof Error ? err.message : "Dữ liệu không hợp lệ." }, 400);
+    // Cùng nguyên tắc như tim_thang ở trên: quét THẬT cả khoảng trước, chỉ tạo đơn nếu có kết quả.
+    let ketQuaNgay: ReturnType<typeof timNgayXemNgayCaoCap>;
+    try {
+      ketQuaNgay = timNgayXemNgayCaoCap({ ...chung, tuNgay, denNgay, soKetQua: 10 });
+    } catch (err) {
+      return jsonResponse({ ok: false, error: err instanceof Error ? err.message : "Dữ liệu không hợp lệ." }, 400);
+    }
+    if (ketQuaNgay.ketQua.length === 0) {
+      return jsonResponse(
+        {
+          ok: false,
+          error: "Không tìm được ngày nào phù hợp trong khoảng đã chọn — vui lòng mở rộng khoảng ngày hoặc dùng chế độ Giám Định 1 Ngày để xem chi tiết từng ngày.",
+        },
+        200,
+      );
+    }
+    snapshot = { cheDo, ...chung, tuNgay, denNgay };
   }
 
   try {
