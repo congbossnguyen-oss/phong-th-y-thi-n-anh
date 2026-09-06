@@ -20,7 +20,7 @@ const goi = Astro.locals.user ? await layGoiDangHoatDong(Astro.locals.user.id) :
 const coCaoCap = goi?.tier === "cao_cap";
 ---
 
-<BaseLayout title={`${cat.title} — Quân Sư Thiên Anh`} description={cat.subtitle} appShell>
+<BaseLayout title={`${cat.title} — Quân Sư Thiên Anh`} description={cat.subtitle} appShell noIndex>
   <section class="qs">
     <div class="qs-wrap">
       <a class="qs-back" href="/quan-su">← Chọn nhóm khác</a>
