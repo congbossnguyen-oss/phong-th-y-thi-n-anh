@@ -1,0 +1,278 @@
+---
+// TOUR CHÀO MỪNG NGƯỜI MỚI — chạy NGAY TRÊN trang chủ app Quân Sư, chỉ hiện ĐÚNG 1 LẦN cho mỗi tài
+// khoản (cờ `users.daXemChaoMungQuanSu`, chủ dự án chốt 7/9/2026).
+//
+// Cách chạy: Quân Sư đứng góc dưới, lời thoại hiện dần từng chữ trong bong bóng cố định (chủ dự án
+// chốt kiểu "gõ chữ" thay vì chữ trượt ngang — đoạn mở đầu dài ~120 chữ, chữ trượt ngang trên điện
+// thoại trôi mất trước khi đọc xong). Đọc tới mục nào thì đúng khối đó trên trang chủ sáng lên và
+// màn hình tự cuộn tới — khối được trỏ bằng `data-tour` đặt sẵn trong index.astro.
+//
+// Bước cuối (lập quẻ) KHÔNG có khối nào trên trang chủ để trỏ (4 hình thức gieo nằm trong trang lập
+// quẻ), nên hiện 4 ô tên hình thức ngay trong bong bóng.
+interface Props {
+  /** Số nhóm câu hỏi thật — đọc trong lời thoại để không nói sai số khi thư viện câu hỏi đổi. */
+  soNhom: number;
+}
+const { soNhom } = Astro.props;
+
+const BUOC = [
+  {
+    loi: "Quân Sư Thiên Anh ra mắt với mong muốn giúp mọi người hiểu mình, hiểu thời vận, và tự mình có được câu trả lời do chính mình gieo quẻ — không phụ thuộc vào máy móc.",
+  },
+  {
+    loi: "Phần luận giải này tôi xây dựng ở tầng rất sâu, độ chính xác rất cao. Tôi không muốn quyết định thay bạn — tôi chỉ muốn giúp bạn hiểu sâu được câu chuyện, tránh mắc phải những sai lầm trong cuộc sống, và chủ động hơn trên con đường phía trước.",
+  },
+  {
+    moc: "thoi-van",
+    loi: "Đầu tiên là Thời Vận. Người mới chỉ cần chạm vào mục này là thấy ngay đại vận và lưu niên — vận trình đang diễn ra của chính mình. Hãy cùng vào khám phá.",
+  },
+  {
+    moc: "co-ban",
+    loi: "Tiếp theo là Đại Cát Lợi - Cơ Bản: những mục xem ở mức cơ bản, mở cho tất cả mọi người. Hãy cùng vào khám phá.",
+  },
+  {
+    moc: "ca-nhan",
+    loi: "Đây là mục Cá nhân — nơi bạn đăng nhập hoặc đăng xuất tài khoản của mình.",
+  },
+  {
+    moc: "thue-bao",
+    loi: "Gói thuê bao có mức Cơ Bản và Cao Cấp để bạn chọn lựa, tuỳ nhu cầu của mỗi người.",
+  },
+  {
+    moc: "cao-cap",
+    loi: "Đại Cát Lợi - Cao Cấp là nơi có những dịch vụ trạch cát, chọn ngày chuyên sâu nhất, cùng các dịch vụ VIP của Quân Sư Thiên Anh. Phần này chỉ có trong bản Cao Cấp.",
+  },
+  {
+    moc: "luan-dich",
+    loi: `Và đây là linh hồn của Quân Sư Thiên Anh: Luận Quẻ Kinh Dịch. ${soNhom} mục lớn, bên trong mỗi mục có sẵn rất nhiều câu hỏi nhỏ. Riêng bản Cao Cấp còn có thêm mục "Câu hỏi khác" để bạn tuỳ ý hỏi.`,
+  },
+  {
+    loi: "Cuối cùng, khi bước vào mục lập quẻ, bạn có 4 hình thức để gieo. Cách thực hiện chi tiết tôi đã để sẵn trong từng mục — bạn hãy trải nghiệm.",
+    hinhThuc: ["Gieo đồng xu", "Mai hoa dịch số", "Seri tiền", "3 số tự nhiên"],
+  },
+];
+---
+
+<div class="qstour-man" id="qstour-man"></div>
+
+<div class="qstour" id="qstour" data-buoc={JSON.stringify(BUOC)}>
+  <img src="/images/quan-su/mascot-chao-mung.webp" alt="Quân Sư Thiên Anh" class="qstour-mascot" width="560" height="672" />
+
+  <div class="qstour-hop">
+    <p class="qstour-loi" id="qstour-loi"></p>
+
+    <div class="qstour-hinh-thuc" id="qstour-hinh-thuc" hidden></div>
+
+    <div class="qstour-chan">
+      <span class="qstour-dem" id="qstour-dem"></span>
+      <button type="button" class="qstour-bo-qua" id="qstour-bo-qua">Bỏ qua</button>
+      <button type="button" class="qstour-tiep" id="qstour-tiep">Tiếp</button>
+    </div>
+  </div>
+</div>
+
+<style is:global>
+  /* Màn tối phủ cả trang để khối đang được nhắc tới nổi hẳn lên, không bị lẫn với phần còn lại
+     (chủ dự án yêu cầu 7/9/2026). Màn CHẶN chạm vào phần đang tối — khách chỉ chạm được đúng khối
+     đang sáng, khỏi lạc đi giữa chừng. */
+  .qstour-man {
+    position: fixed; inset: 0; z-index: 50;
+    background: rgba(4, 3, 2, 0.74);
+    transition: opacity 0.25s;
+  }
+
+  /* Khối đang được Quân Sư nhắc tới: vượt lên trên màn tối + viền vàng thở chậm cho dễ nhận ra. */
+  .qstour-sang {
+    position: relative;
+    z-index: 51;
+    border-radius: 16px;
+    animation: qstour-tho 1.6s ease-in-out infinite;
+  }
+
+  /* Thanh tab dưới cùng có backdrop-filter nên tự tạo tầng riêng — con của nó KHÔNG thể tự vượt lên
+     trên màn tối. Khi Quân Sư nhắc tới một tab thì nâng cả thanh lên, rồi làm mờ các tab còn lại để
+     vẫn chỉ đúng một tab nổi. */
+  .qsn-bar.qstour-noi { z-index: 51; }
+  .qsn-bar.qstour-noi .qsn-tab:not(.qstour-sang) { opacity: 0.3; }
+  @keyframes qstour-tho {
+    0%, 100% { box-shadow: 0 0 0 2px rgba(241, 200, 90, 0.55), 0 0 18px 2px rgba(241, 200, 90, 0.25); transform: translateY(0); }
+    50% { box-shadow: 0 0 0 3px rgba(241, 200, 90, 0.95), 0 0 30px 6px rgba(241, 200, 90, 0.4); transform: translateY(-3px); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .qstour-sang { animation: none; box-shadow: 0 0 0 3px rgba(241, 200, 90, 0.9); }
+  }
+</style>
+
+<style>
+  .qstour {
+    position: fixed; z-index: 60;
+    left: 0; right: 0; bottom: calc(64px + env(safe-area-inset-bottom));
+    display: flex; align-items: flex-end; gap: 0.4rem;
+    padding: 0 0.6rem 0.6rem;
+    max-width: 760px; margin: 0 auto;
+    pointer-events: none;
+  }
+  .qstour-mascot {
+    width: 86px; height: auto; flex: 0 0 auto; margin-bottom: -2px;
+    filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.6));
+  }
+
+  .qstour-hop {
+    pointer-events: auto;
+    flex: 1; min-width: 0;
+    background: linear-gradient(165deg, #1d1810f2, #0d0b07f7);
+    border: 1px solid rgba(241, 200, 90, 0.45);
+    border-radius: 16px; padding: 0.75rem 0.85rem 0.6rem;
+    box-shadow: 0 14px 34px rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(6px);
+  }
+  .qstour-loi {
+    margin: 0; color: #ece3c6; font-size: 0.86rem; line-height: 1.5;
+    min-height: 4.5em; /* giữ chiều cao ổn định để chữ gõ dần không làm hộp giật lên xuống */
+  }
+  .qstour-loi::after {
+    content: "▍"; color: #f1c85a; opacity: 0; margin-left: 1px;
+  }
+  .qstour.dang-go .qstour-loi::after { opacity: 1; animation: qstour-nhay 0.8s steps(2) infinite; }
+  @keyframes qstour-nhay { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+
+  .qstour-hinh-thuc { display: grid; grid-template-columns: 1fr 1fr; gap: 0.35rem; margin: 0.5rem 0 0.1rem; }
+  .qstour-hinh-thuc span {
+    background: rgba(241, 200, 90, 0.1); border: 1px solid rgba(241, 200, 90, 0.3);
+    border-radius: 999px; padding: 0.25rem 0.5rem; font-size: 0.72rem; color: #f1c85a; text-align: center;
+  }
+
+  .qstour-chan { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.55rem; }
+  .qstour-dem { flex: 1; color: #a9a184; font-size: 0.7rem; letter-spacing: 0.05em; }
+  .qstour-bo-qua {
+    background: none; border: none; color: #a9a184; font-size: 0.75rem; padding: 0.35rem 0.2rem;
+    text-decoration: underline; cursor: pointer; font-family: inherit;
+  }
+  .qstour-tiep {
+    background: linear-gradient(180deg, #f1c85a, #b08d47); color: #201607; border: none;
+    border-radius: 999px; padding: 0.45rem 1.1rem; font-weight: 700; font-size: 0.82rem;
+    cursor: pointer; font-family: inherit; min-width: 84px;
+  }
+  .qstour-tiep:disabled { opacity: 0.6; cursor: default; }
+
+  @media (max-width: 380px) {
+    .qstour-mascot { width: 66px; }
+    .qstour-loi { font-size: 0.82rem; }
+  }
+</style>
+
+<script>
+  interface BuocTour {
+    loi: string;
+    moc?: string;
+    hinhThuc?: string[];
+  }
+
+  const goc = document.getElementById("qstour");
+  const oLoi = document.getElementById("qstour-loi");
+  const oHinhThuc = document.getElementById("qstour-hinh-thuc");
+  const oDem = document.getElementById("qstour-dem");
+  const nutTiep = document.getElementById("qstour-tiep") as HTMLButtonElement | null;
+  const nutBoQua = document.getElementById("qstour-bo-qua");
+
+  if (goc && oLoi && oHinhThuc && oDem && nutTiep && nutBoQua) {
+    const BUOC: BuocTour[] = JSON.parse(goc.dataset.buoc ?? "[]");
+    let i = -1;
+    let dangGo = 0; // id của setInterval đang gõ chữ, 0 = không gõ
+
+    function xoaSang() {
+      document.querySelectorAll(".qstour-sang").forEach((e) => e.classList.remove("qstour-sang"));
+      document.querySelector(".qsn-bar")?.classList.remove("qstour-noi");
+    }
+
+    // Máy đang bật "giảm chuyển động" thì hiện thẳng cả câu, không gõ từng chữ.
+    const itChuyenDong = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    function goChu(chu: string) {
+      clearInterval(dangGo);
+      if (itChuyenDong) {
+        xongChu(chu);
+        return;
+      }
+      goc!.classList.add("dang-go");
+      let k = 0;
+      dangGo = window.setInterval(() => {
+        k += 2;
+        oLoi!.textContent = chu.slice(0, k);
+        if (k >= chu.length) xongChu(chu);
+      }, 18);
+    }
+
+    function xongChu(chu: string) {
+      clearInterval(dangGo);
+      dangGo = 0;
+      oLoi!.textContent = chu;
+      goc!.classList.remove("dang-go");
+    }
+
+    function hien(k: number) {
+      i = k;
+      const b = BUOC[k];
+      xoaSang();
+
+      if (b.moc) {
+        const moc = document.querySelectorAll(`[data-tour="${b.moc}"]`);
+        moc.forEach((e) => e.classList.add("qstour-sang"));
+        if (document.querySelector(`.qsn-bar [data-tour="${b.moc}"]`)) {
+          document.querySelector(".qsn-bar")?.classList.add("qstour-noi");
+        }
+        moc[0]?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+
+      if (b.hinhThuc) {
+        oHinhThuc!.innerHTML = "";
+        for (const h of b.hinhThuc) {
+          const s = document.createElement("span");
+          s.textContent = h;
+          oHinhThuc!.appendChild(s);
+        }
+      }
+      oHinhThuc!.hidden = !b.hinhThuc;
+
+      oDem!.textContent = `${k + 1}/${BUOC.length}`;
+      nutTiep!.textContent = k === BUOC.length - 1 ? "Bắt đầu" : "Tiếp";
+      goChu(b.loi);
+    }
+
+    // Đánh dấu ĐÃ XEM rồi mới đóng. Gọi API lỗi (mạng chập chờn) vẫn đóng bình thường — cùng lắm
+    // lần sau tour hiện lại, không được kẹt khách ở đây.
+    async function dongTour(toiPhanHoi: boolean) {
+      clearInterval(dangGo);
+      xoaSang();
+      goc!.remove();
+      document.getElementById("qstour-man")?.remove();
+      try {
+        await fetch("/api/quan-su/da-xem-chao-mung", { method: "POST" });
+      } catch {
+        // bỏ qua — xem chú thích trên
+      }
+      if (toiPhanHoi) document.getElementById("hoi")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+
+    // Đang gõ mà bấm "Tiếp" (hoặc chạm vào lời thoại) thì hiện hết chữ trước, chưa sang bước mới —
+    // người đọc nhanh không phải chờ, người đọc chậm không bị nhảy bước oan.
+    nutTiep.addEventListener("click", () => {
+      if (dangGo) {
+        xongChu(BUOC[i].loi);
+        return;
+      }
+      if (i < BUOC.length - 1) hien(i + 1);
+      else dongTour(true);
+    });
+    oLoi.addEventListener("click", () => {
+      if (dangGo) xongChu(BUOC[i].loi);
+    });
+    nutBoQua.addEventListener("click", () => dongTour(false));
+
+    hien(0);
+  } else {
+    // Thiếu bất kỳ phần nào của tour thì phải gỡ màn tối ngay — để sót lại là khách bị màn đen chặn
+    // cả trang, không bấm được gì.
+    document.getElementById("qstour-man")?.remove();
+  }
+</script>

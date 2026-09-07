@@ -17,18 +17,19 @@ const isActive = (p: string) => !p.includes("#") && (path === p || (p !== "/quan
 // luôn về /hoc-vien, không quay lại app).
 const canNhanHref = Astro.locals.user ? "/hoc-vien" : "/hoc-vien/dang-nhap?tiep=%2Fquan-su";
 
+// `tour`: mốc để tour chào mừng người mới làm sáng đúng tab khi Quân Sư nhắc tới (TourChaoMung.astro).
 const TABS = [
   { href: "/quan-su", label: "Trang chủ", icon: "home" },
   { href: "/dai-cat-loi", label: "Trạch Cát", icon: "calendar" },
   { href: "/quan-su#hoi", label: "Quân Sư", icon: "logo", center: true },
-  { href: "/quan-su/xem-thoi-van", label: "Thời vận", icon: "trend" },
-  { href: canNhanHref, label: "Cá nhân", icon: "user" },
+  { href: "/quan-su/xem-thoi-van", label: "Thời vận", icon: "trend", tour: "thoi-van" },
+  { href: canNhanHref, label: "Cá nhân", icon: "user", tour: "ca-nhan" },
 ] as const;
 ---
 
 <nav class="qsn-bar" aria-label="Điều hướng Quân Sư">
   {TABS.map((t) => (
-    <a href={t.href} class={`qsn-tab ${t.center ? "qsn-center" : ""} ${isActive(t.href) ? "active" : ""}`}>
+    <a href={t.href} class={`qsn-tab ${t.center ? "qsn-center" : ""} ${isActive(t.href) ? "active" : ""}`} data-tour={"tour" in t ? t.tour : undefined}>
       <span class="qsn-ic">
         {t.icon === "home" && (
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M3 11.5 12 4l9 7.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 10v9a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-9" stroke-linecap="round" stroke-linejoin="round"/></svg>
