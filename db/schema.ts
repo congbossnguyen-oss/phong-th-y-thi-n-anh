@@ -44,6 +44,15 @@ export const sessions = pgTable("sessions", {
   ipAddress: text("ip_address"),
 });
 
+// "Quên mật khẩu" — cùng mô hình với sessions: id lưu SHA-256 hash của token thô (token thô chỉ
+// nằm trong link gửi qua email), dùng 1 lần rồi xoá, có hạn (1 giờ, xem password-reset.ts).
+export const passwordResetTokens = pgTable("password_reset_tokens", {
+  id: text("id").primaryKey(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  expiresAt: timestamp("expires_at", { withTimezone: true }).notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // --- Đơn hàng (vật phẩm phong thủy hoặc khóa học online) ---
 
 export const orderStatusEnum = pgEnum("order_status", [

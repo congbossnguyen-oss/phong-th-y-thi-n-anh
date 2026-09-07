@@ -3,6 +3,7 @@ import { siteConfig } from "../site-config";
 import {
   productOrderConfirmedEmail,
   courseOrderConfirmedEmail,
+  passwordResetEmail,
   courseCertificateEmail,
   consultationRequestEmail,
   baoCaoGoogleSheetEmail,
@@ -74,6 +75,12 @@ export async function sendCourseOrderConfirmedEmail(params: {
   totalAmount: number;
 }) {
   const { subject, html } = courseOrderConfirmedEmail(params);
+  await safeSend(params.to, subject, html);
+}
+
+/** Gửi link đặt lại mật khẩu. Dùng safeSend như mọi email khác — lỗi gửi chỉ log, không throw. */
+export async function sendPasswordResetEmail(params: { to: string; resetUrl: string }) {
+  const { subject, html } = passwordResetEmail({ resetUrl: params.resetUrl });
   await safeSend(params.to, subject, html);
 }
 

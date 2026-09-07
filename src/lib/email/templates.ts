@@ -130,6 +130,22 @@ export function courseOrderConfirmedEmail(params: {
   };
 }
 
+export function passwordResetEmail(params: { resetUrl: string }): { subject: string; html: string } {
+  const bodyHtml = `
+    <p>Chào bạn,</p>
+    <p>Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản Phong Thủy Thiên Anh gắn với email này. Bấm nút bên dưới để đặt mật khẩu mới:</p>
+    <div style="margin-top:24px;text-align:center;">
+      <a href="${params.resetUrl}" style="display:inline-block;background-color:${BRAND.cinnabar};color:${BRAND.ivory};text-decoration:none;padding:12px 28px;border-radius:8px;font-weight:bold;font-size:14px;">Đặt lại mật khẩu</a>
+    </div>
+    <p style="margin-top:20px;font-size:13px;color:#8a7a68;">Liên kết có hiệu lực trong 1 giờ và chỉ dùng được 1 lần. Nếu bạn không yêu cầu đặt lại mật khẩu, hãy bỏ qua email này — mật khẩu hiện tại của bạn vẫn an toàn.</p>
+  `;
+
+  return {
+    subject: "Đặt lại mật khẩu tài khoản Phong Thủy Thiên Anh",
+    html: layout({ previewText: "Bấm để đặt lại mật khẩu tài khoản của bạn.", title: "Yêu cầu đặt lại mật khẩu", bodyHtml }),
+  };
+}
+
 export function consultationRequestEmail(params: {
   name: string;
   phone: string;

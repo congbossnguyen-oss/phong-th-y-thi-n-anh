@@ -17,10 +17,14 @@ export const prerender = true;
           class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20" />
       </div>
       <div class="mt-4">
-        <label for="password" class="text-sm font-medium text-(--color-ink-800)">Mật khẩu</label>
+        <div class="flex items-center justify-between">
+          <label for="password" class="text-sm font-medium text-(--color-ink-800)">Mật khẩu</label>
+          <a href="/hoc-vien/quen-mat-khau" class="text-xs font-medium text-(--color-gold-300) hover:underline">Quên mật khẩu?</a>
+        </div>
         <input id="password" name="password" type="password" required autocomplete="current-password"
           class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20" />
       </div>
+      <p id="datlai-thanh-cong" class="mt-4 hidden rounded-(--radius-control) border border-emerald-500/30 bg-emerald-500/10 px-3.5 py-2.5 text-sm text-emerald-700">Đặt lại mật khẩu thành công — đăng nhập lại bằng mật khẩu mới.</p>
       <Button type="submit" id="submit-btn" size="lg" class="mt-6 w-full">Đăng nhập</Button>
       <p class="mt-4 text-center text-sm text-(--color-ink-600)">
         Chưa có tài khoản? <a id="register-link" href="/hoc-vien/dang-ky" class="font-medium text-(--color-gold-300) hover:underline">Đăng ký ngay</a>
@@ -38,6 +42,10 @@ export const prerender = true;
 
   const params = new URLSearchParams(window.location.search);
   const courseSlug = params.get("course");
+
+  if (params.get("datlaithanhcong") === "1") {
+    document.getElementById("datlai-thanh-cong")!.classList.remove("hidden");
+  }
 
   // `tiep` = trang cần quay lại sau khi đăng nhập (vd các công cụ thu phí bắt đăng nhập).
   // CHỈ nhận đường dẫn nội bộ: phải bắt đầu bằng "/" và không phải "//" (dạng "//evil.com" bị
