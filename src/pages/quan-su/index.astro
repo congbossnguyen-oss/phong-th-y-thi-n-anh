@@ -306,7 +306,7 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
   </section>
 
   <BottomNav />
-  {hienTour && <TourChaoMung soNhom={categories.length} />}
+  {hienTour && <TourChaoMung soNhom={categories.length} tenNguoiDung={Astro.locals.user!.name} />}
 </BaseLayout>
 
 <style>
