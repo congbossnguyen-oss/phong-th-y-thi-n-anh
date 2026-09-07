@@ -12,10 +12,18 @@
 interface Props {
   /** Số nhóm câu hỏi thật — đọc trong lời thoại để không nói sai số khi thư viện câu hỏi đổi. */
   soNhom: number;
+  /** Tên tài khoản, để Quân Sư chào đúng tên ở lời mở đầu. */
+  tenNguoiDung: string;
 }
-const { soNhom } = Astro.props;
+const { soNhom, tenNguoiDung } = Astro.props;
+// Chỉ lấy tên (từ cuối) — "Nguyễn Văn A" -> "A", giống cách xưng hô thân mật ngoài đời, không đọc
+// hết họ tên đầy đủ nghe trang trọng xa cách.
+const tenNgan = tenNguoiDung.trim().split(/\s+/).at(-1) || tenNguoiDung;
 
 const BUOC = [
+  {
+    loi: `Chào bạn ${tenNgan}, rất vui mừng khi bạn hữu duyên biết được Quân Sư Thiên Anh. Để hỗ trợ bạn trong quá trình trải nghiệm, tôi sẽ hướng dẫn bạn một chút về tổng quan của trang Quân Sư Thiên Anh.`,
+  },
   {
     loi: "Quân Sư Thiên Anh ra mắt với mong muốn giúp mọi người hiểu mình, hiểu thời vận, và tự mình có được câu trả lời do chính mình gieo quẻ — không phụ thuộc vào máy móc.",
   },
