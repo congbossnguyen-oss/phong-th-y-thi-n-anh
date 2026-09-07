@@ -6,7 +6,7 @@ import { runQuanSu, type CastingMethod, type NgaySinhInput } from "../../../lib/
 import type { DoiTuongHoi } from "../../../lib/quan-su/divination";
 import { getQuestion } from "../../../lib/quan-su";
 import { coQuyenTruyCap, hangYeuCauTheoCauHoi, layGoiDangHoatDong } from "../../../lib/subscriptions/access";
-import { conLuotHoiKhong, ghiNhanLuotHoi, tongLuotDaDung } from "../../../lib/subscriptions/usage";
+import { conLuotHoiKhong, ghiNhanLuotHoi, ghiNhanCauHoiDaHoi, tongLuotDaDung } from "../../../lib/subscriptions/usage";
 import { duocKhuyenMai, TONG_LUOT_MIEN_PHI_KHUYEN_MAI } from "../../../lib/quan-su/khuyen-mai-luan-giai";
 import { checkRateLimit } from "../../../lib/rate-limit";
 import type { CoinLineValue } from "../../../lib/luc-hao";
@@ -150,6 +150,9 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
     });
     // Chỉ tính lượt khi luận giải THÀNH CÔNG — khách không nhận được gì thì không bị trừ lượt.
     if (locals.user.isAdmin !== true) await ghiNhanLuotHoi(locals.user.id);
+    // Ghi lại câu hỏi đã chọn (kể cả admin test) — phục vụ thống kê xu hướng quan tâm, tách biệt
+    // hoàn toàn khỏi hạn mức lượt/tháng ở trên.
+    await ghiNhanCauHoiDaHoi(locals.user.id, body.question_id);
 
     // Phần "Cách hóa giải" CHỈ mở cho gói Cao cấp đang hoạt động (anh Công quyết định 30/8/2026) —
     // gói Cơ bản vẫn xem đủ phần luận giải + kết quả quân sư, chỉ riêng phương pháp hóa giải cụ thể

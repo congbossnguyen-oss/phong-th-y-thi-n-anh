@@ -162,6 +162,17 @@ export const quanSuUsage = pgTable(
   (t) => [uniqueIndex("quan_su_usage_user_thang_idx").on(t.userId, t.thangNam)],
 );
 
+// Ghi lại MỖI LẦN luận giải thành công đã chọn câu hỏi nào (question_id trong bộ 120 câu có sẵn ở
+// questions.ts) — để thống kê "khách quan tâm điều gì" (chủ dự án yêu cầu 7/9/2026). CHỈ ghi
+// question_id (định danh cố định, vd "chuyen-viec") — KHÔNG ghi phần mô tả tự do khách gõ thêm
+// (mo_ta_tinh_huong), vì đó là nội dung riêng tư/nhạy cảm không cần cho mục đích thống kê xu hướng.
+export const quanSuCauHoiLuot = pgTable("quan_su_cau_hoi_luot", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  questionId: text("question_id").notNull(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // --- Khóa học: đăng ký & tiến độ học ---
 
 export const enrollmentSourceEnum = pgEnum("enrollment_source", [
