@@ -243,13 +243,26 @@ async function goiKieuOpenAi(t: ThamSoGoiAi, model: string, ncc: "openai-tuong-t
 
   const data = (await res.json()) as {
     choices?: { message?: { tool_calls?: { function?: { arguments?: string } }[] } }[];
-    usage?: { prompt_tokens?: number; completion_tokens?: number };
+    usage?: {
+      prompt_tokens?: number;
+      completion_tokens?: number;
+      // Chỉ DeepSeek trả 2 trường này (context caching tự động, xem api-docs.deepseek.com/guides/kv_cache).
+      prompt_cache_hit_tokens?: number;
+      prompt_cache_miss_tokens?: number;
+    };
   };
 
   // Quy đổi cách đếm token về chuẩn Anthropic để dùng lại nguyên hệ thống log chi phí sẵn có.
+  // DeepSeek tách sẵn hit/miss — PHẢI dùng đúng 2 số này làm input_tokens/cache_read_input_tokens,
+  // không phải prompt_tokens gộp: nếu để input_tokens = prompt_tokens (đã gồm cả phần trúng cache)
+  // rồi CỘNG THÊM cache_read_input_tokens thì phần trúng cache bị tính tiền 2 LẦN trong
+  // tinhChiPhiLuot() (ghi-log-chi-phi.ts). Nhà cung cấp khác (Gemini) đi chung path này nhưng không
+  // trả 2 trường hit/miss → fallback về prompt_tokens nguyên vẹn, không có cache.
+  const coBaoCacheDeepSeek = typeof data.usage?.prompt_cache_hit_tokens === "number";
   const usage: UsageAnthropic = {
-    input_tokens: data.usage?.prompt_tokens ?? 0,
+    input_tokens: coBaoCacheDeepSeek ? (data.usage?.prompt_cache_miss_tokens ?? 0) : (data.usage?.prompt_tokens ?? 0),
     output_tokens: data.usage?.completion_tokens ?? 0,
+    cache_read_input_tokens: coBaoCacheDeepSeek ? data.usage?.prompt_cache_hit_tokens : undefined,
   };
 
   // KHÁC Anthropic: arguments là CHUỖI JSON, phải tự parse. Model đôi khi trả JSON hỏng → bắt lỗi

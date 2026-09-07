@@ -1,24 +1,23 @@
 /**
- * Khuyến mãi Quân Sư (anh Công 31/8/2026): "20 acc đăng ký sớm nhất sẽ sử dụng được 10 lượt miễn
- * phí quẻ dịch" — thay cho ý ban đầu là tạo sẵn 10 tài khoản test (xem lịch sử chat), giờ tự động
- * theo THỨ TỰ ĐĂNG KÝ, không cần tài khoản/danh sách email nào tạo tay.
+ * Khuyến mãi Quân Sư (anh Công 31/8/2026, mở rộng 7/9/2026): "50 acc đăng ký sớm nhất sẽ sử dụng
+ * được 10 lượt miễn phí quẻ dịch, trong 1 tháng kể từ NGÀY CHÍNH NGƯỜI ĐÓ ĐĂNG KÝ" — tự động theo
+ * THỨ TỰ ĐĂNG KÝ, không cần tài khoản/danh sách email nào tạo tay.
  *
- * "20 tài khoản đăng ký SỚM NHẤT" tính từ THỜI ĐIỂM KHUYẾN MÃI NÀY LÊN SÓNG (`TU_THOI_DIEM` bên
- * dưới) — KHÔNG phải 20 tài khoản đầu tiên trong toàn bộ lịch sử users (site đã có khách thật đăng
+ * "50 tài khoản đăng ký SỚM NHẤT" tính từ THỜI ĐIỂM KHUYẾN MÃI NÀY LÊN SÓNG (`TU_THOI_DIEM` bên
+ * dưới) — KHÔNG phải 50 tài khoản đầu tiên trong toàn bộ lịch sử users (site đã có khách thật đăng
  * ký từ trước, tính từ đầu sẽ toàn khách cũ không liên quan gì tới đợt khuyến mãi này).
  *
- * CÓ HẠN (bổ sung 31/8/2026, anh Công: "chỉ áp dụng cho 20 tài khoản này trong khoảng 1 tháng
- * trước khi anh ra mắt chính thức thôi") — hết `DEN_THOI_DIEM` thì khuyến mãi tắt hẳn, kể cả 1
- * trong 20 tài khoản đó chưa dùng hết 10 lượt cũng không dùng miễn phí được nữa (phải đăng ký gói
- * thật) — không phải "10 lượt dùng bao giờ hết thì thôi", mà là "hết cả 2 điều kiện (đủ 10 lượt
- * HOẶC hết hạn 1 tháng) thì dừng, cái nào tới trước tính cái đó".
+ * HẠN 1 THÁNG LÀ RIÊNG TỪNG NGƯỜI (đổi 7/9/2026, anh Công: "trong tháng đầu tiên kể từ ngày đăng
+ * ký") — KHÁC bản gốc 31/8/2026 dùng 1 mốc hết hạn CHUNG cho mọi người (`TU_THOI_DIEM + 30 ngày`),
+ * khiến người đăng ký gần cuối cửa sổ có ít hơn 30 ngày thật. Giờ mỗi người có hạn riêng =
+ * `createdAt của chính họ + 30 ngày`, không phụ thuộc người khác đăng ký lúc nào.
  *
- * SAU KHI HẾT HẠN: tài khoản trở về y hệt tài khoản bình thường, KHÔNG có gì "còn sót lại" — module
- * này CHƯA BAO GIỜ tạo bản ghi `subscriptions` cho các tài khoản khuyến mãi (chỉ đọc `users`, xem
- * `duocKhuyenMai()` bên dưới), nên khi `duocKhuyenMai()` trả về false, `luan.ts` tự rơi thẳng về
- * nhánh `coQuyenTruyCap()` bình thường — không có gói nào đang hoạt động thì bắt buộc mua gói mới
- * dùng được, đúng yêu cầu (anh Công 31/8/2026: "sau 1 tháng thì như tài khoản bình thường hết...
- * phải mua gói mới được").
+ * Hết hạn (đủ 10 lượt HOẶC hết 30 ngày riêng của mình, cái nào tới trước tính cái đó): tài khoản
+ * trở về y hệt tài khoản bình thường, KHÔNG có gì "còn sót lại" — module này CHƯA BAO GIỜ tạo bản
+ * ghi `subscriptions` cho các tài khoản khuyến mãi (chỉ đọc `users`, xem `duocKhuyenMai()` bên
+ * dưới), nên khi `duocKhuyenMai()` trả về false, `luan.ts` tự rơi thẳng về nhánh `coQuyenTruyCap()`
+ * bình thường — không có gói nào đang hoạt động thì bắt buộc mua gói mới dùng được, và frontend
+ * (`quan-su/hoi/[id].astro`) tự dẫn khách sang `/quan-su/goi-thue-bao` khi API trả 403/429.
  *
  * Chỉ ảnh hưởng ĐÚNG 1 chỗ: hạn mức luận giải Kinh Dịch (tốn AI thật) ở luan.ts — mọi tính năng
  * khác trong Quân Sư không đụng tới, tự nhiên "dùng thoải mái" vì các trang/API đó không gọi hàm
@@ -41,31 +40,56 @@ import { users } from "../../../db/schema";
  */
 const TU_THOI_DIEM = new Date("2026-08-30T17:00:00.000Z"); // 00:00 ngày 31/8/2026 giờ Việt Nam (UTC+7)
 
-/** Mốc hết hạn khuyến mãi — 30 ngày sau TU_THOI_DIEM ("khoảng 1 tháng trước khi ra mắt chính thức"). */
-const DEN_THOI_DIEM = new Date(TU_THOI_DIEM.getTime() + 30 * 24 * 60 * 60 * 1000);
+/** Số ngày mỗi tài khoản đủ điều kiện được hưởng khuyến mãi, tính TỪ NGÀY CHÍNH TÀI KHOẢN ĐÓ đăng ký. */
+const SO_NGAY_HAN_RIENG = 30;
 
 /** Số tài khoản (tính từ TU_THOI_DIEM) được hưởng khuyến mãi. */
-export const SO_TAI_KHOAN_KHUYEN_MAI = 20;
+export const SO_TAI_KHOAN_KHUYEN_MAI = 50;
 
 /** Hạn mức TỔNG (không phải theo tháng) mỗi tài khoản đủ điều kiện được luận giải miễn phí. */
 export const TONG_LUOT_MIEN_PHI_KHUYEN_MAI = 10;
 
-/**
- * true nếu tài khoản này nằm trong 20 tài khoản đăng ký sớm nhất TÍNH TỪ `TU_THOI_DIEM`, VÀ hiện
- * đang trong hạn 1 tháng của khuyến mãi (`DEN_THOI_DIEM`). Đọc thẳng DB mỗi lần gọi (không cache)
- * — chỉ 1 query đơn giản, tần suất gọi bằng đúng số lần luận giải Kinh Dịch nên không đáng lo hiệu năng.
- */
-export async function duocKhuyenMai(userId: string): Promise<boolean> {
-  const now = new Date();
-  if (now < TU_THOI_DIEM || now > DEN_THOI_DIEM) return false;
+interface ViTriKhuyenMai {
+  /** true nếu tài khoản nằm trong 50 tài khoản đăng ký sớm nhất tính từ TU_THOI_DIEM. */
+  hopLeSoThuTu: boolean;
+  /** Hạn riêng của tài khoản này = createdAt của chính họ + 30 ngày. */
+  hetHanLuc: Date;
+}
 
+/** Tra thứ tự đăng ký (so với TU_THOI_DIEM) + tính hạn riêng. null nếu tài khoản đăng ký TRƯỚC đợt khuyến mãi. */
+async function traViTri(userId: string): Promise<ViTriKhuyenMai | null> {
   const [me] = await db.select({ createdAt: users.createdAt }).from(users).where(eq(users.id, userId)).limit(1);
-  if (!me || me.createdAt < TU_THOI_DIEM) return false;
+  if (!me || me.createdAt < TU_THOI_DIEM) return null;
 
   const [row] = await db
     .select({ soThuTu: sql<number>`count(*)` })
     .from(users)
     .where(and(gte(users.createdAt, TU_THOI_DIEM), lte(users.createdAt, me.createdAt)));
 
-  return Number(row?.soThuTu ?? 0) <= SO_TAI_KHOAN_KHUYEN_MAI;
+  return {
+    hopLeSoThuTu: Number(row?.soThuTu ?? 0) <= SO_TAI_KHOAN_KHUYEN_MAI,
+    hetHanLuc: new Date(me.createdAt.getTime() + SO_NGAY_HAN_RIENG * 24 * 60 * 60 * 1000),
+  };
+}
+
+/**
+ * true nếu tài khoản này nằm trong 50 tài khoản đăng ký sớm nhất TÍNH TỪ `TU_THOI_DIEM`, VÀ hiện
+ * đang trong hạn 30 ngày RIÊNG của chính tài khoản đó (không phải mốc chung). Đọc thẳng DB mỗi lần
+ * gọi (không cache) — chỉ 1 query đơn giản, tần suất gọi bằng đúng số lần luận giải Kinh Dịch nên
+ * không đáng lo hiệu năng.
+ */
+export async function duocKhuyenMai(userId: string): Promise<boolean> {
+  const vt = await traViTri(userId);
+  if (!vt) return false;
+  return vt.hopLeSoThuTu && new Date() <= vt.hetHanLuc;
+}
+
+/**
+ * Thông tin khuyến mãi để HIỂN THỊ cho khách (thông báo ngay sau đăng ký, banner nhắc hạn) — trả về
+ * null nếu tài khoản không/không còn thuộc diện khuyến mãi (kể cả đã hết hạn riêng của họ).
+ */
+export async function thongTinKhuyenMai(userId: string): Promise<{ hetHanLuc: Date } | null> {
+  const vt = await traViTri(userId);
+  if (!vt || !vt.hopLeSoThuTu || new Date() > vt.hetHanLuc) return null;
+  return { hetHanLuc: vt.hetHanLuc };
 }
