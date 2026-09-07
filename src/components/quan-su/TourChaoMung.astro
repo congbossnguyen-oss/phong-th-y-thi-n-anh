@@ -32,7 +32,7 @@ const BUOC = [
   },
   {
     moc: "ca-nhan",
-    loi: "Đây là mục Cá nhân — nơi bạn đăng nhập hoặc đăng xuất tài khoản của mình.",
+    loi: "Đây là mục Cá nhân — nơi bạn đăng nhập hoặc đăng xuất tài khoản của mình, và có thể xem lại phần hướng dẫn.",
   },
   {
     moc: "thue-bao",
@@ -47,8 +47,11 @@ const BUOC = [
     loi: `Và đây là linh hồn của Quân Sư Thiên Anh: Luận Quẻ Kinh Dịch. ${soNhom} mục lớn, bên trong mỗi mục có sẵn rất nhiều câu hỏi nhỏ. Riêng bản Cao Cấp còn có thêm mục "Câu hỏi khác" để bạn tuỳ ý hỏi.`,
   },
   {
-    loi: "Cuối cùng, khi bước vào mục lập quẻ, bạn có 4 hình thức để gieo. Cách thực hiện chi tiết tôi đã để sẵn trong từng mục — bạn hãy trải nghiệm.",
+    loi: "Khi bước vào mục lập quẻ, bạn có 4 hình thức để gieo. Cách thực hiện chi tiết tôi đã để sẵn trong từng mục — bạn hãy trải nghiệm.",
     hinhThuc: ["Gieo đồng xu", "Mai hoa dịch số", "Seri tiền", "3 số tự nhiên"],
+  },
+  {
+    loi: "Và cuối cùng, Zhi Gong và Phong Thủy Thiên Anh chúc các bạn có nhiều trải nghiệm thú vị và giải đáp được nhiều vấn đề trong cuộc sống này.",
   },
 ];
 ---
@@ -65,7 +68,8 @@ const BUOC = [
 
     <div class="qstour-chan">
       <span class="qstour-dem" id="qstour-dem"></span>
-      <button type="button" class="qstour-bo-qua" id="qstour-bo-qua">Bỏ qua</button>
+      <button type="button" class="qstour-phu" id="qstour-truoc">Đọc lại</button>
+      <button type="button" class="qstour-phu" id="qstour-bo-qua">Bỏ qua</button>
       <button type="button" class="qstour-tiep" id="qstour-tiep">Tiếp</button>
     </div>
   </div>
@@ -79,6 +83,13 @@ const BUOC = [
     position: fixed; inset: 0; z-index: 50;
     background: rgba(4, 3, 2, 0.74);
     transition: opacity 0.25s;
+  }
+
+  /* Pháo hoa chúc mừng ở lời kết — nằm trên màn tối, không chặn thao tác. */
+  .qstour-phao {
+    position: fixed; inset: 0; z-index: 61;
+    width: 100%; height: 100%;
+    pointer-events: none;
   }
 
   /* Khối đang được Quân Sư nhắc tới: vượt lên trên màn tối + viền vàng thở chậm cho dễ nhận ra. */
@@ -116,6 +127,8 @@ const BUOC = [
     width: 86px; height: auto; flex: 0 0 auto; margin-bottom: -2px;
     filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.6));
   }
+  /* Sau khi bắn giấy chúc mừng thì bảng lời chào lui đi, nhường lại giao diện chính. */
+  .qstour.lui-ra { opacity: 0; transform: translateY(14px); transition: opacity 0.45s, transform 0.45s; }
 
   .qstour-hop {
     pointer-events: auto;
@@ -144,10 +157,11 @@ const BUOC = [
 
   .qstour-chan { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.55rem; }
   .qstour-dem { flex: 1; color: #a9a184; font-size: 0.7rem; letter-spacing: 0.05em; }
-  .qstour-bo-qua {
+  .qstour-phu {
     background: none; border: none; color: #a9a184; font-size: 0.75rem; padding: 0.35rem 0.2rem;
     text-decoration: underline; cursor: pointer; font-family: inherit;
   }
+  .qstour-phu[hidden] { display: none; }
   .qstour-tiep {
     background: linear-gradient(180deg, #f1c85a, #b08d47); color: #201607; border: none;
     border-radius: 999px; padding: 0.45rem 1.1rem; font-weight: 700; font-size: 0.82rem;
@@ -173,9 +187,10 @@ const BUOC = [
   const oHinhThuc = document.getElementById("qstour-hinh-thuc");
   const oDem = document.getElementById("qstour-dem");
   const nutTiep = document.getElementById("qstour-tiep") as HTMLButtonElement | null;
+  const nutTruoc = document.getElementById("qstour-truoc") as HTMLButtonElement | null;
   const nutBoQua = document.getElementById("qstour-bo-qua");
 
-  if (goc && oLoi && oHinhThuc && oDem && nutTiep && nutBoQua) {
+  if (goc && oLoi && oHinhThuc && oDem && nutTiep && nutTruoc && nutBoQua) {
     const BUOC: BuocTour[] = JSON.parse(goc.dataset.buoc ?? "[]");
     let i = -1;
     let dangGo = 0; // id của setInterval đang gõ chữ, 0 = không gõ
@@ -236,22 +251,110 @@ const BUOC = [
 
       oDem!.textContent = `${k + 1}/${BUOC.length}`;
       nutTiep!.textContent = k === BUOC.length - 1 ? "Bắt đầu" : "Tiếp";
+      nutTruoc!.hidden = k === 0;
       goChu(b.loi);
+    }
+
+    /**
+     * Pháo hoa giấy chúc mừng ở lời kết: bắn tung ra TỪ chính bảng lời chào (`nguon` là khung của
+     * bảng đó) rồi rơi xuống. Canvas tự vẽ, không kéo thêm thư viện nào cho nhẹ.
+     */
+    function phaoHoa(nguon: DOMRect, xong: () => void) {
+      if (itChuyenDong) {
+        xong();
+        return;
+      }
+      const canvas = document.createElement("canvas");
+      canvas.className = "qstour-phao";
+      const ty = Math.min(window.devicePixelRatio || 1, 2);
+      const rong = window.innerWidth;
+      const cao = window.innerHeight;
+      canvas.width = rong * ty;
+      canvas.height = cao * ty;
+      document.body.appendChild(canvas);
+      const ctx = canvas.getContext("2d")!;
+      ctx.scale(ty, ty);
+
+      const MAU = ["#f1c85a", "#f8e6ae", "#ece3c6", "#d9a53a", "#c47a6a", "#7fb8a0"];
+      const giay = Array.from({ length: 80 }, (_, n) => {
+        // bắn lên từ mép trên của bảng lời chào, toả đều sang hai bên
+        const toa = (Math.random() - 0.5) * 2;
+        return {
+          x: nguon.left + nguon.width * (0.15 + Math.random() * 0.7),
+          y: nguon.top + Math.random() * 12,
+          vx: toa * 7,
+          vy: -(6 + Math.random() * 7),
+          xoay: Math.random() * Math.PI,
+          vXoay: (Math.random() - 0.5) * 0.34,
+          ngang: 4 + Math.random() * 4,
+          doc: 7 + Math.random() * 6,
+          mau: MAU[n % MAU.length],
+        };
+      });
+
+      // requestAnimationFrame KHÔNG chạy khi khách chuyển sang app khác (tab bị ẩn). Không có chốt
+      // thời gian này thì khách quay lại có thể gặp màn tối còn nguyên — phải đóng bằng mọi giá.
+      let daXong = false;
+      const dong = () => {
+        if (daXong) return;
+        daXong = true;
+        canvas.remove();
+        xong();
+      };
+      setTimeout(dong, 3500);
+
+      const batDau = performance.now();
+      const ve = (nay: number) => {
+        if (daXong) return;
+        const troi = nay - batDau;
+        ctx.clearRect(0, 0, rong, cao);
+        ctx.globalAlpha = troi > 1800 ? Math.max(1 - (troi - 1800) / 500, 0) : 1;
+        for (const g of giay) {
+          g.x += g.vx;
+          g.y += g.vy;
+          g.vy += 0.24;
+          g.vx *= 0.99;
+          g.xoay += g.vXoay;
+          ctx.save();
+          ctx.translate(g.x, g.y);
+          ctx.rotate(g.xoay);
+          ctx.fillStyle = g.mau;
+          ctx.fillRect(-g.ngang / 2, -g.doc / 2, g.ngang, g.doc);
+          ctx.restore();
+        }
+        if (troi < 2300) requestAnimationFrame(ve);
+        else dong();
+      };
+      requestAnimationFrame(ve);
     }
 
     // Đánh dấu ĐÃ XEM rồi mới đóng. Gọi API lỗi (mạng chập chờn) vẫn đóng bình thường — cùng lắm
     // lần sau tour hiện lại, không được kẹt khách ở đây.
-    async function dongTour(toiPhanHoi: boolean) {
+    async function dongTour(coPhaoHoa: boolean) {
       clearInterval(dangGo);
       xoaSang();
-      goc!.remove();
-      document.getElementById("qstour-man")?.remove();
+
+      const ketThuc = () => {
+        goc!.remove();
+        document.getElementById("qstour-man")?.remove();
+        if (coPhaoHoa) document.getElementById("hoi")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      };
+
+      if (coPhaoHoa) {
+        // Giấy bắn ra từ bảng lời chào, nên bảng phải còn đó lúc bắn rồi mới lui ra; màn tối giữ lại
+        // làm nền cho tới khi giấy rơi hết mới trả khách về giao diện chính.
+        const hop = goc!.querySelector(".qstour-hop")!.getBoundingClientRect();
+        phaoHoa(hop, ketThuc);
+        setTimeout(() => goc!.classList.add("lui-ra"), 240);
+      } else {
+        ketThuc();
+      }
+
       try {
         await fetch("/api/quan-su/da-xem-chao-mung", { method: "POST" });
       } catch {
         // bỏ qua — xem chú thích trên
       }
-      if (toiPhanHoi) document.getElementById("hoi")?.scrollIntoView({ behavior: "smooth", block: "start" });
     }
 
     // Đang gõ mà bấm "Tiếp" (hoặc chạm vào lời thoại) thì hiện hết chữ trước, chưa sang bước mới —
@@ -266,6 +369,9 @@ const BUOC = [
     });
     oLoi.addEventListener("click", () => {
       if (dangGo) xongChu(BUOC[i].loi);
+    });
+    nutTruoc.addEventListener("click", () => {
+      if (i > 0) hien(i - 1);
     });
     nutBoQua.addEventListener("click", () => dongTour(false));
 
