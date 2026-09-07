@@ -1,14 +1,16 @@
 {
   "_ghi_chu": "Đơn giá API. Sửa file này khi đổi giá — KHÔNG sửa trong code. Giá ưu đãi ra mắt Sonnet 5 ($2/$10) áp dụng tới 31/8/2026, sau đó về $3/$15.",
-  "_ghi_chu_deepseek": "⚠️ CHƯA CÓ GIÁ THẬT của DeepSeek (API chính thức api.deepseek.com từ 30/8/2026, trước đó qua lớp trung gian tom.qnt.world) lẫn Gemini (thêm 30/8/2026, để so sánh chất lượng luận với DeepSeek). Đang để 0 nên log [AI-COST] sẽ hiện ~0đ cho các model deepseek/gemini — ĐỪNG hiểu nhầm là miễn phí. Khi anh Công lấy được bảng giá thì điền vào đây, log sẽ tự đúng.",
+  "_ghi_chu_deepseek": "Điền 7/9/2026 từ bảng giá công khai api-docs.deepseek.com/quick_start/pricing (chưa đối chiếu qua dashboard tài khoản — nếu có giá riêng/khuyến mãi khác thì sửa lại). DeepSeek tính giá THEO GIỜ: giờ cao điểm 01:00-04:00 và 06:00-10:00 UTC (= 08:00-11:00 và 13:00-17:00 giờ VN, T2-T6 — trùng giờ hành chính, tức có thể trùng giờ khách VN dùng app nhiều) giá gấp ĐÔI giờ thường. Schema file này KHÔNG có trục thời gian nên dùng TRUNG BÌNH cộng (giờ thường + cao điểm)/2 làm giá đại diện — log sẽ xê dịch ±50% quanh số thật tùy giờ gọi thật, không phải số tuyệt đối. deepseek-chat: model KHÔNG còn xuất hiện trên trang giá hiện hành (chỉ có deepseek-v4-flash/v4-pro/v4-flash-vision-exp) — đang dùng riêng cho Kinh Dịch (xem luan-giai/llm.ts) vì bản 'thinking' mặc định từ chối tool_choice ép buộc. Tạm gán CÙNG giá v4-flash (giả định là bí danh non-thinking của tier flash) — CHƯA XÁC MINH được model này còn hoạt động thật trên api.deepseek.com hay không (không có API key để tự gọi thử); nếu log [AI-COST] không thấy dòng nào cho 'Kinh Dịch' dù có khách dùng, hoặc thấy lỗi 'thất bại' trong log server, thì đổi modelOverride ở luan-giai/llm.ts từ 'deepseek-chat' sang 'deepseek-v4-flash' và kiểm tra lại tool_choice có bị từ chối không.",
+  "_ghi_chu_gemini": "CHƯA CÓ GIÁ THẬT của Gemini (thêm 30/8/2026, để so sánh chất lượng luận với DeepSeek). Đang để 0 nên log [AI-COST] sẽ hiện ~0đ — ĐỪNG hiểu nhầm là miễn phí. Điền vào đây khi có giá.",
   "ty_gia_vnd_tren_usd": 26300,
   "mac_dinh": "claude-sonnet-5",
   "models": {
     "claude-sonnet-5": { "input_usd_1m": 2.0, "output_usd_1m": 10.0, "he_so_ghi_cache": 1.25, "he_so_doc_cache": 0.1 },
     "claude-opus-5": { "input_usd_1m": 5.0, "output_usd_1m": 25.0, "he_so_ghi_cache": 1.25, "he_so_doc_cache": 0.1 },
     "claude-haiku-4-5": { "input_usd_1m": 1.0, "output_usd_1m": 5.0, "he_so_ghi_cache": 1.25, "he_so_doc_cache": 0.1 },
-    "deepseek-v4-pro": { "input_usd_1m": 0, "output_usd_1m": 0, "he_so_ghi_cache": 1.25, "he_so_doc_cache": 0.1 },
-    "deepseek-v4-flash": { "input_usd_1m": 0, "output_usd_1m": 0, "he_so_ghi_cache": 1.25, "he_so_doc_cache": 0.1 },
+    "deepseek-v4-flash": { "input_usd_1m": 0.33, "output_usd_1m": 0.99, "he_so_ghi_cache": 1.0, "he_so_doc_cache": 0.0318 },
+    "deepseek-chat": { "input_usd_1m": 0.33, "output_usd_1m": 0.99, "he_so_ghi_cache": 1.0, "he_so_doc_cache": 0.0318 },
+    "deepseek-v4-pro": { "input_usd_1m": 0.99, "output_usd_1m": 2.97, "he_so_ghi_cache": 1.0, "he_so_doc_cache": 0.0333 },
     "gemini-3.6-flash": { "input_usd_1m": 0, "output_usd_1m": 0, "he_so_ghi_cache": 1.25, "he_so_doc_cache": 0.1 }
   }
 }

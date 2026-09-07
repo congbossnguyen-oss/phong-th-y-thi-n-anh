@@ -8,6 +8,7 @@ import BottomNav from "../../components/quan-su/BottomNav.astro";
 import "../../styles/quan-su.css";
 import { getCategoriesWithCounts } from "../../lib/quan-su";
 import TourChaoMung from "../../components/quan-su/TourChaoMung.astro";
+import { thongTinKhuyenMai } from "../../lib/quan-su/khuyen-mai-luan-giai";
 
 export const prerender = false;
 
@@ -19,6 +20,10 @@ export const prerender = false;
 const hienTour = Boolean(
   Astro.locals.user && (!Astro.locals.user.daXemChaoMungQuanSu || Astro.url.searchParams.has("xem-lai")),
 );
+
+// Thông báo khuyến mãi "50 người đăng ký sớm nhất — 10 lượt luận Kinh Dịch miễn phí trong 1 tháng"
+// (anh Công 7/9/2026) — chỉ đọc khi CẦN hiện tour, tránh 1 query DB thừa cho khách đã xem tour rồi.
+const khuyenMai = hienTour && Astro.locals.user ? await thongTinKhuyenMai(Astro.locals.user.id) : null;
 
 const categories = getCategoriesWithCounts();
 
@@ -306,7 +311,13 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
   </section>
 
   <BottomNav />
-  {hienTour && <TourChaoMung soNhom={categories.length} tenNguoiDung={Astro.locals.user!.name} />}
+  {hienTour && (
+    <TourChaoMung
+      soNhom={categories.length}
+      tenNguoiDung={Astro.locals.user!.name}
+      hetHanKhuyenMai={khuyenMai ? khuyenMai.hetHanLuc.toISOString() : null}
+    />
+  )}
 </BaseLayout>
 
 <style>

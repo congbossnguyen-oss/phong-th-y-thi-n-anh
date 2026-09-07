@@ -9,21 +9,43 @@
 //
 // Bước cuối (lập quẻ) KHÔNG có khối nào trên trang chủ để trỏ (4 hình thức gieo nằm trong trang lập
 // quẻ), nên hiện 4 ô tên hình thức ngay trong bong bóng.
+import { TONG_LUOT_MIEN_PHI_KHUYEN_MAI } from "../../lib/quan-su/khuyen-mai-luan-giai";
+
 interface Props {
   /** Số nhóm câu hỏi thật — đọc trong lời thoại để không nói sai số khi thư viện câu hỏi đổi. */
   soNhom: number;
   /** Tên tài khoản, để Quân Sư chào đúng tên ở lời mở đầu. */
   tenNguoiDung: string;
+  /**
+   * Hạn RIÊNG (ISO string, UTC) của khuyến mãi "50 người đăng ký sớm nhất — 10 lượt luận Kinh Dịch
+   * miễn phí trong 1 tháng kể từ ngày đăng ký" — null nếu tài khoản không thuộc diện khuyến mãi.
+   * Có giá trị thì chèn thêm 1 bước thông báo ngay sau lời chào (anh Công 7/9/2026: "mỗi lần đăng
+   * ký xong thì nên có thông báo").
+   */
+  hetHanKhuyenMai: string | null;
 }
-const { soNhom, tenNguoiDung } = Astro.props;
+const { soNhom, tenNguoiDung, hetHanKhuyenMai } = Astro.props;
 // Chỉ lấy tên (từ cuối) — "Nguyễn Văn A" -> "A", giống cách xưng hô thân mật ngoài đời, không đọc
 // hết họ tên đầy đủ nghe trang trọng xa cách.
 const tenNgan = tenNguoiDung.trim().split(/\s+/).at(-1) || tenNguoiDung;
+
+const ngayHetHanKhuyenMai = hetHanKhuyenMai
+  ? new Intl.DateTimeFormat("vi-VN", { day: "2-digit", month: "2-digit", year: "numeric", timeZone: "Asia/Ho_Chi_Minh" }).format(
+      new Date(hetHanKhuyenMai),
+    )
+  : null;
 
 const BUOC = [
   {
     loi: `Chào bạn ${tenNgan}, rất vui mừng khi bạn hữu duyên biết được Quân Sư Thiên Anh. Để hỗ trợ bạn trong quá trình trải nghiệm, tôi sẽ hướng dẫn bạn một chút về tổng quan của trang Quân Sư Thiên Anh.`,
   },
+  ...(ngayHetHanKhuyenMai
+    ? [
+        {
+          loi: `Và đặc biệt, bạn được tặng ${TONG_LUOT_MIEN_PHI_KHUYEN_MAI} lượt trải nghiệm Luận Quẻ Kinh Dịch miễn phí trong 1 tháng — dùng trước hạn ${ngayHetHanKhuyenMai} nhé.`,
+        },
+      ]
+    : []),
   {
     loi: "Quân Sư Thiên Anh ra mắt với mong muốn giúp mọi người hiểu mình, hiểu thời vận, và tự mình có được câu trả lời do chính mình gieo quẻ — không phụ thuộc vào máy móc, cũng như tránh tuyệt đối mê tín dị đoan.",
   },

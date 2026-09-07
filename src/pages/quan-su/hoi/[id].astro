@@ -225,7 +225,10 @@ const choDoiTuongKhac = dungThanHintFor(question.category).kind === "the-hao";
                     </div>`;
                   return;
                 }
-                if (res.status === 403) {
+                if (res.status === 403 || res.status === 429) {
+                  // 403 = chưa có gói đủ hạng; 429 = hết lượt (hết 10 lượt khuyến mãi HOẶC hết hạn
+                  // 1 tháng khuyến mãi rơi về đây vì lúc đó coi như không còn quyền, HOẶC hết hạn
+                  // mức/tháng của gói trả phí) — cả 2 đều dẫn khách sang xem gói thuê bao.
                   resultEl.innerHTML = `<div class="qs-notice">${data.error || "Cần gói thuê bao."}</div>
                     <a href="/quan-su/goi-thue-bao" class="qs-btn" style="text-decoration:none;display:inline-flex;margin-top:0.6rem;">Xem gói thuê bao</a>`;
                   return;
