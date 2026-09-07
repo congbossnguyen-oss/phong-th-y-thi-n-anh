@@ -13,7 +13,7 @@
  */
 import { and, eq, sql } from "drizzle-orm";
 import { db } from "../db/client";
-import { quanSuUsage } from "../../../db/schema";
+import { quanSuUsage, quanSuCauHoiLuot } from "../../../db/schema";
 import type { SubscriptionTier } from "../payments/gia-subscription";
 
 /**
@@ -103,4 +103,12 @@ export async function ghiNhanLuotHoi(userId: string): Promise<void> {
       target: [quanSuUsage.userId, quanSuUsage.thangNam],
       set: { soLuotDaDung: sql`${quanSuUsage.soLuotDaDung} + 1`, updatedAt: new Date() },
     });
+}
+
+/**
+ * Ghi lại câu hỏi (question_id) vừa luận giải thành công — phục vụ thống kê "khách quan tâm điều
+ * gì" (chủ dự án yêu cầu 7/9/2026). Gọi CÙNG LÚC với `ghiNhanLuotHoi`, chỉ khi luận giải thành công.
+ */
+export async function ghiNhanCauHoiDaHoi(userId: string, questionId: string): Promise<void> {
+  await db.insert(quanSuCauHoiLuot).values({ userId, questionId });
 }
