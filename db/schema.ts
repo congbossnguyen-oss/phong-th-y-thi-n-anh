@@ -166,9 +166,15 @@ export const quanSuUsage = pgTable(
 // questions.ts) — để thống kê "khách quan tâm điều gì" (chủ dự án yêu cầu 7/9/2026). CHỈ ghi
 // question_id (định danh cố định, vd "chuyen-viec") — KHÔNG ghi phần mô tả tự do khách gõ thêm
 // (mo_ta_tinh_huong), vì đó là nội dung riêng tư/nhạy cảm không cần cho mục đích thống kê xu hướng.
+//
+// NGOẠI LỆ — riêng câu "Câu hỏi khác" (question_id = "cau-hoi-tu-do", xem questions.ts): ô
+// mo_ta_tinh_huong ở câu này CHÍNH LÀ nội dung câu hỏi khách tự gõ (không phải mô tả thêm cho 1 chủ
+// đề đã biết như 119 câu còn lại) — chủ dự án yêu cầu 7/9/2026 lưu lại để biết khách hỏi gì ngoài
+// danh mục có sẵn. Cột `moTa` để NULL với 119 câu kia, chỉ có giá trị ở "cau-hoi-tu-do".
 export const quanSuCauHoiLuot = pgTable("quan_su_cau_hoi_luot", {
   id: uuid("id").primaryKey().defaultRandom(),
   questionId: text("question_id").notNull(),
+  moTa: text("mo_ta"),
   userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

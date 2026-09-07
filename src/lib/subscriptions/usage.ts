@@ -108,7 +108,11 @@ export async function ghiNhanLuotHoi(userId: string): Promise<void> {
 /**
  * Ghi lại câu hỏi (question_id) vừa luận giải thành công — phục vụ thống kê "khách quan tâm điều
  * gì" (chủ dự án yêu cầu 7/9/2026). Gọi CÙNG LÚC với `ghiNhanLuotHoi`, chỉ khi luận giải thành công.
+ *
+ * `moTa` CHỈ nên truyền khi `questionId === "cau-hoi-tu-do"` (ô mô tả ở câu đó CHÍNH LÀ nội dung
+ * câu hỏi khách tự gõ) — 119 câu còn lại KHÔNG truyền (giữ NULL), vì ô mô tả ở đó chỉ là hoàn cảnh
+ * bổ sung cho 1 chủ đề đã biết sẵn (xem chú thích ở schema.ts).
  */
-export async function ghiNhanCauHoiDaHoi(userId: string, questionId: string): Promise<void> {
-  await db.insert(quanSuCauHoiLuot).values({ userId, questionId });
+export async function ghiNhanCauHoiDaHoi(userId: string, questionId: string, moTa?: string): Promise<void> {
+  await db.insert(quanSuCauHoiLuot).values({ userId, questionId, moTa: moTa ?? null });
 }
