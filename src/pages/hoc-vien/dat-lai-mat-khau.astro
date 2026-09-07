@@ -1,0 +1,87 @@
+---
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Container from "../../components/ui/Container.astro";
+import Button from "../../components/ui/Button.astro";
+
+export const prerender = true;
+---
+
+<BaseLayout title="Đặt lại mật khẩu" description="Đặt lại mật khẩu tài khoản Thiên Anh." noIndex>
+  <Container class="flex min-h-[60vh] items-center justify-center py-16">
+    <form id="datlai-form" class="w-full max-w-sm rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-8">
+      <h1 class="font-display text-2xl font-semibold text-(--color-ink-950)">Đặt lại mật khẩu</h1>
+      <p id="datlai-error" class="mt-3 hidden rounded-(--radius-control) border border-(--color-danger-500)/30 bg-(--color-danger-500)/10 px-3.5 py-2.5 text-sm text-(--color-danger-500)"></p>
+      <div id="datlai-fields" class="hidden">
+        <div class="mt-6">
+          <label for="password" class="text-sm font-medium text-(--color-ink-800)">Mật khẩu mới</label>
+          <input id="password" name="password" type="password" required minlength="6" autocomplete="new-password"
+            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20" />
+        </div>
+        <div class="mt-4">
+          <label for="password2" class="text-sm font-medium text-(--color-ink-800)">Nhập lại mật khẩu mới</label>
+          <input id="password2" name="password2" type="password" required minlength="6" autocomplete="new-password"
+            class="mt-1.5 w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3.5 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20" />
+        </div>
+        <Button type="submit" id="submit-btn" size="lg" class="mt-6 w-full">Đặt lại mật khẩu</Button>
+      </div>
+      <p class="mt-4 text-center text-sm text-(--color-ink-600)">
+        <a href="/hoc-vien/dang-nhap" class="font-medium text-(--color-gold-300) hover:underline">← Quay lại đăng nhập</a>
+      </p>
+    </form>
+  </Container>
+</BaseLayout>
+
+<script>
+  const form = document.getElementById("datlai-form") as HTMLFormElement;
+  const errorEl = document.getElementById("datlai-error")!;
+  const fieldsEl = document.getElementById("datlai-fields")!;
+  const submitBtn = document.getElementById("submit-btn") as HTMLButtonElement;
+
+  const token = new URLSearchParams(window.location.search).get("token");
+
+  if (!token) {
+    errorEl.textContent = "Thiếu token đặt lại mật khẩu — vui lòng mở đúng link trong email.";
+    errorEl.classList.remove("hidden");
+  } else {
+    fieldsEl.classList.remove("hidden");
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errorEl.classList.add("hidden");
+    if (!token) return;
+
+    const password = (document.getElementById("password") as HTMLInputElement).value;
+    const password2 = (document.getElementById("password2") as HTMLInputElement).value;
+
+    if (password !== password2) {
+      errorEl.textContent = "2 lần nhập mật khẩu không khớp.";
+      errorEl.classList.remove("hidden");
+      return;
+    }
+
+    submitBtn.disabled = true;
+
+    try {
+      const res = await fetch("/api/auth/dat-lai-mat-khau", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, password }),
+      });
+      const data = await res.json();
+
+      if (!res.ok || !data.ok) {
+        errorEl.textContent = data.error ?? "Có lỗi xảy ra, thử lại.";
+        errorEl.classList.remove("hidden");
+        submitBtn.disabled = false;
+        return;
+      }
+
+      window.location.href = "/hoc-vien/dang-nhap?datlaithanhcong=1";
+    } catch {
+      errorEl.textContent = "Không kết nối được máy chủ, thử lại sau.";
+      errorEl.classList.remove("hidden");
+      submitBtn.disabled = false;
+    }
+  });
+</script>
