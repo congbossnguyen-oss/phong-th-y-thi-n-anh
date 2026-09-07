@@ -10,12 +10,19 @@ const path = Astro.url.pathname;
 // Tab giữa (mỏ neo #hoi) luôn nổi bật riêng bằng CSS, không cần trạng thái active theo đường dẫn.
 const isActive = (p: string) => !p.includes("#") && (path === p || (p !== "/quan-su" && path.startsWith(p)));
 
+// Tab "Cá nhân": đã đăng nhập thì vào thẳng hồ sơ /hoc-vien như cũ; CHƯA đăng nhập thì đi thẳng
+// tới trang đăng nhập kèm `tiep=/quan-su`, để sau khi đăng nhập xong quay LẠI đúng giao diện chính
+// Quân Sư thay vì rơi về trang web thường /hoc-vien (chủ dự án chốt 7/9/2026 — trước đó link
+// "Cá nhân" trỏ thẳng /hoc-vien, nút "Đăng nhập" ở đó không mang theo `tiep` nên sau khi đăng nhập
+// luôn về /hoc-vien, không quay lại app).
+const canNhanHref = Astro.locals.user ? "/hoc-vien" : "/hoc-vien/dang-nhap?tiep=%2Fquan-su";
+
 const TABS = [
   { href: "/quan-su", label: "Trang chủ", icon: "home" },
   { href: "/dai-cat-loi", label: "Trạch Cát", icon: "calendar" },
   { href: "/quan-su#hoi", label: "Quân Sư", icon: "logo", center: true },
   { href: "/quan-su/xem-thoi-van", label: "Thời vận", icon: "trend" },
-  { href: "/hoc-vien", label: "Cá nhân", icon: "user" },
+  { href: canNhanHref, label: "Cá nhân", icon: "user" },
 ] as const;
 ---
 
