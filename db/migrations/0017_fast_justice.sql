@@ -1,0 +1,1 @@
+ALTER TABLE "users" ADD COLUMN "da_xem_chao_mung_quan_su" boolean DEFAULT false NOT NULL;
