@@ -31,6 +31,10 @@ export const users = pgTable("users", {
   birthYear: integer("birth_year"),
   birthHour: integer("birth_hour"), // 0-23, luôn tùy chọn — thiếu giờ thì bỏ qua lớp Tử Vi (xem current-luck.ts)
   gender: genderEnum("gender"),
+  // Màn chào mừng "Quân Sư" (nhân vật minh hoạ + hướng dẫn demo Luận Dịch) — chỉ hiện ĐÚNG 1 LẦN
+  // cho mỗi tài khoản, ngay lần đầu vào /quan-su (thường là ngay sau đăng ký). Chủ dự án chốt
+  // 7/9/2026. false = chưa xem, quan-su/index.astro tự kiểm tra và chuyển hướng sang /quan-su/chao-mung.
+  daXemChaoMungQuanSu: boolean("da_xem_chao_mung_quan_su").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

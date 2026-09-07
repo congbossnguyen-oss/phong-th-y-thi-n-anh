@@ -27,6 +27,8 @@ export interface SessionUser {
   name: string;
   isAdmin: boolean;
   hoSoSinh: HoSoSinh | null;
+  /** Đã xem màn chào mừng Quân Sư chưa — false thì /quan-su chuyển hướng sang /quan-su/chao-mung. */
+  daXemChaoMungQuanSu: boolean;
 }
 
 /**
@@ -71,6 +73,7 @@ export async function validateSessionToken(token: string, currentIp: string): Pr
       birthYear: users.birthYear,
       birthHour: users.birthHour,
       gender: users.gender,
+      daXemChaoMungQuanSu: users.daXemChaoMungQuanSu,
     })
     .from(sessions)
     .innerJoin(users, eq(sessions.userId, users.id))
@@ -96,7 +99,14 @@ export async function validateSessionToken(token: string, currentIp: string): Pr
     ? { day: row.birthDay!, month: row.birthMonth!, year: row.birthYear!, hour: row.birthHour, gender: row.gender! }
     : null;
 
-  return { id: row.userId, email: row.email, name: row.name, isAdmin: row.isAdmin, hoSoSinh };
+  return {
+    id: row.userId,
+    email: row.email,
+    name: row.name,
+    isAdmin: row.isAdmin,
+    hoSoSinh,
+    daXemChaoMungQuanSu: row.daXemChaoMungQuanSu,
+  };
 }
 
 export async function invalidateSession(token: string): Promise<void> {

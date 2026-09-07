@@ -10,6 +10,14 @@ import { getCategoriesWithCounts } from "../../lib/quan-su";
 
 export const prerender = false;
 
+// Lần đầu tiên vào app sau khi đăng ký: đưa sang màn chào mừng (giới thiệu + hướng dẫn Luận Dịch).
+// Cờ nằm ở DB (users.da_xem_chao_mung_quan_su) chứ không phải localStorage nên đổi máy/đổi trình
+// duyệt cũng không hiện lại. Khách chưa đăng nhập KHÔNG bị chặn — vẫn xem trang chủ app bình
+// thường (chủ dự án chốt 7/9/2026: chỉ hiện sau khi đăng ký).
+if (Astro.locals.user && !Astro.locals.user.daXemChaoMungQuanSu) {
+  return Astro.redirect("/quan-su/chao-mung");
+}
+
 const categories = getCategoriesWithCounts();
 
 // 5 nhóm nổi bật hiện thành icon tròn ngay dưới module cốt lõi (đúng ảnh 1) — trỏ vào đúng

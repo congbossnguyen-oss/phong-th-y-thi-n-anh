@@ -1,0 +1,219 @@
+---
+// MÀN CHÀO MỪNG "Quân Sư" — chỉ hiện ĐÚNG 1 LẦN cho mỗi tài khoản, ngay lần đầu vào app sau khi
+// đăng ký (chủ dự án chốt 7/9/2026). Cờ `users.daXemChaoMungQuanSu` quyết định, không dùng
+// localStorage (đổi máy vẫn không hiện lại). Trang /quan-su tự chuyển hướng sang đây khi cờ = false.
+//
+// Ảnh nhân vật KHÔNG có chữ in sẵn, nên mọi lời thoại nằm ở HTML (bong bóng thoại) — đổi lời chỉ cần
+// sửa mảng MAN bên dưới, không phải xuất lại ảnh.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import "../../styles/quan-su.css";
+
+export const prerender = false;
+
+// Chưa đăng nhập thì không có gì để đánh dấu — về thẳng trang chủ app.
+if (!Astro.locals.user) {
+  return Astro.redirect("/quan-su");
+}
+
+const tenNgan = (Astro.locals.user.name || "").trim().split(/\s+/).slice(-1)[0] || "";
+
+interface Man {
+  loi: string;
+  tieuDe: string;
+  mo?: string;
+  buoc?: { ten: string; mo: string }[];
+  demo?: boolean;
+}
+
+const MAN: Man[] = [
+  {
+    loi: `Chào ${tenNgan ? tenNgan : "anh/chị"}! Tôi là Quân Sư Thiên Anh.`,
+    tieuDe: "Người bàn việc của anh/chị",
+    mo: "Việc đang phân vân — nên hay không nên, đi hay ở, làm hay chờ — cứ hỏi. Tôi gieo quẻ Kinh Dịch và luận cho anh/chị một câu trả lời rõ ràng.",
+  },
+  {
+    loi: "Bắt đầu bằng Luận Quẻ Kinh Dịch nhé.",
+    tieuDe: "Chỉ 3 bước",
+    buoc: [
+      { ten: "Chọn câu hỏi", mo: "Có sẵn 120 câu hỏi thường gặp theo từng việc — hoặc tự viết ở mục “Câu hỏi khác”." },
+      { ten: "Gieo quẻ", mo: "Tĩnh tâm nghĩ về việc muốn hỏi rồi gieo ngay trên máy, đúng như gieo 3 đồng tiền thật." },
+      { ten: "Nhận luận giải", mo: "Quân Sư luận theo Lục Hào: nên hay không nên, thời điểm, và cách hoá giải." },
+    ],
+  },
+  {
+    loi: "Kết quả sẽ trông như thế này.",
+    tieuDe: "Ví dụ minh hoạ",
+    demo: true,
+  },
+];
+---
+
+<BaseLayout title="Chào mừng đến với Quân Sư Thiên Anh" description="Giới thiệu nhanh cách dùng Quân Sư." appShell noIndex>
+  <section class="qs">
+    <div class="qs-wrap qscm">
+      <div class="qscm-sankhau">
+        <img
+          src="/images/quan-su/mascot-chao-mung.webp"
+          alt="Quân Sư Thiên Anh"
+          class="qscm-mascot"
+          width="560"
+          height="672"
+          fetchpriority="high"
+        />
+        <p class="qscm-bong-bong" id="qscm-loi">{MAN[0].loi}</p>
+      </div>
+
+      {MAN.map((m, i) => (
+        <div class="qscm-man" data-man={i} data-loi={m.loi} hidden={i !== 0}>
+          <h1 class="qs-h1 qscm-h1">{m.tieuDe}</h1>
+          {m.mo && <p class="qs-sub qscm-sub">{m.mo}</p>}
+
+          {m.buoc && (
+            <ol class="qscm-buoc">
+              {m.buoc.map((b, j) => (
+                <li class="qscm-buoc-item">
+                  <span class="qscm-so">{j + 1}</span>
+                  <span class="qscm-noi-dung">
+                    <b>{b.ten}</b>
+                    <small>{b.mo}</small>
+                  </span>
+                </li>
+              ))}
+            </ol>
+          )}
+
+          {m.demo && (
+            <div class="qscm-demo" aria-hidden="true">
+              <p class="qscm-demo-hoi">“Tháng này tôi có nên nhận lời chuyển sang công ty mới không?”</p>
+              <div class="qscm-que">
+                <span class="qscm-hao" data-duong></span>
+                <span class="qscm-hao"></span>
+                <span class="qscm-hao" data-duong></span>
+                <span class="qscm-hao" data-duong></span>
+                <span class="qscm-hao"></span>
+                <span class="qscm-hao" data-duong></span>
+              </div>
+              <p class="qscm-demo-ket"><b>NÊN — nhưng chớ vội.</b></p>
+              <p class="qscm-demo-mo">
+                Dụng thần vượng ở nguyệt lệnh, việc thành; hào động báo cần thêm một lần trao đổi nữa
+                về điều kiện trước khi gật đầu…
+              </p>
+              <span class="qscm-demo-nhan">Ví dụ minh hoạ</span>
+            </div>
+          )}
+        </div>
+      ))}
+
+      <div class="qscm-cham" role="presentation">
+        {MAN.map((_, i) => <span class="qscm-cham-i" data-cham={i} data-hien={i === 0 ? "1" : null}></span>)}
+      </div>
+
+      <div class="qscm-nut">
+        <button type="button" id="qscm-tiep" class="qs-btn">Tiếp tục</button>
+        <button type="button" id="qscm-bo-qua" class="qs-btn qs-btn-ghost">Bỏ qua, vào trang chủ</button>
+      </div>
+      <p class="qscm-ghi-chu">Màn hình này chỉ hiện 1 lần duy nhất.</p>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .qscm { text-align: center; padding-bottom: 2.5rem; }
+
+  .qscm-sankhau { position: relative; padding-top: 0.5rem; }
+  .qscm-mascot {
+    width: 100%; max-width: 240px; height: auto; display: block; margin: 0 auto;
+    filter: drop-shadow(0 18px 30px rgba(0, 0, 0, 0.55));
+  }
+  .qscm-bong-bong {
+    position: relative; display: inline-block; max-width: 20rem; margin: -0.6rem auto 1rem;
+    background: linear-gradient(160deg, #f8e6ae, #e8c264); color: #241806;
+    border-radius: 16px; padding: 0.7rem 1rem; font-size: 0.92rem; font-weight: 600; line-height: 1.45;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.45);
+  }
+  .qscm-bong-bong::before {
+    content: ""; position: absolute; top: -8px; left: 50%; transform: translateX(-50%);
+    border-left: 9px solid transparent; border-right: 9px solid transparent; border-bottom: 9px solid #f8e6ae;
+  }
+
+  .qscm-h1 { margin-top: 0; }
+  .qscm-sub { max-width: 30rem; margin-left: auto; margin-right: auto; }
+
+  .qscm-buoc { list-style: none; margin: 0 0 1.4rem; padding: 0; display: grid; gap: 0.7rem; text-align: left; }
+  .qscm-buoc-item {
+    display: grid; grid-template-columns: 34px 1fr; align-items: start; gap: 0.8rem;
+    background: var(--qs-navy); border: 1px solid rgba(241, 200, 90, 0.2); border-radius: 14px;
+    padding: 0.85rem 1rem;
+  }
+  .qscm-so {
+    width: 34px; height: 34px; border-radius: 999px; display: grid; place-items: center;
+    background: linear-gradient(160deg, #f6d878, #d9a53a); color: #1a1206; font-weight: 800;
+  }
+  .qscm-noi-dung b { display: block; font-size: 0.95rem; color: var(--qs-ivory); }
+  .qscm-noi-dung small { display: block; font-size: 0.8rem; color: var(--qs-muted); margin-top: 0.2rem; line-height: 1.5; }
+
+  .qscm-demo {
+    position: relative; text-align: left; background: var(--qs-navy); border: 1px solid var(--qs-gold);
+    border-radius: 14px; padding: 1rem 1.1rem 1.1rem; margin-bottom: 1.4rem;
+  }
+  .qscm-demo-hoi { margin: 0 0 0.8rem; font-size: 0.85rem; color: var(--qs-ivory); font-style: italic; }
+  .qscm-que { display: grid; gap: 6px; margin: 0 auto 0.9rem; width: 132px; }
+  .qscm-hao {
+    display: block; height: 9px; border-radius: 2px;
+    background:
+      linear-gradient(90deg, var(--qs-gold) 0 40%, transparent 40% 60%, var(--qs-gold) 60% 100%);
+  }
+  .qscm-hao[data-duong] { background: var(--qs-gold); }
+  .qscm-demo-ket { margin: 0 0 0.35rem; color: var(--qs-gold); font-size: 0.95rem; }
+  .qscm-demo-mo { margin: 0; color: var(--qs-muted); font-size: 0.8rem; line-height: 1.55; }
+  .qscm-demo-nhan {
+    position: absolute; top: -9px; right: 12px; background: var(--qs-midnight); color: var(--qs-muted);
+    font-size: 0.68rem; padding: 0 0.4rem; letter-spacing: 0.06em; text-transform: uppercase;
+  }
+
+  .qscm-cham { display: flex; justify-content: center; gap: 6px; margin: 0 0 1.1rem; }
+  .qscm-cham-i { width: 7px; height: 7px; border-radius: 999px; background: rgba(241, 200, 90, 0.28); transition: width 0.2s; }
+  .qscm-cham-i[data-hien] { width: 20px; background: var(--qs-gold); }
+
+  .qscm-nut { display: grid; gap: 0.6rem; max-width: 22rem; margin: 0 auto; }
+  .qscm-ghi-chu { color: var(--qs-muted); font-size: 0.75rem; margin-top: 0.9rem; }
+</style>
+
+<script>
+  const loi = document.getElementById("qscm-loi") as HTMLElement;
+  const tiep = document.getElementById("qscm-tiep") as HTMLButtonElement;
+  const boQua = document.getElementById("qscm-bo-qua") as HTMLButtonElement;
+  const man = Array.from(document.querySelectorAll<HTMLElement>("[data-man]"));
+  const cham = Array.from(document.querySelectorAll<HTMLElement>("[data-cham]"));
+  const loiThoai = man.map((m) => m.dataset.loi ?? "");
+
+  let i = 0;
+
+  function hien(k: number) {
+    i = k;
+    man.forEach((m, j) => (m.hidden = j !== k));
+    cham.forEach((c, j) => (j === k ? c.setAttribute("data-hien", "1") : c.removeAttribute("data-hien")));
+    loi.textContent = loiThoai[k];
+    tiep.textContent = k === man.length - 1 ? "Bắt đầu luận quẻ" : "Tiếp tục";
+    window.scrollTo({ top: 0 });
+  }
+
+  // Đánh dấu ĐÃ XEM rồi mới chuyển trang. Nếu gọi API lỗi (mạng chập chờn) vẫn cho đi tiếp —
+  // cùng lắm lần sau màn này hiện lại, không được chặn khách ở đây.
+  async function danhDauRoiDi(dich: string) {
+    tiep.disabled = true;
+    boQua.disabled = true;
+    try {
+      await fetch("/api/quan-su/da-xem-chao-mung", { method: "POST" });
+    } catch {
+      // bỏ qua — xem chú thích trên
+    }
+    window.location.href = dich;
+  }
+
+  tiep.addEventListener("click", () => {
+    if (i < man.length - 1) hien(i + 1);
+    else danhDauRoiDi("/quan-su#hoi");
+  });
+  boQua.addEventListener("click", () => danhDauRoiDi("/quan-su"));
+</script>
