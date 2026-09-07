@@ -88,10 +88,18 @@ const inProgressCourses = totalCourses - completedCourses;
             <h2 class="font-display text-2xl font-semibold text-(--color-ink-950)">{user.name}</h2>
           </div>
         </div>
-        <button id="logout-btn" type="button" class="flex items-center gap-1.5 text-sm font-medium text-(--color-ink-600) hover:text-(--color-gold-300)">
-          <Icon name="logout" class="size-4" />
-          Đăng xuất
-        </button>
+        <div class="flex items-center gap-5">
+          {/* Lối xem lại phần hướng dẫn người mới của app Quân Sư — tour chỉ tự chạy 1 lần, ai lỡ
+              bấm "Bỏ qua" thì vào đây mở lại (chủ dự án chốt 7/9/2026). Chỉ là tham số trên đường
+              dẫn, không ghi gì thêm vào tài khoản. */}
+          <a href="/quan-su?xem-lai=1" class="text-sm font-medium text-(--color-ink-600) hover:text-(--color-gold-300)">
+            Xem lại hướng dẫn Quân Sư
+          </a>
+          <button id="logout-btn" type="button" class="flex items-center gap-1.5 text-sm font-medium text-(--color-ink-600) hover:text-(--color-gold-300)">
+            <Icon name="logout" class="size-4" />
+            Đăng xuất
+          </button>
+        </div>
       </div>
 
       <div class="mt-5 grid gap-4 sm:grid-cols-3">

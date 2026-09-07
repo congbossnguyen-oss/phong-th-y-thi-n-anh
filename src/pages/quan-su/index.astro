@@ -7,16 +7,18 @@ import BaseLayout from "../../layouts/BaseLayout.astro";
 import BottomNav from "../../components/quan-su/BottomNav.astro";
 import "../../styles/quan-su.css";
 import { getCategoriesWithCounts } from "../../lib/quan-su";
+import TourChaoMung from "../../components/quan-su/TourChaoMung.astro";
 
 export const prerender = false;
 
-// Lần đầu tiên vào app sau khi đăng ký: đưa sang màn chào mừng (giới thiệu + hướng dẫn Luận Dịch).
-// Cờ nằm ở DB (users.da_xem_chao_mung_quan_su) chứ không phải localStorage nên đổi máy/đổi trình
-// duyệt cũng không hiện lại. Khách chưa đăng nhập KHÔNG bị chặn — vẫn xem trang chủ app bình
-// thường (chủ dự án chốt 7/9/2026: chỉ hiện sau khi đăng ký).
-if (Astro.locals.user && !Astro.locals.user.daXemChaoMungQuanSu) {
-  return Astro.redirect("/quan-su/chao-mung");
-}
+// Tour chào mừng người mới — chạy ngay trên trang này, CHỈ hiện đúng 1 lần cho mỗi tài khoản (lần
+// đầu vào app, thường là ngay sau khi đăng ký xong). Cờ `daXemChaoMungQuanSu` nằm trên tài khoản
+// (không phải localStorage) nên đổi máy/đổi trình duyệt cũng không hiện lại. Khách chưa đăng nhập
+// KHÔNG thấy tour (chủ dự án chốt 7/9/2026: chỉ hiện sau khi đăng ký).
+// `?xem-lai=1` (lối "Xem lại hướng dẫn Quân Sư" trong mục Cá nhân) mở lại tour cho người đã xem rồi.
+const hienTour = Boolean(
+  Astro.locals.user && (!Astro.locals.user.daXemChaoMungQuanSu || Astro.url.searchParams.has("xem-lai")),
+);
 
 const categories = getCategoriesWithCounts();
 
@@ -106,7 +108,7 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
       <a href="#hoi" class="qsh-cta">💬 Hỏi Quân Sư</a>
 
       <h2 id="hoi" class="qsh-section-title">Anh muốn hỏi việc gì?</h2>
-      <div class="qsh-icon-row">
+      <div class="qsh-icon-row" data-tour="luan-dich">
         {noiBat.map((n) => (
           <a href={`/quan-su/${n.id}`} class="qsh-icon-item">
             <span class="qsh-icon-badge">
@@ -131,7 +133,7 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
         ))}
       </div>
 
-      <details class="qsh-more">
+      <details class="qsh-more" data-tour="luan-dich">
         <summary>Xem tất cả {categories.length} nhóm câu hỏi</summary>
         <div class="qs-grid" style="margin-top:1rem;">
           {categories.map((c) => (
@@ -145,7 +147,7 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
         </div>
       </details>
 
-      <a href="/quan-su/xem-thoi-van" class="qsh-tv-card">
+      <a href="/quan-su/xem-thoi-van" class="qsh-tv-card" data-tour="thoi-van">
         <div>
           <p class="qs-eyebrow" style="margin:0 0 0.2rem;">Thời vận</p>
           <h3>Xem Thời Vận</h3>
@@ -157,7 +159,7 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
       <!-- Gói thuê bao — trước đây chỉ là 1 dòng chữ nhỏ lọt thỏm giữa 2 khối, anh Công phản ánh
            "không thấy rõ" (29/8/2026). Nâng thành thẻ cùng cỡ với thẻ Xem Thời Vận phía trên, kèm
            nhãn "Sắp mở bán" cho trung thực — checkout vẫn đang khóa admin-only, chưa mở bán thật. -->
-      <a href="/quan-su/goi-thue-bao" class="qsh-goi-card">
+      <a href="/quan-su/goi-thue-bao" class="qsh-goi-card" data-tour="thue-bao">
         <div>
           <p class="qs-eyebrow" style="margin:0 0 0.2rem;">Gói thuê bao</p>
           <h3>Gói Quân Sư Thiên Anh <span class="qsh-goi-soon">Sắp mở bán</span></h3>
@@ -192,7 +194,7 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
            Hoàng Đạo" trong lưới "Công cụ hữu ích" bên dưới nay đều trỏ /quan-su/* khi ở app —
            không còn ngoại lệ nào trong toàn bộ trang này trỏ ra web nữa. -->
       <p class="qsh-section-title" style="margin-top:0.4rem;">Đại Cát Lợi - Cơ Bản</p>
-      <div class="qsh-trach-cat-grid">
+      <div class="qsh-trach-cat-grid" data-tour="co-ban">
         {[
           { href: "/quan-su/ngay-ky-hop-dong", label: "Ký Hợp Đồng", sub: "Ngày giờ ký kết", c: "#b18aff", icon: "doc" },
           { href: "/quan-su/ngay-khai-truong", label: "Khai Trương", sub: "Đại cát – phát lộc", c: "#f0a34d", icon: "store" },
@@ -232,7 +234,7 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
       <!-- Đại Cát Lợi - Cao Cấp (tên cũ "Trạch Cát Cao Cấp", đổi 28/8/2026 theo anh Công) — trỏ vào
            trang danh sách trong app Quân Sư (/quan-su/dich-vu-vip): giao diện Quân Sư, đã bỏ mục
            Sim Phong Thủy và KHÔNG hiển thị giá (đi kèm quyền gói Cao Cấp). -->
-      <a href="/quan-su/dich-vu-vip" class="qsh-vip-card">
+      <a href="/quan-su/dich-vu-vip" class="qsh-vip-card" data-tour="cao-cap">
         <img src="/images/quan-su/rong-vang.jpg" alt="" class="qsh-vip-bg" />
         <div class="qsh-vip-crown">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 8.5 7 11l5-6.5L17 11l4-2.5-1.6 9.3a1 1 0 0 1-1 .83H5.6a1 1 0 0 1-1-.83L3 8.5Z" stroke="currentColor" stroke-width="0.5" stroke-linejoin="round"/></svg>
@@ -304,6 +306,7 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
   </section>
 
   <BottomNav />
+  {hienTour && <TourChaoMung soNhom={categories.length} />}
 </BaseLayout>
 
 <style>
