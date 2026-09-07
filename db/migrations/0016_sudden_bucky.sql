@@ -1,0 +1,1 @@
+ALTER TABLE "quan_su_cau_hoi_luot" ADD COLUMN "mo_ta" text;

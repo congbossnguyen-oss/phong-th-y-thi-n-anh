@@ -151,8 +151,13 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
     // Chỉ tính lượt khi luận giải THÀNH CÔNG — khách không nhận được gì thì không bị trừ lượt.
     if (locals.user.isAdmin !== true) await ghiNhanLuotHoi(locals.user.id);
     // Ghi lại câu hỏi đã chọn (kể cả admin test) — phục vụ thống kê xu hướng quan tâm, tách biệt
-    // hoàn toàn khỏi hạn mức lượt/tháng ở trên.
-    await ghiNhanCauHoiDaHoi(locals.user.id, body.question_id);
+    // hoàn toàn khỏi hạn mức lượt/tháng ở trên. Riêng "cau-hoi-tu-do" (khách tự gõ) lưu kèm nội
+    // dung thật khách hỏi — 119 câu còn lại chỉ lưu question_id, không lưu mô tả (xem usage.ts).
+    await ghiNhanCauHoiDaHoi(
+      locals.user.id,
+      body.question_id,
+      body.question_id === "cau-hoi-tu-do" && typeof body.moTa === "string" ? body.moTa : undefined,
+    );
 
     // Phần "Cách hóa giải" CHỈ mở cho gói Cao cấp đang hoạt động (anh Công quyết định 30/8/2026) —
     // gói Cơ bản vẫn xem đủ phần luận giải + kết quả quân sư, chỉ riêng phương pháp hóa giải cụ thể
