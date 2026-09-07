@@ -224,6 +224,69 @@ const BUOC = [
     const BUOC: BuocTour[] = JSON.parse(goc.dataset.buoc ?? "[]");
     let i = -1;
     let dangGo = 0; // id của setInterval đang gõ chữ, 0 = không gõ
+    let daHienBuocDau = false; // để KHÔNG phát tiếng gió ở lần hiện đầu tiên (chưa phải "chuyển")
+
+    // --- Âm thanh: tiếng gõ máy chữ khi chữ hiện dần + tiếng gió lướt khi chuyển bước (chủ dự án
+    // yêu cầu 8/9/2026) — TỰ TỔNG HỢP bằng Web Audio API, không tải file âm thanh ngoài nào (giữ
+    // trang nhẹ, không thêm request mạng). Trình duyệt khoá phát âm thanh tới khi có 1 cú chạm/click
+    // thật của khách — bước 1 tự chạy lúc mới vào trang nên thường câm, tự nghe được từ bước 2 trở
+    // đi (sau khi khách bấm "Tiếp" lần đầu); đây là hành vi bảo vệ khách của trình duyệt, không phải
+    // lỗi, nên cố tình không có xử lý gì thêm.
+    let khungAm: AudioContext | null = null;
+    function moKhungAm(): AudioContext | null {
+      try {
+        if (!khungAm) khungAm = new (window.AudioContext || (window as any).webkitAudioContext)();
+        if (khungAm.state === "suspended") khungAm.resume().catch(() => {});
+        return khungAm;
+      } catch {
+        return null; // Safari cũ/trình duyệt chặn hẳn Web Audio — im lặng bỏ qua, không chặn tour.
+      }
+    }
+
+    /** Tiếng "tách" ngắn mô phỏng phím máy chữ — gọi mỗi vài chữ hiện ra, không phải MỌI chữ (dày quá thành tiếng rè). */
+    function tiengGoPhim() {
+      const ctx = moKhungAm();
+      if (!ctx) return;
+      const t0 = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = "square";
+      osc.frequency.setValueAtTime(2000 + Math.random() * 500, t0);
+      gain.gain.setValueAtTime(0.05, t0);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.028);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(t0);
+      osc.stop(t0 + 0.03);
+    }
+
+    /**
+     * Tiếng "vụt" nhanh như gió lướt qua (nhiễu trắng lọc dải, tần số quét xuống rất nhanh) khi
+     * chuyển sang bước kế tiếp — chủ dự án chốt 8/9/2026: ngắn/gọn kiểu vụt qua, không phải tiếng
+     * gió thổi dài.
+     */
+    function tiengGioLuot() {
+      const ctx = moKhungAm();
+      if (!ctx) return;
+      const t0 = ctx.currentTime;
+      const thoiLuong = 0.17;
+      const buf = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * thoiLuong), ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let n = 0; n < data.length; n++) data[n] = Math.random() * 2 - 1;
+      const nhieu = ctx.createBufferSource();
+      nhieu.buffer = buf;
+      const loc = ctx.createBiquadFilter();
+      loc.type = "bandpass";
+      loc.Q.value = 0.9;
+      loc.frequency.setValueAtTime(3800, t0);
+      loc.frequency.exponentialRampToValueAtTime(500, t0 + thoiLuong);
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.0001, t0);
+      gain.gain.linearRampToValueAtTime(0.15, t0 + 0.015);
+      gain.gain.exponentialRampToValueAtTime(0.0001, t0 + thoiLuong);
+      nhieu.connect(loc).connect(gain).connect(ctx.destination);
+      nhieu.start(t0);
+      nhieu.stop(t0 + thoiLuong);
+    }
 
     function xoaSang() {
       document.querySelectorAll(".qstour-sang").forEach((e) => e.classList.remove("qstour-sang"));
@@ -241,9 +304,15 @@ const BUOC = [
       }
       goc!.classList.add("dang-go");
       let k = 0;
+      let demTich = 0;
       dangGo = window.setInterval(() => {
+        const doanMoi = chu.slice(k, k + 2);
         k += 2;
         oLoi!.textContent = chu.slice(0, k);
+        // Cứ 3 lần hiện chữ mới "gõ" 1 tiếng (~54ms/tiếng) — gõ đúng mỗi nhịp 18ms nghe rè, thưa hơn
+        // mới giống nhịp gõ máy chữ thật. Bỏ qua nếu đoạn vừa hiện toàn khoảng trắng.
+        demTich++;
+        if (demTich % 3 === 0 && doanMoi.trim()) tiengGoPhim();
         if (k >= chu.length) xongChu(chu);
       }, 18);
     }
@@ -259,6 +328,10 @@ const BUOC = [
       i = k;
       const b = BUOC[k];
       xoaSang();
+      // Tiếng gió lướt mỗi lần CHUYỂN bước — không phát ở lần hiện đầu tiên (mới vào trang, chưa
+      // phải "chuyển sang" đâu cả).
+      if (daHienBuocDau) tiengGioLuot();
+      daHienBuocDau = true;
 
       if (b.moc) {
         const moc = document.querySelectorAll(`[data-tour="${b.moc}"]`);
