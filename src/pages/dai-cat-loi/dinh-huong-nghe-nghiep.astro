@@ -5,6 +5,7 @@
 // tái sử dụng y hệt.
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/ui/PageHero.astro";
+import Container from "../../components/ui/Container.astro";
 import { GIA_CONG_CU, dinhDangTien } from "../../lib/payments/gia-cong-cu";
 import DinhHuongNgheNghiep from "../../components/tools/DinhHuongNgheNghiep.astro";
 
@@ -30,4 +31,19 @@ const TOOL_PRICE_LABEL = dinhDangTien(GIA_CONG_CU["dinh-huong-nghe-nghiep"]);
   />
 
   <DinhHuongNgheNghiep />
+
+  {/* Liên kết ngữ cảnh sang bản luận sâu của TỪNG hệ. Công cụ trên đối chiếu hai hệ với nhau;
+      khách muốn đọc trọn một hệ thì phải có đường đi tới, nếu không hai trang đó gần như không
+      ai vào được ngoài lối trực tiếp. */}
+  <Container class="pb-16">
+    <aside class="mx-auto max-w-4xl rounded-(--radius-card) border border-(--color-gold-400)/40 bg-(--color-gold-400)/10 p-6">
+      <p class="font-display text-lg font-bold text-(--color-ink-950)">Muốn đọc sâu từng hệ?</p>
+      <p class="mt-2 text-sm leading-relaxed text-(--color-ink-700)">
+        Bản Định Hướng Nghề Nghiệp ở trên chỉ đọc hai hệ theo trục nghề nghiệp. Đọc trọn một hệ tại
+        <a href="/dai-cat-loi/luan-giai-bat-tu-toan-dien" class="font-semibold text-(--color-gold-700) hover:underline">Luận Giải Bát Tự Toàn Diện</a>
+        hoặc
+        <a href="/dai-cat-loi/luan-giai-tu-vi" class="font-semibold text-(--color-gold-700) hover:underline">Luận Giải Tử Vi</a>.
+      </p>
+    </aside>
+  </Container>
 </BaseLayout>
