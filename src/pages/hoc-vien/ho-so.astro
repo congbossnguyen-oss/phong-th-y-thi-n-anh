@@ -5,6 +5,7 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
+import NgaySinhSelect from "../../components/ui/NgaySinhSelect.astro";
 
 export const prerender = false;
 
@@ -26,14 +27,15 @@ const hs = user.hoSoSinh;
       <div class="mt-5 border-t border-(--color-ivory-300) pt-5">
         <p class="text-sm font-medium text-(--color-ink-800)">Ngày sinh (dương lịch)</p>
         <p class="mt-1 text-xs text-(--color-ink-500)">Dùng lại cho Quân Sư và Xem Thời Vận — khai 1 lần, không hỏi lại.</p>
-        <div class="mt-2 grid grid-cols-3 gap-2">
-          <input id="birth-day" type="number" min="1" max="31" placeholder="Ngày" required value={hs?.day ?? ""}
-            class="w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20" />
-          <input id="birth-month" type="number" min="1" max="12" placeholder="Tháng" required value={hs?.month ?? ""}
-            class="w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20" />
-          <input id="birth-year" type="number" min="1900" max="2026" placeholder="Năm" required value={hs?.year ?? ""}
-            class="w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20" />
-        </div>
+        <NgaySinhSelect
+          idDay="birth-day"
+          idMonth="birth-month"
+          idYear="birth-year"
+          valueDay={hs?.day ?? null}
+          valueMonth={hs?.month ?? null}
+          valueYear={hs?.year ?? null}
+          class="mt-2"
+        />
       </div>
       <div class="mt-4">
         <label for="birth-hour" class="text-sm font-medium text-(--color-ink-800)">Giờ sinh (không bắt buộc)</label>
@@ -72,9 +74,9 @@ const hs = user.hoSoSinh;
     e.preventDefault();
     submitBtn.disabled = true;
 
-    const birthDay = (document.getElementById("birth-day") as HTMLInputElement).value;
-    const birthMonth = (document.getElementById("birth-month") as HTMLInputElement).value;
-    const birthYear = (document.getElementById("birth-year") as HTMLInputElement).value;
+    const birthDay = (document.getElementById("birth-day") as HTMLSelectElement).value;
+    const birthMonth = (document.getElementById("birth-month") as HTMLSelectElement).value;
+    const birthYear = (document.getElementById("birth-year") as HTMLSelectElement).value;
     const birthHourRaw = (document.getElementById("birth-hour") as HTMLInputElement).value;
     const gender = (document.getElementById("gender") as HTMLSelectElement).value;
 

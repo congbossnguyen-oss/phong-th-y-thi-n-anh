@@ -2,6 +2,7 @@
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import Container from "../../components/ui/Container.astro";
 import Button from "../../components/ui/Button.astro";
+import NgaySinhSelect from "../../components/ui/NgaySinhSelect.astro";
 
 export const prerender = true;
 ---
@@ -30,14 +31,7 @@ export const prerender = true;
       <div class="mt-5 border-t border-(--color-ivory-300) pt-5">
         <p class="text-sm font-medium text-(--color-ink-800)">Ngày sinh (dương lịch)</p>
         <p class="mt-1 text-xs text-(--color-ink-500)">Khai báo 1 lần, dùng lại cho các tính năng Quân Sư sau này (không hỏi lại).</p>
-        <div class="mt-2 grid grid-cols-3 gap-2">
-          <input id="birth-day" name="birthDay" type="number" min="1" max="31" placeholder="Ngày" required
-            class="w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20" />
-          <input id="birth-month" name="birthMonth" type="number" min="1" max="12" placeholder="Tháng" required
-            class="w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20" />
-          <input id="birth-year" name="birthYear" type="number" min="1900" max="2026" placeholder="Năm" required
-            class="w-full rounded-(--radius-control) border border-(--color-ivory-300) px-3 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20" />
-        </div>
+        <NgaySinhSelect idDay="birth-day" idMonth="birth-month" idYear="birth-year" class="mt-2" />
       </div>
       <div class="mt-4">
         <label for="birth-hour" class="text-sm font-medium text-(--color-ink-800)">Giờ sinh (không bắt buộc)</label>
@@ -90,9 +84,9 @@ export const prerender = true;
     const name = (document.getElementById("name") as HTMLInputElement).value.trim();
     const email = (document.getElementById("email") as HTMLInputElement).value.trim();
     const password = (document.getElementById("password") as HTMLInputElement).value;
-    const birthDay = (document.getElementById("birth-day") as HTMLInputElement).value;
-    const birthMonth = (document.getElementById("birth-month") as HTMLInputElement).value;
-    const birthYear = (document.getElementById("birth-year") as HTMLInputElement).value;
+    const birthDay = (document.getElementById("birth-day") as HTMLSelectElement).value;
+    const birthMonth = (document.getElementById("birth-month") as HTMLSelectElement).value;
+    const birthYear = (document.getElementById("birth-year") as HTMLSelectElement).value;
     const birthHourRaw = (document.getElementById("birth-hour") as HTMLInputElement).value;
     const gender = (document.getElementById("gender") as HTMLSelectElement).value;
 
