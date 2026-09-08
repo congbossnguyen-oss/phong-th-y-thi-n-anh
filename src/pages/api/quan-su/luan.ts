@@ -107,8 +107,14 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
     const ketKiemDuyet = await kiemDuyetCauHoiTuDo(body.moTa);
     if (ketKiemDuyet.viPham) {
       console.error(`[quan-su/luan] Chặn câu hỏi tự do — nhóm vi phạm: ${ketKiemDuyet.nhomViPham}`);
+      // Cố ý KHÔNG nêu rõ nhóm vi phạm cụ thể cho khách (đã ghi vào log server ở trên) — nói rõ dễ
+      // bị lợi dụng để "lách" qua bộ lọc, và với nhóm nhạy cảm (chống phá Nhà nước) càng không nên
+      // tạo ra 1 dòng xác nhận cụ thể "câu hỏi của bạn về X đã bị gắn cờ".
       return json(
-        { error: "Câu hỏi này không phù hợp để Quân Sư luận giải. Anh/chị vui lòng đặt lại câu hỏi khác nhé." },
+        {
+          error:
+            "Nội dung câu hỏi/mô tả tình huống chưa phù hợp với tiêu chuẩn cộng đồng của Quân Sư nên chưa thể luận giải. Anh/chị vui lòng diễn đạt lại theo hướng khác nhé.",
+        },
         400,
       );
     }
