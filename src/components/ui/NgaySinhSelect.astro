@@ -1,0 +1,81 @@
+---
+// 3 Ô CHỌN NGÀY/THÁNG/NĂM SINH — dùng dropdown thay cho ô nhập số có mũi tên tăng/giảm (anh Công
+// 8/9/2026: mũi tên tăng/giảm khó bấm trên điện thoại, muốn kiểu "cuộn chọn" như lịch — dropdown
+// native trên điện thoại tự bật bánh xe cuộn của hệ điều hành, đúng ý mà không cần code riêng).
+//
+// Giữ NGUYÊN `id`/`name` truyền vào để mọi script đọc `document.getElementById(id).value` ở nơi gọi
+// (register, hồ sơ, các công cụ luận giải...) chạy đúng không cần sửa gì thêm — <select> cũng có
+// `.value` giống <input>, chỉ đổi CÁCH NHẬP, không đổi HỢP ĐỒNG dữ liệu.
+//
+// KHÁC `components/ui/DateSelect.astro` (đã có sẵn, dùng cho NGÀY SỰ KIỆN tương lai gần — khai
+// trương, ký hợp đồng: `yearsBack`/`yearsForward` nhỏ, danh sách năm tăng dần vì "sớm nhất" lên
+// đầu là hợp lý). Component NÀY dành riêng cho NGÀY SINH — cần lùi xa tới 1900, và năm GẦN NHẤT lên
+// đầu (giảm dần) vì khách phần lớn 18-70 tuổi, đỡ phải cuộn xa mới tới năm sinh của mình.
+interface Props {
+  idDay: string;
+  idMonth: string;
+  idYear: string;
+  nameDay?: string;
+  nameMonth?: string;
+  nameYear?: string;
+  /** Giá trị đã có sẵn (form sửa hồ sơ) — để trống nếu là form tạo mới. */
+  valueDay?: number | null;
+  valueMonth?: number | null;
+  valueYear?: number | null;
+  required?: boolean;
+  /** Năm xa nhất cho phép chọn — mặc định 1900. */
+  yearFrom?: number;
+  /** Năm gần nhất cho phép chọn — mặc định năm hiện tại. */
+  yearTo?: number;
+  class?: string;
+  /** Ghi đè class cho từng <select> — dùng khi trang gọi có kiểu input riêng (màu viền/cỡ chữ khác). */
+  selectClass?: string;
+}
+
+const {
+  idDay,
+  idMonth,
+  idYear,
+  nameDay,
+  nameMonth,
+  nameYear,
+  valueDay = null,
+  valueMonth = null,
+  valueYear = null,
+  required = true,
+  yearFrom = 1900,
+  yearTo = new Date().getFullYear(),
+  class: className = "",
+  selectClass,
+} = Astro.props;
+
+const CLASS_SELECT =
+  selectClass ??
+  "w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm focus:border-(--color-gold-300) focus:outline-none focus:ring-2 focus:ring-(--color-gold-300)/20";
+
+const ngayList = Array.from({ length: 31 }, (_, i) => i + 1);
+const thangList = Array.from({ length: 12 }, (_, i) => i + 1);
+// Năm gần nhất trước — hầu hết khách 18-70 tuổi, để năm gần lên đầu đỡ phải cuộn xa.
+const namList = Array.from({ length: yearTo - yearFrom + 1 }, (_, i) => yearTo - i);
+---
+
+<div class={`grid grid-cols-3 gap-2 ${className}`}>
+  <select id={idDay} name={nameDay} required={required} class={CLASS_SELECT}>
+    <option value="" selected={valueDay == null}>Ngày</option>
+    {ngayList.map((n) => (
+      <option value={n} selected={valueDay === n}>{n}</option>
+    ))}
+  </select>
+  <select id={idMonth} name={nameMonth} required={required} class={CLASS_SELECT}>
+    <option value="" selected={valueMonth == null}>Tháng</option>
+    {thangList.map((n) => (
+      <option value={n} selected={valueMonth === n}>Tháng {n}</option>
+    ))}
+  </select>
+  <select id={idYear} name={nameYear} required={required} class={CLASS_SELECT}>
+    <option value="" selected={valueYear == null}>Năm</option>
+    {namList.map((n) => (
+      <option value={n} selected={valueYear === n}>{n}</option>
+    ))}
+  </select>
+</div>

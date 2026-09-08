@@ -8,6 +8,7 @@ import BottomNav from "../../quan-su/BottomNav.astro";
 import Container from "../../ui/Container.astro";
 import Button from "../../ui/Button.astro";
 import MaKhuyenMai from "../../ui/MaKhuyenMai.astro";
+import NgaySinhSelect from "../../ui/NgaySinhSelect.astro";
 import { siteConfig } from "../../../lib/site-config";
 import { dinhDangTien, GIA_CONG_CU } from "../../../lib/payments/gia-cong-cu";
 
@@ -92,14 +93,14 @@ const laQuanTri = Astro.locals.user?.isAdmin === true;
           <label class="text-sm font-semibold text-(--color-ink-900)">
             Ngày sinh dương lịch của bé <span class="text-(--color-danger-500)">*</span>
           </label>
-          <div class="mt-1.5 grid grid-cols-3 gap-3">
-            <input id="dtc-ngay" type="number" min="1" max="31" required placeholder="Ngày"
-              class="w-full rounded-(--radius-control) border border-(--color-ivory-400) bg-(--color-ivory-50) px-3 py-3 text-base text-(--color-ink-900) placeholder:text-(--color-ink-600)" />
-            <input id="dtc-thang" type="number" min="1" max="12" required placeholder="Tháng"
-              class="w-full rounded-(--radius-control) border border-(--color-ivory-400) bg-(--color-ivory-50) px-3 py-3 text-base text-(--color-ink-900) placeholder:text-(--color-ink-600)" />
-            <input id="dtc-nam" type="number" min="1900" max={namNay} required placeholder="Năm"
-              class="w-full rounded-(--radius-control) border border-(--color-ivory-400) bg-(--color-ivory-50) px-3 py-3 text-base text-(--color-ink-900) placeholder:text-(--color-ink-600)" />
-          </div>
+          <NgaySinhSelect
+            idDay="dtc-ngay"
+            idMonth="dtc-thang"
+            idYear="dtc-nam"
+            yearTo={namNay}
+            class="mt-1.5"
+            selectClass="w-full rounded-(--radius-control) border border-(--color-ivory-400) bg-(--color-ivory-50) px-3 py-3 text-base text-(--color-ink-900)"
+          />
         </div>
 
         <details class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3">
