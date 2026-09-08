@@ -243,20 +243,52 @@ const BUOC = [
       }
     }
 
-    /** Tiếng "tách" ngắn mô phỏng phím máy chữ — gọi mỗi vài chữ hiện ra, không phải MỌI chữ (dày quá thành tiếng rè). */
-    function tiengGoPhim() {
+    // Tiếng gõ bàn phím THẬT (Thầy gửi file mp3, nguồn tiengdong.com/CapCut) — đã cắt còn 4 giây +
+    // fade nhẹ 2 đầu, nén mono 64kbps (~33KB) tại public/sounds/quan-su/go-phim.mp3. Tự phát LẶP
+    // suốt lúc chữ đang hiện dần (đủ dài cho cả câu dài nhất ~330 ký tự), dừng ngay khi hiện xong —
+    // không phải 1 tiếng "tách" rời rạc như bản tự tổng hợp trước đó.
+    let bufferGoPhim: AudioBuffer | null | undefined; // undefined = chưa tải, null = tải lỗi
+    async function taiGoPhim(ctx: AudioContext): Promise<AudioBuffer | null> {
+      if (bufferGoPhim !== undefined) return bufferGoPhim;
+      try {
+        const res = await fetch("/sounds/quan-su/go-phim.mp3");
+        const arr = await res.arrayBuffer();
+        bufferGoPhim = await ctx.decodeAudioData(arr);
+      } catch {
+        bufferGoPhim = null; // mạng chập chờn/không giải mã được — im lặng bỏ qua, không chặn tour.
+      }
+      return bufferGoPhim;
+    }
+
+    let nguonGoPhim: AudioBufferSourceNode | null = null;
+    let gainGoPhim: GainNode | null = null;
+    async function batDauTiengGoPhim() {
       const ctx = moKhungAm();
       if (!ctx) return;
-      const t0 = ctx.currentTime;
-      const osc = ctx.createOscillator();
+      const buf = await taiGoPhim(ctx);
+      if (!buf || dangGo === 0) return; // tải xong mà chữ đã hiện hết rồi (câu ngắn) thì thôi, khỏi phát
+      dungTiengGoPhim();
+      const nguon = ctx.createBufferSource();
+      nguon.buffer = buf;
+      nguon.loop = true;
       const gain = ctx.createGain();
-      osc.type = "square";
-      osc.frequency.setValueAtTime(2000 + Math.random() * 500, t0);
-      gain.gain.setValueAtTime(0.05, t0);
-      gain.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.028);
-      osc.connect(gain).connect(ctx.destination);
-      osc.start(t0);
-      osc.stop(t0 + 0.03);
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.5, ctx.currentTime + 0.05);
+      nguon.connect(gain).connect(ctx.destination);
+      nguon.start();
+      nguonGoPhim = nguon;
+      gainGoPhim = gain;
+    }
+    function dungTiengGoPhim() {
+      if (!nguonGoPhim || !gainGoPhim || !khungAm) return;
+      const ctx = khungAm;
+      const nguon = nguonGoPhim;
+      const gain = gainGoPhim;
+      gain.gain.setValueAtTime(gain.gain.value, ctx.currentTime);
+      gain.gain.linearRampToValueAtTime(0.0001, ctx.currentTime + 0.06); // fade tắt nhanh, tránh tiếng "cụp" khi cắt ngang
+      nguon.stop(ctx.currentTime + 0.07);
+      nguonGoPhim = null;
+      gainGoPhim = null;
     }
 
     /**
@@ -304,17 +336,12 @@ const BUOC = [
       }
       goc!.classList.add("dang-go");
       let k = 0;
-      let demTich = 0;
       dangGo = window.setInterval(() => {
-        const doanMoi = chu.slice(k, k + 2);
         k += 2;
         oLoi!.textContent = chu.slice(0, k);
-        // Cứ 3 lần hiện chữ mới "gõ" 1 tiếng (~54ms/tiếng) — gõ đúng mỗi nhịp 18ms nghe rè, thưa hơn
-        // mới giống nhịp gõ máy chữ thật. Bỏ qua nếu đoạn vừa hiện toàn khoảng trắng.
-        demTich++;
-        if (demTich % 3 === 0 && doanMoi.trim()) tiengGoPhim();
         if (k >= chu.length) xongChu(chu);
       }, 18);
+      void batDauTiengGoPhim();
     }
 
     function xongChu(chu: string) {
@@ -322,6 +349,7 @@ const BUOC = [
       dangGo = 0;
       oLoi!.textContent = chu;
       goc!.classList.remove("dang-go");
+      dungTiengGoPhim();
     }
 
     function hien(k: number) {
@@ -329,8 +357,9 @@ const BUOC = [
       const b = BUOC[k];
       xoaSang();
       // Tiếng gió lướt mỗi lần CHUYỂN bước — không phát ở lần hiện đầu tiên (mới vào trang, chưa
-      // phải "chuyển sang" đâu cả).
-      if (daHienBuocDau) tiengGioLuot();
+      // phải "chuyển sang" đâu cả), và CHỈ bắt đầu có từ trang 5 trở đi (chủ dự án chốt 8/9/2026),
+      // mấy bước đầu (chào hỏi/giới thiệu) im lặng.
+      if (daHienBuocDau && k >= 4) tiengGioLuot();
       daHienBuocDau = true;
 
       if (b.moc) {
@@ -477,6 +506,14 @@ const BUOC = [
       if (i > 0) hien(i - 1);
     });
     nutBoQua.addEventListener("click", () => dongTour(false));
+
+    // Tải trước file tiếng gõ ngay từ đầu (không cần đợi cử chỉ) để lúc khách bấm "Tiếp" lần đầu là
+    // phát được luôn, khỏi có độ trễ tải/giải mã ở đúng lần đầu tiên. decodeAudioData chạy được kể
+    // cả khi AudioContext đang "suspended" (chưa có cử chỉ), chỉ PHÁT âm thanh mới cần cử chỉ.
+    if (!itChuyenDong) {
+      const ctxSom = moKhungAm();
+      if (ctxSom) void taiGoPhim(ctxSom);
+    }
 
     hien(0);
   } else {
