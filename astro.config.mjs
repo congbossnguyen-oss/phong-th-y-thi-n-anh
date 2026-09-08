@@ -116,7 +116,7 @@ export default defineConfig({
         !page.includes('/thanh-toan') &&
         !page.includes('/api/'),
       // Bổ sung các trang khóa học đọc động từ Sanity (không tự phát hiện được vì prerender=false).
-      customPages: courseSitemapUrls,
+      customPages: [...courseSitemapUrls, ...blogSitemapUrls],
     }),
   ],
 
