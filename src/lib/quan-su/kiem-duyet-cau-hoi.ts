@@ -17,10 +17,40 @@
  * khác trong site vốn fail-OPEN (AI hỏng thì vẫn cho khách xem bản luận thuần luật). Cố ý khác vì
  * đây là hàng rào an toàn/pháp lý (đặc biệt nhóm chống phá Nhà nước) — thà chặn nhầm 1 câu hỏi lành
  * lúc AI đang lỗi (khách thử lại là được) còn hơn để lọt 1 câu hỏi vi phạm chỉ vì lúc đó AI đang lỗi.
+ *
+ * HAI LỚP (anh Công 8/9/2026: "chặn từ thì tất nhiên là chắc chắn phải có" — muốn CẢ danh sách từ
+ * cấm CHẮC CHẮN lẫn AI hiểu ý nghĩa, không phải chỉ 1 trong 2):
+ *   Lớp 1 — DANH_SACH_TU_CAM: so khớp từ nguyên văn (tách theo từ, có dấu), chặn NGAY LẬP TỨC, không
+ *     tốn lượt gọi AI. Chỉ liệt kê những từ tục tĩu LUÔN LUÔN sai trong MỌI ngữ cảnh — không đưa các
+ *     từ như "lừa đảo"/"chiếm đoạt"/"đảng"/"nhà nước" vào đây vì các từ này xuất hiện bình thường
+ *     trong câu hỏi lành (vd "tôi bị lừa đảo, có nên kiện không", "tôi làm ở cơ quan nhà nước") — 3
+ *     nhóm còn lại (hại người, lừa đảo, chống phá) tùy ngữ cảnh nên giao hẳn cho Lớp 2.
+ *   Lớp 2 — AI đọc hiểu ý nghĩa/ý đồ thật của câu hỏi cho CẢ 4 nhóm (kể cả tục tĩu bị Lớp 1 bỏ lọt vì
+ *     viết tắt/không dấu/nói vòng) — xem SYSTEM_PROMPT bên dưới.
  */
 import { goiAiToolUseVoiRetry } from "../ai/goi-ai";
 
 export type KetQuaKiemDuyet = { viPham: false } | { viPham: true; nhomViPham: string };
+
+/**
+ * Từ tục tĩu CÓ DẤU, luôn sai trong mọi ngữ cảnh — cố ý KHÔNG thêm bản không dấu (vd "du", "lon")
+ * vì tiếng Việt không dấu quá nhiều từ trùng nghĩa khác hoàn toàn lành mạnh, dễ chặn oan.
+ */
+const DANH_SACH_TU_CAM = [
+  "địt", "đụ", "đéo", "đéo mẹ", "đm", "đcm", "đù má", "đù mẹ", "vcl", "vãi lồn",
+  "lồn", "cặc", "buồi", "đĩ", "con đĩ", "thằng đĩ", "óc chó", "súc vật",
+];
+
+/** true nếu `cauHoi` chứa nguyên 1 từ/cụm trong `DANH_SACH_TU_CAM` — so khớp theo TỪ, không phải substring
+ * (tránh chặn oan 1 từ lành mạnh lỡ chứa chuỗi con trùng — dù tiếng Việt có dấu hiếm khi xảy ra). */
+function chuaTuCam(cauHoi: string): string | null {
+  const chuan = cauHoi.toLowerCase();
+  for (const tu of DANH_SACH_TU_CAM) {
+    const re = new RegExp(`(^|[^\\p{L}])${tu}([^\\p{L}]|$)`, "u");
+    if (re.test(chuan)) return tu;
+  }
+  return null;
+}
 
 const TOOL_NAME = "tra_ve_ket_qua_kiem_duyet";
 const SCHEMA = {
@@ -50,6 +80,12 @@ QUAN TRỌNG — KHÔNG chặn nhầm câu hỏi đời thường lành mạnh: 
  * chủ đích, khác các luồng AI khác trong site).
  */
 export async function kiemDuyetCauHoiTuDo(cauHoi: string): Promise<KetQuaKiemDuyet> {
+  const tuCam = chuaTuCam(cauHoi);
+  if (tuCam) {
+    console.error(`[kiem-duyet-cau-hoi] Chặn ngay ở lớp từ cấm — khớp từ: "${tuCam}".`);
+    return { viPham: true, nhomViPham: "tuc_tiu_tu_cam" };
+  }
+
   const ket = await goiAiToolUseVoiRetry({
     tinhNang: "quan-su-kiem-duyet",
     systemCoDinh: SYSTEM_PROMPT,
