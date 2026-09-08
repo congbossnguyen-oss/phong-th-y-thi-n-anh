@@ -3,9 +3,6 @@
 // (1 gói duy nhất 700k, trả phí 1 lần — trước 1/9/2026 tách 2 tầng Cơ Bản/Nâng Cao, xem lý do gộp
 // ở gia-cong-cu.ts). Tầng trả phí BẮT BUỘC đăng nhập (khác mọi công cụ khác trong repo — SPEC mục
 // 0.4), quyền truy cập gắn theo TÀI KHOẢN, không theo orderCode.
-//
-// ⚠️ CHƯA PUBLISH: trang KHÔNG được gắn link ở bất kỳ menu/nav nào — chỉ truy cập qua URL trực tiếp
-// để anh Công test. Khi test xong, gỡ dòng này và thêm vào /dai-cat-loi + menu Công cụ.
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
@@ -157,7 +154,7 @@ function mauTheoDiemMoi(diem: number): string {
   description="Báo cáo luận giải Bát Tự toàn diện theo 12 giai đoạn: nền tảng, tính cách, Thập Thần, Thần Sát, Mộ Khố, Lục Thân, nghề nghiệp - tài - quan, hôn nhân, sức khỏe, ngũ hành thực hành, Đại Vận trọn đời và kết luận."
 >
   <PageHero
-    eyebrow="⭐ Dịch vụ VIP · Đang thử nghiệm"
+    eyebrow="⭐ Dịch vụ VIP"
     title="Luận Giải Bát Tự Toàn Diện"
     description={`Báo cáo luận giải Bát Tự đầy đủ theo 12 giai đoạn — mở đầu miễn phí, gói Luận Toàn Diện ${dinhDangTien(GIA_TOAN_DIEN)} nhận đủ nội dung, kèm PDF gửi email.`}
     breadcrumbs={[{ label: "Trang chủ", href: "/" }, { label: "Đại Cát Lợi", href: "/dai-cat-loi" }, { label: "Luận Giải Bát Tự Toàn Diện" }]}

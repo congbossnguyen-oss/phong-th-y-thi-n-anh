@@ -11,9 +11,6 @@
 // Admin xem trực tiếp kết quả trên trang (để tự kiểm tra chất lượng trước khi mở bán thật). Khách
 // thường KHÔNG đợi AI chạy trên trang — nhận đủ nội dung qua email (PDF) sau khi thanh toán, xem
 // orders.ts. Đây là quyết định UX đã áp dụng cho bat-tu-toan-dien vì ~30s/lần tải trang là chưa đạt.
-//
-// ⚠️ CHƯA PUBLISH: không gắn link ở ToolsShowcase/dai-cat-loi-tools — chỉ vào được qua CTA từ
-// /lap-la-so-tu-vi hoặc URL trực tiếp, để anh Công test trước khi mở rộng.
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import Container from "../../components/ui/Container.astro";
@@ -166,7 +163,7 @@ const gioOptions = Array.from({ length: 24 }, (_, i) => i);
   description="Luận giải Tử Vi Đẩu Số đầy đủ theo phương pháp Nam Phái: đủ 12 cung, Đại Hạn, Tiểu Hạn và chiến lược sống dài hạn."
 >
   <PageHero
-    eyebrow="⭐ Dịch vụ VIP · Đang thử nghiệm"
+    eyebrow="⭐ Dịch vụ VIP"
     title="Luận Giải Tử Vi"
     description={`Gói Luận Giải Tử Vi ${dinhDangTien(GIA_TOAN_DIEN)} — đủ 12 cung, cộng Đại Hạn, Tiểu Hạn, Tổng kết chiến lược, kèm PDF gửi email.`}
     breadcrumbs={[
