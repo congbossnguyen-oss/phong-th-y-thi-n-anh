@@ -387,6 +387,47 @@ const BUOC = [
       goChu(b.loi);
     }
 
+    /** Tiếng "bụp" pháo giấy bắn ra + vài tiếng "tinh" lấp lánh rơi theo sau, đúng lúc giấy bắn lên. */
+    function tiengPhaoGiay() {
+      const ctx = moKhungAm();
+      if (!ctx) return;
+      const t0 = ctx.currentTime;
+
+      // "Bụp": nhiễu lọc thông thấp, tần số cắt tụt nhanh — tiếng bục hơi thoát ra tức thời.
+      const buf = ctx.createBuffer(1, Math.ceil(ctx.sampleRate * 0.12), ctx.sampleRate);
+      const data = buf.getChannelData(0);
+      for (let n = 0; n < data.length; n++) data[n] = Math.random() * 2 - 1;
+      const nguon = ctx.createBufferSource();
+      nguon.buffer = buf;
+      const loc = ctx.createBiquadFilter();
+      loc.type = "lowpass";
+      loc.frequency.setValueAtTime(2600, t0);
+      loc.frequency.exponentialRampToValueAtTime(160, t0 + 0.12);
+      const gainBup = ctx.createGain();
+      gainBup.gain.setValueAtTime(0.4, t0);
+      gainBup.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.12);
+      nguon.connect(loc).connect(gainBup).connect(ctx.destination);
+      nguon.start(t0);
+      nguon.stop(t0 + 0.13);
+
+      // Vài tiếng "tinh" lấp lánh (chuông cao, rải rác) — như ánh giấy kim tuyến bắt sáng lúc rơi.
+      const TAN_SO = [1568, 1976, 2349, 3136]; // G6, B6, D7, G7 — hợp âm sáng, không chói
+      for (let n = 0; n < 4; n++) {
+        const tre = 0.05 + n * (0.06 + Math.random() * 0.05);
+        const tOsc = t0 + tre;
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.type = "sine";
+        osc.frequency.setValueAtTime(TAN_SO[n], tOsc);
+        gain.gain.setValueAtTime(0.0001, tOsc);
+        gain.gain.linearRampToValueAtTime(0.09, tOsc + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, tOsc + 0.5);
+        osc.connect(gain).connect(ctx.destination);
+        osc.start(tOsc);
+        osc.stop(tOsc + 0.52);
+      }
+    }
+
     /**
      * Pháo hoa giấy chúc mừng ở lời kết: bắn tung ra TỪ chính bảng lời chào (`nguon` là khung của
      * bảng đó) rồi rơi xuống. Canvas tự vẽ, không kéo thêm thư viện nào cho nhẹ.
@@ -396,6 +437,7 @@ const BUOC = [
         xong();
         return;
       }
+      tiengPhaoGiay();
       const canvas = document.createElement("canvas");
       canvas.className = "qstour-phao";
       const ty = Math.min(window.devicePixelRatio || 1, 2);
