@@ -98,10 +98,12 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
     }
   }
 
-  // HÀNG RÀO KIỂM DUYỆT (anh Công 8/9/2026) — CHỈ áp dụng cho "cau-hoi-tu-do" (khách tự gõ), chặn
+  // HÀNG RÀO KIỂM DUYỆT (anh Công 8/9/2026, mở rộng sang CẢ 120 câu hỏi 8/9/2026: "cứ kiểm duyệt
+  // tránh sai sót") — áp dụng cho MỌI ô "mô tả tình huống" khách tự gõ, không riêng "cau-hoi-tu-do"
+  // nữa, vì 119 câu hỏi định sẵn cũng dùng chung ô nhập tự do (IN_MO_TA, xem questions.ts). Chặn
   // TRƯỚC KHI tốn lượt/chạy AI luận giải thật nếu nội dung tục tĩu, hại người/vô đạo đức, lừa đảo,
   // hoặc chống phá Đảng/Nhà nước. Xem chi tiết + lý do fail-closed ở kiem-duyet-cau-hoi.ts.
-  if (body.question_id === "cau-hoi-tu-do" && typeof body.moTa === "string" && body.moTa.trim().length > 0) {
+  if (typeof body.moTa === "string" && body.moTa.trim().length > 0) {
     const ketKiemDuyet = await kiemDuyetCauHoiTuDo(body.moTa);
     if (ketKiemDuyet.viPham) {
       console.error(`[quan-su/luan] Chặn câu hỏi tự do — nhóm vi phạm: ${ketKiemDuyet.nhomViPham}`);

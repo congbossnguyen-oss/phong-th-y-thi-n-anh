@@ -1,5 +1,5 @@
 /**
- * HÀNG RÀO KIỂM DUYỆT cho mục "Câu hỏi khác" (câu hỏi tự do) trong Luận Quẻ Kinh Dịch — anh Công
+ * HÀNG RÀO KIỂM DUYỆT cho ô "mô tả tình huống" (khách tự gõ) trong Luận Quẻ Kinh Dịch — anh Công
  * yêu cầu 8/9/2026: chặn TRƯỚC khi luận (không tốn lượt, không chạy AI luận giải thật) nếu nội
  * dung khách tự gõ thuộc 1 trong các nhóm:
  *   - Tục tĩu.
@@ -7,11 +7,11 @@
  *   - Lừa đảo, chiếm đoạt tài sản.
  *   - Hành vi/âm mưu chống phá Đảng và Nhà nước.
  *
- * CHỈ áp dụng cho "cau-hoi-tu-do" theo đúng phạm vi anh Công nêu — 119 câu hỏi định sẵn còn lại
- * CŨNG có ô "mo_ta_tinh_huong" tự gõ tương tự (xem questions.ts, IN_MO_TA dùng chung), nhưng câu
- * hỏi đã định sẵn tự giới hạn chủ đề nên rủi ro thấp hơn nhiều — CHƯA mở rộng hàng rào này sang đó,
- * cần hỏi lại nếu muốn áp dụng toàn bộ 120 câu (tốn thêm 1 lượt gọi AI kiểm duyệt cho MỌI câu hỏi,
- * kể cả câu hỏi lành trong danh sách định sẵn).
+ * Áp dụng cho CẢ 120 câu hỏi (mở rộng 8/9/2026, anh Công: "cứ kiểm duyệt tránh sai sót") — ban đầu
+ * chỉ định cho "cau-hoi-tu-do", nhưng 119 câu hỏi định sẵn còn lại CŨNG dùng chung ô "mo_ta_tinh_huong"
+ * tự gõ (IN_MO_TA, xem questions.ts) nên cùng rủi ro. Đánh đổi: mọi câu hỏi (kể cả câu hỏi lành
+ * trong danh sách định sẵn) đều tốn thêm 1 lượt gọi AI kiểm duyệt nhỏ trước khi luận — chi phí và
+ * độ trễ tăng thêm không đáng kể so với lượt luận giải chính.
  *
  * AI LỖI (mất mạng/hết credit...) → COI NHƯ VI PHẠM, chặn lại (fail-CLOSED) — khác với các bước AI
  * khác trong site vốn fail-OPEN (AI hỏng thì vẫn cho khách xem bản luận thuần luật). Cố ý khác vì
