@@ -93,3 +93,13 @@ export async function thongTinKhuyenMai(userId: string): Promise<{ hetHanLuc: Da
   if (!vt || !vt.hopLeSoThuTu || new Date() > vt.hetHanLuc) return null;
   return { hetHanLuc: vt.hetHanLuc };
 }
+
+/**
+ * Số suất khuyến mãi CÒN LẠI (trong tổng 50 suất, tính từ TU_THOI_DIEM) — dùng cho banner/lời mời
+ * đăng ký ở nơi CHƯA gắn với 1 tài khoản cụ thể (vd banner "Khám phá Quân Sư" ở khu học viên). Luôn
+ * ≥ 0 — không âm dù có bao nhiêu người đăng ký thêm sau khi đã đủ 50.
+ */
+export async function soSuatKhuyenMaiConLai(): Promise<number> {
+  const [row] = await db.select({ n: sql<number>`count(*)` }).from(users).where(gte(users.createdAt, TU_THOI_DIEM));
+  return Math.max(SO_TAI_KHOAN_KHUYEN_MAI - Number(row?.n ?? 0), 0);
+}

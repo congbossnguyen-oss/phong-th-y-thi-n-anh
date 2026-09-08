@@ -8,10 +8,16 @@ import Icon from "../../components/ui/Icon.astro";
 import { getCourses } from "../../lib/cms/queries";
 import { db } from "../../lib/db/client";
 import { courseEnrollments, lessonProgress, courseCertificates } from "../../../db/schema";
+import { soSuatKhuyenMaiConLai } from "../../lib/quan-su/khuyen-mai-luan-giai";
 
 export const prerender = false;
 
 const user = Astro.locals.user;
+
+// Banner dẫn sang app Quân Sư — mục nổi bật hơn link nhỏ "Xem lại hướng dẫn" bên dưới (anh Công
+// 8/9/2026: "muốn có 1 mục nổi bật hơn để dẫn sang phần /quan-su"). Số suất khuyến mãi chỉ tính khi
+// đã đăng nhập (banner chỉ hiện ở nhánh đã đăng nhập) — tránh 1 query DB thừa cho khách vãng lai.
+const suatKhuyenMaiConLai = user ? await soSuatKhuyenMaiConLai() : 0;
 
 let enrolledCourses: { slug: string; name: string; completed: number; total: number; percent: number; hasCertificate: boolean }[] = [];
 
@@ -101,6 +107,35 @@ const inProgressCourses = totalCourses - completedCourses;
           </button>
         </div>
       </div>
+
+      {/* Banner dẫn sang app Quân Sư — dùng riêng bảng màu tối/vàng của Quân Sư (không phải token
+          ivory/ink của trang) để nổi bật rõ giữa các card học viên còn lại. */}
+      <a
+        href="/quan-su"
+        class="mt-5 flex flex-wrap items-center gap-5 overflow-hidden rounded-(--radius-card) border border-[rgba(201,162,86,0.45)] p-6 shadow-[0_12px_34px_rgba(0,0,0,0.35)] transition hover:-translate-y-0.5 hover:shadow-[0_16px_40px_rgba(0,0,0,0.42)]"
+        style="background: radial-gradient(120% 160% at 100% 0%, rgba(201,162,86,0.22), transparent 55%), linear-gradient(135deg, #1c0e12 0%, #150a0c 60%, #0f070a 100%);"
+      >
+        <img src="/images/quan-su/mascot-chao-mung.webp" alt="" width="64" class="h-auto w-16 shrink-0 drop-shadow-[0_6px_12px_rgba(0,0,0,0.5)]" />
+        <div class="min-w-[200px] flex-1">
+          <span class="mb-1 inline-block rounded-full border border-[rgba(201,162,86,0.35)] bg-[rgba(201,162,86,0.12)] px-2.5 py-0.5 text-[0.68rem] font-medium tracking-wide text-(--color-gold-300) uppercase">
+            App riêng
+          </span>
+          <h3 class="font-display text-xl font-bold text-(--color-ink-950)">
+            Khám phá <span class="text-(--color-gold-300)">Quân Sư Thiên Anh</span>
+          </h3>
+          <p class="text-sm leading-relaxed text-(--color-ink-600)">
+            Hỏi một việc đang phân vân, tự tay gieo quẻ Kinh Dịch, nhận luận giải tức thì — cùng Thời Vận, Trạch Cát và các dịch vụ VIP.
+          </p>
+          {suatKhuyenMaiConLai > 0 && (
+            <p class="mt-1.5 text-sm text-(--color-gold-300)">
+              🎁 Còn {suatKhuyenMaiConLai}/50 suất đăng ký sớm — tặng 10 lượt luận giải miễn phí
+            </p>
+          )}
+        </div>
+        <span class="shrink-0 rounded-full px-4 py-2.5 text-sm font-semibold whitespace-nowrap text-(--color-on-accent)" style="background: linear-gradient(160deg, #f6d878, #c9a256);">
+          Vào Quân Sư →
+        </span>
+      </a>
 
       <div class="mt-5 grid gap-4 sm:grid-cols-3">
         <div class="flex items-center gap-3 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-5">
