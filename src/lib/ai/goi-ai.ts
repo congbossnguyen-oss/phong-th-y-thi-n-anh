@@ -35,6 +35,7 @@ export type TinhNangAi =
   | "bat-tu-kiem-duyet"
   | "quan-su-kinh-dich"
   | "quan-su-van-khi"
+  | "quan-su-kiem-duyet"
   | "chart-profile-bat-tu"
   | "chart-profile-tu-vi"
   | "nghe-nghiep-luan-van"
@@ -66,6 +67,7 @@ const BANG_NHA_CUNG_CAP: Record<TinhNangAi, NhaCungCap> = {
   "bat-tu-kiem-duyet": "openai-tuong-thich",
   "quan-su-kinh-dich": "openai-tuong-thich",
   "quan-su-van-khi": "openai-tuong-thich",
+  "quan-su-kiem-duyet": "openai-tuong-thich",
   // 3 dòng dưới đây CHƯA đấu nối thật — chart-profile/llm.ts, chart-profile/llm-tu-vi.ts,
   // nghe-nghiep/llm-luan-van.ts đều gọi THẲNG Anthropic (hardcode), không qua goiAiToolUse/bảng này,
   // nên đổi giá trị ở đây KHÔNG ảnh hưởng hành vi thật của 3 tính năng đó (đo được 31/8/2026 khi rà

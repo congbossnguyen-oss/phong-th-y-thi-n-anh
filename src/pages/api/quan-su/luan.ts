@@ -8,6 +8,7 @@ import { getQuestion } from "../../../lib/quan-su";
 import { coQuyenTruyCap, hangYeuCauTheoCauHoi, layGoiDangHoatDong } from "../../../lib/subscriptions/access";
 import { conLuotHoiKhong, ghiNhanLuotHoi, ghiNhanCauHoiDaHoi, tongLuotDaDung } from "../../../lib/subscriptions/usage";
 import { duocKhuyenMai, TONG_LUOT_MIEN_PHI_KHUYEN_MAI } from "../../../lib/quan-su/khuyen-mai-luan-giai";
+import { kiemDuyetCauHoiTuDo } from "../../../lib/quan-su/kiem-duyet-cau-hoi";
 import { checkRateLimit } from "../../../lib/rate-limit";
 import type { CoinLineValue } from "../../../lib/luc-hao";
 
@@ -94,6 +95,20 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
           429,
         );
       }
+    }
+  }
+
+  // HÀNG RÀO KIỂM DUYỆT (anh Công 8/9/2026) — CHỈ áp dụng cho "cau-hoi-tu-do" (khách tự gõ), chặn
+  // TRƯỚC KHI tốn lượt/chạy AI luận giải thật nếu nội dung tục tĩu, hại người/vô đạo đức, lừa đảo,
+  // hoặc chống phá Đảng/Nhà nước. Xem chi tiết + lý do fail-closed ở kiem-duyet-cau-hoi.ts.
+  if (body.question_id === "cau-hoi-tu-do" && typeof body.moTa === "string" && body.moTa.trim().length > 0) {
+    const ketKiemDuyet = await kiemDuyetCauHoiTuDo(body.moTa);
+    if (ketKiemDuyet.viPham) {
+      console.error(`[quan-su/luan] Chặn câu hỏi tự do — nhóm vi phạm: ${ketKiemDuyet.nhomViPham}`);
+      return json(
+        { error: "Câu hỏi này không phù hợp để Quân Sư luận giải. Anh/chị vui lòng đặt lại câu hỏi khác nhé." },
+        400,
+      );
     }
   }
 
