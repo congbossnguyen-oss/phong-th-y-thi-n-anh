@@ -10,7 +10,6 @@ export const siteConfig = {
   email: "lienhe@phongthuythienanh.com", // TODO: kích hoạt hòm mail thật (chuyển tiếp hoặc Zoho/Google Workspace)
   address: "Ô 11, B5, KĐT Đại Kim - Định Công, TP. Hà Nội",
   workingHours: "8:00 - 17:30, tất cả các ngày trong tuần",
-  businessRegistration: "0000000000", // TODO: số ĐKKD thật
   social: {
     facebook: "https://www.facebook.com/ZhiGongFengShui",
     youtube: "https://www.youtube.com/@PhongthuyThienAnh",
