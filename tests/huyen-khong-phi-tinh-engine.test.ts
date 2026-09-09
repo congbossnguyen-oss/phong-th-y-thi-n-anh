@@ -8,10 +8,12 @@ import {
   CHIEU_THAN,
   CHINH_LINH_THAN,
   CUNG_INFO,
+  NGU_HANH_SAO,
   SON_24,
   bayTinh,
   canhBaoDaKiep,
   chinhLinhThan,
+  hoaGiaiToanBan,
   kiemTraSon,
   lapTinhBan,
   nhanDienCachCuc,
@@ -479,5 +481,89 @@ describe("Thất Tinh Đả Kiếp / Tam Ban Xảo Quái — cập nhật 31/8/2
   it("canhBaoDaKiep() vẫn trả về ghi chú riêng (CẦN NGƯỜI LUẬN TỰ XÉT) về bộ số tam ban cấu trúc, không phải điều kiện phân biệt Đả Kiếp", () => {
     const [, tc] = canhBaoDaKiep();
     expect(tc).toBe("CẦN NGƯỜI LUẬN TỰ XÉT");
+  });
+});
+
+describe("hoaGiaiToanBan — hóa giải từng cung (gộp từ engine.py, 9/9/2026)", () => {
+  const KHAC = new Set(["Kim-Mộc", "Mộc-Thổ", "Thổ-Thủy", "Thủy-Hỏa", "Hỏa-Kim"]);
+  // Hành bắc cầu kỳ vọng cho từng cặp khắc (đối chiếu với port THONG_QUAN trong engine).
+  const HANH_THONG_QUAN: Record<string, string> = {
+    "Kim-Mộc": "Thủy", "Mộc-Thổ": "Hỏa", "Thổ-Thủy": "Kim", "Thủy-Hỏa": "Mộc", "Hỏa-Kim": "Thổ",
+  };
+  const capKhac = (a: number, b: number): [number, number] | null => {
+    if (KHAC.has(`${NGU_HANH_SAO[a]}-${NGU_HANH_SAO[b]}`)) return [a, b];
+    if (KHAC.has(`${NGU_HANH_SAO[b]}-${NGU_HANH_SAO[a]}`)) return [b, a];
+    return null;
+  };
+
+  it("Ngũ Hoàng: cung có sao 5 (Sơn/Hướng) LUÔN có gợi ý 'ngu_hoang'; cung không có 5 thì KHÔNG", () => {
+    for (const van of [1, 2, 3, 4, 5, 6, 7, 8, 9]) {
+      for (const son of Object.keys(SON_24)) {
+        const tb = lapTinhBan(SON_24[son][0], van);
+        const byCung = new Map(hoaGiaiToanBan(tb, van).map((e) => [e.cung, e]));
+        for (const c of [5, 6, 7, 8, 9, 1, 2, 3, 4]) {
+          const co5 = tb.son_ban[c] === 5 || tb.huong_ban[c] === 5;
+          const e = byCung.get(CUNG_INFO[c].ten);
+          const coGoiY = e?.goi_y.some((g) => g.loai === "ngu_hoang") ?? false;
+          expect(coGoiY).toBe(co5);
+        }
+      }
+    }
+  });
+
+  it("Thông quan: xuất hiện ĐÚNG KHI Sơn/Hướng khắc nhau và không có Ngũ Hoàng; hành bắc cầu khớp bảng", () => {
+    for (const van of [1, 2, 3, 4, 5, 6, 7, 8, 9]) {
+      for (const son of Object.keys(SON_24)) {
+        const tb = lapTinhBan(SON_24[son][0], van);
+        const byCung = new Map(hoaGiaiToanBan(tb, van).map((e) => [e.cung, e]));
+        for (const c of [5, 6, 7, 8, 9, 1, 2, 3, 4]) {
+          const s = tb.son_ban[c];
+          const h = tb.huong_ban[c];
+          const e = byCung.get(CUNG_INFO[c].ten);
+          const itemTQ = e?.goi_y.find((g) => g.loai === "thong_quan");
+          const cap = s !== 5 && h !== 5 && s !== h ? capKhac(s, h) : null;
+          if (cap) {
+            expect(itemTQ).toBeDefined();
+            const key = `${NGU_HANH_SAO[cap[0]]}-${NGU_HANH_SAO[cap[1]]}`;
+            expect(itemTQ!.tieu_de).toContain(`thông quan bằng ${HANH_THONG_QUAN[key]}`);
+          } else {
+            expect(itemTQ).toBeUndefined();
+          }
+        }
+      }
+    }
+  });
+
+  it("bất biến: mọi entry trả về đều có ≥1 gợi ý (không trả cung rỗng), và các loại nằm trong tập cho phép", () => {
+    const LOAI = new Set(["ngu_hoang", "nhi_hac", "sao_xau", "thong_quan", "danh_cuc"]);
+    for (const van of [1, 2, 3, 4, 5, 6, 7, 8, 9]) {
+      for (const son of Object.keys(SON_24)) {
+        const tb = lapTinhBan(SON_24[son][0], van);
+        for (const e of hoaGiaiToanBan(tb, van)) {
+          expect(e.goi_y.length).toBeGreaterThan(0);
+          for (const g of e.goi_y) {
+            expect(LOAI.has(g.loai)).toBe(true);
+            expect(g.nguon_md.length).toBeGreaterThan(0);
+          }
+        }
+      }
+    }
+  });
+
+  it("tinhToanHuyenKhong().hoa_giai khớp hoaGiaiToanBan(tb, vanHienTai) — nhà thoái vận", () => {
+    const doHuong = SON_24["Mão"][0];
+    const kq = tinhToanHuyenKhong(doHuong, vanTuNam(2003), { vanHienTai: 9 });
+    const tb = lapTinhBan(doHuong, vanTuNam(2003));
+    expect(kq.hoa_giai).toEqual(hoaGiaiToanBan(tb, 9));
+  });
+
+  it("ví dụ cụ thể — Vận 9 hướng Bính (tọa Nhâm): Trung Cung & Đông Nam có Ngũ Hoàng, Đông (3-6) có thông quan Thủy", () => {
+    const tb = lapTinhBan(SON_24["Bính"][0], 9);
+    const byCung = new Map(hoaGiaiToanBan(tb, 9).map((e) => [e.cung, e]));
+    expect(byCung.get("Trung Cung")!.goi_y.some((g) => g.loai === "ngu_hoang")).toBe(true);
+    expect(byCung.get("Đông Nam")!.goi_y.some((g) => g.loai === "ngu_hoang")).toBe(true);
+    const dong = byCung.get("Đông")!;
+    expect(dong.bo_ba).toBe("3-7-6"); // Sơn 3 — Vận 7 — Hướng 6
+    expect(dong.goi_y.some((g) => g.loai === "thong_quan" && g.tieu_de.includes("thông quan bằng Thủy"))).toBe(true);
   });
 });
