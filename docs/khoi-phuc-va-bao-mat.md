@@ -87,10 +87,12 @@ Secret runtime nằm ở **Cloudflare** (Worker `phong-thuy-thien-anh` → Setti
   git checkout cloudflare-migration && git pull
   npm run build && npx wrangler deploy
   ```
-  Nếu `npm run build` báo **"out of memory"** → tăng heap:
-  ```bash
-  NODE_OPTIONS=--max-old-space-size=8192 npm run build && npx wrangler deploy
-  ```
+  ⚠️ Nếu build báo **"out of memory" / "Zone Allocation failed"** hoặc lỗi nạp native (vd
+  `Cannot find module '...lightningcss...node'`): **gốc là thiếu RAM**, không phải lỗi code. Máy hiện
+  chỉ ~8GB RAM nên **ĐỪNG ép heap lớn** — đặt `--max-old-space-size=8192` còn làm OOM nặng hơn (vượt
+  RAM thật). Cách đúng: **đóng bớt Chrome/ứng dụng nặng để giải phóng RAM** (kiểm bằng Task Manager,
+  cần ≥1.5GB trống), rồi build lại với **heap mặc định** (`npm run build` — node tự chọn ~2GB hợp máy).
+  Build có thể chậm (dùng pagefile) nhưng sẽ xong. Chỉ tăng heap thủ công khi máy có nhiều RAM trống.
 - **Kiểm tra đăng nhập:** `npx wrangler whoami` (phải ra `congboss.nguyen@gmail.com`). Chưa đăng nhập thì `npx wrangler login`.
 - Cloudflare chỉ đổi web khi build XONG sạch (build lỗi thì giữ nguyên bản cũ) — nhưng vẫn nên chờ log `Complete!` rồi mới yên tâm.
 - Muốn quay lại bản trước: Cloudflare dashboard → Workers → `phong-thuy-thien-anh` → Deployments → **Rollback** về version cũ.
