@@ -40,8 +40,8 @@ node scripts/restore-db.mjs backups/db-XXXX.json --confirm
 Hầu hết "bị hack" là do **chiếm tài khoản**, không phải lỗ hổng code. Bật xác thực 2 lớp (2FA/Authenticator) cho **tất cả**:
 
 - [ ] **GitHub** (`congbossnguyen-oss`) — nắm mã nguồn.
-- [ ] **Render** — nắm server + biến môi trường (secret).
-- [ ] **Cloudflare** — nắm DNS (chuyển hướng domain).
+- [ ] **Cloudflare** — nắm **server (Workers — web HIỆN chạy ở đây), biến môi trường/secret của Worker, và DNS** (chuyển hướng domain). Quan trọng nhất về vận hành hiện nay.
+- [ ] **Render** — *host CŨ, đã chuyển sang Cloudflare Workers* (xem mục E). Nếu tài khoản còn thì vẫn bật 2FA cho chắc, nhưng web không còn chạy ở đây.
 - [ ] **Nhà đăng ký tên miền** (nơi mua `phongthuythienanh.com`) — quan trọng nhất, mất domain là mất tất cả. Bật thêm **Registrar Lock / khoá chuyển nhượng**.
 - [ ] **Neon** — nắm database.
 - [ ] **Sanity** — nắm nội dung khóa học.
@@ -55,7 +55,7 @@ Ghi lại **mã khôi phục (recovery codes)** của từng dịch vụ, cất 
 
 ## C. KHI NGHI LỘ SECRET → đổi ngay (thứ tự ưu tiên: tiền → dữ liệu)
 
-Secret nằm ở **Render → Environment** và bản `.env` local. Khi đổi, sửa ở CẢ hai (Render tự deploy lại sau khi lưu).
+Secret runtime nằm ở **Cloudflare** (Worker `phong-thuy-thien-anh` → Settings → Variables and Secrets, hoặc đặt bằng `npx wrangler secret put <TÊN>`) và bản `.env` local (dùng lúc build). Khi đổi: cập nhật trên Cloudflare **và** sửa `.env` local cho khớp. Đổi bằng `wrangler secret put` áp dụng ngay cho Worker đang chạy; nếu đổi biến khai trong `wrangler.jsonc` thì phải **deploy lại** (mục E).
 
 1. **SePay** (`SEPAY_API_TOKEN`, `SEPAY_WEBHOOK_SECRET`) — tạo lại trong SePay dashboard, cập nhật cả cấu hình Webhook Authorization. *(liên quan tiền → đổi trước)*
 2. **Neon** (`DATABASE_URL`) — Neon dashboard → Reset password/connection string.
@@ -69,10 +69,31 @@ Secret nằm ở **Render → Environment** và bản `.env` local. Khi đổi, 
 
 1. **Khoá cửa trước:** đổi mật khẩu + bật 2FA tất cả tài khoản mục B.
 2. **Đổi toàn bộ secret** theo mục C (kẻ tấn công có thể đã lấy được key cũ).
-3. **Mã nguồn:** so với Git. Nếu bị sửa/cài mã độc → `git push` bản sạch lên `main`, Render tự deploy lại. (Code luôn an toàn vì nằm trên GitHub.)
+3. **Mã nguồn:** so với Git. Nếu bị sửa/cài mã độc → đưa bản sạch lên nhánh **`cloudflare-migration`** (nhánh production) rồi **deploy lại thủ công** bằng `wrangler deploy` (mục E). ⚠️ `git push` KHÔNG tự đưa lên web. (Code luôn an toàn vì nằm trên GitHub.)
 4. **Database:** nếu bị xoá/hỏng → khôi phục bằng **Neon PITR** (trong 7 ngày, Neon dashboard → Restore) hoặc bằng file backup gần nhất (mục A → "Khôi phục DB").
 5. **Rà soát gian lận:** kiểm bảng `orders` + `sepay_webhook_logs` xem có đơn/giao dịch giả không.
 6. **Domain/DNS:** vào Cloudflare kiểm bản ghi DNS có bị đổi hướng không.
+
+---
+
+## E. DEPLOY / ĐƯA WEB LÊN (kênh HIỆN TẠI: Cloudflare Workers)
+
+⚠️ **Web KHÔNG còn chạy Render và KHÔNG tự deploy khi push GitHub.** Từ 2026 web chạy trên **Cloudflare Workers**, deploy **thủ công**:
+
+- **Nhánh production:** `cloudflare-migration` (KHÔNG phải `main`). Nhánh `main`/`quan-su-thien-anh` là kiến trúc khác (adapter Node), KHÔNG phải bản đang chạy — đừng deploy nhầm từ đó.
+- **Worker:** tên `phong-thuy-thien-anh`, tài khoản Cloudflare `congboss.nguyen@gmail.com`. Cloudflare đứng trước làm DNS/CDN cho `phongthuythienanh.com`.
+- **Lệnh deploy** — chạy trong **một checkout SẠCH** của nhánh `cloudflare-migration` (tránh lẫn việc đang làm dở vào bản lên web):
+  ```bash
+  git checkout cloudflare-migration && git pull
+  npm run build && npx wrangler deploy
+  ```
+  Nếu `npm run build` báo **"out of memory"** → tăng heap:
+  ```bash
+  NODE_OPTIONS=--max-old-space-size=8192 npm run build && npx wrangler deploy
+  ```
+- **Kiểm tra đăng nhập:** `npx wrangler whoami` (phải ra `congboss.nguyen@gmail.com`). Chưa đăng nhập thì `npx wrangler login`.
+- Cloudflare chỉ đổi web khi build XONG sạch (build lỗi thì giữ nguyên bản cũ) — nhưng vẫn nên chờ log `Complete!` rồi mới yên tâm.
+- Muốn quay lại bản trước: Cloudflare dashboard → Workers → `phong-thuy-thien-anh` → Deployments → **Rollback** về version cũ.
 
 ---
 
