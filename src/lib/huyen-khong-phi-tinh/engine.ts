@@ -183,6 +183,64 @@ const HOA_GIAI_SAO: Record<number, string> = {
   9: "Khi gặp sao xấu: tùy sao đi kèm. Nhà hướng Ly không đặt bếp hướng Đoài (tạo 9-7 cháy nổ).",
 };
 
+// Chi tiết hóa giải theo sao — bảng "tra nhanh" (l-bo-hoa-giai-tong-hop.md Phần 2). Tách 4 cột để
+// hiển thị đầy đủ NGAY TẠI TỪNG CUNG (anh Công 10/9/2026: "trình bày hóa giải tại các phương vị
+// luôn"), thay vì chỉ 1 dòng tóm tắt + link. Đây là bảng tra bảng cố định, ngắn gọn (không phải
+// phần luận 81 cặp cần đọc kèm Thời/Hình/Khí — cái đó vẫn để ở thư viện .md).
+const HOA_GIAI_SAO_CHI_TIET: Record<
+  number,
+  { ban_chat: string; hanh: string; vat_pham: string; cam_ky: string }
+> = {
+  5: {
+    ban_chat: "Thổ — sát khí nặng nhất (Ngũ Hoàng/Chính Quan Sát)",
+    hanh: "KIM (tiết Thổ)",
+    vat_pham: "Chuông đồng lớn + 6 chuông nhỏ; 6 đồng tiền; An Nhẫn Thủy (muối + đồng tiền); mỗi sáng gõ chuông 3 cái",
+    cam_ky: "TUYỆT ĐỐI không Hỏa (đèn đỏ/bếp). Không kích động, giữ tĩnh. Nhà nhiều gió không dùng chuông gió (phạm Thanh Sát)",
+  },
+  2: {
+    ban_chat: "Thổ — Bệnh Phù (bệnh tật, ốm đau)",
+    hanh: "KIM (tiết Thổ)",
+    vat_pham: "Chuông gió 6 thanh kim loại; hồ lô đồng; 6 xu kim loại",
+    cam_ky: "Không treo chuông trên đầu giường. Không Thủy, không Hỏa",
+  },
+  3: {
+    ban_chat: "Mộc — Xi Vưu (kiện tụng, tranh chấp)",
+    hanh: "HỎA (tiết Mộc)",
+    vat_pham: "Đèn đỏ, tranh đỏ, sơn tường đỏ",
+    cam_ky: "KHÔNG dùng Kim khắc (phản tác dụng, càng nổi loạn/kiện tụng nặng). Tránh thiết bị điện chạy thường xuyên tại đây",
+  },
+  7: {
+    ban_chat: "Kim — Phá Quân (trộm cướp, khẩu thiệt, thương tích)",
+    hanh: "THỦY (tiết Kim)",
+    vat_pham: "Vật phẩm tính Thủy",
+    cam_ky: "Dùng vật TIẾT, không dùng vật KHẮC. Nguy hơn khi gặp 3-7 / 5-7 / 6-7",
+  },
+  6: {
+    ban_chat: "Kim (Lục Bạch — khi thất vận)",
+    hanh: "THỦY (tiết Kim)",
+    vat_pham: "Thác nước 6 bậc; phong thủy luân; 6 quả cầu pha lê",
+    cam_ky: "Đề phòng gặp sao 7 cùng đến → Giao Kiếm Sát",
+  },
+  9: {
+    ban_chat: "Hỏa (Cửu Tử)",
+    hanh: "Tùy sao đi kèm",
+    vat_pham: "—",
+    cam_ky: "Nhà hướng Ly không đặt bếp hướng Đoài (tạo 9-7 → cháy nổ)",
+  },
+};
+
+/** Dựng bảng 4 dòng (nhãn, giá trị) để hiển thị chi tiết hóa giải theo sao ngay tại cung. */
+function bangHoaGiaiSao(sao: number): Array<[string, string]> {
+  const d = HOA_GIAI_SAO_CHI_TIET[sao];
+  if (!d) return [];
+  return [
+    ["Bản chất", d.ban_chat],
+    ["Dùng (hành)", d.hanh],
+    ["Vật phẩm gợi ý", d.vat_pham],
+    ["Kiêng kỵ", d.cam_ky],
+  ];
+}
+
 // ==========================================================================
 // BẢNG GHI NGUỒN — mỗi mục engine tính đều truy được về nguồn nào
 // Mức: CHẮC = có nguồn rõ + đã kiểm chứng bằng dữ liệu
@@ -1112,7 +1170,10 @@ export interface HoaGiaiItem {
   loai: LoaiHoaGiai;
   tieu_de: string;
   chi_tiet: string;
-  /** Tên các file .md trong docs/huyen-khong-phi-tinh/references/ để tra chi tiết. */
+  /** Bảng chi tiết (nhãn, giá trị) hiển thị đầy đủ ngay tại cung: Bản chất / Dùng hành / Vật phẩm /
+   *  Kiêng kỵ (sao), hoặc Vấn đề / Dùng hành / Vật phẩm (thông quan). Rỗng nếu chỉ có tóm tắt. */
+  bang: Array<[string, string]>;
+  /** Tên các file .md trong docs/huyen-khong-phi-tinh/references/ để tra chi tiết sâu hơn. */
   nguon_md: string[];
 }
 
@@ -1158,6 +1219,7 @@ export function hoaGiaiToanBan(tb: TinhBan, vanHienTai: number = tb.van): HoaGia
         loai: "ngu_hoang",
         tieu_de: `Ngũ Hoàng (${vai.join("+")}) — đại sát, kỵ động, tránh đặt bếp/cửa/giường`,
         chi_tiet: HOA_GIAI_SAO[5],
+        bang: bangHoaGiaiSao(5),
         nguon_md: ["l-bo-hoa-giai-tong-hop.md", "c-hoa-giai-sat-khi.md"],
       });
     }
@@ -1168,6 +1230,7 @@ export function hoaGiaiToanBan(tb: TinhBan, vanHienTai: number = tb.van): HoaGia
         loai: "nhi_hac",
         tieu_de: "Nhị Hắc (Bệnh Phù) thất vận",
         chi_tiet: HOA_GIAI_SAO[2],
+        bang: bangHoaGiaiSao(2),
         nguon_md: ["l-bo-hoa-giai-tong-hop.md", "c-hoa-giai-sat-khi.md"],
       });
     }
@@ -1179,6 +1242,7 @@ export function hoaGiaiToanBan(tb: TinhBan, vanHienTai: number = tb.van): HoaGia
           loai: "sao_xau",
           tieu_de: `Sao ${sx} (${TEN_SAO[sx]}) thất vận`,
           chi_tiet: HOA_GIAI_SAO[sx],
+          bang: bangHoaGiaiSao(sx),
           nguon_md: ["l-bo-hoa-giai-tong-hop.md", "h-81-cap-sao-va-hoa-giai.md"],
         });
       }
@@ -1196,6 +1260,12 @@ export function hoaGiaiToanBan(tb: TinhBan, vanHienTai: number = tb.van): HoaGia
               loai: "thong_quan",
               tieu_de: `Sao ${a} (${NGU_HANH_SAO[a]}) khắc sao ${b} (${NGU_HANH_SAO[b]}) → thông quan bằng ${tq[0]}`,
               chi_tiet: tq[1],
+              bang: [
+                ["Vấn đề", `Sao ${a} (${NGU_HANH_SAO[a]}) khắc sao ${b} (${NGU_HANH_SAO[b]}) trong cùng cung`],
+                ["Dùng (hành)", `${tq[0]} để bắc cầu (${NGU_HANH_SAO[a]} sinh ${tq[0]}, ${tq[0]} sinh ${NGU_HANH_SAO[b]})`],
+                ["Vật phẩm gợi ý", tq[1]],
+                ["Kiêng kỵ", "Không dùng vật KHẮC trực tiếp (đối đầu làm khí xấu phản ứng mạnh hơn); ưu tiên dẫn khí (thông quan) hơn chặn"],
+              ],
               nguon_md: ["l-bo-hoa-giai-tong-hop.md"],
             });
           }
@@ -1210,7 +1280,8 @@ export function hoaGiaiToanBan(tb: TinhBan, vanHienTai: number = tb.van): HoaGia
       goiY.push({
         loai: "danh_cuc",
         tieu_de: `${dc[0]} [${dc[1]}]`,
-        chi_tiet: `${dc[2]}. Tra cách hóa theo cặp sao ở nguồn bên dưới.`,
+        chi_tiet: `${dc[2]}. Cách hóa cụ thể theo từng cặp sao cần đọc kèm điều kiện Thời/Hình/Khí — xem nguồn bên dưới.`,
+        bang: [],
         nguon_md: ["h-81-cap-sao-va-hoa-giai.md", "c-hoa-giai-sat-khi.md", "l-bo-hoa-giai-tong-hop.md"],
       });
     }

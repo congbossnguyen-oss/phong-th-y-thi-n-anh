@@ -605,8 +605,18 @@ Thành Môn xét theo VẬN HIỆN TẠI (Vận {kq.van_hien_tai}), không phả
                                 {g.tieu_de}
                               </p>
                               <p class="mt-1 text-sm text-(--color-ink-800)">{g.chi_tiet}</p>
-                              <p class="mt-1 text-xs text-(--color-ink-500)">
-                                Tra chi tiết:{" "}
+                              {g.bang.length > 0 && (
+                                <dl class="mt-2 grid grid-cols-[max-content_1fr] gap-x-3 gap-y-1 rounded bg-(--color-ivory-50) p-2 text-sm">
+                                  {g.bang.map(([nhan, giaTri]) => (
+                                    <>
+                                      <dt class="font-semibold text-(--color-ink-700)">{nhan}</dt>
+                                      <dd class="text-(--color-ink-900)">{giaTri}</dd>
+                                    </>
+                                  ))}
+                                </dl>
+                              )}
+                              <p class="mt-1.5 text-xs text-(--color-ink-500)">
+                                Đọc thêm:{" "}
                                 {g.nguon_md.map((file, i) => (
                                   <>
                                     {i > 0 && ", "}

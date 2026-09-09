@@ -566,4 +566,37 @@ describe("hoaGiaiToanBan — hóa giải từng cung (gộp từ engine.py, 9/9/
     expect(dong.bo_ba).toBe("3-7-6"); // Sơn 3 — Vận 7 — Hướng 6
     expect(dong.goi_y.some((g) => g.loai === "thong_quan" && g.tieu_de.includes("thông quan bằng Thủy"))).toBe(true);
   });
+
+  it("bảng chi tiết hiển thị TẠI CUNG: mục sao xấu có đủ Bản chất/Dùng/Vật phẩm/Kiêng kỵ; thông quan có Dùng (hành)", () => {
+    const tb = lapTinhBan(SON_24["Bính"][0], 9);
+    const byCung = new Map(hoaGiaiToanBan(tb, 9).map((e) => [e.cung, e]));
+
+    // Ngũ Hoàng tại Trung Cung: bảng 4 dòng, nêu KIM + cấm Hỏa (l- Phần 2).
+    const nh = byCung.get("Trung Cung")!.goi_y.find((g) => g.loai === "ngu_hoang")!;
+    const nhan = nh.bang.map(([k]) => k);
+    expect(nhan).toEqual(["Bản chất", "Dùng (hành)", "Vật phẩm gợi ý", "Kiêng kỵ"]);
+    expect(nh.bang.find(([k]) => k === "Dùng (hành)")![1]).toContain("KIM");
+    expect(nh.bang.find(([k]) => k === "Kiêng kỵ")![1].toLowerCase()).toContain("không hỏa");
+
+    // Thông quan tại Đông: bảng có dòng "Dùng (hành)" nêu hành bắc cầu Thủy.
+    const tq = byCung.get("Đông")!.goi_y.find((g) => g.loai === "thong_quan")!;
+    expect(tq.bang.find(([k]) => k === "Dùng (hành)")![1]).toContain("Thủy");
+  });
+
+  it("bất biến: mọi mục sao (ngu_hoang/nhi_hac/sao_xau) đều có bảng 4 dòng; danh_cuc để bảng rỗng (cần Thời/Hình/Khí)", () => {
+    for (const van of [1, 5, 9]) {
+      for (const son of Object.keys(SON_24)) {
+        const tb = lapTinhBan(SON_24[son][0], van);
+        for (const e of hoaGiaiToanBan(tb, van)) {
+          for (const g of e.goi_y) {
+            if (g.loai === "ngu_hoang" || g.loai === "nhi_hac" || g.loai === "sao_xau") {
+              expect(g.bang.length).toBe(4);
+            } else if (g.loai === "danh_cuc") {
+              expect(g.bang.length).toBe(0);
+            }
+          }
+        }
+      }
+    }
+  });
 });
