@@ -150,6 +150,40 @@ const Y_NGHIA_CAP_VAN9: Record<string, string> = {
 };
 
 // ==========================================================================
+// HÓA GIẢI (port 1:1 từ engine.py: THONG_QUAN + HOA_GIAI_SAO + _khac).
+// Đây là gợi ý VẬT PHẨM/BỐ TRÍ mang tính tham khảo, KHÔNG phải kết luận cát hung —
+// chi tiết đầy đủ tra ở docs/huyen-khong-phi-tinh/references/ (l-, c-, h-, i-).
+// ==========================================================================
+
+/** a có khắc b không (theo ngũ hành số sao NGU_HANH_SAO). */
+function khac(a: number, b: number): boolean {
+  const ha = NGU_HANH_SAO[a];
+  const hb = NGU_HANH_SAO[b];
+  const cap = new Set(["Kim-Mộc", "Mộc-Thổ", "Thổ-Thủy", "Thủy-Hỏa", "Hỏa-Kim"]);
+  return cap.has(`${ha}-${hb}`);
+}
+
+// Thông Quan — khi 2 sao trong cung KHẮC nhau, chèn hành trung gian (l- Phần 4/8).
+// key = "hànhKhắc-hànhBịKhắc"; value = [hành thông quan, vật phẩm gợi ý].
+const THONG_QUAN: Record<string, [string, string]> = {
+  "Kim-Mộc": ["Thủy", "đồ vật màu đen / bể cá cá đen (Kim sinh Thủy, Thủy sinh Mộc)"],
+  "Mộc-Thổ": ["Hỏa", "đồ đỏ: thảm/rèm/đèn/thạch anh hồng/san hô đỏ (Mộc sinh Hỏa, Hỏa sinh Thổ)"],
+  "Thổ-Thủy": ["Kim", "đồ kim loại (Thổ sinh Kim, Kim sinh Thủy)"],
+  "Thủy-Hỏa": ["Mộc", "đồ/cây màu xanh lục (Thủy sinh Mộc, Mộc sinh Hỏa)"],
+  "Hỏa-Kim": ["Thổ", "đồ màu vàng: thảm/thạch anh vàng/mắt hổ (Hỏa sinh Thổ, Thổ sinh Kim)"],
+};
+
+// Gợi ý hóa giải nhanh theo sao (l- Phần 2 / c-hoa-giai-sat-khi.md).
+const HOA_GIAI_SAO: Record<number, string> = {
+  5: "Hóa bằng KIM (chuông đồng lớn + 6 chuông nhỏ, 6 đồng tiền, An Nhẫn Thủy). TUYỆT ĐỐI không Hỏa. Giữ tĩnh.",
+  2: "Hóa bằng KIM (chuông gió 6 thanh, hồ lô đồng, 6 xu). Không treo trên đầu giường. Không Thủy/Hỏa.",
+  3: "Hóa bằng HỎA (đèn/tranh đỏ). KHÔNG dùng Kim khắc (phản tác dụng). Tránh thiết bị điện chạy thường xuyên.",
+  7: "Hóa bằng THỦY (vật tính Thủy). Dùng vật TIẾT không dùng vật KHẮC. Nguy hơn khi gặp 3-7/5-7/6-7.",
+  6: "Khi thất vận: hóa bằng Thủy (thác nước 6 bậc, 6 quả cầu pha lê). Đề phòng gặp sao 7 = Giao Kiếm Sát.",
+  9: "Khi gặp sao xấu: tùy sao đi kèm. Nhà hướng Ly không đặt bếp hướng Đoài (tạo 9-7 cháy nổ).",
+};
+
+// ==========================================================================
 // BẢNG GHI NGUỒN — mỗi mục engine tính đều truy được về nguồn nào
 // Mức: CHẮC = có nguồn rõ + đã kiểm chứng bằng dữ liệu
 //      NGUỒN = có nguồn rõ nhưng chưa có dữ liệu đối chiếu độc lập
@@ -1069,6 +1103,133 @@ export function phanTichCung(tb: TinhBan, vanHienTai: number = tb.van): PhanTich
 }
 
 // ==========================================================================
+// HÓA GIẢI TỪNG CUNG (gộp từ engine.py — phần web trước đây chưa có)
+// ==========================================================================
+
+export type LoaiHoaGiai = "ngu_hoang" | "nhi_hac" | "sao_xau" | "thong_quan" | "danh_cuc";
+
+export interface HoaGiaiItem {
+  loai: LoaiHoaGiai;
+  tieu_de: string;
+  chi_tiet: string;
+  /** Tên các file .md trong docs/huyen-khong-phi-tinh/references/ để tra chi tiết. */
+  nguon_md: string[];
+}
+
+export interface HoaGiaiCungEntry {
+  cung: string;
+  vt: string;
+  bo_ba: string;
+  la_cung_toa: boolean;
+  la_cung_huong: boolean;
+  goi_y: HoaGiaiItem[];
+}
+
+/**
+ * Gợi ý hóa giải cho từng cung có sao/cách cục xấu — deterministic, port từ logic
+ * `phan_tich_cung` (thông quan) + bảng HOA_GIAI_SAO của engine.py, cộng thêm danh cục hung.
+ * Chỉ trả về những cung THỰC SỰ có vấn đề (goi_y không rỗng) để lớp hiển thị gọn.
+ *
+ * VẪN GIỮ RANH GIỚI "KHÔNG ĐOÁN MÒ": đây là gợi ý vật phẩm/bố trí tham khảo dựa trên sao,
+ * KHÔNG phải kết luận cát hung cuối cùng (việc đó cần loan đầu thực tế + người luận). Với Đại/
+ * Tiểu Không Vong, ưu tiên CHỈNH HƯỚNG trước, không hóa giải từng cung (lớp hiển thị nhắc lại).
+ *
+ * @param vanHienTai Vận đương lệnh dùng xét thất vận của sao 2/3/7 (mặc định = tb.van).
+ */
+export function hoaGiaiToanBan(tb: TinhBan, vanHienTai: number = tb.van): HoaGiaiCungEntry[] {
+  const kq: HoaGiaiCungEntry[] = [];
+  const thatVan = (sao: number): boolean => {
+    const tt = trangThaiSao(sao, vanHienTai);
+    return tt === "SUY" || tt === "TỬ" || tt === "TỬ/XA";
+  };
+
+  for (const c of THU_TU_BAY) {
+    const s = tb.son_ban[c];
+    const h = tb.huong_ban[c];
+    const info = CUNG_INFO[c];
+    const goiY: HoaGiaiItem[] = [];
+
+    // Ngũ Hoàng (đại sát, bất kể sinh khắc) — ưu tiên hóa trước mọi thứ khác.
+    if (s === 5 || h === 5) {
+      const vai: string[] = [];
+      if (s === 5) vai.push("Sơn tinh");
+      if (h === 5) vai.push("Hướng tinh");
+      goiY.push({
+        loai: "ngu_hoang",
+        tieu_de: `Ngũ Hoàng (${vai.join("+")}) — đại sát, kỵ động, tránh đặt bếp/cửa/giường`,
+        chi_tiet: HOA_GIAI_SAO[5],
+        nguon_md: ["l-bo-hoa-giai-tong-hop.md", "c-hoa-giai-sat-khi.md"],
+      });
+    }
+
+    // Nhị Hắc (Bệnh Phù) khi thất vận.
+    if ((s === 2 || h === 2) && thatVan(2)) {
+      goiY.push({
+        loai: "nhi_hac",
+        tieu_de: "Nhị Hắc (Bệnh Phù) thất vận",
+        chi_tiet: HOA_GIAI_SAO[2],
+        nguon_md: ["l-bo-hoa-giai-tong-hop.md", "c-hoa-giai-sat-khi.md"],
+      });
+    }
+
+    // Sao 3 (Xi Vưu) / 7 (Phá Quân) khi thất vận.
+    for (const sx of [3, 7]) {
+      if ((s === sx || h === sx) && thatVan(sx)) {
+        goiY.push({
+          loai: "sao_xau",
+          tieu_de: `Sao ${sx} (${TEN_SAO[sx]}) thất vận`,
+          chi_tiet: HOA_GIAI_SAO[sx],
+          nguon_md: ["l-bo-hoa-giai-tong-hop.md", "h-81-cap-sao-va-hoa-giai.md"],
+        });
+      }
+    }
+
+    // Thông Quan — khi Sơn/Hướng tinh khắc nhau (bỏ qua nếu có Ngũ Hoàng: phải hóa Ngũ Hoàng
+    // bằng Kim trước, vì Ngũ Hoàng là đại sát bất kể sinh khắc — l- Phần 4).
+    if (s !== 5 && h !== 5) {
+      for (const [a, b] of [[s, h], [h, s]] as Array<[number, number]>) {
+        if (a !== b && khac(a, b)) {
+          const key = `${NGU_HANH_SAO[a]}-${NGU_HANH_SAO[b]}`;
+          const tq = THONG_QUAN[key];
+          if (tq) {
+            goiY.push({
+              loai: "thong_quan",
+              tieu_de: `Sao ${a} (${NGU_HANH_SAO[a]}) khắc sao ${b} (${NGU_HANH_SAO[b]}) → thông quan bằng ${tq[0]}`,
+              chi_tiet: tq[1],
+              nguon_md: ["l-bo-hoa-giai-tong-hop.md"],
+            });
+          }
+          break;
+        }
+      }
+    }
+
+    // Danh cục 2 sao có tên & HUNG — nêu tên + trỏ tới nguồn tra cách hóa theo cặp.
+    const dc = layDanhCuc(s, h);
+    if (dc && (dc[1] === "HUNG" || dc[1] === "ĐẠI HUNG")) {
+      goiY.push({
+        loai: "danh_cuc",
+        tieu_de: `${dc[0]} [${dc[1]}]`,
+        chi_tiet: `${dc[2]}. Tra cách hóa theo cặp sao ở nguồn bên dưới.`,
+        nguon_md: ["h-81-cap-sao-va-hoa-giai.md", "c-hoa-giai-sat-khi.md", "l-bo-hoa-giai-tong-hop.md"],
+      });
+    }
+
+    if (goiY.length) {
+      kq.push({
+        cung: info.ten,
+        vt: info.vt,
+        bo_ba: `${s}-${tb.van_ban[c]}-${h}`,
+        la_cung_toa: c === tb.cung_toa,
+        la_cung_huong: c === tb.cung_huong,
+        goi_y: goiY,
+      });
+    }
+  }
+  return kq;
+}
+
+// ==========================================================================
 // NIÊN TINH / NGUYỆT TINH
 // ==========================================================================
 
@@ -1200,6 +1361,8 @@ export interface KetQuaHuyenKhong {
   chinh_linh_than: ChinhLinhThanResult;
   thu_son_xuat_sat: ThuSonXuatSatEntry[];
   cac_cung: PhanTichCungEntry[];
+  /** Gợi ý hóa giải từng cung có sao/cách cục xấu (xét theo vận đương lệnh). */
+  hoa_giai: HoaGiaiCungEntry[];
   luu_nien?: LuuNienResult;
 }
 
@@ -1232,6 +1395,7 @@ export function tinhToanHuyenKhong(
     chinh_linh_than: chinhLinhThan(vanHienTai),
     thu_son_xuat_sat: thuSonXuatSat(tb, vanHienTai),
     cac_cung: phanTichCung(tb, vanHienTai),
+    hoa_giai: hoaGiaiToanBan(tb, vanHienTai),
   };
   if (opts.nam) {
     out.luu_nien = phanTichLuuNien(tb, opts.nam, opts.thangAm ?? null, vanHienTai);

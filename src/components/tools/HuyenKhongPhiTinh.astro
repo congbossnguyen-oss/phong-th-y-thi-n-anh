@@ -25,6 +25,13 @@ import {
 
 export const prerender = false;
 
+// 🔒 Admin-gate cho khối HÓA GIẢI bổ sung (anh Công 9/9/2026 chốt: "chỉ admin xem"). Phần TÍNH TOÁN
+// hiện có (tinh bàn, cách cục, Thành Môn, Chính-Linh Thần, Thu Sơn Xuất Sát, chi tiết cung) GIỮ NGUYÊN
+// công khai cho khách; chỉ khối "Gợi ý hóa giải" mới + thư viện .md là chỉ hiện cho admin. Vì component
+// SSR (prerender=false), khối này chỉ render bên trong {laQuanTri && ...} nên KHÔNG lọt vào HTML gửi cho
+// khách chưa đăng nhập admin — cùng cơ chế trang /kiem-chung Bát Trạch.
+const laQuanTri = Astro.locals.user?.isAdmin === true;
+
 // 8 hướng bát quái theo thứ tự la bàn, dùng cho mọi select/checkbox Nhóm B (cung Lạc Thư, bỏ Trung Cung).
 const HUONG_8 = [1, 8, 3, 4, 9, 2, 7, 6];
 
@@ -130,6 +137,36 @@ const MAU_TRANG_THAI: Record<string, string> = {
   "SUY": "text-(--color-ink-700)",
   "TỬ": "text-(--color-danger-600)",
   "TỬ/XA": "text-(--color-ink-600)",
+};
+
+// Thư viện hóa giải chi tiết (chỉ nạp cho khối admin). Bundle .md lúc build qua import.meta.glob(?raw)
+// — cùng cách content-loader.ts của Bát Tự/Tử Vi, chạy được cả Node lẫn Cloudflare (không đọc fs lúc
+// chạy). Nguồn giữ 1 bản duy nhất ở docs/huyen-khong-phi-tinh/references/, KHÔNG hardcode vào TS.
+const refModules = import.meta.glob("../../../docs/huyen-khong-phi-tinh/references/*.md", {
+  query: "?raw",
+  import: "default",
+  eager: true,
+}) as Record<string, string>;
+const docRef = (ten: string): string => {
+  const key = Object.keys(refModules).find((k) => k.endsWith(`/${ten}`));
+  return key ? refModules[key] : "";
+};
+const THU_VIEN_HOA_GIAI = laQuanTri
+  ? [
+      { file: "l-bo-hoa-giai-tong-hop.md", tieu_de: "Bộ hóa giải tổng hợp (11 phần — đọc phần 1 trước)" },
+      { file: "c-hoa-giai-sat-khi.md", tieu_de: "Hóa giải sát khí (xếp theo đồng thuận nhiều thầy)" },
+      { file: "h-81-cap-sao-va-hoa-giai.md", tieu_de: "81 cặp sao & cách hóa từng cặp" },
+      { file: "i-thu-son-xuat-sat-cua-chinh-duong-khi.md", tieu_de: "Hóa bằng bố cục (Thu Sơn Xuất Sát)" },
+    ].map((x) => ({ ...x, noi_dung: docRef(x.file) }))
+  : [];
+
+// Nhãn ngắn cho từng loại gợi ý hóa giải (khối admin).
+const NHAN_LOAI_HOA_GIAI: Record<string, string> = {
+  ngu_hoang: "Ngũ Hoàng",
+  nhi_hac: "Nhị Hắc",
+  sao_xau: "Sao xấu thất vận",
+  thong_quan: "Thông quan",
+  danh_cuc: "Danh cục hung",
 };
 ---
 
@@ -509,6 +546,82 @@ Thành Môn xét theo VẬN HIỆN TẠI (Vận {kq.van_hien_tai}), không phả
                 ))}
               </div>
             </section>
+
+            {laQuanTri && (
+              <section class="rounded-(--radius-card) border-2 border-(--color-cinnabar-500)/40 bg-(--color-cinnabar-500)/[0.04] p-5">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="rounded-full bg-(--color-cinnabar-500) px-2.5 py-0.5 text-xs font-bold text-white">🔒 CHỈ CHUYÊN GIA / ADMIN</span>
+                  <h2 class="font-display text-2xl font-bold text-(--color-ink-950)">Gợi ý hóa giải từng cung</h2>
+                </div>
+                <p class="mt-2 text-sm font-medium text-(--color-ink-700)">
+                  Khối này chỉ hiện với admin, KHÔNG hiện cho khách. Đây là gợi ý vật phẩm/bố trí mang tính tham khảo dựa trên sao — <strong>không phải kết luận cát hung cuối cùng</strong>. Xét theo Vận {kq.van_hien_tai} (đương lệnh).
+                </p>
+
+                <div class="mt-4 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4 text-sm text-(--color-ink-800)">
+                  <p class="font-bold text-(--color-ink-950)">4 nguyên tắc gốc (áp dụng cho mọi trường hợp)</p>
+                  <ol class="mt-1.5 list-inside list-decimal space-y-1">
+                    <li>Thứ tự ưu tiên: <strong>TRÁNH</strong> (không đặt cửa/bếp/giường ở phương xấu) → <strong>KHÔNG KÍCH HOẠT</strong> (giữ tĩnh) → cuối cùng mới <strong>HÓA GIẢI bằng vật phẩm</strong>.</li>
+                    <li><strong>HÓA (tiết) hơn KHẮC (chế)</strong> — dùng ngũ hành sinh-tiết, tránh vật khắc trực tiếp (khắc làm sao xấu phản ứng mạnh hơn, nhất là sao 3).</li>
+                    <li>Ưu tiên <strong>thông khí bắc cầu</strong> dẫn dòng khí kết thúc ở sao vô hại, hơn là chặn đứng.</li>
+                    <li>Sát khí thuộc Thổ (Ngũ Hoàng, Nhị Hắc) → dùng <strong>KIM</strong>, tuyệt đối tránh Hỏa (Hỏa sinh Thổ làm sát mạnh thêm).</li>
+                  </ol>
+                </div>
+
+                {(kq.tinh_ban.phan_loai_huong.muc === "xau" || kq.tinh_ban.phan_loai_huong.muc === "nguy_hiem" ||
+                  kq.tinh_ban.phan_loai_toa.muc === "xau" || kq.tinh_ban.phan_loai_toa.muc === "nguy_hiem") && (
+                  <div class="mt-4 rounded-(--radius-control) border-2 border-(--color-danger-500)/50 bg-(--color-danger-500)/10 p-4 text-sm font-semibold text-(--color-danger-600)">
+                    ⚠️ Nhà phạm Không Vong: với cách cục này việc cần làm trước tiên là <strong>CHỈNH LẠI HƯỚNG</strong> (nghiêng hẳn về sơn có vượng tinh), KHÔNG hóa giải từng cung. Các gợi ý dưới đây chỉ dùng khi đã xử lý xong hướng.
+                  </div>
+                )}
+
+                <div class="mt-4 space-y-2">
+                  {kq.hoa_giai.length === 0 ? (
+                    <p class="text-base font-medium text-(--color-ink-700)">Không có cung nào có sao/cách cục xấu cần hóa giải đặc biệt theo lý khí.</p>
+                  ) : (
+                    kq.hoa_giai.map((cung) => (
+                      <div class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4">
+                        <p class="font-bold text-(--color-ink-950)">
+                          {cung.cung} — {cung.bo_ba}
+                          {cung.la_cung_toa && <span class="ml-2 text-sm font-bold text-(--color-cinnabar-500)">◄ TỌA</span>}
+                          {cung.la_cung_huong && <span class="ml-2 text-sm font-bold text-(--color-cinnabar-500)">◄ HƯỚNG</span>}
+                        </p>
+                        <div class="mt-2 space-y-2">
+                          {cung.goi_y.map((g) => (
+                            <div class="rounded border-l-4 border-(--color-cinnabar-500)/50 bg-(--color-ivory-100) px-3 py-2">
+                              <p class="text-sm font-bold text-(--color-ink-900)">
+                                <span class="mr-1.5 rounded bg-(--color-ink-900)/10 px-1.5 py-0.5 text-xs font-semibold text-(--color-ink-700)">{NHAN_LOAI_HOA_GIAI[g.loai]}</span>
+                                {g.tieu_de}
+                              </p>
+                              <p class="mt-1 text-sm text-(--color-ink-800)">{g.chi_tiet}</p>
+                              <p class="mt-1 text-xs italic text-(--color-ink-500)">Tra chi tiết: {g.nguon_md.join(", ")}</p>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+
+                <p class="mt-4 rounded-(--radius-control) border border-(--color-gold-400)/50 bg-(--color-gold-400)/10 p-3 text-xs font-medium text-(--color-gold-700)">
+                  ⚠️ Vật phẩm hóa giải chỉ là <strong>gợi ý tham khảo</strong>, hiệu quả phụ thuộc loan đầu thực tế và phải do chuyên gia đối chiếu tại chỗ. Engine KHÔNG tự kết luận đắc/thất cách hay cát/hung cuối cùng.
+                </p>
+
+                {THU_VIEN_HOA_GIAI.length > 0 && (
+                  <div class="mt-5">
+                    <h3 class="font-display text-lg font-bold text-(--color-ink-950)">Thư viện hóa giải chi tiết (nguồn đầy đủ)</h3>
+                    <p class="mt-1 text-xs text-(--color-ink-600)">Bấm để bung nội dung đầy đủ từ tài liệu gốc — dùng khi cần tra sâu ngoài gợi ý ngắn ở trên.</p>
+                    <div class="mt-2 space-y-2">
+                      {THU_VIEN_HOA_GIAI.map((f) => (
+                        <details class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50)">
+                          <summary class="cursor-pointer px-4 py-2.5 text-sm font-semibold text-(--color-ink-900)">{f.tieu_de}</summary>
+                          <pre class="max-h-[28rem] overflow-y-auto whitespace-pre-wrap border-t border-(--color-ivory-300) px-4 py-3 text-xs leading-relaxed text-(--color-ink-800)">{f.noi_dung}</pre>
+                        </details>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </section>
+            )}
 
             <section class="rounded-(--radius-card) border-2 border-(--color-gold-400) bg-(--color-gold-400)/10 p-6 text-center">
               <p class="font-display text-xl font-bold text-(--color-ink-950)">Cần luận chi tiết theo đúng hoàn cảnh nhà mình?</p>

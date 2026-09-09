@@ -11,6 +11,36 @@ quá giới hạn Cloudflare), gây lỗi 502. Thay vì chữa cháy bằng mode
 chi tiết sang chuyên gia người thật. Đã xoá: route `luan-ai.ts`, lib `luan-ai.ts`, `tri-thuc-ai.ts`.
 `goi-ai.ts` để nguyên (entry `huyen-khong-luan-chi-tiet` thành cấu hình thừa vô hại, không gọi tới).
 
+## Cập nhật 9/9/2026 — BỔ SUNG luận hóa giải (chỉ admin) + đối chiếu gói skill
+
+Gói bổ sung `huyen-khong-phi-tinh-web` (kèm `data/engine.py`) yêu cầu so engine cũ trên web với
+`data/engine.py` rồi tư vấn giữ/gộp/thay. Kết quả đối chiếu:
+
+- **Tinh bàn 2 engine KHỚP 100%**: chạy chéo `engine.ts` (web) và `data/engine.py` trên 24 sơn ×
+  9 vận = **216 lá số** (7128 phép so ô Sơn/Vận/Hướng + nhập trung + chiều bay) → **0 sai lệch**.
+  Hai bản cùng gốc `scripts/engine.py`.
+- `engine.ts` (web) đang NHỈNH HƠN `data/engine.py`: có tách Vận nhà vs Vận đương lệnh (thoái vận),
+  `vanTuNam`, `xetMoCuaPhu` chi tiết hơn (lọc Hướng tinh thật), Chiếu Thần. `data/engine.py` chỉ
+  nhỉnh ở phần HÓA GIẢI từng cung.
+- **Anh Công chốt (9/9/2026): GIỮ engine web, chỉ GỘP phần hóa giải còn thiếu — KHÔNG thay engine.**
+  Khối hóa giải mới **CHỈ admin xem** (phần tính toán cũ giữ nguyên công khai cho khách).
+
+Đã gộp:
+1. `engine.ts`: thêm `THONG_QUAN` + `HOA_GIAI_SAO` + `khac()` (port 1:1 từ `engine.py`) và hàm
+   [`hoaGiaiToanBan(tb, vanHienTai)`](./engine.ts) → gợi ý hóa giải từng cung (Ngũ Hoàng; Nhị Hắc/
+   sao 3/sao 7 thất vận; thông quan khi 2 sao khắc; danh cục hung). Thêm field `hoa_giai` vào
+   `KetQuaHuyenKhong`. KHÔNG đụng vào tinh bàn / `phanTichCung` công khai.
+2. Thêm 1 file tri thức: `docs/huyen-khong-phi-tinh/references/l-bo-hoa-giai-tong-hop.md` (bộ tổng
+   hợp 11 phần). 13 file `references/` còn lại đối chiếu **byte-for-byte KHÔNG đổi** so với gói.
+3. [`HuyenKhongPhiTinh.astro`](../../components/tools/HuyenKhongPhiTinh.astro): khối "Gợi ý hóa
+   giải" + "Thư viện hóa giải chi tiết" (bung `.md` l/c/h/i qua `import.meta.glob(?raw)` — cùng cách
+   `content-loader.ts`) — bọc trong `{laQuanTri && ...}`, `laQuanTri = Astro.locals.user?.isAdmin
+   === true`. Component SSR nên khối này KHÔNG lọt vào HTML gửi khách (đã render trang thật để kiểm).
+
+Kiểm chứng: `npx vitest run tests/huyen-khong-phi-tinh-engine.test.ts` → **96/96 pass** (thêm 5 test
+hóa giải). `npx astro build` sạch (0 lỗi). Render SSR với khách chưa đăng nhập: không lọt bất kỳ
+chuỗi hóa giải/`.md` nào; nội dung admin vẫn bundle server-side để render khi `isAdmin`.
+
 ## Cấu trúc
 
 - [`engine.ts`](./engine.ts) — port TypeScript 1:1 từ `scripts/engine.py` gốc (giữ nguyên 100%
