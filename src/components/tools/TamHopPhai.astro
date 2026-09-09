@@ -4,7 +4,8 @@
 // KHÔNG ở <script> client) → khách không nhận bất kỳ dữ liệu/JSON engine nào, chỉ HTML placeholder.
 //
 // Form method="GET": admin nhập Hướng + các sơn quan sát thực địa → kết quả hiện ngay dưới.
-// Nút "Nhờ AI viết luận giải" (riêng, KHÔNG tự chạy) gọi /api/dai-cat-loi/tam-hop-phai/luan-giai.
+// KHÔNG dùng AI: phần luận cát/hung do Thầy trực tiếp thực hiện từ số liệu tra bảng (gỡ lớp AI
+// 10/9/2026 — anh Công: "không cần AI vì đây là công cụ anh kiểm tra cho khách").
 //
 // NGUYÊN TẮC "KHÔNG ĐOÁN": thiếu input nào, engine in cảnh báo rõ — trang hiển thị đủ, không bớt.
 import Container from "../ui/Container.astro";
@@ -211,31 +212,9 @@ const AM_DUONG_DISPLAY: Record<string, string> = { Am: "Âm", Duong: "Dương" }
             </section>
           )}
 
-          {/* Lớp AI — nút riêng, KHÔNG tự chạy */}
-          <section class="rounded-(--radius-card) border-2 border-(--color-gold-400) bg-(--color-gold-400)/5 p-6 text-center">
-            <p class="font-display text-xl font-bold text-(--color-ink-950)">Nhờ AI viết luận giải</p>
-            <p class="mx-auto mt-2 max-w-2xl text-sm font-medium text-(--color-ink-700)">AI sẽ diễn giải dữ liệu tra bảng ở trên thành bài viết hoàn chỉnh. Bước này phát sinh chi phí và chỉ chạy khi Công bấm xác nhận.</p>
-            <div class="mt-4">
-              <button
-                type="button"
-                id="thp-ai-btn"
-                data-huong={String(huongNum)}
-                data-thuykhau={thuyKhau ?? ""}
-                data-gianglong={giangLong ?? ""}
-                data-giangkhi={giangKhi ?? ""}
-                data-laithuy={laiThuy ?? ""}
-                data-khuthuy={khuThuy ?? ""}
-                class="inline-flex items-center gap-2 rounded-(--radius-pill) bg-(--color-gold-400) px-6 py-3 text-sm font-extrabold text-(--color-on-accent) shadow-lg transition hover:bg-(--color-gold-300)"
-              >✍️ Nhờ AI viết luận giải</button>
-            </div>
-
-            <div id="thp-ai-dangchay" class="mt-4 hidden rounded-(--radius-card) border border-(--color-gold-500)/40 bg-(--color-gold-400)/10 p-4 text-sm font-medium text-(--color-ink-800)">⏳ Đang gọi AI viết luận giải…</div>
-            <div id="thp-ai-loi" class="mt-4 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm text-(--color-danger-500)"></div>
-
-            <div id="thp-ai-ketqua" class="mt-4 hidden text-left">
-              <p class="rounded-t-(--radius-card) border border-(--color-gold-500)/50 bg-(--color-gold-400)/15 px-4 py-2 text-sm font-bold text-(--color-gold-700)">Nội dung do AI viết — cần Công kiểm tra lại trước khi dùng cho khách</p>
-              <div id="thp-ai-noidung" class="rounded-b-(--radius-card) border border-t-0 border-(--color-ivory-300) bg-(--color-ivory-50) p-4 text-sm leading-relaxed text-(--color-ink-900)" style="white-space: pre-wrap;"></div>
-            </div>
+          {/* KHÔNG dùng AI — phần luận do Thầy trực tiếp thực hiện từ số liệu tra bảng ở trên. */}
+          <section class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4 text-sm font-medium leading-relaxed text-(--color-ink-700)">
+            Số liệu tra bảng phía trên (Long Cục, Thủy/Sa Pháp, Bát Sát Huỳnh Tuyền, cảnh báo) là phần khách quan để Thầy kiểm tra. Phần luận cát/hung cuối cùng do Thầy trực tiếp đối chiếu loan đầu thực địa và viết cho khách — công cụ không tự kết luận.
           </section>
         </div>
       )}
@@ -243,81 +222,4 @@ const AM_DUONG_DISPLAY: Record<string, string> = { Am: "Âm", Duong: "Dương" }
   </Container>
 )}
 
-{/* Modal xác nhận AI — hiện khi bấm nút, chỉ gọi AI sau khi xác nhận */}
-{laQuanTri && kq && (
-  <div id="thp-ai-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-    <div class="w-full max-w-md rounded-2xl bg-(--color-ivory-50) p-6 text-left shadow-xl">
-      <h3 class="font-display text-lg font-bold text-(--color-ink-950)">Nhờ AI viết luận giải</h3>
-      <p class="mt-2 text-sm text-(--color-ink-700)">Bước này sẽ gọi AI (có phát sinh chi phí) để viết bài luận giải hoàn chỉnh từ dữ liệu tra bảng ở trên. Tiếp tục?</p>
-      <label for="thp-ai-loandau" class="mt-4 block text-xs font-semibold text-(--color-ink-800)">Mô tả Loan Đầu (nếu muốn AI đề cập) — tùy chọn</label>
-      <textarea id="thp-ai-loandau" rows="3" placeholder="Vd: phía trước có hồ nước tụ, bên trái có núi cao tề chỉnh…" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-100) px-3 py-2 text-sm text-(--color-ink-900)"></textarea>
-      <div class="mt-4 flex justify-end gap-3">
-        <button type="button" id="thp-ai-cancel" class="rounded-(--radius-pill) border border-(--color-ivory-400) px-4 py-2 text-sm font-semibold text-(--color-ink-700)">Hủy</button>
-        <button type="button" id="thp-ai-confirm" class="rounded-(--radius-pill) bg-(--color-gold-400) px-5 py-2 text-sm font-extrabold text-(--color-on-accent)">Tiếp tục gọi AI</button>
-      </div>
-    </div>
-  </div>
-)}
-
-<script>
-  const btn = document.getElementById("thp-ai-btn");
-  if (btn) {
-    const modal = document.getElementById("thp-ai-modal")!;
-    const cancel = document.getElementById("thp-ai-cancel")!;
-    const xacNhan = document.getElementById("thp-ai-confirm") as HTMLButtonElement;
-    const loanDau = document.getElementById("thp-ai-loandau") as HTMLTextAreaElement;
-    const ketQuaEl = document.getElementById("thp-ai-ketqua")!;
-    const noiDungEl = document.getElementById("thp-ai-noidung")!;
-    const dangChayEl = document.getElementById("thp-ai-dangchay")!;
-    const loiEl = document.getElementById("thp-ai-loi")!;
-
-    const moModal = () => modal.classList.remove("hidden");
-    const dongModal = () => modal.classList.add("hidden");
-    btn.addEventListener("click", moModal);
-    cancel.addEventListener("click", dongModal);
-    modal.addEventListener("click", (e) => { if (e.target === modal) dongModal(); });
-
-    xacNhan.addEventListener("click", async () => {
-      dongModal();
-      loiEl.classList.add("hidden");
-      ketQuaEl.classList.add("hidden");
-      dangChayEl.classList.remove("hidden");
-      xacNhan.disabled = true;
-
-      const d = (btn as HTMLElement).dataset;
-      const payload = {
-        huong: Number(d.huong),
-        thuyKhau: d.thuykhau || undefined,
-        giangLong: d.gianglong || undefined,
-        giangKhi: d.giangkhi || undefined,
-        laiThuy: d.laithuy || undefined,
-        khuThuy: d.khuthuy || undefined,
-        moTaLoanDau: loanDau.value.trim() || undefined,
-      };
-
-      try {
-        const res = await fetch("/api/dai-cat-loi/tam-hop-phai/luan-giai", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload),
-        });
-        const data = await res.json();
-        dangChayEl.classList.add("hidden");
-        if (!res.ok || !data.ok) {
-          loiEl.textContent = data?.error ?? "Gọi AI thất bại. Vui lòng thử lại.";
-          loiEl.classList.remove("hidden");
-          return;
-        }
-        noiDungEl.textContent = data.noi_dung;
-        ketQuaEl.classList.remove("hidden");
-        ketQuaEl.scrollIntoView({ behavior: "smooth", block: "start" });
-      } catch {
-        dangChayEl.classList.add("hidden");
-        loiEl.textContent = "Có lỗi mạng. Vui lòng thử lại.";
-        loiEl.classList.remove("hidden");
-      } finally {
-        xacNhan.disabled = false;
-      }
-    });
-  }
-</script>
+{/* Đã gỡ lớp AI (modal + script gọi /api/.../luan-giai) — Tam Hợp chỉ còn engine tra bảng, luận do Thầy. */}

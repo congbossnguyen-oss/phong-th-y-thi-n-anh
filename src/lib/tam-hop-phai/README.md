@@ -3,18 +3,20 @@
 Port TypeScript 1:1 từ engine Python gốc (gói `tam-hop-web-module`). Công cụ **nội bộ** — chỉ tài
 khoản quản trị dùng được; khách chỉ thấy màn "đang hoàn thiện".
 
+> **Cập nhật 10/9/2026 — ĐÃ GỠ LỚP AI** (anh Công: *"không cần AI vì đây là công cụ anh kiểm tra
+> cho khách"*). Chỉ còn engine tra bảng; phần luận cát/hung do Thầy trực tiếp từ số liệu. Đã xóa
+> `ai-prompt.ts` + route `luan-giai.ts` + nút/modal/script AI trong component. Entry
+> `"tam-hop-luan-giai"` trong `goi-ai.ts` để nguyên (cấu hình thừa vô hại, không còn nơi gọi) —
+> giống cách xử lý ở Huyền Không Phi Tinh.
+
 ## Các file
 
 | File | Vai trò |
 |---|---|
 | `src/lib/tam-hop-phai/engine.ts` | Engine tra bảng thuần (không AI, không mạng). Port 1:1 từ `engine_reference.py`. |
-| `src/lib/tam-hop-phai/ai-prompt.ts` | System prompt NGUYÊN VĂN + hàm thay biến `{{ket_qua_json}}`, `{{mo_ta_loan_dau_admin_nhap}}`. |
 | `tests/tam-hop-phai-engine.test.ts` | Port 4 nhóm self-test + ca đầy đủ (đối chiếu `vi-du-output-python.txt`) + ca thiếu input. |
-| `src/components/tools/TamHopPhai.astro` | Gate `isAdmin` + form GET + kết quả + nút AI (modal xác nhận). Engine chỉ chạy server-side. |
+| `src/components/tools/TamHopPhai.astro` | Gate `isAdmin` + form GET + kết quả engine (không AI). Engine chỉ chạy server-side. |
 | `src/pages/dai-cat-loi/tam-hop-phai.astro` | Khung trang mỏng (BaseLayout + PageHero). URL `/dai-cat-loi/tam-hop-phai`. |
-| `src/pages/api/dai-cat-loi/tam-hop-phai/luan-giai.ts` | Endpoint AI admin-only (403 nếu không phải admin). |
-
-Chỗ chạm file chung duy nhất: thêm 2 dòng đăng ký `"tam-hop-luan-giai"` vào `src/lib/ai/goi-ai.ts`.
 
 ## Nguyên tắc (giữ đúng như bản Python)
 
@@ -23,8 +25,8 @@ Chỗ chạm file chung duy nhất: thêm 2 dòng đăng ký `"tam-hop-luan-giai
 - **Bát Sát Huỳnh Tuyền**: luôn kèm cảnh báo "độ tin cậy TRUNG BÌNH".
 - **Thầy-only**: tính toán + render kết quả chỉ chạy khi `Astro.locals.user?.isAdmin === true`; engine
   chỉ import trong frontmatter (server-side), không ở `<script>` client → khách không nhận dữ liệu engine.
-- **AI tùy chọn**: chỉ gọi sau khi admin bấm xác nhận trong modal (không tự chạy khi load). Dùng lớp
-  chung `goiAiToolUseVoiRetry` (route hiện tại: DeepSeek, ép `deepseek-chat`). Kết quả kèm nhãn cảnh báo.
+- **KHÔNG dùng AI** (gỡ 10/9/2026): engine cho kết quả tra bảng đầy đủ, phần luận cát/hung do Thầy
+  trực tiếp đối chiếu loan đầu thực địa — thống nhất với hướng đã chọn ở Huyền Không Phi Tinh.
 
 ## Chạy / kiểm thử
 
