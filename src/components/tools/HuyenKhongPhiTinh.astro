@@ -160,6 +160,18 @@ const THU_VIEN_HOA_GIAI = laQuanTri
     ].map((x) => ({ ...x, noi_dung: docRef(x.file) }))
   : [];
 
+// Neo (id) cho từng file trong "Thư viện hóa giải chi tiết" bên dưới — dùng để biến dòng
+// "Tra chi tiết: <tên file>" ở mỗi gợi ý hóa giải thành LINK bấm nhảy thẳng + tự bung đúng mục,
+// thay vì hiện tên file trần khiến admin không biết tra ở đâu (anh Công phản hồi 9/9/2026).
+const idThuVien = (file: string): string =>
+  `hg-lib-${file.replace(/\.md$/i, "").replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+const NHAN_NGAN_THEO_FILE: Record<string, string> = {
+  "l-bo-hoa-giai-tong-hop.md": "Bộ hóa giải tổng hợp",
+  "c-hoa-giai-sat-khi.md": "Hóa giải sát khí",
+  "h-81-cap-sao-va-hoa-giai.md": "81 cặp sao & hóa giải",
+  "i-thu-son-xuat-sat-cua-chinh-duong-khi.md": "Thu Sơn Xuất Sát",
+};
+
 // Nhãn ngắn cho từng loại gợi ý hóa giải (khối admin).
 const NHAN_LOAI_HOA_GIAI: Record<string, string> = {
   ngu_hoang: "Ngũ Hoàng",
@@ -593,7 +605,19 @@ Thành Môn xét theo VẬN HIỆN TẠI (Vận {kq.van_hien_tai}), không phả
                                 {g.tieu_de}
                               </p>
                               <p class="mt-1 text-sm text-(--color-ink-800)">{g.chi_tiet}</p>
-                              <p class="mt-1 text-xs italic text-(--color-ink-500)">Tra chi tiết: {g.nguon_md.join(", ")}</p>
+                              <p class="mt-1 text-xs text-(--color-ink-500)">
+                                Tra chi tiết:{" "}
+                                {g.nguon_md.map((file, i) => (
+                                  <>
+                                    {i > 0 && ", "}
+                                    <a
+                                      href={`#${idThuVien(file)}`}
+                                      class="italic text-(--color-cinnabar-500) underline decoration-dotted hover:decoration-solid"
+                                    >{NHAN_NGAN_THEO_FILE[file] ?? file}</a>
+                                  </>
+                                ))}
+                                {" "}(bấm để bung ngay bên dưới)
+                              </p>
                             </div>
                           ))}
                         </div>
@@ -609,10 +633,10 @@ Thành Môn xét theo VẬN HIỆN TẠI (Vận {kq.van_hien_tai}), không phả
                 {THU_VIEN_HOA_GIAI.length > 0 && (
                   <div class="mt-5">
                     <h3 class="font-display text-lg font-bold text-(--color-ink-950)">Thư viện hóa giải chi tiết (nguồn đầy đủ)</h3>
-                    <p class="mt-1 text-xs text-(--color-ink-600)">Bấm để bung nội dung đầy đủ từ tài liệu gốc — dùng khi cần tra sâu ngoài gợi ý ngắn ở trên.</p>
+                    <p class="mt-1 text-xs text-(--color-ink-600)">Bấm để bung nội dung đầy đủ từ tài liệu gốc — dùng khi cần tra sâu ngoài gợi ý ngắn ở trên. Link "Tra chi tiết" ở mỗi gợi ý phía trên sẽ tự nhảy xuống và bung đúng mục tương ứng ở đây.</p>
                     <div class="mt-2 space-y-2">
                       {THU_VIEN_HOA_GIAI.map((f) => (
-                        <details class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50)">
+                        <details id={idThuVien(f.file)} class="scroll-mt-24 rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50)">
                           <summary class="cursor-pointer px-4 py-2.5 text-sm font-semibold text-(--color-ink-900)">{f.tieu_de}</summary>
                           <pre class="max-h-[28rem] overflow-y-auto whitespace-pre-wrap border-t border-(--color-ivory-300) px-4 py-3 text-xs leading-relaxed text-(--color-ink-800)">{f.noi_dung}</pre>
                         </details>
@@ -620,6 +644,38 @@ Thành Môn xét theo VẬN HIỆN TẠI (Vận {kq.van_hien_tai}), không phả
                     </div>
                   </div>
                 )}
+
+                <script is:inline>
+                  // Bấm link "Tra chi tiết: <tên>" ở trên → tự MỞ đúng <details> tương ứng trong thư
+                  // viện + cuộn tới đó, thay vì chỉ nhảy neo suông (một số webview trong app Zalo/
+                  // Facebook không tự mở <details> khi nhảy neo, nên tự mở bằng JS cho chắc — anh Công
+                  // phản hồi 9/9/2026 không biết tra hóa giải ở đâu).
+                  //
+                  // is:inline BẮT BUỘC ở đây: trang này SSR theo yêu cầu (prerender=false, phụ thuộc
+                  // Astro.locals.user lúc chạy) nên lúc build tĩnh Astro không "thấy" khối admin này
+                  // để đóng gói script riêng — đã tự kiểm bằng build thật: KHÔNG dùng is:inline thì
+                  // Astro tạo entry cho script trong manifest server nhưng KHÔNG sinh ra file .js
+                  // tương ứng trong dist/client/_astro/ → script 404, im lặng không chạy trên web
+                  // thật. is:inline nhúng thẳng script vào HTML, không qua bước đóng gói nên không
+                  // dính lỗi này. Vì is:inline KHÔNG được biên dịch, cố tình viết JS thuần (bỏ kiểu
+                  // TypeScript, tránh cú pháp quá mới) để chạy được cả trên webview cũ trong app.
+                  function moHoaGiaiTheoHash(hash) {
+                    if (!hash || hash.indexOf("#hg-lib-") !== 0) return;
+                    var el = document.querySelector(hash);
+                    if (!el || el.tagName !== "DETAILS") return;
+                    el.open = true;
+                    el.scrollIntoView({ behavior: "smooth", block: "start" });
+                  }
+                  document.addEventListener("click", function (e) {
+                    var a = e.target && e.target.closest ? e.target.closest('a[href^="#hg-lib-"]') : null;
+                    if (!a) return;
+                    e.preventDefault();
+                    var hash = a.getAttribute("href") || "";
+                    if (window.history && window.history.pushState) window.history.pushState(null, "", hash);
+                    moHoaGiaiTheoHash(hash);
+                  });
+                  if (window.location.hash) moHoaGiaiTheoHash(window.location.hash);
+                </script>
               </section>
             )}
 
