@@ -9,6 +9,7 @@ import { coQuyenTruyCap, hangYeuCauTheoCauHoi, layGoiDangHoatDong } from "../../
 import { conLuotHoiKhong, ghiNhanLuotHoi, ghiNhanCauHoiDaHoi, tongLuotDaDung } from "../../../lib/subscriptions/usage";
 import { duocKhuyenMai, TONG_LUOT_MIEN_PHI_KHUYEN_MAI } from "../../../lib/quan-su/khuyen-mai-luan-giai";
 import { kiemDuyetCauHoiTuDo } from "../../../lib/quan-su/kiem-duyet-cau-hoi";
+import { luuLichSuLuan } from "../../../lib/quan-su/lich-su-luan";
 import { checkRateLimit } from "../../../lib/rate-limit";
 import type { CoinLineValue } from "../../../lib/luc-hao";
 
@@ -169,17 +170,19 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
     ? { day: hs.day, month: hs.month, year: hs.year, gender: hs.gender, hour: hs.hour ?? undefined }
     : undefined;
 
+  const dauVaoQuanSu = {
+    question_id: body.question_id,
+    castingMethod,
+    tosses,
+    seriTien,
+    soTuNhien,
+    ngaySinh,
+    moTa: typeof body.moTa === "string" ? body.moTa : undefined,
+    doiTuong,
+  };
+
   try {
-    const result = await runQuanSu({
-      question_id: body.question_id,
-      castingMethod,
-      tosses,
-      seriTien,
-      soTuNhien,
-      ngaySinh,
-      moTa: typeof body.moTa === "string" ? body.moTa : undefined,
-      doiTuong,
-    });
+    const result = await runQuanSu(dauVaoQuanSu);
     // Chỉ tính lượt khi luận giải THÀNH CÔNG — khách không nhận được gì thì không bị trừ lượt.
     if (locals.user.isAdmin !== true) await ghiNhanLuotHoi(locals.user.id);
     // Ghi lại câu hỏi đã chọn (kể cả admin test) — phục vụ thống kê xu hướng quan tâm, tách biệt
@@ -190,6 +193,17 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
       body.question_id,
       body.question_id === "cau-hoi-tu-do" && typeof body.moTa === "string" ? body.moTa : undefined,
     );
+
+    // Lưu lịch sử luận giải (anh Công 10/9/2026: khách phản hồi hỏi quẻ rồi quên mất kết quả, không
+    // biết tra lại ở đâu) — lưu NGUYÊN kết quả TRƯỚC khi khoá "Cách hóa giải" ở dưới, để khách nâng
+    // cấp lên Cao cấp sau này xem lại lịch sử thì mở khoá được luôn cả phần cũ (không mãi mãi mất
+    // phần đó vì lúc hỏi còn ở gói Cơ bản). Lỗi lưu KHÔNG được làm hỏng response — khách đã tốn 1
+    // lượt cho AI luận xong, lỗi ghi log lịch sử không đáng để huỷ cả kết quả họ đang chờ.
+    try {
+      await luuLichSuLuan(locals.user.id, dauVaoQuanSu, result);
+    } catch (err) {
+      console.error("[quan-su/luan] Lưu lịch sử luận giải thất bại (không chặn response):", err);
+    }
 
     // Phần "Cách hóa giải" CHỈ mở cho gói Cao cấp đang hoạt động (anh Công quyết định 30/8/2026) —
     // gói Cơ bản vẫn xem đủ phần luận giải + kết quả quân sư, chỉ riêng phương pháp hóa giải cụ thể

@@ -127,6 +127,13 @@
       "when": 1788779797937,
       "tag": "0017_fast_justice",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1788980139073,
+      "tag": "0018_majestic_lockjaw",
+      "breakpoints": true
     }
   ]
 }

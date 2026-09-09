@@ -140,8 +140,7 @@ const choDoiTuongKhac = dungThanHintFor(question.category).kind === "the-hao";
 
           <script type="application/json" id="qs-question" set:html={JSON.stringify(question)}></script>
           <script>
-            import { CAN, CHI } from "../../../lib/menh-nap-am";
-            import { CHI_NGU_HANH } from "../../../lib/bat-tu";
+            import { renderKetQuaHtml } from "../../../lib/quan-su/render-ket-qua-client";
 
             const qEl = document.getElementById("qs-question");
             const question = JSON.parse(qEl?.textContent || "{}");
@@ -279,161 +278,10 @@ const choDoiTuongKhac = dungThanHintFor(question.category).kind === "the-hao";
               }
             }
 
-            function bar(dim) {
-              const pct = Math.round((dim.score / 10) * 100);
-              const warn = dim.higherIsBetter ? "" : " warn";
-              const note = dim.higherIsBetter ? "" : ' <span style="color:var(--qs-muted);font-size:0.72rem;">(càng cao càng thận trọng)</span>';
-              return `<div class="qs-dim${warn}"><div class="lab"><span>${dim.label}${note}</span><span>${dim.score}/10</span></div><div class="track"><div class="fill" style="width:${pct}%"></div></div></div>`;
-            }
-            function esc(s) { const d = document.createElement("div"); d.textContent = s == null ? "" : String(s); return d.innerHTML; }
-            function points(cls, arr) { return `<ul class="qs-points ${cls}">${arr.map((s) => `<li>${esc(s)}</li>`).join("")}</ul>`; }
-
-            // Bảng quẻ đầy đủ (Nạp Giáp, Lục Thân, Thế/Ứng, Tuần Không, Lục Thú) — dark theme khớp
-            // trang, KHÁC bản "thẻ giấy" xuất PNG ở /gieo-que-kinh-dich (bản đó tách riêng để tải
-            // ảnh, không hợp hiển thị giữa 1 trang nền tối). Thầy, 2026-08-23: "phải cho anh hiện
-            // ra ảnh quẻ dịch... anh đối chiếu mới biết đúng hay sai về cách luận giải" — khách và
-            // Thầy cần tự soát số liệu gốc, không chỉ tin lời luận của AI.
-            const LUC_THAN_TAT = { "Huynh Đệ": "Huynh", "Tử Tôn": "Tử", "Thê Tài": "Thê", "Quan Quỷ": "Quan", "Phụ Mẫu": "Phụ" };
-
-            function lineBarHtml(value, isDong) {
-              const color = isDong ? "var(--qs-gold)" : "var(--qs-ivory)";
-              const bar = value === 1
-                ? `<div style="height:6px;border-radius:2px;background:${color};"></div>`
-                : `<div style="height:6px;display:flex;justify-content:space-between;"><div style="width:42%;height:100%;border-radius:2px;background:${color};"></div><div style="width:42%;height:100%;border-radius:2px;background:${color};"></div></div>`;
-              return `<div style="width:16px;">${bar}</div>`;
-            }
-
-            // Bảng thu gọn tối đa để 2 cột (Chính/Biến) vừa khung điện thoại hẹp nhất mà KHÔNG tràn
-            // trang (Thầy: "quẻ trên mobile đang lỗi tràn ra... chỉ cần nhìn đúng quẻ là được", 2026-
-            // 08-24) — dùng Lục Thân viết tắt (LUC_THAN_TAT) và chấm tròn nhỏ thay chữ "Không" cho
-            // Tuần Không, đổi padding/cỡ chữ nhỏ lại.
-            function queTableHtml(q, isBien, dongPositions) {
-              const rows = [...q.hao].reverse();
-              const rowsHtml = rows.map((h) => {
-                const isRowDong = h.isDong || (isBien && dongPositions.includes(h.hao));
-                const rc = isRowDong ? "var(--qs-gold)" : "var(--qs-ivory)";
-                const fw = isRowDong ? "700" : "400";
-                return `
-                  <tr style="border-bottom:1px solid rgba(241,200,90,0.1);">
-                    <td style="padding:4px 2px;">${lineBarHtml(h.value, isRowDong)}</td>
-                    <td style="padding:4px 3px;color:${rc};font-weight:${fw};font-size:0.66rem;white-space:nowrap;">${h.theUng ?? ""}</td>
-                    <td style="padding:4px 3px;color:${rc};font-weight:${fw};font-size:0.66rem;white-space:nowrap;">${esc(LUC_THAN_TAT[h.lucThan] ?? h.lucThan)}</td>
-                    <td style="padding:4px 3px;color:${rc};font-weight:${fw};font-size:0.66rem;white-space:nowrap;">${CAN[h.canIndex]}${CHI[h.chiIndex]}<br/><span style="font-size:0.56rem;color:var(--qs-muted);font-weight:400;">${CHI_NGU_HANH[h.chiIndex]}</span></td>
-                    <td style="padding:4px 2px;text-align:center;">${h.xunKong ? `<span style="display:inline-block;width:6px;height:6px;border-radius:999px;background:${rc};" title="Tuần Không"></span>` : ""}</td>
-                  </tr>`;
-              }).join("");
-              return `
-                <div style="overflow-x:auto;">
-                  <table style="width:100%;border-collapse:collapse;min-width:150px;">
-                    <thead>
-                      <tr style="color:var(--qs-gold);font-size:0.56rem;text-transform:uppercase;letter-spacing:0.01em;">
-                        <th style="padding:2px;"></th><th style="padding:2px;text-align:left;">T/Ư</th><th style="padding:2px;text-align:left;">L.Thân</th><th style="padding:2px;text-align:left;">Can Chi</th><th style="padding:2px;text-align:center;">T.K</th>
-                      </tr>
-                    </thead>
-                    <tbody>${rowsHtml}</tbody>
-                  </table>
-                </div>`;
-            }
-
-            // Quẻ chính + quẻ biến CÙNG HÀNG, sát nhau (Thầy: "cho sát lại gần nhau chút", 2026-08-
-            // 23) — bảng đã rút gọn còn 4 cột (bỏ P.Thần lẻ ra thành 1 dòng ghi chú riêng) để vừa 2
-            // cột trên màn hình điện thoại mà không phải cuộn ngang từng bảng.
-            function renderQueDayDu(que) {
-              const dongPositions = que.dongPositions || [];
-              const coBien = !!que.bien;
-              const chinhBlock = `<div><h4 style="margin:0 0 0.4rem;color:var(--qs-gold);font-size:0.82rem;">Quẻ chính<br/><span style="color:var(--qs-ivory);font-size:0.95rem;">${esc(que.chinh.name)}</span></h4>${queTableHtml(que.chinh, false, dongPositions)}</div>`;
-              const bienBlock = coBien
-                ? `<div><h4 style="margin:0 0 0.4rem;color:var(--qs-gold);font-size:0.82rem;">Quẻ biến<br/><span style="color:var(--qs-ivory);font-size:0.95rem;">${esc(que.bien.name)}</span></h4>${queTableHtml(que.bien, true, dongPositions)}</div>`
-                : "";
-              const phucThanHao = que.chinh.hao.filter((h) => h.phucThan);
-              const phucThanNote = phucThanHao.length
-                ? `<p style="margin:0.5rem 0 0;color:var(--qs-muted);font-size:0.74rem;">Phục Thần: ${phucThanHao.map((h) => `hào ${h.hao} ẩn ${LUC_THAN_TAT[h.phucThan.lucThan]}-${CHI[h.phucThan.chiIndex]}`).join(", ")}</p>`
-                : "";
-              const ngamNote = (que.fanYin && que.fanYin.enabled) || (que.fuYin && que.fuYin.enabled)
-                ? `<p style="margin:0.3rem 0 0;color:var(--qs-gold);font-size:0.78rem;">${[que.fanYin?.enabled ? que.fanYin.label : null, que.fuYin?.enabled ? que.fuYin.label : null].filter(Boolean).join(" · ")}</p>`
-                : "";
-              return `
-                <p style="margin:0 0 0.6rem;color:var(--qs-muted);font-size:0.8rem;">
-                  ${esc(que.canChiText)} · Tuần Không: <strong style="color:var(--qs-ivory);">${esc(que.tuanKhong)}</strong> · Nhật thần: <strong style="color:var(--qs-ivory);">${esc(que.nhatThan)}</strong> · Nguyệt lệnh: <strong style="color:var(--qs-ivory);">${esc(que.nguyetLenh)}</strong>
-                </p>
-                <div style="display:grid;grid-template-columns:${coBien ? "minmax(0,1fr) minmax(0,1fr)" : "minmax(0,1fr)"};gap:0.6rem;min-width:0;">
-                  ${chinhBlock}${bienBlock}
-                </div>
-                ${phucThanNote}
-                ${ngamNote}`;
-            }
-
+            // Phần dựng HTML kết quả (bảng quẻ, luận AI, chấm điểm...) chuyển sang module dùng chung
+            // (10/9/2026) để trang Lịch sử luận giải tái dùng được, khỏi chép lại ~250 dòng.
             function renderResult(data) {
-              const rep = data.report;
-              const que = data.que;
-              // 6. Vận trình (từ report.vanTrinh.chiBao)
-              let luckHtml = "";
-              if (rep.vanTrinh) {
-                const bars = rep.vanTrinh.chiBao.map(bar).join("");
-                luckHtml = `<div class="qs-luck"><h3>Vận trình hiện tại</h3>
-                  <div style="color:var(--qs-muted);font-size:0.82rem;margin-bottom:0.6rem;">Đại vận ${esc(rep.vanTrinh.daiVan)} · Năm ${esc(rep.vanTrinh.namHienTai)}</div>
-                  ${bars}</div>`;
-              }
-              // Có bài luận sâu thì lấy làm phần chính; không có thì lùi về bản chấm điểm bằng luật.
-              const ai = data.luanAI;
-              const li = (arr) => (arr || []).map((x) => `<li>${esc(x)}</li>`).join("");
-              const khoiAI = ai
-                ? `
-                  <div class="qs-sect"><h4>Quân Sư luận</h4>
-                    <ul style="margin:0;padding-left:1.1rem;line-height:1.75;">${li(ai.phan_tich)}</ul>
-                  </div>
-                  ${ai.nguyen_nhan_cot_loi ? `<div class="qs-sect"><h4>Gốc rễ vấn đề</h4><p style="margin:0;line-height:1.75;">${esc(ai.nguyen_nhan_cot_loi)}</p></div>` : ""}
-                  <div class="qs-sect"><h4>Điểm cần lưu tâm</h4>
-                    <ul style="margin:0;padding-left:1.1rem;line-height:1.75;">${li(ai.diem_can_luu_y)}</ul>
-                  </div>
-                  <div class="qs-sect"><h4>Quân Sư khuyên</h4>
-                    <ul style="margin:0;padding-left:1.1rem;line-height:1.75;">${li(ai.quan_su_khuyen)}</ul>
-                  </div>
-                  ${ai.phuong_phap_hoa_giai && ai.phuong_phap_hoa_giai.length
-                    ? `<div class="qs-sect"><h4>Cách hóa giải</h4>
-                        <ul style="margin:0;padding-left:1.1rem;line-height:1.75;">${li(ai.phuong_phap_hoa_giai)}</ul>
-                        <p style="margin:0.7rem 0 0;color:var(--qs-muted);font-size:0.8rem;line-height:1.6;">Cách hóa giải trên chỉ mang tính tham khảo, không đảm bảo hiệu quả 100% — hóa giải cần có sự linh ứng, kết hợp đúng thiên thời - địa lợi - nhân hòa, an vị vật phẩm hoặc khai quang đúng cách. Để được tư vấn chuyên sâu và thực hiện đúng, anh/chị nên liên hệ trực tiếp.</p>
-                        ${ZALO_HREF ? `<a href="${ZALO_HREF}" target="_blank" rel="noopener" class="qs-btn" style="text-decoration:none;display:inline-flex;margin-top:0.6rem;">Liên hệ trợ lý Thầy Zhi Gong (Zalo)</a>` : ""}
-                      </div>`
-                    : data.hoaGiaiBiKhoa
-                    ? `<div class="qs-sect"><h4>🔒 Cách hóa giải</h4>
-                        <p style="margin:0 0 0.6rem;color:var(--qs-muted);line-height:1.7;">Quẻ này có chỉ dấu cần hóa giải — phương pháp cụ thể chỉ mở cho gói Cao cấp.</p>
-                        <a href="/quan-su/goi-thue-bao" class="qs-btn" style="text-decoration:none;display:inline-flex;">Nâng cấp gói Cao cấp</a>
-                      </div>`
-                    : ""}
-                  ${ai.thoi_diem_khuyen_nghi ? `<div class="qs-sect"><h4>Thời điểm</h4><p style="margin:0;line-height:1.75;">${esc(ai.thoi_diem_khuyen_nghi)}</p></div>` : ""}`
-                : `
-                  <div class="qs-sect"><h4>Điểm thuận</h4>${points("thuan", rep.diemThuan)}</div>
-                  <div class="qs-sect"><h4>Điểm cần lưu ý</h4>${points("luuy", rep.diemLuuY)}</div>
-                  <div class="qs-sect"><h4>Quân Sư khuyên</h4>${points("khuyen", rep.quanSuKhuyen)}</div>`;
-
-              resultEl.innerHTML = `
-                <div class="qs-verdict">
-                  <h2>KẾT QUẢ QUÂN SƯ</h2>
-                  <div class="qs-badge ${rep.ketLuan}">${esc(rep.ketLuanLabel)}</div>
-                  <div class="qs-score">
-                    <div class="lab"><span>Mức độ thuận</span><span>${rep.mucDoThuan}/100</span></div>
-                    <div class="track"><div class="fill" style="width:${rep.mucDoThuan}%"></div></div>
-                  </div>
-                  <p>${esc(rep.xuHuong)}</p>
-                  ${khoiAI}
-                  ${data.isDemo ? '<div class="qs-demo">⚙ Bản luận này dựa trên quy tắc Lục Hào từ số liệu quẻ (Dụng Thần, vượng suy, hào động, hóa biến…). Xem chi tiết ở mục "Xem luận giải chi tiết" bên dưới.</div>' : ""}
-                </div>
-                ${luckHtml}
-                <div class="qs-luck" style="margin-top:1rem;">
-                  <h3>Quẻ đã gieo — đối chiếu số liệu gốc</h3>
-                  ${renderQueDayDu(que)}
-                </div>
-                <details class="qs-detail">
-                  <summary>Xem luận giải chi tiết (chấm điểm theo luật)</summary>
-                  <div class="body">
-                    ${esc(rep.luanGiaiChiTiet).replace(/\n/g, "<br>")}<br><br>
-                    Bảng chấm điểm:
-                    <ul style="margin:0.4rem 0 0;padding-left:1.1rem;">
-                      ${rep.bangChamDiem.map((i) => `<li>${i.delta > 0 ? "+" : ""}${i.delta} · ${esc(i.factor)} — ${esc(i.reason)}</li>`).join("") || "<li>(không có điều chỉnh)</li>"}
-                    </ul>
-                  </div>
-                </details>`;
+              resultEl.innerHTML = renderKetQuaHtml(data, ZALO_HREF);
               resultEl.scrollIntoView({ behavior: "smooth", block: "start" });
             }
 

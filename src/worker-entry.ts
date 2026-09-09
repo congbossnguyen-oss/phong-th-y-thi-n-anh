@@ -13,6 +13,7 @@
  */
 import astroHandler from "@astrojs/cloudflare/entrypoints/server";
 import { chayNhacNgayLe } from "./lib/thong-bao/chay-nhac-ngay-le";
+import { xoaLichSuLuanQuaHan } from "./lib/quan-su/lich-su-luan";
 
 // Kiểu tối thiểu tự khai cho đúng 2 tham số Cloudflare truyền vào scheduled() — dự án CHƯA cài
 // @cloudflare/workers-types, không kéo thêm phụ thuộc chỉ để có kiểu đầy đủ (ngoài phạm vi cần cho
@@ -43,6 +44,18 @@ export default {
         })
         .catch((err) => {
           console.error(`[cron ${event.cron}] gui-nhac-ngay-le LỖI:`, err);
+        }),
+    );
+
+    // Dọn lịch sử luận giải Kinh Dịch quá 6 tháng (xem lich-su-luan.ts) — chạy cùng cron hằng ngày
+    // có sẵn, không thêm Cron Trigger riêng.
+    ctx.waitUntil(
+      xoaLichSuLuanQuaHan()
+        .then((soDong) => {
+          console.log(`[cron ${event.cron}] xoa-lich-su-luan-qua-han: đã xoá ${soDong} dòng`);
+        })
+        .catch((err) => {
+          console.error(`[cron ${event.cron}] xoa-lich-su-luan-qua-han LỖI:`, err);
         }),
     );
   },
