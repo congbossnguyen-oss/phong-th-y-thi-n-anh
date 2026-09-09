@@ -1,0 +1,93 @@
+---
+// LỊCH SỬ LUẬN GIẢI — anh Công 10/9/2026: khách phản hồi "hỏi quẻ rồi quên mất kết quả, không biết
+// tra lại ở đâu" (trước đây kết quả chỉ hiện ra màn hình, không lưu gì). CHỈ khách tự xem lại của
+// mình (chốt 10/9/2026: "chắc chỉ khách muốn xem thôi") — giữ 6 tháng, xem lich-su-luan.ts.
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import BottomNav from "../../../components/quan-su/BottomNav.astro";
+import "../../../styles/quan-su.css";
+import { layLichSuLuan } from "../../../lib/quan-su/lich-su-luan";
+import { getQuestion } from "../../../lib/quan-su";
+
+export const prerender = false;
+
+if (!Astro.locals.user) {
+  return Astro.redirect("/hoc-vien/dang-nhap?tiep=%2Fquan-su%2Flich-su");
+}
+
+const TRANG_SO_DONG = 20;
+const trangHienTai = Math.max(1, Number(Astro.url.searchParams.get("trang")) || 1);
+const danhSach = await layLichSuLuan(Astro.locals.user.id, TRANG_SO_DONG + 1, (trangHienTai - 1) * TRANG_SO_DONG);
+const conTrangSau = danhSach.length > TRANG_SO_DONG;
+const hienThi = danhSach.slice(0, TRANG_SO_DONG);
+
+const TEN_CACH_LAP: Record<string, string> = {
+  "gieo-tay": "Gieo đồng xu",
+  "mai-hoa": "Mai hoa dịch số",
+  "seri-tien": "Seri tiền",
+  "3-so": "3 số tự nhiên",
+};
+
+const KET_LUAN_MAU: Record<string, string> = {
+  NEN: "var(--qs-good)",
+  KHONG_NEN: "var(--qs-bad)",
+  NEN_CHO: "var(--qs-gold)",
+  CO_DIEU_KIEN: "var(--qs-gold)",
+};
+
+function dinhDangNgayGio(d: Date): string {
+  return new Intl.DateTimeFormat("vi-VN", {
+    day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit",
+    timeZone: "Asia/Ho_Chi_Minh",
+  }).format(d);
+}
+---
+
+<BaseLayout title="Lịch sử luận giải — Quân Sư Thiên Anh" description="Xem lại các lượt hỏi Quân Sư đã luận giải." appShell noIndex>
+  <section class="qs">
+    <div class="qs-wrap">
+      <a class="qs-back" href="/quan-su">← Quân Sư</a>
+      <p class="qs-eyebrow" style="margin-top:1rem;">Lịch sử</p>
+      <h1 class="qs-h1">Lịch sử luận giải</h1>
+      <p class="qs-sub">Lưu lại 6 tháng gần nhất — chỉ mình anh/chị xem được.</p>
+
+      {hienThi.length === 0 ? (
+        <div class="qs-notice">Chưa có lượt hỏi nào trong 6 tháng gần đây.</div>
+      ) : (
+        <div style="display:grid;gap:0.7rem;">
+          {hienThi.map((m) => {
+            const cauHoi = getQuestion(m.questionId);
+            const rep = m.ketQua.report;
+            const mau = KET_LUAN_MAU[rep.ketLuan] || "var(--qs-ivory)";
+            return (
+              <a href={`/quan-su/lich-su/${m.id}`} class="qs-card" style="display:block;">
+                <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:0.6rem;">
+                  <div>
+                    <div class="ti">{cauHoi?.title ?? m.ketQua.question?.title ?? "Câu hỏi"}</div>
+                    <div class="de" style="margin-top:0.2rem;">
+                      {dinhDangNgayGio(m.createdAt)} · {TEN_CACH_LAP[m.castingMethod] ?? m.castingMethod}
+                    </div>
+                    {m.questionId === "cau-hoi-tu-do" && m.dauVao.moTa && (
+                      <div class="de" style="margin-top:0.3rem;font-style:italic;">"{m.dauVao.moTa}"</div>
+                    )}
+                  </div>
+                  <span style={`flex-shrink:0;font-weight:700;font-size:0.82rem;color:${mau};`}>{rep.ketLuanLabel}</span>
+                </div>
+              </a>
+            );
+          })}
+        </div>
+      )}
+
+      <div class="qs-row" style="justify-content:space-between;margin-top:1.2rem;max-width:420px;">
+        {trangHienTai > 1 ? (
+          <a href={`/quan-su/lich-su?trang=${trangHienTai - 1}`} class="qs-btn qs-btn-ghost" style="text-decoration:none;">← Mới hơn</a>
+        ) : <span />}
+        {conTrangSau && (
+          <a href={`/quan-su/lich-su?trang=${trangHienTai + 1}`} class="qs-btn qs-btn-ghost" style="text-decoration:none;">Cũ hơn →</a>
+        )}
+      </div>
+    </div>
+  </section>
+
+  <BottomNav />
+</BaseLayout>

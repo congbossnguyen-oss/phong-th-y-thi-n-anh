@@ -8,6 +8,7 @@ import {
   numeric,
   pgEnum,
   uniqueIndex,
+  jsonb,
 } from "drizzle-orm/pg-core";
 
 // --- Tài khoản & phiên đăng nhập (khu học viên) ---
@@ -180,6 +181,36 @@ export const quanSuCauHoiLuot = pgTable("quan_su_cau_hoi_luot", {
   questionId: text("question_id").notNull(),
   moTa: text("mo_ta"),
   userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
+// Lịch sử luận giải Kinh Dịch — chủ dự án yêu cầu 10/9/2026: khách phản hồi "hỏi quẻ rồi quên mất
+// kết quả, không biết tra lại ở đâu" vì trước đây kết quả chỉ trả về màn hình, KHÔNG lưu gì cả.
+// Lưu NGUYÊN `RunQuanSuInput` (đầu vào: cách lập quẻ, tosses/seriTien/soTuNhien dùng thật, mô tả
+// tình huống) và NGUYÊN `QuanSuResult` (đầu ra: quẻ đầy đủ `que` — đã có sẵn Không Vong/Nhật
+// Thần/Nguyệt Lệnh, báo cáo cố vấn, bài luận AI) làm 2 cột jsonb — KHÔNG tách từng trường ra cột
+// riêng, để chắc chắn không thiếu chi tiết nào khách/Thầy cần đối chiếu lại sau, và khỏi phải chạy
+// migration mỗi khi cấu trúc `QuanSuResult` đổi.
+//
+// CHỈ khách tự xem lại của mình (không có mục tra cứu cho admin/CSKH ở giai đoạn này, chủ dự án
+// chốt 10/9/2026: "chắc chỉ khách muốn xem thôi") — xem lich-su-luan.ts.
+//
+// Giữ 6 THÁNG (chủ dự án chốt 10/9/2026, cân nhắc giữa 3/6 tháng/vĩnh viễn — chi phí lưu trữ như
+// nhau ở mọi mức vì mỗi bản ghi chỉ vài KB, chọn theo lợi ích khách hàng: đủ rộng để "quên rồi nhớ
+// ra" vẫn tìm lại được, nhưng có giới hạn, không tồn dữ liệu vô thời hạn), KHÔNG lưu vĩnh viễn. Dọn
+// bản ghi quá hạn qua `xoaLichSuLuanQuaHan()` (lich-su-luan.ts) — repo này (Node/Render, KHÔNG có
+// worker-entry.ts/Cron Trigger như bản Cloudflare) CHƯA nối hàm đó vào đâu để tự chạy định kỳ, cần
+// nối vào cron/scheduled job riêng của hạ tầng Render khi triển khai thật.
+export const quanSuLichSuLuan = pgTable("quan_su_lich_su_luan", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  questionId: text("question_id").notNull(),
+  /** "gieo-tay" | "mai-hoa" | "seri-tien" | "3-so" — xem CastingMethod trong orchestrator.ts. */
+  castingMethod: text("casting_method").notNull(),
+  /** Nguyên `RunQuanSuInput` đã dùng để lập quẻ (tosses/seriTien/soTuNhien/moTa/doiTuong...). */
+  dauVao: jsonb("dau_vao").notNull(),
+  /** Nguyên `QuanSuResult` trả về (que/report/luanAI/vanTrinh/isDemo). */
+  ketQua: jsonb("ket_qua").notNull(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
