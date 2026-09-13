@@ -5,9 +5,11 @@
  * interface `AstronomicalProvider`, không bao giờ biết tới `sweph` — đúng ADR-001 và
  * `docs/astrology-module/ARCHITECTURE/PHASE3A_ASTRONOMICAL_CORE.md`.
  *
- * PHẠM VI PHASE 3A: chỉ vị trí hành tinh/node/Chiron/Lilith thô (`getPlanetPosition`,
- * `getNodePosition`). House cusps/Ascendant/Midheaven/Ayanamsa CHƯA implement — xem
- * `SwissEphemerisPhase3AScopeError`. KHÔNG có house/aspect/dignity/interpretation nào ở đây.
+ * PHẠM VI: Phase 3A implement vị trí hành tinh/node/Chiron/Lilith thô (`getPlanetPosition`,
+ * `getNodePosition`). Phase 3B-1 bổ sung house cusps/Ascendant/Midheaven (`getHouseCusps`,
+ * `getAscendant`, `getMidheaven`) — CHỈ hình học Tây phương thuần tuý (tropical, house cusps,
+ * ASC/MC), KHÔNG có aspect/dignity/interpretation nào ở đây. `getAyanamsa` vẫn CHƯA implement
+ * (Phase 4+, Vedic — xem `SwissEphemerisPhase3AScopeError`).
  *
  * QUY ƯỚC TOẠ ĐỘ (phải đọc trước khi dùng số liệu từ class này):
  * - Geocentric (tâm Trái Đất), KHÔNG heliocentric.
@@ -40,10 +42,12 @@
 import {
   calc_ut,
   constants,
+  houses_ex2,
   set_ephe_path,
   utc_to_jd,
   version,
 } from "sweph";
+import type { HouseSystems, HousesList, PointsList } from "sweph";
 
 import type {
   AngleResult,
@@ -62,9 +66,12 @@ import type {
 import { resolveDefaultEphemerisPath } from "./ephemerisPath.js";
 import {
   SwissEphemerisCalculationError,
+  SwissEphemerisHouseCalculationError,
+  SwissEphemerisHouseSystemUndefinedAtLatitudeError,
   SwissEphemerisPhase3AScopeError,
   SwissEphemerisPrecisionDegradedError,
   SwissEphemerisUnsupportedBodyError,
+  SwissEphemerisUnsupportedHouseSystemError,
 } from "./errors.js";
 
 /**
@@ -96,6 +103,41 @@ const KNOWN_BODY_TO_SWISS_EPH_ID: Record<KnownCelestialBody, number> = {
 };
 
 const SWISS_EPH_CALC_FLAGS = constants.SEFLG_SWIEPH | constants.SEFLG_SPEED;
+
+/**
+ * Ánh xạ định danh house system ĐÃ BIẾT sang mã chữ cái Swiss Ephemeris — xác nhận bằng thực
+ * nghiệm qua `sweph.house_name()` (KHÔNG suy đoán từ tài liệu online, gọi thẳng thư viện đang
+ * dùng để lấy tên chính thức của từng mã). CHỈ 12 hệ phổ biến nhất được hỗ trợ ở Phase 3B-1 —
+ * KHÔNG hỗ trợ "G" (Gauquelin sectors, trả về 36 "cusp" thay vì 12, không tương thích shape
+ * `HouseCusps` của interface). Danh sách này có thể mở rộng sau (thêm 1 dòng, KHÔNG đổi kiến
+ * trúc) — `HouseSystemId` vẫn là `string` mở, provider chỉ giới hạn khả năng TÍNH THẬT của nó.
+ *
+ * Xác nhận bằng thực nghiệm (2026-09, `sweph@2.10.3-8`): CHỈ Placidus và Koch (2 hệ dùng phép
+ * chia CUNG GIỜ — temporal/diurnal arc trisection) thất bại bên trong vòng cực; 10 hệ còn lại
+ * trong bảng này vẫn tính được (flag=OK) kể cả tại đúng 90° — xem
+ * docs/astrology-module/ARCHITECTURE/PHASE3B1_HOUSES_ANGLES.md "Edge cases".
+ */
+const KNOWN_HOUSE_SYSTEM_TO_SWISS_EPH_CODE: Record<string, HouseSystems> = {
+  placidus: "P",
+  koch: "K",
+  equal: "A",
+  whole_sign: "W",
+  porphyry: "O",
+  campanus: "C",
+  regiomontanus: "R",
+  topocentric: "T",
+  morinus: "M",
+  alcabitius: "B",
+  krusinski: "U",
+  vehlow_equal: "V",
+};
+
+/** Chuỗi con xuất hiện trong `error` native của Swiss Ephemeris khi một hệ time-based (Placidus/Koch) không tính được bên trong vòng cực — xác nhận bằng thực nghiệm, KHÔNG suy đoán. */
+const POLAR_CIRCLE_ERROR_PATTERN = /polar circle/i;
+
+/** Nhà (house) 1 và 10 LUÔN chính là Ascendant/Midheaven ở MỌI hệ quadrant-based — xác nhận bằng thực nghiệm (points[0]===houses[0], points[1]===houses[9]). */
+const ASCENDANT_POINT_INDEX = 0;
+const MIDHEAVEN_POINT_INDEX = 1;
 
 /** Thời điểm dùng để "probe" tình trạng ephemeris lúc `getMetadata()` được gọi — J2000.0, luôn nằm trong phạm vi bất kỳ bộ file `.se1` hợp lý nào. */
 const METADATA_PROBE_UTC = new Date("2000-01-01T12:00:00.000Z");
@@ -155,16 +197,26 @@ export class SwissEphemerisProvider implements AstronomicalProvider {
     return { nodeType, pole, longitude };
   }
 
-  getHouseCusps(_utcInstant: Date, _latitude: number, _longitude: number, _houseSystem: HouseSystemId): HouseCusps {
-    throw new SwissEphemerisPhase3AScopeError("getHouseCusps");
+  getHouseCusps(utcInstant: Date, latitude: number, longitude: number, houseSystem: HouseSystemId): HouseCusps {
+    const data = this.computeHouses(utcInstant, latitude, longitude, houseSystem, `getHouseCusps(${houseSystem})`);
+    const cusps = data.houses.map(normalizeDegrees);
+    if (cusps.length !== 12) {
+      throw new SwissEphemerisHouseCalculationError(
+        `getHouseCusps(${houseSystem})`,
+        `expected exactly 12 cusps from Swiss Ephemeris, got ${cusps.length}`,
+      );
+    }
+    return { houseSystem, cusps: cusps as unknown as HouseCusps["cusps"] };
   }
 
-  getAscendant(_utcInstant: Date, _latitude: number, _longitude: number, _houseSystem: HouseSystemId): AngleResult {
-    throw new SwissEphemerisPhase3AScopeError("getAscendant");
+  getAscendant(utcInstant: Date, latitude: number, longitude: number, houseSystem: HouseSystemId): AngleResult {
+    const data = this.computeHouses(utcInstant, latitude, longitude, houseSystem, `getAscendant(${houseSystem})`);
+    return { longitude: normalizeDegrees(data.points[ASCENDANT_POINT_INDEX]) };
   }
 
-  getMidheaven(_utcInstant: Date, _latitude: number, _longitude: number, _houseSystem: HouseSystemId): AngleResult {
-    throw new SwissEphemerisPhase3AScopeError("getMidheaven");
+  getMidheaven(utcInstant: Date, latitude: number, longitude: number, houseSystem: HouseSystemId): AngleResult {
+    const data = this.computeHouses(utcInstant, latitude, longitude, houseSystem, `getMidheaven(${houseSystem})`);
+    return { longitude: normalizeDegrees(data.points[MIDHEAVEN_POINT_INDEX]) };
   }
 
   getAyanamsa(_utcInstant: Date, _ayanamsaId: AyanamsaId): number {
@@ -208,6 +260,45 @@ export class SwissEphemerisProvider implements AstronomicalProvider {
 
     const [lon, lat, dist, lonSpd] = result.data;
     return [lon, lat, dist, lonSpd];
+  }
+
+  /**
+   * Tính house cusps + points (ASC/MC/ARMC/Vertex/...) qua `houses_ex2`. Validate `houseSystem`
+   * TRƯỚC KHI gọi native (xem `SwissEphemerisUnsupportedHouseSystemError` — native KHÔNG tự từ
+   * chối mã lạ). Phân biệt rõ 2 loại lỗi native: "polar circle" (house system ĐÃ biết nhưng
+   * không tính được ở vĩ độ này — `SwissEphemerisHouseSystemUndefinedAtLatitudeError`) và lỗi
+   * khác (`SwissEphemerisHouseCalculationError`) — KHÔNG gộp chung, đúng yêu cầu "return
+   * deterministic, meaningful errors", không phải một exception mơ hồ duy nhất cho mọi trường hợp.
+   *
+   * QUYẾT ĐỊNH: khi native báo lỗi polar-circle, `getAscendant`/`getMidheaven` CŨNG throw lỗi này
+   * (không cố gắng "cứu" riêng ASC/MC dù về lý thuyết thiên văn chúng độc lập với cách chia house
+   * trung gian) — nhất quán với "Do NOT hide Swiss Ephemeris errors", và tránh khẳng định một chi
+   * tiết hành vi native chưa được xác minh độc lập trong session này. Xem PHASE3B1_HOUSES_ANGLES.md.
+   */
+  private computeHouses(
+    utcInstant: Date,
+    latitude: number,
+    longitude: number,
+    houseSystem: HouseSystemId,
+    operationLabel: string,
+  ): { houses: HousesList; points: PointsList } {
+    const swissCode = KNOWN_HOUSE_SYSTEM_TO_SWISS_EPH_CODE[houseSystem];
+    if (swissCode === undefined) {
+      throw new SwissEphemerisUnsupportedHouseSystemError(houseSystem);
+    }
+
+    const jdUt = this.toJulianDayUt(utcInstant);
+    const result = houses_ex2(jdUt, constants.SEFLG_SWIEPH, latitude, longitude, swissCode);
+
+    if (result.flag === constants.ERR) {
+      const nativeError = result.error ?? "";
+      if (POLAR_CIRCLE_ERROR_PATTERN.test(nativeError)) {
+        throw new SwissEphemerisHouseSystemUndefinedAtLatitudeError(houseSystem, latitude, nativeError);
+      }
+      throw new SwissEphemerisHouseCalculationError(operationLabel, nativeError || "unknown error");
+    }
+
+    return { houses: result.data.houses, points: result.data.points };
   }
 
   private probePrecisionClass(): PrecisionClass {

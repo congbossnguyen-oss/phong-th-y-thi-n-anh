@@ -1,8 +1,12 @@
 /**
  * Bảng mã lỗi ổn định cho Astrology Module — đúng danh sách đã freeze ở
- * docs/astrology-module/ARCHITECTURE/ARCHITECTURE_FREEZE.md mục 5 (chỉ lấy các mã liên quan
- * Phase 1; các mã còn lại — EPHEMERIS_ERROR, CALCULATION_ERROR, UNSUPPORTED_SCHOOL,
- * UNSUPPORTED_FEATURE, UNSUPPORTED_HOUSE_SYSTEM_AT_LATITUDE — thuộc Phase 3+ và chưa dùng ở đây).
+ * docs/astrology-module/ARCHITECTURE/ARCHITECTURE_FREEZE.md mục 5. Phase 1 chỉ dùng 7 mã đầu
+ * (input/timezone). Phase 3B-1 (Western houses/angles) bổ sung 3 mã còn lại của bảng freeze:
+ * `UNSUPPORTED_HOUSE_SYSTEM_AT_LATITUDE` (Placidus/Koch trong vòng cực), `UNSUPPORTED_FEATURE`
+ * (house system không được provider hỗ trợ), `CALCULATION_ERROR` (lỗi native Swiss Ephemeris
+ * khác không lường trước). `UNSUPPORTED_SCHOOL`/`EPHEMERIS_ERROR` vẫn CHƯA dùng (Phase 4+/khi
+ * ephemeris file thiếu theo cách khác với vĩ độ cực — house calculation không cần file .se1 nên
+ * chưa có tình huống nào kích hoạt EPHEMERIS_ERROR ở Phase 3B-1).
  *
  * Hình dạng `AstrologyCoreError` là SUPERSET tương thích cấu trúc với `EngineError` của
  * `@thien-anh/engine-contract` ({code, message, field}) — một Engine ở Phase 3+ bọc package
@@ -18,7 +22,10 @@ export type AstrologyCoreErrorCode =
   | "INVALID_TIMEZONE"
   | "TIMEZONE_NOT_FOUND"
   | "AMBIGUOUS_LOCAL_TIME"
-  | "NONEXISTENT_LOCAL_TIME";
+  | "NONEXISTENT_LOCAL_TIME"
+  | "UNSUPPORTED_HOUSE_SYSTEM_AT_LATITUDE"
+  | "UNSUPPORTED_FEATURE"
+  | "CALCULATION_ERROR";
 
 /** Một lỗi input: mã ổn định (dùng cho xử lý tự động/i18n) + message tiếng Việt (debug/log) + field gây lỗi + chi tiết máy đọc được tuỳ mã lỗi. */
 export interface AstrologyCoreError {

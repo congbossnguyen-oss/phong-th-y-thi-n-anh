@@ -131,3 +131,56 @@ hiện tại của dự án (nghiên cứu cá nhân, không thương mại, kh�
 thay đổi (thương mại hoá, SaaS, dịch vụ công khai, phân phối cho người ngoài chủ sở hữu/gia
 đình), quyết định này BẮT BUỘC phải xem lại TRƯỚC KHI thay đổi đó triển khai — KHÔNG được coi
 quyết định Phase 3A là đã "giải quyết xong" vấn đề license cho mọi kịch bản tương lai.
+
+## 14. Phase 3B-1 — `NormalizedChart.houses[]` (sign + ruler) và `planets[].sign/house` CHƯA điền
+
+Task brief Phase 3B-1 chỉ cho phép điền `houseSystem`/`houseCusps`/`angles` — KHÔNG điền
+`houses[]` (cần bảng cai quản/ruler, một quyết định NỘI DUNG Tây phương riêng chưa được duyệt)
+hay gán `sign`/`house` cho từng hành tinh trong `planets[]` (cần cả house cusps VÀ vị trí hành
+tinh cùng lúc, và việc "hành tinh nằm nhà nào" là phép tính CHƯA được yêu cầu ở phase này). Phase
+sau (có thể gọi Phase 3B-2 hoặc 3C) cần: (a) quyết định bảng cai quản cổ điển hay hiện đại (vd.
+Mars hay Pluto cai quản Scorpio) — đây LÀ một quyết định kiến trúc/nội dung cần duyệt tường minh,
+tương tự cách house system mặc định đã cần duyệt ở Phase 3B-1; (b) viết hàm gán house cho từng
+hành tinh dựa trên house cusps đã có.
+
+## 15. `AstronomicalProvider` chưa có "error contract" chung cho mọi implementation
+
+`western/houses.ts::mapHouseProviderError()` phải biết tới các class lỗi CỤ THỂ của
+`SwissEphemerisProvider` (`SwissEphemerisHouseSystemUndefinedAtLatitudeError`,
+`SwissEphemerisUnsupportedHouseSystemError`, ...) để dịch sang `AstrologyCoreError` — vì
+interface `AstronomicalProvider` (Phase 1) không định nghĩa MỘT hình dạng lỗi chung mà mọi
+implementation phải tuân theo. Nếu tương lai có provider thứ hai (khác Swiss Ephemeris), tầng
+Chart Calculation cần mở rộng thêm nhánh nhận diện lỗi của provider đó — không sai, nhưng là một
+hạn chế có thật, nên cân nhắc một ADR mới ("Provider Error Contract") nếu số lượng provider tăng.
+
+## 16. `getAscendant`/`getMidheaven` ném lỗi vĩ độ cực GIỐNG `getHouseCusps` dù về lý thuyết ASC/MC độc lập với cách chia house trung gian
+
+`SwissEphemerisProvider.computeHouses()` coi CẢ 3 method (`getHouseCusps`/`getAscendant`/
+`getMidheaven`) đều thất bại khi Swiss Ephemeris báo "within polar circle, switched to Porphyry",
+dù về mặt thiên văn Ascendant/Midheaven là điểm hình học độc lập với cách CHIA house trung gian
+(house 1 = ASC, house 10 = MC ở MỌI hệ quadrant-based, kể cả Porphyry mà Swiss Ephemeris tự động
+chuyển sang) — quyết định này CHỦ Ý bảo thủ (nhất quán, tránh khẳng định một chi tiết hành vi
+native chưa xác minh sâu qua mã nguồn C của Swiss Ephemeris trong phạm vi phase này). Nếu tương
+lai cần ASC/MC riêng tại vĩ độ cực mà không cần house cusps, cân nhắc xác minh giả thuyết này (đọc
+`swehouse.c` hoặc hỏi trực tiếp Astrodienst) rồi nới lỏng có chủ đích.
+
+## 17. Chỉ 12/25 house system của Swiss Ephemeris có ánh xạ — mở rộng được nhưng chưa làm hết
+
+`KNOWN_HOUSE_SYSTEM_TO_SWISS_EPH_CODE` (`SwissEphemerisProvider.ts`) chỉ ánh xạ 12 hệ phổ biến
+nhất (Placidus, Koch, Equal, Whole Sign, Porphyry, Campanus, Regiomontanus, Topocentric, Morinus,
+Alcabitius, Krusinski, Vehlow). Swiss Ephemeris hỗ trợ 25 hệ (xác nhận qua `sweph.house_name()`
+cho từng mã chữ cái). Thêm hệ mới chỉ cần 1 dòng trong bảng ánh xạ — KHÔNG đổi kiến trúc. "G"
+(Gauquelin sectors, 36 "cusp" thay vì 12) CỐ Ý không hỗ trợ vì không tương thích shape `HouseCusps`
+của interface (đúng 12 phần tử).
+
+## 18. House cusps trung gian (2,3,5,6,8,9,11,12 của Placidus) chưa có oracle số học độc lập
+
+Golden test Phase 3B-1 xác nhận ĐỘC LẬP: Ascendant, Midheaven (qua công thức GMST/obliquity/RAMC
+chuẩn — xem `PHASE3B1_HOUSES_ANGLES.md`), và house 1/4/7/10 (bằng ASC/MC/DESC/IC theo ĐỊNH NGHĨA
+hình học). 8 cusp trung gian còn lại của Placidus (2,3,5,6,8,9,11,12) dùng phép chia CUNG GIỜ lặp
+(không có công thức đóng đơn giản) — Phase 3B-1 CHỈ xác nhận được các bất biến CẤU TRÚC của
+chúng (đơn điệu quanh vòng tròn, không trùng lặp, trong [0,360)), KHÔNG có oracle số học độc lập
+xác nhận GIÁ TRỊ chính xác. Đây là `VALIDATION GAP` theo đúng định nghĩa `VALIDATION_ORACLES.md`
+— ghi nhận tường minh, giống cách True Node được ghi nhận ở mục 12. Nếu cần độ tin cậy cao hơn,
+cân nhắc build `swetest` từ nguồn C (Astrodienst) hoặc đối chiếu với công cụ tính lá số của
+astro.com cho vài trường hợp cụ thể.

@@ -142,7 +142,7 @@ Per `../ASTROLOGY_REPO_AUDIT/WESTERN_AUDIT.md`, split into `western.core` (Phase
 
 | Sub-module | Content | Phase |
 |---|---|---|
-| `western.core` | Tropical zodiac; Sun→Pluto; North/South Node; ASC/MC/DESC/IC; house system (default TBD, see `ADR/ADR-001`); 5 major aspects w/ configurable orbs; retrograde flag | 3 |
+| `western.core` | Tropical zodiac; Sun→Pluto; North/South Node; ASC/MC/DESC/IC; house system (default **decided Phase 3B-1: Placidus** — this was genuinely undecided here and in `ADR/ADR-001`, approved explicitly before Phase 3B-1 implementation, see `PHASE3B1_HOUSES_ANGLES.md`); 5 major aspects w/ configurable orbs; retrograde flag | 3 |
 | `western.traditional` | Essential/accidental dignity, sect, triplicity, terms, decans, profections, zodiacal releasing, firdaria, primary directions, arabic parts | 3.1+ (deferred — `stellium` is the reference architecture per `WESTERN_AUDIT.md`, not vendored) |
 | `western.chart_ruler` | Chart ruler derivation (Ascendant sign ruler) | 3.1 |
 | Elements/Modalities | Derived display attributes off `ZodiacSign`, no new calculation | 3 |

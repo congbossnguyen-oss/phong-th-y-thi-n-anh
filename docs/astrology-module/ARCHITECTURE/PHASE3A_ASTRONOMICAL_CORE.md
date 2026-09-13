@@ -1,5 +1,10 @@
 # PHASE 3A — Astronomical Core + Swiss Ephemeris Provider
 
+**Update (Phase 3B-1)**: `getHouseCusps()`/`getAscendant()`/`getMidheaven()`, listed below as "not
+implemented" (correct as of Phase 3A), are now implemented — see
+`PHASE3B1_HOUSES_ANGLES.md`. This document is left as an accurate historical record of Phase 3A's
+own scope, not rewritten.
+
 Implements the first real (non-placeholder) `AstronomicalProvider`, per `ADR-001-Ephemeris-Strategy.md`
 and the interface frozen in `packages/astrology-core/src/astronomical/AstronomicalProvider.ts`
 (Phase 1) and widened in Phase 2.1 (`PHASE2_1_CONTRACT_HARDENING.md`). This document records what

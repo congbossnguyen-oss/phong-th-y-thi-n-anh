@@ -5,6 +5,7 @@
  */
 import { describe, expect, it } from "vitest";
 import {
+  calculateWesternHousesAndAngles,
   isWithinTolerance,
   resolveBirthDataInstant,
   roundForDisplay,
@@ -59,5 +60,22 @@ describe("public API — pipeline đầy đủ Phase 1 (validate -> resolve UTC)
     const sun = provider.getPlanetPosition(resolved.utc, "sun");
     expect(sun.longitude).toBeGreaterThanOrEqual(0);
     expect(sun.longitude).toBeLessThan(360);
+  });
+
+  it("calculateWesternHousesAndAngles export đúng qua public API, pipeline đầy đủ BirthData -> UTC -> house cusps + ASC/MC/DESC/IC thật", () => {
+    const resolved = resolveBirthDataInstant(benchmarkBirthData);
+    expect(resolved.ok).toBe(true);
+    if (!resolved.ok) throw new Error("unreachable");
+    const result = calculateWesternHousesAndAngles({
+      provider: new SwissEphemerisProvider(),
+      utcInstant: resolved.utc,
+      latitude: benchmarkBirthData.latitude,
+      longitude: benchmarkBirthData.longitude,
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error("unreachable");
+    expect(result.houseSystem).toBe("placidus");
+    expect(result.houseCusps).toHaveLength(12);
+    expect(result.angles.map((a) => a.type).sort()).toEqual(["ASC", "DESC", "IC", "MC"]);
   });
 });

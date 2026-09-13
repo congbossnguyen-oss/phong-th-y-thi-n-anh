@@ -54,15 +54,66 @@ export class SwissEphemerisPrecisionDegradedError extends Error {
   }
 }
 
-/** Ném bởi các method CHƯA implement ở Phase 3A (house cusps/ASC/MC/ayanamsa) — nằm ngoài phạm vi đã khai trong task brief Phase 3A, KHÔNG phải lỗi cấu hình. */
+/** Ném bởi các method CHƯA implement (ayanamsa — thuộc Phase 4+ Vedic, ZERO scope ở Phase 3A/3B-1). House cusps/ASC/MC ĐÃ implement từ Phase 3B-1 — KHÔNG còn dùng error này cho 3 method đó nữa. */
 export class SwissEphemerisPhase3AScopeError extends Error {
   constructor(method: string) {
     super(
-      `SwissEphemerisProvider.${method}() CHƯA implement ở Phase 3A — phạm vi Phase 3A chỉ gồm vị trí ` +
-        `hành tinh/node thô (getPlanetPosition/getNodePosition). House cusps/Ascendant/Midheaven/Ayanamsa ` +
-        `thuộc Phase 3B+ (Western house calculation) hoặc Phase 4+ (Vedic/ayanamsa) — xem ` +
-        `docs/astrology-module/ARCHITECTURE/PHASE3A_ASTRONOMICAL_CORE.md.`,
+      `SwissEphemerisProvider.${method}() CHƯA implement — thuộc Phase 4+ (Vedic/ayanamsa), ` +
+        `ZERO scope ở Western (Phase 3A/3B-1). Xem ` +
+        `docs/astrology-module/ARCHITECTURE/PHASE3B1_HOUSES_ANGLES.md.`,
     );
     this.name = "SwissEphemerisPhase3AScopeError";
+  }
+}
+
+/**
+ * Ném khi `houseSystem` là một chuỗi KHÔNG nằm trong bảng ánh xạ Swiss Ephemeris đã biết của
+ * provider này — KHÁC với `SwissEphemerisHouseSystemUndefinedAtLatitudeError` (đó là hệ ĐÃ biết
+ * nhưng không tính được ở vĩ độ này). Quan trọng: Swiss Ephemeris (native) KHÔNG tự báo lỗi cho
+ * một mã hệ nhà không xác định (`hsys` lạ) — nó âm thầm rơi về một hành vi mặc định (đã xác nhận
+ * bằng thực nghiệm: hsys="Z" vẫn trả flag=OK). Vì vậy provider này PHẢI tự validate `houseSystem`
+ * TRƯỚC KHI gọi native, không dựa vào native tự từ chối.
+ */
+export class SwissEphemerisUnsupportedHouseSystemError extends Error {
+  constructor(readonly houseSystem: string) {
+    super(
+      `SwissEphemerisProvider chưa hỗ trợ house system "${houseSystem}". Xem ` +
+        `docs/astrology-module/ARCHITECTURE/PHASE3B1_HOUSES_ANGLES.md để biết danh sách hệ đã hỗ trợ.`,
+    );
+    this.name = "SwissEphemerisUnsupportedHouseSystemError";
+  }
+}
+
+/**
+ * Ném khi house system ĐÃ BIẾT (có trong bảng ánh xạ) nhưng Swiss Ephemeris xác nhận KHÔNG tính
+ * được tại vĩ độ này — vd. Placidus/Koch bên trong vòng cực (`ARCHITECTURE_FREEZE.md` §5:
+ * "UNSUPPORTED_HOUSE_SYSTEM_AT_LATITUDE (e.g. Placidus undefined inside the polar circle)").
+ * Phát hiện bằng cách đọc CHÍNH THÔNG ĐIỆP LỖI native ("within polar circle, switched to
+ * Porphyry") — KHÔNG tự đoán ngưỡng vĩ độ (66.5°) vì đó là chi tiết thuật toán của Swiss Ephemeris,
+ * không phải hằng số nên tự tay hardcode lại ở tầng gọi.
+ */
+export class SwissEphemerisHouseSystemUndefinedAtLatitudeError extends Error {
+  constructor(
+    readonly houseSystem: string,
+    readonly latitude: number,
+    readonly nativeError: string,
+  ) {
+    super(
+      `SwissEphemerisProvider: house system "${houseSystem}" không xác định được tại vĩ độ ${latitude}° ` +
+        `(Swiss Ephemeris tự chuyển sang Porphyry cho các cusp trung gian — provider này CHỦ ĐỘNG từ chối ` +
+        `kết quả đó thay vì âm thầm trả về dưới nhãn "${houseSystem}"). Xem .nativeError để biết chi tiết native.`,
+    );
+    this.name = "SwissEphemerisHouseSystemUndefinedAtLatitudeError";
+  }
+}
+
+/** Ném khi Swiss Ephemeris trả lỗi tính house/angle KHÔNG PHẢI do vĩ độ cực (vd. lỗi native khác không lường trước). */
+export class SwissEphemerisHouseCalculationError extends Error {
+  constructor(
+    readonly operation: string,
+    readonly nativeError: string,
+  ) {
+    super(`SwissEphemerisProvider: phép tính house/angle "${operation}" thất bại (xem .nativeError để biết chi tiết native).`);
+    this.name = "SwissEphemerisHouseCalculationError";
   }
 }

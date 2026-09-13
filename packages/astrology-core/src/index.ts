@@ -55,7 +55,17 @@ export {
   SwissEphemerisCalculationError,
   SwissEphemerisPrecisionDegradedError,
   SwissEphemerisPhase3AScopeError,
+  SwissEphemerisUnsupportedHouseSystemError,
+  SwissEphemerisHouseSystemUndefinedAtLatitudeError,
+  SwissEphemerisHouseCalculationError,
 } from "./astronomical/providers/errors.js";
+
+// ---------------------------------------------------------------------------------------
+// Phase 3B-1 — Western Houses + Angles (Chart Calculation layer)
+// ---------------------------------------------------------------------------------------
+
+export type { CalculateWesternHousesAndAnglesInput, WesternHousesAndAnglesResult } from "./western/houses.js";
+export { WESTERN_DEFAULT_HOUSE_SYSTEM, calculateWesternHousesAndAngles } from "./western/houses.js";
 
 export {
   ANGULAR_TOLERANCE_FILE_BASED_DEGREES,

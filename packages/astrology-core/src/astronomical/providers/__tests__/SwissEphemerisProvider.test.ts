@@ -169,12 +169,9 @@ describe("SwissEphemerisProvider — chống 'silent Moshier fallback' (SWISS_EP
   });
 });
 
-describe("SwissEphemerisProvider — Phase 3A scope guard: house/ascendant/midheaven/ayanamsa CHƯA implement", () => {
-  it("getHouseCusps/getAscendant/getMidheaven/getAyanamsa đều ném SwissEphemerisPhase3AScopeError, KHÔNG trả số liệu bịa hay crash mơ hồ", () => {
+describe("SwissEphemerisProvider — scope guard: ayanamsa CHƯA implement (Phase 4+, Vedic — ZERO scope ở Western)", () => {
+  it("getAyanamsa ném SwissEphemerisPhase3AScopeError, KHÔNG trả số liệu bịa hay crash mơ hồ. getHouseCusps/getAscendant/getMidheaven ĐÃ implement từ Phase 3B-1 — xem SwissEphemerisProvider.houses.test.ts", () => {
     const utcInstant = new Date(J2000_UTC_ISO);
-    expect(() => defaultProvider().getHouseCusps(utcInstant, 21.0285, 105.8542, "placidus")).toThrow(SwissEphemerisPhase3AScopeError);
-    expect(() => defaultProvider().getAscendant(utcInstant, 21.0285, 105.8542, "placidus")).toThrow(SwissEphemerisPhase3AScopeError);
-    expect(() => defaultProvider().getMidheaven(utcInstant, 21.0285, 105.8542, "placidus")).toThrow(SwissEphemerisPhase3AScopeError);
     expect(() => defaultProvider().getAyanamsa(utcInstant, "lahiri")).toThrow(SwissEphemerisPhase3AScopeError);
   });
 });
