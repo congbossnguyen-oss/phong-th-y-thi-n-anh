@@ -55,7 +55,9 @@ export const mainNav: NavItem[] = [
       { label: "Lập lá số Bát Tự", href: "/lap-la-so-bat-tu" },
       { label: "Lập quẻ Kinh Dịch", href: "/gieo-que-kinh-dich" },
       { label: "Lập lá số Tử Vi", href: "/lap-la-so-tu-vi" },
-      { label: "Lập Kỳ Môn Độn Giáp", href: "/lap-ky-mon" },
+      // 13/9/2026 (anh Công): gom Kỳ Môn Độn Giáp vào group "Huyền Môn Tam Thức" (cùng Lục Nhâm,
+      // Thái Ất khi có sau) thay vì để dòng riêng — route /lap-ky-mon cũ không đổi, chỉ đổi lối vào.
+      { label: "Huyền Môn Tam Thức", href: "/huyen-mon-tam-thuc" },
       { label: "Xem ngày tốt xấu", href: "/xem-ngay-tot-xau" },
       { label: "Luận số điện thoại", href: "/luan-so-dien-thoai" },
       { label: "Tính Trùng Tang", href: "/tinh-trung-tang" },

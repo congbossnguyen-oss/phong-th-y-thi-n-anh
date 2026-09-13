@@ -1,14 +1,33 @@
 ---
 // Công cụ "Xem hướng nhà Bát Trạch" — MỘT module duy nhất, kết quả LŨY TIẾN theo
-// SPEC-OVERRIDE-MOT-MODULE.md (không phân tầng Free/Cao Cấp, không thu phí, không đăng nhập).
+// SPEC-OVERRIDE-MOT-MODULE.md (không phân tầng Free/Cao Cấp, không thu phí).
 // Logic tính nằm hết ở @thien-anh/rule-engine (BatTrachNha) qua API /api/bat-trach-nha; component
 // này chỉ dựng form + gọi API + render — không tự tính lại bất kỳ phép nào (nguyên tắc bao-trùm).
 //
-// 🔒 GIAI ĐOẠN THỬ NGHIỆM NỘI BỘ (anh Công 30/8/2026): trang gọi component này phải admin-gate ở
-// cả middleware LẪN API (xem GHI-CHU-CAN-CHU-SITE-XEM.md ở gốc dự án).
+// 🔒 KHOÁ LẠI 13/9/2026 (anh Công: "những phần trong phong thủy chính phái em để thành chế độ
+// đang hoàn thiện, chỉ để admin xem được") — TOÀN BỘ component giờ chỉ hiện cho admin (laQuanTri),
+// khách chỉ thấy màn "Đang hoàn thiện" + CTA liên hệ, cùng khuôn TamHopPhai.astro/HuyenKhongPhiTinh.
+// Trước đó (30/8/2026) trang ĐÃ MỞ CÔNG KHAI hoàn toàn, không gate.
 import Container from "../../components/ui/Container.astro";
+import Button from "../../components/ui/Button.astro";
+
+const laQuanTri = Astro.locals.user?.isAdmin === true;
 ---
 
+{!laQuanTri ? (
+  <Container class="py-16">
+    <div class="mx-auto max-w-xl rounded-(--radius-card) border border-(--color-gold-400)/30 bg-(--color-ivory-100) p-8 text-center shadow-lg">
+      <p class="inline-block rounded-full border border-(--color-gold-400) bg-(--color-gold-400)/15 px-3 py-1 text-xs font-extrabold uppercase tracking-wide text-(--color-gold-600)">Đang hoàn thiện</p>
+      <h2 class="mt-3 font-display text-2xl font-bold text-(--color-ink-950)">Xem hướng nhà Bát Trạch</h2>
+      <p class="mx-auto mt-2 max-w-md text-sm font-medium leading-relaxed text-(--color-ink-700)">
+        Công cụ xét hợp mệnh, Đông/Tây Tứ Trạch, Du Niên Bát Quái, Dương Trạch Tam Yếu đang được Thầy hoàn thiện. Phần luận cần đối chiếu loan đầu thực tế nên sẽ do chuyên gia trực tiếp thực hiện.
+      </p>
+      <div class="mt-5">
+        <Button href="/lien-he" size="lg">Liên hệ tư vấn trực tiếp</Button>
+      </div>
+    </div>
+  </Container>
+) : (
 <Container class="py-16">
   <div class="mx-auto max-w-2xl">
     <div class="mb-4 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-4 text-xs text-(--color-ink-600)">
@@ -147,8 +166,12 @@ import Container from "../../components/ui/Container.astro";
     </p>
   </div>
 </Container>
+)}
 
 <script>
+  // laQuanTri=false (khách) → <Container> ở trên không render, #bt-form không có trong DOM. Chặn
+  // sớm để tránh lỗi "Cannot read properties of null" khi các addEventListener bên dưới chạy.
+  if (document.getElementById("bt-form")) {
   interface HopMenhMotChieu {
     khi: string;
     tenKhi: string;
@@ -667,4 +690,5 @@ import Container from "../../components/ui/Container.astro";
   } catch {
     namXemInput.value = String(new Date().getFullYear());
   }
+  } // đóng if (document.getElementById("bt-form"))
 </script>

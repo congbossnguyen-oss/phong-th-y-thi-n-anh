@@ -1,11 +1,11 @@
 ---
-// TRANG "Xem hướng nhà Bát Trạch" — module MỚI (30/8/2026), MỘT luồng duy nhất, không phân
-// Free/Cao Cấp, không thu phí, kết quả lũy tiến theo SPEC-OVERRIDE-MOT-MODULE.md.
+// TRANG "Xem hướng nhà Bát Trạch" — MỘT luồng duy nhất, không phân Free/Cao Cấp, không thu phí,
+// kết quả lũy tiến theo SPEC-OVERRIDE-MOT-MODULE.md.
 //
-// ĐÃ MỞ CÔNG KHAI (30/8/2026, anh Công: "để ra ngoài như mục huyền không phi tinh") — cùng mức mở
-// như "Xem phong thủy nhà (Huyền Không Phi Tinh)": không admin-gate, đăng ký trong site-config.ts
-// mục Công cụ. Trang tự kiểm chứng "/kiem-chung" (đối chiếu số liệu nội bộ) vẫn admin-only, tự
-// kiểm tra riêng trong file .astro của nó — không liên quan tới trang chính này.
+// 🔒 KHOÁ LẠI 13/9/2026 (anh Công: "những phần trong phong thủy chính phái em để thành chế độ
+// đang hoàn thiện, chỉ để admin xem được") — component XemHuongNhaBatTrach tự gate isAdmin, khách
+// chỉ thấy màn "Đang hoàn thiện". Trước đó (30/8/2026) trang ĐÃ MỞ CÔNG KHAI, không gate. Trang tự
+// kiểm chứng "/kiem-chung" (đối chiếu số liệu nội bộ) vẫn admin-only riêng, không liên quan trang này.
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import PageHero from "../../components/ui/PageHero.astro";
 import XemHuongNhaBatTrach from "../../components/tools/XemHuongNhaBatTrach.astro";

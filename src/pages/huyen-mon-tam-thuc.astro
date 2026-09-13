@@ -1,0 +1,64 @@
+---
+// TRANG DANH MỤC "Huyền Môn Tam Thức" (13/9/2026, anh Công yêu cầu) — nhóm 3 thuật số cổ Trung Hoa:
+// Kỳ Môn Độn Giáp, (Đại) Lục Nhâm, Thái Ất Thần Số. Đặt TRONG mục "Công cụ" ở dropdown chính,
+// KHÔNG nằm dưới "Đại Cát Lợi" (khác "Phong thủy chính phái") — anh Công chỉ định rõ vị trí này.
+//
+// Hiện CHỈ có "Lập Kỳ Môn Độn Giáp" (route /lap-ky-mon đã có sẵn, không đổi, chỉ thêm 1 lối vào
+// mới qua trang này). Đại Lục Nhâm + Thái Ất CHƯA build (git status cho thấy packages/daliuren-engine
+// đang làm dở) — để anh Công tự thêm vào mảng `muc` bên dưới khi module đó xong, không tự đoán/
+// dựng card giả cho phần chưa có.
+//
+// Card dạng CHỮ (không dùng ảnh bìa như phong-thuy-chinh-phai.astro) vì chưa có ảnh bìa riêng cho
+// nhóm này — thêm module mới chỉ cần thêm 1 object vào mảng, không cần chờ thiết kế ảnh trước.
+import BaseLayout from "../layouts/BaseLayout.astro";
+import PageHero from "../components/ui/PageHero.astro";
+import Container from "../components/ui/Container.astro";
+
+export const prerender = true;
+
+// Thêm module mới (Đại Lục Nhâm, Thái Ất...) bằng cách thêm 1 object vào mảng này khi đã có trang thật.
+const muc = [
+  {
+    title: "Lập Kỳ Môn Độn Giáp",
+    mota: "Lập lá bàn Kỳ Môn Độn Giáp 9 cung theo giờ hiện tại hoặc giờ sinh (Mệnh) — kèm Tam Thắng và lịch tháng Kỳ Môn.",
+    href: "/lap-ky-mon",
+  },
+];
+---
+
+<BaseLayout
+  title="Huyền Môn Tam Thức"
+  description="Kỳ Môn Độn Giáp, Lục Nhâm, Thái Ất — ba thuật số trấn quốc của huyền học cổ Trung Hoa."
+>
+  <PageHero
+    eyebrow="Công cụ"
+    title="Huyền Môn Tam Thức"
+    description="Kỳ Môn Độn Giáp — Lục Nhâm — Thái Ất: ba thuật số cổ vốn chỉ dùng trong cung đình, quân sự, dùng để đoán định thời cơ, mưu sự và vận hạn."
+    breadcrumbs={[
+      { label: "Trang chủ", href: "/" },
+      { label: "Huyền Môn Tam Thức" },
+    ]}
+  />
+
+  <Container class="py-16">
+    <div class="mx-auto grid max-w-3xl gap-4 sm:grid-cols-2">
+      {
+        muc.map((m) => (
+          <a
+            href={m.href}
+            aria-label={m.title}
+            class="block rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl"
+          >
+            <h2 class="font-display text-xl font-bold text-(--color-ink-950)">{m.title}</h2>
+            <p class="mt-2 text-sm leading-relaxed text-(--color-ink-700)">{m.mota}</p>
+          </a>
+        ))
+      }
+    </div>
+    {muc.length < 2 && (
+      <p class="mx-auto mt-6 max-w-3xl text-center text-sm text-(--color-ink-500)">
+        Đang tiếp tục bổ sung Lục Nhâm và Thái Ất.
+      </p>
+    )}
+  </Container>
+</BaseLayout>

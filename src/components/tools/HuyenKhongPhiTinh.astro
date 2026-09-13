@@ -1,6 +1,10 @@
 ---
-// Công cụ "Xem phong thủy nhà theo Huyền Không Phi Tinh" — bản TÍNH TOÁN (Free, 0đ, KHÔNG AI),
-// CÔNG KHAI, đăng ký ở site-config.ts mục Công cụ.
+// Công cụ "Xem phong thủy nhà theo Huyền Không Phi Tinh" — bản TÍNH TOÁN (Free, 0đ, KHÔNG AI).
+//
+// 🔒 KHOÁ LẠI 13/9/2026 (anh Công: "những phần trong phong thủy chính phái em để thành chế độ
+// đang hoàn thiện, chỉ để admin xem được") — TOÀN BỘ nội dung (form + kết quả) giờ chỉ hiện cho
+// admin (laQuanTri), khách chỉ thấy màn "Đang hoàn thiện" + CTA liên hệ, cùng khuôn TamHopPhai.astro.
+// Trước đó (30/8–9/9/2026) trang công khai hoàn toàn, chỉ riêng khối "Gợi ý hóa giải" là admin-only.
 //
 // KHÔNG dùng AI (anh Công 30/8/2026: "huyền không phi tinh không sử dụng AI được không? luận như
 // bình thường được rồi, xong CTV với chuyên gia"). Lớp engine.ts tính toán khách quan (tinh bàn,
@@ -182,9 +186,23 @@ const NHAN_LOAI_HOA_GIAI: Record<string, string> = {
 };
 ---
 
-<Container class="py-10">
-  <div class="mx-auto max-w-4xl">
-    <>
+{!laQuanTri ? (
+  <Container class="py-16">
+    <div class="mx-auto max-w-xl rounded-(--radius-card) border border-(--color-gold-400)/30 bg-(--color-ivory-100) p-8 text-center shadow-lg">
+      <p class="inline-block rounded-full border border-(--color-gold-400) bg-(--color-gold-400)/15 px-3 py-1 text-xs font-extrabold uppercase tracking-wide text-(--color-gold-600)">Đang hoàn thiện</p>
+      <h2 class="mt-3 font-display text-2xl font-bold text-(--color-ink-950)">Xem phong thủy nhà (Huyền Không Phi Tinh)</h2>
+      <p class="mx-auto mt-2 max-w-md text-sm font-medium leading-relaxed text-(--color-ink-700)">
+        Công cụ lập tinh bàn Huyền Không Phi Tinh — cách cục, vượng suy 9 sao, Thành Môn, bố trí thủy, gợi ý hóa giải — đang được Thầy hoàn thiện. Phần luận cần đối chiếu loan đầu thực tế nên sẽ do chuyên gia trực tiếp thực hiện.
+      </p>
+      <div class="mt-5">
+        <Button href="/lien-he" size="lg">Liên hệ tư vấn trực tiếp</Button>
+      </div>
+    </div>
+  </Container>
+) : (
+  <Container class="py-10">
+    <div class="mx-auto max-w-4xl">
+      <>
         <form method="GET" class="flex flex-col gap-6 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
           <div>
             <p class="text-sm font-semibold text-(--color-ink-900)">Nhóm A — bắt buộc</p>
@@ -720,7 +738,8 @@ Thành Môn xét theo VẬN HIỆN TẠI (Vận {kq.van_hien_tai}), không phả
             </section>
           </div>
         )}
-    </>
-  </div>
-</Container>
+      </>
+    </div>
+  </Container>
+)}
 
