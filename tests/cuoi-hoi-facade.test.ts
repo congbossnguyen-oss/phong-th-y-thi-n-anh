@@ -62,6 +62,31 @@ describe("calculateGioCuoiHoi — tầng giờ", () => {
   });
 });
 
+// ── V3-01 (2026-09-13): regression cho correction A-01 ───────────────────────────────────────────
+// Trước sửa: TRUC_TOT_CUOI_HOI còn chứa "Bình" → mâu thuẫn trực tiếp với bảng lõi canonical
+// `trucDanhGiaTongQuat.ts` (Bình/cuoi-hoi = "ky") và KR3g0051 Q11 (嫁娶, Bình thuộc 忌). Ngày
+// 2026-10-05 (thực tế rơi vào Trực Bình, đã xác nhận bằng thực nghiệm ở V2.5) từng được engine
+// xếp "CÓ THỂ DÙNG" với diemCapDoi = 5.6/10 nhờ cộng điểm sai từ Trực Bình. Test này khoá hành vi
+// ĐÚNG qua chính public path (calculateCuoiHoiRange) — không test trực tiếp hằng số nội bộ
+// TRUC_TOT_CUOI_HOI (không export, và test hành vi bền hơn test chi tiết cài đặt).
+describe("Trực Bình KHÔNG còn được coi là Trực tốt cho cưới hỏi (V3-01 correction A-01)", () => {
+  it("ngày 2026-10-05 (Trực Bình thật) có điểm thấp hơn hẳn giá trị SAI trước khi sửa (5.6/10)", () => {
+    const range = calculateCuoiHoiRange({
+      namSinhCoDau: 1998,
+      namSinhChuRe: 1996,
+      startDate: { year: 2026, month: 10, day: 5 },
+      endDate: { year: 2026, month: 10, day: 5 },
+      nghiLe: "thanh-hon",
+      timeZone: TZ,
+      soNgayTraVe: 1,
+    });
+    // Về mặt toán học, bỏ "Bình" khỏi trucTot chỉ có thể làm giảm hoặc giữ nguyên phanChung (không
+    // bao giờ tăng) — nên nếu ngày này không bị loại thẳng, điểm PHẢI thấp hơn giá trị sai 5.6 cũ.
+    expect(range.ngayXepHang).toHaveLength(1);
+    expect(range.ngayXepHang[0]!.diemCapDoi).toBeLessThan(5.6);
+  });
+});
+
 import { calculateLichCuoiHoi } from "@thien-anh/trachnhat-engine";
 
 describe("calculateLichCuoiHoi — lịch trọn gói", () => {
