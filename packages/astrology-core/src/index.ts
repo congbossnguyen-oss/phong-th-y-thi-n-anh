@@ -43,6 +43,20 @@ export {
   AstronomicalProviderNotConfiguredError,
 } from "./astronomical/UnimplementedAstronomicalProvider.js";
 
+// ---------------------------------------------------------------------------------------
+// Phase 3A — Swiss Ephemeris Provider (astronomical core)
+// ---------------------------------------------------------------------------------------
+
+export type { SwissEphemerisProviderOptions } from "./astronomical/providers/SwissEphemerisProvider.js";
+export { SwissEphemerisProvider } from "./astronomical/providers/SwissEphemerisProvider.js";
+export { resolveDefaultEphemerisPath } from "./astronomical/providers/ephemerisPath.js";
+export {
+  SwissEphemerisUnsupportedBodyError,
+  SwissEphemerisCalculationError,
+  SwissEphemerisPrecisionDegradedError,
+  SwissEphemerisPhase3AScopeError,
+} from "./astronomical/providers/errors.js";
+
 export {
   ANGULAR_TOLERANCE_FILE_BASED_DEGREES,
   ANGULAR_TOLERANCE_ANALYTIC_FALLBACK_DEGREES,

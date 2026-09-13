@@ -1,6 +1,47 @@
 # LICENSE BOUNDARY — Astronomical Core
 
-**STATUS: LEGAL DECISION REQUIRED. This status is not resolved by this document and must not be treated as resolved by anyone reading it.**
+**STATUS: LEGAL DECISION REQUIRED for any commercial/distributed/public-service use. This status is not resolved by this document and must not be treated as resolved by anyone reading it.**
+
+## Phase 3A interim decision (personal research use only — does NOT close the gate below)
+
+Phongthuy.vn's `phong-thuy-thien-anh` repository is, as of Phase 3A (2026-09), explicitly scoped
+as a **personal research tool** for the owner and family members — not a commercial product, not
+a SaaS, not a public astrology service, not distributed software (see repository `CLAUDE.md`).
+
+Swiss Ephemeris's own `LICENSE`/`LICENSE.TXT` (verbatim, read directly from
+`github.com/aloistr/swisseph`) states the license-choice obligation triggers specifically
+**"before distributing software containing Swiss Ephemeris or activating any public service using
+it."** Neither condition currently applies to this repository's declared scope. On this basis,
+Phase 3A implements `SwissEphemerisProvider` using the `sweph` npm binding under **AGPL-3.0-or-later**
+(the only license available for that binding without a separately-purchased Astrodienst
+Professional License — see "Swiss binding license" below), scoped strictly to the current
+non-commercial, non-distributed, non-public-service usage declared above.
+
+**This is an engineering-scoped interim decision, not a substitute for the legal decision this
+document has always required.** It resolves nothing about commercial, distributed, or
+public-service use — the gate below (`GATE: SWISS_EPHEMERIS_LICENSE`) remains open and BLOCKING
+for any of those scenarios. If the project's status ever changes — becomes a commercial product,
+a SaaS, a public service, or is distributed to anyone outside the owner/family — this decision
+MUST be revisited before that change ships: either obtain a Swiss Ephemeris Professional License
+from Astrodienst AG, or implement full AGPL compliance (making the complete corresponding source
+available to the software's remote users, per AGPL-3.0 §13), or replace the ephemeris backend.
+
+### Swiss binding license (`sweph` npm package)
+
+`sweph` (github.com/timotejroiko/sweph, the Node.js binding selected for `SwissEphemerisProvider`)
+is itself dual-licensed, confirmed by reading its own README verbatim:
+- `sweph@latest` (used here, version `2.10.3-8`): **AGPL-3.0-or-later**.
+- `sweph@gpl` (legacy, frozen at Swiss Ephemeris 2.10.0): older **GPL-2.0**, not used here.
+- **LGPL-3.0** is available for ANY version of the library, but ONLY "if you own a professional
+  license for the Swiss Ephemeris" from Astrodienst — which this project does not have. This
+  mirrors the exact "openastrology-library" pattern already flagged in
+  `../AUDIT/LICENSE_AUDIT.md` ("LGPL only unlocked if a Swiss Ephemeris Professional License is
+  separately purchased").
+
+No ephemeris data files are bundled with `sweph` — Phase 3A downloads exactly 3 files
+(`sepl_18.se1`, `semo_18.se1`, `seas_18.se1`, ~2MB total, covering 1800-2400) directly from
+Astrodienst's own `aloistr/swisseph` GitHub repository (the same entity that publishes the
+license), not from any third-party audited repo.
 
 ## Current status
 

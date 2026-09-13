@@ -1,7 +1,7 @@
 {
   "name": "@thien-anh/astrology-core",
   "version": "0.1.0",
-  "description": "Astrology Module — Phase 1 (Core Foundation): BirthData, input validation, Timezone/DST resolution (IANA), AstronomicalProvider interface. KHÔNG chứa luận giải, KHÔNG chứa rule Tây/Vệ Đà, KHÔNG gọi AI, KHÔNG phụ thuộc Swiss Ephemeris (xem docs/astrology-module/ARCHITECTURE/LICENSE_BOUNDARY.md — LEGAL DECISION REQUIRED).",
+  "description": "Astrology Module — BirthData/validation, Timezone/DST resolution (IANA), AstronomicalProvider interface + SwissEphemerisProvider (Phase 3A: raw planet/node positions only). KHÔNG chứa luận giải, KHÔNG chứa rule Tây/Vệ Đà, KHÔNG gọi AI, KHÔNG có house/aspect/dignity calculation. Swiss Ephemeris dùng dưới AGPL-3.0-or-later, phạm vi nghiên cứu cá nhân — xem docs/astrology-module/ARCHITECTURE/LICENSE_BOUNDARY.md trước khi thương mại hoá/phân phối.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -21,7 +21,8 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@thien-anh/calendar-core": "*"
+    "@thien-anh/calendar-core": "*",
+    "sweph": "^2.10.3-8"
   },
   "devDependencies": {
     "typescript": "^5.6.3",

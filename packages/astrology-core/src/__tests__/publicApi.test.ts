@@ -8,6 +8,7 @@ import {
   isWithinTolerance,
   resolveBirthDataInstant,
   roundForDisplay,
+  SwissEphemerisProvider,
   UnimplementedAstronomicalProvider,
   validateBirthData,
   type BirthData,
@@ -47,5 +48,16 @@ describe("public API — pipeline đầy đủ Phase 1 (validate -> resolve UTC)
     expect(roundForDisplay(35.542535, 4)).toBe(35.5425);
     expect(isWithinTolerance(35.5425, 35.54253500624649, 0.0001)).toBe(true);
     expect(isWithinTolerance(35.5, 35.9, 0.0001)).toBe(false);
+  });
+
+  it("SwissEphemerisProvider export đúng qua public API, pipeline đầy đủ BirthData -> UTC -> vị trí thiên văn thật", () => {
+    const resolved = resolveBirthDataInstant(benchmarkBirthData);
+    expect(resolved.ok).toBe(true);
+    if (!resolved.ok) throw new Error("unreachable");
+    const provider = new SwissEphemerisProvider();
+    expect(provider.getMetadata().precisionClass).toBe("file_based");
+    const sun = provider.getPlanetPosition(resolved.utc, "sun");
+    expect(sun.longitude).toBeGreaterThanOrEqual(0);
+    expect(sun.longitude).toBeLessThan(360);
   });
 });

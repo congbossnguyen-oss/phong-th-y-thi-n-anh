@@ -134,13 +134,13 @@ describe("UnimplementedAstronomicalProvider — hành vi khi chưa có provider 
     expect(() => provider.getAyanamsa(UTC_INSTANT, "lahiri")).toThrow(AstronomicalProviderNotConfiguredError);
   });
 
-  it("thông điệp lỗi trỏ rõ tới LICENSE_BOUNDARY.md, không phải một stack trace vô nghĩa", () => {
+  it("thông điệp lỗi trỏ rõ tới SwissEphemerisProvider (provider thật, xem Phase 3A), không phải một stack trace vô nghĩa", () => {
     try {
       provider.getPlanetPosition(UTC_INSTANT, "sun");
       throw new Error("phải throw ở dòng trên");
     } catch (e) {
       expect(e).toBeInstanceOf(AstronomicalProviderNotConfiguredError);
-      expect((e as Error).message).toContain("LICENSE_BOUNDARY.md");
+      expect((e as Error).message).toContain("SwissEphemerisProvider");
     }
   });
 });

@@ -103,3 +103,31 @@ bao giờ biết chính xác tới dưới giây; 1 giây chuyển động Mặt
 đúng yêu cầu. Đề xuất: hoặc truyền phần dư thập phân vào tham số mili-giây thứ 7 của `Date.UTC`
 để giữ đúng độ chính xác, hoặc thu hẹp `LocalTime.second` về số nguyên và sửa lại thông điệp lỗi
 tương ứng.
+
+## 11. Phase 3A — house cusps/Ascendant/Midheaven/Ayanamsa CHƯA implement ở `SwissEphemerisProvider`
+
+`getHouseCusps`/`getAscendant`/`getMidheaven`/`getAyanamsa` đều ném `SwissEphemerisPhase3AScopeError`
+— nằm ngoài phạm vi CALCULATION SCOPE của Phase 3A (chỉ vị trí hành tinh/node thô). Khi Phase 3B
+(Western house/angle calculation) hoặc Phase 4 (Vedic/ayanamsa) bắt đầu: `sweph` đã có sẵn
+`houses_ex`/`houses_ex2` và `get_ayanamsa_ex_ut` — chỉ cần thay 4 stub này bằng lệnh gọi thật,
+KHÔNG cần đổi interface `AstronomicalProvider` (đã xác nhận đủ dùng ở Phase 3A).
+
+## 12. True Lunar Node — chưa có oracle độc lập xác nhận
+
+Mean Node cross-check được với công thức Meeus (`docs/astrology-module/ARCHITECTURE/PHASE3A_ASTRONOMICAL_CORE.md`
+"Golden fixture provenance"), nhưng True Node (osculating, dao động quanh mean node) chưa tìm
+được nguồn oracle độc lập ít công sức để xác nhận trong phạm vi Phase 3A — chỉ kiểm tra được tính
+NHẤT QUÁN NỘI BỘ (north/south lệch đúng 180°, dao động quanh mean node trong biên độ vật lý hợp
+lý ~1.5-2°). Đây là `VALIDATION GAP` theo đúng định nghĩa của `VALIDATION_ORACLES.md` — ghi nhận
+tường minh, KHÔNG coi "có vẻ đúng" là đủ. Nếu cần độ tin cậy cao hơn cho True Node trước khi dùng
+trong tính toán nghiệp vụ thật (Phase 3B+), cân nhắc chạy `swetest` (Astrodienst, cần build từ
+nguồn C) hoặc so với một ephemeris độc lập khác có track true node.
+
+## 13. `sweph` là dependency AGPL-3.0-or-later — quyết định license CHỈ áp dụng cho phạm vi hiện tại
+
+Xem `docs/astrology-module/ARCHITECTURE/LICENSE_BOUNDARY.md` "Phase 3A interim decision". Quyết
+định dùng AGPL (thay vì mua Professional License từ Astrodienst) được đưa ra DỰA TRÊN phạm vi
+hiện tại của dự án (nghiên cứu cá nhân, không thương mại, không phân phối). Nếu phạm vi dự án
+thay đổi (thương mại hoá, SaaS, dịch vụ công khai, phân phối cho người ngoài chủ sở hữu/gia
+đình), quyết định này BẮT BUỘC phải xem lại TRƯỚC KHI thay đổi đó triển khai — KHÔNG được coi
+quyết định Phase 3A là đã "giải quyết xong" vấn đề license cho mọi kịch bản tương lai.

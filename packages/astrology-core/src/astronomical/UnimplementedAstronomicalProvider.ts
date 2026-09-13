@@ -2,10 +2,12 @@
  * Placeholder AstronomicalProvider — KHÔNG phải Swiss Ephemeris, KHÔNG import bất kỳ thư viện
  * ephemeris nào. Dùng để: (1) cho phép code Phase 1 biên dịch/test đầy đủ mà không cần một
  * provider thật, (2) làm "unsupported provider behavior" rõ ràng thay vì `undefined`/crash mơ
- * hồ nếu ai đó lỡ gọi provider trước khi có quyết định license.
+ * hồ nếu ai đó lỡ gọi provider trước khi cấu hình một provider thật.
  *
- * `SwissEphemerisProvider` CHƯA được viết — xem
- * docs/astrology-module/ARCHITECTURE/LICENSE_BOUNDARY.md (LEGAL DECISION REQUIRED).
+ * CẬP NHẬT Phase 3A: `SwissEphemerisProvider` ĐÃ được viết (xem `providers/SwissEphemerisProvider.ts`)
+ * — class này vẫn còn hữu ích làm default an toàn cho code CHƯA tự cấu hình provider nào (test,
+ * chỗ khởi tạo sớm), KHÔNG phải vì license vẫn chưa quyết được. Xem
+ * docs/astrology-module/ARCHITECTURE/LICENSE_BOUNDARY.md để biết phạm vi quyết định license hiện tại.
  */
 
 import type {
@@ -24,9 +26,9 @@ import type {
 export class AstronomicalProviderNotConfiguredError extends Error {
   constructor(method: string) {
     super(
-      `AstronomicalProvider chưa có implementation thật (gọi ${method}()). ` +
-        `SwissEphemerisProvider chưa được viết — xem docs/astrology-module/ARCHITECTURE/LICENSE_BOUNDARY.md ` +
-        `(LEGAL DECISION REQUIRED, chưa xác nhận Swiss Ephemeris Professional License).`,
+      `AstronomicalProvider chưa được cấu hình (gọi ${method}() trên UnimplementedAstronomicalProvider). ` +
+        `Dùng SwissEphemerisProvider (packages/astrology-core/src/astronomical/providers/SwissEphemerisProvider.ts) ` +
+        `thay vì provider này nếu cần kết quả thật.`,
     );
     this.name = "AstronomicalProviderNotConfiguredError";
   }

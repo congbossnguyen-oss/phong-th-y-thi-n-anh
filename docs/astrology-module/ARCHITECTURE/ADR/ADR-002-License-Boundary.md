@@ -1,7 +1,12 @@
 # ADR-002: License Boundary
 
 ## Status
-Proposed — **blocked on external legal decision (LEGAL DECISION REQUIRED)**
+Proposed — **blocked on external legal decision (LEGAL DECISION REQUIRED) for any commercial/distributed/public-service use.**
+Phase 3A (2026-09) implemented `SwissEphemerisProvider` under an **interim, scope-limited**
+decision (AGPL-3.0-or-later via `sweph`) that applies ONLY to the project's current declared
+personal-research, non-commercial, non-distributed status — see `../LICENSE_BOUNDARY.md` "Phase
+3A interim decision" for the full reasoning and the conditions under which it must be revisited.
+This ADR's blocked status is otherwise unchanged.
 
 ## Context
 Swiss Ephemeris is dual-licensed AGPL-3.0 or a paid Astrodienst AG Professional License; terms of the latter are unconfirmed (`../LICENSE_BOUNDARY.md`, `../../ASTROLOGY_REPO_AUDIT/LICENSE_AUDIT.md`). Nearly every technically strong audited repo inherits this same fork in the road. No document produced by this audit or this architecture may resolve it — resolution requires direct contact with Astrodienst AG.

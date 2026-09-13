@@ -42,5 +42,8 @@
   "devDependencies": {
     "drizzle-kit": "^0.31.10",
     "vitest": "^4.1.10"
+  },
+  "allowScripts": {
+    "sweph@2.10.3-8": true
   }
 }
