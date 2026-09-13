@@ -69,20 +69,26 @@ export const CAT_HUNG_BY_SAO: Record<string, CatHung> = {
   "Thiên La": "Hung", "Địa Võng": "Hung", "Thiên Sứ": "Hung", "Thiên Thương": "Hung",
   "Quốc Ấn": "Cát", "Đường Phù": "Cát", "Thiên Quan": "Cát", "Thiên Phúc": "Cát",
   "Thai Phụ": "Cát", "Phong Cáo": "Cát",
-  "Tướng Tinh": "Cát", "Phan Án": "Hung", "Tuế Dịch": "Hung", "Tức Thần": "Cát",
+  // Tức Thần sửa 14/9/2026 (anh Công): là sao xấu, trước ghi nhầm Cát.
+  "Tướng Tinh": "Cát", "Phan Án": "Hung", "Tuế Dịch": "Hung", "Tức Thần": "Hung",
   "Hoa Cái": "Cát", "Kiếp Sát": "Hung", "Tai Sát": "Hung", "Thiên Sát": "Hung",
   "Chỉ Bối": "Hung", "Nguyệt Sát": "Hung", "Vong Thần": "Hung", "Âm Sát": "Hung",
   "Lưu Hà": "Hung",
-  "Ân Quang": "Cát", "Thiên Quý": "Cát", "Tam Thai": "Cát", "Bát Tọa": "Cát", "Đẩu Quân": "Cát",
-  // Vòng Bác Sĩ — Bác Sĩ/Lực Sĩ/Thanh Long/Tướng Quân/Tấu Thư/Hỷ Thần: Cát (trí tuệ, quyền uy, tin vui).
+  // Đẩu Quân sửa 14/9/2026 (anh Công): là sao xấu, trước ghi nhầm Cát.
+  "Ân Quang": "Cát", "Thiên Quý": "Cát", "Tam Thai": "Cát", "Bát Tọa": "Cát", "Đẩu Quân": "Hung",
+  // Vòng Bác Sĩ — Bác Sĩ/Lực Sĩ/Thanh Long/Tấu Thư/Hỷ Thần: Cát (trí tuệ, quyền uy, tin vui).
+  // Tướng Quân sửa 14/9/2026 (anh Công): là sao xấu, trước ghi nhầm Cát — chuyển xuống dòng Hung bên dưới.
   // Tiểu Hao/Phi Liêm/Bệnh Phù/Đại Hao/Phục Binh/Quan Phủ: Hung (hao tài, thị phi, bệnh, kiện tụng).
-  "Bác Sĩ": "Cát", "Lực Sĩ": "Cát", "Thanh Long": "Cát", "Tướng Quân": "Cát", "Tấu Thư": "Cát", "Hỷ Thần": "Cát",
+  "Bác Sĩ": "Cát", "Lực Sĩ": "Cát", "Thanh Long": "Cát", "Tấu Thư": "Cát", "Hỷ Thần": "Cát",
+  "Tướng Quân": "Hung",
   "Tiểu Hao": "Hung", "Phi Liêm": "Hung", "Bệnh Phù": "Hung", "Đại Hao": "Hung", "Phục Binh": "Hung", "Quan Phủ": "Hung",
-  // Vòng Thái Tuế — Thiếu Dương/Thiếu Âm/Long Đức/Phúc Đức/Trực Phù: Cát. Thái Tuế/Tang Môn/Quan Phù/Tử
+  // Vòng Thái Tuế — Thiếu Dương/Thiếu Âm/Long Đức/Phúc Đức: Cát. Thái Tuế/Tang Môn/Quan Phù/Tử
   // Phù/Tuế Phá/Bạch Hổ/Điếu Khách: Hung (phân loại phổ biến).
-  "Thiếu Dương": "Cát", "Thiếu Âm": "Cát", "Long Đức": "Cát", "Phúc Đức": "Cát", "Trực Phù": "Cát",
+  // Trực Phù sửa 14/9/2026 (anh Công): là sao xấu (liên quan pháp luật/tranh tụng — khớp
+  // trung-tinh-tieu-tinh.md), trước ghi nhầm Cát — chuyển xuống dòng Hung bên dưới.
+  "Thiếu Dương": "Cát", "Thiếu Âm": "Cát", "Long Đức": "Cát", "Phúc Đức": "Cát",
   "Thái Tuế": "Hung", "Tang Môn": "Hung", "Quan Phù": "Hung", "Tử Phù": "Hung", "Tuế Phá": "Hung",
-  "Bạch Hổ": "Hung", "Điếu Khách": "Hung",
+  "Bạch Hổ": "Hung", "Điếu Khách": "Hung", "Trực Phù": "Hung",
   // Bổ sung audit 2026-08: Thiên Trù (phúc/lộc ăn uống) = Cát. Lưu Tứ Hóa: Lộc/Quyền/Khoa cát, Kỵ hung.
   "Thiên Trù": "Cát",
   "L.Hóa Lộc": "Cát", "L.Hóa Quyền": "Cát", "L.Hóa Khoa": "Cát", "L.Hóa Kỵ": "Hung",
