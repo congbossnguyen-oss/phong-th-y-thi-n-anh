@@ -15,6 +15,15 @@
 | **vedic-calc** | Vedic cross-check, especially KP (most complete independently-verified KP engine found) | Disclosed 99% cross-validation against 2 commercial astrology APIs, with failures itemized not hidden — the strongest *methodology* to imitate, not just a data source (`../ASTROLOGY_REPO_AUDIT/VEDIC_AUDIT.md`) |
 | **openastrology-library** | Secondary Western/Vedic cross-check | 526-test golden-value suite; useful as a third data point but has a confirmed house-lord-mapping bug in its yoga engine — do not trust blindly, cross-check against 2+ other oracles before treating a disagreement as "our bug" (`../ASTROLOGY_REPO_AUDIT/raw/openastrology-library.md`) |
 
+**Phase 3 (Western) resolution status**: this roster's Western row (stellium) was not actually run
+as an oracle during Phase 3A/3B-1/3B-2/3C — layer-appropriate substitutes were used instead (JPL
+Horizons for planets, an independent mathematical formula for houses/angles, an independent
+algorithm plus a pre-existing fixture for aspects) and formally accepted as satisfying the
+validation *intent* for Phase 3, per the post-Phase-3C audit. Full reasoning:
+`ADR/ADR-009-Validation-Oracle-Strategy.md` "Amendment: Phase 3 oracle substitution". This row and
+the roster above are left unchanged as the historical specification — stellium remains a valid
+future comparative oracle, not retracted.
+
 ## How oracles are actually used (process, not a dependency)
 
 1. Run each oracle **out-of-process**, in its own isolated environment (own venv/container), never imported into the module's own dependency tree.
@@ -34,6 +43,8 @@
 | **Geography** | Northern high latitude; southern hemisphere; equator; extreme/polar latitude (must assert `UNSUPPORTED_HOUSE_SYSTEM_AT_LATITUDE` per `ARCHITECTURE_FREEZE.md` §5, not a silently-wrong cusp) |
 
 None of the 10 audited repos has a test suite covering all of these categories together (`../ASTROLOGY_REPO_AUDIT/TEST_AUDIT.md` "Boundary/edge-case category coverage" — DST/historical-timezone/polar-latitude tests were found in **zero** audited repos). This matrix is therefore new work, not adapted from any oracle's existing suite, and should be treated as `VALIDATION GAP` (unproven) until Phase 1–3 testing actually exercises it.
+
+**Status as of the post-Phase-3C audit**: most of this matrix is now exercised (Normal, Timezone, Historical timezone, sign/house-cusp boundary, midnight, and the full Geography row are all covered by Phase 3A/3B-1/3B-2/3C tests). **Retrograde station (velocity crossing zero) and leap-day birth (Feb 29) remain untested** — this is a separate, still-open `VALIDATION GAP`, distinct from and not resolved by the stellium-substitution decision above (that decision addresses *which oracle* was used; this gap is about *which scenarios* were exercised at all).
 
 ## Explicit non-goal
 

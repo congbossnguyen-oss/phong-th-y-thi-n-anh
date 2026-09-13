@@ -20,7 +20,7 @@
 ## Phase 3 — Western Calculation
 - Deliverable: `western.core` (tropical zodiac, Sun→Pluto, Nodes, ASC/MC/DESC/IC, one house system, 5 major aspects with configurable orbs) implemented against a **real** `SwissEphemerisProvider` — this is the first phase that requires the license gate to be resolved, or an explicit interim decision (e.g. development-only use pending the gate, clearly separated from anything shipped to production).
 - Depends on: Phase 1 (concrete provider), Phase 2.
-- DoD: Golden tests (per `TEST_ARCHITECTURE.md`/`VALIDATION_ORACLES.md`) pass against stellium + direct-Swiss-Ephemeris oracles at the specified tolerance, across the full test matrix in `VALIDATION_ORACLES.md`.
+- DoD: Golden tests (per `TEST_ARCHITECTURE.md`/`VALIDATION_ORACLES.md`) pass against stellium + direct-Swiss-Ephemeris oracles at the specified tolerance, across the full test matrix in `VALIDATION_ORACLES.md`. **Resolution (post-Phase-3C audit)**: stellium was not actually used — the DoD's validation *intent* was formally accepted as satisfied by layer-appropriate substitute oracles instead (JPL Horizons, an independent mathematical formula, an independent algorithm, and a pre-existing fixture) — see `ADR/ADR-009-Validation-Oracle-Strategy.md` "Amendment: Phase 3 oracle substitution" for the full decision. This line is left as-is as the historical record of what was originally specified.
 
 ## Phase 4 — Vedic Calculation
 - Deliverable: `vedic` school's V1 module set (Rashi/D1, Nakshatra+Pada, Vimshottari Dasha — see `DOMAIN_MODEL.md` §7 for the oracle-strength-prioritized module list).
