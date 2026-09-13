@@ -12,9 +12,9 @@ import {
   MAIN_STAR_STATUS, NGU_HO_DON, TU_HOA_TABLE, TU_VI_RING, THIEN_MA_START, THIEN_PHU_RING,
   THAI_TUE_STAGES, TRANG_SINH_START, TRANG_SINH_STAGES, TRIET_TABLE,
   STAR_TA_PHU, STAR_HUU_BAT, STAR_VAN_XUONG, STAR_VAN_KHUC,
-  diaKhongIndex, diaKiepIndex, getChuMenh, getChuThan, getThienKhoi, getThienViet, hongLoanIndex,
-  huuBatIndex, mod10, mod12, taPhuIndex, tamHopGroup, thienDieuIndex, thienHinhIndex, thienHyIndex,
-  thienYIndex, tinhMenhQuai, vanKhucIndex, vanXuongIndex,
+  diaKhongIndex, diaKiepIndex, getChuMenh, getChuThan, getPhuTinhDacHam, getThienKhoi, getThienViet,
+  hongLoanIndex, huuBatIndex, mod10, mod12, taPhuIndex, tamHopGroup, thienDieuIndex, thienHinhIndex,
+  thienHyIndex, thienYIndex, tinhMenhQuai, vanKhucIndex, vanXuongIndex,
 } from "./rules";
 import type { TrangThaiSao, TuHoaResult } from "./rules";
 
@@ -36,6 +36,9 @@ export interface ChinhTinhO {
 export interface PhuTinhO {
   name: string;
   tuHoa?: "Lộc" | "Quyền" | "Khoa" | "Kỵ";
+  // Đắc/Hãm (13/9/2026) — CHỈ có giá trị cho 10 phụ tinh đã có nguồn trong PHU_TINH_DAC_HAM (rules.ts);
+  // undefined nghĩa là chưa có nguồn cho sao đó, KHÔNG phải "trung tính" — lớp hiển thị phải phân biệt.
+  trangThai?: TrangThaiSao;
 }
 
 export interface CungKetQua {
@@ -214,7 +217,13 @@ export function tinhTuVi(input: TuViInput): TuViChart {
 
   // --- STEP 10-17: phụ tinh ---
   const phuTinhTaiChi: PhuTinhO[][] = Array.from({ length: 12 }, () => []);
-  const addPhuTinh = (chiIdx: number, name: string) => phuTinhTaiChi[mod12(chiIdx)].push({ name });
+  // Gắn Đắc/Hãm (nếu có nguồn — xem PHU_TINH_DAC_HAM) ngay tại điểm tạo duy nhất, để tự động áp dụng
+  // cho MỌI phụ tinh gọi qua addPhuTinh() bên dưới, không phải sửa từng dòng addPhuTinh riêng lẻ.
+  const addPhuTinh = (chiIdx: number, name: string) => {
+    const finalChi = mod12(chiIdx);
+    const trangThai = getPhuTinhDacHam(name, finalChi) ?? undefined;
+    phuTinhTaiChi[finalChi].push(trangThai ? { name, trangThai } : { name });
+  };
 
   addPhuTinh(taPhuIndex(lunar.month), STAR_TA_PHU);
   addPhuTinh(huuBatIndex(lunar.month), STAR_HUU_BAT);

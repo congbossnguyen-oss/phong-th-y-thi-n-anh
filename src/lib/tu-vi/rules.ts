@@ -220,6 +220,51 @@ export function getStarStatus(star: string, chiIndex: number): TrangThaiSao {
   return row[chiIndex];
 }
 
+// --- Mục 16b: Đắc/Hãm cho PHỤ TINH (13/9/2026, anh Công báo "Địa Không Địa Kiếp đang không có gì").
+// KHÁC bảng Miếu/Vượng/Đắc/Bình/Hãm (5 trạng thái) của chính tinh ở trên — phụ tinh trong nguồn chỉ
+// có 2 trạng thái Đắc/Hãm. Dùng lại type TrangThaiSao (Đắc/Hãm đã là 2 giá trị hợp lệ của type đó)
+// để tương thích thẳng với toStarInstance()/STATUS_MAP trong json-contract.ts, không cần đổi gì ở đó.
+//
+// NGUỒN DUY NHẤT: handoff/knowledge/luan-giai-tu-vi-nam-phai/references/trung-tinh-tieu-tinh.md
+// (Bài 04 Tính lý Trung Tinh + Bài 06 Tính lý Tiểu Tinh, khóa Tử Vi Cơ Bản — Tống Nguyên Trung, đúng
+// profile NAM_PHAI_NGUYEN_CAT engine đang dùng). Trích nguyên văn từng dòng, KHÔNG suy đoán:
+//   - "Khôi...không hãm địa. Việt...không hãm địa" → luôn Đắc cả 12 cung (không có ý Miếu/Vượng riêng
+//     như chính tinh, chỉ biểu thị "không rơi vào Hãm").
+//   - "Tả Phụ...Hữu Bật...không hãm địa" → luôn Đắc cả 12 cung, như trên.
+//   - "Xương...Khúc...Đắc địa: Thìn Tuất Sửu Mùi, Tỵ Hợi" → Đắc tại Sửu(1) Thìn(4) Tỵ(5) Mùi(7)
+//     Tuất(10) Hợi(11), Hãm 6 cung còn lại.
+//   - "Kình...Đà...Đắc địa: Thìn Tuất Sửu Mùi. Hãm địa: các cung còn lại" → Đắc tại Sửu(1) Thìn(4)
+//     Mùi(7) Tuất(10), Hãm 8 cung còn lại.
+//   - "Không...Kiếp...Đắc địa: Dần Thân Tỵ Hợi. Hãm địa: các cung còn lại" → Đắc tại Dần(2) Tỵ(5)
+//     Thân(8) Hợi(11), Hãm 8 cung còn lại.
+// CỐ TÌNH KHÔNG thêm Hỏa Tinh/Linh Tinh: nguồn chỉ ghi "Hãm địa: các cung còn lại" mà KHÔNG nêu cung
+// Đắc là đâu (thiếu vế so với các cặp khác) — không đủ căn cứ, không suy đoán để lấp chỗ trống.
+// 8 phụ tinh còn lại đang an trên lá số (Lộc Tồn, Thiên Mã, Đào Hoa, Hồng Loan, Thiên Hỷ, Thiên Hình,
+// Thiên Diêu, Thiên Y) KHÔNG có nguồn Đắc/Hãm nào trong repo — để trống, không bịa số liệu.
+//
+// Thứ tự chỉ số Chi giống bảng chính tinh: Tý0 Sửu1 Dần2 Mão3 Thìn4 Tỵ5 Ngọ6 Mùi7 Thân8 Dậu9 Tuất10 Hợi11.
+export const PHU_TINH_DAC_HAM: Record<string, TrangThaiSao[]> = {
+  "Thiên Khôi": ["Đắc", "Đắc", "Đắc", "Đắc", "Đắc", "Đắc", "Đắc", "Đắc", "Đắc", "Đắc", "Đắc", "Đắc"],
+  "Thiên Việt": ["Đắc", "Đắc", "Đắc", "Đắc", "Đắc", "Đắc", "Đắc", "Đắc", "Đắc", "Đắc", "Đắc", "Đắc"],
+  "Tả Phù": ["Đắc", "Đắc", "Đắc", "Đắc", "Đắc", "Đắc", "Đắc", "Đắc", "Đắc", "Đắc", "Đắc", "Đắc"],
+  "Hữu Bật": ["Đắc", "Đắc", "Đắc", "Đắc", "Đắc", "Đắc", "Đắc", "Đắc", "Đắc", "Đắc", "Đắc", "Đắc"],
+  "Văn Xương": ["Hãm", "Đắc", "Hãm", "Hãm", "Đắc", "Đắc", "Hãm", "Đắc", "Hãm", "Hãm", "Đắc", "Đắc"],
+  "Văn Khúc": ["Hãm", "Đắc", "Hãm", "Hãm", "Đắc", "Đắc", "Hãm", "Đắc", "Hãm", "Hãm", "Đắc", "Đắc"],
+  "Kình Dương": ["Hãm", "Đắc", "Hãm", "Hãm", "Đắc", "Hãm", "Hãm", "Đắc", "Hãm", "Hãm", "Đắc", "Hãm"],
+  "Đà La": ["Hãm", "Đắc", "Hãm", "Hãm", "Đắc", "Hãm", "Hãm", "Đắc", "Hãm", "Hãm", "Đắc", "Hãm"],
+  "Địa Không": ["Hãm", "Hãm", "Đắc", "Hãm", "Hãm", "Đắc", "Hãm", "Hãm", "Đắc", "Hãm", "Hãm", "Đắc"],
+  "Địa Kiếp": ["Hãm", "Hãm", "Đắc", "Hãm", "Hãm", "Đắc", "Hãm", "Hãm", "Đắc", "Hãm", "Hãm", "Đắc"],
+};
+
+// getPhuTinhDacHam: trả null (KHÔNG throw) nếu sao chưa có nguồn — đây là bảng bổ sung dần, không phải
+// bảng bắt buộc đủ 100% như MAIN_STAR_STATUS của chính tinh.
+export function getPhuTinhDacHam(star: string, chiIndex: number): TrangThaiSao | null {
+  const row = PHU_TINH_DAC_HAM[star];
+  if (!row) return null;
+  if (chiIndex < 0 || chiIndex > 11) throw new Error("RULE_NOT_DEFINED: chiIndex ngoài phạm vi 0-11: " + chiIndex);
+  return row[chiIndex];
+}
+
 // --- Mục 17: Tứ Hóa theo Can năm (VERIFIED nhánh Canh: Thái Dương=Lộc, Vũ Khúc=Quyền, Thái Âm=Khoa,
 // Thiên Đồng=Kỵ, khớp Golden Master mục 17+37; 9 nhánh Can còn lại DERIVED). ---
 export interface TuHoaResult {

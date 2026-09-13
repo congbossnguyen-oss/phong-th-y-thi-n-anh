@@ -142,7 +142,7 @@ function toStarInstance(name: string, category: "CHINH_TINH" | "PHU_TINH", statu
 function toPalace(c: CungKetQua): TuViJsonPalace {
   const stars: TuViJsonStar[] = [
     ...c.chinhTinh.map((s) => toStarInstance(s.name, "CHINH_TINH", s.trangThai, s.tuHoa)),
-    ...c.phuTinh.map((s) => toStarInstance(s.name, "PHU_TINH", undefined, s.tuHoa)),
+    ...c.phuTinh.map((s) => toStarInstance(s.name, "PHU_TINH", s.trangThai, s.tuHoa)),
   ];
   return {
     index: c.chiIndex,

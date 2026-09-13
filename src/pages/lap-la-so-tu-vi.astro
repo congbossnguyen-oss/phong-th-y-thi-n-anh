@@ -66,6 +66,9 @@ const khoaTuVi = dangKhoaThuNghiem("luan-giai-tu-vi-toan-dien");
         <div class="mt-4">
           <p class={labelClass}>Giờ sinh:</p>
           <select id="tv-hour" class={selectClass}></select>
+          <p class="mt-1 text-xs text-(--color-ink-500)">
+            Sinh khoảng nửa đêm cần chọn đúng: <strong>23h-24h (đêm hôm trước)</strong> chọn "Tý sớm"; <strong>00h-01h (đã sang ngày mới)</strong> chọn "Tý muộn" — 2 mốc này cho Ngày sinh (và Can giờ) khác nhau dù cùng là giờ Tý.
+          </p>
         </div>
 
         <label class="mt-4 flex items-center gap-2 text-sm text-(--color-ink-700)">
@@ -253,10 +256,22 @@ const khoaTuVi = dangKhoaThuNghiem("luan-giai-tu-vi-toan-dien");
   const nowYear = new Date().getFullYear();
   const YEAR_OPTIONS: [number, string][] = Array.from({ length: 100 }, (_, i) => nowYear - i).map((y) => [y, String(y)]);
   // Giờ sinh chọn theo 12 Chi (giờ đại diện đầu mỗi canh giờ) — khớp công thức gioChiIndex trong engine.
+  //
+  // 🔧 SỬA 13/9/2026 (anh Công báo cột Ngày/Giờ ra trùng "Giáp Tý"): giờ Tý (23h-01h) kéo dài qua nửa
+  // đêm nên PHẢI tách 2 lựa chọn riêng — "Tý sớm" (23h-24h, thuộc đêm hôm TRƯỚC, trụ Ngày phải lùi
+  // +1 ngày) và "Tý muộn" (00h-01h, đã sang đúng ngày dương lịch đã nhập, trụ Ngày KHÔNG lùi ngày).
+  // Trước đây chỉ có 1 ô "Tý (23h-01h)" gán cứng value=23 → mọi ca sinh 00h-01h bị hiểu nhầm thành
+  // 23h, khiến trụ Ngày bị lùi nhầm +1 ngày (rơi đúng qua ngày kế tiếp trong vòng Giáp Tý-Quý Hợi 60
+  // ngày, nên khi ngày đúng là Quý Hợi thì hiển thị sai thành Giáp Tý — kéo theo trụ Giờ suy từ Can
+  // Ngày sai cũng ra Giáp Tý theo). Engine tinhBatTu() (src/lib/bat-tu.ts) đã tính ĐÚNG cho cả 2 giá
+  // trị hour=23 và hour=0 từ trước — chỉ thiếu lối chọn hour=0 ở giao diện này. Vị trí các SAO trên lá
+  // số (Tử Vi) không bị ảnh hưởng bởi lỗi này — solarToLunar() không nhận tham số hour (tu-vi/engine.ts
+  // dòng 155), chỉ khung Tứ Trụ (Bát Tự) hiển thị cạnh lá số bị sai với ca sinh 00h-01h.
   const HOUR_OPTIONS: [number, string][] = [
-    [23, "Tý (23h-01h)"], [1, "Sửu (01h-03h)"], [3, "Dần (03h-05h)"], [5, "Mão (05h-07h)"],
+    [0, "Tý muộn (00h-01h)"], [1, "Sửu (01h-03h)"], [3, "Dần (03h-05h)"], [5, "Mão (05h-07h)"],
     [7, "Thìn (07h-09h)"], [9, "Tỵ (09h-11h)"], [11, "Ngọ (11h-13h)"], [13, "Mùi (13h-15h)"],
     [15, "Thân (15h-17h)"], [17, "Dậu (17h-19h)"], [19, "Tuất (19h-21h)"], [21, "Hợi (21h-23h)"],
+    [23, "Tý sớm (23h-24h)"],
   ];
 
   const daySel = document.getElementById("tv-day") as HTMLSelectElement;
@@ -354,7 +369,7 @@ const khoaTuVi = dangKhoaThuNghiem("luan-giai-tu-vi-toan-dien");
     { chiIndex: 2, row: 4, col: 1 }, { chiIndex: 1, row: 4, col: 2 }, { chiIndex: 0, row: 4, col: 3 }, { chiIndex: 11, row: 4, col: 4 },
   ];
 
-  type DisplayStar = { name: string; tuHoa?: "Lộc" | "Quyền" | "Khoa" | "Kỵ" };
+  type DisplayStar = { name: string; tuHoa?: "Lộc" | "Quyền" | "Khoa" | "Kỵ"; trangThai?: string };
 
   // Yêu cầu Công: sao Lưu Niên (an theo năm ĐANG XEM, khác bản chất Natal Core) hiện ở CUỐI cột phụ tinh
   // cát/hung tương ứng, tiền tố "L." và tô màu mờ (giống cách hocvienlyso.org hiển thị nhóm sao Lưu) để
@@ -367,9 +382,16 @@ const khoaTuVi = dangKhoaThuNghiem("luan-giai-tu-vi-toan-dien");
   // Yêu cầu Công: bỏ chữ viết tắt Tứ Hóa nhỏ (sup) trên phụ tinh — Công thấy khó hiểu ("sao Văn Xương lại
   // có chữ K nhỏ trên đầu là ý làm sao"). Tứ Hóa đã có dòng "Hóa Lộc/Quyền/Khoa/Kỵ" riêng ở đầu cột rồi
   // nên không cần lặp lại bằng ký hiệu mập mờ trên từng sao nữa.
+  //
+  // 🔧 13/9/2026 (anh Công báo Địa Không/Địa Kiếp "không có gì"): hiện Đắc/Hãm nếu sao đó CÓ nguồn
+  // (trangThai đến từ PHU_TINH_DAC_HAM trong rules.ts, xem engine.ts) — chỉ đúng 10/20 phụ tinh hiện có
+  // nguồn (xem chú thích rules.ts). Sao KHÔNG có trangThai (còn lại) hiện y như cũ, không thêm/không đoán.
   function starLineHtml(s: DisplayStar): string {
     const color = colorOfSao(s.name, LIGHT.textMuted);
-    return `<div style="font-size:10.5px;font-weight:700;color:${color};line-height:1.3;white-space:nowrap;">${s.name}</div>`;
+    const dacHam = s.trangThai
+      ? `<span style="font-weight:800;color:${LIGHT.textMuted};"> ${TT_ABBR[s.trangThai] ?? ""}</span>`
+      : "";
+    return `<div style="font-size:10.5px;font-weight:700;color:${color};line-height:1.3;white-space:nowrap;">${s.name}${dacHam}</div>`;
   }
 
   // Yêu cầu Công: Tứ Hóa ghi RÕ RÀNG thành dòng riêng ở ĐẦU danh sách phụ tinh (Hóa Lộc/Quyền/Khoa bên
