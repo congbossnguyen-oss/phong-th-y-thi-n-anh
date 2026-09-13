@@ -49,6 +49,29 @@ describe("buildWesternChart — pipeline đầy đủ: BirthData -> resolveBirth
     }
   });
 
+  it("aspects[] (Phase 3C) được điền — khớp CHÍNH XÁC 2 aspect đã có trong fixture Phase 2 (Sun trine Saturn, Moon conjunction Saturn), tính từ CHÍNH 10 hành tinh thật của chart này (không chỉ 3 hành tinh của fixture)", () => {
+    const resolution = resolveBirthDataInstant(HANOI_BIRTH_DATA);
+    if (!resolution.ok) throw new Error("unreachable");
+    const result = buildWesternChart({
+      provider: freshProvider(),
+      birthDataRef: "sha256:test-3c-hanoi",
+      utcInstant: resolution.utc,
+      latitude: HANOI_BIRTH_DATA.latitude,
+      longitude: HANOI_BIRTH_DATA.longitude,
+    });
+    if (!result.ok) throw new Error("unreachable");
+
+    const sunSaturn = result.chart.aspects.find((a) => a.planetA === "sun" && a.planetB === "saturn");
+    expect(sunSaturn?.type).toBe("trine");
+    const moonSaturn = result.chart.aspects.find((a) => a.planetA === "moon" && a.planetB === "saturn");
+    expect(moonSaturn?.type).toBe("conjunction");
+
+    // KHÔNG có interpretation nào rò rỉ vào aspect — chỉ 7 field hình học đã định nghĩa.
+    for (const aspect of result.chart.aspects) {
+      expect(Object.keys(aspect).sort()).toEqual(["actualAngle", "exactAngle", "orb", "planetA", "planetB", "type", "withinOrb"]);
+    }
+  });
+
   it("Sun/Moon trong chart lắp ráp khớp CHÍNH XÁC fixture Phase 2 đã xác nhận đúng (cùng benchmark Hanoi)", () => {
     const resolution = resolveBirthDataInstant(HANOI_BIRTH_DATA);
     if (!resolution.ok) throw new Error("unreachable");
@@ -110,10 +133,11 @@ describe("buildWesternChart — pipeline đầy đủ: BirthData -> resolveBirth
     expect(roundTrip.planets).toEqual(result.chart.planets);
     expect(roundTrip.houseCusps).toEqual(result.chart.houseCusps);
     expect(roundTrip.angles).toEqual(result.chart.angles);
+    expect(roundTrip.aspects).toEqual(result.chart.aspects);
     expect(roundTrip.houseSystem).toBe(result.chart.houseSystem);
   });
 
-  it("KHÔNG bịa field ngoài phạm vi Phase 3B-2: houses[]/points[]/nodes[]/aspects[]/dignities[] vẫn rỗng", () => {
+  it("KHÔNG bịa field ngoài phạm vi đã implement: houses[]/points[]/nodes[]/dignities[] vẫn rỗng (aspects[] ĐÃ điền từ Phase 3C, không còn rỗng — xem test riêng ở trên)", () => {
     const resolution = resolveBirthDataInstant(HANOI_BIRTH_DATA);
     if (!resolution.ok) throw new Error("unreachable");
     const result = buildWesternChart({
@@ -127,7 +151,6 @@ describe("buildWesternChart — pipeline đầy đủ: BirthData -> resolveBirth
     expect(result.chart.houses).toEqual([]);
     expect(result.chart.points).toEqual([]);
     expect(result.chart.nodes).toEqual([]);
-    expect(result.chart.aspects).toEqual([]);
     expect(result.chart.dignities).toEqual([]);
   });
 });
@@ -191,5 +214,48 @@ describe("buildWesternChart — deterministic (ngoại trừ metadata.calculatio
     expect(first.chart.planets).toEqual(second.chart.planets);
     expect(first.chart.houseCusps).toEqual(second.chart.houseCusps);
     expect(first.chart.angles).toEqual(second.chart.angles);
+    expect(first.chart.aspects).toEqual(second.chart.aspects);
+  });
+});
+
+describe("buildWesternChart — aspectOrbPolicy tuỳ chỉnh (Phase 3C)", () => {
+  it("truyền một orb policy KHÁC (hẹp hơn) cho ra ÍT aspect hơn CHÍNH XÁC trên cùng chart thật", () => {
+    const resolution = resolveBirthDataInstant(HANOI_BIRTH_DATA);
+    if (!resolution.ok) throw new Error("unreachable");
+
+    const withDefaultOrb = buildWesternChart({
+      provider: freshProvider(),
+      birthDataRef: "sha256:test-3c-default-orb",
+      utcInstant: resolution.utc,
+      latitude: HANOI_BIRTH_DATA.latitude,
+      longitude: HANOI_BIRTH_DATA.longitude,
+    });
+    const withNarrowOrb = buildWesternChart({
+      provider: freshProvider(),
+      birthDataRef: "sha256:test-3c-narrow-orb",
+      utcInstant: resolution.utc,
+      latitude: HANOI_BIRTH_DATA.latitude,
+      longitude: HANOI_BIRTH_DATA.longitude,
+      aspectOrbPolicy: {
+        id: "test.narrow.v1",
+        description: "Test-only: orb rất hẹp (1°) để xác nhận buildWesternChart truyền policy đúng, không hardcode.",
+        definitions: [
+          { type: "conjunction", exactAngle: 0, orbDegrees: 1 },
+          { type: "sextile", exactAngle: 60, orbDegrees: 1 },
+          { type: "square", exactAngle: 90, orbDegrees: 1 },
+          { type: "trine", exactAngle: 120, orbDegrees: 1 },
+          { type: "opposition", exactAngle: 180, orbDegrees: 1 },
+        ],
+      },
+    });
+    if (!withDefaultOrb.ok || !withNarrowOrb.ok) throw new Error("unreachable");
+    expect(withDefaultOrb.chart.aspects.length).toBeGreaterThan(withNarrowOrb.chart.aspects.length);
+    // Sun-Saturn trine có orb thật ~6.6865° — vượt quá orb hẹp 1° nên biến mất; Moon-Saturn conjunction (~1.9°) cũng vượt quá 1° nên cũng biến mất
+    // (một cặp khác, Neptune-Saturn hoặc Neptune-Pluto, có thể vẫn còn vì orb thật của nó tình cờ < 1° — không giả định policy hẹp luôn cho ra mảng rỗng).
+    expect(withNarrowOrb.chart.aspects.find((a) => a.planetA === "sun" && a.planetB === "saturn")).toBeUndefined();
+    expect(withNarrowOrb.chart.aspects.find((a) => a.planetA === "moon" && a.planetB === "saturn")).toBeUndefined();
+    for (const aspect of withNarrowOrb.chart.aspects) {
+      expect(aspect.orb).toBeLessThanOrEqual(1);
+    }
   });
 });

@@ -5,8 +5,10 @@
  */
 import { describe, expect, it } from "vitest";
 import {
+  angularSeparation,
   buildWesternChart,
   calculateWesternHousesAndAngles,
+  computeWesternAspects,
   isWithinTolerance,
   resolveBirthDataInstant,
   roundForDisplay,
@@ -14,6 +16,7 @@ import {
   UnimplementedAstronomicalProvider,
   validateBirthData,
   validateNormalizedChart,
+  WESTERN_MODERN_MAJOR_ASPECT_ORB_POLICY,
   type BirthData,
 } from "../index.js";
 
@@ -100,5 +103,17 @@ describe("public API — pipeline đầy đủ Phase 1 (validate -> resolve UTC)
       expect(planet.sign).toBeDefined();
       expect(planet.house).not.toBeNull();
     }
+    // aspects[] (Phase 3C) đã được điền qua public API, không cần gọi computeWesternAspects riêng.
+    expect(result.chart.aspects.length).toBeGreaterThan(0);
+  });
+
+  it("computeWesternAspects/angularSeparation/WESTERN_MODERN_MAJOR_ASPECT_ORB_POLICY export đúng qua public API", () => {
+    expect(angularSeparation(0, 180)).toBe(180);
+    expect(WESTERN_MODERN_MAJOR_ASPECT_ORB_POLICY.id).toBe("western.major_aspects.modern_default.v1");
+    const result = computeWesternAspects([
+      { body: "a", longitude: 0 },
+      { body: "b", longitude: 120 },
+    ]);
+    expect(result[0]?.type).toBe("trine");
   });
 });

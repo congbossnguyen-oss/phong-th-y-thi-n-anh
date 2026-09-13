@@ -220,5 +220,39 @@ Khi viết test cross-check cho `western/zodiac.ts` (Phase 3B-2), phát hiện S
 `chart/__tests__/fixtures.ts::fullWesternChart()` có `sign: "sagittarius"` nhưng
 `longitude: 238.1087`/`signDegree: 28.1087` của CHÍNH fixture đó lại xác nhận "scorpio" (210°-240°,
 238.1087-210=28.1087) — một lỗi nhập liệu có từ Phase 2, KHÔNG liên quan tới Phase 3B-2. `house: 7`
-của Saturn vẫn ĐÚNG (house không phụ thuộc sign). Đã báo cáo qua `spawn_task` (task riêng, không
-sửa trong phạm vi Phase 3B-2) thay vì tự sửa file không thuộc phase này.
+của Saturn vẫn ĐÚNG (house không phụ thuộc sign). **Đã sửa** (commit `f2a10da16f71a7626fd74f071a76b5056ed61960`,
+kèm regression assertion mới trong `western/__tests__/zodiac.test.ts`).
+
+## 23. Phase 3C — Applying/separating aspect KHÔNG implement (đã bị loại khỏi schema đã freeze)
+
+Tài liệu giai đoạn audit (`AUDIT/ARCHITECTURE_PROPOSAL.md` dòng 114) từng phác thảo field
+`applying: bool` cho `AspectInstance`, nhưng field này KHÔNG được đưa vào schema đã freeze
+(`DOMAIN_MODEL.md` §4's `AspectInstance`/`NormalizedAspectInstance` hiện tại không có field
+applying/separating nào). Cùng tài liệu audit đó (dòng 42) cũng liệt kê "applying/separating
+logic" là "Phase 2+" (ngoài phạm vi bản dựng Tây phương ban đầu). Phase 3C KHÔNG tự thêm field
+này hay tự chọn một phương pháp xác định applying/separating (vd. so sánh tốc độ tương đối giữa 2
+hành tinh như `stellium`, hoặc phát hiện trạm dừng như `mayaastrolib` — cả hai chỉ là tài liệu
+audit về cách CÁC REPO KHÁC làm, KHÔNG phải quyết định của kiến trúc này) — đây là một
+`NormalizedAspectInstance` schema change CẦN duyệt tường minh, tương tự house-system-default và
+orb-policy trước đó, không phải điều Phase 3C tự quyết được.
+
+## 24. Aspect chỉ tính giữa các hành tinh trong `planets[]` — KHÔNG mở rộng sang góc/node/point
+
+`DOMAIN_MODEL.md` §4's `AspectInstance { planet_a: CelestialBody, planet_b: CelestialBody, ... }`
+đặt tên field là "planet", không phải "point" — Phase 3C đọc đây là phạm vi CHỦ Ý: chỉ aspect
+giữa các hành tinh đã tính trong `NormalizedChart.planets[]`. Nhiều phần mềm chiêm tinh khác CŨNG
+tính aspect tới Ascendant/Midheaven (vd. "Mars conjunct Ascendant") hoặc tới node/điểm tính toán
+— đây là một MỞ RỘNG PHẠM VI hợp lý cho tương lai, nhưng KHÔNG được yêu cầu ở Phase 3C và tên
+field hiện tại của schema nghiêng về "chỉ hành tinh" hơn — cần một quyết định kiến trúc riêng nếu
+muốn mở rộng, không tự suy diễn thêm.
+
+## 25. `AspectOrbPolicy` chưa có chỗ lưu trong `CalculationMetadata` để Evidence layer sau này biết policy nào đã dùng
+
+`western/aspects.ts::AspectOrbPolicy.id` (vd. `"western.major_aspects.modern_default.v1"`) là
+định danh ỔN ĐỊNH của policy đã dùng để tạo ra `NormalizedChart.aspects[]`, nhưng
+`CalculationMetadata` (Phase 2, đã freeze) không có field nào để LƯU định danh này vào chart đã
+tính — có nghĩa là một `NormalizedChart` đã lưu KHÔNG tự chứa thông tin "orb policy nào đã tạo ra
+các aspect này", nếu sau này có nhiều policy khác nhau cùng tồn tại. Phase 3C KHÔNG tự thêm field
+mới vào `CalculationMetadata` (tránh sửa contract không được yêu cầu) — đây là một
+`CalculationMetadata` schema change cần duyệt tường minh nếu Evidence/Interpretation layer (Phase
+6+) thực sự cần truy vết ngược policy đã dùng.

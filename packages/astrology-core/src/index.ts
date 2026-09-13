@@ -89,6 +89,13 @@ export type { BuildWesternChartInput, BuildWesternChartResult } from "./western/
 export { WESTERN_CORE_ZODIAC_CONFIG_VERSION, WESTERN_CORE_PRECISION_POLICY_VERSION, buildWesternChart } from "./western/chart.js";
 
 // ---------------------------------------------------------------------------------------
+// Phase 3C — Western Aspects
+// ---------------------------------------------------------------------------------------
+
+export type { AspectDefinition, AspectOrbPolicy, AspectCandidatePoint } from "./western/aspects.js";
+export { angularSeparation, computeWesternAspects, WESTERN_MODERN_MAJOR_ASPECT_ORB_POLICY } from "./western/aspects.js";
+
+// ---------------------------------------------------------------------------------------
 // Phase 2 — Normalized Chart
 // ---------------------------------------------------------------------------------------
 

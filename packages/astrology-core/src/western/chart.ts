@@ -1,13 +1,15 @@
 /**
- * Phase 3B-2 — lắp ráp một `NormalizedChart` Tây phương ĐẦY ĐỦ (trong phạm vi đã implement:
- * planets + houseCusps + angles) từ một `BirthData` đã quy đổi UTC. Đây là hàm "tiện dụng" ghép
+ * Lắp ráp một `NormalizedChart` Tây phương ĐẦY ĐỦ (trong phạm vi đã implement: planets +
+ * houseCusps + angles + aspects) từ một `BirthData` đã quy đổi UTC. Đây là hàm "tiện dụng" ghép
  * `western/houses.ts` (Phase 3B-1) + `western/planets.ts` (Phase 3B-2) +
- * `chart/createNormalizedChart.ts` (Phase 2) lại — KHÔNG thêm bất kỳ tính toán MỚI nào ngoài
- * việc điều phối 3 hàm đã có, đúng mục tiêu "làm NormalizedChart hữu dụng như một cấu trúc lá số
- * Tây phương thật" của task brief Phase 3B-2.
+ * `western/aspects.ts` (Phase 3C) + `chart/createNormalizedChart.ts` (Phase 2) lại — KHÔNG thêm
+ * bất kỳ tính toán MỚI nào ngoài việc điều phối các hàm đã có.
  *
- * `NormalizedChart.houses[]` (sign+ruler của TỪNG NHÀ) và `points[]`/`nodes[]`/`aspects[]`/
- * `dignities[]` KHÔNG được điền ở đây — ngoài phạm vi Phase 3B-2 (xem FUTURE_WORK.md mục 14).
+ * `NormalizedChart.houses[]` (sign+ruler của TỪNG NHÀ) và `points[]`/`nodes[]`/`dignities[]`
+ * KHÔNG được điền ở đây — ngoài phạm vi (xem FUTURE_WORK.md mục 14). `aspects[]` ĐÃ điền từ
+ * Phase 3C — CHỈ giữa các hành tinh đã tính trong `planets[]` (đúng tên field `planet_a`/
+ * `planet_b` của `DOMAIN_MODEL.md` §4 — KHÔNG mở rộng sang góc/node/point, xem
+ * PHASE3C_ASPECTS_IMPLEMENTATION.md).
  */
 
 import { randomUUID } from "node:crypto";
@@ -16,6 +18,7 @@ import type { AstrologyCoreError } from "../errors.js";
 import type { AstronomicalProvider, CelestialBody, HouseSystemId } from "../astronomical/AstronomicalProvider.js";
 import type { NormalizedChart, SchoolId } from "../chart/types.js";
 import { createNormalizedChart } from "../chart/createNormalizedChart.js";
+import { computeWesternAspects, WESTERN_MODERN_MAJOR_ASPECT_ORB_POLICY, type AspectOrbPolicy } from "./aspects.js";
 import { calculateWesternHousesAndAngles, WESTERN_DEFAULT_HOUSE_SYSTEM } from "./houses.js";
 import { mapWesternPlanetPositions, WESTERN_CORE_BODIES } from "./planets.js";
 
@@ -41,6 +44,8 @@ export interface BuildWesternChartInput {
   houseSystem?: HouseSystemId;
   bodies?: readonly CelestialBody[];
   school?: SchoolId;
+  /** Mặc định `WESTERN_MODERN_MAJOR_ASPECT_ORB_POLICY` (Phase 3C) nếu bỏ trống. */
+  aspectOrbPolicy?: AspectOrbPolicy;
 }
 
 export type BuildWesternChartResult = { ok: true; chart: NormalizedChart } | { ok: false; errors: AstrologyCoreError[] };
@@ -80,6 +85,11 @@ export function buildWesternChart(input: BuildWesternChartInput): BuildWesternCh
   });
   if (!planetsResult.ok) return { ok: false, errors: planetsResult.errors };
 
+  const aspects = computeWesternAspects(
+    planetsResult.planets.map((p) => ({ body: p.body, longitude: p.longitude })),
+    input.aspectOrbPolicy ?? WESTERN_MODERN_MAJOR_ASPECT_ORB_POLICY,
+  );
+
   const chart = createNormalizedChart({
     metadata: {
       calculationId: randomUUID(),
@@ -101,6 +111,7 @@ export function buildWesternChart(input: BuildWesternChartInput): BuildWesternCh
     planets: planetsResult.planets,
     houseCusps,
     angles,
+    aspects,
   });
 
   return { ok: true, chart };
