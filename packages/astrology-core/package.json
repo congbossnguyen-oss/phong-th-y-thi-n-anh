@@ -1,0 +1,39 @@
+{
+  "name": "@thien-anh/astrology-core",
+  "version": "0.1.0",
+  "description": "Astrology Module — Phase 1 (Core Foundation): BirthData, input validation, Timezone/DST resolution (IANA), AstronomicalProvider interface. KHÔNG chứa luận giải, KHÔNG chứa rule Tây/Vệ Đà, KHÔNG gọi AI, KHÔNG phụ thuộc Swiss Ephemeris (xem docs/astrology-module/ARCHITECTURE/LICENSE_BOUNDARY.md — LEGAL DECISION REQUIRED).",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@thien-anh/calendar-core": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4"
+  },
+  "keywords": [
+    "astrology",
+    "birth-data",
+    "timezone",
+    "dst",
+    "astronomical-provider"
+  ],
+  "license": "UNLICENSED",
+  "private": true
+}
