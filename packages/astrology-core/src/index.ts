@@ -1,9 +1,11 @@
 /**
- * @thien-anh/astrology-core — Astrology Module, Phase 1 (Core Foundation).
+ * @thien-anh/astrology-core — Astrology Module.
  *
- * CHỈ chứa: BirthData + validation, Timezone/DST Engine, AstronomicalProvider interface,
- * Precision Policy. KHÔNG chứa rule Tây/Vệ Đà, KHÔNG có Factor/Rule/Interpretation Engine,
- * KHÔNG gọi AI, KHÔNG có implementation Swiss Ephemeris.
+ * Phase 1 (Core Foundation): BirthData + validation, Timezone/DST Engine, AstronomicalProvider
+ * interface, Precision Policy.
+ * Phase 2 (Normalized Chart): NormalizedChart data contract + validation + serialization —
+ * KHÔNG chứa rule Tây/Vệ Đà, KHÔNG có Factor/Rule/Interpretation Engine, KHÔNG gọi AI, KHÔNG
+ * có implementation Swiss Ephemeris, KHÔNG tính toán Western/Vedic chart nào.
  *
  * Xem docs/astrology-module/ARCHITECTURE/ (đã freeze) cho toàn bộ quyết định kiến trúc.
  */
@@ -46,3 +48,38 @@ export {
   roundForDisplay,
   isWithinTolerance,
 } from "./precision.js";
+
+// ---------------------------------------------------------------------------------------
+// Phase 2 — Normalized Chart
+// ---------------------------------------------------------------------------------------
+
+export type {
+  SchoolId,
+  ZodiacSign,
+  ZodiacType,
+  HouseNumber,
+  AspectType,
+  DignityType,
+  AngleType,
+  CalculationMetadata,
+  NormalizedPlanetPosition,
+  NormalizedHouse,
+  NormalizedHouseCusp,
+  NormalizedAngle,
+  NormalizedNodePosition,
+  NormalizedPointPosition,
+  NormalizedAspectInstance,
+  NormalizedDignityResult,
+  NormalizedChart,
+} from "./chart/types.js";
+export { ZODIAC_SIGNS, NORMALIZED_CHART_SCHEMA_VERSION } from "./chart/types.js";
+
+export type { CreateNormalizedChartInput } from "./chart/createNormalizedChart.js";
+export { createNormalizedChart } from "./chart/createNormalizedChart.js";
+
+export type { NormalizedChartErrorCode, NormalizedChartError } from "./chart/validation.js";
+export { validateNormalizedChart } from "./chart/validation.js";
+
+export { serializeNormalizedChart, deserializeNormalizedChart, NormalizedChartVersionMismatchError } from "./chart/serialization.js";
+
+export { computeBirthDataFingerprint } from "./chart/birthDataFingerprint.js";

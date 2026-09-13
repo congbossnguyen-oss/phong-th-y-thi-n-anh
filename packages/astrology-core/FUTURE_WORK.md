@@ -46,7 +46,26 @@ Phase 3 phải bổ sung test xác nhận `UNSUPPORTED_HOUSE_SYSTEM_AT_LATITUDE`
 sẵn trong `ARCHITECTURE_FREEZE.md` §5 nhưng CHƯA đưa vào `errors.ts` của package này vì chưa
 có code path nào dùng tới ở Phase 1 — thêm mã lỗi chưa dùng vào enum sẽ là dead code).
 
-## 6. Root `package-lock.json` có drift lớn không liên quan Phase 1
+## 6. Ayanamsa VALUE (độ), không chỉ tên — cần trước khi Phase 4 Vedic bắt đầu nghiêm túc
+
+`CalculationMetadata.ayanamsa` (Phase 2) chỉ lưu tên định danh (vd. `"lahiri"`), KHÔNG lưu giá
+trị độ đã tính tại đúng thời điểm — audit đã ghi nhận PyJHora mặc định lệch ~1.1° so với Lahiri
+tường minh (`docs/astrology-module/AUDIT/VEDIC_AUDIT.md`). Phase 2 CỐ Ý không tự thêm field mới
+vào NormalizedChart cho việc này (tránh bịa field ngoài spec đã freeze) — xem
+`PHASE2_NORMALIZED_CHART_IMPLEMENTATION.md` mục "Open item". Cần quyết định tường minh (thêm
+field `ayanamsaValueDegrees` hay không) trước khi Phase 4 viết chart calculation Vedic thật.
+
+## 7. Dasha/Varga KHÔNG thuộc NormalizedChart — cần data structure riêng ở Phase 4
+
+Đã xác nhận rõ trong lúc làm Phase 2: Dasha (Vimshottari, Yogini,...) và Varga/divisional charts
+là các "overlay" theo TRỤC THỜI GIAN hoặc BIẾN THỂ khác của cùng một lá số, không phải một phần
+của "chart snapshot" mà `NormalizedChart` mô hình hoá — DOMAIN_MODEL.md §4 không hề nhắc tới 2
+khái niệm này. Phase 4 (Vedic calculation) sẽ cần tự định nghĩa kiểu dữ liệu riêng cho Dasha
+(timeline các giai đoạn) và cho Varga (rất có thể là `NormalizedChart[]`, một bản snapshot
+riêng cho mỗi loại phân chia D1/D9/D10/..., tham chiếu chung `birthDataRef`) — KHÔNG nhét vào
+bên trong `NormalizedChart` hiện có.
+
+## 8. Root `package-lock.json` có drift lớn không liên quan Phase 1
 
 Khi bắt đầu Phase 1, `package-lock.json` đã ở trạng thái "modified" (chưa commit) với ~2600
 dòng thay đổi — KHÔNG liên quan tới `astrology-core` (repo có nhiều thay đổi khác đang dang dở:
