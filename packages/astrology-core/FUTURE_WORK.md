@@ -184,3 +184,41 @@ xác nhận GIÁ TRỊ chính xác. Đây là `VALIDATION GAP` theo đúng đị
 — ghi nhận tường minh, giống cách True Node được ghi nhận ở mục 12. Nếu cần độ tin cậy cao hơn,
 cân nhắc build `swetest` từ nguồn C (Astrodienst) hoặc đối chiếu với công cụ tính lá số của
 astro.com cho vài trường hợp cụ thể.
+
+## 19. Phase 3B-2 — House assignment dùng longitude thuần, KHÔNG dùng `sweph.house_pos()` "visually accurate"
+
+`western/housePlacement.ts::assignHouseNumber()` dùng phương pháp CUNG longitude chuẩn (một
+điểm thuộc nhà N nếu longitude nằm trong [cusp[N], cusp[N+1])) — đây là phương pháp phổ biến
+nhất trong phần mềm chiêm tinh Tây phương, nhưng Swiss Ephemeris có `house_pos(armc, geolat, eps,
+hsys, xpin)` cho kết quả "visually accurate" hơn (có tính vĩ độ hoàng đạo/xích vĩ của điểm, quan
+trọng hơn với hành tinh có vĩ độ hoàng đạo lớn, vd. Pluto ~17° ở một số vị trí). Phase 3B-2 CHỐI
+Ý chọn phương pháp đơn giản hơn vì task brief chỉ yêu cầu "longitude + house cusps" làm đầu vào,
+KHÔNG yêu cầu thêm phụ thuộc (ARMC/obliquity/xích vĩ). Nếu tương lai cần độ chính xác cao hơn cho
+hành tinh có vĩ độ hoàng đạo lớn, cân nhắc thêm `getHousePosition()` vào `AstronomicalProvider`
+(một quyết định kiến trúc/interface CẦN duyệt tường minh, tương tự house system default).
+
+## 20. `NormalizedAngle` không có field `sign` — ASC/MC/DESC/IC sign tính "on demand", không lưu
+
+`DOMAIN_MODEL.md` §4's `Angle { type, longitude }` không có field sign — đúng nguyên tắc "derived,
+not independently stored" đã áp dụng cho `PlanetPosition.sign`. Phase 3B-2 KHÔNG thêm field mới
+vào `NormalizedAngle` (tránh sửa contract không được yêu cầu) — dùng chung `signOfLongitude()`
+(export public từ `western/zodiac.ts`) để tính sign của bất kỳ góc nào từ `longitude` đã có sẵn.
+Nếu một phase sau cần LƯU sign của góc (vd. để tránh tính lại nhiều lần ở tầng hiển thị), đó là
+một thay đổi contract cần duyệt tường minh, không tự thêm ở đây.
+
+## 21. DMS (độ-phút-giây) chỉ là tiện ích hiển thị — contract KHÔNG có field DMS
+
+`precision.ts::toDegreesMinutesSeconds()` được thêm ở Phase 3B-2 theo đúng điều kiện "if the
+existing contract supports it" trong task brief — kiểm tra thực tế xác nhận contract KHÔNG hỗ
+trợ (không field nào trong `NormalizedPlanetPosition`/`NormalizedAngle`/`NormalizedHouseCusp`
+lưu DMS, chỉ có độ thập phân). Hàm được thêm như MỘT TIỆN ÍCH ĐỘC LẬP (không gắn vào bất kỳ field
+nào của `NormalizedChart`) để dùng khi cần hiển thị — không phải một phần contract.
+
+## 22. Phát hiện: lỗi dữ liệu có trước trong fixture Phase 2 (`fullWesternChart()`)
+
+Khi viết test cross-check cho `western/zodiac.ts` (Phase 3B-2), phát hiện Saturn trong
+`chart/__tests__/fixtures.ts::fullWesternChart()` có `sign: "sagittarius"` nhưng
+`longitude: 238.1087`/`signDegree: 28.1087` của CHÍNH fixture đó lại xác nhận "scorpio" (210°-240°,
+238.1087-210=28.1087) — một lỗi nhập liệu có từ Phase 2, KHÔNG liên quan tới Phase 3B-2. `house: 7`
+của Saturn vẫn ĐÚNG (house không phụ thuộc sign). Đã báo cáo qua `spawn_task` (task riêng, không
+sửa trong phạm vi Phase 3B-2) thay vì tự sửa file không thuộc phase này.

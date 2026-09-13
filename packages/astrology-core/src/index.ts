@@ -72,7 +72,21 @@ export {
   ANGULAR_TOLERANCE_ANALYTIC_FALLBACK_DEGREES,
   roundForDisplay,
   isWithinTolerance,
+  angularPrecisionForClass,
+  toDegreesMinutesSeconds,
+  type DegreesMinutesSeconds,
 } from "./precision.js";
+
+// ---------------------------------------------------------------------------------------
+// Phase 3B-2 — Western Chart Mapping (sign + house assignment)
+// ---------------------------------------------------------------------------------------
+
+export { signOfLongitude, signDegreeOfLongitude } from "./western/zodiac.js";
+export { assignHouseNumber } from "./western/housePlacement.js";
+export type { MapWesternPlanetPositionsInput, MapWesternPlanetPositionsResult } from "./western/planets.js";
+export { WESTERN_CORE_BODIES, mapWesternPlanetPositions } from "./western/planets.js";
+export type { BuildWesternChartInput, BuildWesternChartResult } from "./western/chart.js";
+export { WESTERN_CORE_ZODIAC_CONFIG_VERSION, WESTERN_CORE_PRECISION_POLICY_VERSION, buildWesternChart } from "./western/chart.js";
 
 // ---------------------------------------------------------------------------------------
 // Phase 2 — Normalized Chart

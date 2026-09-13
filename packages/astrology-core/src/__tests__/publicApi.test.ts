@@ -5,6 +5,7 @@
  */
 import { describe, expect, it } from "vitest";
 import {
+  buildWesternChart,
   calculateWesternHousesAndAngles,
   isWithinTolerance,
   resolveBirthDataInstant,
@@ -12,6 +13,7 @@ import {
   SwissEphemerisProvider,
   UnimplementedAstronomicalProvider,
   validateBirthData,
+  validateNormalizedChart,
   type BirthData,
 } from "../index.js";
 
@@ -77,5 +79,26 @@ describe("public API — pipeline đầy đủ Phase 1 (validate -> resolve UTC)
     expect(result.houseSystem).toBe("placidus");
     expect(result.houseCusps).toHaveLength(12);
     expect(result.angles.map((a) => a.type).sort()).toEqual(["ASC", "DESC", "IC", "MC"]);
+  });
+
+  it("buildWesternChart export đúng qua public API, pipeline đầy đủ BirthData -> NormalizedChart Tây phương thật với sign/house đã gán", () => {
+    const resolved = resolveBirthDataInstant(benchmarkBirthData);
+    expect(resolved.ok).toBe(true);
+    if (!resolved.ok) throw new Error("unreachable");
+    const result = buildWesternChart({
+      provider: new SwissEphemerisProvider(),
+      birthDataRef: "sha256:test-public-api",
+      utcInstant: resolved.utc,
+      latitude: benchmarkBirthData.latitude,
+      longitude: benchmarkBirthData.longitude,
+    });
+    expect(result.ok).toBe(true);
+    if (!result.ok) throw new Error("unreachable");
+    expect(validateNormalizedChart(result.chart)).toEqual([]);
+    expect(result.chart.planets).toHaveLength(10);
+    for (const planet of result.chart.planets) {
+      expect(planet.sign).toBeDefined();
+      expect(planet.house).not.toBeNull();
+    }
   });
 });
