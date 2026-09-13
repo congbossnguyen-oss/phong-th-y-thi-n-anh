@@ -76,8 +76,20 @@ describe("deserializeNormalizedChart — version handling", () => {
 
   it("từ chối major version khác (breaking change) bằng NormalizedChartVersionMismatchError", () => {
     const json = serializeNormalizedChart(minimalValidChart());
-    const tampered = JSON.stringify({ ...JSON.parse(json), schemaVersion: "2.0.0" });
+    const currentMajor = Number(NORMALIZED_CHART_SCHEMA_VERSION.split(".")[0]);
+    const tampered = JSON.stringify({ ...JSON.parse(json), schemaVersion: `${currentMajor + 1}.0.0` });
     expect(() => deserializeNormalizedChart(tampered)).toThrow(NormalizedChartVersionMismatchError);
+  });
+
+  it("REGRESSION Phase 2.1: dữ liệu 1.0.0 cũ (dignities dùng shape planet/type-đóng) bị từ chối đúng bởi runtime 2.0.0, không bị hiểu sai âm thầm", () => {
+    // Đây chính là kịch bản thật sự version gate phải xử lý: một NormalizedChart đã serialize
+    // dưới schema 1.0.0 (trước khi NormalizedDignityResult đổi hình dạng ở Phase 2.1) không
+    // được phép deserialize thành công dưới runtime 2.0.0 hiện tại.
+    const oldShapeJson = JSON.stringify({
+      schemaVersion: "1.0.0",
+      chart: { ...minimalValidChart(), dignities: [{ planet: "mars", sign: "aries", type: "domicile", score: 5 }] },
+    });
+    expect(() => deserializeNormalizedChart(oldShapeJson)).toThrow(NormalizedChartVersionMismatchError);
   });
 
   it("chấp nhận minor version khác (field mới không bắt buộc, không breaking)", () => {

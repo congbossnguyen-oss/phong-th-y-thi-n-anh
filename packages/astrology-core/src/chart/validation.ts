@@ -44,7 +44,11 @@ export type NormalizedChartErrorCode =
   | "ASPECT_SELF_REFERENCE"
   | "EMPTY_BIRTH_DATA_REF"
   | "EMPTY_SCHOOL"
-  | "INVALID_SPEED";
+  | "INVALID_SPEED"
+  | "EMPTY_DIGNITY_SCHEME"
+  | "EMPTY_DIGNITY_TYPE"
+  | "EMPTY_DIGNITY_BODY"
+  | "INVALID_DIGNITY_SCORE";
 
 export interface NormalizedChartError extends Omit<AstrologyCoreError, "code"> {
   code: NormalizedChartErrorCode;
@@ -245,6 +249,30 @@ function validateAspect(a: NormalizedAspectInstance, index: number): NormalizedC
   return errors;
 }
 
+/**
+ * Validate `NormalizedDignityResult` — trung lập trường phái (Phase 2.1, Approved Decision 2).
+ * `sign` CHỈ validate khi CÓ mặt (tuỳ chọn — nhiều thành phần strength không dựa trên cung, vd.
+ * Dig/Kaala/Cheshta Bala của Vedic Shadbala) — KHÔNG bắt buộc phải có như bản cũ.
+ */
 function validateDignity(d: NormalizedDignityResult, index: number): NormalizedChartError[] {
-  return validateSign(d.sign, `dignities[${index}].sign`);
+  const prefix = `dignities[${index}]`;
+  const errors: NormalizedChartError[] = [];
+
+  if (typeof d.scheme !== "string" || d.scheme.length === 0) {
+    errors.push(err("EMPTY_DIGNITY_SCHEME", `${prefix}.scheme không được rỗng.`, `${prefix}.scheme`));
+  }
+  if (typeof d.type !== "string" || d.type.length === 0) {
+    errors.push(err("EMPTY_DIGNITY_TYPE", `${prefix}.type không được rỗng.`, `${prefix}.type`));
+  }
+  if (typeof d.body !== "string" || d.body.length === 0) {
+    errors.push(err("EMPTY_DIGNITY_BODY", `${prefix}.body không được rỗng.`, `${prefix}.body`));
+  }
+  if (!isFiniteNumber(d.score)) {
+    errors.push(err("INVALID_DIGNITY_SCORE", `${prefix}.score phải là số hữu hạn: nhận ${String(d.score)}.`, `${prefix}.score`));
+  }
+  if (d.sign !== undefined) {
+    errors.push(...validateSign(d.sign, `${prefix}.sign`));
+  }
+
+  return errors;
 }

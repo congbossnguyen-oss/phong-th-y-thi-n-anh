@@ -1,6 +1,13 @@
-# FUTURE WORK — discovered during Phase 1, deferred (per Scope Guard)
+# FUTURE WORK — discovered during Phase 1/2/gate audit, deferred (per Scope Guard)
 
-Không implement gì dưới đây trong Phase 1. Ghi lại để Phase 2+ không phải khám phá lại.
+Không implement gì dưới đây khi phát hiện. Ghi lại để phase sau không phải khám phá lại.
+
+**Cập nhật Phase 2.1**: 2 câu hỏi kiến trúc từng nằm ở đây (`CelestialBody` không mở rộng
+được; `NormalizedDignityResult.type` chỉ biểu diễn được Tây phương) đã được duyệt và giải
+quyết — xem `docs/astrology-module/ARCHITECTURE/PHASE2_1_CONTRACT_HARDENING.md`. Không còn là
+future work, không lặp lại ở đây nữa. Mục 9-10 dưới đây là 2 phát hiện MỚI từ gate audit
+(`PHASE3_GATE_AUDIT.md`) — CHỈ ghi lại theo đúng yêu cầu ("Do NOT automatically change these"),
+CHƯA sửa.
 
 ## 1. `calendar-core`'s `zonedTimeToUtc` không phát hiện ambiguous/nonexistent local time
 
@@ -72,3 +79,27 @@ dòng thay đổi — KHÔNG liên quan tới `astrology-core` (repo có nhiều
 AI video, chat widget, v.v., xem `git status` tại thời điểm PHASE1_COMPLETE). Commit Phase 1
 KHÔNG bao gồm `package-lock.json` để tránh gộp lẫn thay đổi không liên quan — ai đó cần tự chạy
 `npm install` lại và review/commit lockfile riêng khi các luồng công việc kia sẵn sàng.
+
+## 9. `MIN_YEAR`/`MAX_YEAR` trong `validateBirthData` — lý do trong comment SAI, đã xác nhận bằng test
+
+Phát hiện ở gate audit trước Phase 3 (`docs/astrology-module/ARCHITECTURE/PHASE3_GATE_AUDIT.md`
+§2, §11#4): `validation/birthData.ts` giới hạn `year` trong `[-4712, 9999]`, với comment nói đây
+là "giới hạn dưới của thuật toán Julian Day (calendar-core) — ngày trước mốc này không tính
+được JDN dương." Đã chạy thực tế `isValidCalendarDate(-10000, 3, 12)` và `isValidCalendarDate
+(10000, 3, 12)` trên chính `calendar-core` đang dùng — CẢ HAI đều trả `true`, tức công thức JDN
+của calendar-core KHÔNG có giới hạn này. Comment sai, cận số vẫn đứng vững nhưng không có căn
+cứ thuật toán như đã ghi. **CHƯA sửa** theo đúng yêu cầu ("Do NOT automatically change this").
+Đề xuất (khi nào động vào file này vì lý do khác): hoặc bỏ hẳn cận số và chỉ dựa vào round-trip
+check sẵn có của `isValidCalendarDate`, hoặc giữ cận nhưng sửa comment thành "giới hạn thực tế
+cho phạm vi sản phẩm, không phải giới hạn thuật toán."
+
+## 10. Giây lẻ (fractional seconds) bị `Date.UTC` cắt về số nguyên, không khớp với type/validation đã khai
+
+Phát hiện ở gate audit (`PHASE3_GATE_AUDIT.md` §2, §11#5): `LocalTime.second` được khai kiểu và
+validate cho phép số thập phân (`0-59.999...`), nhưng `resolveLocalTimeToUtc` dùng
+`Date.UTC(...)` bên trong — đã xác nhận bằng chạy thực tế `Date.UTC(2024,0,1,12,30,45.678)` cho
+ra `...:45.000Z`, mất hoàn toàn phần thập phân. Tác động thực tế gần như bằng 0 (giờ sinh không
+bao giờ biết chính xác tới dưới giây; 1 giây chuyển động Mặt Trăng ~0.0002°). **CHƯA sửa** theo
+đúng yêu cầu. Đề xuất: hoặc truyền phần dư thập phân vào tham số mili-giây thứ 7 của `Date.UTC`
+để giữ đúng độ chính xác, hoặc thu hẹp `LocalTime.second` về số nguyên và sửa lại thông điệp lỗi
+tương ứng.

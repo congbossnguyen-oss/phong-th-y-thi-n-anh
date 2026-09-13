@@ -144,3 +144,39 @@ describe("UnimplementedAstronomicalProvider — hành vi khi chưa có provider 
     }
   });
 });
+
+describe("CelestialBody — mở rộng được (Phase 2.1, Approved Decision 1)", () => {
+  const provider = new MockAstronomicalProvider();
+
+  it("10 hành tinh cổ điển ĐÃ BIẾT vẫn hợp lệ (tương thích ngược, không đổi hành vi)", () => {
+    for (const body of ALL_BODIES) {
+      expect(() => provider.getPlanetPosition(UTC_INSTANT, body)).not.toThrow();
+    }
+  });
+
+  it("Chiron (định danh mới thêm vào KnownCelestialBody) được chấp nhận như một CelestialBody hợp lệ", () => {
+    const body: CelestialBody = "chiron";
+    expect(() => provider.getPlanetPosition(UTC_INSTANT, body)).not.toThrow();
+    expect(provider.getPlanetPosition(UTC_INSTANT, body).body).toBe("chiron");
+  });
+
+  it("Lilith (mean_lilith) được chấp nhận như một CelestialBody hợp lệ", () => {
+    const body: CelestialBody = "mean_lilith";
+    expect(() => provider.getPlanetPosition(UTC_INSTANT, body)).not.toThrow();
+    expect(provider.getPlanetPosition(UTC_INSTANT, body).body).toBe("mean_lilith");
+  });
+
+  it("một định danh TƯƠNG LAI hoàn toàn chưa biết (vd. tiểu hành tinh/sao cố định) KHÔNG bị từ chối chỉ vì lạ — CelestialBody là kiểu mở, không phải union đóng", () => {
+    // "eris" (tiểu hành tinh 136199) và "regulus" (sao cố định) — cả hai đều KHÔNG có trong
+    // KnownCelestialBody, nhưng type CelestialBody = KnownCelestialBody | (string & {}) vẫn
+    // chấp nhận, đúng yêu cầu "unknown future identifiers are not rejected merely because
+    // they are unknown". KHÔNG có logic tính toán nào được thêm cho các thiên thể này — mock
+    // provider chỉ trả nguyên `body` lại, đúng phạm vi "chỉ kiểm tra type-level, không thêm
+    // calculation logic".
+    for (const futureBody of ["eris", "regulus", "some_school_specific_point"] as const) {
+      const body: CelestialBody = futureBody;
+      expect(() => provider.getPlanetPosition(UTC_INSTANT, body)).not.toThrow();
+      expect(provider.getPlanetPosition(UTC_INSTANT, body).body).toBe(futureBody);
+    }
+  });
+});

@@ -48,9 +48,9 @@ describe("validateNormalizedChart — invalid enum values", () => {
     expect(validateNormalizedChart(chart).map((e) => e.code)).toContain("INVALID_ZODIAC_SIGN");
   });
 
-  it("báo INVALID_ZODIAC_SIGN cho dignities[].sign sai", () => {
+  it("báo INVALID_ZODIAC_SIGN cho dignities[].sign sai (khi CÓ mặt — sign giờ là tuỳ chọn)", () => {
     const chart = fullWesternChart();
-    chart.dignities = [{ planet: "mars", sign: "not_a_sign" as never, type: "domicile", score: 5 }];
+    chart.dignities = [{ scheme: "western_traditional", body: "mars", sign: "not_a_sign" as never, type: "domicile", score: 5 }];
     expect(validateNormalizedChart(chart).map((e) => e.code)).toContain("INVALID_ZODIAC_SIGN");
   });
 });

@@ -2,6 +2,8 @@
 
 Audit date: 2026-09-13. Scope: `packages/astrology-core/` as committed at Phase 1 (`33209ea`) and Phase 2 (`6cde9f0`), plus one fix applied and committed during this gate (`a43ff36`). Method: direct re-reading of the actual shipped source (not memory of having written it), targeted execution against real ICU/tzdata data, and a full re-run of the test suite. No Phase 3 code, no Swiss Ephemeris/pysweph/pyswisseph, no architecture redesign was implemented.
 
+> **Addendum (Phase 2.1)**: the two `ARCHITECTURE DECISION REQUIRED` items in §13 (`CelestialBody` extensibility, `NormalizedDignityResult.type` Western-only coupling) have since been reviewed, approved, and resolved — see `PHASE2_1_CONTRACT_HARDENING.md`. The rest of this document is left exactly as originally written, as the historical record of the gate; do not treat §13's two items as still-open.
+
 ## VERDICT: **YELLOW — PHASE 3 POSSIBLE, BUT SPECIFIC FIXES SHOULD HAPPEN FIRST**
 
 Phase 3 (Western-only calculation, per `ROADMAP.md`) can safely begin on top of the current `BirthData → Timezone/DST → AstronomicalProvider → NormalizedChart` contracts, **provided** the `AstronomicalProvider.CelestialBody` extensibility gap (below) is resolved before Western dignity/Chiron work needs it, and the false `MIN_YEAR` justification is corrected. One severe, confirmed defect in the Timezone/DST engine was found and **already fixed and committed** during this gate (see Phase 1 findings). One confirmed **NormalizedChart-contract-level defect** (`DignityType` accidentally assumes Western astrology) does **not** block Phase 3 itself (Western dignity work only, per the frozen Phase 3 scope) but **is an ARCHITECTURE DECISION REQUIRED before Phase 4 (Vedic)** and should not be deferred silently.

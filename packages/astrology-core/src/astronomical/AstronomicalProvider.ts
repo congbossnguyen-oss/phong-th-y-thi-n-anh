@@ -12,7 +12,16 @@
  * Swiss Ephemeris/pysweph/pyswisseph — xem LICENSE_BOUNDARY.md (LEGAL DECISION REQUIRED).
  */
 
-export type CelestialBody =
+/**
+ * Danh sách thiên thể ĐÃ BIẾT — chỉ để gợi ý autocomplete/tài liệu, KHÔNG phải danh sách đóng.
+ * Đây là phần vá lỗi Phase 2.1 (Approved Decision 1, xem
+ * docs/astrology-module/ARCHITECTURE/PHASE2_1_CONTRACT_HARDENING.md): bản Phase 1 gốc dùng
+ * union đóng 10 giá trị, mâu thuẫn với chính DOMAIN_MODEL.md §3 ("extensible, not exhaustive")
+ * và chặn đường Chiron/Lilith/tiểu hành tinh/sao cố định/điểm riêng theo trường phái — không
+ * ai trong số đó liệt kê hết được bằng một union hữu hạn (vd. có hơn 800.000 tiểu hành tinh đã
+ * đặt tên).
+ */
+export type KnownCelestialBody =
   | "sun"
   | "moon"
   | "mercury"
@@ -22,7 +31,20 @@ export type CelestialBody =
   | "saturn"
   | "uranus"
   | "neptune"
-  | "pluto";
+  | "pluto"
+  | "chiron"
+  | "mean_lilith"
+  | "true_lilith";
+
+/**
+ * Định danh thiên thể dùng trong `AstronomicalProvider` — mở (`string`) nhưng vẫn gợi ý được
+ * 13 giá trị đã biết qua `KnownCelestialBody` nhờ kỹ thuật `(string & {})` (TypeScript vẫn
+ * autocomplete các literal đã khai báo, đồng thời chấp nhận bất kỳ chuỗi nào khác — KHÔNG có
+ * union đóng nào chặn thiên thể mới). Hoàn toàn tương thích ngược: mọi giá trị hợp lệ trước
+ * Phase 2.1 (10 hành tinh cổ điển) vẫn là `CelestialBody` hợp lệ, KHÔNG đổi kiểu, KHÔNG đổi
+ * hành vi — đây thuần là NỚI RỘNG tập giá trị chấp nhận được, không phải thay hình dạng.
+ */
+export type CelestialBody = KnownCelestialBody | (string & {});
 
 export type NodeType = "true" | "mean";
 

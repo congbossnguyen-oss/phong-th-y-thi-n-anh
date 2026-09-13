@@ -64,7 +64,17 @@ export type HouseNumber = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
  */
 export type AspectType = string;
 
-export type DignityType = "domicile" | "exaltation" | "detriment" | "fall" | "triplicity" | "term" | "decan";
+/**
+ * Phase 2.1 (Approved Decision 2 — xem
+ * docs/astrology-module/ARCHITECTURE/PHASE2_1_CONTRACT_HARDENING.md): `DignityType` (union
+ * đóng chỉ gồm từ vựng dignity Tây phương) đã BỊ LOẠI BỎ — nó khiến Vedic (moolatrikona, ngũ
+ * bậc thân/thù...) không có cách nào biểu diễn hợp lệ trong cùng field. Thay bằng cặp định
+ * danh MỞ `scheme` (hệ thống dignity/strength nào) + `type` (ý nghĩa cụ thể, do CHÍNH `scheme`
+ * đó định nghĩa) — giống hệt cách `AspectType`/`HouseSystemId`/`SchoolId` đã làm trong file
+ * này, không phải một cách tiếp cận mới.
+ */
+export type DignitySchemeId = string; // vd. "western_traditional", "vedic_shadbala" — mở, do trường phái quyết định.
+export type DignityTypeId = string; // ý nghĩa phụ thuộc `scheme`; vd. scheme="western_traditional" => "domicile"|"exaltation"|"detriment"|"fall"|"triplicity"|"term"|"decan" (KHÔNG ép ở kiểu, chỉ theo quy ước của scheme đó).
 
 export type AngleType = "ASC" | "MC" | "DESC" | "IC";
 
@@ -146,10 +156,26 @@ export interface NormalizedAspectInstance {
   withinOrb: boolean;
 }
 
+/**
+ * Kết quả dignity/strength — trung lập trường phái (Phase 2.1, Approved Decision 2). Shape
+ * đúng theo yêu cầu duyệt: scheme/system identifier, type identifier, body identifier,
+ * value/result, KHÔNG có field nào giả định riêng một trường phái.
+ *
+ * `sign` để TUỲ CHỌN (không bắt buộc như bản cũ) — dignity Tây phương (domicile/exaltation...)
+ * luôn gắn với 1 cung nên sẽ điền field này, nhưng nhiều thành phần strength Vedic (vd. Dig
+ * Bala theo NHÀ, Kaala Bala theo THỜI ĐIỂM, Cheshta Bala theo CHUYỂN ĐỘNG — 3 trong 6 thành
+ * phần Shadbala) không gắn với một cung cụ thể nào cả — bắt buộc `sign` sẽ tự nó là một giả
+ * định Tây phương trá hình, đúng lỗi Audit 4 đã chỉ ra.
+ */
 export interface NormalizedDignityResult {
-  planet: string;
-  sign: ZodiacSign;
-  type: DignityType;
+  /** Hệ dignity/strength nào tạo ra kết quả này — vd. "western_traditional", "vedic_shadbala". Trường phái tự định nghĩa, KHÔNG cố định ở đây. */
+  scheme: DignitySchemeId;
+  /** Ý nghĩa cụ thể TRONG hệ `scheme` — vd. scheme="western_traditional" thì type="domicile"|"exaltation"|...; scheme="vedic_shadbala" thì type="sthana_bala"|"dig_bala"|... Ý nghĩa hoàn toàn do `scheme` quyết định, contract này không ép. */
+  type: DignityTypeId;
+  /** Hành tinh/điểm mà kết quả này áp dụng — đổi tên từ `planet` (bản cũ) vì Vedic có thể tính strength cho cả điểm không phải hành tinh cổ điển (vd. Lagna). */
+  body: string;
+  /** CHỈ điền khi bản thân kết quả dignity thực sự gắn với một cung cụ thể (đa số dignity Tây phương) — bỏ trống nếu scheme đó không dựa trên cung (vd. nhiều thành phần Shadbala). */
+  sign?: ZodiacSign;
   score: number;
 }
 
@@ -170,5 +196,20 @@ export interface NormalizedChart {
   nodes: NormalizedNodePosition[];
 }
 
-/** Phiên bản schema NormalizedChart hiện tại — xem PHASE2_NORMALIZED_CHART_IMPLEMENTATION.md §Versioning. Tăng MAJOR khi có breaking change (xoá/đổi kiểu field), MINOR khi thêm field mới không bắt buộc. */
-export const NORMALIZED_CHART_SCHEMA_VERSION = "1.0.0";
+/**
+ * Phiên bản schema NormalizedChart hiện tại — xem PHASE2_NORMALIZED_CHART_IMPLEMENTATION.md
+ * §Versioning. Tăng MAJOR khi có breaking change (xoá/đổi kiểu field), MINOR khi thêm field
+ * mới không bắt buộc.
+ *
+ * 1.0.0 -> 2.0.0 (Phase 2.1, Approved Decision 2): `NormalizedDignityResult` đổi hình dạng
+ * (`planet` -> `body`, thêm `scheme` bắt buộc, `sign` từ bắt buộc thành tuỳ chọn, `type` đổi
+ * từ union đóng sang định danh mở) — đây là breaking change đúng nghĩa của field lồng bên
+ * trong `NormalizedChart.dignities[]`, nên PHẢI tăng MAJOR theo đúng chính sách đã có, dù thực
+ * tế CHƯA có fixture/dữ liệu nào từng điền `dignities[]` khác rỗng (nội dung dignity là Phase
+ * 3+) — chính sách versioning áp theo HÌNH DẠNG hợp đồng, không áp theo có dữ liệu thật hay
+ * chưa. Xem PHASE2_1_CONTRACT_HARDENING.md §Versioning cho lý giải đầy đủ. Thay đổi
+ * `CelestialBody` (Approved Decision 1) KHÔNG ảnh hưởng version này — đó là type của tầng
+ * `AstronomicalProvider` (Phase 1), không thuộc schema `NormalizedChart`, và bản thân thay đổi
+ * đó là NỚI RỘNG (mọi giá trị cũ vẫn hợp lệ), không phải breaking.
+ */
+export const NORMALIZED_CHART_SCHEMA_VERSION = "2.0.0";

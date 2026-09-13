@@ -26,6 +26,7 @@ export { resolveBirthDataInstant } from "./timezone/resolveBirthDataInstant.js";
 export type {
   AstronomicalProvider,
   CelestialBody,
+  KnownCelestialBody,
   NodeType,
   HouseSystemId,
   AyanamsaId,
@@ -59,7 +60,8 @@ export type {
   ZodiacType,
   HouseNumber,
   AspectType,
-  DignityType,
+  DignitySchemeId,
+  DignityTypeId,
   AngleType,
   CalculationMetadata,
   NormalizedPlanetPosition,
