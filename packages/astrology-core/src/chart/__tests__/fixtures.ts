@@ -83,7 +83,7 @@ export function fullWesternChart(): NormalizedChart {
         distanceAu: 9.4879,
         speedDegreesPerDay: -0.0076,
         isRetrograde: true,
-        sign: "sagittarius",
+        sign: "scorpio",
         signDegree: 28.1087,
         house: 7,
         source: "astronomical_core",

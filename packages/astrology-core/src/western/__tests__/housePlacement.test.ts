@@ -18,7 +18,7 @@ describe("assignHouseNumber — khớp CHÍNH XÁC 3 hành tinh đã xác nhận
     expect(assignHouseNumber(240.0111, benchmarkCusps())).toBe(7);
   });
 
-  it("Saturn (longitude=238.1087) -> nhà 7 (cùng cung với Moon — ĐÚNG bất kể lỗi nhãn 'sign' đã phát hiện riêng ở fixture đó, vì house KHÔNG liên quan tới sign)", () => {
+  it("Saturn (longitude=238.1087) -> nhà 7 (cùng cung với Moon — house KHÔNG liên quan tới sign, đúng cả trước và sau khi fixture sửa lỗi nhãn 'sign' của Saturn)", () => {
     expect(assignHouseNumber(238.1087, benchmarkCusps())).toBe(7);
   });
 });

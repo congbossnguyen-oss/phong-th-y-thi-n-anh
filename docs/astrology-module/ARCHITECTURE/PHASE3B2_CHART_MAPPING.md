@@ -133,15 +133,17 @@ reproducibility test's equality check (same convention as every prior phase).
 - `src/__tests__/publicApi.test.ts` — extended with one `buildWesternChart` test through the
   package's public surface.
 
-## Data quality finding (reported separately, not fixed here)
+## Data quality finding (reported separately, fixed in a follow-up commit)
 
 While cross-validating `signOfLongitude()` against the pre-existing Phase 2 benchmark fixture,
 Saturn's `sign: "sagittarius"` was found to be inconsistent with its own `longitude: 238.1087`/
 `signDegree: 28.1087` in the same fixture entry (both values imply Scorpio, 210°-240°, not
-Sagittarius, 240°-270°) — a data-entry error from Phase 2, unrelated to this phase's own work.
-Not fixed here (not this phase's file to modify); reported as a separate follow-up task. This
-phase's own tests assert the mathematically correct value (`"scorpio"`) and explicitly document
-the discrepancy rather than silently reusing the fixture's wrong literal.
+Sagittarius, 240°-270°) — a data-entry error from Phase 2, unrelated to this phase's own work. Not
+fixed inside this phase's own commit (not this phase's file to modify at the time); reported via a
+separate spawned task and corrected in a dedicated follow-up commit (`fix(astrology): correct
+Saturn fixture sign`) that also added a standing regression assertion
+(`western/__tests__/zodiac.test.ts`: every planet in `fullWesternChart()` must have `sign` matching
+`signOfLongitude(longitude)`) so this class of error is caught automatically going forward.
 
 ## Explicitly out of scope (unchanged from task brief)
 

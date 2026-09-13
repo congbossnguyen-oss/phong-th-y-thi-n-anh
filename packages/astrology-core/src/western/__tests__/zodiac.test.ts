@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { ZODIAC_SIGNS } from "../../chart/types.js";
+import { fullWesternChart } from "../../chart/__tests__/fixtures.js";
 import { signDegreeOfLongitude, signOfLongitude } from "../zodiac.js";
 
 describe("signOfLongitude — ranh giới chính xác của 12 cung (quy ước toán học phổ quát 0°-30° Aries, ...)", () => {
@@ -28,13 +29,16 @@ describe("signOfLongitude — ranh giới chính xác của 12 cung (quy ước 
     expect(signOfLongitude(720 + 45)).toBe("taurus"); // nhiều vòng 360°
   });
 
-  it("khớp CHÍNH XÁC 2 giá trị đã xác nhận đúng từ fixture Phase 2 (Hanoi 1985-03-12 08:30, chart/__tests__/fixtures.ts::fullWesternChart) — Sun và Moon (KHÔNG dùng Saturn của fixture đó, xem test riêng bên dưới về lỗi dữ liệu đã phát hiện)", () => {
+  it("khớp CHÍNH XÁC 3 giá trị đã xác nhận đúng từ fixture Phase 2 (Hanoi 1985-03-12 08:30, chart/__tests__/fixtures.ts::fullWesternChart) — Sun, Moon, Saturn", () => {
     expect(signOfLongitude(351.4222)).toBe("pisces"); // Sun
     expect(signOfLongitude(240.0111)).toBe("sagittarius"); // Moon
+    expect(signOfLongitude(238.1087)).toBe("scorpio"); // Saturn
   });
 
-  it("PHÁT HIỆN: fixture Phase 2 fullWesternChart() gán sign='sagittarius' cho Saturn (longitude=238.1087°) — về mặt toán học đây là 'scorpio' (210°-240°), không phải sagittarius (240°-270°); signDegree=28.1087 của chính fixture đó (238.1087-210) cũng xác nhận scorpio, không phải sagittarius. Đây là lỗi dữ liệu fixture CÓ TRƯỚC Phase 3B-2, KHÔNG sửa ở đây (không phải file của phase này) — đã báo cáo riêng qua spawn_task.", () => {
-    expect(signOfLongitude(238.1087)).toBe("scorpio");
+  it("REGRESSION: mọi hành tinh trong fixture fullWesternChart() có sign KHỚP ĐÚNG signOfLongitude(longitude) của chính nó — bắt lại lỗi dữ liệu đã từng phát hiện và sửa (Saturn từng ghi sai 'sagittarius' cho longitude 238.1087°, đúng phải là 'scorpio'; xem docs/astrology-module/ARCHITECTURE/PHASE3B2_CHART_MAPPING.md 'Data quality finding')", () => {
+    for (const planet of fullWesternChart().planets) {
+      expect(planet.sign).toBe(signOfLongitude(planet.longitude));
+    }
   });
 });
 
