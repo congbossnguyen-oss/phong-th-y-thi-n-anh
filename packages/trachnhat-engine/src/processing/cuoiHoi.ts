@@ -17,8 +17,22 @@ type Chi = Data.Chi;
 /** Quét tối đa để tránh vòng lặp quá dài; đủ cho một mùa cưới. */
 const SO_NGAY_TOI_DA = 120;
 
-/** Trực coi là "tốt cho cưới hỏi": nhóm Thành/Khai/Mãn/Bình/Định (loại Phá/Bế/Kiến…). */
-const TRUC_TOT_CUOI_HOI = new Set(["Thành", "Khai", "Mãn", "Bình", "Định"]);
+/**
+ * Trực coi là "tốt cho cưới hỏi": nhóm Thành/Khai/Mãn/Định (loại Phá/Bế/Kiến…).
+ *
+ * ⚠️ V3-02 (2026-09-13): đã BỎ "Bình" khỏi nhóm này. Bảng lõi canonical
+ * `trucDanhGiaTongQuat.ts` (`mucDich["cuoi-hoi"]` của Trực Bình = "ky") và
+ * 《欽定協紀辨方書》 Q11 (嫁娶) đều xếp Trực Bình vào nhóm KỴ cho cưới hỏi — trước
+ * đây hằng số này mâu thuẫn trực tiếp với bảng lõi (viết trước 1 ngày, chưa
+ * từng đồng bộ ngược). Đây là correction A-01, đã Human-approved từ
+ * `V26_HUMAN_DECISION_REGISTER.md` và đã có 1 lần implement/test trên nhánh
+ * `main` (không phải production) ở lượt V3-01 gốc — V3-02 phát hiện production
+ * thật (`cloudflare-migration`) chưa từng nhận thay đổi này (branch-drift,
+ * cùng loại lỗi đã phát hiện ở Lục Hào V2.8) nên port lại đúng thay đổi này
+ * vào đây. Xem `reports/V302_TRUC_BINH_AUDIT.md` trong `phong-thuy-research-hub`
+ * để biết đầy đủ bằng chứng/root cause.
+ */
+const TRUC_TOT_CUOI_HOI = new Set(["Thành", "Khai", "Mãn", "Định"]);
 
 export interface CuoiHoiRangeInput {
   namSinhCoDau: number;
@@ -161,7 +175,8 @@ export function calculateGioCuoiHoi(input: CuoiHoiGioInput): CuoiHoiGioResult {
       diemNgayCoDau,
       diemNgayChuRe,
       hoangDao: ngayInfo.hoangDaoHacDaoNgay === "hoàng đạo",
-      trucTot: ["Thành", "Khai", "Mãn", "Bình", "Định"].includes(ngayInfo.truc.name),
+      // Đồng bộ với TRUC_TOT_CUOI_HOI (xem ghi chú V3-02 ở đầu file) — không lặp "Bình" ở đây nữa.
+      trucTot: TRUC_TOT_CUOI_HOI.has(ngayInfo.truc.name),
       tuCat: ngayInfo.nhiThapBatTu.catHung === "cát",
       catTinhCoMat: ngayInfo.thanSat.filter((t) => t.catHung === "cát").map((t) => t.name),
       thanSatCoMat: ngayInfo.thanSat.map((t) => t.name),

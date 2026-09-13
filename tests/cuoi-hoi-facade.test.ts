@@ -2,8 +2,76 @@
 // Tiểu Lục Nhâm THẬT. Đối chiếu `modulengaycuoihoitonghop final.md` v6 mục 22, 24.
 import { describe, expect, it } from "vitest";
 import { calculateCuoiHoiRange, calculateGioCuoiHoi } from "@thien-anh/trachnhat-engine";
+import { TrachNhat } from "@thien-anh/rule-engine";
 
 const TZ = "Asia/Ho_Chi_Minh";
+
+describe("Trực Bình KHÔNG còn được coi là Trực tốt cho cưới hỏi (V3-02 correction A-01, production port)", () => {
+  const base = {
+    namSinhCoDau: 1998,
+    namSinhChuRe: 1996,
+    startDate: { year: 2026, month: 10, day: 1 },
+    endDate: { year: 2026, month: 10, day: 31 },
+    nghiLe: "thanh-hon" as const,
+    timeZone: TZ,
+  };
+
+  it("ngày 2026-10-05 (Trực Bình thật) có điểm thấp hơn hẳn giá trị SAI trước khi sửa (5.6/10)", () => {
+    const r = calculateCuoiHoiRange({ ...base, soNgayTraVe: 31 });
+    const ngay = r.ngayXepHang.find(
+      (n) => n.solarDate.year === 2026 && n.solarDate.month === 10 && n.solarDate.day === 5,
+    );
+    expect(ngay).toBeDefined();
+    expect(ngay!.diemCapDoi).toBeLessThan(5.6);
+  });
+
+  it("tầng GIỜ (calculateGioCuoiHoi) cũng đồng bộ — ngày Trực Bình không còn được cộng điểm trucTot ở tầng giờ", () => {
+    const truoc = calculateGioCuoiHoi({
+      namSinhCoDau: 1998,
+      namSinhChuRe: 1996,
+      solarDate: { year: 2026, month: 10, day: 5 },
+      nghiLe: "thanh-hon",
+      timeZone: TZ,
+    });
+    // Không có field trucTot lộ ra trực tiếp trong kết quả giờ, nhưng diemNgay (nền để gộp) phải
+    // phản ánh đúng việc KHÔNG còn cộng thưởng Trực tốt — dùng ngưỡng toán học tương tự tầng ngày.
+    expect(truoc.diemNgay).toBeLessThan(5.6);
+  });
+
+  it("mọi Trực còn lại trong TRUC_TOT_CUOI_HOI phải nhất quán với bảng lõi canonical (không Trực nào bị đánh dấu 'tốt' trong khi bảng lõi ghi 'kỵ' cho cưới hỏi)", () => {
+    const TRUC_TOT_HIEN_TAI = ["Thành", "Khai", "Mãn", "Định"];
+    for (const truc of TRUC_TOT_HIEN_TAI) {
+      const danhGia = TrachNhat.danhGiaTrucTheoMucDich(truc, "cuoi-hoi");
+      expect(danhGia?.mucDo).not.toBe("ky");
+    }
+  });
+
+  it("Trực Bình cụ thể: bảng lõi canonical xác nhận 'ky' cho cưới hỏi (đúng căn cứ của correction)", () => {
+    const danhGia = TrachNhat.danhGiaTrucTheoMucDich("Bình", "cuoi-hoi");
+    expect(danhGia?.mucDo).toBe("ky");
+  });
+
+  it("các Trực khác (Thành/Khai/Mãn/Định) không bị động tới — ngày 2026-11-11 (Trực tốt thật, đã xác nhận thực nghiệm) vẫn giữ điểm cao/hạng TỐT", () => {
+    // 2026-11-11 đã xác nhận thực nghiệm là kết quả xếp hạng #1 (7.6đ, hạng "tot") trong khoảng
+    // quét 2026-10-01..2026-11-30 SAU khi sửa — dùng làm mốc chống regression để đảm bảo correction
+    // A-01 không vô tình hạ điểm các Trực KHÔNG phải Bình.
+    const r = calculateCuoiHoiRange({
+      namSinhCoDau: 1998,
+      namSinhChuRe: 1996,
+      startDate: { year: 2026, month: 10, day: 1 },
+      endDate: { year: 2026, month: 11, day: 30 },
+      nghiLe: "thanh-hon",
+      timeZone: TZ,
+      soNgayTraVe: 500,
+    });
+    const ngay1111 = r.ngayXepHang.find(
+      (n) => n.solarDate.year === 2026 && n.solarDate.month === 11 && n.solarDate.day === 11,
+    );
+    expect(ngay1111).toBeDefined();
+    expect(ngay1111!.diemCapDoi).toBeGreaterThanOrEqual(7);
+    expect(ngay1111!.hang).toBe("tot");
+  });
+});
 
 describe("calculateGioCuoiHoi — tầng giờ", () => {
   const base = {
