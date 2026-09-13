@@ -8,20 +8,27 @@
 // đang làm dở) — để anh Công tự thêm vào mảng `muc` bên dưới khi module đó xong, không tự đoán/
 // dựng card giả cho phần chưa có.
 //
-// Card dạng CHỮ (không dùng ảnh bìa như phong-thuy-chinh-phai.astro) vì chưa có ảnh bìa riêng cho
-// nhóm này — thêm module mới chỉ cần thêm 1 object vào mảng, không cần chờ thiết kế ảnh trước.
+// Card có `anh`: thẻ ẢNH BÌA thuần (giống phong-thuy-chinh-phai.astro) — ảnh tự chứa tiêu đề, không
+// đè chữ. Card KHÔNG có `anh`: thẻ CHỮ (fallback cho module mới chưa kịp có ảnh bìa riêng).
+//
+// 13/9/2026 (anh Công gửi ảnh "kmdg"): thêm ảnh bìa cho Kỳ Môn Độn Giáp — public/ky-mon-banner.webp,
+// đã nén lại bằng sharp q62 (110.9KB → 88.0KB, cùng mức webp q62 đã dùng cho các ảnh bìa khác trong
+// phong-thuy-chinh-phai.astro) trước khi đưa vào đây, không thấy giảm chất lượng nhìn được ở kích
+// thước hiển thị.
 import BaseLayout from "../layouts/BaseLayout.astro";
 import PageHero from "../components/ui/PageHero.astro";
 import Container from "../components/ui/Container.astro";
 
 export const prerender = true;
 
-// Thêm module mới (Đại Lục Nhâm, Thái Ất...) bằng cách thêm 1 object vào mảng này khi đã có trang thật.
-const muc = [
+// Thêm module mới (Đại Lục Nhâm, Thái Ất...) bằng cách thêm 1 object vào mảng này khi đã có trang
+// thật. `anh` là tùy chọn — chưa có ảnh bìa thì bỏ trống, card tự chuyển sang dạng chữ.
+const muc: Array<{ title: string; mota: string; href: string; anh?: string }> = [
   {
     title: "Lập Kỳ Môn Độn Giáp",
     mota: "Lập lá bàn Kỳ Môn Độn Giáp 9 cung theo giờ hiện tại hoặc giờ sinh (Mệnh) — kèm Tam Thắng và lịch tháng Kỳ Môn.",
     href: "/lap-ky-mon",
+    anh: "/ky-mon-banner.webp",
   },
 ];
 ---
@@ -43,16 +50,26 @@ const muc = [
   <Container class="py-16">
     <div class="mx-auto grid max-w-3xl gap-4 sm:grid-cols-2">
       {
-        muc.map((m) => (
-          <a
-            href={m.href}
-            aria-label={m.title}
-            class="block rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl"
-          >
-            <h2 class="font-display text-xl font-bold text-(--color-ink-950)">{m.title}</h2>
-            <p class="mt-2 text-sm leading-relaxed text-(--color-ink-700)">{m.mota}</p>
-          </a>
-        ))
+        muc.map((m) =>
+          m.anh ? (
+            <a
+              href={m.href}
+              aria-label={m.title}
+              class="block overflow-hidden rounded-2xl border-2 border-(--color-gold-300) shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl"
+            >
+              <img src={m.anh} alt={m.title} class="block h-auto w-full" loading="lazy" />
+            </a>
+          ) : (
+            <a
+              href={m.href}
+              aria-label={m.title}
+              class="block rounded-2xl border-2 border-(--color-gold-300) bg-(--color-ivory-100) p-6 shadow-lg transition hover:-translate-y-0.5 hover:shadow-xl"
+            >
+              <h2 class="font-display text-xl font-bold text-(--color-ink-950)">{m.title}</h2>
+              <p class="mt-2 text-sm leading-relaxed text-(--color-ink-700)">{m.mota}</p>
+            </a>
+          ),
+        )
       }
     </div>
     {muc.length < 2 && (
