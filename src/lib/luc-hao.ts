@@ -379,33 +379,46 @@ function elementalRelationsOf(lineNguHanh: NguHanh, targetNguHanh: NguHanh): ("S
   return out;
 }
 
-// NHẬP MỘ (27/8/2026) — bản gốc "kinh dịch lục hào sơ cấp minh việt" (Chương IX "TÙY QUỶ NHẬP MỘ",
-// dòng 2087-2089) không lấy lại được (không còn trong repo/skill nào), anh Công duyệt phương án: cài
-// theo 3 dạng CHUẨN CỔ ĐIỂN CHUNG (nhất quán xuyên nhiều nguồn Lục Hào, không riêng Minh Việt), CHƯA
-// đối chiếu riêng bản Minh Việt — nếu sau này có lại bản gốc thì audit lại đúng theo TODO cũ:
+// NHẬP MỘ (27/8/2026, mở rộng 13/9/2026 — LH-M02 Động Mộ) — bản gốc "kinh dịch lục hào sơ cấp minh
+// việt" (Chương IX "TÙY QUỶ NHẬP MỘ", dòng 2087-2089) không lấy lại được (không còn trong repo/skill
+// nào). 27/8/2026 anh Công duyệt cài 3 dạng (Nhật/Nguyệt/Hóa Mộ, xem lịch sử ở git blame). Nghiên cứu
+// độc lập sau đó (phong-thuy-research-hub V2.10/V2.11, đối chiếu verbatim 《增删卜易·隨鬼入墓章第
+// 三十》 + Vương Hổ Ứng 《六爻趋吉避凶（化解）秘传》) xác nhận nguyên bản "Tam Mộ" cổ điển thực ra là
+// Nhật/Động/Hóa Mộ (KHÔNG có Nguyệt Mộ trong tam mộ gốc — Nguyệt chỉ là tác nhân XUNG PHÁ mộ trong cổ
+// văn) và Động Mộ là loại MẠNH NHẤT trong 4 loại (Động > Nhật > Hóa > Nguyệt theo Vương Hổ Ứng). Công
+// Anh duyệt (V2.11 Human Decision Board, methodology identity THIEN_ANH_COMPOSITE_LIUYAO):
 //   1. Nhật Mộ:  growthDay === "Mộ"   (hào lâm Mộ so với Chi Ngày — đã có sẵn, chỉ chưa surface)
-//   2. Nguyệt Mộ: growthMonth === "Mộ" (hào lâm Mộ so với Chi Tháng)
+//   2. Nguyệt Mộ: growthMonth === "Mộ" (hào lâm Mộ so với Chi Tháng) — GIỮ NGUYÊN trong engine theo
+//      quyết định V2.11 (LH-M04 = SECONDARY_SIGNAL/P3, KHÔNG phải Tam Mộ — chỉ đổi CÁCH DIỄN GIẢI ở
+//      tầng advisory-engine.ts/kien-thuc, KHÔNG xóa khỏi engine).
 //   3. Hóa Mộ:   hào ĐỘNG, Chi hào BIẾN đúng là Mộ khố của NGŨ HÀNH hào GỐC (tính ở finalizeCast, sau
 //      khi có cả chinh+bien — xem khối "Hóa Mộ" bên dưới, cùng chỗ tính fanYin/fuYin).
+//   4. Động Mộ (LH-M02, MỚI 13/9/2026): có 1 hào KHÁC đang ĐỘNG, Chi GỐC (không phải chi biến) của hào
+//      động đó đúng là Mộ khố của NGŨ HÀNH hào đang xét — xem khối "Động Mộ" bên dưới, ngay sau Hóa Mộ.
+//      Dùng ĐÚNG field `source: "YAO"` + `relatedYao` đã có sẵn trong type (trước đây khai báo "chưa
+//      dùng ở C1", nay đã dùng — additive thuần túy, không đổi shape).
 // CHỦ Ý BỎ dạng "tùy quỷ nhập mộ" (Quan Quỷ kéo Dụng Thần nhập Mộ) — đây là mẫu hình phối hợp giữa
 // Nhập Mộ + vị trí Quan Quỷ, không phải 1 quan hệ hào<->Nhật/Nguyệt độc lập; để LLM tự kết hợp 2 dữ
 // kiện đã có (Nhập Mộ của Dụng Thần + Quan Quỷ động/vượng) thay vì hardcode 1 rule chưa có nguồn xác
 // nhận rõ. Sắc thái vượng/suy ("vượng tướng vô hại, suy tuyệt mới hại") KHÔNG bake vào relation — hào
 // đã có sẵn field `vuongSuy`, downstream (LLM) tự đối chiếu, giống cách Ám Động/Nhật Phá đang làm.
+// "Nhập mộ kép" (1 hào đồng thời dính ≥2 dạng Mộ) và tương tác Mộ↔Không Vong: CHƯA có nguồn Level 1-4
+// xác nhận cách xử lý — CHỦ Ý KHÔNG code hóa diễn giải riêng, để downstream (LLM) tự đối chiếu từ các
+// relation/field đã có sẵn (RESEARCH_MORE, xem phong-thuy-research-hub V2.15 Golden Case 05/08).
 export type HaoRelationType =
   | "Sinh" | "Khắc" | "Hợp" | "Xung" | "Hại"
   | "Nhật Phá" | "Nguyệt Phá" | "Ám Động" // Phá tách riêng Ngày/Tháng theo đúng nguồn (không gộp chung điều kiện)
   | "Lâm Nhật" | "Lâm Nguyệt" // hào có Chi trùng đúng Chi Ngày/Chi Tháng (đương lệnh/lâm Nhật Thần)
-  | "Nhập Mộ"; // xem khối chú thích "NHẬP MỘ" ngay trên — source DAY/MONTH/CHANGED_YAO ứng 3 dạng
+  | "Nhập Mộ"; // xem khối chú thích "NHẬP MỘ" ngay trên — source DAY/MONTH/YAO/CHANGED_YAO ứng 4 dạng
 
-export type HaoRelationSource = "DAY" | "MONTH" | "YAO" | "CHANGED_YAO"; // YAO/CHANGED_YAO dành cho C2/C3 (Tam Hợp/Tam Hình), chưa dùng ở C1
+export type HaoRelationSource = "DAY" | "MONTH" | "YAO" | "CHANGED_YAO"; // YAO = Động Mộ (LH-M02, dùng từ 13/9/2026); CHANGED_YAO = Hóa Mộ
 export type HaoRelationTarget = "HAO";
 
 export interface HaoRelation {
   type: HaoRelationType;
   source: HaoRelationSource;
   target: HaoRelationTarget;
-  relatedYao?: number; // vị trí hào (1-6) gây ra quan hệ này — chỉ dùng khi source là YAO/CHANGED_YAO, chưa dùng ở C1
+  relatedYao?: number; // vị trí hào (1-6) gây ra quan hệ này — dùng khi source="YAO" (Động Mộ, LH-M02): vị trí hào ĐỘNG đã gây mộ
 }
 
 // Quan hệ hào <-> Nhật Thần (Chi Ngày). Nhật Phá vs Ám Động phân biệt theo vượng/suy CỦA HÀO so với
@@ -817,6 +830,24 @@ function finalizeCast(
       const hb = bien.hao[pos - 1];
       if (truongSinhLucHaoOf(hg.nguHanh, hb.chiIndex) === "Mộ") {
         hg.relations.push({ type: "Nhập Mộ", source: "CHANGED_YAO", target: "HAO" });
+      }
+    }
+  }
+
+  // Động Mộ (LH-M02, 13/9/2026) — dạng 4/4 của Nhập Mộ (xem khối chú thích "NHẬP MỘ" phía trên
+  // HaoRelationType): có 1 hào KHÁC (không phải chính hào đang xét) đang ĐỘNG, và Chi GỐC (KHÔNG phải
+  // chi biến — khác Hóa Mộ ở trên) của hào động đó đúng là Mộ khố của NGŨ HÀNH hào đang xét. Chỉ cần
+  // chinh.hao[] (không cần bien) nhưng đặt cùng khối Hóa Mộ cho gọn, sau khi chinh.hao[] đã đầy đủ cả
+  // 6 hào. Nguồn: 《增删卜易·隨鬼入墓章第三十》 + Vương Hổ Ứng — xem
+  // phong-thuy-research-hub/reports/V210_CLASSICAL_RULE_COMPARISON.md,
+  // V210_WANG_HU_YING_RULES.md để biết đầy đủ evidence/provenance (LH-M02, VERIFIED methodology,
+  // Human Decision V2.11/V3-01).
+  for (const ln of chinh.hao) {
+    for (const otherPos of dongPositions) {
+      if (otherPos === ln.hao) continue; // 1 hào không tự gây Động Mộ cho chính nó (đó là Hóa Mộ, xử lý riêng ở trên)
+      const other = chinh.hao[otherPos - 1];
+      if (truongSinhLucHaoOf(ln.nguHanh, other.chiIndex) === "Mộ") {
+        ln.relations.push({ type: "Nhập Mộ", source: "YAO", target: "HAO", relatedYao: otherPos });
       }
     }
   }

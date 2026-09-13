@@ -69,6 +69,19 @@ Cũng cần xét vượng suy riêng của Phục Thần theo Nhật/Nguyệt (m
 - Trường hợp còn lại — hào gốc **sinh** cho hào biến (ví dụ Mộc động hóa Hỏa) — không gọi là hồi đầu sinh/khắc (hai tên đó chỉ dùng khi hào biến tác động ngược lại hào gốc). Đây gọi là hào gốc **sinh xuất/tiết khí** cho hào biến: hào gốc tự hao mòn dần theo thời gian để nuôi hào biến, tương tự nguyên lý "Phục sinh Phi" ở mục 5 — dùng cách gọi này cho nhất quán khi luận, đừng nhầm với hồi đầu sinh.
 - Tương tự, hào gốc **khắc** hào biến (không phải hào biến khắc ngược hào gốc) thì gọi là hào gốc khắc xuất — hào gốc vẫn hao lực khi khắc ra ngoài, nhưng ít nghiêm trọng hơn bị khắc vào.
 
+## 7. Mộ Khố — 4 dạng Nhập Mộ (Nhật Mộ, Động Mộ, Hóa Mộ, Nguyệt Mộ)
+
+Mỗi ngũ hành có 1 địa chi "mộ khố" cố định: Mộc mộ tại Mùi, Hỏa mộ tại Tuất, Kim mộ tại Sửu, Thủy/Thổ mộ tại Thìn. Một hào "nhập mộ" nghĩa là bị thu tàng, tạm không phát huy được tác dụng — như việc bị vùi lấp, đình trệ — cho tới khi có ngày/tháng/hào khác xung phá đúng địa chi mộ đó ("xuất mộ") thì mới thông trở lại. Có **4 dạng nhập mộ**, PHẢI phân biệt rõ khi luận vì mức độ mạnh yếu khác nhau (thứ tự mạnh dần: Nguyệt Mộ < Hóa Mộ < Nhật Mộ < Động Mộ):
+
+- **Nhật Mộ**: Chi Ngày (Nhật Thần) đúng là mộ khố của hào — mức mạnh thứ 2/4.
+- **Động Mộ**: có 1 hào KHÁC đang ĐỘNG trong quẻ, và Chi của hào động đó đúng là mộ khố của hào đang xét (không phải hào đó tự biến vào mộ của chính nó — đó là Hóa Mộ, xem bên dưới). Đây là dạng nhập mộ **MẠNH NHẤT** trong 4 dạng — hào bị 1 lực đang vận động thật sự (không phải yếu tố tĩnh như Ngày/Tháng) kéo vào mộ.
+- **Hóa Mộ**: chính hào đó đang ĐỘNG, và Chi hào BIẾN của nó đúng là mộ khố của ngũ hành CHÍNH NÓ — tự mình động rồi hóa ra đúng mộ khố của mình, việc "tự vùi lấp". Mức mạnh thứ 3/4.
+- **Nguyệt Mộ**: Chi Tháng (Nguyệt Kiến) đúng là mộ khố của hào. **QUAN TRỌNG: Nguyệt Mộ KHÔNG thuộc "Tam Mộ" cổ điển** (Tam Mộ nguyên bản chỉ gồm Nhật Mộ + Động Mộ + Hóa Mộ) — đây là tín hiệu PHỤ, YẾU NHẤT trong 4 dạng, chỉ dùng để tham khảo bổ sung, KHÔNG được coi ngang hàng hay dùng làm căn cứ chính như 3 dạng kia.
+
+Một hào có thể nhập mộ theo NHIỀU dạng cùng lúc (ví dụ vừa Nhật Mộ vừa Động Mộ) — trường hợp này quẻ dữ liệu sẽ liệt kê đủ các dạng đã xảy ra; **chưa có quy tắc chuẩn hóa cho cách cộng dồn/ưu tiên khi nhập mộ kép**, cũng như cách Mộ tương tác với Không Vong khi xảy ra đồng thời trên cùng 1 hào — 2 trường hợp này còn đang nghiên cứu thêm, tự đối chiếu thận trọng theo từng lớp thông tin đã có (vượng suy, Không Vong, quan hệ Nhật/Nguyệt) thay vì áp 1 công thức cứng chưa được xác thực.
+
+*(Nguồn: Nhật/Động/Hóa Mộ đối chiếu verbatim 《增删卜易·隨鬼入墓章第三十》 và xếp hạng mạnh-yếu theo Vương Hổ Ứng 《六爻趋吉避凶（化解）秘传》 — xem chi tiết provenance tại phong-thuy-research-hub, báo cáo V210_CLASSICAL_RULE_COMPARISON.md/V210_WANG_HU_YING_RULES.md. Đây là 1 rule cụ thể có nguồn riêng trong methodology tổng hợp THIEN_ANH_COMPOSITE_LIUYAO — không suy rộng thành "toàn bộ hệ thống theo Vương Hổ Ứng".)*
+
 ## Ví dụ mẫu (đã luận đầy đủ, dùng để calibrate văn phong và độ sâu phân tích)
 
 Quẻ Thủy Lôi Truân (hào 2 động, Tử Tôn Dần Mộc trì Thế) biến Thủy Trạch Tiết, ngày Ất Dậu tháng Mùi (Nguyệt lệnh), hỏi cầu tài:

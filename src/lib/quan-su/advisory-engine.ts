@@ -160,6 +160,10 @@ function chamDiem(resolved: DungThanResolved, chinh: QueDayDu, luck: LuckContext
       else if (r.type === "Hợp") add("Được hợp", 3, "Có hợp — dễ thành hình nhưng cần đúng thời.");
       else if (r.type === "Xung") add("Bị xung", -3, "Có xung — dễ dao động.");
       else if (r.type === "Hại") add("Bị hại", -3, "Có hại ngầm — cần đề phòng tiểu tiết.");
+      // "Nhập Mộ" (mọi source: DAY/MONTH/YAO/CHANGED_YAO — Nhật/Nguyệt/Động/Hóa Mộ) CỐ Ý KHÔNG chấm
+      // điểm ở đây — chưa có trọng số nào được Thiên Anh xác minh (không tự bịa số điểm), giữ ĐÚNG
+      // NHẤT QUÁN với cách Nhật Mộ/Nguyệt Mộ/Hóa Mộ đã và đang được xử lý (chỉ metadata + narrate ở
+      // luanChiTiet/luanMotHaoDong bên dưới, không vào chamDiem). LH-M02, V3-01 13/9/2026.
     }
   } else if (resolved.trangThai === "phuc_tang") {
     add("Phục tàng", -10, "Điều anh/chị hỏi đang ẩn, chưa lộ ra — thường là chưa tới lúc.");
@@ -238,6 +242,15 @@ function khuyenTheoTinHieu(resolved: DungThanResolved, cast: QuanSuInterpretatio
   if (resolved.trangThai === "phuc_tang") return "Điều anh/chị hỏi đang ẩn chưa lộ (Dụng Thần phục tàng) — chưa nên thúc ép, chờ khi việc rõ đầu mối hãy quyết.";
   if (!dt || resolved.trangThai !== "hien") return null;
   if (dt.xunKong) return "Dụng Thần đang Tuần Không (như việc còn trống, chưa tới lúc) — đừng vội, chờ qua ngày/tháng xung Không thì hãy động.";
+  // Động Mộ (LH-M02) — Vương Hổ Ứng xếp đây là dạng Nhập Mộ MẠNH NHẤT trong 4 loại (Động > Nhật > Hóa
+  // > Nguyệt), nên đặt ưu tiên NGAY SAU Tuần Không, TRƯỚC cả Nguyệt Phá.
+  {
+    const dongMo = dt.relations.find((r) => r.type === "Nhập Mộ" && r.source === "YAO");
+    if (dongMo?.relatedYao) {
+      const nguon = cast.chinh.hao[dongMo.relatedYao - 1];
+      return `Dụng Thần đang bị hào ${dongMo.relatedYao} (${nguon.lucThan}, đang động) kéo vào Mộ (Động Mộ) — đây là dạng nhập mộ mạnh nhất, việc dễ bị vùi lấp/đình trệ; cần chờ ngày/tháng xung phá đúng hào ${dongMo.relatedYao} thì Dụng Thần mới "ra" được.`;
+    }
+  }
   if (dt.relations.some((r) => r.type === "Nguyệt Phá")) return "Dụng Thần bị Nguyệt Phá — cả tháng này bất lợi, nên lùi sang tháng khác (tháng xung lại chỗ phá) rồi tính.";
   if (dt.relations.some((r) => r.type === "Khắc")) return "Dụng Thần đang bị Nhật/Nguyệt khắc chế — cần hóa giải nguồn khắc hoặc tìm thế được sinh phò trước khi tiến.";
   if (dt.vuongSuy === "Tù" || dt.vuongSuy === "Tử") return "Dụng Thần suy nhược (mùa không phò) — nên chờ tới mùa Dụng Thần vượng, hoặc mượn nguyên thần sinh phò rồi hãy làm.";
@@ -375,6 +388,12 @@ function luanMotHaoDong(
   const ltY = LUC_THU_Y[hg.lucThu];
   if (ltY) parts.push(`Lục Thú ${hg.lucThu} ${ltY}`);
 
+  // Động Mộ (LH-M02) — hào này ĐỘNG có đang kéo 1 hào TĨNH/hào khác vào Mộ không (tìm ngược qua
+  // relatedYao === pos trên toàn quẻ). Khác Hóa Mộ (chính hào này tự biến vào mộ của chính nó, xử lý
+  // ở khối "Hóa biến" bên dưới) — đây là hào này làm NGUỒN gây mộ cho hào KHÁC.
+  const gayMoCho = cast.chinh.hao.filter((h) => h.hao !== pos && h.relations.some((r) => r.type === "Nhập Mộ" && r.source === "YAO" && r.relatedYao === pos));
+  if (gayMoCho.length) parts.push(`đang kéo ${gayMoCho.map((h) => `hào ${h.hao} (${h.lucThan})`).join(", ")} vào Mộ (Động Mộ)`);
+
   // Hóa biến (hồi đầu sinh/khắc, tiến/thoái, hóa Không, nhập Mộ).
   if (hb) {
     const hoi = nguHanhTac(hb.nguHanh, hg.nguHanh); // biến hào TÁC ĐỘNG lên hào gốc
@@ -413,6 +432,13 @@ function luanChiTiet(payload: QuanSuInterpretationPayload, resolved: DungThanRes
     }
     if (dt.xunKong) qhNhatNguyet.push("rơi Tuần Không (chưa tới lúc, còn trống — chờ ngày xung Không / xuất Không)");
     if (qhNhatNguyet.length) dtLines.push(`  – So với Nhật/Nguyệt: Dụng Thần ${qhNhatNguyet.join(", ")}.`);
+    // Động Mộ (LH-M02) — KHÁC "so với Nhật/Nguyệt" ở trên (đó là quan hệ với Nhật Thần/Nguyệt Kiến;
+    // Động Mộ là quan hệ với 1 HÀO KHÁC đang động trong chính quẻ, source="YAO") nên tách dòng riêng.
+    const dongMoDt = dt.relations.find((r) => r.type === "Nhập Mộ" && r.source === "YAO");
+    if (dongMoDt?.relatedYao) {
+      const nguonMo = cast.chinh.hao[dongMoDt.relatedYao - 1];
+      dtLines.push(`  – Động Mộ: Dụng Thần bị hào ${dongMoDt.relatedYao} (${nguonMo.lucThan}, đang động) kéo vào Mộ — dạng nhập mộ mạnh nhất trong 4 dạng, việc dễ bị vùi lấp/đình trệ cho tới khi hào ${dongMoDt.relatedYao} bị xung phá.`);
+    }
     // Lưỡng hiện.
     if (payload.question.dung_than_hint.kind === "luc-than") {
       const target = payload.question.dung_than_hint.value;

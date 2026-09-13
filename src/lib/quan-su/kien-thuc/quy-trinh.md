@@ -48,7 +48,7 @@ Xét đầy đủ các lớp thông tin sau (không chỉ dừng ở 1 yếu t�
 1. **Vượng suy theo mùa** (Nhật/Nguyệt với Dụng thần) — dùng bảng vượng-tướng-hưu-tù-tử trong `references/nguyen-tac-luan-giai.md`
 2. **Không Vong** — Dụng thần/hào quan trọng có rơi vào tuần Không không; Không Vong có thể là "hư" (tài không thực, việc chưa thành) hoặc chờ ngày Xung Không/Thực Không mới phát
 3. **Nguyệt phá** — hào bị Nguyệt xung thì gọi Nguyệt phá, suy yếu nặng
-4. **Hào động và hào biến** — hồi đầu sinh/khắc, hóa Tiến Thần/Thoái Thần, hóa Không, hóa Mộ...; hào biến bị Nhật/Nguyệt xung thì lực biến bị cản tạm thời
+4. **Hào động và hào biến** — hồi đầu sinh/khắc, hóa Tiến Thần/Thoái Thần, hóa Không; hào biến bị Nhật/Nguyệt xung thì lực biến bị cản tạm thời. Riêng Mộ Khố có 4 dạng (Nhật Mộ, Động Mộ, Hóa Mộ, Nguyệt Mộ) cần phân biệt rõ mạnh-yếu — xem mục 7 `references/nguyen-tac-luan-giai.md` (LƯU Ý: Nguyệt Mộ KHÔNG phải Tam Mộ, chỉ là tín hiệu phụ yếu nhất)
 5. **Lục thần** bổ nghĩa tình huống cụ thể (Thanh Long=vui/háo sắc, Chu Tước=lời nói/thị phi, Câu Trần=chậm chạp/kiến trúc/u bướu, Đằng Xà=lo lắng/quái dị, Bạch Hổ=hung dữ/tai nạn/phẫu thuật, Huyền Vũ=ám muội/trộm cắp/che giấu)
 6. **Hào Thế/Ứng** — Thế là bản thân, Ứng là đối tượng liên quan; xét ai sinh/khắc ai
 7. **Tam hợp cục, lục hợp, lục xung, hình, hại** giữa các địa chi trong quẻ nếu có
