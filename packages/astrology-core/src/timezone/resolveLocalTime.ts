@@ -18,9 +18,14 @@
 import { Timezone } from "@thien-anh/calendar-core";
 import type { CalendarDate, LocalTime } from "../types.js";
 
-const { getUtcOffsetMinutes, utcToZonedTime } = Timezone;
+const { getUtcOffsetMinutes, utcToZonedTime, zonedTimeToUtc } = Timezone;
 
-/** Nửa ngày (mili giây) — khoảng cách lấy mẫu offset "trước"/"sau" để dò chuyển múi giờ quanh thời điểm cần quy đổi. */
+/**
+ * Nửa ngày (mili giây) — khoảng cách lấy mẫu offset "trước"/"sau" quanh ANCHOR (xem
+ * `resolveLocalTimeToUtc`) để dò chuyển múi giờ. 12h là đủ AN TOÀN chỉ khi anchor đã được neo
+ * gần đúng thời điểm UTC thật (xem lịch sử sửa lỗi bên dưới) — KHÔNG được quay lại neo theo
+ * "naive UTC" (coi số giờ địa phương như thể là UTC) như bản cũ.
+ */
 const HALF_DAY_MS = 12 * 60 * 60 * 1000;
 
 export interface ResolvedInstant {
@@ -93,21 +98,35 @@ function findTransitionInstantMs(lowMs: number, highMs: number, timeZone: string
  * biên của DST. KHÔNG throw: mọi tổ hợp `(date, localTime, timeZone)` hợp lệ cú pháp đều trả
  * về một trong ba trạng thái `resolved | ambiguous | nonexistent`.
  *
- * Thuật toán: lấy mẫu offset 12 giờ TRƯỚC và 12 giờ SAU thời điểm "giờ treo tường coi như UTC"
- * (naive). Vì các đợt chuyển múi giờ mùa hè trên thực tế cách nhau hàng tháng, việc offset tại
- * hai mốc cách nhau 24 giờ khác nhau nghĩa là CHÍNH NGÀY đang xét có một lần chuyển; nếu giống
- * nhau thì chắc chắn không có chuyển giờ nào ảnh hưởng đến ngày này. Khi có chuyển giờ, thử cả
- * hai offset (offset "trước" và offset "sau") làm ứng viên rồi đối chiếu ngược lại: ứng viên
- * nào round-trip đúng ra lại giờ treo tường gốc thì hợp lệ — 0 ứng viên hợp lệ = nonexistent
- * (khoảng trống), 2 ứng viên hợp lệ = ambiguous (mơ hồ), 1 ứng viên hợp lệ = resolved bình
- * thường (rơi đúng ngày có chuyển giờ nhưng bản thân giờ đó không nằm trong vùng biên).
+ * Thuật toán: lấy mẫu offset 12 giờ TRƯỚC và 12 giờ SAU một ANCHOR — KHÔNG lấy mẫu quanh "giờ
+ * treo tường coi như UTC" (naive) như bản đầu tiên đã làm. Anchor được tính bằng
+ * `Timezone.zonedTimeToUtc` (hội tụ 2 bước sẵn có của calendar-core) để tự động bù đúng offset
+ * thực tế trước khi lấy mẫu.
+ *
+ * TẠI SAO bắt buộc phải neo theo anchor, không neo theo naive: nếu neo theo naive và offset
+ * múi giờ lớn (vd. Pacific/Chatham +12:45/+13:45), khoảng lấy mẫu ±12h quanh ĐIỂM SAI (naive)
+ * có thể nằm hoàn toàn về MỘT phía của điểm chuyển giờ thật — khiến `offsetBefore === offsetAfter`
+ * dù ngày đó THỰC SỰ có chuyển giờ, làm hàm này ÂM THẦM trả về "resolved" cho một giờ treo
+ * tường KHÔNG TỒN TẠI (đã xác nhận bằng cách chạy thực tế: giờ 02:45-03:30 ngày 2024-09-29 tại
+ * Pacific/Chatham — đúng ra phải là "nonexistent" — bị trả về "resolved" sai). Neo theo anchor
+ * (đã bù offset gần đúng) loại bỏ hoàn toàn phụ thuộc vào độ lớn offset, vì khoảng ±12h quanh
+ * một điểm ĐÃ GẦN ĐÚNG luôn đủ rộng để bao trọn một lần chuyển giờ duy nhất trong ngày đó.
+ *
+ * Sau khi có offsetBefore/offsetAfter: nếu hai mốc cách nhau 24 giờ (quanh anchor) cho offset
+ * khác nhau nghĩa là CHÍNH NGÀY đang xét có một lần chuyển; nếu giống nhau thì chắc chắn không
+ * có chuyển giờ nào ảnh hưởng đến ngày này. Khi có chuyển giờ, thử cả hai offset làm ứng viên
+ * rồi đối chiếu ngược lại: ứng viên nào round-trip đúng ra lại giờ treo tường gốc thì hợp lệ —
+ * 0 ứng viên hợp lệ = nonexistent (khoảng trống), 2 ứng viên hợp lệ = ambiguous (mơ hồ), 1 ứng
+ * viên hợp lệ = resolved bình thường (rơi đúng ngày có chuyển giờ nhưng bản thân giờ đó không
+ * nằm trong vùng biên).
  */
 export function resolveLocalTimeToUtc(date: CalendarDate, localTime: LocalTime, timeZone: string): LocalTimeResolution {
   const second = localTime.second ?? 0;
   const naiveUtcMs = Date.UTC(date.year, date.month - 1, date.day, localTime.hour, localTime.minute, second);
+  const anchorMs = zonedTimeToUtc({ year: date.year, month: date.month, day: date.day, hour: localTime.hour, minute: localTime.minute, second }, timeZone).getTime();
 
-  const offsetBefore = getUtcOffsetMinutes(timeZone, new Date(naiveUtcMs - HALF_DAY_MS));
-  const offsetAfter = getUtcOffsetMinutes(timeZone, new Date(naiveUtcMs + HALF_DAY_MS));
+  const offsetBefore = getUtcOffsetMinutes(timeZone, new Date(anchorMs - HALF_DAY_MS));
+  const offsetAfter = getUtcOffsetMinutes(timeZone, new Date(anchorMs + HALF_DAY_MS));
 
   if (offsetBefore === offsetAfter) {
     // Không có chuyển múi giờ nào ảnh hưởng ngày này — hội tụ 1 bước như calendar-core vẫn làm.
@@ -143,8 +162,8 @@ export function resolveLocalTimeToUtc(date: CalendarDate, localTime: LocalTime, 
   // do tiến giờ mùa hè). Dò chính xác thời điểm chuyển giờ bằng bisection rồi báo cáo đúng
   // 2 mốc UTC hợp lệ NGAY SÁT hai bên khoảng trống (không phải suy diễn gián tiếp qua offset).
   const transitionMs = findTransitionInstantMs(
-    naiveUtcMs - HALF_DAY_MS,
-    naiveUtcMs + HALF_DAY_MS,
+    anchorMs - HALF_DAY_MS,
+    anchorMs + HALF_DAY_MS,
     timeZone,
     offsetBefore,
   );

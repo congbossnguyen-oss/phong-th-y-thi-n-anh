@@ -163,3 +163,53 @@ describe("resolveLocalTimeToUtc — boundary khác", () => {
     expect(r.utc.toISOString()).toBe("2024-02-29T00:00:00.000Z");
   });
 });
+
+describe("resolveLocalTimeToUtc — REGRESSION: offset lớn (Pacific/Chatham +12:45/+13:45) không được im lặng trả sai", () => {
+  // Bug đã tìm thấy ở gate audit sau Phase 2: khi lấy mẫu offset quanh "naive UTC" (coi số giờ
+  // địa phương như UTC) thay vì quanh một anchor đã bù offset, cửa sổ ±12h có thể nằm hoàn
+  // toàn về một phía của điểm chuyển giờ thật đối với múi giờ có offset lớn — khiến hàm ÂM
+  // THẦM trả "resolved" cho giờ treo tường KHÔNG TỒN TẠI. Xác minh độc lập qua Intl trực tiếp:
+  // Pacific/Chatham chuyển giờ mùa hè 2024-09-29 lúc 02:45 -> 03:45 (offset 765->825 phút).
+  it("02:45-03:44 ngày 2024-09-29 là nonexistent (KHÔNG được trả resolved)", () => {
+    for (const [h, m] of [
+      [2, 45],
+      [2, 59],
+      [3, 0],
+      [3, 30],
+      [3, 44],
+    ] as const) {
+      const r = resolveLocalTimeToUtc({ year: 2024, month: 9, day: 29 }, { hour: h, minute: m }, "Pacific/Chatham");
+      expect(r.status, `${h}:${m}`).toBe("nonexistent");
+    }
+  });
+
+  it("02:44 (ngay trước khoảng trống) resolved với offset trước chuyển (765 phút = +12:45)", () => {
+    const r = resolveLocalTimeToUtc({ year: 2024, month: 9, day: 29 }, { hour: 2, minute: 44 }, "Pacific/Chatham");
+    expect(r.status).toBe("resolved");
+    if (r.status !== "resolved") throw new Error("unreachable");
+    expect(r.utcOffsetMinutes).toBe(765);
+  });
+
+  it("03:45 (ngay sau khoảng trống) resolved với offset sau chuyển (825 phút = +13:45)", () => {
+    const r = resolveLocalTimeToUtc({ year: 2024, month: 9, day: 29 }, { hour: 3, minute: 45 }, "Pacific/Chatham");
+    expect(r.status).toBe("resolved");
+    if (r.status !== "resolved") throw new Error("unreachable");
+    expect(r.utcOffsetMinutes).toBe(825);
+  });
+
+  it("khoảng trống rộng đúng 60 phút, khớp chính xác biên trên/dưới", () => {
+    const r = resolveLocalTimeToUtc({ year: 2024, month: 9, day: 29 }, { hour: 3, minute: 0 }, "Pacific/Chatham");
+    expect(r.status).toBe("nonexistent");
+    if (r.status !== "nonexistent") throw new Error("unreachable");
+    expect(r.gapMinutes).toBe(60);
+    expect(r.nearestValidBefore.utcOffsetMinutes).toBe(765);
+    expect(r.nearestValidAfter.utcOffsetMinutes).toBe(825);
+  });
+
+  it("giờ bình thường xa vùng biên (10:00) trên CÙNG ngày chuyển giờ vẫn resolved đúng", () => {
+    const r = resolveLocalTimeToUtc({ year: 2024, month: 9, day: 29 }, { hour: 10, minute: 0 }, "Pacific/Chatham");
+    expect(r.status).toBe("resolved");
+    if (r.status !== "resolved") throw new Error("unreachable");
+    expect(r.utcOffsetMinutes).toBe(825);
+  });
+});
