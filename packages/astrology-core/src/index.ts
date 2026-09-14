@@ -189,3 +189,12 @@ export {
 
 export type { VedicRashiPosition, CalculateVedicCoreInput, VedicCoreResult, CalculateVedicCoreResult } from "./vedic/chart.js";
 export { calculateVedicCore } from "./vedic/chart.js";
+
+// ---------------------------------------------------------------------------------------
+// Phase 5 — Vedic Ascendant (Lagna) + Whole Sign Houses
+// ---------------------------------------------------------------------------------------
+
+export type { CalculateVedicAscendantInput, VedicAscendantResult, CalculateVedicAscendantResult } from "./vedic/ascendant.js";
+export { calculateVedicAscendant } from "./vedic/ascendant.js";
+
+export { getWholeSignHouseNumber } from "./vedic/houses.js";
