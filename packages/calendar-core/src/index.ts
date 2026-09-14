@@ -156,3 +156,12 @@ export function getSolarTerms(year: number): SolarTermOccurrence[] {
   }
   return coreGetSolarTerms(year);
 }
+
+// ---------------------------------------------------------------------------------------
+// Canonical BirthDate + Year Context + MethodYearContract (V3-07B Phase B/C).
+// Tầng "ngày sinh chuẩn" — methodology-neutral: cung cấp DỮ KIỆN lịch + cơ chế hợp đồng năm,
+// KHÔNG map phương pháp → quy ước. Xem `./birth-date/*` để biết chi tiết.
+// (Các hàm trong yearContext gọi ngược getGanzhiYear/getLunarDate ở trên — ESM live-binding an toàn
+//  vì chỉ gọi lúc runtime, không ở thời điểm nạp module.)
+// ---------------------------------------------------------------------------------------
+export * from "./birth-date/index.js";

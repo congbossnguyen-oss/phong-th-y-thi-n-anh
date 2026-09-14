@@ -22,7 +22,7 @@
  * Âm làm "Mệnh"). Khi có nguồn dữ liệu bảng đối chiếu xác định, chỉ cần sửa
  * `calculateNapAmCompatibility`.
  */
-import { getGanzhiYear, Data } from "@thien-anh/calendar-core";
+import { birthDateFromGregorianYear, resolveMethodYear, Data, type MethodYearRequest } from "@thien-anh/calendar-core";
 import { isCanHop } from "../trach-nhat/canHop.js";
 import { isTamHop } from "../trach-nhat/tamHop.js";
 import { isLucHop } from "../trach-nhat/lucHop.js";
@@ -171,12 +171,30 @@ function isXung(chiA: Chi, chiB: Chi): boolean {
   return getLucXungChi(chiA) === chiB;
 }
 
-/** Suy Can/Chi/Nạp Âm của 1 năm sinh dương lịch (quy ước "năm con giáp" đại chúng, ranh giới 1/1 — không dùng Lập Xuân vì người dùng chỉ nhập năm, không nhập ngày sinh chính xác). */
+/**
+ * V3-07B (Phase D — pilot Trạch Nhật): KHAI BÁO TƯỜNG MINH quy ước năm dùng để suy Can/Chi/Nạp Âm
+ * từ NĂM SINH — "năm con giáp đại chúng", tức Ganzhi ranh giới 1/1 dương lịch (KHÔNG Lập Xuân, vì
+ * người dùng chỉ nhập năm, không nhập ngày sinh cụ thể).
+ *
+ * Trước đây quy ước này ẨN trong một magic `{ yearBoundary: "calendar" }` ngay tại call site; nay nó
+ * là một MethodYearContract rõ ràng, truy vết được, đi qua Calendar Core canonical. Đây KHÔNG phải
+ * thay đổi phương pháp: convention GANZHI_CALENDAR_BOUNDARY resolve NỘI BỘ bằng đúng
+ * `getGanzhiYear({...}, { yearBoundary: "calendar" })` như cũ → Can/Chi/Nạp Âm giữ nguyên 100%
+ * (đã xác nhận parity 1900-2100, xem reports/V307B_TRACH_NHAT_MIGRATION.md).
+ */
+const TRACH_NHAT_NAM_SINH_YEAR: MethodYearRequest = {
+  method: "trach-nhat.tuoi-can-chi",
+  convention: "GANZHI_CALENDAR_BOUNDARY",
+};
+
+/** Suy Can/Chi/Nạp Âm của 1 năm sinh dương lịch qua MethodYearContract tường minh (xem ghi chú trên). */
 function tinhCanChiNapAmNamSinh(namSinh: number): { can: Can; chi: Chi; napAm: { name: string; element: NguHanh } } {
-  const pillar = getGanzhiYear(
-    { year: namSinh, month: 1, day: 1, hour: 12, timeZone: DEFAULT_TIME_ZONE },
-    { yearBoundary: "calendar" },
-  );
+  const birthDate = birthDateFromGregorianYear(namSinh, DEFAULT_TIME_ZONE);
+  const { pillar } = resolveMethodYear(TRACH_NHAT_NAM_SINH_YEAR, birthDate).resolved;
+  if (!pillar) {
+    // Không thể xảy ra với GANZHI_CALENDAR_BOUNDARY; guard tường minh thay vì "!" ngầm.
+    throw new Error("Trạch Nhật: quy ước GANZHI_CALENDAR_BOUNDARY phải trả về trụ Can Chi năm.");
+  }
   return { can: pillar.can, chi: pillar.chi, napAm: pillar.napAm };
 }
 
