@@ -21,6 +21,7 @@ import type {
   NormalizedDignityResult,
   NormalizedHouse,
   NormalizedHouseCusp,
+  NormalizedNakshatraPosition,
   NormalizedNodePosition,
   NormalizedPlanetPosition,
   NormalizedPointPosition,
@@ -45,6 +46,8 @@ export interface CreateNormalizedChartInput {
   aspects?: NormalizedAspectInstance[];
   dignities?: NormalizedDignityResult[];
   nodes?: NormalizedNodePosition[];
+  /** Phase 4 Step 4 — mặc định `[]` nếu bỏ trống, CÙNG quy ước với mọi mảng khác ở trên (kể cả Western — xem `NormalizedChart.nakshatraPositions`'s doc comment). */
+  nakshatraPositions?: NormalizedNakshatraPosition[];
 }
 
 export function createNormalizedChart(input: CreateNormalizedChartInput): NormalizedChart {
@@ -67,5 +70,6 @@ export function createNormalizedChart(input: CreateNormalizedChartInput): Normal
     aspects: input.aspects ?? [],
     dignities: input.dignities ?? [],
     nodes: input.nodes ?? [],
+    nakshatraPositions: input.nakshatraPositions ?? [],
   };
 }

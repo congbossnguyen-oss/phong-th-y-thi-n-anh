@@ -54,15 +54,19 @@ export class SwissEphemerisPrecisionDegradedError extends Error {
   }
 }
 
-/** Ném bởi các method CHƯA implement (ayanamsa — thuộc Phase 4+ Vedic, ZERO scope ở Phase 3A/3B-1). House cusps/ASC/MC ĐÃ implement từ Phase 3B-1 — KHÔNG còn dùng error này cho 3 method đó nữa. */
-export class SwissEphemerisPhase3AScopeError extends Error {
-  constructor(method: string) {
+/**
+ * Ném khi `ayanamsaId` là một chuỗi KHÔNG nằm trong bảng ánh xạ ayanamsa đã biết của provider
+ * này — cùng nguyên tắc với `SwissEphemerisUnsupportedHouseSystemError`: Swiss Ephemeris
+ * (native) KHÔNG tự báo lỗi cho một `sid_mode` không xác định theo cùng cách provider validate
+ * trước — provider PHẢI validate `ayanamsaId` TRƯỚC KHI gọi native.
+ */
+export class SwissEphemerisUnsupportedAyanamsaError extends Error {
+  constructor(readonly ayanamsaId: string) {
     super(
-      `SwissEphemerisProvider.${method}() CHƯA implement — thuộc Phase 4+ (Vedic/ayanamsa), ` +
-        `ZERO scope ở Western (Phase 3A/3B-1). Xem ` +
-        `docs/astrology-module/ARCHITECTURE/PHASE3B1_HOUSES_ANGLES.md.`,
+      `SwissEphemerisProvider chưa hỗ trợ ayanamsa "${ayanamsaId}". Xem ` +
+        `docs/astrology-module/ARCHITECTURE/PHASE4_STEP1_AYANAMSA.md để biết danh sách ayanamsa đã hỗ trợ.`,
     );
-    this.name = "SwissEphemerisPhase3AScopeError";
+    this.name = "SwissEphemerisUnsupportedAyanamsaError";
   }
 }
 

@@ -14,13 +14,9 @@
  */
 
 import type { HouseNumber, NormalizedHouseCusp } from "../chart/types.js";
+import { normalizeDegrees } from "../precision.js";
 
 const EXPECTED_HOUSE_COUNT = 12;
-
-function normalizeDegrees(value: number): number {
-  const wrapped = value % 360;
-  return wrapped < 0 ? wrapped + 360 : wrapped;
-}
 
 /** Điểm `longitude` có nằm trong cung [start, end) đi theo chiều TĂNG DẦN, vòng qua 360°/0° nếu `end < start`? */
 function isWithinForwardArc(longitude: number, start: number, end: number): boolean {

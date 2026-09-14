@@ -8,8 +8,11 @@
  * PHẠM VI: Phase 3A implement vị trí hành tinh/node/Chiron/Lilith thô (`getPlanetPosition`,
  * `getNodePosition`). Phase 3B-1 bổ sung house cusps/Ascendant/Midheaven (`getHouseCusps`,
  * `getAscendant`, `getMidheaven`) — CHỈ hình học Tây phương thuần tuý (tropical, house cusps,
- * ASC/MC), KHÔNG có aspect/dignity/interpretation nào ở đây. `getAyanamsa` vẫn CHƯA implement
- * (Phase 4+, Vedic — xem `SwissEphemerisPhase3AScopeError`).
+ * ASC/MC), KHÔNG có aspect/dignity/interpretation nào ở đây. Phase 4 Step 1 bổ sung `getAyanamsa`
+ * (giá trị ayanamsa THÔ, độ — KHÔNG tự trừ vào longitude nào, đó là việc của tầng `vedic/` sau
+ * này) — xem `docs/astrology-module/ARCHITECTURE/PHASE4_STEP1_AYANAMSA.md`. KHÔNG có Rashi/
+ * Nakshatra/Dasha nào ở file này — provider CHỈ trả dữ kiện thiên văn thô, không có tri thức
+ * Vedic nào.
  *
  * QUY ƯỚC TOẠ ĐỘ (phải đọc trước khi dùng số liệu từ class này):
  * - Geocentric (tâm Trái Đất), KHÔNG heliocentric.
@@ -42,8 +45,10 @@
 import {
   calc_ut,
   constants,
+  get_ayanamsa_ex_ut,
   houses_ex2,
   set_ephe_path,
+  set_sid_mode,
   utc_to_jd,
   version,
 } from "sweph";
@@ -63,13 +68,14 @@ import type {
   PrecisionClass,
   ProviderMetadata,
 } from "../AstronomicalProvider.js";
+import { normalizeDegrees } from "../../precision.js";
 import { resolveDefaultEphemerisPath } from "./ephemerisPath.js";
 import {
   SwissEphemerisCalculationError,
   SwissEphemerisHouseCalculationError,
   SwissEphemerisHouseSystemUndefinedAtLatitudeError,
-  SwissEphemerisPhase3AScopeError,
   SwissEphemerisPrecisionDegradedError,
+  SwissEphemerisUnsupportedAyanamsaError,
   SwissEphemerisUnsupportedBodyError,
   SwissEphemerisUnsupportedHouseSystemError,
 } from "./errors.js";
@@ -135,6 +141,21 @@ const KNOWN_HOUSE_SYSTEM_TO_SWISS_EPH_CODE: Record<string, HouseSystems> = {
 /** Chuỗi con xuất hiện trong `error` native của Swiss Ephemeris khi một hệ time-based (Placidus/Koch) không tính được bên trong vòng cực — xác nhận bằng thực nghiệm, KHÔNG suy đoán. */
 const POLAR_CIRCLE_ERROR_PATTERN = /polar circle/i;
 
+/**
+ * Ánh xạ định danh ayanamsa ĐÃ BIẾT sang mã `sid_mode` của Swiss Ephemeris — xác nhận bằng thực
+ * nghiệm qua `sweph.get_ayanamsa_name()` (KHÔNG suy đoán từ tài liệu online). CHỈ 4 ayanamsa
+ * được hỗ trợ ở Phase 4 Step 1 — ĐÚNG BẰNG bộ 4 mà oracle mapping xác nhận (vedic-calc hỗ trợ
+ * chính xác 4 ayanamsa này; PyJHora hỗ trợ cả 4 trong bộ 20 mode của nó) — xem
+ * docs/astrology-module/ARCHITECTURE/PHASE4_STEP1_AYANAMSA.md. Danh sách có thể mở rộng sau
+ * (thêm 1 dòng, KHÔNG đổi kiến trúc) — `AyanamsaId` vẫn là `string` mở.
+ */
+const KNOWN_AYANAMSA_TO_SWISS_EPH_SIDM: Record<string, number> = {
+  lahiri: constants.SE_SIDM_LAHIRI,
+  raman: constants.SE_SIDM_RAMAN,
+  kp: constants.SE_SIDM_KRISHNAMURTI,
+  true_chitrapaksha: constants.SE_SIDM_TRUE_CITRA,
+};
+
 /** Nhà (house) 1 và 10 LUÔN chính là Ascendant/Midheaven ở MỌI hệ quadrant-based — xác nhận bằng thực nghiệm (points[0]===houses[0], points[1]===houses[9]). */
 const ASCENDANT_POINT_INDEX = 0;
 const MIDHEAVEN_POINT_INDEX = 1;
@@ -145,11 +166,6 @@ const METADATA_PROBE_UTC = new Date("2000-01-01T12:00:00.000Z");
 export interface SwissEphemerisProviderOptions {
   /** Ghi đè đường dẫn thư mục ephemeris — mặc định `resolveDefaultEphemerisPath()` (`<package root>/ephe`). Dùng cho test (vd. trỏ tới thư mục rỗng để buộc kiểm tra đường Moshier fallback). */
   ephemerisPath?: string;
-}
-
-function normalizeDegrees(value: number): number {
-  const wrapped = value % 360;
-  return wrapped < 0 ? wrapped + 360 : wrapped;
 }
 
 export class SwissEphemerisProvider implements AstronomicalProvider {
@@ -219,8 +235,35 @@ export class SwissEphemerisProvider implements AstronomicalProvider {
     return { longitude: normalizeDegrees(data.points[MIDHEAVEN_POINT_INDEX]) };
   }
 
-  getAyanamsa(_utcInstant: Date, _ayanamsaId: AyanamsaId): number {
-    throw new SwissEphemerisPhase3AScopeError("getAyanamsa");
+  /**
+   * Giá trị ayanamsa (độ) tại một thời điểm UTC — KHÔNG tự trừ vào bất kỳ longitude nào, chỉ trả
+   * con số thô. `set_sid_mode()` là trạng thái TOÀN TIẾN TRÌNH của Swiss Ephemeris (giống
+   * `set_ephe_path`) nên được gọi lại NGAY TRƯỚC MỖI lần tính (không chỉ ở constructor), đảm bảo
+   * đúng ayanamsa được yêu cầu cho LẦN GỌI NÀY, không phụ thuộc lần gọi `getAyanamsa` trước đó với
+   * `ayanamsaId` khác đã đổi state global.
+   *
+   * XÁC NHẬN BẰNG THỰC NGHIỆM (2026-09): KHÔNG áp dụng kiểm tra "silent Moshier fallback" như
+   * `calcBody` — ayanamsa là phép tính tuế sai/lượng giác thuần tuý, KHÔNG cần file `.se1` (đã
+   * thử trực tiếp: bỏ ephemeris path đi, giá trị Lahiri tại J2000.0 vẫn giống hệt, flag vẫn khớp
+   * yêu cầu) — khác hẳn `getPlanetPosition`, nơi thiếu file THẬT SỰ làm giảm độ chính xác. Vẫn
+   * kiểm tra `flag === ERR` cho lỗi native khác không lường trước (phòng vệ, chưa từng quan sát
+   * được kích hoạt trong thực nghiệm).
+   */
+  getAyanamsa(utcInstant: Date, ayanamsaId: AyanamsaId): number {
+    const sidMode = KNOWN_AYANAMSA_TO_SWISS_EPH_SIDM[ayanamsaId];
+    if (sidMode === undefined) {
+      throw new SwissEphemerisUnsupportedAyanamsaError(ayanamsaId);
+    }
+
+    set_sid_mode(sidMode, 0, 0);
+    const jdUt = this.toJulianDayUt(utcInstant);
+    const result = get_ayanamsa_ex_ut(jdUt, constants.SEFLG_SWIEPH);
+
+    if (result.flag === constants.ERR) {
+      throw new SwissEphemerisCalculationError(`getAyanamsa(${ayanamsaId})`, result.error ?? "unknown error");
+    }
+
+    return result.data;
   }
 
   /**

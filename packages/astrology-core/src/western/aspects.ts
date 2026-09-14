@@ -26,11 +26,7 @@
  */
 
 import type { AspectType, NormalizedAspectInstance } from "../chart/types.js";
-
-function normalizeDegrees(value: number): number {
-  const wrapped = value % 360;
-  return wrapped < 0 ? wrapped + 360 : wrapped;
-}
+import { normalizeDegrees } from "../precision.js";
 
 /**
  * Khoảng cách góc NHỎ NHẤT giữa 2 longitude — HÀM THUẦN HÌNH HỌC, KHÔNG biết gì về aspect/orb.

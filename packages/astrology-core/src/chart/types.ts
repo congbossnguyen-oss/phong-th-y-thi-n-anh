@@ -57,6 +57,99 @@ export const ZODIAC_SIGNS: readonly ZodiacSign[] = [
 export type HouseNumber = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 
 /**
+ * 27 Nakshatra (lunar mansion) — Phase 4 Step 4. Union đóng, cùng lý do `ZodiacSign` đã dùng:
+ * một danh mục CỐ ĐỊNH, phổ quát trong TOÀN BỘ truyền thống Vedic (kể cả các nhánh phụ như
+ * KP/Jaimini đều dùng ĐÚNG 27 tên này, không nhánh nào định nghĩa một tập khác) — khác với
+ * `AspectType`/`DignityTypeId` (mở, vì các trường phái/hệ thống KHÁC NHAU thật sự cần từ vựng
+ * khác nhau cho cùng một "khe"). Xác nhận bằng đọc trực tiếp cả 2 oracle (PyJHora, vedic-calc)
+ * trước khi viết union này — KHÔNG chỉ dựa vào kiến thức chung, xem
+ * docs/astrology-module/ARCHITECTURE/PHASE4_STEP4_NAKSHATRA.md. Tên dùng dạng Sanskrit
+ * (khớp vedic-calc + cách task brief tự tham chiếu "Anuradha"), KHÔNG dùng tên tiếng Tamil mà
+ * PyJHora hiển thị mặc định (2 oracle KHÁC NHAU về tên hiển thị nhưng THỐNG NHẤT hoàn toàn về
+ * vị trí thứ tự 1-27 và bảng lord — xem tài liệu trên).
+ */
+export type NakshatraName =
+  | "ashwini"
+  | "bharani"
+  | "krittika"
+  | "rohini"
+  | "mrigashira"
+  | "ardra"
+  | "punarvasu"
+  | "pushya"
+  | "ashlesha"
+  | "magha"
+  | "purva_phalguni"
+  | "uttara_phalguni"
+  | "hasta"
+  | "chitra"
+  | "swati"
+  | "vishakha"
+  | "anuradha"
+  | "jyeshtha"
+  | "mula"
+  | "purva_ashadha"
+  | "uttara_ashadha"
+  | "shravana"
+  | "dhanishta"
+  | "shatabhisha"
+  | "purva_bhadrapada"
+  | "uttara_bhadrapada"
+  | "revati";
+
+/** Thứ tự index 0-26 khớp ĐÚNG thứ tự sidereal 0°-360° (Ashwini bắt đầu tại 0° Aries sidereal). */
+export const NAKSHATRA_NAMES: readonly NakshatraName[] = [
+  "ashwini",
+  "bharani",
+  "krittika",
+  "rohini",
+  "mrigashira",
+  "ardra",
+  "punarvasu",
+  "pushya",
+  "ashlesha",
+  "magha",
+  "purva_phalguni",
+  "uttara_phalguni",
+  "hasta",
+  "chitra",
+  "swati",
+  "vishakha",
+  "anuradha",
+  "jyeshtha",
+  "mula",
+  "purva_ashadha",
+  "uttara_ashadha",
+  "shravana",
+  "dhanishta",
+  "shatabhisha",
+  "purva_bhadrapada",
+  "uttara_bhadrapada",
+  "revati",
+];
+
+/** 1 trong 4 pada của một Nakshatra — cùng quy ước union đóng nhỏ như `HouseNumber`. */
+export type NakshatraPada = 1 | 2 | 3 | 4;
+
+/**
+ * Vị trí Nakshatra/Pada của MỘT hành tinh/điểm — Phase 4 Step 4 (Approved Contract, Phase 4
+ * Decision Gate D3): KHÔNG thêm vào `NormalizedPlanetPosition` (tránh Western phải mang field
+ * Vedic-only luôn rỗng/null) — sống ở `NormalizedChart.nakshatraPositions` (mảng song song, tham
+ * chiếu qua `body`), CÙNG school-neutral layer với mọi type khác trong file này.
+ *
+ * 4 field TỐI THIỂU theo đúng contract đã duyệt — CỐ Ý không thêm degree-trong-nakshatra hay bất
+ * kỳ field Vedic nào khác chưa được duyệt (KP sub-lord, Abhijit, v.v.).
+ */
+export interface NormalizedNakshatraPosition {
+  /** CelestialBody (Phase 1) hoặc điểm mở rộng theo trường phái — CÙNG quy ước `NormalizedPlanetPosition.body`/`NormalizedDignityResult.body` (đổi tên từ "planetOrPoint" theo pseudotype gợi ý trong task để khớp naming convention đã có sẵn trong file này). */
+  body: string;
+  name: NakshatraName;
+  pada: NakshatraPada;
+  /** Hành tinh cai quản Nakshatra (Vimshottari lord) — string mở, cùng quy ước `body` ở trên (Rahu/Ketu không nằm trong `KnownCelestialBody` nhưng vẫn là chuỗi hợp lệ). */
+  lord: string;
+}
+
+/**
  * Loại tương quan góc giữa hai điểm (aspect). Cố ý để `string` mở — DOMAIN_MODEL.md không
  * đóng khung union này, và mỗi trường phái tự định nghĩa tập aspect của mình qua
  * `AstrologySchool.aspect_rules` (Phase 3+ Western: 5 aspect chính; Vedic Drishti dùng tập
@@ -194,6 +287,14 @@ export interface NormalizedChart {
   aspects: NormalizedAspectInstance[];
   dignities: NormalizedDignityResult[]; // rỗng ở Phase 2 (nội dung thuộc Phase 3+) — KHÔNG bắt buộc rỗng ở validation, chỉ là hiện trạng chưa có ai điền
   nodes: NormalizedNodePosition[];
+  /**
+   * Phase 4 Step 4 — TUỲ CHỌN (KHÔNG bắt buộc), đúng chính sách versioning MINOR đã ghi ở
+   * `NORMALIZED_CHART_SCHEMA_VERSION` bên dưới ("MINOR khi thêm field mới KHÔNG bắt buộc").
+   * `createNormalizedChart()` LUÔN điền `[]` cho chart mới (kể cả Western) — field CHỈ có thể
+   * `undefined` khi đọc lại (`deserializeNormalizedChart`) một chart đã serialize TRƯỚC Step 4,
+   * KHÔNG phải vì Western "không có" field này. Rỗng cho Western (không có khái niệm Nakshatra).
+   */
+  nakshatraPositions?: NormalizedNakshatraPosition[];
 }
 
 /**
@@ -211,5 +312,12 @@ export interface NormalizedChart {
  * `CelestialBody` (Approved Decision 1) KHÔNG ảnh hưởng version này — đó là type của tầng
  * `AstronomicalProvider` (Phase 1), không thuộc schema `NormalizedChart`, và bản thân thay đổi
  * đó là NỚI RỘNG (mọi giá trị cũ vẫn hợp lệ), không phải breaking.
+ *
+ * 2.0.0 -> 2.1.0 (Phase 4 Step 4): thêm `NormalizedChart.nakshatraPositions?` — field MỚI, TUỲ
+ * CHỌN (không đổi/xoá field nào có sẵn), đúng nghĩa MINOR đã định nghĩa ở trên. Chart đã
+ * serialize TRƯỚC Step 4 (thiếu field này) vẫn đọc được đúng dưới CÙNG major version 2.x —
+ * `deserializeNormalizedChart` không cần thay đổi gì, field vắng mặt = giá trị `undefined` hợp
+ * lệ theo type, KHÔNG phải lỗi tương thích. Quyết định tường minh (KHÔNG đổi thành field bắt
+ * buộc) — xem docs/astrology-module/ARCHITECTURE/PHASE4_STEP4_NAKSHATRA.md.
  */
-export const NORMALIZED_CHART_SCHEMA_VERSION = "2.0.0";
+export const NORMALIZED_CHART_SCHEMA_VERSION = "2.1.0";

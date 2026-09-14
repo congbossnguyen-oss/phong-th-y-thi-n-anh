@@ -13,6 +13,7 @@ describe("serializeNormalizedChart — determinism", () => {
   it("thứ tự field trong object KHÔNG ảnh hưởng chuỗi ra (key luôn sắp xếp)", () => {
     const chart = fullWesternChart();
     const reordered = {
+      nakshatraPositions: chart.nakshatraPositions,
       nodes: chart.nodes,
       dignities: chart.dignities,
       aspects: chart.aspects,

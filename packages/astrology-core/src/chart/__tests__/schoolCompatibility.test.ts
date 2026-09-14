@@ -25,6 +25,7 @@ const GENERIC_CHART_KEYS = [
   "aspects",
   "dignities",
   "nodes",
+  "nakshatraPositions",
 ].sort();
 
 describe("NormalizedChart — tương thích Western", () => {
@@ -76,7 +77,7 @@ describe("NormalizedChart — không rò rỉ dữ liệu đặc thù trường 
     expect(Object.keys(fullWesternChart()).sort()).toEqual(GENERIC_CHART_KEYS);
   });
 
-  it("chart Vedic chỉ có ĐÚNG các key của contract chung, không thêm key riêng kiểu 'dasha'/'nakshatra'/'varga'", () => {
+  it("chart Vedic chỉ có ĐÚNG các key của contract chung, không thêm key riêng kiểu 'dasha'/'varga' (Phase 4 Step 4: 'nakshatraPositions' ĐÃ được duyệt thành key CHUNG — tuỳ chọn, mặc định rỗng cho Western, KHÔNG phải một field rò rỉ riêng trường phái, xem GENERIC_CHART_KEYS/PHASE4_STEP4_NAKSHATRA.md)", () => {
     expect(Object.keys(fullVedicChart()).sort()).toEqual(GENERIC_CHART_KEYS);
   });
 

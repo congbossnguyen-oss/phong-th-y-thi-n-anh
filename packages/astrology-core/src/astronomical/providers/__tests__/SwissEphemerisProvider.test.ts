@@ -6,11 +6,7 @@ import { resolveBirthDataInstant } from "../../../timezone/resolveBirthDataInsta
 import type { BirthData } from "../../../types.js";
 import { ANGULAR_TOLERANCE_ANALYTIC_FALLBACK_DEGREES, ANGULAR_TOLERANCE_FILE_BASED_DEGREES, isWithinTolerance } from "../../../precision.js";
 import { SwissEphemerisProvider } from "../SwissEphemerisProvider.js";
-import {
-  SwissEphemerisPhase3AScopeError,
-  SwissEphemerisPrecisionDegradedError,
-  SwissEphemerisUnsupportedBodyError,
-} from "../errors.js";
+import { SwissEphemerisPrecisionDegradedError, SwissEphemerisUnsupportedBodyError } from "../errors.js";
 import { GOLDEN_SCENARIOS, J2000_REFERENCE, J2000_UTC_ISO, MEAN_NODE_MEEUS_REFERENCE_J2000_DEGREES } from "./goldenFixtures.js";
 
 const EMPTY_EPHEMERIS_DIR = fileURLToPath(new URL(".", import.meta.url)); // thư mục test — không có file .se1 nào, buộc rớt xuống Moshier.
@@ -166,13 +162,6 @@ describe("SwissEphemerisProvider — chống 'silent Moshier fallback' (SWISS_EP
   it("khi ngày NẰM NGOÀI phạm vi file .se1 hiện có (1800-2400), ném SwissEphemerisPrecisionDegradedError thay vì âm thầm trả Moshier", () => {
     const farFuture = new Date("2500-01-01T00:00:00.000Z"); // ngoài phạm vi sepl_18/semo_18/seas_18 (1800-2400)
     expect(() => defaultProvider().getPlanetPosition(farFuture, "sun")).toThrow(SwissEphemerisPrecisionDegradedError);
-  });
-});
-
-describe("SwissEphemerisProvider — scope guard: ayanamsa CHƯA implement (Phase 4+, Vedic — ZERO scope ở Western)", () => {
-  it("getAyanamsa ném SwissEphemerisPhase3AScopeError, KHÔNG trả số liệu bịa hay crash mơ hồ. getHouseCusps/getAscendant/getMidheaven ĐÃ implement từ Phase 3B-1 — xem SwissEphemerisProvider.houses.test.ts", () => {
-    const utcInstant = new Date(J2000_UTC_ISO);
-    expect(() => defaultProvider().getAyanamsa(utcInstant, "lahiri")).toThrow(SwissEphemerisPhase3AScopeError);
   });
 });
 

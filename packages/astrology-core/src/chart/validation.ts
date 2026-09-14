@@ -8,7 +8,7 @@
  * (`validation/birthData.ts`).
  */
 import type { AstrologyCoreError } from "../errors.js";
-import { ZODIAC_SIGNS } from "./types.js";
+import { NAKSHATRA_NAMES, ZODIAC_SIGNS } from "./types.js";
 import type {
   NormalizedAngle,
   NormalizedAspectInstance,
@@ -16,6 +16,7 @@ import type {
   NormalizedDignityResult,
   NormalizedHouse,
   NormalizedHouseCusp,
+  NormalizedNakshatraPosition,
   NormalizedNodePosition,
   NormalizedPlanetPosition,
   NormalizedPointPosition,
@@ -48,7 +49,12 @@ export type NormalizedChartErrorCode =
   | "EMPTY_DIGNITY_SCHEME"
   | "EMPTY_DIGNITY_TYPE"
   | "EMPTY_DIGNITY_BODY"
-  | "INVALID_DIGNITY_SCORE";
+  | "INVALID_DIGNITY_SCORE"
+  | "INVALID_NAKSHATRA_NAME"
+  | "INVALID_NAKSHATRA_PADA"
+  | "EMPTY_NAKSHATRA_LORD"
+  | "EMPTY_NAKSHATRA_BODY"
+  | "DUPLICATE_NAKSHATRA_POSITION";
 
 export interface NormalizedChartError extends Omit<AstrologyCoreError, "code"> {
   code: NormalizedChartErrorCode;
@@ -85,6 +91,9 @@ export function validateNormalizedChart(chart: NormalizedChart): NormalizedChart
   errors.push(...validateNoDuplicateAngleTypes(chart.angles));
   errors.push(...chart.aspects.flatMap((a, i) => validateAspect(a, i)));
   errors.push(...chart.dignities.flatMap((d, i) => validateDignity(d, i)));
+  const nakshatraPositions = chart.nakshatraPositions ?? []; // TUỲ CHỌN (Phase 4 Step 4) — chart cũ trước Step 4 hợp lệ khi vắng mặt.
+  errors.push(...nakshatraPositions.flatMap((n, i) => validateNakshatraPosition(n, i)));
+  errors.push(...validateNoDuplicateNakshatraPositions(nakshatraPositions));
 
   return errors;
 }
@@ -274,5 +283,43 @@ function validateDignity(d: NormalizedDignityResult, index: number): NormalizedC
     errors.push(...validateSign(d.sign, `${prefix}.sign`));
   }
 
+  return errors;
+}
+
+/**
+ * Validate `NormalizedNakshatraPosition` — Phase 4 Step 4. Cùng nguyên tắc `validatePlanet`:
+ * kiểm tra kiểu/khoảng giá trị, KHÔNG tính lại Nakshatra/Pada từ longitude nào (contract này
+ * không có field longitude — xem `chart/types.ts`'s doc comment "CỐ Ý không thêm
+ * degree-trong-nakshatra").
+ */
+function validateNakshatraPosition(n: NormalizedNakshatraPosition, index: number): NormalizedChartError[] {
+  const prefix = `nakshatraPositions[${index}]`;
+  const errors: NormalizedChartError[] = [];
+
+  if (typeof n.body !== "string" || n.body.length === 0) {
+    errors.push(err("EMPTY_NAKSHATRA_BODY", `${prefix}.body không được rỗng.`, `${prefix}.body`));
+  }
+  if (!NAKSHATRA_NAMES.includes(n.name)) {
+    errors.push(err("INVALID_NAKSHATRA_NAME", `${prefix}.name không phải 1 trong 27 Nakshatra hợp lệ: nhận "${String(n.name)}".`, `${prefix}.name`, { actual: n.name }));
+  }
+  if (!Number.isInteger(n.pada) || n.pada < 1 || n.pada > 4) {
+    errors.push(err("INVALID_NAKSHATRA_PADA", `${prefix}.pada phải là 1-4: nhận ${String(n.pada)}.`, `${prefix}.pada`, { actual: n.pada }));
+  }
+  if (typeof n.lord !== "string" || n.lord.length === 0) {
+    errors.push(err("EMPTY_NAKSHATRA_LORD", `${prefix}.lord không được rỗng.`, `${prefix}.lord`));
+  }
+
+  return errors;
+}
+
+function validateNoDuplicateNakshatraPositions(positions: readonly NormalizedNakshatraPosition[]): NormalizedChartError[] {
+  const seen = new Set<string>();
+  const errors: NormalizedChartError[] = [];
+  for (const n of positions) {
+    if (seen.has(n.body)) {
+      errors.push(err("DUPLICATE_NAKSHATRA_POSITION", `"${n.body}" xuất hiện nhiều hơn 1 lần trong nakshatraPositions[].`, "nakshatraPositions", { body: n.body }));
+    }
+    seen.add(n.body);
+  }
   return errors;
 }

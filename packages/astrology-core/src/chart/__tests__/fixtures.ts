@@ -173,5 +173,11 @@ export function fullVedicChart(): NormalizedChart {
     aspects: [],
     dignities: [],
     nodes: [{ nodeType: "mean", pole: "north", longitude: 51.4381 }],
+    // Phase 4 Step 4 — xác nhận qua CẢ HAI oracle (PyJHora native + vedic-calc manual subtraction),
+    // KHÔNG chỉ copy giá trị đã biết trước — xem PHASE4_STEP4_NAKSHATRA.md "Golden fixtures".
+    nakshatraPositions: [
+      { body: "sun", name: "purva_bhadrapada", pada: 3, lord: "jupiter" },
+      { body: "moon", name: "anuradha", pada: 1, lord: "saturn" },
+    ],
   });
 }

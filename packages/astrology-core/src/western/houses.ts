@@ -21,6 +21,7 @@
 import type { AstrologyCoreError, AstrologyCoreErrorCode } from "../errors.js";
 import type { AstronomicalProvider, HouseSystemId } from "../astronomical/AstronomicalProvider.js";
 import type { HouseNumber, NormalizedAngle, NormalizedHouseCusp } from "../chart/types.js";
+import { normalizeDegrees } from "../precision.js";
 import {
   SwissEphemerisCalculationError,
   SwissEphemerisHouseCalculationError,
@@ -52,11 +53,6 @@ export interface CalculateWesternHousesAndAnglesInput {
 export type WesternHousesAndAnglesResult =
   | { ok: true; houseSystem: HouseSystemId; houseCusps: NormalizedHouseCusp[]; angles: NormalizedAngle[] }
   | { ok: false; errors: AstrologyCoreError[] };
-
-function normalizeDegrees(value: number): number {
-  const wrapped = value % 360;
-  return wrapped < 0 ? wrapped + 360 : wrapped;
-}
 
 /**
  * Ánh xạ lỗi provider (CỤ THỂ của `SwissEphemerisProvider` — xem ghi chú "VẤN ĐỀ KIẾN TRÚC MỞ"
