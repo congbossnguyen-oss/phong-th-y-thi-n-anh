@@ -3,9 +3,9 @@
  * `SPEC-OVERRIDE-MOT-MODULE.md` §2: input tối thiểu ra kết quả ngay, mỗi input thêm mở ra 1 lớp
  * mới, không tính lại lớp trước.
  */
-import { calculateCungPhi, isDongTuMenh, CUNG_BAT_TRACH_NGU_HANH, type CungBatTrach, type GioiTinh } from "../cung-menh-bat-trach/cungPhi.js";
+import { calculateCungPhiBatTrach, isDongTuMenh, CUNG_BAT_TRACH_NGU_HANH, type CungBatTrach, type GioiTinh } from "../cung-menh-bat-trach/cungPhi.js";
 import { getKhiBatTrach, KHI_BAT_TRACH_INFO, type KhiBatTrach } from "../cung-menh-bat-trach/duNienBatQuai.js";
-import type { Data } from "@thien-anh/calendar-core";
+import { type Data, birthDateFromGregorian } from "@thien-anh/calendar-core";
 import { DEFAULT_BAT_TRACH_CONFIG, type BatTrachConfig } from "./config.js";
 import { doToCung, doToSon, huongToToa, canhBaoLapHuong, doTuDauVaoHuong, type DauVaoHuong, type CanhBaoLapHuong } from "./toaHuong.js";
 import { tinhHungSatDacBiet, type HungSatDacBiet } from "./hungSat.js";
@@ -21,11 +21,17 @@ import { loiTuongCuaChu, type LoiTuong } from "./loiTuong.js";
 
 type NguHanh = Data.NguHanh;
 
+const DEFAULT_TIME_ZONE = "Asia/Ho_Chi_Minh";
+
 // -----------------------------------------------------------------------------------------------
 // TẦNG TỐI THIỂU — năm sinh + giới tính + hướng nhà.
 // -----------------------------------------------------------------------------------------------
 export interface BatTrachNhaInputToiThieu {
-  namSinh: number;
+  /**
+   * V3-10: Mệnh Quái Bát Trạch dùng quy ước LẬP XUÂN (phụ thuộc NGÀY) → BẮT BUỘC đủ ngày/tháng/năm
+   * sinh Dương lịch, KHÔNG chấp nhận chỉ-năm (không bịa 1/1). `timeZone` mặc định Asia/Ho_Chi_Minh.
+   */
+  ngaySinh: { year: number; month: number; day: number; timeZone?: string };
   gioiTinh: GioiTinh;
   huong: DauVaoHuong;
 }
@@ -48,6 +54,12 @@ export interface KetQuaHopMenh {
 
 export interface KetQuaBatTrachToiThieu {
   cungMenh: CungBatTrach;
+  /**
+   * V3-10: minh bạch quy ước năm của Mệnh Quái (Decision F). `namLapXuan` = năm Can Chi hiệu dụng
+   * theo Lập Xuân; `truocLapXuan` = true nếu sinh trước Lập Xuân (Mệnh Quái lùi 1 năm so với dương
+   * lịch — ca biên). `quyUoc` luôn "Lập Xuân" (lựa chọn methodology Thiên Anh, KHÔNG phải chân lý phổ quát).
+   */
+  menhQuaiQuyUoc: { quyUoc: "Lập Xuân"; namDuongLich: number; namLapXuan: number; truocLapXuan: boolean; boundaryRule: string };
   nguHanhMenh: NguHanh;
   nhomMenh: "dong" | "tay";
   huong: { do: number; cung: CungBatTrach; canhBao: CanhBaoLapHuong };
@@ -68,9 +80,18 @@ function hopMenhMotChieu(cungMenh: CungBatTrach, cungKia: CungBatTrach): HopMenh
   return { khi, tenKhi: KHI_BAT_TRACH_INFO[khi].ten, hop: KHI_BAT_TRACH_INFO[khi].cat };
 }
 
-/** Lớp tối thiểu — luôn tính được ngay khi có năm sinh + giới tính + hướng nhà. */
+/** Lớp tối thiểu — cần ngày/tháng/năm sinh (Lập Xuân) + giới tính + hướng nhà. */
 export function luanBatTrachToiThieu(input: BatTrachNhaInputToiThieu, config: BatTrachConfig = DEFAULT_BAT_TRACH_CONFIG): KetQuaBatTrachToiThieu {
-  const cungMenh = calculateCungPhi(input.namSinh, input.gioiTinh);
+  // V3-10: Mệnh Quái theo Lập Xuân qua hạ tầng canonical V3-07B (BirthDate → MethodYearContract →
+  // Calendar Core). BirthDate đủ ngày → nếu thiếu ngày sẽ ném BirthDatePrecisionError (không bịa 1/1).
+  const birthDate = birthDateFromGregorian({
+    year: input.ngaySinh.year,
+    month: input.ngaySinh.month,
+    day: input.ngaySinh.day,
+    timeZone: input.ngaySinh.timeZone ?? DEFAULT_TIME_ZONE,
+  });
+  const menhQuai = calculateCungPhiBatTrach(birthDate, input.gioiTinh);
+  const cungMenh = menhQuai.cung;
   const huongDo = doTuDauVaoHuong(input.huong);
   const toaDo = huongToToa(huongDo);
   const cungHuong = doToCung(huongDo);
@@ -91,6 +112,13 @@ export function luanBatTrachToiThieu(input: BatTrachNhaInputToiThieu, config: Ba
 
   return {
     cungMenh,
+    menhQuaiQuyUoc: {
+      quyUoc: menhQuai.quyUoc,
+      namDuongLich: menhQuai.namDuongLich,
+      namLapXuan: menhQuai.namLapXuan,
+      truocLapXuan: menhQuai.truocLapXuan,
+      boundaryRule: menhQuai.boundaryRule,
+    },
     nguHanhMenh: CUNG_BAT_TRACH_NGU_HANH[cungMenh],
     nhomMenh: isDongTuMenh(cungMenh) ? "dong" : "tay",
     huong: { do: huongDo, cung: cungHuong, canhBao: canhBaoLapHuong(huongDo) },

@@ -158,6 +158,11 @@ if (Astro.locals.user?.isAdmin !== true) {
   async function tinh1Ca(ca: CaKiemChung) {
     const p = new URLSearchParams();
     p.set("namSinh", String(ca.namSinh));
+    // V3-10: API Bát Trạch nay yêu cầu đủ ngày sinh (Mệnh Quái theo Lập Xuân). Harness nội bộ này chỉ
+    // đối chiếu SỐ LIỆU theo NĂM (không xét ca biên Lập Xuân) → dùng 1 ngày GIỮA NĂM cố định (15/6) để
+    // năm Lập Xuân hiệu dụng ≡ năm dương lịch, giữ nguyên giá trị đối chiếu như trước.
+    p.set("thangSinh", "6");
+    p.set("ngaySinh", "15");
     p.set("gioiTinh", ca.gioiTinh);
     p.set("huongKieu", "do");
     p.set("huongGiaTri", String(ca.huongDo));

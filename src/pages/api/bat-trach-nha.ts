@@ -27,6 +27,8 @@ export const GET: APIRoute = async ({ url }) => {
   const p = url.searchParams;
 
   const namSinhRaw = p.get("namSinh");
+  const thangSinhRaw = p.get("thangSinh");
+  const ngaySinhRaw = p.get("ngaySinh");
   const gioiTinhRaw = p.get("gioiTinh");
   if (namSinhRaw === null || (gioiTinhRaw !== "nam" && gioiTinhRaw !== "nu")) {
     return jsonResponse({ error: "Thiếu tham số bắt buộc: namSinh, gioiTinh (nam|nu)." }, 400);
@@ -34,6 +36,23 @@ export const GET: APIRoute = async ({ url }) => {
   const namSinh = Number(namSinhRaw);
   if (!Number.isInteger(namSinh)) {
     return jsonResponse({ error: "namSinh phải là số nguyên." }, 400);
+  }
+  // V3-10: Mệnh Quái Bát Trạch tính theo LẬP XUÂN (lựa chọn methodology Thiên Anh) — phụ thuộc NGÀY
+  // sinh. BẮT BUỘC đủ ngày+tháng+năm; KHÔNG bịa 1/1, KHÔNG âm thầm coi chỉ-năm là đủ (V3-09 Critical
+  // Input Rule). Nếu thiếu ngày/tháng → báo lỗi rõ ràng.
+  const thangSinh = thangSinhRaw !== null ? Number(thangSinhRaw) : NaN;
+  const ngaySinh = ngaySinhRaw !== null ? Number(ngaySinhRaw) : NaN;
+  if (
+    !Number.isInteger(thangSinh) || thangSinh < 1 || thangSinh > 12 ||
+    !Number.isInteger(ngaySinh) || ngaySinh < 1 || ngaySinh > 31
+  ) {
+    return jsonResponse(
+      {
+        error:
+          "Mệnh Quái Bát Trạch tính theo Lập Xuân nên cần ĐỦ ngày sinh (Dương lịch): thiếu tham số hợp lệ thangSinh (1-12) và ngaySinh (1-31).",
+      },
+      400,
+    );
   }
 
   const huongKieu = p.get("huongKieu");
@@ -70,7 +89,10 @@ export const GET: APIRoute = async ({ url }) => {
   };
 
   try {
-    const toiThieu = BatTrachNha.luanBatTrachToiThieu({ namSinh, gioiTinh: gioiTinhRaw, huong }, config);
+    const toiThieu = BatTrachNha.luanBatTrachToiThieu(
+      { ngaySinh: { year: namSinh, month: thangSinh, day: ngaySinh }, gioiTinh: gioiTinhRaw, huong },
+      config,
+    );
 
     const cuaCung = docCung(p.get("cuaCung"));
     const chuCung = docCung(p.get("chuCung"));
