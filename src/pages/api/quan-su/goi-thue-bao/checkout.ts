@@ -1,7 +1,7 @@
 import type { APIRoute } from "astro";
-import { createSubscriptionOrder, markOrderPaidAndFulfill } from "../../../../lib/db/orders";
+import { createSubscriptionOrder } from "../../../../lib/db/orders";
 import { getSepayQrUrl } from "../../../../lib/payments/sepay";
-import { GIA_SUBSCRIPTION, laSubscriptionTier, laSubscriptionDuration } from "../../../../lib/payments/gia-subscription";
+import { giaSubscription, laSubscriptionTier, laSubscriptionDuration } from "../../../../lib/payments/gia-subscription";
 import { checkRateLimit } from "../../../../lib/rate-limit";
 import { thongBaoLoiAnToan } from "../../../../lib/loi-an-toan";
 
@@ -14,11 +14,10 @@ function jsonResponse(body: unknown, status: number): Response {
 /**
  * Tạo đơn gói thuê bao "Quân Sư". BẮT BUỘC đăng nhập — quyền truy cập gói tính theo tài khoản.
  *
- * GIAI ĐOẠN THỬ NGHIỆM NỘI BỘ (đúng quy ước đang áp cho "Định Hướng Nghề Nghiệp"): chỉ tài khoản
- * quản trị được tạo đơn, và được đi luồng 0đ/tự xác nhận kể cả khi giá CHƯA chốt (`gia-subscription.ts`
- * còn `null`) — để Thầy test trọn luồng (tạo đơn → kích hoạt → coQuyenTruyCap) mà không cần giá thật.
- * Khi mở bán thật: xóa cổng admin-only NHƯNG vẫn phải điền đủ 8 giá trước, nếu không toàn bộ request
- * khách thường sẽ bị chặn ở bước tính tiền (đúng như thiết kế, không phải bug).
+ * Mở bán thật cho mọi tài khoản (Thầy, 2026-09-14) — trước đó có giai đoạn thử nghiệm nội bộ chỉ
+ * admin tạo đơn được, đã gỡ cổng đó khi cả 3 hạng (Cơ bản/Cao cấp/VIP) đều đã có giá thật trong
+ * `gia-subscription.ts`. `giaSubscription()`/`GIA_SUBSCRIPTION[tier][duration]` ném lỗi/`null` nếu
+ * lỡ có hạng nào chưa kịp điền giá sau này — chặn đúng ở bước tính tiền, không phải bug.
  */
 export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
   const limited = checkRateLimit({ request, clientAddress }, { key: "checkout-goi-thue-bao", max: 10, windowMs: 60_000 });
@@ -26,9 +25,6 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
 
   if (!locals.user) {
     return jsonResponse({ ok: false, error: "Vui lòng đăng nhập trước khi đăng ký gói." }, 401);
-  }
-  if (locals.user.isAdmin !== true) {
-    return jsonResponse({ ok: false, error: "Gói thuê bao đang trong giai đoạn thử nghiệm nội bộ, chưa mở bán." }, 403);
   }
 
   const body = await request.json().catch(() => null);
@@ -43,10 +39,12 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
   // khoản, không cần số liên hệ riêng cho gói thuê bao (khác các đơn công cụ lẻ vẫn cần liên hệ).
   const customerPhone = "";
 
-  // Giá thật nếu đã chốt; admin test khi chưa chốt giá thì coi như 0đ (không đụng tới khách thường
-  // vì nhánh này chỉ chạy được khi đã qua cổng isAdmin ở trên).
-  const giaThat = GIA_SUBSCRIPTION[tier][duration];
-  const totalAmount = giaThat ?? 0;
+  let totalAmount: number;
+  try {
+    totalAmount = giaSubscription(tier, duration);
+  } catch {
+    return jsonResponse({ ok: false, error: "Gói này chưa mở bán, vui lòng thử gói khác." }, 400);
+  }
 
   try {
     const { orderId, orderCode } = await createSubscriptionOrder({
@@ -58,11 +56,6 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
       customerEmail: locals.user.email,
       totalAmount,
     });
-
-    if (totalAmount === 0) {
-      await markOrderPaidAndFulfill(orderId);
-      return jsonResponse({ ok: true, orderCode, mienPhi: true, qrUrl: null, totalAmount }, 200);
-    }
 
     return jsonResponse({ ok: true, orderCode, mienPhi: false, qrUrl: getSepayQrUrl({ amount: totalAmount, orderCode }), totalAmount }, 200);
   } catch (err) {
