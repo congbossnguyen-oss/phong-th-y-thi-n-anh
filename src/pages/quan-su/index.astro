@@ -274,10 +274,9 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
            Hoàng Đạo/Phong Thủy Nhà chưa có công cụ tra cứu riêng — không đưa vào để tránh dẫn khách
            tới trang không tồn tại; bổ sung sau khi các công cụ đó được xây).
 
-           "Nhắc Lịch Cúng" (thêm 28/8/2026, anh Công) KHÔNG phải trang riêng — nó neo (#thong-bao)
-           tới đúng ô bật/tắt nhắc mùng Một/Rằm đã có sẵn ngay trên trang chủ (NutBatThongBao.astro,
-           phía trên). Trước đây ô đó nằm im ngay dưới hero, không ai để ý là có tính năng này; giờ
-           thêm lối vào rõ ràng trong lưới công cụ để khách dễ tìm thấy hơn.
+           "Nhắc Lịch Cúng" (thêm 28/8/2026) đã bỏ khỏi lưới này theo yêu cầu Thầy (2026-09-14) — ô
+           bật/tắt nhắc mùng Một/Rằm (NutBatThongBao.astro) vẫn còn trên trang chủ, chỉ không còn
+           lối vào phụ ở đây nữa.
 
            "Ngày Giờ Xuất Hành" (tên cũ "Hướng Xuất Hành") đã DỜI lên lưới "Đại Cát Lợi - Cơ Bản"
            phía trên (29/8/2026, anh Công) — không còn ở đây nữa, tránh lặp 2 nơi trên cùng 1 trang. -->
@@ -289,14 +288,12 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
           { href: "/quan-su/tinh-trung-tang", label: "Tính Trùng Tang", icon: "clock" },
           { href: "/quan-su/doi-lich-am-duong", label: "Đổi Lịch", icon: "calendar" },
           { href: "/quan-su/gio-tot-trong-ngay", label: "Giờ Hoàng Đạo", icon: "clock" },
-          { href: "#thong-bao", label: "Nhắc Lịch Cúng", icon: "bell" },
         ].map((t) => (
           <a href={t.href} class="qsh-tool-item">
             <span class="qsh-tool-ic">
               {t.icon === "calendar" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4" stroke-linecap="round"/></svg>}
               {t.icon === "phone" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5.5 4.5h3l1.5 4-2 1.5a11 11 0 0 0 5 5l1.5-2 4 1.5v3a1.5 1.5 0 0 1-1.6 1.5C10.8 18.6 5.4 13.2 4 7.1a1.5 1.5 0 0 1 1.5-1.6Z" stroke-linejoin="round" stroke-linecap="round"/></svg>}
               {t.icon === "clock" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3.5 2" stroke-linecap="round" stroke-linejoin="round" /></svg>}
-              {t.icon === "bell" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 10a6 6 0 0 1 12 0c0 4 1.5 5.5 1.5 5.5H4.5S6 14 6 10Z" stroke-linejoin="round" stroke-linecap="round"/><path d="M10 18.5a2 2 0 0 0 4 0" stroke-linecap="round"/></svg>}
             </span>
             <span>{t.label}</span>
           </a>
