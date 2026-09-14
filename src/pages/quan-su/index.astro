@@ -162,13 +162,14 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
       </a>
 
       <!-- Gói thuê bao — trước đây chỉ là 1 dòng chữ nhỏ lọt thỏm giữa 2 khối, anh Công phản ánh
-           "không thấy rõ" (29/8/2026). Nâng thành thẻ cùng cỡ với thẻ Xem Thời Vận phía trên, kèm
-           nhãn "Sắp mở bán" cho trung thực — checkout vẫn đang khóa admin-only, chưa mở bán thật. -->
+           "không thấy rõ" (29/8/2026). Nâng thành thẻ cùng cỡ với thẻ Xem Thời Vận phía trên.
+           Đã mở bán thật 3 hạng Cơ bản/Cao cấp/VIP (Thầy, 2026-09-14) — bỏ nhãn "Sắp mở bán" (không
+           còn đúng), đổi badge "Mở bán" + tăng độ nổi bật (viền dày hơn, có glow) theo yêu cầu Thầy. -->
       <a href="/quan-su/goi-thue-bao" class="qsh-goi-card" data-tour="thue-bao">
         <div>
           <p class="qs-eyebrow" style="margin:0 0 0.2rem;">Gói thuê bao</p>
-          <h3>Gói Quân Sư Thiên Anh <span class="qsh-goi-soon">Sắp mở bán</span></h3>
-          <p>Cơ bản & Cao cấp — hỏi việc không giới hạn theo tháng, khung giá đã sẵn sàng.</p>
+          <h3>Gói Quân Sư Thiên Anh <span class="qsh-goi-badge">Mở bán</span></h3>
+          <p>Cơ bản · Cao cấp · VIP — hỏi việc không giới hạn theo tháng.</p>
         </div>
         <span class="qsh-arrow" style="color:var(--qs-gold);">→</span>
       </a>
@@ -457,22 +458,25 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
   .qsh-arrow { color: var(--qs-purple); font-size: 1.3rem; }
 
   /* Gói thuê bao — cùng bố cục thẻ với .qsh-tv-card, đổi tông vàng (gắn với VIP/gói mua) thay vì
-     tím (dành riêng cho Thời Vận). */
+     tím (dành riêng cho Thời Vận). Nâng độ nổi bật hơn .qsh-tv-card (viền dày + sáng hơn, glow nhẹ,
+     nền đậm hơn) theo yêu cầu Thầy 2026-09-14 — đây là nguồn doanh thu định kỳ, nên đập vào mắt
+     trước thẻ Xem Thời Vận (miễn phí) ngay phía trên. */
   .qsh-goi-card {
     display: flex; align-items: center; justify-content: space-between; gap: 1rem; text-decoration: none;
-    border: 1px solid rgba(241, 200, 90, 0.3); border-radius: 16px; padding: 1.1rem 1.2rem;
-    background: linear-gradient(160deg, rgba(241, 200, 90, 0.1), rgba(255, 255, 255, 0.02));
+    border: 1.5px solid rgba(241, 200, 90, 0.55); border-radius: 16px; padding: 1.25rem 1.3rem;
+    background: linear-gradient(160deg, rgba(241, 200, 90, 0.18), rgba(255, 255, 255, 0.02));
+    box-shadow: 0 0 0 1px rgba(241, 200, 90, 0.08), 0 8px 24px -12px rgba(241, 200, 90, 0.5);
     margin-top: 1rem; margin-bottom: 1.8rem;
   }
   .qsh-goi-card h3 {
-    font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.1rem; margin: 0 0 0.25rem; color: var(--qs-ivory);
+    font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.2rem; margin: 0 0 0.3rem; color: var(--qs-ivory);
     display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap;
   }
-  .qsh-goi-card p { margin: 0; color: var(--qs-muted); font-size: 0.78rem; }
-  .qsh-goi-soon {
-    font-size: 0.6rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
-    padding: 0.15rem 0.5rem; border-radius: 999px;
-    background: rgba(241, 200, 90, 0.14); border: 1px solid var(--qs-gold); color: var(--qs-gold);
+  .qsh-goi-card p { margin: 0; color: var(--qs-muted); font-size: 0.8rem; }
+  .qsh-goi-badge {
+    font-size: 0.62rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 0.18rem 0.55rem; border-radius: 999px;
+    background: var(--qs-gold); border: 1px solid var(--qs-gold); color: var(--qs-midnight);
   }
 
   /* Trạch Cát — lưới 3×3, mỗi ô 1 màu neon riêng (--c) giống mockup, cùng kiểu badge tròn viền sáng
