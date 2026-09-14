@@ -1,7 +1,7 @@
 // Tầng Free — KHÔNG gọi AI, thuần code điền vào câu mẫu cố định (xem content/bat-tu/prompts/free-template.md).
 // Mở tự do, không cần đăng nhập, không giới hạn số lần, chi phí ~0.
 import type { BatTuChart } from "../bat-tu";
-import { tinhLuuNien } from "../bat-tu";
+import { tinhLuuNien, namBatTuHienTai } from "../bat-tu";
 import type { BatTuAnalysis, Hanh, CapDo } from "../bat-tu-engine/engine";
 import { hanhCan, hanhChi } from "../bat-tu-engine/engine";
 import { docData } from "./content-loader";
@@ -121,7 +121,8 @@ export function taoGoiMoFree(chart: BatTuChart, analysis: BatTuAnalysis): string
   //   hoisting) — KHÔNG thêm tri thức mới, chỉ diễn giải bằng lời một con số đã tính sẵn. Cố ý dùng
   //   từ nhẹ ("cần thận trọng hơn") thay vì "xấu" cho vận điểm âm — tránh kết luận nặng nề khi bản
   //   free chưa xét đủ Lưu Niên chồng lên Đại Vận (nguyên tắc như với Thần Sát: không nói nửa vời).
-  const namNay = new Date().getFullYear();
+  // V3-07A: KHÔNG dùng new Date().getFullYear() — xem ghi chú namBatTuHienTai() trong bat-tu.ts.
+  const namNay = namBatTuHienTai();
   const vanHienTai = chart.daiVan.find((v, i) => {
     const ketThuc = chart.daiVan[i + 1]?.startDate.y ?? Infinity;
     return namNay >= v.startDate.y && namNay < ketThuc;
@@ -214,7 +215,8 @@ export function taoDuLieuDoHinhFree(chart: BatTuChart, analysis: BatTuAnalysis, 
     return { can: v.can, chi: v.chi, startAge: v.startAge, endAge: v.endAge, diem };
   });
 
-  const namNay = new Date().getFullYear();
+  // V3-07A: KHÔNG dùng new Date().getFullYear() — xem ghi chú namBatTuHienTai() trong bat-tu.ts.
+  const namNay = namBatTuHienTai();
   const luuNien: DoHinhLuuNienDiem[] = tinhLuuNien(namNay, namSinh, SO_NAM_LUU_NIEN_FREE).map((n) => ({
     year: n.year,
     tuoi: n.tuoi,

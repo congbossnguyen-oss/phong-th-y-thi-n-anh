@@ -8,7 +8,7 @@
 // Mỗi năm Lưu Niên được chấm theo Dụng Thần của ĐÚNG Đại Vận mà năm đó rơi vào, chứ không phải Dụng
 // Thần nguyên cục — đúng thứ tự tầng thứ Lưu Niên > Đại Vận > mệnh cục (quan-he-can-chi.md mục 4).
 import type { BatTuChart } from "../bat-tu";
-import { tinhLuuNien } from "../bat-tu";
+import { tinhLuuNien, namBatTuHienTai } from "../bat-tu";
 import { hanhCan, hanhChi, phanTichBatTuTaiDaiVan, type BatTuAnalysis, type TuTruInput, type DungThanResult } from "../bat-tu-engine/engine";
 import { hyKyCuaHanh } from "./findings-co-ban";
 import { goiClaudeToolUse } from "./ai-narrative";
@@ -313,7 +313,8 @@ export async function taoBieuDoLuuNien(
   laSo: unknown,
   namSinh: number,
 ): Promise<DiemGiaiDoanVan[]> {
-  const namNay = new Date().getFullYear();
+  // V3-07A: KHÔNG dùng new Date().getFullYear() — xem ghi chú namBatTuHienTai() trong bat-tu.ts.
+  const namNay = namBatTuHienTai();
   const danhSachNam = tinhLuuNien(namNay, namSinh, 10);
   const dtVan = dungThanTungDaiVan(chart, tt);
 

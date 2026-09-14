@@ -6,6 +6,7 @@
  * luật, cùng bản đồ 5 trục + mức đồng thuận 2 hệ. Thuần công thức, không AI.
  */
 import { calculateChonTuoiKetHon, type ChonTuoiKetHonResult } from "@thien-anh/trachnhat-engine";
+import { namBatTuHienTai } from "../bat-tu";
 import {
   lapHoSoBatTu, tinhBoKhuyet, tinhPhuThe, tinhTinhCach, tinhDongBoDaiVan,
   type HoSoBatTu, type TrucKetQua, type MucTruc,
@@ -77,7 +78,9 @@ function nhomMuc(m: MucTruc): "thuan" | "can" | "na" {
 }
 
 export function tinhHopHon(input: HopHonInput): HopHonKetQua {
-  const namHienTai = input.namHienTai ?? new Date().getFullYear();
+  // V3-07A: KHÔNG dùng new Date().getFullYear() — tinhDongBoDaiVan() so sánh trực tiếp với
+  // chart.daiVan (ranh giới Lập Xuân, từ tinhBatTu()) — xem ghi chú namBatTuHienTai() trong bat-tu.ts.
+  const namHienTai = input.namHienTai ?? namBatTuHienTai();
 
   // Tầng 0 — sơ loại năm sinh (module sẵn có, engine dùng "nam"/"nu").
   const soLoai = calculateChonTuoiKetHon({

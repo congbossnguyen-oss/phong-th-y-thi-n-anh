@@ -12,7 +12,7 @@
  * Vận còn lại chỉ có `tongQuan` (thuần code, không AI) — đúng ý SPEC §6 "app hiển thị 1 thẻ tổng quan
  * ĐV + 10 thẻ năm" (không phải mọi ĐV cùng lúc).
  */
-import { tinhBatTu, tinhLuuNien, type BatTuChart } from "../../bat-tu";
+import { tinhBatTu, tinhLuuNien, namBatTuHienTai, type BatTuChart } from "../../bat-tu";
 import { phanTichBatTu, type Hanh, type TuTruInput } from "../../bat-tu-engine/engine";
 import { chamDiem4LinhVuc } from "./cham-diem";
 import { tinhTrangThaiThoiDiem } from "./tang-dong";
@@ -229,7 +229,9 @@ async function layHoacTinhLuuNien(
  * gọi AI viết lời luận (có hậu kiểm an toàn).
  */
 export async function tinhVanKhi(input: VanKhiInput): Promise<VanKhiOutput> {
-  const nowYear = input.nowYear ?? new Date().getFullYear();
+  // V3-07A: KHÔNG dùng new Date().getFullYear() — ranh giới năm Bát Tự là Lập Xuân, không phải 1/1
+  // dương lịch. Lỗi này đã từng xảy ra thật ở Quân Sư current-luck.ts (8/2026), xem bat-tu.ts.
+  const nowYear = input.nowYear ?? namBatTuHienTai();
   const gioSinhKnown = typeof input.hour === "number";
   const hour = input.hour ?? 12;
   const tuoiMu = nowYear - input.year + 1;

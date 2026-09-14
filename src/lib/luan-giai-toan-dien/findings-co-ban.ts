@@ -4,7 +4,7 @@
 // Nguyên tắc: CHỈ xác định sự thật cấu trúc (structural findings), KHÔNG viết văn. Đọc lại
 // content/bat-tu/data/ (Loại 1) — không hardcode nội dung diễn giải.
 import type { BatTuChart, PillarInfo } from "../bat-tu";
-import { CHI_NGU_HANH, CAN_NGU_HANH, tinhLuuNien } from "../bat-tu";
+import { CHI_NGU_HANH, CAN_NGU_HANH, tinhLuuNien, namBatTuHienTai } from "../bat-tu";
 import type { BatTuAnalysis, Hanh } from "../bat-tu-engine/engine";
 import { hanhCan, hanhChi } from "../bat-tu-engine/engine";
 import { docData } from "./content-loader";
@@ -251,7 +251,8 @@ export function findingsJ(
     mucDoUuTien.push({ loai: "DaiVan", canChi: `${dv.can} ${dv.chi}`, namHoacTuoi: `${dv.startAge}-${dv.endAge} tuổi`, mucDo: phanLoai(hanhCan(dv.can), hanhChi(dv.chi)) });
   }
   if (namSinh) {
-    const nam0 = namXem ?? new Date().getFullYear();
+    // V3-07A: KHÔNG dùng new Date().getFullYear() — xem ghi chú namBatTuHienTai() trong bat-tu.ts.
+    const nam0 = namXem ?? namBatTuHienTai();
     for (const n of tinhLuuNien(nam0, namSinh, 10)) {
       mucDoUuTien.push({ loai: "LuuNien", canChi: `${n.can} ${n.chi}`, namHoacTuoi: `${n.year}`, mucDo: phanLoai(hanhCan(n.can), hanhChi(n.chi)) });
     }
