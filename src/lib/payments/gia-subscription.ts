@@ -1,14 +1,14 @@
 /**
- * Bảng giá gói thuê bao "Quân Sư" (Cơ bản / Cao cấp × 1-3-6-12 tháng) — NGUỒN SỰ THẬT DUY NHẤT.
+ * Bảng giá gói thuê bao "Quân Sư" (Cơ bản / Cao cấp / VIP × 1-3-6-12 tháng) — NGUỒN SỰ THẬT DUY NHẤT.
  *
- * ⚠️ Giá CHƯA CHỐT (Thầy: "khung giá cứ để sau anh tính đi", 2026-08-23) — để `null` thay vì 0, vì
- * 0 dễ bị đọc nhầm là "miễn phí". `giaSubscription()` NÉM LỖI nếu gọi tới mức giá còn `null`, để
- * không thể vô tình cho khách checkout gói chưa có giá thật.
+ * Cơ bản/Cao cấp: giá đã chốt (Thầy, 2026-09-14). VIP: khung đã dựng nhưng CHƯA CHỐT giá — để `null`
+ * thay vì 0, vì 0 dễ bị đọc nhầm là "miễn phí". `giaSubscription()` NÉM LỖI nếu gọi tới mức giá còn
+ * `null`, để không thể vô tình cho khách checkout gói chưa có giá thật.
  *
  * Mọi chỗ tính tiền phải đọc từ đây, KHÔNG bao giờ nhận số tiền client gửi lên (giống quy ước
  * `gia-cong-cu.ts`).
  */
-export type SubscriptionTier = "co_ban" | "cao_cap";
+export type SubscriptionTier = "co_ban" | "cao_cap" | "vip";
 export type SubscriptionDuration = "1_thang" | "3_thang" | "6_thang" | "1_nam";
 
 export const SO_THANG_THEO_KY_HAN: Record<SubscriptionDuration, number> = {
@@ -20,12 +20,18 @@ export const SO_THANG_THEO_KY_HAN: Record<SubscriptionDuration, number> = {
 
 export const GIA_SUBSCRIPTION: Record<SubscriptionTier, Record<SubscriptionDuration, number | null>> = {
   co_ban: {
-    "1_thang": null,
-    "3_thang": null,
-    "6_thang": null,
-    "1_nam": null,
+    "1_thang": 150_000,
+    "3_thang": 400_000,
+    "6_thang": 750_000,
+    "1_nam": 1_500_000,
   },
   cao_cap: {
+    "1_thang": 350_000,
+    "3_thang": 950_000,
+    "6_thang": 1_800_000,
+    "1_nam": 3_500_000,
+  },
+  vip: {
     "1_thang": null,
     "3_thang": null,
     "6_thang": null,

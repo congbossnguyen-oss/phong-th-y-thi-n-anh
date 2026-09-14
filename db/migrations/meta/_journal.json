@@ -134,6 +134,20 @@
       "when": 1788981141800,
       "tag": "0018_absurd_imperial_guard",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1789297115780,
+      "tag": "0019_mighty_colonel_america",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1789361063665,
+      "tag": "0020_careless_otto_octavius",
+      "breakpoints": true
     }
   ]
 }

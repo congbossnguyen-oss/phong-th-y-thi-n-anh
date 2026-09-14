@@ -11,7 +11,7 @@ import { subscriptions } from "../../../db/schema";
 import type { SubscriptionTier } from "../payments/gia-subscription";
 import type { PricingTier } from "../quan-su/types";
 
-const BAC_HANG: Record<SubscriptionTier, number> = { co_ban: 1, cao_cap: 2 };
+const BAC_HANG: Record<SubscriptionTier, number> = { co_ban: 1, cao_cap: 2, vip: 3 };
 
 export interface GoiDangHoatDong {
   tier: SubscriptionTier;

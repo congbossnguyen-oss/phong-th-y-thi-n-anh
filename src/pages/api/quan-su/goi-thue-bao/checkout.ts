@@ -39,10 +39,9 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
     return jsonResponse({ ok: false, error: "Hạng gói hoặc kỳ hạn không hợp lệ." }, 400);
   }
 
-  const customerPhone = typeof b.customerPhone === "string" ? b.customerPhone.trim() : "";
-  if (!customerPhone) {
-    return jsonResponse({ ok: false, error: "Vui lòng nhập số điện thoại liên hệ." }, 400);
-  }
+  // Không thu số điện thoại ở bước này nữa (Thầy, 2026-09-14) — quyền truy cập tính theo tài
+  // khoản, không cần số liên hệ riêng cho gói thuê bao (khác các đơn công cụ lẻ vẫn cần liên hệ).
+  const customerPhone = "";
 
   // Giá thật nếu đã chốt; admin test khi chưa chốt giá thì coi như 0đ (không đụng tới khách thường
   // vì nhánh này chỉ chạy được khi đã qua cổng isAdmin ở trên).
