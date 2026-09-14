@@ -198,3 +198,10 @@ export type { CalculateVedicAscendantInput, VedicAscendantResult, CalculateVedic
 export { calculateVedicAscendant } from "./vedic/ascendant.js";
 
 export { getWholeSignHouseNumber } from "./vedic/houses.js";
+
+// ---------------------------------------------------------------------------------------
+// V1.1 Batch 1 — Vedic Divisional Charts (Varga): D2 (Hora), D3 (Drekkana), D4 (Chaturthamsa)
+// ---------------------------------------------------------------------------------------
+
+export type { VargaId } from "./vedic/divisional.js";
+export { countSignsForward, getD2HoraSign, getD3DrekkanaSign, getD4ChaturthamsaSign, getDivisionalSign } from "./vedic/divisional.js";
