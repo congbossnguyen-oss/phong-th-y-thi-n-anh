@@ -141,16 +141,26 @@ const DURATIONS: SubscriptionDuration[] = ["1_thang", "3_thang", "6_thang", "1_n
         } catch (e) { /* im lặng, thử lại lần poll sau */ }
       }
 
+      function chiTietRow(nhan, giaTri) {
+        return `<div style="display:flex;justify-content:space-between;gap:1rem;padding:0.45rem 0;border-bottom:1px solid rgba(255,255,255,0.08);">
+          <span class="qs-sub" style="margin:0;">${esc(nhan)}</span>
+          <span style="color:var(--qs-ivory);font-weight:600;">${giaTri}</span>
+        </div>`;
+      }
+
       grid?.addEventListener("click", async (e) => {
         const btn = e.target.closest(".goi-btn");
         if (!btn || btn.disabled) return;
 
+        // Huỷ theo dõi đơn CŨ ngay khi khách chọn gói khác — tránh trường hợp đơn cũ (chưa/không
+        // thanh toán) lỡ được xác nhận sau đó rồi ghi đè lên màn hình đang hiện QR của đơn mới.
+        if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+
         const tenGoi = TEN_HANG[btn.dataset.tier] ?? btn.dataset.tier;
         const tenKyHan = TEN_KY_HAN[btn.dataset.duration] ?? btn.dataset.duration;
-        const moTaGoi = `${esc(tenGoi)} — ${esc(tenKyHan)}`;
 
         resultEl.classList.remove("qs-hidden");
-        resultEl.innerHTML = `<p class="qs-sub">Đang tạo đơn gói <strong>${moTaGoi}</strong>…</p>`;
+        resultEl.innerHTML = `<p class="qs-sub">Đang tạo đơn gói <strong>${esc(tenGoi)} — ${esc(tenKyHan)}</strong>…</p>`;
 
         try {
           const res = await fetch("/api/quan-su/goi-thue-bao/checkout", {
@@ -169,10 +179,14 @@ const DURATIONS: SubscriptionDuration[] = ["1_thang", "3_thang", "6_thang", "1_n
           resultEl.innerHTML = `
             <div class="qs-verdict" style="text-align:center;">
               <h2>Quét mã để thanh toán</h2>
-              <p class="qs-sub" style="font-size:1rem;">Gói <strong style="color:var(--qs-gold);">${moTaGoi}</strong></p>
-              <p style="font-size:1.4rem;font-weight:800;color:var(--qs-ivory);margin:0.3rem 0 0.8rem;">${esc(dinhDangTienJS(data.totalAmount))}</p>
+              <div style="text-align:left;max-width:320px;margin:0.8rem auto;">
+                ${chiTietRow("Gói", esc(tenGoi))}
+                ${chiTietRow("Kỳ hạn", esc(tenKyHan))}
+                ${chiTietRow("Số tiền", `<span style="color:var(--qs-gold);font-size:1.1rem;">${esc(dinhDangTienJS(data.totalAmount))}</span>`)}
+                ${chiTietRow("Mã đơn", esc(data.orderCode))}
+              </div>
               <img src="${data.qrUrl}" alt="QR thanh toán" style="max-width:280px;border-radius:12px;margin:0.5rem auto;display:block;" />
-              <p class="qs-sub">Mã đơn: ${esc(data.orderCode)} — trang tự làm mới khi thanh toán xong.</p>
+              <p class="qs-sub">Quét đúng mã QR này để chuyển đúng số tiền + đúng mã đơn — trang tự làm mới khi thanh toán xong.</p>
             </div>`;
           pollTimer = setInterval(() => pollStatus(data.orderCode), 3000);
         } catch (e) {
