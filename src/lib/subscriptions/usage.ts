@@ -25,6 +25,7 @@ import type { SubscriptionTier } from "../payments/gia-subscription";
 export const HAN_MUC_LUOT_THEO_GOI: Record<SubscriptionTier, number> = {
   co_ban: 15,
   cao_cap: 25,
+  vip: 40,
 };
 
 /**

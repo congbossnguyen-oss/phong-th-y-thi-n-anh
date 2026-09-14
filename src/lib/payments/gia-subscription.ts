@@ -1,14 +1,15 @@
 /**
- * Bảng giá gói thuê bao "Quân Sư" (Cơ bản / Cao cấp × 1-3-6-12 tháng) — NGUỒN SỰ THẬT DUY NHẤT.
+ * Bảng giá gói thuê bao "Quân Sư" (Cơ bản / Cao cấp / VIP × 1-3-6-12 tháng) — NGUỒN SỰ THẬT DUY NHẤT.
  *
- * ⚠️ Giá CHƯA CHỐT (Thầy: "khung giá cứ để sau anh tính đi", 2026-08-23) — để `null` thay vì 0, vì
- * 0 dễ bị đọc nhầm là "miễn phí". `giaSubscription()` NÉM LỖI nếu gọi tới mức giá còn `null`, để
- * không thể vô tình cho khách checkout gói chưa có giá thật.
+ * Cả 3 hạng đã chốt giá — Cơ bản/Cao cấp chốt 27/8/2026, VIP chốt thêm 14/9/2026. Giá `null` là chỗ
+ * dành cho lần sau nếu mở thêm hạng mới mà chưa kịp chốt — để `null` thay vì 0, vì 0 dễ bị đọc nhầm
+ * là "miễn phí". `giaSubscription()` NÉM LỖI nếu gọi tới mức giá còn `null`, để không thể vô tình
+ * cho khách checkout gói chưa có giá thật.
  *
  * Mọi chỗ tính tiền phải đọc từ đây, KHÔNG bao giờ nhận số tiền client gửi lên (giống quy ước
  * `gia-cong-cu.ts`).
  */
-export type SubscriptionTier = "co_ban" | "cao_cap";
+export type SubscriptionTier = "co_ban" | "cao_cap" | "vip";
 export type SubscriptionDuration = "1_thang" | "3_thang" | "6_thang" | "1_nam";
 
 export const SO_THANG_THEO_KY_HAN: Record<SubscriptionDuration, number> = {
@@ -45,6 +46,12 @@ export const GIA_SUBSCRIPTION: Record<SubscriptionTier, Record<SubscriptionDurat
     "6_thang": 1800000, // tiết kiệm 300.000đ
     "1_nam": 3500000, // tiết kiệm 700.000đ (≈ tặng 2 tháng)
   },
+  vip: {
+    "1_thang": 550000,
+    "3_thang": 1480000, // tiết kiệm 170.000đ
+    "6_thang": 2790000, // tiết kiệm 510.000đ
+    "1_nam": 5500000, // tiết kiệm 1.100.000đ (≈ tặng 2 tháng)
+  },
 };
 
 /** true nếu gói tier+duration đã có giá thật (khác null) — dùng để ẩn nút mua ở UI khi chưa chốt giá. */
@@ -65,7 +72,7 @@ export function giaSubscription(tier: SubscriptionTier, duration: SubscriptionDu
 }
 
 export function laSubscriptionTier(v: unknown): v is SubscriptionTier {
-  return v === "co_ban" || v === "cao_cap";
+  return v === "co_ban" || v === "cao_cap" || v === "vip";
 }
 
 export function laSubscriptionDuration(v: unknown): v is SubscriptionDuration {
