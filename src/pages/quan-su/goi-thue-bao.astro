@@ -119,12 +119,13 @@ const DURATIONS: SubscriptionDuration[] = ["1_thang", "3_thang", "6_thang", "1_n
   </section>
 
   {user && (
-    <script define:vars={{ userIsAdmin: user.isAdmin }}>
+    <script define:vars={{ TEN_HANG, TEN_KY_HAN }}>
       const grid = document.getElementById("goi-grid");
       const resultEl = document.getElementById("qs-sub-result");
       let pollTimer = null;
 
       function esc(s) { const d = document.createElement("div"); d.textContent = s == null ? "" : String(s); return d.innerHTML; }
+      function dinhDangTienJS(soTien) { return `${Number(soTien).toLocaleString("vi-VN")}đ`; }
 
       async function pollStatus(orderCode) {
         try {
@@ -144,8 +145,12 @@ const DURATIONS: SubscriptionDuration[] = ["1_thang", "3_thang", "6_thang", "1_n
         const btn = e.target.closest(".goi-btn");
         if (!btn || btn.disabled) return;
 
+        const tenGoi = TEN_HANG[btn.dataset.tier] ?? btn.dataset.tier;
+        const tenKyHan = TEN_KY_HAN[btn.dataset.duration] ?? btn.dataset.duration;
+        const moTaGoi = `${esc(tenGoi)} — ${esc(tenKyHan)}`;
+
         resultEl.classList.remove("qs-hidden");
-        resultEl.innerHTML = '<p class="qs-sub">Đang tạo đơn…</p>';
+        resultEl.innerHTML = `<p class="qs-sub">Đang tạo đơn gói <strong>${moTaGoi}</strong>…</p>`;
 
         try {
           const res = await fetch("/api/quan-su/goi-thue-bao/checkout", {
@@ -164,6 +169,8 @@ const DURATIONS: SubscriptionDuration[] = ["1_thang", "3_thang", "6_thang", "1_n
           resultEl.innerHTML = `
             <div class="qs-verdict" style="text-align:center;">
               <h2>Quét mã để thanh toán</h2>
+              <p class="qs-sub" style="font-size:1rem;">Gói <strong style="color:var(--qs-gold);">${moTaGoi}</strong></p>
+              <p style="font-size:1.4rem;font-weight:800;color:var(--qs-ivory);margin:0.3rem 0 0.8rem;">${esc(dinhDangTienJS(data.totalAmount))}</p>
               <img src="${data.qrUrl}" alt="QR thanh toán" style="max-width:280px;border-radius:12px;margin:0.5rem auto;display:block;" />
               <p class="qs-sub">Mã đơn: ${esc(data.orderCode)} — trang tự làm mới khi thanh toán xong.</p>
             </div>`;
