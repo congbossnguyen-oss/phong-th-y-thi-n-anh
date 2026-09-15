@@ -558,11 +558,241 @@ the dispatch describe block.
 - `npm run build`: clean.
 - `npx vitest run`: 595/595 passing, 28/28 test files passing.
 
-## Explicit Non-Scope (Batch 3, confirmed, not touched)
+## Explicit Non-Scope (Batch 3, confirmed, not touched) — Batch 3's own scope at the time
 
-D24, D27, D30, D40, D45 calculation code — not implemented. D60 — remains DEFERRED, not researched
+**Correction (post-Batch-4):** D24/D27/D30 listed below as "not implemented" described Batch 3's
+own scope — they were implemented in Batch 4 (see section below) and are no longer non-scope,
+matching the same correction practice used at every prior batch transition.
+
+D40, D45 calculation code — not implemented. D60 — remains DEFERRED, not researched
 in this task. `NormalizedChart`/`chart/types.ts` — unchanged, no schema bump. `vedic/chart.ts` —
 unchanged. Phase 4/Phase 5 source files — unchanged (confirmed by `git diff`: zero lines touched).
 No Rule Engine, interpretation, yoga, prediction, or house-lord logic. No UI, no API server. No
 dependency added or upgraded (`package.json`/`package-lock.json` for `astrology-core` unchanged).
-No method-selection parameter exposed. No commit made.
+No method-selection parameter exposed. No commit made (Batch 3 was committed separately afterward,
+per its own Human Decision Gate — see `653a20cfc690dfd58c957b764cf316c6c7149254`).
+
+---
+
+# Batch 4 — D24 + D27 + D30 Implementation
+
+**Status: implementation complete, NOT committed.** Checkpoint preserved: HEAD
+`653a20cfc690dfd58c957b764cf316c6c7149254` (Batch 3, closed + committed). Builds on
+[`V1_1_DIVISIONAL_CHARTS_PREFLIGHT.md`](V1_1_DIVISIONAL_CHARTS_PREFLIGHT.md) §"Batch 4 —
+D24/D27/D30 Preflight" (status: `CONTRACT READY WITH VARIANT NOTE`, human-approved and frozen).
+This section is additive — Batch 1/2/3's sections above are otherwise unchanged, aside from the one
+stale-claim correction noted immediately above.
+
+## Scope
+
+**In this batch:** D24 (Chaturvimsamsa/Siddhamsha), D27 (Nakshatramsa/Bhamsa), D30 (Trimsamsa) —
+sign-placement calculation only, each using the frozen `chart_method=1` ("Traditional Parasara")
+contract. **Explicitly not in this batch:** D40, D45 (contract resolved in Batch 1's preflight,
+implementation deferred), D60 (contract itself still deferred). No Rule Engine, interpretation,
+yoga, prediction, house-lord logic, full nested mini-chart, UI, API server, or schema migration —
+none touched.
+
+## D24 Formula (Chaturvimsamsa / Siddhamsha)
+
+**Contract:** PyJHora `chart_method=1` (`TRADITIONAL_PARASARA`) == vedic-calc's only implementation.
+
+- `part = floor(signDegree / 1.25)` — 24 parts, exact terminating binary fraction (`1.25 = 5/4`).
+- Odd sign → `(4 + part) mod 12` — seed is the **fixed sign Leo**, not the D1 sign itself.
+- Even sign → `(3 + part) mod 12` — seed is the **fixed sign Cancer**.
+- Always counted forward — the frozen contract explicitly excludes PyJHora's methods 2/3
+  (direction-reversal, seed-double-reversal); neither is implemented or exposed.
+- Implemented as `getD24ChaturvimsamsaSign(sign, signDegree)`, reusing the existing `isOddSign`
+  helper (unchanged since Batch 1) and `countSignsForward` primitive (unchanged).
+
+## D27 Formula (Nakshatramsa / Bhamsa)
+
+**Contract:** PyJHora `chart_method=1` (`TRADITIONAL_PARASARA`) == vedic-calc's only implementation.
+
+- `part = floor(signDegree / (30/27))` — 27 parts, `30/27 = 10/9`, a genuinely repeating fraction.
+- Starting sign by **element** (fire→Aries, earth→Cancer, air→Libra, water→Capricorn) — **not**
+  modality; confirmed directly from source, not inferred from D16/D20's shape. This mapping is
+  distinct from D9's own element table (D9: earth→Capricorn, water→Cancer — the earth/water seeds
+  are swapped relative to D27); the two tables are separate constants, never shared.
+- `(startIndex + part) mod 12`, always forward — no odd/even branch of any kind.
+- New helper: `D27_ELEMENT_START_SIGNS = [aries, cancer, libra, capricorn]`, reusing the existing
+  `getElementIndex(sign)` helper (Batch 2) unchanged.
+
+## D30 Formula (Trimsamsa)
+
+**Contract:** unchanged from the original D30 Boundary Resolution, re-verified fresh in the Batch 4
+preflight with no contract change.
+
+- D30 is **not** a `part = floor(...)` + `countSignsForward` calculation at all — it is a dedicated
+  degree-range lookup, distinct per sign parity, matching this project's own special-case precedent
+  (D2/D3).
+- Odd sign ranges: `[0,5)→Aries, [5,10)→Aquarius, [10,18)→Sagittarius, [18,25)→Gemini,
+  [25,30)→Libra`.
+- Even sign ranges: `[0,5)→Taurus, [5,12)→Virgo, [12,20)→Pisces, [20,25)→Capricorn,
+  [25,30)→Scorpio`.
+- Implemented as `getD30TrimsamsaSign(sign, signDegree)` via an explicit ordered range table per
+  parity (`D30_ODD_SIGN_RANGES`, `D30_EVEN_SIGN_RANGES`) and a `signDegree < upperBound` scan — the
+  first matching (upperBound, sign) pair wins, giving closed-lower/open-upper semantics identical
+  to vedic-calc's `if/elif` chain, and explicitly **not** PyJHora's inclusive-both-ends artifact
+  (see Precision Policy below).
+
+## Precision Policy — D27's Repeating Fraction (Most Severe Case Yet) and a New Test-Methodology Finding
+
+**No `Math.round`, `toFixed`, epsilon, or tolerance was added anywhere in this batch.** D24's part
+width is an exact terminating binary fraction (`1.25 = 5/4`) with no hazard. D27's part width
+(`30/27 = 10/9 = 1.1111...`) is a genuinely repeating fraction — the preflight found this affects
+**10 of 26 internal boundaries (~38%)** under PyJHora's Python `//` operator, the most severe case
+researched in this engagement (worse than D7's 1/6 and D9's 2/8). The frozen resolution is
+identical in kind to D7/D9's: `Math.floor(signDegree / partWidth)`, matching vedic-calc, **not**
+reproducing PyJHora's artifact.
+
+**A new, generally-applicable precision-methodology finding from the preflight, now reflected in
+this batch's tests:** a boundary test value must be constructed as `k * partWidth` (multiplying the
+already-computed part-width constant), **not** `k * 30 / N` (an independently re-derived
+expression) — the two are mathematically equivalent but can round to different IEEE-754 doubles,
+and only the former is guaranteed self-consistent with the production formula. Every D27 boundary
+test in this batch's suite uses the `k * w` construction explicitly, with an inline comment citing
+this requirement.
+
+D30 has no part-width floating-point concern at all (its boundary values — 5, 10, 12, 18, 20, 25 —
+are all exact integers); its only precision-relevant property is the closed-lower/open-upper
+boundary *convention*, which is a deliberate implementation choice (matching vedic-calc, rejecting
+PyJHora's inclusive-scan artifact), not a floating-point representation issue.
+
+## Oracle Validation
+
+Both PyJHora and vedic-calc were **executed live in this implementation task** (fresh execution on
+an independently-constructed probe set — different signs and degrees than either the preflight's or
+any prior batch's fixtures):
+
+- D24: 23 boundary points × 3 probes on **both** Sagittarius (odd) and Capricorn (even) + 12
+  representative-sign probes at 11.1° = 150 cases.
+- D27: 26 boundary points × 3 probes on Scorpio (water), constructed via `k * partWidth` + 12
+  representative-sign probes at 16.6° = 90 cases.
+- D30: 4 boundary points × 3 probes on Libra (odd) + 4 boundary points × 3 probes on Scorpio (even)
+  + explicit 0°/near-30° checks + 12 representative-sign probes at 21.2° = 44 cases.
+- A fresh independent synthetic benchmark chart (7 points, distinct from every prior fixture) — 7
+  cases × 3 vargas = 21 checks.
+- **Total: 305 comparisons.**
+
+**Result: the compiled TypeScript implementation was diffed byte-for-byte against fresh output from
+both PyJHora and vedic-calc.**
+- **Against vedic-calc: 0 differences across all 305 comparisons.**
+- **Against PyJHora: exactly the 18 already-classified discrepancies reappear** (10 for D27, 8 for
+  D30, now reproduced on entirely different signs than the preflight used), **and no new,
+  unexplained discrepancy was found.** D24 shows zero discrepancies against either oracle.
+
+## D27/D30 Oracle Artifact Classification (per the frozen contract's explicit requirement)
+
+Both discrepancy classes are **library implementation artifacts, not traditional-method or
+mathematical disagreements** — re-confirmed by direct interactive reproduction this task, not
+inferred:
+
+- **D27 (10 points, e.g. `k=5,9,10,13,17,18,19,20,25,26`):** PyJHora's Python `//` operator does
+  not always equal `math.floor(a/b)` at exact-integer-quotient boundaries of a repeating fraction
+  (same root cause class already documented for D7/D9 in Batch 2). **Classification: floating-point
+  / library implementation discrepancy.**
+- **D30 (8 points, all tested exact boundaries):** PyJHora's inclusive-both-ends list scan resolves
+  ties to the lower range; vedic-calc's `<` chain resolves to the upper range. **Classification:
+  library implementation discrepancy (boundary-convention artifact)**, not a repeating-fraction
+  floating-point issue (D30's boundary values are exact integers) and not a traditional-method
+  dispute.
+
+Neither classification is a mathematical or traditional-method discrepancy — no case in either
+varga reflects disagreement about the underlying formula or which classical rule applies.
+
+## Architecture Reuse
+
+- `countSignsForward(fromSign, offset)` — reused unchanged for D24 and D27.
+- `isOddSign(sign)` — reused unchanged for D24 and D30.
+- `getElementIndex(sign)` (Batch 2) — reused unchanged for D27, with a new, separate 4-entry table.
+- `getModalityIndex(sign)` (Batch 3) — **not used by this batch** (D24/D27/D30 are odd/even- and
+  element-based, not modality-based).
+- D30 required **no new helper**, but a dedicated special-case function with two literal range
+  tables — matching the preflight's own architecture-impact prediction exactly (D30 cannot be
+  forced into the generic `part = floor(...)` shape).
+- No generalized "all Vargas" formula engine, no Rule Engine, no architecture expansion beyond
+  divisional calculation — every helper this batch needed already existed from prior batches.
+
+## API Expansion
+
+- `VargaId` widened from `2 | 3 | 4 | 7 | 9 | 10 | 12 | 16 | 20` to `2 | 3 | 4 | 7 | 9 | 10 | 12 |
+  16 | 20 | 24 | 27 | 30`.
+- `getDivisionalSign(varga, sign, signDegree)` extended with 3 new `switch` cases (`24`, `27`,
+  `30`) — no change to any existing case.
+- No change to `NormalizedChart` or `chart/types.ts`. No schema bump — remains 2.1.0.
+- Carried-forward note (unresolved, out of scope for this batch, same as recorded in every prior
+  batch's closure audit): the individual per-varga functions for D7 through D30 are still not
+  re-exported from `index.ts` — only Batch 1's D2/D3/D4 functions and the generic
+  `getDivisionalSign` dispatcher are part of the package's public surface today; `getDivisionalSign`
+  still has no `default` throw branch.
+
+## Input Contract
+
+Unchanged — `signDegree` precondition (`[0, 30)`) applies identically. No date-only input, no
+guessed birth time, no noon/midnight fallback.
+
+## Tests
+
+Extended `packages/astrology-core/src/vedic/__tests__/divisional.test.ts` — **35 new tests** (131
+total in this file), all passing:
+- `getD24ChaturvimsamsaSign`: explicit fixed-seed proofs (odd→Leo, even→Cancer, independent of
+  which specific sign), all 24 segments, a full 23-boundary loop, near-30° stability, wraparound, an
+  explicit "no direction reversal" proof (confirming methods 2/3 are not accidentally active),
+  12-sign representative sweep, independent benchmark-chart cases, determinism.
+- `getD27NakshatramsaSign`: all 4 element groups (3 signs each), a same-element-different-modality
+  equivalence proof, all 27 segments, a full 26-boundary loop using the `k * w` construction
+  required by the frozen precision methodology, a dedicated `"KNOWN DISCREPANCY"` test asserting
+  the project-consistent result at all 10 identified PyJHora-artifact boundaries, near-30°
+  stability, 12-sign representative sweep, independent benchmark-chart cases, determinism.
+- `getD30TrimsamsaSign`: both full odd/even range tables exercised end-to-end, all 8 boundary
+  points (4 odd + 4 even) with explicit "at equals above, differs from below" assertions, a
+  dedicated `"KNOWN ORACLE ARTIFACT"` test asserting the upper-range (not PyJHora's lower-range)
+  result at the 5° boundary, explicit 0°/near-30° checks for both parities, 12-sign representative
+  sweep, independent benchmark-chart cases, determinism.
+- `getDivisionalSign`: dispatch-correctness for varga 24/27/30, explicit Batch-1/2/3
+  non-regression checks (benchmark values re-asserted for all three prior batches), categorical-
+  output invariant extended to all 12 vargas.
+
+**Test independence:** boundary/segment/wraparound expected values hand-derived from the frozen
+formula; representative-sign-sweep, benchmark-chart, and known-discrepancy expected values taken
+from this task's own fresh, independently-executed oracle runs (not reused from the preflight's
+saved output, not reimplementations of the production formula) — the oracle scripts call the real
+PyJHora/vedic-calc library functions directly. Two self-corrections were needed and applied before
+this report was written: two hand-derived wraparound comments initially disagreed with their own
+adjacent assertions (a copy/paste slip caught while re-reading the file, not by a failing test —
+both were arithmetically re-verified and fixed prior to running the suite).
+
+### Regression
+
+Full suite re-run alongside the new tests — **630/630 passing** (595 pre-existing + 35 new, zero
+regressions). Phase 4/Phase 5 regression suites, Batch 1 (D2/D3/D4), Batch 2 (D7/D9/D10), and
+Batch 3 (D12/D16/D20) all pass unchanged, plus a new explicit Batch-3 non-regression assertion in
+the dispatch describe block (Batch 1/2's own non-regression assertions were already present and
+remain unchanged).
+
+## Validation Gate
+
+- `tsc -p tsconfig.json --noEmit`: clean.
+- Strict test-inclusive invocation (same flags as every prior batch): clean.
+- `npm run build`: clean.
+- `npx vitest run`: 630/630 passing, 28/28 test files passing.
+
+## Evidence Wording — Confidence Accuracy Note
+
+Per the frozen contract's explicit instruction: this document does **not** claim direct BPHS
+primary-text confirmation for D24/D27/D30. The tradition evidence is, as for every prior varga in
+this engagement, source-code self-labeling (PyJHora's own docstring/enum naming its default
+"Traditional Parasara") corroborated by an independently-authored second implementation
+(vedic-calc) producing bit-for-bit identical results — high confidence that this is each oracle's
+own self-declared canonical Parashari form, not independent verification against a primary Sanskrit
+text.
+
+## Explicit Non-Scope (Batch 4, confirmed, not touched)
+
+D40, D45 calculation code — not implemented. D60 — remains DEFERRED, not researched in this task.
+`NormalizedChart`/`chart/types.ts` — unchanged, no schema bump. `vedic/chart.ts` — unchanged.
+Phase 4/Phase 5 source files — unchanged (confirmed by `git diff`: zero lines touched). No Rule
+Engine, interpretation, yoga, prediction, or house-lord logic. No UI, no API server. No dependency
+added or upgraded (`package.json`/`package-lock.json` for `astrology-core` unchanged). No
+method-selection parameter exposed (PyJHora's D24 methods 2/3, D27 methods 2/3, and D30 methods
+2-5 are all documented but not implemented, per the frozen contract). No commit made.

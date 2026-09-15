@@ -12,6 +12,9 @@ import {
   getD12DwadasamsaSign,
   getD16ShodasamsaSign,
   getD20VimsamsaSign,
+  getD24ChaturvimsamsaSign,
+  getD27NakshatramsaSign,
+  getD30TrimsamsaSign,
   getDivisionalSign,
 } from "../divisional.js";
 
@@ -672,6 +675,292 @@ describe("getD20VimsamsaSign — cung bắt đầu theo MODALITY (movable/fixed/
   });
 });
 
+describe("getD24ChaturvimsamsaSign — cung lẻ đếm tới trước từ Leo, cung chẵn đếm tới trước từ Cancer, LUÔN đếm tới trước", () => {
+  const w = 30 / 24; // 1.25°
+
+  it("cung lẻ (Aries/Gemini/Leo/Libra/Sagittarius/Aquarius) — seed CỐ ĐỊNH là Leo, KHÔNG phải chính cung", () => {
+    expect(getD24ChaturvimsamsaSign("aries", 0)).toBe("leo");
+    expect(getD24ChaturvimsamsaSign("gemini", 0)).toBe("leo");
+    expect(getD24ChaturvimsamsaSign("leo", 0)).toBe("leo");
+    expect(getD24ChaturvimsamsaSign("libra", 0)).toBe("leo");
+    expect(getD24ChaturvimsamsaSign("sagittarius", 0)).toBe("leo");
+    expect(getD24ChaturvimsamsaSign("aquarius", 0)).toBe("leo");
+  });
+
+  it("cung chẵn (Taurus/Cancer/Virgo/Scorpio/Capricorn/Pisces) — seed CỐ ĐỊNH là Cancer, KHÔNG phải chính cung", () => {
+    expect(getD24ChaturvimsamsaSign("taurus", 0)).toBe("cancer");
+    expect(getD24ChaturvimsamsaSign("cancer", 0)).toBe("cancer");
+    expect(getD24ChaturvimsamsaSign("virgo", 0)).toBe("cancer");
+    expect(getD24ChaturvimsamsaSign("scorpio", 0)).toBe("cancer");
+    expect(getD24ChaturvimsamsaSign("capricorn", 0)).toBe("cancer");
+    expect(getD24ChaturvimsamsaSign("pisces", 0)).toBe("cancer");
+  });
+
+  it("24 phần trên Leo (odd, seed=Leo) — đếm tới trước theo part", () => {
+    expect(getD24ChaturvimsamsaSign("leo", 0)).toBe("leo"); // part0
+    expect(getD24ChaturvimsamsaSign("leo", w)).toBe("virgo"); // part1
+    expect(getD24ChaturvimsamsaSign("leo", 23 * w)).toBe("cancer"); // part23 (phần cuối): Leo(4)+23=27%12=3=Cancer
+  });
+
+  it("mọi 23 biên (1.25°,2.5°,...,28.75°) đều phân loại đúng vào phần SAU (open-upper), không dùng epsilon", () => {
+    for (let k = 1; k <= 23; k++) {
+      const boundary = k * w;
+      const below = getD24ChaturvimsamsaSign("leo", boundary - 1e-9);
+      const at = getD24ChaturvimsamsaSign("leo", boundary);
+      const above = getD24ChaturvimsamsaSign("leo", boundary + 1e-9);
+      expect(at).toBe(above);
+      expect(at).not.toBe(below);
+    }
+  });
+
+  it("gần 30° vẫn ổn định (phần cuối, part23)", () => {
+    expect(getD24ChaturvimsamsaSign("leo", 30 - 1e-9)).toBe("cancer");
+    expect(getD24ChaturvimsamsaSign("taurus", 30 - 1e-9)).toBe("gemini"); // Cancer(3)+23=26%12=2=Gemini
+  });
+
+  it("vòng qua điểm nối 12->1 (part khiến seed+part vượt quá 11)", () => {
+    expect(getD24ChaturvimsamsaSign("leo", 8 * w)).toBe("aries"); // Leo(4)+8=12%12=0=Aries
+  });
+
+  it("KHÔNG đảo hướng — chỉ implement chart_method=1 (method 2/3 KHÔNG được expose)", () => {
+    // Nếu vô tình implement method 2 (even reversal), Taurus (even) tại part lớn sẽ đếm NGƯỢC từ Cancer thay vì tới trước.
+    // Xác nhận cung chẵn luôn đếm TỚI (forward), khớp method 1 duy nhất.
+    expect(getD24ChaturvimsamsaSign("taurus", w)).toBe("leo"); // Cancer(3)+1=4=Leo (forward, KHÔNG phải Cancer(3)-1=2=Gemini)
+  });
+
+  it("12 cung đại diện tại cùng một độ — phát hiện offset/modulo/seed sai nếu có", () => {
+    const expected: Record<ZodiacSign, ZodiacSign> = {
+      aries: "aries",
+      taurus: "pisces",
+      gemini: "aries",
+      cancer: "pisces",
+      leo: "aries",
+      virgo: "pisces",
+      libra: "aries",
+      scorpio: "pisces",
+      sagittarius: "aries",
+      capricorn: "pisces",
+      aquarius: "aries",
+      pisces: "pisces",
+    };
+    for (const sign of ZODIAC_SIGNS) {
+      expect(getD24ChaturvimsamsaSign(sign, 11.1)).toBe(expected[sign]);
+    }
+  });
+
+  it("case thực tế (benchmark độc lập, oracle-verified trực tiếp task này — không trùng benchmark Batch 1/2/3)", () => {
+    expect(getD24ChaturvimsamsaSign("scorpio", 8.8)).toBe("aquarius"); // sun
+    expect(getD24ChaturvimsamsaSign("leo", 19.19)).toBe("scorpio"); // moon
+    expect(getD24ChaturvimsamsaSign("pisces", 27.27)).toBe("aries"); // mars
+    expect(getD24ChaturvimsamsaSign("scorpio", 2.2)).toBe("leo"); // mercury
+    expect(getD24ChaturvimsamsaSign("aquarius", 13.13)).toBe("gemini"); // jupiter
+    expect(getD24ChaturvimsamsaSign("cancer", 5.5)).toBe("scorpio"); // venus
+    expect(getD24ChaturvimsamsaSign("libra", 24.24)).toBe("pisces"); // saturn
+  });
+
+  it("tính xác định (deterministic)", () => {
+    expect(getD24ChaturvimsamsaSign("virgo", 17.5)).toBe(getD24ChaturvimsamsaSign("virgo", 17.5));
+  });
+});
+
+describe("getD27NakshatramsaSign — cung bắt đầu theo NGUYÊN TỐ (element, KHÔNG phải modality), part width = 30/27 (phân số tuần hoàn — mức độ nặng nhất đã nghiên cứu)", () => {
+  const w = 30 / 27; // dùng biểu thức, KHÔNG literal thập phân — bắt buộc theo phương pháp kiểm thử biên đã freeze cho D27.
+
+  it("Hoả (fire) → bắt đầu từ Aries", () => {
+    expect(getD27NakshatramsaSign("aries", 0)).toBe("aries");
+    expect(getD27NakshatramsaSign("leo", 0)).toBe("aries");
+    expect(getD27NakshatramsaSign("sagittarius", 0)).toBe("aries");
+  });
+
+  it("Thổ (earth) → bắt đầu từ Cancer (KHÁC D9 — D9 gán Thổ→Capricorn)", () => {
+    expect(getD27NakshatramsaSign("taurus", 0)).toBe("cancer");
+    expect(getD27NakshatramsaSign("virgo", 0)).toBe("cancer");
+    expect(getD27NakshatramsaSign("capricorn", 0)).toBe("cancer");
+  });
+
+  it("Khí (air) → bắt đầu từ Libra", () => {
+    expect(getD27NakshatramsaSign("gemini", 0)).toBe("libra");
+    expect(getD27NakshatramsaSign("libra", 0)).toBe("libra");
+    expect(getD27NakshatramsaSign("aquarius", 0)).toBe("libra");
+  });
+
+  it("Thuỷ (water) → bắt đầu từ Capricorn (KHÁC D9 — D9 gán Thuỷ→Cancer)", () => {
+    expect(getD27NakshatramsaSign("cancer", 0)).toBe("capricorn");
+    expect(getD27NakshatramsaSign("scorpio", 0)).toBe("capricorn");
+    expect(getD27NakshatramsaSign("pisces", 0)).toBe("capricorn");
+  });
+
+  it("KHÔNG dùng modality — Aries(movable)/Leo(fixed)/Sagittarius(dual) đều cùng Hoả nên cho CÙNG kết quả tại cùng độ (xác nhận element-based, không phải D16/D20's modality-based)", () => {
+    expect(getD27NakshatramsaSign("aries", 9.0)).toBe(getD27NakshatramsaSign("leo", 9.0));
+    expect(getD27NakshatramsaSign("leo", 9.0)).toBe(getD27NakshatramsaSign("sagittarius", 9.0));
+  });
+
+  it("27 phần trên Aries — đếm tới trước từ Aries theo part", () => {
+    expect(getD27NakshatramsaSign("aries", 0)).toBe("aries"); // part0
+    expect(getD27NakshatramsaSign("aries", w)).toBe("taurus"); // part1
+    expect(getD27NakshatramsaSign("aries", 26 * w)).toBe("gemini"); // part26 (phần cuối): Aries(0)+26=26%12=2=Gemini
+  });
+
+  it("mọi 26 biên (dựng bằng k*partWidth — KHÔNG dùng k*30/27) đều phân loại đúng vào phần SAU, không dùng epsilon", () => {
+    for (let k = 1; k <= 26; k++) {
+      const boundary = k * w; // BẮT BUỘC k*w, KHÔNG phải k*30/27 — xem ghi chú precision-methodology đầu file divisional.ts.
+      const below = getD27NakshatramsaSign("aries", boundary - 1e-9);
+      const at = getD27NakshatramsaSign("aries", boundary);
+      const above = getD27NakshatramsaSign("aries", boundary + 1e-9);
+      expect(at).toBe(above);
+      expect(at).not.toBe(below);
+    }
+  });
+
+  it("KNOWN DISCREPANCY: 10 biên nơi PyJHora's Python `//` sai (k=5,9,10,13,17,18,19,20,25,26) — dùng hành vi project-consistent (Math.floor + k*partWidth), KHÔNG tái tạo lỗi PyJHora", () => {
+    // Đã xác nhận trong preflight ("Batch 4 — D24/D27/D30 Preflight"): đây là lỗi floating-point CỦA
+    // PYTHON (Python's `//` operator), KHÔNG PHẢI khác biệt truyền thống — verified bằng thực thi
+    // trực tiếp cả implementation này VÀ vedic-calc, cả hai khớp tuyệt đối tại các điểm này.
+    const knownDiscrepancyKs = [5, 9, 10, 13, 17, 18, 19, 20, 25, 26];
+    const expectedAtK: Record<number, ZodiacSign> = {
+      5: "virgo",
+      9: "capricorn",
+      10: "aquarius",
+      13: "taurus",
+      17: "virgo",
+      18: "libra",
+      19: "scorpio",
+      20: "sagittarius",
+      25: "taurus",
+      26: "gemini",
+    };
+    for (const k of knownDiscrepancyKs) {
+      const boundary = k * w;
+      expect(getD27NakshatramsaSign("aries", boundary)).toBe(expectedAtK[k]);
+    }
+  });
+
+  it("gần 30° vẫn ổn định (phần cuối, part26)", () => {
+    expect(getD27NakshatramsaSign("aries", 30 - 1e-9)).toBe(getD27NakshatramsaSign("aries", 26 * w));
+  });
+
+  it("12 cung đại diện tại cùng một độ — phát hiện offset/modulo/element sai nếu có", () => {
+    const expected: Record<ZodiacSign, ZodiacSign> = {
+      aries: "gemini",
+      taurus: "virgo",
+      gemini: "sagittarius",
+      cancer: "pisces",
+      leo: "gemini",
+      virgo: "virgo",
+      libra: "sagittarius",
+      scorpio: "pisces",
+      sagittarius: "gemini",
+      capricorn: "virgo",
+      aquarius: "sagittarius",
+      pisces: "pisces",
+    };
+    for (const sign of ZODIAC_SIGNS) {
+      expect(getD27NakshatramsaSign(sign, 16.6)).toBe(expected[sign]);
+    }
+  });
+
+  it("case thực tế (benchmark độc lập, oracle-verified trực tiếp task này)", () => {
+    expect(getD27NakshatramsaSign("scorpio", 8.8)).toBe("leo"); // sun
+    expect(getD27NakshatramsaSign("leo", 19.19)).toBe("virgo"); // moon
+    expect(getD27NakshatramsaSign("pisces", 27.27)).toBe("capricorn"); // mars
+    expect(getD27NakshatramsaSign("scorpio", 2.2)).toBe("aquarius"); // mercury
+    expect(getD27NakshatramsaSign("aquarius", 13.13)).toBe("virgo"); // jupiter
+    expect(getD27NakshatramsaSign("cancer", 5.5)).toBe("taurus"); // venus
+    expect(getD27NakshatramsaSign("libra", 24.24)).toBe("cancer"); // saturn
+  });
+
+  it("tính xác định (deterministic)", () => {
+    expect(getD27NakshatramsaSign("capricorn", 21.1)).toBe(getD27NakshatramsaSign("capricorn", 21.1));
+  });
+});
+
+describe("getD30TrimsamsaSign — tra bảng khoảng độ KHÔNG đều theo lẻ/chẵn, KHÔNG dùng countSignsForward (đặc thù như D2/D3)", () => {
+  it("cung lẻ (Gemini) — toàn bộ 5 khoảng khớp bảng Parashari", () => {
+    expect(getD30TrimsamsaSign("gemini", 0)).toBe("aries");
+    expect(getD30TrimsamsaSign("gemini", 4.9999999)).toBe("aries");
+    expect(getD30TrimsamsaSign("gemini", 7)).toBe("aquarius");
+    expect(getD30TrimsamsaSign("gemini", 15)).toBe("sagittarius");
+    expect(getD30TrimsamsaSign("gemini", 22)).toBe("gemini");
+    expect(getD30TrimsamsaSign("gemini", 27)).toBe("libra");
+  });
+
+  it("cung chẵn (Cancer) — toàn bộ 5 khoảng khớp bảng Parashari", () => {
+    expect(getD30TrimsamsaSign("cancer", 0)).toBe("taurus");
+    expect(getD30TrimsamsaSign("cancer", 4.9999999)).toBe("taurus");
+    expect(getD30TrimsamsaSign("cancer", 8)).toBe("virgo");
+    expect(getD30TrimsamsaSign("cancer", 15)).toBe("pisces");
+    expect(getD30TrimsamsaSign("cancer", 22)).toBe("capricorn");
+    expect(getD30TrimsamsaSign("cancer", 27)).toBe("scorpio");
+  });
+
+  it("mọi 4 biên nội bộ cung lẻ (5°,10°,18°,25°) đều phân loại đúng vào khoảng SAU (open-upper) — KHÔNG tái tạo lỗi inclusive-both-ends-list-scan của PyJHora", () => {
+    for (const boundary of [5, 10, 18, 25]) {
+      const below = getD30TrimsamsaSign("gemini", boundary - 1e-9);
+      const at = getD30TrimsamsaSign("gemini", boundary);
+      const above = getD30TrimsamsaSign("gemini", boundary + 1e-9);
+      expect(at).toBe(above);
+      expect(at).not.toBe(below);
+    }
+  });
+
+  it("mọi 4 biên nội bộ cung chẵn (5°,12°,20°,25°) đều phân loại đúng vào khoảng SAU (open-upper)", () => {
+    for (const boundary of [5, 12, 20, 25]) {
+      const below = getD30TrimsamsaSign("cancer", boundary - 1e-9);
+      const at = getD30TrimsamsaSign("cancer", boundary);
+      const above = getD30TrimsamsaSign("cancer", boundary + 1e-9);
+      expect(at).toBe(above);
+      expect(at).not.toBe(below);
+    }
+  });
+
+  it("KNOWN ORACLE ARTIFACT: PyJHora's inclusive-both-ends scan cho biên thuộc khoảng TRƯỚC — project dùng khoảng SAU (đã freeze, không đổi)", () => {
+    // Tại đúng 5°: PyJHora (nếu chạy trực tiếp) trả về Aries (khoảng trước); project trả về Aquarius (khoảng sau, ĐÚNG hợp đồng).
+    expect(getD30TrimsamsaSign("gemini", 5)).toBe("aquarius");
+    expect(getD30TrimsamsaSign("gemini", 5)).not.toBe("aries");
+  });
+
+  it("0° và gần 30° ổn định ở cả hai đầu", () => {
+    expect(getD30TrimsamsaSign("gemini", 0)).toBe("aries");
+    expect(getD30TrimsamsaSign("gemini", 29.9999999)).toBe("libra");
+    expect(getD30TrimsamsaSign("cancer", 0)).toBe("taurus");
+    expect(getD30TrimsamsaSign("cancer", 29.9999999)).toBe("scorpio");
+  });
+
+  it("12 cung đại diện tại cùng một độ — phát hiện lỗi tra bảng nếu có", () => {
+    const expected: Record<ZodiacSign, ZodiacSign> = {
+      aries: "gemini",
+      taurus: "capricorn",
+      gemini: "gemini",
+      cancer: "capricorn",
+      leo: "gemini",
+      virgo: "capricorn",
+      libra: "gemini",
+      scorpio: "capricorn",
+      sagittarius: "gemini",
+      capricorn: "capricorn",
+      aquarius: "gemini",
+      pisces: "capricorn",
+    };
+    for (const sign of ZODIAC_SIGNS) {
+      expect(getD30TrimsamsaSign(sign, 21.2)).toBe(expected[sign]);
+    }
+  });
+
+  it("case thực tế (benchmark độc lập, oracle-verified trực tiếp task này)", () => {
+    expect(getD30TrimsamsaSign("scorpio", 8.8)).toBe("virgo"); // sun
+    expect(getD30TrimsamsaSign("leo", 19.19)).toBe("gemini"); // moon
+    expect(getD30TrimsamsaSign("pisces", 27.27)).toBe("scorpio"); // mars
+    expect(getD30TrimsamsaSign("scorpio", 2.2)).toBe("taurus"); // mercury
+    expect(getD30TrimsamsaSign("aquarius", 13.13)).toBe("sagittarius"); // jupiter
+    expect(getD30TrimsamsaSign("cancer", 5.5)).toBe("virgo"); // venus
+    expect(getD30TrimsamsaSign("libra", 24.24)).toBe("gemini"); // saturn
+  });
+
+  it("tính xác định (deterministic)", () => {
+    expect(getD30TrimsamsaSign("aquarius", 3.3)).toBe(getD30TrimsamsaSign("aquarius", 3.3));
+  });
+});
+
 describe("getDivisionalSign — điểm vào chung, dispatch đúng theo VargaId", () => {
   it("varga=2 khớp getD2HoraSign", () => {
     for (const sign of ZODIAC_SIGNS) {
@@ -745,20 +1034,50 @@ describe("getDivisionalSign — điểm vào chung, dispatch đúng theo VargaId
     }
   });
 
-  it("Batch 1 (D2/D3/D4) KHÔNG bị regress bởi việc thêm D7/D9/D10/D12/D16/D20 — case thực tế benchmark Batch 1 vẫn đúng", () => {
+  it("varga=24 khớp getD24ChaturvimsamsaSign", () => {
+    for (const sign of ZODIAC_SIGNS) {
+      for (const degree of [0, 10, 15, 20, 29.9]) {
+        expect(getDivisionalSign(24, sign, degree)).toBe(getD24ChaturvimsamsaSign(sign, degree));
+      }
+    }
+  });
+
+  it("varga=27 khớp getD27NakshatramsaSign", () => {
+    for (const sign of ZODIAC_SIGNS) {
+      for (const degree of [0, 10, 15, 20, 29.9]) {
+        expect(getDivisionalSign(27, sign, degree)).toBe(getD27NakshatramsaSign(sign, degree));
+      }
+    }
+  });
+
+  it("varga=30 khớp getD30TrimsamsaSign", () => {
+    for (const sign of ZODIAC_SIGNS) {
+      for (const degree of [0, 10, 15, 20, 29.9]) {
+        expect(getDivisionalSign(30, sign, degree)).toBe(getD30TrimsamsaSign(sign, degree));
+      }
+    }
+  });
+
+  it("Batch 1 (D2/D3/D4) KHÔNG bị regress bởi việc thêm D7..D30 — case thực tế benchmark Batch 1 vẫn đúng", () => {
     expect(getDivisionalSign(2, "aquarius", 27.7812)).toBe("cancer");
     expect(getDivisionalSign(3, "aquarius", 27.7812)).toBe("libra");
     expect(getDivisionalSign(4, "aquarius", 27.7812)).toBe("scorpio");
   });
 
-  it("Batch 2 (D7/D9/D10) KHÔNG bị regress bởi việc thêm D12/D16/D20 — case thực tế benchmark Batch 2 vẫn đúng", () => {
+  it("Batch 2 (D7/D9/D10) KHÔNG bị regress bởi việc thêm D12..D30 — case thực tế benchmark Batch 2 vẫn đúng", () => {
     expect(getDivisionalSign(7, "gemini", 24.1567)).toBe("scorpio");
     expect(getDivisionalSign(9, "gemini", 24.1567)).toBe("taurus");
     expect(getDivisionalSign(10, "gemini", 24.1567)).toBe("aquarius");
   });
 
-  it("mọi kết quả LUÔN là một ZodiacSign hợp lệ trên toàn bộ 12 cung x 9 varga", () => {
-    const vargas = [2, 3, 4, 7, 9, 10, 12, 16, 20] as const;
+  it("Batch 3 (D12/D16/D20) KHÔNG bị regress bởi việc thêm D24/D27/D30 — case thực tế benchmark Batch 3 vẫn đúng", () => {
+    expect(getDivisionalSign(12, "sagittarius", 5.55)).toBe("aquarius");
+    expect(getDivisionalSign(16, "sagittarius", 5.55)).toBe("aquarius");
+    expect(getDivisionalSign(20, "sagittarius", 5.55)).toBe("scorpio");
+  });
+
+  it("mọi kết quả LUÔN là một ZodiacSign hợp lệ trên toàn bộ 12 cung x 12 varga", () => {
+    const vargas = [2, 3, 4, 7, 9, 10, 12, 16, 20, 24, 27, 30] as const;
     for (const varga of vargas) {
       for (const sign of ZODIAC_SIGNS) {
         for (const degree of [0, 5, 10, 15, 20, 25, 29.9999]) {

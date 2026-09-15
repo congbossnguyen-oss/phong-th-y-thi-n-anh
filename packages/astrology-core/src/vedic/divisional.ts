@@ -4,13 +4,15 @@
  * Batch 2: D7 (Saptamsa), D9 (Navamsa), D10 (Dasamsa) — xem `V1_1_DIVISIONAL_CHARTS_PREFLIGHT.md`
  * §"Batch 2 — D7/D9/D10 Preflight".
  * Batch 3: D12 (Dwadasamsa), D16 (Shodasamsa/Kalamsa), D20 (Vimsamsa) — xem
- * `V1_1_DIVISIONAL_CHARTS_PREFLIGHT.md` §"Batch 3 — D12/D16/D20 Preflight" cho toàn bộ nghiên
+ * `V1_1_DIVISIONAL_CHARTS_PREFLIGHT.md` §"Batch 3 — D12/D16/D20 Preflight".
+ * Batch 4: D24 (Chaturvimsamsa), D27 (Nakshatramsa/Bhamsa), D30 (Trimsamsa) — xem
+ * `V1_1_DIVISIONAL_CHARTS_PREFLIGHT.md` §"Batch 4 — D24/D27/D30 Preflight" cho toàn bộ nghiên
  * cứu/oracle evidence đứng sau các công thức dưới đây.
  * Tầng "Chart Calculation" phía Vedic, tiếp theo `vedic/rashi.ts`/`vedic/ascendant.ts` — biến MỘT
  * cặp (Rashi, độ trong cung) đã có (D1) thành Rashi tương ứng ở một Varga cụ thể. KHÔNG tính D1
- * (đã có ở `rashi.ts`/`ascendant.ts`), KHÔNG tính D24/D27/D30/D40/D45/D60 (ngoài phạm vi Batch
- * 1+2+3 — D60 vẫn DEFERRED), KHÔNG lắp vào `NormalizedChart`/`vedic/chart.ts` (quyết định
- * CF.4/CF.10 — "standalone calculation API", không nhúng full nested chart, không đổi schema).
+ * (đã có ở `rashi.ts`/`ascendant.ts`), KHÔNG tính D40/D45/D60 (ngoài phạm vi Batch 1+2+3+4 — D60
+ * vẫn DEFERRED), KHÔNG lắp vào `NormalizedChart`/`vedic/chart.ts` (quyết định CF.4/CF.10 —
+ * "standalone calculation API", không nhúng full nested chart, không đổi schema).
  *
  * HOÀN TOÀN THUẦN — không cần `AstronomicalProvider`, không cần `Date` — giống hệt
  * `vedic/houses.ts::getWholeSignHouseNumber` (chỉ cần Rashi/độ đã có). KHÔNG import `western/`
@@ -44,12 +46,26 @@
  * là luỹ thừa của 2) — khác hẳn D7(`30/7`)/D9(`30/9`). `Math.floor(signDegree/partWidth)` an toàn
  * tuyệt đối cho cả ba (0 sai khác qua 5 triệu điểm mẫu mỗi Varga) — KHÔNG cần lưu ý đặc biệt nào
  * như D7/D9.
+ *
+ * D27 REPEATING-FRACTION BOUNDARY — MỨC ĐỘ NẶNG NHẤT (Batch 4, đã xác nhận trực tiếp + thực
+ * nghiệm ở preflight): `30/27 = 10/9 = 1.1111...` cũng không có biểu diễn nhị phân hữu hạn, và lỗi
+ * `//` của Python (cùng bản chất lỗi đã tìm thấy ở D7/D9) ảnh hưởng tới 10/26 biên nội bộ (~38%) —
+ * NẶNG HƠN NHIỀU so với D7 (1/6) và D9 (2/8). Quyết định GIỐNG HỆT D7/D9: dùng
+ * `Math.floor(signDegree/partWidth)`, KHÔNG tái tạo lỗi `//` của PyJHora — đã kiểm chứng AN TOÀN
+ * trong JavaScript. D24 (`30/24=1.25=5/4`) và D30 (bảng khoảng độ cố định, biên là số nguyên) KHÔNG
+ * có vấn đề phân số tuần hoàn.
+ *
+ * PHƯƠNG PHÁP KIỂM THỬ BIÊN (phát hiện mới ở Batch 4, áp dụng ngược cho mọi Varga phân số tuần
+ * hoàn): giá trị biên dùng để test PHẢI dựng bằng `k * partWidth` (nhân với chính hằng số đã tính
+ * sẵn), KHÔNG dựng bằng `k * 30 / N` (chia lại từ đầu) — hai cách viết toán học tương đương nhưng
+ * có thể cho ra hai double khác nhau do làm tròn floating-point khác đường tính. Test biên D27
+ * TRONG file test PHẢI dùng `k * D27_PART_WIDTH_DEGREES`-style construction.
  */
 
 import { ZODIAC_SIGNS, type ZodiacSign } from "../chart/types.js";
 
-/** 9 Varga có trong Batch 1+2+3 — union đóng, CHỈ mở rộng khi một batch triển khai kế tiếp thực sự cần (không thêm D24+ trước — đúng chỉ dẫn "Do not over-engineer"). */
-export type VargaId = 2 | 3 | 4 | 7 | 9 | 10 | 12 | 16 | 20;
+/** 12 Varga có trong Batch 1+2+3+4 — union đóng, CHỈ mở rộng khi một batch triển khai kế tiếp thực sự cần (không thêm D40+ trước — đúng chỉ dẫn "Do not over-engineer"). */
+export type VargaId = 2 | 3 | 4 | 7 | 9 | 10 | 12 | 16 | 20 | 24 | 27 | 30;
 
 /**
  * Đếm tới trước `offset` cung kể từ `fromSign`, quấn vòng mod 12 — PRIMITIVE DÙNG CHUNG cho MỌI
@@ -272,7 +288,97 @@ export function getD20VimsamsaSign(sign: ZodiacSign, signDegree: number): Zodiac
 }
 
 // ---------------------------------------------------------------------------------------
-// Standalone API — điểm vào chung cho Batch 1+2+3 (CF.4: "standalone calculation API",
+// D24 — Chaturvimsamsa (còn gọi Siddhamsa, cùng một Varga). Contract: "Batch 4 — D24/D27/D30
+// Preflight" — PyJHora `chart_method=1` (`TRADITIONAL_PARASARA`) == vedic-calc's DUY NHẤT
+// implementation D24. 24 phần 1.25° mỗi cung; cung lẻ đếm tới `part` cung TỪ LEO (seed cố định,
+// KHÔNG phải từ chính cung); cung chẵn đếm tới `part` cung TỪ CANCER (seed cố định khác) — LUÔN
+// đếm tới trước, KHÔNG đảo hướng (đảo hướng chỉ có ở method 2/3, KHÔNG implement).
+// ---------------------------------------------------------------------------------------
+
+const D24_PART_WIDTH_DEGREES = 30 / 24;
+const D24_ODD_SIGN_SEED: ZodiacSign = "leo";
+const D24_EVEN_SIGN_SEED: ZodiacSign = "cancer";
+
+/** D24 (Chaturvimsamsa/Siddhamsa): part = floor(signDegree / 1.25); cung lẻ → đếm tới `part` cung từ Leo; cung chẵn → đếm tới `part` cung từ Cancer. */
+export function getD24ChaturvimsamsaSign(sign: ZodiacSign, signDegree: number): ZodiacSign {
+  const part = Math.min(23, Math.floor(signDegree / D24_PART_WIDTH_DEGREES));
+  const seed = isOddSign(sign) ? D24_ODD_SIGN_SEED : D24_EVEN_SIGN_SEED;
+  return countSignsForward(seed, part);
+}
+
+// ---------------------------------------------------------------------------------------
+// D27 — Nakshatramsa (còn gọi Bhamsa, cùng một Varga). Contract: "Batch 4 — D24/D27/D30
+// Preflight" — PyJHora `chart_method=1` (`TRADITIONAL_PARASARA`) == vedic-calc's DUY NHẤT
+// implementation D27. 27 phần `30/27 = 10/9`° mỗi cung; cung bắt đầu xác định theo NGUYÊN TỐ
+// (element) của cung D1 — Hoả→Aries, Thổ→Cancer, Khí→Libra, Thuỷ→Capricorn — rồi LUÔN đếm tới
+// trước. KHÔNG phải modality (KHÔNG dùng bảng D16/D20 — đã xác nhận trực tiếp từ source, không suy
+// diễn từ D16/D20's hình dạng).
+//
+// D27 REPEATING-FRACTION: `30/27` không có biểu diễn nhị phân hữu hạn — xem ghi chú đầu file. Dùng
+// `Math.floor(signDegree/partWidth)`, KHÔNG tái tạo lỗi `//` của PyJHora (ảnh hưởng 10/26 biên nội
+// bộ trong PyJHora, đã xác nhận không phải khác biệt truyền thống mà là lỗi floating-point CỦA
+// PYTHON).
+// ---------------------------------------------------------------------------------------
+
+const D27_PART_WIDTH_DEGREES = 30 / 27;
+/** Cung bắt đầu theo nguyên tố cho D27 — chỉ số khớp `getElementIndex()`: 0=Hoả→Aries, 1=Thổ→Cancer, 2=Khí→Libra, 3=Thuỷ→Capricorn (đối chiếu `_ELEMENT_STARTS[27]` vedic-calc). KHÁC D9's bảng nguyên tố (`D9_ELEMENT_START_SIGNS`) — KHÔNG dùng chung. */
+const D27_ELEMENT_START_SIGNS: readonly [ZodiacSign, ZodiacSign, ZodiacSign, ZodiacSign] = ["aries", "cancer", "libra", "capricorn"];
+
+/** D27 (Nakshatramsa/Bhamsa): part = floor(signDegree / (30/27)); cung bắt đầu theo nguyên tố của `sign`, rồi đếm tới `part` cung từ đó. */
+export function getD27NakshatramsaSign(sign: ZodiacSign, signDegree: number): ZodiacSign {
+  const part = Math.min(26, Math.floor(signDegree / D27_PART_WIDTH_DEGREES));
+  const elementIndex = getElementIndex(sign);
+  const startSign = D27_ELEMENT_START_SIGNS[elementIndex];
+  if (startSign === undefined) {
+    // Không thể xảy ra: `getElementIndex` luôn trả về [0,3] (`% 4`), khớp đúng 4 phần tử D27_ELEMENT_START_SIGNS — phòng vệ cho noUncheckedIndexedAccess.
+    throw new Error(`getD27NakshatramsaSign: elementIndex không hợp lệ (${elementIndex}) cho sign=${sign}.`);
+  }
+  return countSignsForward(startSign, part);
+}
+
+// ---------------------------------------------------------------------------------------
+// D30 — Trimsamsa. Contract: "Batch 4 — D24/D27/D30 Preflight" (tái xác nhận CONFIRMED — không
+// đổi contract so với D30 Boundary Resolution gốc) — PyJHora `chart_method=1`
+// (`TRADITIONAL_PARASARA`) == vedic-calc's DUY NHẤT implementation D30. KHÔNG phải công thức
+// part=floor(...)/countSignsForward — D30 là TRA BẢNG khoảng độ KHÔNG ĐỀU theo lẻ/chẵn (giống D2 —
+// special case riêng, KHÔNG dùng primitive chung). Biên đóng-dưới/mở-trên (closed-lower/open-upper)
+// — TẠI ĐÚNG biên, kết quả thuộc khoảng SAU/TRÊN, KHÔNG tái tạo lỗi inclusive-both-ends-list-scan
+// của PyJHora (khiến biên thuộc khoảng dưới — đã xác nhận đây là library artifact, KHÔNG phải quy
+// ước truyền thống khác).
+// ---------------------------------------------------------------------------------------
+
+/** Bảng tra D30 cho cung lẻ — (ngưỡng trên, cung đích), ĐÃ SẮP THEO THỨ TỰ TĂNG DẦN, biên đóng-dưới/mở-trên: signDegree < ngưỡng[i] → cung đích[i]. Đối chiếu `charts.py:1150` PyJHora + `divisional.py:187-197` vedic-calc — khớp bit-for-bit cả hai oracle (đã xác nhận range-by-range). */
+const D30_ODD_SIGN_RANGES: readonly (readonly [number, ZodiacSign])[] = [
+  [5, "aries"],
+  [10, "aquarius"],
+  [18, "sagittarius"],
+  [25, "gemini"],
+  [30, "libra"],
+];
+
+/** Bảng tra D30 cho cung chẵn — cùng quy ước với `D30_ODD_SIGN_RANGES`. Đối chiếu `charts.py:1151` PyJHora + `divisional.py:198-208` vedic-calc. */
+const D30_EVEN_SIGN_RANGES: readonly (readonly [number, ZodiacSign])[] = [
+  [5, "taurus"],
+  [12, "virgo"],
+  [20, "pisces"],
+  [25, "capricorn"],
+  [30, "scorpio"],
+];
+
+/** D30 (Trimsamsa): tra bảng khoảng độ KHÔNG đều theo lẻ/chẵn của `sign` — KHÔNG dùng `countSignsForward`/`part=floor(...)`. Biên closed-lower/open-upper: `signDegree` thuộc khoảng đầu tiên có ngưỡng trên LỚN HƠN `signDegree` (không phải `>=`). */
+export function getD30TrimsamsaSign(sign: ZodiacSign, signDegree: number): ZodiacSign {
+  const ranges = isOddSign(sign) ? D30_ODD_SIGN_RANGES : D30_EVEN_SIGN_RANGES;
+  for (const [upperBound, destinationSign] of ranges) {
+    if (signDegree < upperBound) {
+      return destinationSign;
+    }
+  }
+  // Không thể xảy ra: tiền điều kiện `signDegree < 30` (đầu file) đảm bảo phần tử cuối (ngưỡng 30) luôn khớp — phòng vệ cho trường hợp vi phạm tiền điều kiện.
+  throw new Error(`getD30TrimsamsaSign: signDegree=${signDegree} không khớp khoảng nào (vi phạm tiền điều kiện [0,30)).`);
+}
+
+// ---------------------------------------------------------------------------------------
+// Standalone API — điểm vào chung cho Batch 1+2+3+4 (CF.4: "standalone calculation API",
 // "explicit Varga identifier", "must not expose Swiss-specific types"). KHÔNG lắp vào
 // `NormalizedChart`/`vedic/chart.ts` (ngoài phạm vi task này).
 // ---------------------------------------------------------------------------------------
@@ -280,8 +386,8 @@ export function getD20VimsamsaSign(sign: ZodiacSign, signDegree: number): Zodiac
 /**
  * Tính Rashi của MỘT hành tinh/điểm (Ascendant, ...) ở một Varga cụ thể — nhận `sign`/`signDegree`
  * D1 ĐÃ CÓ (từ `calculateRashi()`/`calculateVedicAscendant()`), KHÔNG tự tính D1. `varga` giới hạn
- * {2,3,4,7,9,10,12,16,20} ở Batch 1+2+3 (TypeScript union đóng chặn giá trị khác tại compile time —
- * D24/D60/... không thể truyền vào cho tới khi có batch triển khai riêng).
+ * {2,3,4,7,9,10,12,16,20,24,27,30} ở Batch 1+2+3+4 (TypeScript union đóng chặn giá trị khác tại
+ * compile time — D40/D60/... không thể truyền vào cho tới khi có batch triển khai riêng).
  */
 export function getDivisionalSign(varga: VargaId, sign: ZodiacSign, signDegree: number): ZodiacSign {
   switch (varga) {
@@ -303,5 +409,11 @@ export function getDivisionalSign(varga: VargaId, sign: ZodiacSign, signDegree: 
       return getD16ShodasamsaSign(sign, signDegree);
     case 20:
       return getD20VimsamsaSign(sign, signDegree);
+    case 24:
+      return getD24ChaturvimsamsaSign(sign, signDegree);
+    case 27:
+      return getD27NakshatramsaSign(sign, signDegree);
+    case 30:
+      return getD30TrimsamsaSign(sign, signDegree);
   }
 }
