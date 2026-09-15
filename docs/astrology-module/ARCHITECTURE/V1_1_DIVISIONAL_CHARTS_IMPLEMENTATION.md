@@ -383,11 +383,186 @@ pass, plus an explicit new non-regression assertion in the dispatch describe blo
 - `npm run build`: clean.
 - `npx vitest run`: 562/562 passing, 28/28 test files passing.
 
-## Explicit Non-Scope (Batch 2, confirmed, not touched)
+## Explicit Non-Scope (Batch 2, confirmed, not touched) — Batch 2's own scope at the time
 
-D12, D16, D20, D24, D27, D30, D40, D45 calculation code — not implemented. D60 — remains DEFERRED,
+**Correction (post-Batch-3):** D12/D16/D20 listed below as "not implemented" described Batch 2's
+own scope — they were implemented in Batch 3 (see section below) and are no longer non-scope. This
+line is corrected here rather than silently left stale, matching the same practice used for the
+Batch 1→2 transition above.
+
+D24, D27, D30, D40, D45 calculation code — not implemented. D60 — remains DEFERRED,
 not researched in this task. `NormalizedChart`/`chart/types.ts` — unchanged, no schema bump.
 `vedic/chart.ts` — unchanged. Phase 4/Phase 5 source files — unchanged (confirmed by `git diff`:
 zero lines touched). No Rule Engine, interpretation, yoga, prediction, or house-lord logic. No UI,
 no API server. No dependency added or upgraded (`package.json`/`package-lock.json` for
-`astrology-core` unchanged). No method-selection parameter exposed. No commit made.
+`astrology-core` unchanged). No method-selection parameter exposed. No commit made (Batch 2 was
+committed separately afterward, per its own Human Decision Gate — see
+`831adc02b95518eec187ca38a38e58097422aa53`).
+
+---
+
+# Batch 3 — D12 + D16 + D20 Implementation
+
+**Status: implementation complete, NOT committed.** Checkpoint preserved: HEAD
+`831adc02b95518eec187ca38a38e58097422aa53` (Batch 2, closed + committed). Builds on
+[`V1_1_DIVISIONAL_CHARTS_PREFLIGHT.md`](V1_1_DIVISIONAL_CHARTS_PREFLIGHT.md) §"Batch 3 —
+D12/D16/D20 Preflight" (status: `BATCH 3 READY`). This section is additive — Batch 1/2's sections
+above are otherwise unchanged, aside from the one stale-claim correction noted immediately above.
+
+## Scope
+
+**In this batch:** D12 (Dwadasamsa), D16 (Shodasamsa/Kalamsa), D20 (Vimsamsa) — sign-placement
+calculation only, each using the project's selected `chart_method=1` ("Traditional Parasara")
+contract, frozen in the preflight. **Explicitly not in this batch:** D24, D27, D30, D40, D45
+(contract resolved in Batch 1's preflight, implementation deferred), D60 (contract itself still
+deferred). No Rule Engine, interpretation, yoga, prediction, house-lord logic, full nested
+mini-chart, UI, API server, or schema migration — none touched.
+
+## D12 Formula (Dwadasamsa)
+
+**Contract:** PyJHora `chart_method=1` (`TRADITIONAL_PARASARA`) == vedic-calc's only implementation.
+
+- `part = floor(signDegree / 2.5)` — 12 parts, each an exact terminating decimal boundary.
+- `(signIndex + part) mod 12` for **every** sign — no odd/even, no modality, no element branch of
+  any kind in the canonical form (verified directly from both oracles' source, not assumed).
+- Implemented as `getD12DwadasamsaSign(sign, signDegree)` — the simplest of all 9 vargas
+  implemented so far, requiring no lookup table at all (offset is `part` directly).
+
+## D16 Formula (Shodasamsa / Kalamsa)
+
+**Contract:** PyJHora `chart_method=1` (`PARASARA_TRADITIONAL`) == vedic-calc's only implementation.
+"Kalamsa" is an alternate classical name for the same chart, not a competing method (PyJHora
+literally aliases `kalamsa_chart()` to `shodasamsa_chart()`).
+
+- `part = floor(signDegree / 1.875)` — 16 parts. `1.875 = 15/8`, an exact terminating binary
+  fraction (denominator a power of 2) — **not** a repeating-fraction case like D7/D9.
+- Starting sign by **modality**: movable→Aries, fixed→Leo, dual→Sagittarius.
+- `(startIndex + part) mod 12`, always forward — no odd/even branch.
+- New helper: private `getModalityIndex(sign)` (`ZODIAC_SIGNS.indexOf(sign) % 3`) plus
+  `D16_MODALITY_START_SIGNS = [aries, leo, sagittarius]` (indexed 0=movable, 1=fixed, 2=dual).
+
+## D20 Formula (Vimsamsa)
+
+**Contract:** PyJHora `chart_method=1` (`PARASARA_TRADITIONAL`) == vedic-calc's only implementation.
+
+- `part = floor(signDegree / 1.5)` — 20 parts, `1.5 = 3/2`, exact terminating binary fraction.
+- Starting sign by modality: movable→Aries, **dual→Leo, fixed→Sagittarius**.
+- `(startIndex + part) mod 12`, always forward.
+- Reuses `getModalityIndex` (unchanged) with a **separate** table:
+  `D20_MODALITY_START_SIGNS = [aries, sagittarius, leo]` (0=movable, 1=fixed, 2=dual).
+
+## D16 vs. D20 — Confirmed Intentional Difference
+
+D16 assigns fixed→Leo, dual→Sagittarius. D20 assigns fixed→Sagittarius, dual→Leo — the **roles are
+swapped**, verified independently from both oracles' source side-by-side (PyJHora's
+`charts.py:1011-1014` vs. `charts.py:1048-1051`; vedic-calc's `_MODALITY_STARTS[16]` vs.
+`_MODALITY_STARTS[20]`). This is not a typo risk left implicit: `divisional.test.ts` includes a
+dedicated `"REGRESSION GUARD"` test that calls both `getD16ShodasamsaSign` and
+`getD20VimsamsaSign` on the same fixed sign (Leo) and the same dual sign (Gemini) and asserts the
+results differ, specifically to catch a future accidental copy-paste of one table into the other's
+slot.
+
+## Precision Policy — No Repeating-Fraction Concern
+
+Unlike Batch 2's D7/D9, **D12/D16/D20 have zero floating-point hazard.** All three part widths
+(2.5°, 1.875°, 1.5°) are exact, terminating binary fractions — confirmed both mathematically (each
+denominator, when the width is expressed as a fraction, is a power of 2: `2.5=5/2`, `1.875=15/8`,
+`1.5=3/2`) and empirically (a 5,000,000-sample dense sweep per width comparing
+`Math.floor(v/partWidth)` against `Math.floor(v×N/30)` found zero mismatches for N=12, 16, and 20).
+No epsilon, no rounding, no PyJHora-`//`-artifact concern applies to this batch — `Math.floor` is
+fully sufficient with no caveat.
+
+## Oracle Validation
+
+Both PyJHora and vedic-calc were **executed live in this implementation task** (fresh execution,
+independently constructed — not reused from the preflight or Batch 1/2's fixtures):
+
+- D12: 11 boundary points × 3 probes on Scorpio + 12 representative-sign probes at 21.6° = 45 cases.
+- D16: 15 boundary points × 3 probes on Cancer (movable) + 12 representative-sign probes at 17.8° =
+  57 cases.
+- D20: 19 boundary points × 3 probes on Virgo (dual) + 12 representative-sign probes at 4.4° = 69
+  cases.
+- A fresh independent synthetic benchmark chart (7 points, distinct from every prior batch's
+  fixtures) — 7 cases × 3 vargas = 21 checks.
+- **Total: 192 comparisons.**
+
+**Result: the compiled TypeScript implementation was diffed byte-for-byte against fresh output from
+both PyJHora and vedic-calc — zero differences across all 192 comparisons, against both oracles.**
+This is a materially cleaner result than Batch 2 (which had 4 confirmed, explained discrepancies) —
+consistent with the Precision Policy finding above.
+
+## Architecture Reuse
+
+- `countSignsForward(fromSign, offset)` — reused unchanged for all three vargas.
+- `isOddSign(sign)` — **not used by any of D12/D16/D20** (none has an odd/even branch in its
+  canonical form; D12 was double-checked for this specifically, per the preflight's own explicit
+  audit finding).
+- `getElementIndex(sign)` (Batch 2) — not used by this batch.
+- `getModalityIndex(sign)` (new, private, this batch) + two separate 3-entry tables
+  (`D16_MODALITY_START_SIGNS`, `D20_MODALITY_START_SIGNS`) — the only new primitives, exactly
+  matching the preflight's own architecture-impact prediction (one small, reusable modality helper,
+  not a generalized element/modality framework).
+
+## API Expansion
+
+- `VargaId` widened from `2 | 3 | 4 | 7 | 9 | 10` to `2 | 3 | 4 | 7 | 9 | 10 | 12 | 16 | 20`.
+- `getDivisionalSign(varga, sign, signDegree)` extended with 3 new `switch` cases (`12`, `16`,
+  `20`) — no change to any existing case.
+- No change to `NormalizedChart`, `chart/types.ts`, or `vedic/chart.ts`.
+- Carried-forward note (unresolved, out of scope for this batch, same as Batch 2's own closure
+  audit recorded): the individual per-varga functions for D7/D9/D10/D12/D16/D20 are still not
+  re-exported from `index.ts` — only Batch 1's D2/D3/D4 functions and the generic
+  `getDivisionalSign` dispatcher are part of the package's public surface today.
+
+## Input Contract
+
+Unchanged — `signDegree` precondition (`[0, 30)`) applies identically. No date-only input, no
+guessed birth time, no noon/midnight fallback.
+
+## Tests
+
+Extended `packages/astrology-core/src/vedic/__tests__/divisional.test.ts` — **33 new tests** (96
+total in this file), all passing:
+- `getD12DwadasamsaSign`: all 12 segments, a full 11-boundary loop, explicit "no odd/even branch"
+  and "no modality/element branch" proofs, wraparound, near-30° stability, 12-sign representative
+  sweep, independent benchmark-chart cases, determinism.
+- `getD16ShodasamsaSign`: all 3 modality groups (4 signs each), all 16 segments, a full 15-boundary
+  loop, wraparound, near-30° stability, 12-sign representative sweep, independent benchmark-chart
+  cases, determinism.
+- `getD20VimsamsaSign`: all 3 modality groups, an explicit `"REGRESSION GUARD"` test proving the
+  D16/D20 fixed/dual swap is intentional (not a shared-table bug), all 20 segments, a full
+  19-boundary loop, near-30° stability, 12-sign representative sweep, independent benchmark-chart
+  cases, determinism.
+- `getDivisionalSign`: dispatch-correctness for varga 12/16/20, explicit Batch-1 and Batch-2
+  non-regression checks (benchmark values re-asserted for both), categorical-output invariant
+  extended to all 9 vargas.
+
+**Test independence:** boundary/segment expected values hand-derived from the frozen formula; the
+representative-sign-sweep and benchmark-chart expected values were taken from this task's own
+fresh, independently-executed oracle runs (not reused from the preflight), with one round of
+self-correction — three hand-derived "12 representative signs" tables initially contained
+arithmetic slips, caught by the test run itself and corrected against the independently-verified
+oracle output before this report was written.
+
+### Regression
+
+Full suite re-run alongside the new tests — **595/595 passing** (562 pre-existing + 33 new, zero
+regressions). Phase 4/Phase 5 regression suites, Batch 1 (D2/D3/D4, 30 tests) and Batch 2 (D7/D9/D10,
+33 tests) all pass unchanged, plus two new explicit non-regression assertions (one per batch) in
+the dispatch describe block.
+
+## Validation Gate
+
+- `tsc -p tsconfig.json --noEmit`: clean.
+- Strict test-inclusive invocation (same flags as Batch 1/2): clean.
+- `npm run build`: clean.
+- `npx vitest run`: 595/595 passing, 28/28 test files passing.
+
+## Explicit Non-Scope (Batch 3, confirmed, not touched)
+
+D24, D27, D30, D40, D45 calculation code — not implemented. D60 — remains DEFERRED, not researched
+in this task. `NormalizedChart`/`chart/types.ts` — unchanged, no schema bump. `vedic/chart.ts` —
+unchanged. Phase 4/Phase 5 source files — unchanged (confirmed by `git diff`: zero lines touched).
+No Rule Engine, interpretation, yoga, prediction, or house-lord logic. No UI, no API server. No
+dependency added or upgraded (`package.json`/`package-lock.json` for `astrology-core` unchanged).
+No method-selection parameter exposed. No commit made.
