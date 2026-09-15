@@ -22,15 +22,17 @@
  * lặng lẽ. Đây chính là bài học cốt lõi của CF-01 (V3-04/V3-05): một `number` "năm" trần đi qua ranh
  * giới quy ước mà không ai biết nó thuộc quy ước nào.
  */
-import type { GanzhiPillar } from "../calendar/ganzhi.js";
+import { type GanzhiPillar, buildPillar } from "../calendar/ganzhi.js";
 import type { LunarDate } from "../calendar/lunarCalendar.js";
 import { getGanzhiYear, getLunarDate } from "../index.js";
+import { mod } from "../utils/math.js";
 import { type BirthDate, hasCalendarDate } from "./birthDate.js";
 
 export type YearConvention =
   | "GREGORIAN"
   | "GANZHI_CALENDAR_BOUNDARY"
   | "GANZHI_LICH_XUAN"
+  | "GANZHI_LUNAR_TET"
   | "LUNAR_TET";
 
 /** Tập giá trị hợp lệ (để validate runtime khi convention đến từ dữ liệu ngoài). */
@@ -38,6 +40,7 @@ export const YEAR_CONVENTIONS: readonly YearConvention[] = [
   "GREGORIAN",
   "GANZHI_CALENDAR_BOUNDARY",
   "GANZHI_LICH_XUAN",
+  "GANZHI_LUNAR_TET",
   "LUNAR_TET",
 ];
 
@@ -46,9 +49,9 @@ export interface ResolvedYearContext {
   readonly convention: YearConvention;
   /** Giá trị năm (số nguyên) sau khi áp đúng ranh giới của quy ước. */
   readonly year: number;
-  /** Trụ Can Chi năm — CÓ MẶT cho 2 quy ước Ganzhi, null cho GREGORIAN/LUNAR_TET. */
+  /** Trụ Can Chi năm — CÓ MẶT cho 3 quy ước Ganzhi (1/1, Lập Xuân, Lập Xuân Tết), null cho GREGORIAN/LUNAR_TET. */
   readonly pillar: GanzhiPillar | null;
-  /** Ngày Âm lịch đầy đủ — CÓ MẶT cho LUNAR_TET, null cho các quy ước khác. */
+  /** Ngày Âm lịch đầy đủ — CÓ MẶT cho LUNAR_TET và GANZHI_LUNAR_TET, null cho các quy ước khác. */
   readonly lunarDate: LunarDate | null;
   /** Mô tả ranh giới (phục vụ audit/hiển thị). */
   readonly boundaryRule: string;
@@ -61,7 +64,7 @@ export class BirthDatePrecisionError extends Error {
   constructor(convention: YearConvention) {
     super(
       `Quy ước năm "${convention}" phụ thuộc NGÀY sinh cụ thể (ranh giới ` +
-        `${convention === "LUNAR_TET" ? "Tết" : "Lập Xuân"}), nhưng BirthDate chỉ có NĂM (precision="year"). ` +
+        `${convention === "LUNAR_TET" || convention === "GANZHI_LUNAR_TET" ? "Tết" : "Lập Xuân"}), nhưng BirthDate chỉ có NĂM (precision="year"). ` +
         `KHÔNG được âm thầm bịa 1/1 — hãy cung cấp đủ ngày/tháng sinh, hoặc chọn quy ước không phụ thuộc ngày ` +
         `(GREGORIAN / GANZHI_CALENDAR_BOUNDARY).`,
     );
@@ -143,6 +146,31 @@ export function resolveYearContext(birthDate: BirthDate, convention: YearConvent
       };
     }
 
+    case "GANZHI_LUNAR_TET": {
+      // V3-17 (D8=B): trụ Can Chi NĂM theo ranh giới Mùng 1 Tết (âm lịch) — dùng cho Tử Vi Natal.
+      // KHÁC LUNAR_TET (chỉ trả số năm + lunarDate, pillar=null): quy ước này TRẢ VỀ trụ Can Chi.
+      // KHÔNG nhân bản thuật toán lịch: lấy năm âm lịch từ getLunarDate rồi suy trụ bằng công thức
+      // Lục Thập Hoa Giáp chuẩn (năm 4 = Giáp Tý), y hệt getGanzhiYear — chỉ khác ranh giới (Tết).
+      if (!hasCalendarDate(birthDate)) throw new BirthDatePrecisionError(convention);
+      const lunar = getLunarDate({
+        year: birthDate.gregorianYear,
+        month: birthDate.gregorianMonth as number,
+        day: birthDate.gregorianDay as number,
+        hour: birthDate.hour ?? 12,
+        minute: birthDate.minute ?? 0,
+        timeZone: birthDate.timeZone,
+      });
+      const cycleIndex = mod(lunar.year - 4, 60);
+      return {
+        convention,
+        year: lunar.year,
+        pillar: buildPillar(cycleIndex, cycleIndex),
+        lunarDate: lunar,
+        boundaryRule: "Ganzhi ranh giới Mùng 1 Tết (âm lịch) — trụ năm Can Chi theo năm âm lịch.",
+        sourceImplementation: "calendar-core::getLunarDate + buildPillar((namÂmLịch-4) mod 60).",
+      };
+    }
+
     case "LUNAR_TET": {
       if (!hasCalendarDate(birthDate)) throw new BirthDatePrecisionError(convention);
       const lunar = getLunarDate({
@@ -176,7 +204,10 @@ export function resolveYearContext(birthDate: BirthDate, convention: YearConvent
 export function resolveAllAvailableYearContexts(birthDate: BirthDate): ResolvedYearContext[] {
   const result: ResolvedYearContext[] = [];
   for (const convention of YEAR_CONVENTIONS) {
-    if (!hasCalendarDate(birthDate) && (convention === "GANZHI_LICH_XUAN" || convention === "LUNAR_TET")) {
+    if (
+      !hasCalendarDate(birthDate) &&
+      (convention === "GANZHI_LICH_XUAN" || convention === "GANZHI_LUNAR_TET" || convention === "LUNAR_TET")
+    ) {
       continue; // không đủ độ chính xác — bỏ qua thay vì bịa
     }
     result.push(resolveYearContext(birthDate, convention));

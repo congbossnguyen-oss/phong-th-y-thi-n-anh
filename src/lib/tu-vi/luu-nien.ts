@@ -24,7 +24,17 @@
 import { mod12, tamHopGroup, LOC_TON_TABLE, THIEN_MA_START, THAI_TUE_STAGES, DAO_HOA_START, hongLoanIndex, TU_HOA_TABLE } from "./rules";
 import { thienKhocIndex, thienHuIndex, CO_THAN_BY_CHI, QUA_TU_BY_CHI } from "./tap-dieu";
 import { CAN, CHI } from "../menh-nap-am";
+import { luuNienQuyUoc, type QuyUocNam } from "./year-contracts";
 import type { TuViChart } from "./engine";
+
+// V3-17 (D5): KHAI BÁO TƯỜNG MINH quy ước năm Lưu Niên = GANZHI_CALENDAR_BOUNDARY (nhãn Can Chi 1/1).
+// Input là NĂM dương lịch (không có ngày) nên KHÔNG áp được ranh giới Tết/Lập Xuân — 1/1 là biểu diễn
+// duy nhất khả dĩ. KHÔNG đổi thuật toán `canOfYear`/`getLuuTuHoa`. Re-export helper để UI/API gắn nhãn.
+export { luuNienQuyUoc, type QuyUocNam };
+/** Mô tả quy ước năm Lưu Niên cho 1 năm xem cụ thể (metadata phơi bày UI/API). */
+export function moTaQuyUocLuuNien(namXem: number): QuyUocNam & { nam: number; can: string } {
+  return { ...luuNienQuyUoc(namXem), can: canOfYear(namXem) };
+}
 
 export interface LuuNienPlacement {
   chiIndex: number;

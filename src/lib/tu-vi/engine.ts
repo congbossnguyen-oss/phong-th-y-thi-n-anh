@@ -17,6 +17,7 @@ import {
   thienHyIndex, thienYIndex, tinhMenhQuai, vanKhucIndex, vanXuongIndex,
 } from "./rules";
 import type { TrangThaiSao, TuHoaResult } from "./rules";
+import { TUVI_NATAL_QUY_UOC, type QuyUocNam } from "./year-contracts";
 
 export interface TuViInput {
   day: number;
@@ -71,6 +72,10 @@ export interface TuViChart {
   lunarIsLeap: boolean;
   yearCanName: string;
   yearChiName: string;
+  // V3-17: KHAI BÁO TƯỜNG MINH quy ước năm Natal (LUNAR_TET/Tết) — metadata phơi bày ra UI/API (D6).
+  // KHÔNG đổi thuật toán: yearCanName/yearChiName vẫn dẫn xuất y hệt trước (((lunar.year-4)%60)), field
+  // này chỉ mô tả ranh giới đã dùng + số năm âm lịch. `nam` = năm âm lịch (ranh giới Tết).
+  namQuyUoc: QuyUocNam & { nam: number };
   amDuongNam: "Dương Nam" | "Âm Nam" | "Dương Nữ" | "Âm Nữ";
   gioChiName: string;
   tuoiNamXem: number | null;
@@ -352,6 +357,7 @@ export function tinhTuVi(input: TuViInput): TuViChart {
     lunarIsLeap: lunar.isLeapMonth,
     yearCanName,
     yearChiName,
+    namQuyUoc: { ...TUVI_NATAL_QUY_UOC, nam: lunar.year },
     amDuongNam,
     gioChiName: CHI[gioChiIndex],
     tuoiNamXem,
