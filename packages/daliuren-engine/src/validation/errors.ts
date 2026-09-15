@@ -12,7 +12,10 @@ export type DaLiuRenValidationErrorCode =
   | "CONFIDENCE_SUMMARY_MISMATCH"
   | "QUESTION_TYPE_NOT_ALLOWED"
   | "RULE_DEPENDENCY_UNAVAILABLE"
-  | "DUPLICATE_ID";
+  | "DUPLICATE_ID"
+  | "MISSING_EVALUATOR"
+  | "DUPLICATE_EVALUATOR"
+  | "EVALUATOR_FOR_UNKNOWN_RULE";
 
 export class DaLiuRenValidationError extends Error {
   readonly code: DaLiuRenValidationErrorCode;

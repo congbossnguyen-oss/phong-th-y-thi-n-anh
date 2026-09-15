@@ -4,7 +4,7 @@
  * liệu đó, chỉ đủ để test shape/validator, không đại diện quy tắc đã kiểm chứng đầy đủ.
  */
 import type { ProvenanceEntry } from "../../src/interpretation/provenance.js";
-import type { RuleDefinition } from "../../src/interpretation/rule.js";
+import type { RuleDefinition, EvaluatorRegistration } from "../../src/interpretation/rule.js";
 import type { Signal } from "../../src/interpretation/signal.js";
 import type { Conflict } from "../../src/interpretation/conflict.js";
 import type { InterpretationPackage } from "../../src/interpretation/interpretation-package.js";
@@ -94,6 +94,38 @@ export const SYNTHETIC_SIGNALS: Signal[] = [
     calculationConfidence: "A",
     provenanceId: "R-HONNHAN-THIENHAU-LUCHOP",
     appliesTo: "hon-nhan",
+  },
+];
+
+/**
+ * SYNTHETIC — evaluator GIẢ (mock) khớp 1-1 với SYNTHETIC_RULES, chỉ để chứng minh hạ tầng
+ * Rule Registry/Evaluator Registry hoạt động đúng (Phase 10.6.2) — KHÔNG PHẢI logic domain
+ * thật, luôn trả `status: "not-triggered"`, KHÔNG đọc/diễn giải field Calculation nào.
+ */
+export const SYNTHETIC_EVALUATOR_REGISTRATIONS: EvaluatorRegistration[] = [
+  {
+    ruleId: "R-SANCHUAN-KE-NHAT",
+    evaluate: () => ({
+      ruleId: "R-SANCHUAN-KE-NHAT",
+      status: "not-triggered",
+      inputs: {},
+      signals: [],
+      provenanceId: "R-SANCHUAN-KE-NHAT",
+      ruleConfidence: "A",
+      calculationConfidence: "A",
+    }),
+  },
+  {
+    ruleId: "R-HONNHAN-THIENHAU-LUCHOP",
+    evaluate: () => ({
+      ruleId: "R-HONNHAN-THIENHAU-LUCHOP",
+      status: "not-triggered",
+      inputs: {},
+      signals: [],
+      provenanceId: "R-HONNHAN-THIENHAU-LUCHOP",
+      ruleConfidence: "A",
+      calculationConfidence: "A",
+    }),
   },
 ];
 

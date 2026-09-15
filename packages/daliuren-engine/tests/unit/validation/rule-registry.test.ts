@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { validateRuleRegistry, questionTypeAllowsRules } from "../../../src/validation/rule-registry.js";
+import {
+  validateRuleRegistry,
+  questionTypeAllowsRules,
+  buildRuleRegistry,
+  getRuleById,
+  selectEligibleRules,
+} from "../../../src/validation/rule-registry.js";
 import { DaLiuRenValidationError } from "../../../src/validation/errors.js";
 import { SYNTHETIC_PROVENANCE, SYNTHETIC_RULES } from "../fixtures.js";
 import type { RuleDefinition } from "../../../src/interpretation/rule.js";
@@ -73,6 +79,63 @@ describe("daliuren-engine/validation/rule-registry", () => {
         dependencies: { calculationFields: ["twelveGenerals"], unimplementedComponents: ["lianMuGuiRen"] },
       };
       expect(() => validateRuleRegistry([blocked], SYNTHETIC_PROVENANCE)).toThrow(DaLiuRenValidationError);
+    });
+  });
+
+  describe("buildRuleRegistry / getRuleById (Phase 10.6.2 Section 2)", () => {
+    it("[A] giữ NGUYÊN thứ tự rules đã truyền vào — deterministic, không sắp lại", () => {
+      const registry = buildRuleRegistry(SYNTHETIC_RULES, SYNTHETIC_PROVENANCE);
+      expect(registry.rules).toEqual(SYNTHETIC_RULES);
+      expect(registry.rules.map((r) => r.ruleId)).toEqual(SYNTHETIC_RULES.map((r) => r.ruleId));
+    });
+
+    it("[B] ném lỗi (không trả về registry một-phần) nếu có ruleId trùng lặp", () => {
+      const duplicated: RuleDefinition[] = [...SYNTHETIC_RULES, SYNTHETIC_RULES[0]!];
+      expect(() => buildRuleRegistry(duplicated, SYNTHETIC_PROVENANCE)).toThrow(DaLiuRenValidationError);
+    });
+
+    it("[C] tái sử dụng validateRuleRegistry — vẫn phát hiện provenanceId mồ côi khi build registry", () => {
+      const broken: RuleDefinition[] = [{ ...SYNTHETIC_RULES[0]!, provenanceId: "KHONG-TON-TAI" }];
+      expect(() => buildRuleRegistry(broken, SYNTHETIC_PROVENANCE)).toThrow(/provenanceId/);
+    });
+
+    it("getRuleById trả về đúng RuleDefinition theo ruleId, undefined nếu không có (không throw)", () => {
+      const registry = buildRuleRegistry(SYNTHETIC_RULES, SYNTHETIC_PROVENANCE);
+      expect(getRuleById(registry, "R-SANCHUAN-KE-NHAT")?.ruleId).toBe("R-SANCHUAN-KE-NHAT");
+      expect(getRuleById(registry, "R-KHONG-TON-TAI")).toBeUndefined();
+    });
+  });
+
+  describe("selectEligibleRules (Phase 10.6.2 Section 5-6)", () => {
+    const registry = buildRuleRegistry(SYNTHETIC_RULES, SYNTHETIC_PROVENANCE);
+
+    it("[D] Level 1: questionType KHÔNG được phép (UNVERIFIED) → danh sách rỗng, BẤT KỂ rule nào trong registry", () => {
+      expect(selectEligibleRules(registry, "su-nghiep")).toEqual([]);
+      expect(selectEligibleRules(registry, "tinh-cam")).toEqual([]);
+    });
+
+    it("rule KHÔNG khai báo questionTypes (universal/core) áp dụng cho MỌI questionType hợp lệ", () => {
+      const eligibleForKienTung = selectEligibleRules(registry, "kien-tung");
+      expect(eligibleForKienTung.map((r) => r.ruleId)).toContain("R-SANCHUAN-KE-NHAT");
+      expect(eligibleForKienTung.map((r) => r.ruleId)).not.toContain("R-HONNHAN-THIENHAU-LUCHOP");
+    });
+
+    it("rule CÓ khai báo questionTypes chỉ áp dụng cho đúng questionType đó", () => {
+      const eligibleForHonNhan = selectEligibleRules(registry, "hon-nhan");
+      expect(eligibleForHonNhan.map((r) => r.ruleId).sort()).toEqual(["R-HONNHAN-THIENHAU-LUCHOP", "R-SANCHUAN-KE-NHAT"].sort());
+    });
+
+    it("[J] deterministic: gọi nhiều lần cùng registry/questionType cho CÙNG thứ tự kết quả, không mutate registry", () => {
+      const first = selectEligibleRules(registry, "hon-nhan");
+      const second = selectEligibleRules(registry, "hon-nhan");
+      expect(second).toEqual(first);
+      expect(registry.rules).toEqual(SYNTHETIC_RULES); // registry gốc không bị đổi thứ tự/nội dung
+    });
+
+    it("KHÔNG sắp xếp theo confidence — thứ tự kết quả LUÔN khớp thứ tự trong registry.rules (filter, không sort)", () => {
+      const eligible = selectEligibleRules(registry, "hon-nhan");
+      const expectedOrder = registry.rules.filter((r) => eligible.some((e) => e.ruleId === r.ruleId)).map((r) => r.ruleId);
+      expect(eligible.map((r) => r.ruleId)).toEqual(expectedOrder);
     });
   });
 });

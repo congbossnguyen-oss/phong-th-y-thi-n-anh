@@ -10,7 +10,7 @@
  */
 import type { RuleDefinition } from "../interpretation/rule.js";
 import type { ProvenanceEntry } from "../interpretation/provenance.js";
-import { QUESTION_TYPE_STATUS } from "../interpretation/question-type.js";
+import { QUESTION_TYPE_STATUS, type QuestionType } from "../interpretation/question-type.js";
 import { DaLiuRenValidationError } from "./errors.js";
 
 /** question_type có được phép gắn rule mới hay không — READY/PARTIAL: có; UNVERIFIED/DO_NOT_IMPLEMENT: không. */
@@ -76,4 +76,45 @@ export function validateRuleRegistry(
       );
     }
   }
+}
+
+/**
+ * Rule Registry ĐÃ QUA `validateRuleRegistry` — Phase 10.6.2 Section 2. Type CHẶN việc gọi
+ * `selectEligibleRules`/`buildEvaluatorRegistry` trên 1 mảng `RuleDefinition[]` CHƯA validate
+ * (chỉ `buildRuleRegistry` mới tạo ra được giá trị kiểu này) — Level 1 + Level 2 vì vậy LUÔN
+ * đúng cho MỌI rule bên trong, không cần re-check ở tầng gọi sau.
+ */
+export interface ValidatedRuleRegistry {
+  /** Đúng thứ tự đã truyền vào `buildRuleRegistry` — KHÔNG sắp lại theo confidence/questionType/bất kỳ giá trị suy ra nào (Phase 10.6.2 Section 6). */
+  readonly rules: readonly RuleDefinition[];
+}
+
+/** Validate rồi bọc thành `ValidatedRuleRegistry` — ném lỗi (qua `validateRuleRegistry`) nếu bất kỳ rule nào vi phạm, KHÔNG trả về registry "một phần hợp lệ". */
+export function buildRuleRegistry(
+  rules: readonly RuleDefinition[],
+  provenanceById: Readonly<Record<string, ProvenanceEntry>>,
+): ValidatedRuleRegistry {
+  validateRuleRegistry(rules, provenanceById);
+  return { rules };
+}
+
+/** Tra `RuleDefinition` theo `ruleId` trong 1 registry đã validate — `undefined` nếu không có (KHÔNG throw, để caller tự quyết định ý nghĩa "không tìm thấy"). */
+export function getRuleById(registry: ValidatedRuleRegistry, ruleId: string): RuleDefinition | undefined {
+  return registry.rules.find((rule) => rule.ruleId === ruleId);
+}
+
+/**
+ * Rule nào trong registry ĐÃ VALIDATE đủ điều kiện chạy cho 1 `questionType` — Phase 10.6.2
+ * Section 5-6: Level 1 (questionType tổng quát có được phép hay không) + "rule này CÓ áp dụng
+ * cho questionType này không" (universal nếu `questionTypes` vắng mặt, hoặc khớp danh sách).
+ * Level 2 KHÔNG cần re-check ở đây — MỌI rule trong `registry.rules` đã pass Level 2 tại
+ * `buildRuleRegistry` (type `ValidatedRuleRegistry` đảm bảo điều này, xem comment trên).
+ *
+ * THUẦN, TẤT ĐỊNH: giữ NGUYÊN thứ tự `registry.rules`, KHÔNG sắp xếp lại, KHÔNG mutate registry.
+ */
+export function selectEligibleRules(registry: ValidatedRuleRegistry, questionType: QuestionType): readonly RuleDefinition[] {
+  if (!questionTypeAllowsRules(questionType)) {
+    return [];
+  }
+  return registry.rules.filter((rule) => rule.questionTypes === undefined || rule.questionTypes.includes(questionType));
 }

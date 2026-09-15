@@ -11,6 +11,7 @@ import type { Confidence } from "./confidence.js";
 import type { QuestionType } from "./question-type.js";
 import type { Signal } from "./signal.js";
 import type { RuleDependencyDeclaration } from "./rule-dependencies.js";
+import type { DaLiuRenCalculationResult } from "../da-liu-ren-calculation-result.js";
 
 export type RuleLayer = "core" | "secondary" | "auxiliary";
 
@@ -58,4 +59,18 @@ export interface RuleResult<TInputs = unknown, TOutputs = unknown> {
   calculationConfidence: Confidence;
   /** Chỉ có khi `status === 'error'` — KHÔNG được nuốt lỗi âm thầm (Phase 5A mục 17 "explicit errors"). */
   errorMessage?: string;
+}
+
+/**
+ * Chữ ký evaluator ĐÃ FREEZE (Phase 10.2 Model A, tái xác nhận Phase 10.4 Section 3): hàm
+ * THUẦN, CHỈ nhận `DaLiuRenCalculationResult` — KHÔNG `ChartInput`, KHÔNG `EngineMeta`, KHÔNG
+ * `QuestionType`. Sống ở evaluator registry RIÊNG (xem validation/evaluator-registry.ts) —
+ * KHÔNG gắn vào `RuleDefinition` (đó vẫn CHỈ là dữ liệu, xem comment `condition` ở trên).
+ */
+export type RuleEvaluator = (calculation: DaLiuRenCalculationResult) => RuleResult;
+
+/** 1 lượt đăng ký evaluator cho đúng 1 `ruleId` — dạng danh sách (không phải object/Map đã gộp sẵn) để `buildEvaluatorRegistry` phát hiện được ĐĂNG KÝ TRÙNG LẶP (Phase 10.6.2 Section 4). */
+export interface EvaluatorRegistration {
+  readonly ruleId: string;
+  readonly evaluate: RuleEvaluator;
 }
