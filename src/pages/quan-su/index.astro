@@ -9,6 +9,7 @@ import "../../styles/quan-su.css";
 import { getAllCategories, getAllQuestions, getCategoriesWithCounts } from "../../lib/quan-su";
 import TourChaoMung from "../../components/quan-su/TourChaoMung.astro";
 import { thongTinKhuyenMai } from "../../lib/quan-su/khuyen-mai-luan-giai";
+import { daiCatLoiTools, paidTools } from "../../lib/dai-cat-loi-tools";
 
 export const prerender = false;
 
@@ -17,16 +18,66 @@ export const prerender = false;
 // ở đây chỉ là hiển thị — chặn thật nằm ở checkout.ts.
 const DANG_MO_BAN = false;
 
-// Thanh tìm kiếm từ khóa trên đầu app (Thầy, 2026-09-16) — tìm trong TOÀN BỘ thư viện câu hỏi
-// (120+ câu), không riêng 5 nhóm nổi bật ở dưới. Chạy hoàn toàn client-side trên 1 mảng nhỏ
-// (title/subtitle/tên nhóm) đã build sẵn ở server — không cần API riêng, nhanh, không tốn lượt.
+// "Công cụ hữu ích" — tách thành hằng số dùng chung giữa lưới hiển thị (bên dưới) và chỉ mục tìm
+// kiếm, để không lặp lại 5 dòng này 2 chỗ rồi lệch nhau dần theo thời gian.
+const CONG_CU_HUU_ICH = [
+  { href: "/quan-su/xem-ngay-tot-xau", label: "Xem Ngày Tốt Xấu", icon: "calendar" },
+  { href: "/quan-su/luan-so-dien-thoai", label: "Luận Số Điện Thoại", icon: "phone" },
+  { href: "/quan-su/tinh-trung-tang", label: "Tính Trùng Tang", icon: "clock" },
+  { href: "/quan-su/doi-lich-am-duong", label: "Đổi Lịch", icon: "calendar" },
+  { href: "/quan-su/gio-tot-trong-ngay", label: "Giờ Hoàng Đạo", icon: "clock" },
+] as const;
+
+// Thanh tìm kiếm từ khóa trên đầu app (Thầy, 2026-09-16, mở rộng 2026-09-16: "tìm được tất cả các
+// hạng mục... kể cả đại cát lợi cơ bản/cao cấp, trùng tang, luận số điện thoại"). Gộp CẢ 4 nguồn nội
+// dung của app vào 1 chỉ mục: 120+ câu hỏi + 14 công cụ Đại Cát Lợi Cơ Bản + 13 dịch vụ Cao Cấp/VIP +
+// 5 Công cụ hữu ích — chạy hoàn toàn client-side trên 1 mảng nhỏ build sẵn ở server, không cần API
+// riêng, không tốn lượt hỏi.
 const tenNhomTheoId = Object.fromEntries(getAllCategories().map((c) => [c.id, c.title]));
-const chiMucTimKiem = getAllQuestions().map((q) => ({
+const chiMucCauHoi = getAllQuestions().map((q) => ({
   id: q.question_id,
   title: q.title,
   subtitle: q.subtitle,
   nhom: tenNhomTheoId[q.category] ?? "",
+  href: `/quan-su/hoi/${q.question_id}`,
 }));
+
+// Đại Cát Lợi - Cơ Bản — bỏ "ngay-dai-cat-ca-nhan" (kiểm tra 2026-09-16: 14/15 mục trong
+// dai-cat-loi-tools.ts đã có trang /quan-su/* riêng, mục này thì chưa, tránh dẫn khách tới trang
+// không tồn tại).
+const chiMucCoBan = daiCatLoiTools
+  .filter((t) => t.href !== "/dai-cat-loi/ngay-dai-cat-ca-nhan")
+  .map((t) => ({
+    id: t.href,
+    title: t.title,
+    subtitle: t.desc,
+    nhom: "Đại Cát Lợi - Cơ Bản",
+    href: t.href.replace("/dai-cat-loi/", "/quan-su/"),
+  }));
+
+// Đại Cát Lợi - Cao Cấp (Dịch vụ VIP) — cùng danh sách loại trừ với /quan-su/dich-vu-vip.astro:
+// sim-phong-thuy-khai-van chưa có trang app, trach-cat-ky-mon đã dời sang hub Kỳ Môn Độn Giáp riêng
+// (đang "Sắp ra mắt", chưa mở cho khách nên không đưa vào tìm kiếm kẻo dẫn khách tới trang khoá).
+const BO_KHOI_TIM_KIEM_CAO_CAP = new Set(["/dai-cat-loi/sim-phong-thuy-khai-van", "/dai-cat-loi/trach-cat-ky-mon"]);
+const chiMucCaoCap = paidTools
+  .filter((t) => !BO_KHOI_TIM_KIEM_CAO_CAP.has(t.href))
+  .map((t) => ({
+    id: t.href,
+    title: t.title,
+    subtitle: t.desc,
+    nhom: "Đại Cát Lợi - Cao Cấp",
+    href: t.href.replace("/dai-cat-loi/", "/quan-su/"),
+  }));
+
+const chiMucCongCu = CONG_CU_HUU_ICH.map((t) => ({
+  id: t.href,
+  title: t.label,
+  subtitle: "",
+  nhom: "Công cụ hữu ích",
+  href: t.href,
+}));
+
+const chiMucTimKiem = [...chiMucCauHoi, ...chiMucCoBan, ...chiMucCaoCap, ...chiMucCongCu];
 
 // Tour chào mừng người mới — chạy ngay trên trang này, CHỈ hiện đúng 1 lần cho mỗi tài khoản (lần
 // đầu vào app, thường là ngay sau khi đăng ký xong). Cờ `daXemChaoMungQuanSu` nằm trên tài khoản
@@ -74,11 +125,12 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
     </div>
 
     <div class="qs-wrap" style="margin-top:0;">
-      {/* Tìm kiếm từ khóa — trên đầu app, ngay dưới hero (Thầy, 2026-09-16). Gõ tới đâu lọc tới đó
-          trong 120+ câu hỏi, bấm 1 kết quả là vào thẳng trang hỏi câu đó (/quan-su/hoi/<id>). */}
+      {/* Tìm kiếm từ khóa — trên đầu app, ngay dưới hero (Thầy, 2026-09-16, mở rộng cùng ngày để
+          phủ HẾT các hạng mục: 120+ câu hỏi + Đại Cát Lợi Cơ Bản/Cao Cấp + Công cụ hữu ích, xem
+          chiMucTimKiem ở đầu file). Gõ tới đâu lọc tới đó, bấm 1 kết quả vào thẳng trang đó. */}
       <div class="qsh-search" data-tour="tim-kiem">
         <svg class="qsh-search-ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="10.5" cy="10.5" r="6.5"/><path d="M20 20l-4.8-4.8" stroke-linecap="round"/></svg>
-        <input id="qsh-search-input" type="search" placeholder="Tìm câu hỏi — vd: chuyển việc, mua nhà, vay vốn…" autocomplete="off" />
+        <input id="qsh-search-input" type="search" placeholder="Tìm câu hỏi, công cụ — vd: trùng tang, số điện thoại, khai trương…" autocomplete="off" />
         <div id="qsh-search-results" class="qsh-search-results qs-hidden"></div>
       </div>
 
@@ -307,13 +359,7 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
            phía trên (29/8/2026, anh Công) — không còn ở đây nữa, tránh lặp 2 nơi trên cùng 1 trang. -->
       <p class="qsh-section-title">Công cụ hữu ích</p>
       <div class="qsh-tool-grid">
-        {[
-          { href: "/quan-su/xem-ngay-tot-xau", label: "Xem Ngày Tốt Xấu", icon: "calendar" },
-          { href: "/quan-su/luan-so-dien-thoai", label: "Luận Số Điện Thoại", icon: "phone" },
-          { href: "/quan-su/tinh-trung-tang", label: "Tính Trùng Tang", icon: "clock" },
-          { href: "/quan-su/doi-lich-am-duong", label: "Đổi Lịch", icon: "calendar" },
-          { href: "/quan-su/gio-tot-trong-ngay", label: "Giờ Hoàng Đạo", icon: "clock" },
-        ].map((t) => (
+        {CONG_CU_HUU_ICH.map((t) => (
           <a href={t.href} class="qsh-tool-item">
             <span class="qsh-tool-ic">
               {t.icon === "calendar" && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3.5" y="5" width="17" height="16" rx="2"/><path d="M3.5 9.5h17M8 3v4M16 3v4" stroke-linecap="round"/></svg>}
@@ -378,12 +424,12 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
       }
       ketQuaEl.classList.remove("qs-hidden");
       if (ds.length === 0) {
-        ketQuaEl.innerHTML = '<div class="qsh-search-empty">Không tìm thấy câu hỏi phù hợp — thử từ khóa khác.</div>';
+        ketQuaEl.innerHTML = '<div class="qsh-search-empty">Không tìm thấy mục phù hợp — thử từ khóa khác.</div>';
         return;
       }
       ketQuaEl.innerHTML = ds
         .map(
-          (c) => `<a href="/quan-su/hoi/${encodeURIComponent(c.id)}" class="qsh-search-item">
+          (c) => `<a href="${esc(c.href)}" class="qsh-search-item">
             <span class="qsh-search-item-title">${esc(c.title)}</span>
             <span class="qsh-search-item-nhom">${esc(c.nhom)}</span>
           </a>`,
