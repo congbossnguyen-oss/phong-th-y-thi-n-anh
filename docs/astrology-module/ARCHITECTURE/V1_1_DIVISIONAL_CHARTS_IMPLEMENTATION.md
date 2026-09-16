@@ -787,7 +787,11 @@ this engagement, source-code self-labeling (PyJHora's own docstring/enum naming 
 own self-declared canonical Parashari form, not independent verification against a primary Sanskrit
 text.
 
-## Explicit Non-Scope (Batch 4, confirmed, not touched)
+## Explicit Non-Scope (Batch 4, confirmed, not touched) — Batch 4's own scope at the time
+
+**Correction (post-Batch-5):** D40/D45 listed below as "not implemented" described Batch 4's own
+scope — they were implemented in Batch 5 (see section below) and are no longer non-scope, matching
+the same correction practice used at every prior batch transition.
 
 D40, D45 calculation code — not implemented. D60 — remains DEFERRED, not researched in this task.
 `NormalizedChart`/`chart/types.ts` — unchanged, no schema bump. `vedic/chart.ts` — unchanged.
@@ -796,3 +800,247 @@ Engine, interpretation, yoga, prediction, or house-lord logic. No UI, no API ser
 added or upgraded (`package.json`/`package-lock.json` for `astrology-core` unchanged). No
 method-selection parameter exposed (PyJHora's D24 methods 2/3, D27 methods 2/3, and D30 methods
 2-5 are all documented but not implemented, per the frozen contract). No commit made.
+
+---
+
+# Batch 5 — D40 + D45 Implementation
+
+**Status: implementation complete, NOT committed.** Checkpoint preserved: HEAD `f983b96` (Batch 4,
+closed + committed). Builds on
+[`V1_1_DIVISIONAL_CHARTS_PREFLIGHT.md`](V1_1_DIVISIONAL_CHARTS_PREFLIGHT.md) §"Batch 5 — D40/D45
+Preflight" (status: `CONTRACT READY WITH VARIANT NOTE`, human-approved and frozen with an explicit
+precision-methodology caveat for D45). This section is additive — Batch 1/2/3/4's sections above are
+otherwise unchanged, aside from the one stale-claim correction noted immediately above.
+
+## Scope
+
+**In this batch:** D40 (Khavedamsa), D45 (Akshavedamsa) — sign-placement calculation only, each
+using the frozen `chart_method=1` ("Traditional Parasara") contract. **Explicitly not in this
+batch:** D60 (contract itself still DEFERRED — not researched in this task). No Rule Engine,
+interpretation, yoga, prediction, house-lord logic, full nested mini-chart, UI, API server, or
+schema migration — none touched.
+
+## D40 Formula (Khavedamsa)
+
+**Contract:** PyJHora `chart_method=1` (`PARASARA_TRADITIONAL`) == vedic-calc's only implementation.
+
+- `part = floor(signDegree / 0.75)` — 40 parts, `0.75 = 3/4`, an exact terminating binary fraction
+  with no repeating-fraction hazard of any kind.
+- Odd sign → count `part` signs forward from **Aries** (fixed seed, not the D1 sign itself).
+- Even sign → count `part` signs forward from **Libra** (fixed seed).
+- Always counted forward — only `chart_method=1` is implemented; PyJHora's alternate,
+  non-Parashari methods are not exposed.
+- Implemented as `getD40KhavedamsaSign(sign, signDegree)`, reusing the existing `isOddSign` helper
+  (unchanged since Batch 1) and `countSignsForward` primitive (unchanged since Batch 1).
+
+## D45 Formula (Akshavedamsa)
+
+**Contract:** PyJHora `chart_method=1` (`PARASARA_TRADITIONAL`) == vedic-calc's only implementation.
+
+- `part = floor(signDegree / (30/45))` — 45 parts, `30/45 = 2/3`, a genuinely repeating binary
+  fraction.
+- Starting sign by **modality** (movable→Aries, fixed→Leo, dual→Sagittarius) — **bit-for-bit the
+  same table as D16's** (`D16_MODALITY_START_SIGNS`), confirmed directly from both oracles, and
+  explicitly **not** D20's table (D20 swaps the fixed/dual roles relative to D16/D45).
+- `(startIndex + part) mod 12`, always forward.
+- No new modality table was created — `getD45AkshavedamsaSign` reuses `D16_MODALITY_START_SIGNS`
+  and `getModalityIndex` directly, per the frozen contract's explicit instruction against
+  duplicating an identical table.
+
+## Precision Policy — D45's Repeating Fraction Has TWO Independent Floating-Point Phenomena
+
+**No `Math.round`, `toFixed`, epsilon, or tolerance was added anywhere in this batch.** D40's part
+width (`0.75 = 3/4`) is an exact terminating binary fraction with zero hazard — confirmed and
+tested with the same simple `k * partWidth ± 1e-9` boundary-loop pattern used for D16/D20/D24.
+
+D45's part width (`30/45 = 2/3 = 0.6666666666666666...`) is a genuinely repeating fraction, and this
+batch's research surfaced **two distinct, independent floating-point phenomena**, not one:
+
+1. **The familiar PyJHora Python `//` artifact** (same root cause already documented for D7, D9,
+   and D27): Python's `//` operator does not always equal `math.floor(a/b)` at exact-integer-quotient
+   boundaries of a repeating fraction. The original oracle probe (constructed via naive `k *
+   (30/45)`, see Oracle Validation below) found apparent differences at **12 of 44 boundaries** (`k
+   = 5,10,13,17,20,23,26,29,34,37,40,43`). **Correction (post-Closure-Audit):** PyJHora's own `//`
+   computation is itself sensitive to the exact input bit pattern — 9 of these 12 (`k =
+   5,10,17,20,23,34,37,40,43`) turn out to be an artifact of the naive `k * (30/45)` probe
+   construction, not of PyJHora disagreeing with the project's contract. When PyJHora is fed the
+   same `(2 * k) / 3` value the shipped tests actually use, it **agrees** with the project at those
+   9 points. Only **3 of 44 boundaries (`k = 13, 26, 29`)** are a genuine, construction-independent
+   PyJHora discrepancy — see "D45 Oracle Artifact Classification" below for the full re-derivation.
+   Resolution is identical in kind to every prior batch: `Math.floor(signDegree / partWidth)`,
+   matching vedic-calc, not reproducing PyJHora's artifact.
+
+2. **A second, previously-unseen phenomenon, newly discovered in this batch's research:** the
+   `k * partWidth` boundary-construction convention established as "safe" in Batch 4 (for D27) is
+   **not** reliably safe for every repeating fraction. For D45, `k * (30/45)` lands **exactly 1 ULP
+   below** the true rational value `k * (2/3)` at 5 specific, disjoint k-values (`k = 7, 14, 25, 28,
+   31`) — e.g. at `k=7`: `7 * (30/45) = 4.666666666666666`, while the true rational value
+   `14/3 = 4.666666666666667`. Because production code applies closed-lower/open-upper semantics,
+   this 1-ULP-low construction would silently classify the boundary itself into the **wrong (lower)
+   segment** if used naively as a test's "at-boundary" value — not a production bug (the production
+   formula itself was never wrong), but a **test-construction** hazard that this batch's research
+   caught before it could produce a false-positive test.
+
+**Resolution, verified by exhaustive check across all 44 boundaries:** construct the D45 boundary
+test value as `(2 * k) / 3` — a single correctly-rounded division representing the exact rational
+value `k * (2/3)`, rather than the two-step `k * (30/45)` (which introduces two independent rounding
+steps). This construction has **zero** misclassifications at any of the 44 boundaries, including all
+5 of the k-values that break the naive `k * partWidth` construction. It is combined with a
+TEST-ONLY, independently-implemented IEEE-754 `nextUp`/`nextDown` ULP utility (direct 64-bit
+manipulation via `DataView`, no library dependency) used to prove, at the bit level, that the naive
+construction is exactly one representable value below the correct one — without introducing any
+arbitrary epsilon tolerance anywhere, in tests or production.
+
+This finding is scoped **only** to test construction; it changes nothing about the production
+formula, which was correct (and independently oracle-verified as matching vedic-calc 100%) from the
+first implementation attempt.
+
+## Oracle Validation
+
+Both PyJHora and vedic-calc were **executed live in this implementation task** (fresh execution on
+an independently-constructed probe set — different signs and degrees than the preflight's or any
+prior batch's fixtures):
+
+- D40: 39 boundary points × 3 probes, on **both** an odd-classified sign and an even-classified sign
+  (234 cases) + 1 midpoint probe + 12 representative-sign probes at 5.7° = 247 cases.
+- D45: 44 boundary points × 3 probes on Capricorn (movable), constructed via `k * (30/45)` in the
+  probe script (132 cases) + 1 midpoint probe + 12 representative-sign probes at 27.9° = 145 cases.
+- A fresh independent synthetic benchmark chart (7 points, distinct from every prior fixture) — 7
+  cases × 2 vargas = 14 checks.
+- **Total: 406 comparisons**, executed fresh against both oracles.
+
+**Result: the compiled TypeScript implementation was diffed byte-for-byte against fresh output from
+both PyJHora and vedic-calc.**
+- **Against vedic-calc: 0 differences across all 406 comparisons** (D40 and D45 both).
+- **Against PyJHora, using this probe's `k * (30/45)` construction: exactly the 12
+  already-classified D45 differences reappear** (reproduced on an entirely different sign —
+  Capricorn — than the preflight used), and no new, unexplained difference was found. D40 shows
+  zero discrepancies against either oracle. **See the Correction below: only 3 of these 12 hold up
+  as genuine discrepancies once re-verified against the `(2 * k) / 3` construction the shipped
+  tests actually use.**
+
+## D45 Oracle Artifact Classification (per the frozen contract's explicit requirement)
+
+**Correction (post-Closure-Audit — see the Batch 5 Closure Audit report):** the paragraph below, as
+originally written, classified all 12 of `{5,10,13,17,20,23,26,29,34,37,40,43}` as genuine PyJHora
+discrepancies. That classification was verified only against a probe that fed PyJHora the naive `k *
+(30/45)` construction. The Closure Audit independently re-verified all 12 points feeding PyJHora the
+exact `(2 * k) / 3` value the shipped test suite actually asserts against (on two different signs —
+Capricorn and Aquarius — with identical results), and found:
+
+- **3 of 44 boundaries (`k = 13, 26, 29`) are genuine, construction-independent PyJHora
+  discrepancies** — PyJHora disagrees with the project regardless of which mathematically-equivalent
+  double is used to represent the boundary.
+- **9 of the originally-listed 12 (`k = 5,10,17,20,23,34,37,40,43`) are not genuine PyJHora
+  discrepancies at all.** PyJHora's own `//`-based computation is itself sensitive to the exact
+  input bit pattern (the same class of fragility this batch already documented for the project's
+  own naive `k * partWidth` test-construction hazard, §Precision Policy above) — when fed the
+  corrected `(2 * k) / 3` double instead of the naive `k * (30/45)` double, PyJHora computes the
+  same result as the project at these 9 points. The apparent "12-point" discrepancy was an artifact
+  of the original oracle probe's construction choice, not evidence of 12 genuine points of
+  disagreement under the contract the shipped code and tests actually use.
+
+**Corrected classification:** the 3 genuine points (`k = 13, 26, 29`) are a **library implementation
+artifact, not a traditional-method or mathematical disagreement** — PyJHora's Python `//` operator
+does not always equal `math.floor(a/b)` at exact-integer-quotient boundaries of D45's repeating
+fraction (same root-cause class already documented for D7, D9, and D27 in prior batches).
+**Classification: floating-point / library implementation discrepancy.** It is not a mathematical or
+traditional-method discrepancy — no case reflects disagreement about the underlying formula or which
+classical rule applies, and this 3-point set is a **distinct, unrelated phenomenon** from the
+separate 5-point test-construction ULP hazard documented above (`{13,26,29}` and `{7,14,25,28,31}`
+are fully disjoint).
+
+## Architecture Reuse
+
+- `isOddSign(sign)` — reused unchanged for D40.
+- `countSignsForward(fromSign, offset)` — reused unchanged for D40 and D45.
+- `getModalityIndex(sign)` (Batch 3) — reused unchanged for D45.
+- `D16_MODALITY_START_SIGNS` (Batch 3) — reused **directly, with no new table**, for D45, per the
+  frozen contract's explicit instruction. D45 does **not** reuse D20's modality table (D20 swaps the
+  fixed/dual roles).
+- No generalized "all Vargas" formula engine, no Rule Engine, no architecture expansion beyond
+  divisional calculation — every helper this batch needed already existed from prior batches.
+
+## API Expansion
+
+- `VargaId` widened from `2 | 3 | 4 | 7 | 9 | 10 | 12 | 16 | 20 | 24 | 27 | 30` to `2 | 3 | 4 | 7 |
+  9 | 10 | 12 | 16 | 20 | 24 | 27 | 30 | 40 | 45`.
+- `getDivisionalSign(varga, sign, signDegree)` extended with 2 new `switch` cases (`40`, `45`) — no
+  change to any existing case.
+- No change to `NormalizedChart` or `chart/types.ts`. No schema bump — remains 2.1.0.
+- Carried-forward note (unresolved, out of scope for this batch, same as recorded in every prior
+  batch's closure audit): the individual per-varga functions are still not re-exported from
+  `index.ts` — only Batch 1's D2/D3/D4 functions and the generic `getDivisionalSign` dispatcher are
+  part of the package's public surface today; `getDivisionalSign` still has no `default` throw
+  branch.
+
+## Input Contract
+
+Unchanged — `signDegree` precondition (`[0, 30)`) applies identically. No date-only input, no
+guessed birth time, no noon/midnight fallback.
+
+## Tests
+
+Extended `packages/astrology-core/src/vedic/__tests__/divisional.test.ts` — **28 new tests** (159
+total in this file), all passing:
+
+- `getD40KhavedamsaSign`: explicit fixed-seed proofs (odd→Aries, even→Libra, independent of which
+  specific sign), all 40 segments, a full 39-boundary loop (exact binary fraction, no hazard),
+  near-30° stability, wraparound, 12-sign representative sweep, independent benchmark-chart cases,
+  determinism.
+- `getD45AkshavedamsaSign`: all 3 modality-group seed proofs, an explicit bit-for-bit
+  reuses-D16/differs-from-D20 verification, all 45 segments, a self-verifying `nextUp`/`nextDown`
+  sanity check, a dedicated test proving the naive `k * partWidth` construction is exactly 1 ULP
+  below the correct `(2*k)/3` value at all 5 hazard k-values and would misclassify if used, a full
+  44-boundary loop using the `(2*k)/3` construction, a dedicated `"PROJECT-CONSISTENT BEHAVIOR"` test
+  asserting the project-consistent result at 12 boundaries with a history of oracle discrepancy
+  (only 3 of the 12 — see the Oracle Artifact Classification correction above — are genuine,
+  construction-independent PyJHora artifacts), near-30° stability across all 3 modality groups,
+  wraparound, 12-sign representative sweep, independent benchmark-chart cases, determinism.
+- `getDivisionalSign`: dispatch-correctness for varga 40/45, an explicit Batch-4 non-regression
+  check (benchmark values re-asserted), categorical-output invariant extended to all 14 vargas.
+
+**Test independence:** boundary/segment/wraparound expected values hand-derived from the frozen
+formula (pure `seed + part mod 12` arithmetic, using the same already-tested `countSignsForward`
+primitive every prior batch relies on); representative-sign-sweep and benchmark-chart expected
+values taken from this task's own fresh, independently-executed oracle runs (not reused from the
+preflight's saved output, not reimplementations of the production formula) — the oracle scripts call
+the real PyJHora/vedic-calc library functions directly. The D45 boundary-loop test does not use the
+production formula, or its own output, as the source of its expected classification: it asserts the
+self-consistent, contract-derived property that a value on the far side of the true rational
+boundary must classify differently from one on the near side, using an independently-implemented
+ULP utility to construct those values as tightly as the contract required.
+
+### Regression
+
+Full suite re-run alongside the new tests — **658/658 passing** (630 pre-existing + 28 new, zero
+regressions). Phase 4/Phase 5 regression suites, Batch 1 (D2/D3/D4), Batch 2 (D7/D9/D10), Batch 3
+(D12/D16/D20), and Batch 4 (D24/D27/D30) all pass unchanged, plus a new explicit Batch-4
+non-regression assertion in the dispatch describe block (Batch 1/2/3's own non-regression assertions
+were already present and remain unchanged).
+
+## Validation Gate
+
+- `tsc -p tsconfig.json --noEmit`: clean.
+- Strict test-inclusive invocation (same flags as every prior batch): clean.
+- `npm run build`: clean.
+- `npx vitest run`: 658/658 passing, 28/28 test files passing.
+
+## Evidence Wording — Confidence Accuracy Note
+
+Per the frozen contract's explicit instruction: this document does **not** claim direct BPHS
+primary-text confirmation for D40/D45. The tradition evidence is, as for every prior varga in this
+engagement, source-code self-labeling (PyJHora's own docstring/enum naming its default "Traditional
+Parasara") corroborated by an independently-authored second implementation (vedic-calc) producing
+bit-for-bit identical results — high confidence that this is each oracle's own self-declared
+canonical Parashari form, not independent verification against a primary Sanskrit text.
+
+## Explicit Non-Scope (Batch 5, confirmed, not touched)
+
+D60 — remains DEFERRED, not researched in this task. `NormalizedChart`/`chart/types.ts` —
+unchanged, no schema bump. `vedic/chart.ts` — unchanged. Phase 4/Phase 5 source files — unchanged
+(confirmed by `git diff`: zero lines touched). No Rule Engine, interpretation, yoga, prediction, or
+house-lord logic. No UI, no API server. No dependency added or upgraded
+(`package.json`/`package-lock.json` for `astrology-core` unchanged). No method-selection parameter
+exposed (PyJHora's D40/D45 alternate, non-Parashari methods are documented but not implemented, per
+the frozen contract). No commit made.

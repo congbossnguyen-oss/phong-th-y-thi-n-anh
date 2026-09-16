@@ -6,12 +6,14 @@
  * Batch 3: D12 (Dwadasamsa), D16 (Shodasamsa/Kalamsa), D20 (Vimsamsa) — xem
  * `V1_1_DIVISIONAL_CHARTS_PREFLIGHT.md` §"Batch 3 — D12/D16/D20 Preflight".
  * Batch 4: D24 (Chaturvimsamsa), D27 (Nakshatramsa/Bhamsa), D30 (Trimsamsa) — xem
- * `V1_1_DIVISIONAL_CHARTS_PREFLIGHT.md` §"Batch 4 — D24/D27/D30 Preflight" cho toàn bộ nghiên
- * cứu/oracle evidence đứng sau các công thức dưới đây.
+ * `V1_1_DIVISIONAL_CHARTS_PREFLIGHT.md` §"Batch 4 — D24/D27/D30 Preflight".
+ * Batch 5: D40 (Khavedamsa), D45 (Akshavedamsa) — xem `V1_1_DIVISIONAL_CHARTS_PREFLIGHT.md`
+ * §"Batch 5 — D40/D45 Preflight" cho toàn bộ nghiên cứu/oracle evidence đứng sau các công thức
+ * dưới đây.
  * Tầng "Chart Calculation" phía Vedic, tiếp theo `vedic/rashi.ts`/`vedic/ascendant.ts` — biến MỘT
  * cặp (Rashi, độ trong cung) đã có (D1) thành Rashi tương ứng ở một Varga cụ thể. KHÔNG tính D1
- * (đã có ở `rashi.ts`/`ascendant.ts`), KHÔNG tính D40/D45/D60 (ngoài phạm vi Batch 1+2+3+4 — D60
- * vẫn DEFERRED), KHÔNG lắp vào `NormalizedChart`/`vedic/chart.ts` (quyết định CF.4/CF.10 —
+ * (đã có ở `rashi.ts`/`ascendant.ts`), KHÔNG tính D60 (ngoài phạm vi Batch 1+2+3+4+5 — D60 vẫn
+ * DEFERRED), KHÔNG lắp vào `NormalizedChart`/`vedic/chart.ts` (quyết định CF.4/CF.10 —
  * "standalone calculation API", không nhúng full nested chart, không đổi schema).
  *
  * HOÀN TOÀN THUẦN — không cần `AstronomicalProvider`, không cần `Date` — giống hệt
@@ -60,12 +62,43 @@
  * sẵn), KHÔNG dựng bằng `k * 30 / N` (chia lại từ đầu) — hai cách viết toán học tương đương nhưng
  * có thể cho ra hai double khác nhau do làm tròn floating-point khác đường tính. Test biên D27
  * TRONG file test PHẢI dùng `k * D27_PART_WIDTH_DEGREES`-style construction.
+ *
+ * D45 REPEATING-FRACTION — PHÁT HIỆN MỚI Ở BATCH 5, KHÁC HẲN D7/D9/D27 (đã xác nhận trực tiếp +
+ * thực nghiệm ở preflight): `30/45 = 2/3 = 0.6666...` không có biểu diễn nhị phân hữu hạn. NGOÀI
+ * lỗi Python `//` quen thuộc của PyJHora (giải quyết GIỐNG HỆT D7/D9/D27 bằng `Math.floor`), D45
+ * còn có một hiện tượng THỨ HAI, RIÊNG BIỆT, CHƯA từng gặp ở D7/D9/D27: dựng giá trị biên bằng
+ * `k * partWidth` KHÔNG đảm bảo luôn rơi ĐÚNG-hoặc-TRÊN biên toán học thật — tại 5 giá trị k (rời
+ * rạc), double `k * partWidth` rơi THẤP HƠN biên toán học thật một chút (vd. `k=7`: `7*(30/45) =
+ * 4.666666666666666`, nhưng giá trị hữu tỉ đúng `14/3 = 4.666666666666667` — sai khác 1 ULP, đủ để
+ * `Math.floor((7*w)/w)` cho `6` thay vì `7`). ĐÂY KHÔNG PHẢI lỗi của `Math.floor(signDegree/
+ * partWidth)` — công thức runtime vẫn hoàn toàn xác định (deterministic) và đúng cho BẤT KỲ double
+ * cụ thể nào nó nhận — đây là hạn chế của việc DỰNG giá trị test "đúng tại biên" khi biên toán học
+ * là một số hữu tỉ (2/3) không có biểu diễn nhị phân chính xác. File test PHẢI xử lý 5 điểm này
+ * riêng (dùng test-only helper `nextRepresentableDouble`/`previousRepresentableDouble` thay vì
+ * `k*partWidth` để dựng "ngay trên"/"ngay dưới" biên hữu tỉ thật một cách trung thực, KHÔNG dùng
+ * epsilon/tolerance để che). D40 (`30/40=0.75=3/4`) KHÔNG có bất kỳ vấn đề phân số tuần hoàn nào —
+ * an toàn tuyệt đối, giống D24.
+ *
+ * D45 PyJHora `//` ARTIFACT — SỐ ĐIỂM CHÍNH XÁC PHỤ THUỘC CÁCH DỰNG BIÊN (phát hiện của Closure
+ * Audit Batch 5, KHÔNG PHẢI lỗi implementation): probe oracle ban đầu (preflight + Batch 5 Oracle
+ * Validation) dùng cách dựng THÔ (naive) `k*(30/45)` để feed PyJHora, và tìm thấy 12/44 biên khác biệt
+ * (`k=5,10,13,17,20,23,26,29,34,37,40,43`). Nhưng bản thân PyJHora's Python `//` CŨNG nhạy cảm với
+ * bit-pattern chính xác của input — khi feed PyJHora bằng đúng giá trị `(2*k)/3` (cách dựng ĐÚNG mà
+ * test file thực sự dùng), Closure Audit xác nhận trực tiếp CHỈ CÒN 3 điểm thực sự khác biệt
+ * (`k=13,26,29`); 9 điểm còn lại (`5,10,17,20,23,34,37,40,43`) hoá ra PyJHora ĐỒNG Ý với project khi
+ * dùng đúng `(2*k)/3` — khác biệt trước đó chỉ là do bit-pattern khác nhau giữa `k*(30/45)` và
+ * `(2*k)/3` tại các điểm đó (không phải 5 điểm hazard ở trên — đây là MỘT tập k khác, chỉ ảnh hưởng
+ * input feed vào PyJHora, KHÔNG ảnh hưởng `Math.floor` của chính implementation này, vốn đã xác
+ * nhận đồng nhất giữa hai cách dựng ở mọi k trừ 5 điểm hazard). Kết luận: chỉ 3/44 biên là PyJHora
+ * discrepancy độc lập-với-cách-dựng (construction-independent); 12 là con số của một probe dùng
+ * cách dựng khác với cách dựng được ship trong test, KHÔNG PHẢI số genuine discrepancy dưới hợp đồng
+ * hiện tại. Xem `V1_1_DIVISIONAL_CHARTS_IMPLEMENTATION.md` §"D45 Oracle Artifact Classification".
  */
 
 import { ZODIAC_SIGNS, type ZodiacSign } from "../chart/types.js";
 
-/** 12 Varga có trong Batch 1+2+3+4 — union đóng, CHỈ mở rộng khi một batch triển khai kế tiếp thực sự cần (không thêm D40+ trước — đúng chỉ dẫn "Do not over-engineer"). */
-export type VargaId = 2 | 3 | 4 | 7 | 9 | 10 | 12 | 16 | 20 | 24 | 27 | 30;
+/** 14 Varga có trong Batch 1+2+3+4+5 — union đóng, CHỈ mở rộng khi một batch triển khai kế tiếp thực sự cần (không thêm D60 trước — D60 vẫn DEFERRED). */
+export type VargaId = 2 | 3 | 4 | 7 | 9 | 10 | 12 | 16 | 20 | 24 | 27 | 30 | 40 | 45;
 
 /**
  * Đếm tới trước `offset` cung kể từ `fromSign`, quấn vòng mod 12 — PRIMITIVE DÙNG CHUNG cho MỌI
@@ -378,7 +411,53 @@ export function getD30TrimsamsaSign(sign: ZodiacSign, signDegree: number): Zodia
 }
 
 // ---------------------------------------------------------------------------------------
-// Standalone API — điểm vào chung cho Batch 1+2+3+4 (CF.4: "standalone calculation API",
+// D40 — Khavedamsa. Contract: "Batch 5 — D40/D45 Preflight" — PyJHora `chart_method=1`
+// (`PARASARA_TRADITIONAL`) == vedic-calc's DUY NHẤT implementation D40. 40 phần 0.75° mỗi cung;
+// cung lẻ đếm tới `part` cung TỪ ARIES (seed cố định); cung chẵn đếm tới `part` cung TỪ LIBRA
+// (seed cố định khác) — LUÔN đếm tới trước. Cùng hình dạng D7/D10/D24 (odd/even với seed cố định).
+// ---------------------------------------------------------------------------------------
+
+const D40_PART_WIDTH_DEGREES = 30 / 40;
+const D40_ODD_SIGN_SEED: ZodiacSign = "aries";
+const D40_EVEN_SIGN_SEED: ZodiacSign = "libra";
+
+/** D40 (Khavedamsa): part = floor(signDegree / 0.75); cung lẻ → đếm tới `part` cung từ Aries; cung chẵn → đếm tới `part` cung từ Libra. */
+export function getD40KhavedamsaSign(sign: ZodiacSign, signDegree: number): ZodiacSign {
+  const part = Math.min(39, Math.floor(signDegree / D40_PART_WIDTH_DEGREES));
+  const seed = isOddSign(sign) ? D40_ODD_SIGN_SEED : D40_EVEN_SIGN_SEED;
+  return countSignsForward(seed, part);
+}
+
+// ---------------------------------------------------------------------------------------
+// D45 — Akshavedamsa. Contract: "Batch 5 — D40/D45 Preflight" — PyJHora `chart_method=1`
+// (`PARASARA_TRADITIONAL`) == vedic-calc's DUY NHẤT implementation D45. 45 phần `30/45 = 2/3`°
+// mỗi cung; cung bắt đầu theo TAM HỢP CÁCH (modality): movable→Aries, fixed→Leo, dual→Sagittarius
+// — XÁC NHẬN TRỰC TIẾP bảng này GIỐNG HỆT D16 (KHÁC D20, vốn hoán đổi fixed/dual) — TÁI DÙNG
+// `D16_MODALITY_START_SIGNS` thay vì tạo bảng trùng lặp.
+//
+// D45 REPEATING-FRACTION: `30/45 = 2/3` không có biểu diễn nhị phân hữu hạn — xem ghi chú đầu
+// file cho CẢ HAI hiện tượng floating-point đã phát hiện (lỗi Python `//` của PyJHora — CHỈ 3/44
+// biên là construction-independent genuine discrepancy, xem ghi chú "D45 PyJHora `//` ARTIFACT" đầu
+// file — VÀ hiện tượng `k*partWidth` rơi dưới biên thật ở test methodology). Dùng
+// `Math.floor(signDegree/partWidth)`, KHÔNG tái tạo lỗi `//` của PyJHora.
+// ---------------------------------------------------------------------------------------
+
+const D45_PART_WIDTH_DEGREES = 30 / 45;
+
+/** D45 (Akshavedamsa): part = floor(signDegree / (30/45)); cung bắt đầu theo modality của `sign` (TÁI DÙNG bảng D16 — bit-for-bit giống nhau, đã xác nhận trực tiếp từ cả hai oracle), rồi đếm tới `part` cung từ đó. */
+export function getD45AkshavedamsaSign(sign: ZodiacSign, signDegree: number): ZodiacSign {
+  const part = Math.min(44, Math.floor(signDegree / D45_PART_WIDTH_DEGREES));
+  const modalityIndex = getModalityIndex(sign);
+  const startSign = D16_MODALITY_START_SIGNS[modalityIndex];
+  if (startSign === undefined) {
+    // Không thể xảy ra: `getModalityIndex` luôn trả về [0,2] (`% 3`), khớp đúng 3 phần tử D16_MODALITY_START_SIGNS — phòng vệ cho noUncheckedIndexedAccess.
+    throw new Error(`getD45AkshavedamsaSign: modalityIndex không hợp lệ (${modalityIndex}) cho sign=${sign}.`);
+  }
+  return countSignsForward(startSign, part);
+}
+
+// ---------------------------------------------------------------------------------------
+// Standalone API — điểm vào chung cho Batch 1+2+3+4+5 (CF.4: "standalone calculation API",
 // "explicit Varga identifier", "must not expose Swiss-specific types"). KHÔNG lắp vào
 // `NormalizedChart`/`vedic/chart.ts` (ngoài phạm vi task này).
 // ---------------------------------------------------------------------------------------
@@ -386,8 +465,8 @@ export function getD30TrimsamsaSign(sign: ZodiacSign, signDegree: number): Zodia
 /**
  * Tính Rashi của MỘT hành tinh/điểm (Ascendant, ...) ở một Varga cụ thể — nhận `sign`/`signDegree`
  * D1 ĐÃ CÓ (từ `calculateRashi()`/`calculateVedicAscendant()`), KHÔNG tự tính D1. `varga` giới hạn
- * {2,3,4,7,9,10,12,16,20,24,27,30} ở Batch 1+2+3+4 (TypeScript union đóng chặn giá trị khác tại
- * compile time — D40/D60/... không thể truyền vào cho tới khi có batch triển khai riêng).
+ * {2,3,4,7,9,10,12,16,20,24,27,30,40,45} ở Batch 1+2+3+4+5 (TypeScript union đóng chặn giá trị
+ * khác tại compile time — D60 không thể truyền vào cho tới khi được resolve/triển khai riêng).
  */
 export function getDivisionalSign(varga: VargaId, sign: ZodiacSign, signDegree: number): ZodiacSign {
   switch (varga) {
@@ -415,5 +494,9 @@ export function getDivisionalSign(varga: VargaId, sign: ZodiacSign, signDegree: 
       return getD27NakshatramsaSign(sign, signDegree);
     case 30:
       return getD30TrimsamsaSign(sign, signDegree);
+    case 40:
+      return getD40KhavedamsaSign(sign, signDegree);
+    case 45:
+      return getD45AkshavedamsaSign(sign, signDegree);
   }
 }
