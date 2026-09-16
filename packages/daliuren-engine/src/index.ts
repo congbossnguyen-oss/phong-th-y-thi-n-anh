@@ -48,6 +48,7 @@ export * from "./twelve-generals/index.js";
 export * from "./calendar-foundation-result.js";
 export * from "./da-liu-ren-calculation-result.js";
 export * from "./rules/index.js";
+export * from "./interpretation-package-builder.js";
 
 import { fail, ok } from "@thien-anh/engine-contract";
 import type { EngineError, EngineMeta, EngineResult } from "@thien-anh/engine-contract";
