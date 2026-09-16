@@ -28,3 +28,6 @@ ma-khuyen-mai.csv
 
 # Bản sao lưu DB — chứa dữ liệu khách + hash mật khẩu, TUYỆT ĐỐI không commit
 backups/
+
+# CONG AI VIDEO — MP4 do smoke test API thật tải về (xem src/lib/ai-video/smoke), không commit
+generated/

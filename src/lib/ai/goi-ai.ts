@@ -41,7 +41,8 @@ export type TinhNangAi =
   | "nghe-nghiep-luan-van"
   | "luan-giai-tu-vi-co-ban"
   | "luan-giai-tu-vi-nang-cao"
-  | "huyen-khong-luan-chi-tiet";
+  | "huyen-khong-luan-chi-tiet"
+  | "cong-ai-video-scene-planner";
 
 /**
  * BẢNG CHỌN NHÀ CUNG CẤP CHO TỪNG TÍNH NĂNG — chỗ duy nhất cần sửa khi muốn đổi.
@@ -79,6 +80,10 @@ const BANG_NHA_CUNG_CAP: Record<TinhNangAi, NhaCungCap> = {
   "luan-giai-tu-vi-co-ban": "openai-tuong-thich",
   "luan-giai-tu-vi-nang-cao": "openai-tuong-thich",
   "huyen-khong-luan-chi-tiet": "openai-tuong-thich",
+  // CONG AI VIDEO (module nội bộ, thêm 13/9/2026): chỉ CHIA CẢNH từ kiến thức phong thủy có sẵn
+  // (không luận giải sâu, không phải nội dung khách trả tiền đọc) — dùng bên rẻ như các tính năng
+  // "thiên về số liệu/câu ngắn" khác trong bảng này.
+  "cong-ai-video-scene-planner": "openai-tuong-thich",
 };
 
 /**

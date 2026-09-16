@@ -1,0 +1,12 @@
+{
+  "_ghi_chu": "Đơn giá ước tính cho AI Video (Wan/LTX). Sửa file này khi đổi giá — KHÔNG sửa trong code (xem src/lib/ai-video/cost.ts). Video tính theo GIÂY (usd_per_second), khác AI văn bản tính theo token (gia-ai.json). Wan CHƯA có giá thật (chưa test — xem STEP 2 report). Model id trong khoá phải khớp CHÍNH XÁC field 'model' gửi lên provider (xem WanProvider/LTXProvider) — sai model id thì cost.ts âm thầm trả 0đ (không chặn generate, chỉ không ước tính được), dễ tưởng nhầm là miễn phí.",
+  "_ghi_chu_ltx": "13/9/2026: đổi từ 'ltx-video' (model id CŨ, thời còn nhắm nhầm sang fal.ai — xem STEP 2) sang đúng model id thật 'ltx-2-5-fast' của docs.ltx.io. usd_per_second suy ra từ THÔNG BÁO LỖI THẬT của chính API (`insufficient_funds_error: \"Required: 54 cents\"` cho request 6 giây, 1280x720, model ltx-2-5-fast — job feng-shui-proof STEP 4) — 0.54/6 = 0.09 USD/giây. Đây là số ĐÁNG TIN hơn ước tính ban đầu (bản thân provider báo giá) nhưng KHÔNG PHẢI hoá đơn đã thanh toán thật (job đó bị từ chối, không hề chạy) — coi là ước tính tốt, không phải verified 100%.",
+  "_ghi_chu_resolution": "STEP 6 §2: 'he_so_theo_resolution' khoá theo giá trị CANONICAL do src/lib/ai-video/cost.ts#normalizeResolution() sinh ra (480p/720p/1080p/1440p/2160p) — KHÔNG khoá theo chuỗi thô của provider (Wan trả '1080P', LTX trả '1920x1080', cả 2 đều tự quy về '1080p' trước khi tra bảng này). Thiếu key nào coi hệ số key đó = 1 (giá cơ bản, không nhân thêm).",
+  "_ghi_chu_ltx23": "13/9/2026: 'ltx-2-3-fast' chốt làm DEFAULT VIDEO MODEL của CONG AI VIDEO V1 sau real visual benchmark (xem docs/09-module-cong-ai-video.md). Giá đây là giá CHÍNH THỨC do anh Công cung cấp (không phải suy đoán/soi từ lỗi provider như ltx-2-5-fast): 720p=$0.03/s (usd_per_second, mức cơ sở), 1080p=$0.06/s (hệ số 2), 1440p=$0.12/s (hệ số 4), 4K/2160p=$0.24/s (hệ số 8). Khớp đúng với thực tế đã quan sát ở benchmark thật (6s × $0.03 = $0.18 = \"Required: 18 cents\" mà LTX từng báo).",
+  "ty_gia_vnd_tren_usd": 26300,
+  "models": {
+    "wan:wanx2.1-t2v-turbo": { "usd_per_second": 0.05, "he_so_theo_resolution": { "1080p": 1.5, "1440p": 2, "2160p": 3 } },
+    "ltx:ltx-2-5-fast": { "usd_per_second": 0.09, "he_so_theo_resolution": { "1080p": 1.5, "1440p": 2, "2160p": 3 } },
+    "ltx:ltx-2-3-fast": { "usd_per_second": 0.03, "he_so_theo_resolution": { "1080p": 2, "1440p": 4, "2160p": 8 } }
+  }
+}

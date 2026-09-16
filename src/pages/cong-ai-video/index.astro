@@ -1,0 +1,387 @@
+---
+// TRANG "CONG AI VIDEO" — CÔNG CỤ NỘI BỘ cho chủ site tự dùng, admin-gated cùng cơ chế với
+// khai-mon.astro/kiem-chung.astro: KHÔNG phải trang bán cho khách, không phân tầng giá, không
+// thanh toán. Feng Shui Knowledge → Scene → Prompt → AI Video Generation → Video Clip (V1).
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Container from "../../components/ui/Container.astro";
+import { listVideoProviders } from "../../lib/ai-video/providers/registry";
+
+export const prerender = false;
+
+if (Astro.locals.user?.isAdmin !== true) {
+  return Astro.redirect("/");
+}
+
+const providers = listVideoProviders();
+---
+
+<BaseLayout title="AI TiaTextVi (nội bộ)" description="Công cụ nội bộ — chia cảnh phong thủy và tạo video AI. Không dùng cho khách.">
+  <Container class="py-10">
+    <div class="mx-auto max-w-4xl">
+      <h1 class="font-display text-2xl font-bold text-(--color-ink-950)">🎬 AI TiaTextVi (nội bộ)</h1>
+      <p class="mt-2 text-sm text-(--color-ink-600)">
+        Chủ đề phong thủy → chia cảnh (bám kiến thức đã dán, không tự bịa) → chọn cảnh → chọn provider → tạo video AI.
+        Công cụ nội bộ — admin-only, không thu phí, không gating.
+      </p>
+
+      <section class="mt-6 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-4">
+        <h2 class="text-sm font-semibold text-(--color-ink-800)">1. Chủ đề &amp; kiến thức nguồn</h2>
+        <div class="mt-3 grid gap-3">
+          <div>
+            <label for="cav-topic" class="text-xs font-medium text-(--color-ink-600)">Chủ đề</label>
+            <input id="cav-topic" type="text" placeholder="VD: 5 lỗi phong thủy phòng ngủ"
+              class="mt-1 w-full rounded border border-(--color-ivory-300) px-3 py-2 text-sm" />
+          </div>
+          <div>
+            <label for="cav-knowledge" class="text-xs font-medium text-(--color-ink-600)">
+              Kiến thức nguồn (mỗi dòng = 1 ý — dán từ nội dung phong thủy đã kiểm chứng, KHÔNG để AI tự nghĩ ra)
+            </label>
+            <textarea id="cav-knowledge" rows="6" placeholder="Giường đối diện cửa gây bất an khi ngủ.&#10;Gương chiếu thẳng vào giường ảnh hưởng giấc ngủ.&#10;..."
+              class="mt-1 w-full rounded border border-(--color-ivory-300) px-3 py-2 text-sm"></textarea>
+          </div>
+          <button id="cav-chia-canh" type="button"
+            class="w-fit rounded-(--radius-pill) bg-(--color-gold-400) px-4 py-2 text-xs font-semibold text-(--color-on-accent)">
+            Chia cảnh
+          </button>
+        </div>
+      </section>
+
+      <p id="cav-loi" class="mt-3 hidden rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-3 text-sm text-(--color-danger-500)"></p>
+
+      <section id="cav-scenes-wrap" class="mt-6 hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-4">
+        <h2 class="text-sm font-semibold text-(--color-ink-800)">2. Chọn cảnh &amp; provider</h2>
+        <div id="cav-scenes" class="mt-3 grid gap-2"></div>
+
+        <div class="mt-4 flex flex-wrap items-end gap-3">
+          <div>
+            <label for="cav-provider" class="text-xs font-medium text-(--color-ink-600)">Provider</label>
+            <select id="cav-provider" class="mt-1 rounded border border-(--color-ivory-300) px-2 py-1.5 text-sm">
+              {providers.map((p) => <option value={p.id}>{p.displayName}</option>)}
+            </select>
+          </div>
+          <div>
+            <label for="cav-duration" class="text-xs font-medium text-(--color-ink-600)">Thời lượng (giây)</label>
+            <input id="cav-duration" type="number" value="6" class="mt-1 w-20 rounded border border-(--color-ivory-300) px-2 py-1.5 text-sm" />
+            <div id="cav-duration-hint" class="mt-0.5 text-[11px] text-(--color-ink-400)"></div>
+          </div>
+          <div>
+            <label for="cav-aspect" class="text-xs font-medium text-(--color-ink-600)">Khung hình</label>
+            <select id="cav-aspect" class="mt-1 rounded border border-(--color-ivory-300) px-2 py-1.5 text-sm">
+              <option value="9:16">9:16 (dọc)</option>
+              <option value="16:9">16:9 (ngang)</option>
+              <option value="1:1">1:1</option>
+            </select>
+          </div>
+          <button id="cav-generate" type="button" disabled
+            class="rounded-(--radius-pill) bg-(--color-gold-400) px-4 py-2 text-xs font-semibold text-(--color-on-accent) disabled:opacity-40">
+            Tạo video
+          </button>
+        </div>
+      </section>
+
+      <section id="cav-job-wrap" class="mt-6 hidden rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-4">
+        <h2 class="text-sm font-semibold text-(--color-ink-800)">3. Trạng thái job</h2>
+        <div id="cav-job-status" class="mt-3 text-sm"></div>
+        <video id="cav-video" class="mt-3 hidden w-full max-w-md rounded-(--radius-card)" controls></video>
+      </section>
+
+      <section class="mt-6 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-sm font-semibold text-(--color-ink-800)">Lịch sử job đã tạo</h2>
+          <button id="cav-history-refresh" type="button" class="text-xs font-medium text-(--color-ink-600) underline">Làm mới</button>
+        </div>
+        <div id="cav-history" class="mt-3 grid gap-2 text-sm">
+          <p class="text-(--color-ink-400)">Đang tải...</p>
+        </div>
+      </section>
+    </div>
+  </Container>
+</BaseLayout>
+
+<!--
+  Data island: truyền providerDurationRanges (dữ liệu SERVER, không phải input người dùng) sang client
+  qua JSON thuần thay vì `define:vars` — `define:vars` bắt Astro coi script đi kèm là inline và BỎ QUA
+  bước strip TypeScript, khiến `interface`/`as HTMLxxxElement` bên dưới lọt nguyên vào browser dưới
+  dạng cú pháp không hợp lệ (SyntaxError ngay khi parse, chặn TOÀN BỘ script — kể cả mọi addEventListener
+  — chạy được). Escape `<` phòng ngừa (dù nguồn dữ liệu ở đây chỉ là số min/max, không phải chuỗi tự do).
+-->
+<script type="application/json" id="cav-provider-duration-ranges" set:html={JSON.stringify(Object.fromEntries(providers.map((p) => [p.id, p.capabilities.durationRangeSeconds]))).replace(/</g, "\\u003c")}></script>
+
+<script>
+  interface Scene {
+    id: string;
+    title: string;
+    order: number;
+    durationSeconds: number;
+    knowledgeReference: string;
+    knowledgeStatement: string;
+    visualDescription: string;
+    camera: string;
+    movement: string;
+    environment: string;
+    lighting: string;
+    style: string;
+    constraints: string[];
+    negativeConstraints: string[];
+    narrationHint: string;
+  }
+
+  const topicEl = document.getElementById("cav-topic") as HTMLInputElement;
+  const knowledgeEl = document.getElementById("cav-knowledge") as HTMLTextAreaElement;
+  const loiEl = document.getElementById("cav-loi") as HTMLParagraphElement;
+  const scenesWrap = document.getElementById("cav-scenes-wrap") as HTMLElement;
+  const scenesEl = document.getElementById("cav-scenes") as HTMLElement;
+  const providerEl = document.getElementById("cav-provider") as HTMLSelectElement;
+  const durationEl = document.getElementById("cav-duration") as HTMLInputElement;
+  const durationHintEl = document.getElementById("cav-duration-hint") as HTMLElement;
+  const aspectEl = document.getElementById("cav-aspect") as HTMLSelectElement;
+  const generateBtn = document.getElementById("cav-generate") as HTMLButtonElement;
+  const jobWrap = document.getElementById("cav-job-wrap") as HTMLElement;
+  const jobStatusEl = document.getElementById("cav-job-status") as HTMLElement;
+  const videoEl = document.getElementById("cav-video") as HTMLVideoElement;
+  const historyEl = document.getElementById("cav-history") as HTMLElement;
+  const historyRefreshBtn = document.getElementById("cav-history-refresh") as HTMLButtonElement;
+
+  // Đọc từ data island JSON (xem thẻ <script type="application/json"> phía trên) thay vì define:vars.
+  const providerDurationRanges: Record<string, { min: number; max: number }> = JSON.parse(
+    document.getElementById("cav-provider-duration-ranges")!.textContent!,
+  );
+
+  let scenes: Scene[] = [];
+  let selectedSceneOrder: number | null = null;
+  let pollTimer: number | null = null;
+  let currentJobId: string | null = null; // job đang được poll ở mục "3. Trạng thái job" — dùng để biết có cần dừng poll khi hủy job này từ mục lịch sử hay không
+
+  // STEP 6 §4: min/max thời lượng phải khớp ĐÚNG capability của provider đang chọn — bản cũ để cứng
+  // min=2/max=20 (chỉ đúng cho LTX), cho phép chọn giá trị LTX chắc chắn từ chối (vd 2-5s) mà chỉ bị
+  // phát hiện sau khi tốn 1 lượt gọi mạng thật. `providerDurationRanges` lấy TRỰC TIẾP từ
+  // `ProviderCapabilities` (registry.ts) — không lặp lại số 6/20 ở đây, đổi capability thì UI tự đổi theo.
+  function capNhatKhoangThoiLuong() {
+    const range = providerDurationRanges[providerEl.value];
+    if (!range) return;
+    durationEl.min = String(range.min);
+    durationEl.max = String(range.max);
+    const hienTai = Number(durationEl.value);
+    if (Number.isNaN(hienTai) || hienTai < range.min) durationEl.value = String(range.min);
+    else if (hienTai > range.max) durationEl.value = String(range.max);
+    durationHintEl.textContent = `${providerEl.selectedOptions[0]?.textContent ?? providerEl.value} cho phép ${range.min}-${range.max} giây.`;
+  }
+  providerEl.addEventListener("change", capNhatKhoangThoiLuong);
+  capNhatKhoangThoiLuong();
+
+  function baoLoi(msg: string) {
+    loiEl.textContent = msg;
+    loiEl.classList.remove("hidden");
+  }
+
+  document.getElementById("cav-chia-canh")!.addEventListener("click", async () => {
+    loiEl.classList.add("hidden");
+    if (!topicEl.value.trim() || !knowledgeEl.value.trim()) {
+      baoLoi("Cần nhập chủ đề và kiến thức nguồn.");
+      return;
+    }
+    try {
+      const res = await fetch("/api/internal/ai-video/scenes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topic: topicEl.value.trim(), knowledgeText: knowledgeEl.value }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error ?? "Không chia được cảnh.");
+      scenes = data.scenes;
+      selectedSceneOrder = null;
+      if (Array.isArray(data.warnings) && data.warnings.length > 0) {
+        console.warn("[cong-ai-video] Cảnh bị AI trả không hợp lệ, đã dùng bản mặc định grounded:", data.warnings);
+      }
+      renderScenes();
+      scenesWrap.classList.remove("hidden");
+    } catch (err) {
+      baoLoi(err instanceof Error ? err.message : "Lỗi không xác định.");
+    }
+  });
+
+  function renderScenes() {
+    scenesEl.innerHTML = "";
+    for (const s of scenes) {
+      const label = document.createElement("label");
+      label.className = "flex cursor-pointer items-start gap-2 rounded border border-(--color-ivory-300) p-2 text-sm";
+      label.innerHTML = `
+        <input type="radio" name="cav-scene" value="${s.order}" class="mt-1" />
+        <span><strong>${s.title}</strong> <span class="text-(--color-ink-400)">(${s.knowledgeReference})</span><br/>
+          <span class="text-(--color-ink-600)">${s.visualDescription}</span></span>
+      `;
+      label.querySelector("input")!.addEventListener("change", () => {
+        selectedSceneOrder = s.order;
+        generateBtn.disabled = false;
+      });
+      scenesEl.appendChild(label);
+    }
+  }
+
+  generateBtn.addEventListener("click", async () => {
+    loiEl.classList.add("hidden");
+    const scene = scenes.find((s) => s.order === selectedSceneOrder);
+    if (!scene) {
+      baoLoi("Chọn 1 cảnh trước.");
+      return;
+    }
+    generateBtn.disabled = true;
+    try {
+      const res = await fetch("/api/internal/ai-video/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          provider: providerEl.value,
+          topic: topicEl.value.trim(),
+          scene: { ...scene, durationSeconds: Number(durationEl.value) },
+          aspectRatio: aspectEl.value,
+        }),
+      });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error ?? "Không tạo được job.");
+      jobWrap.classList.remove("hidden");
+      videoEl.classList.add("hidden");
+      startPolling(data.job.id);
+    } catch (err) {
+      baoLoi(err instanceof Error ? err.message : "Lỗi không xác định.");
+      generateBtn.disabled = false;
+    }
+  });
+
+  const TRANG_THAI_KET_THUC = new Set(["ready", "failed", "cancelled", "timeout", "auth_error", "rate_limit", "provider_error", "download_error"]);
+  // Đúng tập TRANG_THAI_LOI phía server (providers/types.ts) — chỉ dùng để QUYẾT ĐỊNH HIỂN THỊ nút
+  // "Thử lại" ở client, KHÔNG phải nơi enforce quyền retry (route/job-manager mới là nơi enforce thật).
+  const TRANG_THAI_LOI = new Set(["failed", "cancelled", "timeout", "auth_error", "rate_limit", "provider_error", "download_error"]);
+
+  function startPolling(jobId: string) {
+    if (pollTimer) window.clearInterval(pollTimer);
+    currentJobId = jobId;
+    const kiemTra = async () => {
+      const res = await fetch(`/api/internal/ai-video/jobs/${jobId}`);
+      const data = await res.json();
+      if (!res.ok || !data.ok) {
+        jobStatusEl.textContent = data.error ?? "Không tra được trạng thái job.";
+        return;
+      }
+      const job = data.job;
+      jobStatusEl.textContent = `Trạng thái: ${job.status}${job.errorMessage ? " — " + job.errorMessage : ""}`;
+      if (job.status === "ready" && job.resultUrl) {
+        videoEl.src = job.resultUrl;
+        videoEl.classList.remove("hidden");
+      }
+      if (TRANG_THAI_KET_THUC.has(job.status)) {
+        if (pollTimer) window.clearInterval(pollTimer);
+        generateBtn.disabled = false;
+        void taiLichSu(); // job vừa xong (ready/failed/...) — cập nhật ngay vào lịch sử, không đợi bấm "Làm mới"
+      }
+    };
+    void kiemTra();
+    pollTimer = window.setInterval(kiemTra, 5000);
+  }
+
+  interface JobHistoryItem {
+    id: string;
+    topic: string | null;
+    sceneTitle: string | null;
+    provider: string;
+    model: string | null;
+    status: string;
+    resultUrl: string | null;
+    errorMessage: string | null;
+    createdAt: string;
+  }
+
+  function dinhDangThoiGian(iso: string): string {
+    return new Date(iso).toLocaleString("vi-VN");
+  }
+
+  async function taiLichSu() {
+    try {
+      const res = await fetch("/api/internal/ai-video/jobs");
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error ?? "Không tải được lịch sử.");
+      const jobs = data.jobs as JobHistoryItem[];
+      if (jobs.length === 0) {
+        historyEl.innerHTML = `<p class="text-(--color-ink-400)">Chưa có job nào.</p>`;
+        return;
+      }
+      historyEl.innerHTML = "";
+      for (const j of jobs) {
+        const coTheHuy = !TRANG_THAI_KET_THUC.has(j.status);
+        const coTheThuLai = TRANG_THAI_LOI.has(j.status);
+        const row = document.createElement("div");
+        row.className = "rounded border border-(--color-ivory-300) p-2";
+        row.innerHTML = `
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <span><strong>${j.sceneTitle ?? j.topic ?? "(không tên)"}</strong>
+              <span class="text-(--color-ink-400)">— ${j.provider}${j.model ? "/" + j.model : ""} — ${dinhDangThoiGian(j.createdAt)}</span>
+            </span>
+            <span class="flex items-center gap-2">
+              <span class="text-xs font-medium">${j.status}${j.errorMessage ? " — " + j.errorMessage : ""}</span>
+              ${coTheThuLai ? `<button type="button" data-retry-id="${j.id}" class="rounded border border-(--color-gold-400)/60 px-2 py-0.5 text-[11px] font-medium text-(--color-ink-800)">Thử lại</button>` : ""}
+              ${coTheHuy ? `<button type="button" data-cancel-id="${j.id}" class="rounded border border-(--color-danger-500)/40 px-2 py-0.5 text-[11px] font-medium text-(--color-danger-500)">Hủy</button>` : ""}
+            </span>
+          </div>
+          ${j.resultUrl ? `<video class="mt-2 w-full max-w-xs rounded" controls src="${j.resultUrl}"></video>` : ""}
+        `;
+        if (coTheHuy) {
+          row.querySelector(`[data-cancel-id="${j.id}"]`)!.addEventListener("click", () => void huyJob(j.id));
+        }
+        if (coTheThuLai) {
+          const retryBtn = row.querySelector(`[data-retry-id="${j.id}"]`) as HTMLButtonElement;
+          retryBtn.addEventListener("click", () => void thuLaiJob(j.id, retryBtn));
+        }
+        historyEl.appendChild(row);
+      }
+    } catch (err) {
+      historyEl.innerHTML = `<p class="text-(--color-danger-500)">${err instanceof Error ? err.message : "Lỗi không xác định."}</p>`;
+    }
+  }
+  historyRefreshBtn.addEventListener("click", taiLichSu);
+  void taiLichSu();
+
+  /**
+   * Hủy 1 job từ mục lịch sử — gọi ĐÚNG endpoint POST .../jobs/[id]/cancel đã có sẵn (không tạo mới).
+   * Nếu job đang hủy TRÙNG với job đang được poll ở mục "3. Trạng thái job" (`currentJobId`): dừng
+   * `pollTimer` NGAY và ghi thẳng status "cancelled" từ response — tránh trường hợp 1 lượt poll đã
+   * gửi đi TRƯỚC lúc hủy trả về SAU đó, ghi đè lại status cũ (vd "processing") lên chữ "cancelled" vừa hiện.
+   */
+  async function huyJob(jobId: string) {
+    if (!window.confirm("Hủy job này?")) return;
+    try {
+      const res = await fetch(`/api/internal/ai-video/jobs/${jobId}/cancel`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error ?? "Không hủy được job.");
+      if (jobId === currentJobId) {
+        if (pollTimer) window.clearInterval(pollTimer);
+        jobStatusEl.textContent = `Trạng thái: ${data.job.status}${data.job.errorMessage ? " — " + data.job.errorMessage : ""}`;
+        generateBtn.disabled = false;
+      }
+      void taiLichSu();
+    } catch (err) {
+      baoLoi(err instanceof Error ? err.message : "Không hủy được job.");
+    }
+  }
+
+  /**
+   * Thử lại 1 job lỗi từ mục lịch sử — gọi ĐÚNG endpoint POST .../jobs/[id]/retry (Phase 2 §1), tạo job
+   * MỚI từ chính request đã lưu (không nhập lại chủ đề/kiến thức/cảnh). `btn.disabled = true` NGAY khi
+   * bấm (trước khi await) để chống double-click tạo 2 lượt generate thật ngoài ý muốn.
+   */
+  async function thuLaiJob(jobId: string, btn: HTMLButtonElement) {
+    if (!window.confirm("Thử lại job này? Sẽ tạo 1 lượt generate MỚI (phát sinh chi phí provider).")) return;
+    btn.disabled = true;
+    try {
+      const res = await fetch(`/api/internal/ai-video/jobs/${jobId}/retry`, { method: "POST" });
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error ?? "Không retry được job.");
+      jobWrap.classList.remove("hidden");
+      videoEl.classList.add("hidden");
+      startPolling(data.job.id); // chuyển UI sang theo dõi job MỚI (không phải job cũ vừa lỗi)
+      void taiLichSu();
+    } catch (err) {
+      baoLoi(err instanceof Error ? err.message : "Không retry được job.");
+      btn.disabled = false;
+    }
+  }
+</script>
