@@ -12,6 +12,11 @@ import { thongTinKhuyenMai } from "../../lib/quan-su/khuyen-mai-luan-giai";
 
 export const prerender = false;
 
+// Đăng ký gói thuê bao đang TẠM KHÓA (Thầy, 2026-09-16) — cờ này phải khớp với DANG_MO_BAN trong
+// api/quan-su/goi-thue-bao/checkout.ts và goi-thue-bao.astro (3 chỗ, sửa cả 3 khi mở lại), vì badge
+// ở đây chỉ là hiển thị — chặn thật nằm ở checkout.ts.
+const DANG_MO_BAN = false;
+
 const categories = getCategoriesWithCounts();
 
 // Tour chào mừng người mới — chạy ngay trên trang này, CHỈ hiện đúng 1 lần cho mỗi tài khoản (lần
@@ -162,13 +167,14 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
       </a>
 
       <!-- Gói thuê bao — trước đây chỉ là 1 dòng chữ nhỏ lọt thỏm giữa 2 khối, anh Công phản ánh
-           "không thấy rõ" (29/8/2026). Nâng thành thẻ cùng cỡ với thẻ Xem Thời Vận phía trên.
-           Đã mở bán thật 3 hạng Cơ bản/Cao cấp/VIP (Thầy, 2026-09-14) — bỏ nhãn "Sắp mở bán" (không
-           còn đúng), đổi badge "Mở bán" + tăng độ nổi bật (viền dày hơn, có glow) theo yêu cầu Thầy. -->
+           "không thấy rõ" (29/8/2026). Nâng thành thẻ cùng cỡ với thẻ Xem Thời Vận phía trên, tăng độ
+           nổi bật (viền dày hơn, có glow) theo yêu cầu Thầy 2026-09-14. Mở bán thật 14/9 rồi TẠM KHÓA
+           lại 16/9 (xem DANG_MO_BAN ở đầu file) — badge đổi theo cờ, không hard-code "Mở bán" nữa để
+           khỏi lặp lại đúng kiểu nhầm lẫn "Sắp mở bán" cũ khi trạng thái đổi. -->
       <a href="/quan-su/goi-thue-bao" class="qsh-goi-card" data-tour="thue-bao">
         <div>
           <p class="qs-eyebrow" style="margin:0 0 0.2rem;">Gói thuê bao</p>
-          <h3>Gói Quân Sư Thiên Anh <span class="qsh-goi-badge">Mở bán</span></h3>
+          <h3>Gói Quân Sư Thiên Anh <span class="qsh-goi-badge">{DANG_MO_BAN ? "Mở bán" : "Tạm khóa"}</span></h3>
           <p>Cơ bản · Cao cấp · VIP — hỏi việc không giới hạn theo tháng.</p>
         </div>
         <span class="qsh-arrow" style="color:var(--qs-gold);">→</span>

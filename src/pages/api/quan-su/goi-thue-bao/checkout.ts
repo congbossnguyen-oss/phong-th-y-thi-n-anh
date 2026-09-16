@@ -7,6 +7,13 @@ import { thongBaoLoiAnToan } from "../../../../lib/loi-an-toan";
 
 export const prerender = false;
 
+/**
+ * Công tắc tạm khóa đăng ký gói (Thầy, 2026-09-16) — mở bán thật 14/9 rồi Thầy yêu cầu tạm dừng lại,
+ * CHƯA rõ lý do cụ thể nên khóa hẳn thay vì đoán/nới lỏng một phần. Admin vẫn đi qua được để test.
+ * Đổi thành `true` khi Thầy xác nhận mở lại — KHÔNG xóa cờ này, chỉ lật giá trị.
+ */
+const DANG_MO_BAN = false;
+
 function jsonResponse(body: unknown, status: number): Response {
   return new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } });
 }
@@ -14,10 +21,11 @@ function jsonResponse(body: unknown, status: number): Response {
 /**
  * Tạo đơn gói thuê bao "Quân Sư". BẮT BUỘC đăng nhập — quyền truy cập gói tính theo tài khoản.
  *
- * Mở bán thật cho mọi tài khoản (Thầy, 2026-09-14) — trước đó có giai đoạn thử nghiệm nội bộ chỉ
- * admin tạo đơn được, đã gỡ cổng đó khi cả 3 hạng (Cơ bản/Cao cấp/VIP) đều đã có giá thật trong
- * `gia-subscription.ts`. `giaSubscription()`/`GIA_SUBSCRIPTION[tier][duration]` ném lỗi/`null` nếu
- * lỡ có hạng nào chưa kịp điền giá sau này — chặn đúng ở bước tính tiền, không phải bug.
+ * Mở bán thật 14/9/2026 cho mọi tài khoản, nhưng Thầy yêu cầu TẠM KHÓA lại 16/9/2026 (xem cờ
+ * `DANG_MO_BAN` ở trên) — trước khi mở bán thật cũng có giai đoạn thử nghiệm nội bộ chỉ admin tạo
+ * đơn được, dùng lại đúng cơ chế đó thay vì viết logic khóa mới. `giaSubscription()`/
+ * `GIA_SUBSCRIPTION[tier][duration]` ném lỗi/`null` nếu lỡ có hạng nào chưa kịp điền giá sau này —
+ * chặn đúng ở bước tính tiền, không phải bug.
  */
 export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
   const limited = checkRateLimit({ request, clientAddress }, { key: "checkout-goi-thue-bao", max: 10, windowMs: 60_000 });
@@ -25,6 +33,9 @@ export const POST: APIRoute = async ({ request, locals, clientAddress }) => {
 
   if (!locals.user) {
     return jsonResponse({ ok: false, error: "Vui lòng đăng nhập trước khi đăng ký gói." }, 401);
+  }
+  if (!DANG_MO_BAN && locals.user.isAdmin !== true) {
+    return jsonResponse({ ok: false, error: "Gói thuê bao đang tạm khóa đăng ký, mong bạn quay lại sau." }, 403);
   }
 
   const body = await request.json().catch(() => null);
