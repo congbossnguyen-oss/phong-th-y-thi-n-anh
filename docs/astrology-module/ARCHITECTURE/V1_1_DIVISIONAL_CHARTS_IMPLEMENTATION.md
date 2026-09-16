@@ -1035,7 +1035,12 @@ Parasara") corroborated by an independently-authored second implementation (vedi
 bit-for-bit identical results — high confidence that this is each oracle's own self-declared
 canonical Parashari form, not independent verification against a primary Sanskrit text.
 
-## Explicit Non-Scope (Batch 5, confirmed, not touched)
+## Explicit Non-Scope (Batch 5, confirmed, not touched) — Batch 5's own scope at the time
+
+**Correction (post-Batch-6):** D60 listed below as "remains DEFERRED" described Batch 5's own scope —
+it was researched (Batch 6 preflight), human-reviewed, contract-frozen, and implemented in Batch 6
+(see section below), and is no longer non-scope. This matches the same correction practice used at
+every prior batch transition.
 
 D60 — remains DEFERRED, not researched in this task. `NormalizedChart`/`chart/types.ts` —
 unchanged, no schema bump. `vedic/chart.ts` — unchanged. Phase 4/Phase 5 source files — unchanged
@@ -1044,3 +1049,133 @@ house-lord logic. No UI, no API server. No dependency added or upgraded
 (`package.json`/`package-lock.json` for `astrology-core` unchanged). No method-selection parameter
 exposed (PyJHora's D40/D45 alternate, non-Parashari methods are documented but not implemented, per
 the frozen contract). No commit made.
+
+---
+
+# Batch 6 — D60 Implementation (Shashtiamsa) — V1.1 COMPLETE (15/15)
+
+**Status: implementation complete, NOT committed.** Checkpoint: Batch 5 (D40/D45) closed + committed
+as `63e37a7`. Builds on [`V1_1_DIVISIONAL_CHARTS_PREFLIGHT.md`](V1_1_DIVISIONAL_CHARTS_PREFLIGHT.md)
+§"Batch 6 (cont.) — D60 OPUS METHOD-RESOLUTION REPORT" (status: **CANONICAL METHOD RESOLVED —
+Candidate A**, then **human-reviewed and FROZEN** as the D60 contract). This is the **final** Varga
+of the V1.1 divisional-chart scope: all 15 (D2, D3, D4, D7, D9, D10, D12, D16, D20, D24, D27, D30,
+D40, D45, D60) are now implemented. This section is additive — Batches 1–5 above are unchanged aside
+from the one stale-scope correction noted immediately above.
+
+## Scope
+
+**In this batch:** D60 (Shashtiamsa) — sign-placement calculation only. **Explicitly not in this
+batch:** the 60-named-deity/Shashtiamsa-lord layer (out of V1.1 scope — the classical odd/even name
+reversal belongs to that layer, not to sign placement); no Rule Engine, interpretation, yoga,
+prediction, house-lord logic, full nested mini-chart, UI, API server, or schema migration.
+
+## D60 Formula (Shashtiamsa) — FROZEN CONTRACT
+
+**Source of truth:** the worked example in the reviewed Santhanam translation of BPHS Ch. 6, ślokas
+33–41 (see the preflight's Batch 6 report for the verbatim verse and worked example). Human decision:
+**freeze Candidate A** (count from the occupied sign).
+
+- `part = Math.min(59, Math.floor(signDegree / (30/60)))` — i.e. `floor(signDegree / 0.5)`; 60
+  parts, `30/60 = 0.5 = 1/2`, an exact terminating binary fraction.
+- `destination = countSignsForward(sign, part)` — count `part` signs **forward from the planet's own
+  D1 sign**. No odd/even branch, no reversal, no fixed-Aries seed. Structurally identical to D12.
+- **Worked-example anchor (frozen):** Venus at Capricorn 13°25′ → intra-sign degrees ×2 = 26°50′ →
+  26 ÷ 12 remainder 2 → +1 = 3 → count 3 signs from Capricorn (inclusive) → **Pisces**. The
+  implementation reproduces this exactly, and it is asserted as a dedicated, non-oracle-derived test.
+- **Interpretation note (frozen):** the verse's "ignore the sign position" applies only to computing
+  the intra-sign portion count (use degrees within the sign, not absolute longitude); the resulting
+  count is then applied **from the occupied natal sign** — *not* from a fixed Aries seed. The
+  odd/even reversal in the classical text concerns the deity/name sequence only ("insomuch as these
+  names are concerned"), which is out of scope.
+- **Explicitly rejected** for V1.1 D60 sign placement (per the frozen contract): fixed-Aries seed
+  (PyJHora `chart_method=2`); odd/even 7th-sign shift; odd/even destination reversal (PyJHora
+  `chart_method=4`, untested even by PyJHora's own authors); any deity-name-based sign-placement.
+
+Implemented as `getD60ShashtiamsaSign(sign, signDegree)`, reusing the existing `countSignsForward`
+primitive (unchanged since Batch 1) — **zero new helpers**.
+
+## Precision Policy
+
+`30/60 = 0.5 = 1/2` is an exact terminating binary fraction — the cleanest of any Varga. **No**
+`Math.round`, `toFixed`, epsilon, or tolerance. Unlike D7/D9/D27/D45, there is **no** PyJHora Python
+`//` repeating-fraction artifact; unlike D45, there is **no** `k*partWidth` boundary-construction
+hazard (so tests use the plain `k*0.5 ± 1e-9` pattern, no `nextUp`/`nextDown` scaffolding). Boundary
+convention: closed-lower/open-upper — exact `k*0.5` belongs to the upper part, matching every prior
+Varga and both oracles.
+
+## Oracle Validation (validation only — not the source of the contract)
+
+Per the human directive, oracle agreement is **validation, not proof of classical correctness** (the
+contract was frozen from the reviewed Santhanam worked example). Fresh checks this task, expected
+values hand-derived from the frozen formula:
+- 12-sign representative sweep at 7.3° + a fresh 7-point benchmark chart (distinct from every prior
+  batch's fixtures): **PyJHora `chart_method=1` — 0 discrepancies; vedic-calc — 0 discrepancies.**
+- The Santhanam worked-example anchor (Capricorn 13°25′ → Pisces) reproduced by both oracles and by
+  the implementation.
+
+## Architecture Reuse
+
+- `countSignsForward(fromSign, offset)` — reused unchanged.
+- No `isOddSign`, no element/modality helper, no lookup table, no new helper of any kind — the
+  simplest Varga in the engagement, identical in shape to `getD12DwadasamsaSign`.
+- No generalized formula engine, no Rule Engine, no architecture change.
+
+## API Expansion
+
+- `VargaId` widened from `2 | 3 | 4 | 7 | 9 | 10 | 12 | 16 | 20 | 24 | 27 | 30 | 40 | 45` to add
+  `| 60` — the complete 15-Varga V1.1 closed union.
+- `getDivisionalSign` extended with exactly one new `switch` case (`60`) — no change to any existing
+  case.
+- No change to `NormalizedChart` or `chart/types.ts`. No schema bump — remains **2.1.0**. No
+  dependency change. The 60-named-deity layer was **not** introduced.
+- Carried-forward note (pre-existing, unchanged): per-varga functions are still not re-exported from
+  `index.ts`; `getDivisionalSign` still has no `default` throw branch (its closed union makes the
+  switch exhaustive).
+
+## Tests
+
+Extended `packages/astrology-core/src/vedic/__tests__/divisional.test.ts` — **14 new tests** (173
+total in this file), all passing:
+- `getD60ShashtiamsaSign`: the frozen Santhanam worked-example anchor (Capricorn 13°25′ → Pisces, a
+  non-oracle-derived classical expected value); a from-occupied-sign proof (part0 = own sign, not
+  Aries — rejecting Candidate B); a no-parity/no-reversal proof on even signs (rejecting Candidate
+  C/E); all 60 parts on Aries and on Capricorn (index-derived expectations, zodiac wraps 5×); a full
+  59-boundary loop; exact 0°/0.5°/29.5°/near-30° edges; wraparound (part ≥ 12); midpoint; a 12-sign
+  representative sweep at 7.3°; an independent benchmark-chart case; determinism.
+- `getDivisionalSign`: dispatch-correctness for varga 60; an explicit Batch-5 non-regression
+  assertion; the categorical-output invariant extended to all 15 vargas.
+
+**Test independence:** boundary/segment/wraparound/all-60-parts expected values are hand-derived from
+the frozen formula (index arithmetic on `ZODIAC_SIGNS`, not calls to the function under test); the
+worked-example anchor is taken from the classical text itself; the representative-sweep and
+benchmark values are hand-derived and independently oracle-verified (validation only). No expected
+value for formula correctness is generated by calling the production formula under test.
+
+### Regression
+
+Full suite re-run — **672/672 passing** (658 pre-existing + 14 new, zero regressions). D2–D45 behavior
+is unchanged (explicit per-varga dispatch-equality tests and per-batch benchmark non-regression
+assertions all pass, including a new Batch-5 non-regression assertion).
+
+## Validation Gate
+
+- `tsc -p tsconfig.json --noEmit`: clean.
+- Strict test-inclusive invocation (same flags as every prior batch): clean.
+- `npm run build`: clean.
+- `npx vitest run`: 672/672 passing, 28/28 test files passing.
+
+## Evidence Wording — Confidence Accuracy Note
+
+Unlike D2–D45 (resolved on self-labeled-"Traditional" oracle defaults), D60's contract was frozen
+from an **actual primary-text worked example** (Santhanam BPHS Ch. 6). This document does not
+overclaim beyond that: the resolution rests on the single Santhanam edition + its worked example,
+corroborated by independent secondary worked examples and two software oracles — see the preflight's
+Batch 6 §13 "Remaining Risks" (single-primary-edition residual risk) for the honest confidence bound.
+
+## Explicit Non-Scope (Batch 6, confirmed, not touched)
+
+The 60-named-deity/Shashtiamsa-lord layer and its odd/even name reversal — out of V1.1 scope.
+`NormalizedChart`/`chart/types.ts` — unchanged, no schema bump. `vedic/chart.ts` — unchanged. Phase
+4/Phase 5 source files — unchanged. No Rule Engine, interpretation, yoga, prediction, or house-lord
+logic. No UI, no API server. No dependency added or upgraded. No PyJHora alternate D60 methods
+(2/3/4) exposed. No commit made.

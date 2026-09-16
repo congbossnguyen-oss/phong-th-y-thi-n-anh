@@ -10,11 +10,14 @@
  * Batch 5: D40 (Khavedamsa), D45 (Akshavedamsa) — xem `V1_1_DIVISIONAL_CHARTS_PREFLIGHT.md`
  * §"Batch 5 — D40/D45 Preflight" cho toàn bộ nghiên cứu/oracle evidence đứng sau các công thức
  * dưới đây.
+ * Batch 6: D60 (Shashtiamsa) — xem `V1_1_DIVISIONAL_CHARTS_PREFLIGHT.md` §"Batch 6 (cont.) — D60
+ * OPUS METHOD-RESOLUTION REPORT" (contract FROZEN theo human review từ chính worked-example của
+ * Santhanam BPHS Ch. 6, sloka 33-41). Đây là Varga CUỐI CÙNG của V1.1 (15/15).
  * Tầng "Chart Calculation" phía Vedic, tiếp theo `vedic/rashi.ts`/`vedic/ascendant.ts` — biến MỘT
  * cặp (Rashi, độ trong cung) đã có (D1) thành Rashi tương ứng ở một Varga cụ thể. KHÔNG tính D1
- * (đã có ở `rashi.ts`/`ascendant.ts`), KHÔNG tính D60 (ngoài phạm vi Batch 1+2+3+4+5 — D60 vẫn
- * DEFERRED), KHÔNG lắp vào `NormalizedChart`/`vedic/chart.ts` (quyết định CF.4/CF.10 —
- * "standalone calculation API", không nhúng full nested chart, không đổi schema).
+ * (đã có ở `rashi.ts`/`ascendant.ts`), KHÔNG lắp vào `NormalizedChart`/`vedic/chart.ts` (quyết định
+ * CF.4/CF.10 — "standalone calculation API", không nhúng full nested chart, không đổi schema).
+ * KHÔNG tính tầng 60 tên Shashtiamsa (deity/name layer) — ngoài phạm vi V1.1, chỉ tính cung đích.
  *
  * HOÀN TOÀN THUẦN — không cần `AstronomicalProvider`, không cần `Date` — giống hệt
  * `vedic/houses.ts::getWholeSignHouseNumber` (chỉ cần Rashi/độ đã có). KHÔNG import `western/`
@@ -97,13 +100,13 @@
 
 import { ZODIAC_SIGNS, type ZodiacSign } from "../chart/types.js";
 
-/** 14 Varga có trong Batch 1+2+3+4+5 — union đóng, CHỈ mở rộng khi một batch triển khai kế tiếp thực sự cần (không thêm D60 trước — D60 vẫn DEFERRED). */
-export type VargaId = 2 | 3 | 4 | 7 | 9 | 10 | 12 | 16 | 20 | 24 | 27 | 30 | 40 | 45;
+/** 15 Varga (toàn bộ V1.1) trong Batch 1+2+3+4+5+6 — union đóng, đã hoàn tất (D60 là Varga cuối). */
+export type VargaId = 2 | 3 | 4 | 7 | 9 | 10 | 12 | 16 | 20 | 24 | 27 | 30 | 40 | 45 | 60;
 
 /**
  * Đếm tới trước `offset` cung kể từ `fromSign`, quấn vòng mod 12 — PRIMITIVE DÙNG CHUNG cho MỌI
  * Varga có dạng "phần thứ N của cung → đếm tới N cung từ một cung gốc" (D3/D4 ở Batch 1; D7/D9/D10
- * ở Batch 2; D12/D16/D20 ở Batch 3; cùng hình dạng D24/D27/D40/D45 sẽ dùng ở các batch sau — KHÔNG
+ * ở Batch 2; D12/D16/D20 ở Batch 3; D24/D27 ở Batch 4; D40/D45 ở Batch 5; D60 ở Batch 6 — KHÔNG
  * viết lại). D2 KHÔNG dùng hàm này (không phải phép đếm cung, xem `getD2HoraSign`).
  */
 export function countSignsForward(fromSign: ZodiacSign, offset: number): ZodiacSign {
@@ -457,7 +460,33 @@ export function getD45AkshavedamsaSign(sign: ZodiacSign, signDegree: number): Zo
 }
 
 // ---------------------------------------------------------------------------------------
-// Standalone API — điểm vào chung cho Batch 1+2+3+4+5 (CF.4: "standalone calculation API",
+// D60 — Shashtiamsa. Contract FROZEN (human review) theo Batch 6 OPUS METHOD-RESOLUTION — nguồn
+// chính là WORKED EXAMPLE của chính Santhanam BPHS Ch. 6, sloka 33-41: "Venus tại Capricorn 13°25′
+// → nhân độ trong cung với 2 = 26°50′ → 26 chia 12 dư 2 → +1 = 3 → ĐẾM 3 CUNG TỪ CAPRICORN →
+// Pisces". Nghĩa là: "ignore the sign position" CHỈ áp dụng cho bước tính phần trong cung (dùng độ
+// trong cung, không dùng kinh độ tuyệt đối), rồi ĐẾM TỚI TRƯỚC TỪ CHÍNH CUNG GỐC — KHÔNG phải seed
+// cố định Aries. Thuật toán của Santhanam ("(floor(2d) mod 12)+1, đếm inclusive từ cung gốc") ĐỒNG
+// NHẤT ĐẠI SỐ với `(signIndex + floor(2d)) mod 12` cho MỌI d — tức cùng dạng D12: part = floor(
+// signDegree / 0.5), destination = countSignsForward(sign, part). KHÔNG có nhánh lẻ/chẵn, KHÔNG đảo
+// chiều: phép đảo lẻ/chẵn trong cổ văn CHỈ liên quan chuỗi TÊN 60 Shashtiamsa (deity layer, NGOÀI
+// PHẠM VI V1.1), đã bị loại trừ tường minh bởi mệnh đề "insomuch as these names are concerned".
+// PRECISION: `30/60 = 0.5 = 1/2` là phân số nhị phân HỮU HẠN — KHÔNG có lỗi Python `//` như
+// D7/D9/D27/D45, KHÔNG có hazard dựng biên `k*partWidth` như D45. Dùng `Math.floor` thuần, không
+// epsilon, biên closed-lower/open-upper (0.5° đúng biên thuộc phần SAU). Oracle (PyJHora
+// chart_method=1 + vedic-calc) khớp Candidate A — dùng làm VALIDATION, không phải bằng chứng cổ điển
+// (bằng chứng cổ điển đã freeze từ worked example của Santhanam).
+// ---------------------------------------------------------------------------------------
+
+const D60_PART_WIDTH_DEGREES = 30 / 60;
+
+/** D60 (Shashtiamsa): part = floor(signDegree / 0.5); đếm tới `part` cung từ chính `sign` — KHÔNG phân biệt lẻ/chẵn, KHÔNG đảo chiều (cùng dạng D12). Neo worked-example: Capricorn 13°25′ → Pisces. */
+export function getD60ShashtiamsaSign(sign: ZodiacSign, signDegree: number): ZodiacSign {
+  const part = Math.min(59, Math.floor(signDegree / D60_PART_WIDTH_DEGREES));
+  return countSignsForward(sign, part);
+}
+
+// ---------------------------------------------------------------------------------------
+// Standalone API — điểm vào chung cho Batch 1+2+3+4+5+6 (CF.4: "standalone calculation API",
 // "explicit Varga identifier", "must not expose Swiss-specific types"). KHÔNG lắp vào
 // `NormalizedChart`/`vedic/chart.ts` (ngoài phạm vi task này).
 // ---------------------------------------------------------------------------------------
@@ -465,8 +494,8 @@ export function getD45AkshavedamsaSign(sign: ZodiacSign, signDegree: number): Zo
 /**
  * Tính Rashi của MỘT hành tinh/điểm (Ascendant, ...) ở một Varga cụ thể — nhận `sign`/`signDegree`
  * D1 ĐÃ CÓ (từ `calculateRashi()`/`calculateVedicAscendant()`), KHÔNG tự tính D1. `varga` giới hạn
- * {2,3,4,7,9,10,12,16,20,24,27,30,40,45} ở Batch 1+2+3+4+5 (TypeScript union đóng chặn giá trị
- * khác tại compile time — D60 không thể truyền vào cho tới khi được resolve/triển khai riêng).
+ * {2,3,4,7,9,10,12,16,20,24,27,30,40,45,60} — toàn bộ 15 Varga V1.1 (TypeScript union đóng chặn giá
+ * trị khác tại compile time).
  */
 export function getDivisionalSign(varga: VargaId, sign: ZodiacSign, signDegree: number): ZodiacSign {
   switch (varga) {
@@ -498,5 +527,7 @@ export function getDivisionalSign(varga: VargaId, sign: ZodiacSign, signDegree: 
       return getD40KhavedamsaSign(sign, signDegree);
     case 45:
       return getD45AkshavedamsaSign(sign, signDegree);
+    case 60:
+      return getD60ShashtiamsaSign(sign, signDegree);
   }
 }
