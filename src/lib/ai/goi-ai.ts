@@ -34,7 +34,8 @@ export type TinhNangAi =
   | "chart-profile-tu-vi"
   | "nghe-nghiep-luan-van"
   | "luan-giai-tu-vi-co-ban"
-  | "luan-giai-tu-vi-nang-cao";
+  | "luan-giai-tu-vi-nang-cao"
+  | "cong-ai-video-scene-planner";
 
 /**
  * BẢNG CHỌN NHÀ CUNG CẤP CHO TỪNG TÍNH NĂNG — chỗ duy nhất cần sửa khi muốn đổi.
@@ -58,6 +59,10 @@ const BANG_NHA_CUNG_CAP: Record<TinhNangAi, NhaCungCap> = {
   // Gói 149k/299k, khách đọc kỹ và trả tiền cao — giữ Anthropic cho chắc chất lượng.
   "luan-giai-tu-vi-co-ban": "anthropic",
   "luan-giai-tu-vi-nang-cao": "anthropic",
+  // CONG AI VIDEO (module nội bộ, thêm 13/9/2026): chỉ CHIA CẢNH từ kiến thức phong thủy có sẵn
+  // (không luận giải sâu, không phải nội dung khách trả tiền đọc) — dùng bên rẻ như các tính năng
+  // "thiên về số liệu/câu ngắn" khác trong bảng này.
+  "cong-ai-video-scene-planner": "openai-tuong-thich",
 };
 
 /**
