@@ -268,3 +268,55 @@ export const pushSubscriptions = pgTable("push_subscriptions", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   lastSentAt: timestamp("last_sent_at", { withTimezone: true }),
 });
+
+// --- CONG AI VIDEO (module nội bộ, admin-only — xem src/lib/ai-video/) ---
+//
+// Job tạo video AI (Wan/LTX) là ASYNC (submit → poll → xong), không giống lệnh gọi AI văn bản chạy
+// đồng bộ trong 1 request — nên cần lưu trạng thái ở DB thay vì giữ trong bộ nhớ tiến trình (Node
+// process trên VPS/Render có thể restart giữa lúc chờ provider render xong). V1 KHÔNG có queue/worker
+// riêng: client (trang /cong-ai-video) tự poll GET /api/internal/ai-video/jobs/[id], route đó gọi
+// provider.getGenerationStatus() rồi ghi lại dòng này — đủ dùng ở quy mô nội bộ 1 admin.
+
+export const aiVideoProviderEnum = pgEnum("ai_video_provider", ["wan", "ltx"]);
+
+export const aiVideoJobStatusEnum = pgEnum("ai_video_job_status", [
+  "queued",
+  "submitted",
+  "processing",
+  "completed",
+  "downloading",
+  "ready",
+  "failed",
+  "cancelled",
+  "timeout",
+  "auth_error",
+  "rate_limit",
+  "provider_error",
+  "download_error",
+]);
+
+export const aiVideoJobs = pgTable("ai_video_jobs", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  // Luôn là admin ở V1 (module chỉ mở cho isAdmin) — vẫn lưu để truy vết ai đã tạo job nào.
+  createdBy: uuid("created_by").notNull().references(() => users.id, { onDelete: "cascade" }),
+  topic: text("topic"),
+  sceneIndex: integer("scene_index"),
+  sceneTitle: text("scene_title"),
+  sceneKnowledgeRef: text("scene_knowledge_ref"),
+  provider: aiVideoProviderEnum("provider").notNull(),
+  model: text("model"),
+  prompt: text("prompt").notNull(),
+  negativePrompt: text("negative_prompt"),
+  durationSeconds: integer("duration_seconds"),
+  resolution: text("resolution"),
+  aspectRatio: text("aspect_ratio"),
+  status: aiVideoJobStatusEnum("status").notNull().default("queued"),
+  // id job phía provider (Wan task_id / LTX request_id) — dùng để poll, null cho tới khi submit xong.
+  externalJobId: text("external_job_id"),
+  // URL video do PROVIDER trả — V1 không tải về re-host, chỉ lưu thẳng URL (xem README module).
+  resultUrl: text("result_url"),
+  errorMessage: text("error_message"),
+  estimatedCostUsd: numeric("estimated_cost_usd", { precision: 10, scale: 4 }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+});
