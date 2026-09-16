@@ -1,6 +1,7 @@
 ---
 // Trang đăng ký/gia hạn gói thuê bao "Quân Sư" (Cơ bản / Cao cấp / VIP × 1-3-6-12 tháng).
-// Đã mở bán cho mọi tài khoản (Thầy, 2026-09-14) — cả 3 hạng đều đã có giá thật (gia-subscription.ts).
+// Mở bán thật 14/9/2026, TẠM KHÓA lại theo yêu cầu Thầy 16/9/2026 — xem cờ DANG_MO_BAN trong
+// api/goi-thue-bao/checkout.ts (nguồn sự thật duy nhất, sửa ở CẢ HAI chỗ khi mở lại).
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import BottomNav from "../../components/quan-su/BottomNav.astro";
 import "../../styles/quan-su.css";
@@ -8,9 +9,13 @@ import { layGoiDangHoatDong } from "../../lib/subscriptions/access";
 import { GIA_SUBSCRIPTION, SO_THANG_THEO_KY_HAN, dinhDangTien, type SubscriptionTier, type SubscriptionDuration } from "../../lib/payments/gia-subscription";
 import { HAN_MUC_LUOT_THEO_GOI } from "../../lib/subscriptions/usage";
 
+const DANG_MO_BAN = false;
+
 export const prerender = false;
 
 const user = Astro.locals.user;
+const isAdmin = user?.isAdmin === true;
+const choDangKy = DANG_MO_BAN || isAdmin;
 const goiHienTai = user ? await layGoiDangHoatDong(user.id) : null;
 
 const TEN_HANG: Record<SubscriptionTier, string> = { co_ban: "Cơ bản", cao_cap: "Cao cấp", vip: "VIP" };
@@ -59,6 +64,12 @@ const DURATIONS: SubscriptionDuration[] = ["1_thang", "3_thang", "6_thang", "1_n
         <p class="qs-sub" style="margin:0.7rem 0 0;font-size:0.78rem;">Hạn mức lượt hỏi làm mới vào đầu mỗi tháng dương lịch. Cao cấp bao gồm mọi quyền của Cơ bản.</p>
       </div>
 
+      {!choDangKy && (
+        <div class="qs-notice" style="background:rgba(241,200,90,0.1);border-color:rgba(241,200,90,0.4);color:var(--qs-gold);margin-bottom:1.5rem;">
+          ⚙ Gói thuê bao đang tạm khóa đăng ký, mong bạn quay lại sau. Trong lúc chờ, bạn vẫn dùng được đầy đủ các dịch vụ lẻ ở mục <a href="/dai-cat-loi/dich-vu-thu-phi" style="color:var(--qs-gold);text-decoration:underline;">Dịch vụ VIP</a>.
+        </div>
+      )}
+
       {!user ? (
         <div class="qs-card" style="text-align:center;padding:1.5rem;">
           <p style="margin-bottom:1rem;">Cần đăng nhập để đăng ký gói.</p>
@@ -97,7 +108,7 @@ const DURATIONS: SubscriptionDuration[] = ["1_thang", "3_thang", "6_thang", "1_n
                         class="goi-btn"
                         data-tier={tier}
                         data-duration={duration}
-                        disabled={gia === null}
+                        disabled={gia === null || !choDangKy}
                         style="flex:1;min-width:120px;text-align:center;padding:0.8rem 0.6rem;border-radius:10px;border:1px solid rgba(241,200,90,0.25);background:rgba(255,255,255,0.02);cursor:pointer;color:inherit;font:inherit;"
                       >
                         <span style="display:block;font-weight:700;color:var(--qs-gold);">{TEN_KY_HAN[duration]}</span>
