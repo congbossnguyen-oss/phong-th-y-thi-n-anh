@@ -1,0 +1,39 @@
+{
+  "name": "@thien-anh/daliuren-engine",
+  "version": "0.1.0",
+  "description": "Đại Lục Nhâm Engine — domain contracts, CalculationProfile, provenance/rule/signal/conflict model, InterpretationPackage schema. CHECKPOINT 1: chỉ chứa kiểu dữ liệu + validator + test harness, CHƯA có tính toán lập bàn (Calendar Layer) hay luận giải AI. Xem docs/daliuren/DA_LIU_REN_IMPLEMENTATION_GATE.md cho ranh giới implementation.",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:unit": "vitest run tests/unit"
+  },
+  "dependencies": {
+    "@thien-anh/calendar-core": "*",
+    "@thien-anh/engine-contract": "*",
+    "@thien-anh/rule-engine": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.4"
+  },
+  "keywords": [
+    "dai-luc-nham",
+    "da-liu-ren"
+  ],
+  "license": "UNLICENSED",
+  "private": true
+}
