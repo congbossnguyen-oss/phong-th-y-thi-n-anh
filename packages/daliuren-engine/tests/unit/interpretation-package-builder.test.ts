@@ -42,10 +42,18 @@ describe("daliuren-engine/interpretation-package-builder", () => {
     expect(pkg.unresolved_items).toEqual([]);
   });
 
+  // Phase 11-B (đã duyệt): questionType "hon-nhan" nay có 2 rule eligible (R-NHATTHAN-01 universal
+  // + R-HONNHAN-01 chuyên biệt) thay vì chỉ 1 — R-HONNHAN-01 KHÔNG trigger cho golden chart
+  // 2024-01-01 00:30 (canGeneral=gouChen, chiGeneral=tianKong — không phải Thiên Hậu/Lục Hợp, đã
+  // xác nhận qua calculateDaLiuRenChart thật) nên chỉ thêm 1 phần tử triggered=false vào
+  // verified_rules — signals KHÔNG đổi (vẫn đúng 1, từ R-NHATTHAN-01, byte-identical với trước).
   it("questionType hợp lệ (hon-nhan, READY) → R-NHATTHAN-01 nằm trong verified_rules, signal khớp evaluator thật", () => {
     const { calculation, engineMeta } = realCalculation();
     const pkg = buildInterpretationPackage({ calculation, chartIdentity: CHART_INPUT, profile: CLASSICAL_V1_PROFILE, engineMeta, questionType: "hon-nhan" });
-    expect(pkg.verified_rules).toEqual([{ ruleId: "R-NHATTHAN-01", triggered: true }]);
+    expect(pkg.verified_rules).toEqual([
+      { ruleId: "R-NHATTHAN-01", triggered: true },
+      { ruleId: "R-HONNHAN-01", triggered: false },
+    ]);
     expect(pkg.signals).toHaveLength(1);
     expect(pkg.signals[0]).toMatchObject({
       ruleId: "R-NHATTHAN-01",
@@ -136,7 +144,10 @@ describe("daliuren-engine/interpretation-package-builder", () => {
       ruleRegistry: registry,
       evaluatorRegistry,
     });
-    expect(pkg.verified_rules).toEqual([{ ruleId: "R-NHATTHAN-01", triggered: true }]);
+    expect(pkg.verified_rules).toEqual([
+      { ruleId: "R-NHATTHAN-01", triggered: true },
+      { ruleId: "R-HONNHAN-01", triggered: false },
+    ]);
   });
 
   it("forbidden_inferences luôn có mặt, bao gồm 'scoring' — không AI tự chấm điểm", () => {

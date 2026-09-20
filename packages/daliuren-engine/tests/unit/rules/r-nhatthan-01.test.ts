@@ -45,17 +45,26 @@ describe("daliuren-engine/rules/r-nhatthan-01", () => {
   });
 
   describe("[B] Registry — real rule/evaluator qua buildRuleRegistry/buildEvaluatorRegistry", () => {
-    it("PRODUCTION_RULE_REGISTRY chứa ĐÚNG 1 rule: R-NHATTHAN-01", () => {
-      expect(PRODUCTION_RULE_REGISTRY.rules.map((r) => r.ruleId)).toEqual(["R-NHATTHAN-01"]);
+    // Phase 11-B (đã duyệt): PRODUCTION_RULE_REGISTRY mở rộng từ 1 → 4 rule (R-NHATTHAN-01 GIỮ
+    // NGUYÊN vị trí đầu, KHÔNG đổi hành vi cũ) — cập nhật assertion để khớp thực tế MỚI, KHÔNG
+    // phải vá lỗi (R-NHATTHAN-01's chính nó không đổi 1 ký tự nào, xem mục [D]/[E]/[F] dưới).
+    it("PRODUCTION_RULE_REGISTRY chứa ĐÚNG 4 rule, R-NHATTHAN-01 vẫn ở vị trí đầu tiên", () => {
+      expect(PRODUCTION_RULE_REGISTRY.rules.map((r) => r.ruleId)).toEqual([
+        "R-NHATTHAN-01",
+        "R-HONNHAN-01",
+        "R-TIMDO-01",
+        "R-KIENTUNG-02",
+      ]);
     });
 
     it("real rule pass buildRuleRegistry() — provenanceId resolve đúng trong PRODUCTION_RULE_PROVENANCE", () => {
       expect(() => buildRuleRegistry([R_NHATTHAN_01], PRODUCTION_RULE_PROVENANCE)).not.toThrow();
     });
 
-    it("real evaluator pass buildEvaluatorRegistry() — completeness 1-1 đúng", () => {
-      expect(() => buildEvaluatorRegistry(PRODUCTION_RULE_REGISTRY, [R_NHATTHAN_01_EVALUATOR_REGISTRATION])).not.toThrow();
-      expect(PRODUCTION_EVALUATOR_REGISTRY.evaluatorByRuleId.size).toBe(1);
+    it("real evaluator pass buildEvaluatorRegistry() — completeness 1-1 đúng (registry CÔ LẬP chỉ chứa R-NHATTHAN-01, giữ nguyên phạm vi test gốc — KHÔNG dùng PRODUCTION_RULE_REGISTRY vì nay có 4 rule)", () => {
+      const isolatedRegistry = buildRuleRegistry([R_NHATTHAN_01], { [NHATTHAN_01_PROVENANCE.id]: NHATTHAN_01_PROVENANCE });
+      expect(() => buildEvaluatorRegistry(isolatedRegistry, [R_NHATTHAN_01_EVALUATOR_REGISTRATION])).not.toThrow();
+      expect(PRODUCTION_EVALUATOR_REGISTRY.evaluatorByRuleId.size).toBe(4);
       expect(PRODUCTION_EVALUATOR_REGISTRY.evaluatorByRuleId.has("R-NHATTHAN-01")).toBe(true);
     });
 
@@ -63,7 +72,7 @@ describe("daliuren-engine/rules/r-nhatthan-01", () => {
       expect(R_NHATTHAN_01_EVALUATOR_REGISTRATION.ruleId).toBe(R_NHATTHAN_01.ruleId);
     });
 
-    it("không có ruleId trùng lặp trong PRODUCTION_RULE_REGISTRY (chỉ 1 rule nên trivially đúng, xác nhận tường minh)", () => {
+    it("không có ruleId trùng lặp trong PRODUCTION_RULE_REGISTRY (nay 4 rule, xác nhận tường minh)", () => {
       const ids = PRODUCTION_RULE_REGISTRY.rules.map((r) => r.ruleId);
       expect(new Set(ids).size).toBe(ids.length);
     });
@@ -75,9 +84,11 @@ describe("daliuren-engine/rules/r-nhatthan-01", () => {
       expect(questionTypeAllowsRules("kien-tung")).toBe(true); // PARTIAL
     });
 
-    it("selectEligibleRules trả về R-NHATTHAN-01 cho MỌI question_type hợp lệ (rule không khai báo questionTypes = universal)", () => {
-      expect(selectEligibleRules(PRODUCTION_RULE_REGISTRY, "hon-nhan").map((r) => r.ruleId)).toEqual(["R-NHATTHAN-01"]);
-      expect(selectEligibleRules(PRODUCTION_RULE_REGISTRY, "kien-tung").map((r) => r.ruleId)).toEqual(["R-NHATTHAN-01"]);
+    // Phase 11-B: "hon-nhan"/"kien-tung" nay có THÊM rule chuyên biệt (R-HONNHAN-01/R-KIENTUNG-02)
+    // bên cạnh R-NHATTHAN-01 (universal) — "quan-chuc" KHÔNG đổi (R-QUANCHUC-01 ngoài phạm vi).
+    it("selectEligibleRules trả về R-NHATTHAN-01 cho MỌI question_type hợp lệ (rule không khai báo questionTypes = universal), CỘNG rule chuyên biệt khi có", () => {
+      expect(selectEligibleRules(PRODUCTION_RULE_REGISTRY, "hon-nhan").map((r) => r.ruleId)).toEqual(["R-NHATTHAN-01", "R-HONNHAN-01"]);
+      expect(selectEligibleRules(PRODUCTION_RULE_REGISTRY, "kien-tung").map((r) => r.ruleId)).toEqual(["R-NHATTHAN-01", "R-KIENTUNG-02"]);
       expect(selectEligibleRules(PRODUCTION_RULE_REGISTRY, "quan-chuc").map((r) => r.ruleId)).toEqual(["R-NHATTHAN-01"]);
     });
 
