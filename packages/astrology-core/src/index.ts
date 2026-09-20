@@ -247,3 +247,19 @@ export { WESTERN_RULES_VERSION, WESTERN_RULES_V1 } from "./western/rules.js";
 export type { DomainScore, ScoringContext, ScoringEngine } from "./scoring/types.js";
 export { SCORING_ENGINE_VERSION } from "./scoring/types.js";
 export { scoreDomains, scoringEngine } from "./scoring/engine.js";
+
+// ---------------------------------------------------------------------------------------
+// Phase 7B — Evidence Engine. Provenance plumbing thuần xác định (no calc/interp/scoring/LLM).
+// In-memory, no persistence. record → trace → traceToBirthData.
+// ---------------------------------------------------------------------------------------
+
+export type { Evidence, TraceChain } from "./evidence/types.js";
+export { EvidenceTraceIntegrityError } from "./evidence/types.js";
+export type { TraceResolutionContext } from "./evidence/engine.js";
+export {
+  EVIDENCE_ENGINE_VERSION,
+  makeEvidenceId,
+  recordEvidence,
+  traceByInterpretation,
+  traceToBirthData,
+} from "./evidence/engine.js";
