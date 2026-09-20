@@ -47,6 +47,8 @@ export * from "./three-transmissions/index.js";
 export * from "./twelve-generals/index.js";
 export * from "./calendar-foundation-result.js";
 export * from "./da-liu-ren-calculation-result.js";
+export * from "./ke-type/index.js";
+export * from "./da-liu-ren-chart-with-ke-type.js";
 export * from "./rules/index.js";
 export * from "./interpretation-package-builder.js";
 
@@ -75,6 +77,8 @@ import { YiMaError } from "./yi-ma/errors.js";
 import { computeTwelveGenerals } from "./twelve-generals/compute.js";
 import { TwelveGeneralsError } from "./twelve-generals/errors.js";
 import type { DaLiuRenCalculationResult } from "./da-liu-ren-calculation-result.js";
+import { computeKeType } from "./ke-type/compute.js";
+import type { DaLiuRenChartWithKeType } from "./da-liu-ren-chart-with-ke-type.js";
 
 /** Version của `@thien-anh/calendar-core` đã dùng để tính — cùng quy ước hardcode literal như `trachnhat-engine` (xem `packages/trachnhat-engine/src/index.ts`), KHÔNG đọc động từ package.json. */
 const CORE_CALENDAR_VERSION = "0.1.0";
@@ -162,6 +166,37 @@ export function calculateCalendarFoundation(
   } catch (error) {
     return fail([toEngineError(error)], meta);
   }
+}
+
+/**
+ * Facade Phase 11-A1 — `calculateDaLiuRenChart()` + 課體 (`keType`). KHÔNG sửa
+ * `calculateDaLiuRenChart()` (đã đông băng cho Phase 11-B) — chỉ GỌI nó rồi bổ sung field
+ * ADDITIVE, đúng khuyến nghị Phase 11-A Pre-Implementation Audit mục "Schema/API Impact".
+ * `keType.primary.method` là ĐỒNG NHẤT (identity) với `threeTransmissions.method` — không tính
+ * lại, không suy luận gì mới (xem `ke-type/compute.ts`).
+ */
+export function calculateDaLiuRenChartWithKeType(
+  input: ChartInput,
+  profile: CalculationProfile = CLASSICAL_V1_PROFILE,
+): EngineResult<DaLiuRenChartWithKeType> {
+  const base = calculateDaLiuRenChart(input, profile);
+  if (!base.ok || !base.data) {
+    return fail(base.errors ?? [], base.meta);
+  }
+
+  const { keType, provenanceId } = computeKeType(base.data.threeTransmissions.method, base.data.provenance.threeTransmissionsInitialProvenanceId);
+
+  return ok<DaLiuRenChartWithKeType>(
+    {
+      ...base.data,
+      keType,
+      provenance: {
+        ...base.data.provenance,
+        keTypeProvenanceId: provenanceId,
+      },
+    },
+    base.meta,
+  );
 }
 
 /**
