@@ -238,3 +238,12 @@ export { validateRuleSet, loadRuleSet } from "./rule/validate.js";
 
 // Phase 6 Batch 3 — Western geometric RuleSet V1 content (3 luminary rules, geometric_rule).
 export { WESTERN_RULES_VERSION, WESTERN_RULES_V1 } from "./western/rules.js";
+
+// ---------------------------------------------------------------------------------------
+// Phase 7 — Scoring Engine (Layer 10). Generic deterministic weighted-sum only.
+// No scoring content: domain vocabulary deferred; Western RuleSet v1 carries no weighting → [].
+// ---------------------------------------------------------------------------------------
+
+export type { DomainScore, ScoringContext, ScoringEngine } from "./scoring/types.js";
+export { SCORING_ENGINE_VERSION } from "./scoring/types.js";
+export { scoreDomains, scoringEngine } from "./scoring/engine.js";
