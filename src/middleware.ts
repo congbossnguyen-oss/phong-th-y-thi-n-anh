@@ -2,7 +2,15 @@ import { defineMiddleware } from "astro:middleware";
 import { SESSION_COOKIE_NAME, validateSessionToken } from "./lib/auth/session";
 import { getClientIp } from "./lib/auth/client-ip";
 
+// Domain riêng cho app Quân Sư (Thầy, 2026-09-20) — cùng Worker, cùng code, chỉ khác domain trỏ
+// vào. Khách vào thẳng domain này thì đưa luôn vào /quan-su thay vì thấy trang chủ marketing.
+const DOMAIN_QUAN_SU = new Set(["quansuthienanh.com", "www.quansuthienanh.com"]);
+
 export const onRequest = defineMiddleware(async (context, next) => {
+  if (DOMAIN_QUAN_SU.has(context.url.hostname) && context.url.pathname === "/") {
+    return context.redirect("/quan-su");
+  }
+
   context.locals.user = null;
 
   // Trang prerender (tĩnh) không có cookie thật lúc build — bỏ qua để tránh warning

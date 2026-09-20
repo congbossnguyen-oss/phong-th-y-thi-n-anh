@@ -1,0 +1,34 @@
+{
+  // Worker THỨ HAI, cùng code/cùng dist với phong-thuy-thien-anh (wrangler.jsonc) — chỉ khác tên
+  // Worker + domain trỏ vào (Thầy, 2026-09-20: "copy sang cái mới" cho domain quansuthienanh.com).
+  // Middleware.ts tự redirect "/" -> "/quan-su" khi hostname khớp domain này, nên khách vào domain
+  // này chỉ thấy app Quân Sư dù code là y hệt.
+  //
+  // KHÔNG khai báo "triggers.crons" ở đây — cùng DATABASE_URL với Worker chính, bật cron ở CẢ HAI
+  // Worker sẽ gửi trùng lặp mọi thông báo (nhắc lịch, v.v.) mỗi ngày 2 lần. Cron chỉ chạy ở
+  // wrangler.jsonc gốc.
+  //
+  // LUU Y deploy: "wrangler deploy -c <file nay>" KHONG chay duoc thang - Astro Cloudflare adapter
+  // bake san wrangler.jsonc (ban goc) vao dist/server/wrangler.json luc build (no_bundle,
+  // main=entry.mjs), va "wrangler deploy" KHONG kem -c moi tu nhan ra dung ban do; kem -c lai ep
+  // bundle thang tu src/worker-entry.ts nen vo (khong resolve duoc virtual module cua Astro). Cach
+  // deploy dung: 1) doi tam "name"+"routes" cua wrangler.jsonc GOC thanh cua file nay, 2) npm run
+  // build, 3) npx wrangler deploy (KHONG -c), 4) doi wrangler.jsonc goc ve lai nhu cu roi build+
+  // deploy lai 1 lan nua de Worker chinh khong bi dinh cau hinh tam.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "quan-su-thien-anh",
+  "main": "src/worker-entry.ts",
+  "compatibility_date": "2025-05-21",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS"
+  },
+  "kv_namespaces": [{ "binding": "SESSION", "id": "6d7b9d11decd4f7dacd97ede5deab9d2" }],
+  // Domain riêng — CHỈ hoạt động sau khi mua quansuthienanh.com và thêm domain đó vào Cloudflare
+  // (zone). Chưa mua domain thì deploy Worker vẫn chạy bình thường, chỉ route này bị bỏ qua/lỗi.
+  "routes": [{ "pattern": "quansuthienanh.com/*", "custom_domain": true }],
+  "observability": {
+    "enabled": true
+  }
+}
