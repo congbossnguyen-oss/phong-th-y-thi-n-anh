@@ -235,3 +235,6 @@ export type {
 export { evaluateRules, ruleEngine } from "./rule/engine.js";
 export type { RuleSetErrorCode, RuleSetError } from "./rule/validate.js";
 export { validateRuleSet, loadRuleSet } from "./rule/validate.js";
+
+// Phase 6 Batch 3 — Western geometric RuleSet V1 content (3 luminary rules, geometric_rule).
+export { WESTERN_RULES_VERSION, WESTERN_RULES_V1 } from "./western/rules.js";
