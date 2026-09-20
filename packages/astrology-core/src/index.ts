@@ -213,3 +213,25 @@ export { countSignsForward, getD2HoraSign, getD3DrekkanaSign, getD4ChaturthamsaS
 
 export type { Factor, FactorId, FactorCategory, FactorInput, FactorInputType, FactorSchoolConfig, FactorEngine } from "./factor/types.js";
 export { WESTERN_FACTORS_VERSION, extractWesternFactors, westernFactorEngine } from "./western/factors.js";
+
+// ---------------------------------------------------------------------------------------
+// Phase 6 — Rule Engine (Layer 8). Generic evaluator + RuleSet contract + schema validation.
+// Model A (one generic engine, school-specific RuleSet data). Batches 0–2 only: no rule content,
+// no Evidence/Scoring/Interpretation, no Vedic RuleSet.
+// ---------------------------------------------------------------------------------------
+
+export type {
+  RuleId,
+  ConditionComparator,
+  ConditionExpr,
+  RuleSourceType,
+  SourceRef,
+  RuleWeighting,
+  Rule,
+  RuleSet,
+  RuleEvaluation,
+  RuleEngine,
+} from "./rule/types.js";
+export { evaluateRules, ruleEngine } from "./rule/engine.js";
+export type { RuleSetErrorCode, RuleSetError } from "./rule/validate.js";
+export { validateRuleSet, loadRuleSet } from "./rule/validate.js";
