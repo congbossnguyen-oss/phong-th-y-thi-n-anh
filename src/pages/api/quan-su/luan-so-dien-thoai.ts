@@ -43,7 +43,7 @@ function jsonResponse(body: unknown, status: number): Response {
  * không nên nằm trên thanh địa chỉ hay trong log truy cập. Cũng khớp quy ước chung của dự án: form
  * gửi bằng fetch/JSON để không dính chặn CSRF trong trình duyệt trong ứng dụng Zalo/Facebook.
  */
-export const POST: APIRoute = async ({ request, clientAddress }) => {
+export const POST: APIRoute = async ({ request, clientAddress, locals }) => {
   const body = await request.json().catch(() => null);
   if (!body || typeof body !== "object") {
     return jsonResponse({ error: "Dữ liệu gửi lên không hợp lệ." }, 400);
@@ -55,18 +55,23 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   }
 
   // Hạn mức 3 số/ngày/thiết bị — đặt SAU khi đã có số điện thoại hợp lệ để không tính oan các lần
-  // bấm nhầm thiếu số. Vượt hạn mức trả 429 kèm thông báo rõ ràng cho khách.
-  const limited = checkRateLimit(
-    { request, clientAddress },
-    {
-      key: "luan-so-ngay-qs",
-      max: MOI_NGAY_TOI_DA,
-      windowMs: MOT_NGAY_MS,
-      message:
-        "Mỗi ngày mỗi thiết bị chỉ luận tối đa 3 số điện thoại (để tránh lạm dụng). Vui lòng quay lại vào ngày mai, " +
-        "hoặc liên hệ hotline để được chuyên gia tư vấn trực tiếp.",
-    },
-  );
+  // bấm nhầm thiếu số. Vượt hạn mức trả 429 kèm thông báo rõ ràng cho khách. Admin bỏ qua hạn mức
+  // này (2026-09-20, Thầy báo tài khoản admin cũng bị chặn — endpoint này vốn không đọc locals.user
+  // nên admin bị tính chung IP như khách thường).
+  const limited =
+    locals.user?.isAdmin === true
+      ? null
+      : checkRateLimit(
+          { request, clientAddress },
+          {
+            key: "luan-so-ngay-qs",
+            max: MOI_NGAY_TOI_DA,
+            windowMs: MOT_NGAY_MS,
+            message:
+              "Mỗi ngày mỗi thiết bị chỉ luận tối đa 3 số điện thoại (để tránh lạm dụng). Vui lòng quay lại vào ngày mai, " +
+              "hoặc liên hệ hotline để được chuyên gia tư vấn trực tiếp.",
+          },
+        );
   if (limited) return limited;
 
   const cccdRaw = typeof body.cccd === "string" ? body.cccd.trim() : "";
