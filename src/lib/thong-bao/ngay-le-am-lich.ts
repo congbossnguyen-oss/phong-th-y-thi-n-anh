@@ -11,7 +11,7 @@
  * Múi giờ: solarToLunar() của dự án quy đổi theo giờ Việt Nam, nên mọi ngày đưa vào đây phải là
  * ngày theo giờ Việt Nam. Máy chủ Render chạy giờ UTC — luôn dùng ngayVietNam() để lấy cho đúng.
  */
-import { solarToLunar } from "../lunar-calendar";
+import { resolveVnLunar } from "../lunar-canonical";
 
 export type LoaiNgayLe = "mung-mot" | "ram";
 
@@ -59,7 +59,7 @@ function congNgay(g: NgayDuong, them: number): NgayDuong {
 
 /** Ngày dương lịch này có phải mùng Một hoặc ngày Rằm không. */
 export function laNgayLe(g: NgayDuong): LoaiNgayLe | null {
-  const am = solarToLunar(g.ngay, g.thang, g.nam);
+  const am = resolveVnLunar(g.ngay, g.thang, g.nam);
   if (am.day === 1) return "mung-mot";
   if (am.day === 15) return "ram";
   return null;
@@ -77,7 +77,7 @@ export function cannhacHomNay(homNay: NgayDuong, kieu: KieuNhac): NgayLeCanNhac 
   const loai = laNgayLe(ngayLe);
   if (!loai) return null;
 
-  const am = solarToLunar(ngayLe.ngay, ngayLe.thang, ngayLe.nam);
+  const am = resolveVnLunar(ngayLe.ngay, ngayLe.thang, ngayLe.nam);
   return {
     loai,
     kieu,

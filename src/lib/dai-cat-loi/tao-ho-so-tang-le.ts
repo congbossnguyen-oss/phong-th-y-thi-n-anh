@@ -6,7 +6,7 @@
  * sớm muộn cũng lệch nhau, mà tang gia lại đối chiếu bản in với bản trên màn hình.
  */
 import { apDungPhase2, calculateGioLiemHaHuyet, type GioLiemHaHuyetInput } from "@thien-anh/trachnhat-engine";
-import { getLunarDate } from "@thien-anh/calendar-core";
+import { getLunarDate, vnLunarZone, isCanonicalVnLunarEnabled } from "@thien-anh/calendar-core";
 import type { TrungTang } from "@thien-anh/rule-engine";
 import { generateHoSoTangLePdf } from "./ho-so-tang-le-pdf";
 
@@ -46,7 +46,13 @@ export async function taoHoSoTangLe(dauVao: DauVaoHoSo): Promise<KetQuaTaoHoSo> 
   const amLichHaHuyet: Record<string, string> = {};
   for (const h of ketQua.ngayGioHaHuyet ?? []) {
     const d = h.ngayDuongLich;
-    const am = getLunarDate({ year: d.nam, month: d.thang, day: d.ngay, hour: 12 });
+    // G10 (flag): BẬT → quy đổi Âm lịch qua resolver chính sách (Etc/GMT-7/8). TẮT → giữ nguyên
+    // call baseline (không timeZone) để byte-identical.
+    const am = getLunarDate(
+      isCanonicalVnLunarEnabled()
+        ? { year: d.nam, month: d.thang, day: d.ngay, hour: 12, timeZone: vnLunarZone({ year: d.nam, month: d.thang, day: d.ngay }) }
+        : { year: d.nam, month: d.thang, day: d.ngay, hour: 12 },
+    );
     const khoa = `${String(d.ngay).padStart(2, "0")}/${String(d.thang).padStart(2, "0")}/${d.nam}|${h.chiGio}`;
     amLichHaHuyet[khoa] = `${am.day}/${am.month}${am.isLeapMonth ? " nhuận" : ""}`;
   }

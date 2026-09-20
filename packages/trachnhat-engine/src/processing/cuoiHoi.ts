@@ -7,7 +7,7 @@
  * ⚠️ Dùng lại toàn bộ tầng dùng chung (Scoring, TrachNhat, getSolarTerms) — không số hoá lại. Xem
  * ghi chú khảo sát ở `packages/rule-engine/src/cuoi-hoi/cuoiHoi.ts`.
  */
-import { getSolarTerms, getSolarDateFromLunar, getLunarDate, Data } from "@thien-anh/calendar-core";
+import { getSolarTerms, getSolarDateFromLunar, getLunarDate, Data, vnLunarZone, vnInverseZone } from "@thien-anh/calendar-core";
 import { CuoiHoi, Scoring, TrachNhat } from "@thien-anh/rule-engine";
 import { tinhTuTru } from "./tuTru.js";
 import { tinhNgayInfo } from "./ngayInfo.js";
@@ -90,10 +90,10 @@ function tietVaNgayThu(namDuong: number, jdn: number): { tiet: string; ngayThu: 
  * lịch âm. Nếu ra ngày 30 (cùng tháng) → tháng đủ; nếu đã sang mùng 1 tháng sau → tháng thiếu.
  */
 function laThangDu(lunar: { year: number; month: number; day: number; isLeapMonth: boolean }, timeZone: string): boolean {
-  const mung1 = getSolarDateFromLunar({ year: lunar.year, month: lunar.month, day: 1, isLeapMonth: lunar.isLeapMonth }, timeZone);
+  const mung1 = getSolarDateFromLunar({ year: lunar.year, month: lunar.month, day: 1, isLeapMonth: lunar.isLeapMonth }, vnInverseZone({ day: 1, month: lunar.month, year: lunar.year, isLeapMonth: lunar.isLeapMonth }, timeZone));
   const jdMung1 = Date.UTC(mung1.year, mung1.month - 1, mung1.day);
   const sau29 = new Date(jdMung1 + 29 * 86_400_000);
-  const lunarSau29 = getLunarDate({ year: sau29.getUTCFullYear(), month: sau29.getUTCMonth() + 1, day: sau29.getUTCDate(), hour: 12, timeZone });
+  const lunarSau29 = getLunarDate({ year: sau29.getUTCFullYear(), month: sau29.getUTCMonth() + 1, day: sau29.getUTCDate(), hour: 12, timeZone: vnLunarZone({ year: sau29.getUTCFullYear(), month: sau29.getUTCMonth() + 1, day: sau29.getUTCDate() }, timeZone) });
   return lunarSau29.day === 30;
 }
 

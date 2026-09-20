@@ -5,7 +5,7 @@
 
 import { CAN, CHI, NAP_AM } from "../menh-nap-am";
 import { khongVongIndicesOf, tinhBatTu, type PillarInfo } from "../bat-tu";
-import { solarToLunar } from "../lunar-calendar";
+import { resolveVnLunar } from "../lunar-canonical";
 import {
   CAN_DUONG, CUC_INFO, CUNG_NAMES_TU_MENH_NGHICH,
   DAN, DAO_HOA_START, HOA_TINH_START, LINH_TINH_START, LOC_TON_TABLE,
@@ -160,7 +160,7 @@ function pillarOf(p: PillarInfo): CanChiPillar {
 
 export function tinhTuVi(input: TuViInput): TuViChart {
   // --- STEP 1-2: Calendar + Can Chi ---
-  const lunar = solarToLunar(input.day, input.month, input.year);
+  const lunar = resolveVnLunar(input.day, input.month, input.year);
   const gioChiIndex = Math.floor((((input.hour + 1) % 24) + 24) % 24 / 2);
 
   // PHASE 20: đủ 4 trụ Can Chi — gọi thẳng tinhBatTu() (bat-tu.ts), KHÔNG viết lại thuật toán Can Chi
