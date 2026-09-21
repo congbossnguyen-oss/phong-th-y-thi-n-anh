@@ -30,8 +30,10 @@ Implementation is gated separately by a later Phase 8 contract freeze.
 | D-ID | Deterministic interpretation id | HUMAN RATIFIED |
 | D-SCORE | Inactive scoring / DomainScore | HUMAN RATIFIED |
 | D-EVIDENCE | Conclusion → Evidence enforcement | HUMAN RATIFIED |
+| D-ID-CONSTRUCT | Interpretation ID construction | HUMAN RATIFIED |
+| D-EMIT | Interpretation emission scope | HUMAN RATIFIED |
 
-**Contract Freeze:** NOT YET DONE.
+**Contract Freeze:** NOT YET DONE. Precheck blockers resolved: **FB-1 → D-ID-CONSTRUCT**, **FB-2 → D-EMIT**. The Contract Freeze re-run remains a separate task.
 
 ---
 
@@ -436,6 +438,75 @@ content/methodology decision. Western RuleSet V1 remains FROZEN.
 
 D-BIND does not reactivate `Rule.weighting`, and does not create numeric weight, DomainScore, score
 aggregation, or cross-domain comparison. `Rule.domain` and `Rule.weighting` are independent concepts.
+
+---
+
+# Contract-Freeze Blocker Resolutions
+
+The Phase 8 Contract Freeze Precheck returned RED with two blockers (FB-1: interpretation-ID
+construction; FB-2: emission scope / coverage-vs-absence). The two decisions below resolve them. They
+are human-ratified; they change no code, schema, spec, or RuleSet, and assign no domain to any rule.
+
+## D-ID-CONSTRUCT — Interpretation ID Construction (resolves FB-1)
+
+- **Date recorded:** 2026-09-21
+- **Status:** HUMAN RATIFIED
+
+### Decision
+Freeze the exact construction:
+```
+interpretationId = `${calculationId}:${domain}`
+```
+
+### Invariants
+- deterministic; stable; no random UUID; no timestamp; no environment dependency.
+- same `calculationId + domain` → same `interpretationId`.
+
+### Rationale
+- Mirrors the existing Evidence ID convention `${calculationId}:${ruleId}`.
+- Compatible with D-MULTI (one domain per rule ⇒ one InterpretationObject per chart × domain, so
+  `calculationId:domain` is unique).
+- Deterministic and auditable; no hashing layer.
+
+### Constraints
+This concretizes **D-ID**; it does **not** alter D-ID. Do not introduce hashing. Do not add
+`conclusion.key`, Rule IDs, Evidence IDs, or any other variable content to the ID.
+
+---
+
+## D-EMIT — Interpretation Emission Scope (resolves FB-2)
+
+- **Date recorded:** 2026-09-21
+- **Status:** HUMAN RATIFIED
+
+### Decision
+For each canonical domain, evaluated against a given RuleSet:
+
+1. **Zero bound Rules** — if the evaluated RuleSet contains no Rule bound to the domain: **emit no
+   InterpretationObject.** Do **not** emit `domain_not_indicated`. The domain has not been assessed by
+   that RuleSet.
+2. **≥1 bound Rule, none fired + evidenced** — if the RuleSet contains ≥1 Rule bound to the domain but
+   none produces a valid fired + evidenced result: emit `conclusion.key = "domain_not_indicated"`.
+3. **≥1 fired + evidenced Rule** — if ≥1 Rule bound to the domain fires and has valid Evidence: emit
+   `conclusion.key = "domain_activated"`.
+
+No third conclusion key is introduced.
+
+### Semantic boundary
+`domain_not_indicated` therefore means **assessed but not activated**. It does **not** mean: an event
+will not / cannot happen, negative prediction, unfavorable outcome, low confidence, low strength, or
+probability zero. (Refines D-ABSENCE by distinguishing "not assessed / zero coverage" — which emits
+nothing — from "assessed but not activated" — which emits `domain_not_indicated`.)
+
+---
+
+## Western RuleSet V1 (restated non-decision)
+
+D-ID-CONSTRUCT and D-EMIT do **not** authorize assigning domains to
+`WESTERN.STRUCT.LUMINARIES_SAME_ELEMENT`, `WESTERN.STRUCT.LUMINARIES_SAME_MODALITY`, or
+`WESTERN.STRUCT.LUMINARIES_IN_ASPECT`. Western RuleSet V1 remains FROZEN and unassigned. Consequently,
+under D-EMIT, all 15 domains currently have zero bound rules, so `interpret()` against V1 emits **no**
+InterpretationObject for any domain — this is correct (not-assessed), not a defect.
 
 ---
 
