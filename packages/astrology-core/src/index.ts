@@ -263,3 +263,21 @@ export {
   traceByInterpretation,
   traceToBirthData,
 } from "./evidence/engine.js";
+
+// ---------------------------------------------------------------------------------------
+// Phase 8 — Canonical domain vocabulary (H1) + Interpretation Engine (Layer 11).
+// Shared 15-domain taxonomy (used by Rule.domain and Interpretation); deterministic assembly
+// engine emitting domain_activated / domain_not_indicated. No confidence, no strength, no scoring.
+// ---------------------------------------------------------------------------------------
+
+export type { CanonicalDomain } from "./domain/types.js";
+export { CANONICAL_DOMAINS, isCanonicalDomain } from "./domain/types.js";
+
+export type {
+  ConclusionKey,
+  InterpretationConclusion,
+  Caveat,
+  InterpretationObject,
+} from "./interpretation/types.js";
+export { INTERPRETATION_ENGINE_VERSION, InterpretationValidationError } from "./interpretation/types.js";
+export { interpret, buildInterpretation, validateInterpretation, makeInterpretationId } from "./interpretation/engine.js";

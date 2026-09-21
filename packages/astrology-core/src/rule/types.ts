@@ -15,6 +15,7 @@
  */
 
 import type { SchoolId } from "../chart/types.js";
+import type { CanonicalDomain } from "../domain/types.js";
 import type { Factor, FactorId } from "../factor/types.js";
 
 /** Định danh rule ổn định — vd. "WESTERN.PLACEMENT.001". */
@@ -80,6 +81,13 @@ export interface Rule {
   weighting?: RuleWeighting;
   /** D4: TUỲ CHỌN — trích dẫn nguồn (geometric rule có thể bỏ). */
   source?: SourceRef;
+  /**
+   * Phase 8 (D-BIND, HUMAN RATIFIED): semantic Rule→Domain binding, ĐÚNG một domain/rule (D-MULTI).
+   * TUỲ CHỌN — rule KHÔNG gán domain (vd. Western RuleSet V1) là "không bound" ⇒ Interpretation
+   * KHÔNG đánh giá domain nào cho nó (D-EMIT Case A). Độc lập với `weighting`; `weighting.domain`
+   * KHÔNG được dùng làm cơ chế domain-binding của Phase 8. KHÔNG suy ra domain từ factor/house/id/school.
+   */
+  domain?: CanonicalDomain;
 }
 
 /** Bộ rule theo một trường phái (Model A: dữ liệu, engine dùng chung). */

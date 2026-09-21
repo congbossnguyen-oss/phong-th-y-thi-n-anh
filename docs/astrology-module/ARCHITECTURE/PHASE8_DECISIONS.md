@@ -32,8 +32,10 @@ Implementation is gated separately by a later Phase 8 contract freeze.
 | D-EVIDENCE | Conclusion → Evidence enforcement | HUMAN RATIFIED |
 | D-ID-CONSTRUCT | Interpretation ID construction | HUMAN RATIFIED |
 | D-EMIT | Interpretation emission scope | HUMAN RATIFIED |
+| D-EVIDENCE-SCOPE | Evidence invariant scoped by conclusion | HUMAN RATIFIED |
+| D-INTERPRET-INPUT | `interpret()` consumes RuleSet | HUMAN RATIFIED (interface) |
 
-**Contract Freeze:** NOT YET DONE. Precheck blockers resolved: **FB-1 → D-ID-CONSTRUCT**, **FB-2 → D-EMIT**. The Contract Freeze re-run remains a separate task.
+**Contract Freeze:** GREEN (re-run). Precheck blockers resolved: **FB-1 → D-ID-CONSTRUCT**, **FB-2 → D-EMIT**. Late implementation-time conflict (D-EMIT Case 2 ⇄ D-EVIDENCE) resolved by **D-EVIDENCE-SCOPE**.
 
 ---
 
@@ -507,6 +509,51 @@ D-ID-CONSTRUCT and D-EMIT do **not** authorize assigning domains to
 `WESTERN.STRUCT.LUMINARIES_IN_ASPECT`. Western RuleSet V1 remains FROZEN and unassigned. Consequently,
 under D-EMIT, all 15 domains currently have zero bound rules, so `interpret()` against V1 emits **no**
 InterpretationObject for any domain — this is correct (not-assessed), not a defect.
+
+---
+
+## D-EVIDENCE-SCOPE — Evidence Invariant Scoped by Conclusion
+
+- **Date recorded:** 2026-09-21
+- **Status:** HUMAN RATIFIED
+
+### Decision
+The Evidence invariant is scoped by conclusion semantics:
+- `domain_activated` → **`evidence.length > 0` REQUIRED**. A `domain_activated` conclusion without
+  Evidence is invalid and MUST NOT be emitted.
+- `domain_not_indicated` → **`evidence.length` MAY equal 0**. It is a valid InterpretationObject even
+  with an empty evidence array.
+
+### Rationale
+`domain_not_indicated` is a structural absence-state produced when bound Rules exist but none fired.
+Under Phase 7B semantics, non-fired Rules generate no Evidence. Therefore: do **not** manufacture
+absence Evidence, do **not** change the Evidence Engine, do **not** create Evidence for non-fired
+Rules, do **not** reinterpret Evidence as absence proof, and do **not** drop `domain_not_indicated`.
+
+### Relationship to D-EVIDENCE
+This **narrows** D-EVIDENCE's earlier categorical wording ("every emitted Interpretation must have
+`evidence.length > 0`"). The categorical form is superseded by: *every emitted `domain_activated`
+Interpretation must have `evidence.length > 0`; `domain_not_indicated` is an explicitly permitted
+absence-state exception and may have an empty evidence array.* D-EVIDENCE's other clauses (Evidence
+stays provenance/traceability only; never confidence/strength/probability/intensity/polarity; Evidence
+Engine unchanged) remain in force. Historical D-EVIDENCE text is not rewritten; this addendum governs.
+
+---
+
+## D-INTERPRET-INPUT — `interpret()` Consumes RuleSet (interface clarification)
+
+- **Date recorded:** 2026-09-21
+- **Status:** HUMAN RATIFIED (interface realization, not methodology)
+
+### Decision
+The Interpretation Engine signature is `interpret(chart, factors, ruleEvaluations, evidence, ruleset)`.
+The `ruleset` is required because `Rule.domain` lives on `Rule`, `RuleEvaluation` does not carry a
+domain, and D-EMIT evaluates rules by `Rule.domain`; the RuleSet resolves `RuleId → Rule.domain`.
+
+### Constraints
+This mirrors the accepted Scoring precedent `scoreDomains(ruleEvaluations, ruleset, context)`. Do not
+duplicate `domain` onto `RuleEvaluation`, do not add `domain` to `Evidence`, and do not invent another
+domain-resolution mechanism. This is plumbing, not a methodology change.
 
 ---
 
