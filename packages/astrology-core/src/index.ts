@@ -283,14 +283,27 @@ export { INTERPRETATION_ENGINE_VERSION, InterpretationValidationError } from "./
 export { interpret, buildInterpretation, validateInterpretation, makeInterpretationId } from "./interpretation/engine.js";
 
 // ---------------------------------------------------------------------------------------
-// Phase 9 (MVP vertical slice) — AI Narrative renderer. Minimal, grounded: InterpretationObject →
-// Vietnamese prose via a NarrativeProvider. Ships a deterministic local mock provider (no network).
+// Phase 9 — AI Narrative (Layer 13). NarrativeEngine per AI_GROUNDING_CONTRACT.md: InterpretationObject[]
+// → grounded Vietnamese prose via a vendor-agnostic NarrativeProvider, gated by a DETERMINISTIC
+// post-generation grounding check (catches adversarial hallucination). Ships a local mock provider only.
 // ---------------------------------------------------------------------------------------
 
 export type { NarrativeInput, Narrative, NarrativeProvider } from "./narrative/types.js";
 export { NARRATIVE_RENDERER_VERSION } from "./narrative/types.js";
 export { toNarrativeInput, buildNarrativePrompt, renderNarratives } from "./narrative/renderer.js";
 export { deterministicMockNarrativeProvider } from "./narrative/mockProvider.js";
+
+export type { NarrativeStyle, Report, NarrativeEngine } from "./narrative/types.js";
+export { NARRATIVE_ENGINE_VERSION } from "./narrative/types.js";
+export type { NarrativeEngineOptions } from "./narrative/engine.js";
+export { createNarrativeEngine, NARRATIVE_REFUSAL_TEXT, NARRATIVE_BLOCKED_TEXT } from "./narrative/engine.js";
+export type { GroundingViolation, GroundingViolationCode, GroundingResult } from "./narrative/grounding.js";
+export { checkGrounding } from "./narrative/grounding.js";
+
+// Real vendor-abstracted provider (D3 REVISED — human-ratified override, see PHASE9_DECISIONS.md).
+// No SDK dependency (raw fetch); no API key ever hardcoded — caller injects it at the edge.
+export type { AnthropicNarrativeProviderConfig } from "./narrative/anthropicProvider.js";
+export { createAnthropicNarrativeProvider } from "./narrative/anthropicProvider.js";
 
 // End-to-end convenience orchestration (MVP): Factor → Rule → Evidence → Interpretation → Narrative.
 export type { RunPipelineInput, PipelineResult } from "./pipeline.js";

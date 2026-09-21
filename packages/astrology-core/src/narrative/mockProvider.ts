@@ -28,6 +28,8 @@ const DOMAIN_LABEL_VI: Record<CanonicalDomain, string> = {
 };
 
 export const deterministicMockNarrativeProvider: NarrativeProvider = {
+  modelProvider: "mock",
+  modelVersion: "deterministic.v1",
   generateNarrative(input: NarrativeInput): Promise<string> {
     const label = DOMAIN_LABEL_VI[input.domain];
     let text: string;
