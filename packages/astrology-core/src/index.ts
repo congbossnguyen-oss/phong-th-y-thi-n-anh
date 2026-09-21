@@ -281,3 +281,17 @@ export type {
 } from "./interpretation/types.js";
 export { INTERPRETATION_ENGINE_VERSION, InterpretationValidationError } from "./interpretation/types.js";
 export { interpret, buildInterpretation, validateInterpretation, makeInterpretationId } from "./interpretation/engine.js";
+
+// ---------------------------------------------------------------------------------------
+// Phase 9 (MVP vertical slice) — AI Narrative renderer. Minimal, grounded: InterpretationObject →
+// Vietnamese prose via a NarrativeProvider. Ships a deterministic local mock provider (no network).
+// ---------------------------------------------------------------------------------------
+
+export type { NarrativeInput, Narrative, NarrativeProvider } from "./narrative/types.js";
+export { NARRATIVE_RENDERER_VERSION } from "./narrative/types.js";
+export { toNarrativeInput, buildNarrativePrompt, renderNarratives } from "./narrative/renderer.js";
+export { deterministicMockNarrativeProvider } from "./narrative/mockProvider.js";
+
+// End-to-end convenience orchestration (MVP): Factor → Rule → Evidence → Interpretation → Narrative.
+export type { RunPipelineInput, PipelineResult } from "./pipeline.js";
+export { runPipeline } from "./pipeline.js";
