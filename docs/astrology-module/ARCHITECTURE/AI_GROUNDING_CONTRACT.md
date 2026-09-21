@@ -58,7 +58,17 @@ Report {
 
 Because LLM output cannot be trusted to self-report compliance, the architecture requires a **post-generation grounding check** before a `Report` is served: a lightweight verification step (rule-based, not another LLM call by default) that flags narrative sentences containing named entities (planet names, house numbers, dates, numeric scores) not traceable to any input `InterpretationObject`. This does not exist in any audited repo — it is a new design element proposed specifically because no audited repo validates its own LLM output against its structured input at all.
 
-- **VALIDATION GAP**: the exact grounding-check algorithm (keyword/entity matching vs. a stricter structured-output-only approach, e.g. requiring the LLM to emit `{interpretation_id, text}` pairs instead of free paragraphs) is not decided here — flagged as a Phase 9 design decision, not resolved at Architecture Freeze.
+- **VALIDATION GAP — RESOLVED (Phase 9)**: the grounding-check algorithm is decided in
+  `PHASE9_DECISIONS.md` (D1) and implemented in `packages/astrology-core/src/narrative/grounding.ts`
+  (`checkGrounding`). Chosen approach = **deterministic structured grounding**: the allowed set is derived
+  from the `InterpretationObject`s' provenance ids + derivable counts; the check strips those allowed id tokens
+  and then flags any *surviving* invented entity (planet), house, date, or number/score, plus a forbidden-
+  semantics deny-list (prediction / probability / confidence / strength / recommendation / risk). It is
+  rule-based (never an LLM), deterministic (pure string ops; report_id/generated_at metadata is isolated from
+  the grounding decision — D2), and adversarially tested (invented planet / house / date / number and forbidden
+  semantics are each caught; the hallucinated text is discarded, never served — `NarrativeEngine`,
+  `narrative/engine.ts`). The stricter structured-output-only variant remains available as a future hardening
+  option but was not required to satisfy the Phase 9 DoD.
 
 ## Security note (cross-reference)
 
