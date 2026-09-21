@@ -22,6 +22,16 @@ Implementation is gated separately by a later Phase 8 contract freeze.
 | H3 | Conclusion-key vocabulary | HUMAN RATIFIED |
 | H4 | Confidence policy | HUMAN RATIFIED |
 | H5 | Interpretation strength | HUMAN RATIFIED |
+| D-BIND | Rule → Domain binding | HUMAN RATIFIED |
+| D-MULTI | Multi-domain rule policy | HUMAN RATIFIED |
+| D-ABSENCE | `domain_not_indicated` semantics | HUMAN RATIFIED |
+| D-CONF | Remove `confidence` | HUMAN RATIFIED |
+| D-STRENGTH | Remove `strength` | HUMAN RATIFIED |
+| D-ID | Deterministic interpretation id | HUMAN RATIFIED |
+| D-SCORE | Inactive scoring / DomainScore | HUMAN RATIFIED |
+| D-EVIDENCE | Conclusion → Evidence enforcement | HUMAN RATIFIED |
+
+**Contract Freeze:** NOT YET DONE.
 
 ---
 
@@ -282,7 +292,154 @@ Interpretation-strength policy for Phase 8. No engine, schema, or spec change.
 
 ---
 
-## Cross-cutting invariants (all five decisions)
+# Contract-Freeze Precheck Decisions (D-series)
+
+These eight decisions resolve the gaps surfaced by the Phase 8 Contract Freeze Precheck. They are
+human-ratified methodology/contract decisions. They authorize a later Contract Freeze; they do **not**
+themselves change any code, schema, spec, or RuleSet, and they do **not** assign a domain to any
+existing rule.
+
+## D-BIND — Rule → Domain Binding
+
+- **Date recorded:** 2026-09-21
+- **Status:** HUMAN RATIFIED
+
+### Decision
+Phase 8 uses **explicit Rule-level domain binding**. Conceptual contract: `Rule.domain: CanonicalDomain`,
+where `CanonicalDomain` is exactly one of the 15 H1 domains (`character_temperament`, `health`, `wealth`,
+`vocation`, `status_reputation`, `partnership`, `friends_social`, `family_home`, `siblings_kin`,
+`children`, `travel`, `religion_philosophy`, `shared_resources`, `adversaries`, `mortality`).
+
+### Invariants
+- `Rule.domain` is a **semantic domain binding** only — not a numeric weight, score, confidence,
+  strength, or polarity.
+- `Rule.domain` is **independent of `Rule.weighting`**. H6 is unchanged; `Rule.weighting` must **not**
+  be used as the Phase 8 domain-binding mechanism.
+
+### Scope / non-decision
+D-BIND ratifies architecture/contract only. It does **not** assign a domain to any Western RuleSet V1
+rule in this record (see "Western RuleSet V1 — explicit non-decision" below). Per-rule domain
+assignment is a separate content/methodology task if ever needed.
+
+---
+
+## D-MULTI — Multi-domain Rule Policy
+
+- **Date recorded:** 2026-09-21
+- **Status:** HUMAN RATIFIED
+
+### Decision
+In Phase 8, **1 Rule → exactly 1 canonical domain**. A rule binding to multiple domains at once is not
+supported.
+
+### Rationale
+Keeps the contract simple and deterministic; avoids implicit cross-domain semantics; fits the structural
+`domain_activated` conclusion; adds no unneeded complexity.
+
+### Non-decision
+Any future multi-domain methodology requires its own decision. Multi-domain must **not** be inferred
+from D-BIND.
+
+---
+
+## D-ABSENCE — `domain_not_indicated`
+
+- **Date recorded:** 2026-09-21
+- **Status:** HUMAN RATIFIED
+
+### Decision
+`domain_not_indicated(domain)` holds when **no** fired Rule satisfies all of: the Rule is bound to that
+domain (D-BIND), `RuleEvaluation.fired = true`, and a corresponding Evidence record exists.
+
+### Semantic boundary
+`domain_not_indicated` does **not** mean: an event will not / cannot happen, negative prediction,
+unfavorable outcome, low confidence, weak result, or probability zero. It is **structural absence only**.
+
+---
+
+## D-CONF — Interpretation Confidence
+
+- **Date recorded:** 2026-09-21
+- **Status:** HUMAN RATIFIED
+
+### Decision
+Phase 8 **REMOVES** `InterpretationObject.confidence`. There is no confidence concept in Phase 8:
+no numeric, ordinal, evidence-count, rule-count, source-type, or sensitive-domain confidence. Any future
+confidence methodology requires its own decision. **REDEFINE is not permitted** under this decision.
+(Consistent with H4; disposition = REMOVE.)
+
+---
+
+## D-STRENGTH — Interpretation Strength
+
+- **Date recorded:** 2026-09-21
+- **Status:** HUMAN RATIFIED
+
+### Decision
+Phase 8 **REMOVES** `InterpretationObject.strength`. There is no interpretation-strength concept in
+Phase 8. `RuleEvaluation.strength = 1.0 / 0.0` remains a structural fired-gate in the Rule Engine and
+must **not** be turned into magnitude, intensity, importance, certainty, probability, or interpretation
+strength. Any future Strength Engine / lower-layer strength methodology requires its own decision.
+**REDEFINE is not permitted** under this decision. (Consistent with H5; disposition = REMOVE.)
+
+---
+
+## D-ID — Deterministic Interpretation ID
+
+- **Date recorded:** 2026-09-21
+- **Status:** HUMAN RATIFIED
+
+### Decision
+`interpretation_id` must be generated **deterministically**: same canonical inputs → same
+`interpretation_id`. No random UUID generation. Construction is based on the canonical deterministic
+inputs of the interpretation contract; the exact hashing/encoding mechanism is fixed at Contract
+Freeze / implementation contract. The Evidence ID contract is **not** changed.
+
+---
+
+## D-SCORE — Inactive Scoring / DomainScore
+
+- **Date recorded:** 2026-09-21
+- **Status:** HUMAN RATIFIED
+
+### Decision
+Phase 8 uses no active numeric Scoring. `DomainScore` remains **INACTIVE / DEFERRED**. Phase 8
+`interpret()` must **not** require a non-empty `scores` input, and the interpretation contract must not
+depend on active DomainScore. No Scoring Engine redesign, no numeric aggregation, no cross-domain
+ranking, no score→strength, no score→confidence. Future Scoring activation requires its own
+methodology/contract decision. (Consistent with H6.)
+
+---
+
+## D-EVIDENCE — Conclusion → Evidence Enforcement
+
+- **Date recorded:** 2026-09-21
+- **Status:** HUMAN RATIFIED
+
+### Decision
+H3.7 is enforced at the **Interpretation construction / validation boundary**: every emitted
+Interpretation must have `evidence.length > 0`. A conclusion without Evidence is not a valid emitted
+Interpretation. Evidence keeps its semantics (provenance, traceability, chain integrity) and must
+**not** become confidence, strength, probability, intensity, or polarity. The Evidence Engine is **not**
+changed in this record.
+
+---
+
+## Western RuleSet V1 — explicit non-decision
+
+D-BIND does **not** assign a domain to `WESTERN.STRUCT.LUMINARIES_SAME_ELEMENT`,
+`WESTERN.STRUCT.LUMINARIES_SAME_MODALITY`, or `WESTERN.STRUCT.LUMINARIES_IN_ASPECT`. These rules are
+currently unassigned; no domain assignment is invented here. Any assignment is a separate
+content/methodology decision. Western RuleSet V1 remains FROZEN.
+
+## H6 preservation (restated)
+
+D-BIND does not reactivate `Rule.weighting`, and does not create numeric weight, DomainScore, score
+aggregation, or cross-domain comparison. `Rule.domain` and `Rule.weighting` are independent concepts.
+
+---
+
+## Cross-cutting invariants (all decisions)
 
 - No source code, tests, schema, rules, scoring, evidence, or interpretation implementation is changed
   by recording these decisions.
