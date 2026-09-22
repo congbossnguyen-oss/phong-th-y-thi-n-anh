@@ -1,0 +1,24 @@
+---
+interface Props {
+  kind: "missing_input" | "calculation_error" | "empty_interpretation";
+  messages: string[];
+}
+const { kind, messages } = Astro.props;
+const LABEL: Record<Props["kind"], string> = {
+  missing_input: "Thiếu dữ liệu",
+  calculation_error: "Lỗi tính toán",
+  empty_interpretation: "Không có Interpretation nào",
+};
+const tone = kind === "calculation_error" ? "border-red-400/40 bg-red-500/10" : "border-current/10";
+---
+<div class={`mb-6 rounded-lg border p-4 text-sm ${tone}`}>
+  <p class="mb-1 font-medium">{LABEL[kind]}</p>
+  {messages.length > 0 && (
+    <ul class="list-inside list-disc opacity-80">
+      {messages.map((m) => <li>{m}</li>)}
+    </ul>
+  )}
+  {kind === "empty_interpretation" && (
+    <p class="opacity-70">RuleSet demo (mvp.demo.v1) không có rule nào bind vào domain nào — không có gì để hiển thị.</p>
+  )}
+</div>

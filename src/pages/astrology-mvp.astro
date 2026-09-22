@@ -1,0 +1,99 @@
+---
+// Astrology MVP demo page — separate from all existing pages, not linked into nav/SEO/sitemap.
+// Server-rendered (SSR), computes in frontmatter on GET (no client fetch), matching the app's own
+// existing "compute-on-the-result-page" convention (see DinhHuongNgheNghiep.astro).
+export const prerender = false;
+
+import Layout from "../layouts/BaseLayout.astro";
+import ChartHeader from "../components/western-astrology/ChartHeader.astro";
+import InterpretationCard from "../components/western-astrology/InterpretationCard.astro";
+import StatusMessage from "../components/western-astrology/StatusMessage.astro";
+import { runWesternAstrologyMvp } from "../lib/western-astrology/index";
+import type { WesternAstrologyMvpViewModel } from "../lib/western-astrology/view-model";
+
+const params = Astro.url.searchParams;
+const dateStr = params.get("date"); // YYYY-MM-DD
+const hourStr = params.get("hour");
+const minuteStr = params.get("minute");
+const tz = params.get("tz") || "Asia/Ho_Chi_Minh";
+const latStr = params.get("lat") || "21.0278"; // Hà Nội default
+const lonStr = params.get("lon") || "105.8342";
+const place = params.get("place") || "Hà Nội, Việt Nam";
+
+let vm: WesternAstrologyMvpViewModel | null = null;
+
+if (dateStr) {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  const hour = hourStr !== null && hourStr !== "" ? Number(hourStr) : null;
+  const minute = minuteStr !== null && minuteStr !== "" ? Number(minuteStr) : null;
+  const time = hour !== null && !Number.isNaN(hour) ? { hour, minute: minute ?? 0 } : null;
+
+  vm = await runWesternAstrologyMvp({
+    date: { year: year ?? 0, month: month ?? 0, day: day ?? 0 },
+    time,
+    timezoneId: tz,
+    latitude: Number(latStr),
+    longitude: Number(lonStr),
+    locationLabel: place,
+  });
+}
+---
+<Layout title="Astrology MVP" noIndex={true}>
+  <main class="mx-auto max-w-3xl px-4 py-10">
+    <h1 class="mb-1 text-2xl font-semibold">Astrology MVP</h1>
+    <p class="mb-6 text-sm opacity-70">
+      Demo vertical slice: Calculation → Factor → Rule → Evidence → Interpretation → NarrativeEngine
+      → Vietnamese narrative. RuleSet demo: <code>mvp.demo.v1</code> (vocation / health only).
+    </p>
+
+    <form method="get" class="mb-8 grid grid-cols-2 gap-3 rounded-lg border border-current/10 p-4 text-sm sm:grid-cols-3">
+      <label class="col-span-2 flex flex-col gap-1 sm:col-span-1">
+        Ngày sinh
+        <input type="date" name="date" value={dateStr ?? ""} required class="rounded border border-current/20 bg-transparent px-2 py-1" />
+      </label>
+      <label class="flex flex-col gap-1">
+        Giờ (0-23, để trống = không rõ)
+        <input type="number" name="hour" min="0" max="23" value={hourStr ?? ""} class="rounded border border-current/20 bg-transparent px-2 py-1" />
+      </label>
+      <label class="flex flex-col gap-1">
+        Phút
+        <input type="number" name="minute" min="0" max="59" value={minuteStr ?? ""} class="rounded border border-current/20 bg-transparent px-2 py-1" />
+      </label>
+      <label class="flex flex-col gap-1">
+        Múi giờ (IANA)
+        <input type="text" name="tz" value={tz} class="rounded border border-current/20 bg-transparent px-2 py-1" />
+      </label>
+      <label class="flex flex-col gap-1">
+        Vĩ độ
+        <input type="text" name="lat" value={latStr} class="rounded border border-current/20 bg-transparent px-2 py-1" />
+      </label>
+      <label class="flex flex-col gap-1">
+        Kinh độ
+        <input type="text" name="lon" value={lonStr} class="rounded border border-current/20 bg-transparent px-2 py-1" />
+      </label>
+      <label class="col-span-2 flex flex-col gap-1 sm:col-span-3">
+        Nơi sinh (chỉ hiển thị)
+        <input type="text" name="place" value={place} class="rounded border border-current/20 bg-transparent px-2 py-1" />
+      </label>
+      <button type="submit" class="col-span-2 mt-1 rounded bg-current/90 px-4 py-2 font-medium text-white sm:col-span-3">
+        Xem
+      </button>
+    </form>
+
+    {vm === null && (
+      <StatusMessage kind="missing_input" messages={["Nhập ngày sinh phía trên rồi bấm Xem để chạy pipeline."]} />
+    )}
+
+    {vm && vm.status !== "success" && (
+      <StatusMessage kind={vm.status} messages={vm.errors} />
+    )}
+
+    {vm && vm.chart && <ChartHeader chart={vm.chart} providerKind={vm.narrativeProviderKind} place={place} dateStr={dateStr} hourStr={hourStr} minuteStr={minuteStr} />}
+
+    {vm && vm.status === "success" && (
+      <div class="mt-6 flex flex-col gap-4">
+        {vm.interpretations.map((interp) => <InterpretationCard interp={interp} />)}
+      </div>
+    )}
+  </main>
+</Layout>

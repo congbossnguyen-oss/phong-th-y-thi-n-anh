@@ -1,0 +1,33 @@
+---
+import type { DomainInterpretationVM } from "../../lib/western-astrology/view-model";
+
+interface Props {
+  interp: DomainInterpretationVM;
+}
+const { interp } = Astro.props;
+const activated = interp.conclusionKey === "domain_activated";
+---
+<article class="rounded-lg border border-current/10 p-4">
+  <header class="mb-2 flex flex-wrap items-center justify-between gap-2">
+    <h2 class="text-lg font-semibold">{interp.domainLabel}</h2>
+    <span class={`rounded px-2 py-0.5 text-xs font-medium ${activated ? "bg-emerald-500/15 text-emerald-700" : "bg-slate-500/15 text-slate-600"}`}>
+      {interp.conclusionKey}
+    </span>
+  </header>
+
+  <p class="mb-3 text-sm leading-relaxed">{interp.narrativeText}</p>
+
+  {!interp.groundingCheckPassed && (
+    <p class="mb-3 text-xs text-amber-600">⚠ Grounding check không pass cho nội dung này (đã bị chặn/thay bằng thông báo cố định).</p>
+  )}
+
+  <details class="text-xs opacity-70">
+    <summary class="cursor-pointer select-none">Provenance / debug</summary>
+    <dl class="mt-2 grid grid-cols-1 gap-1">
+      <dt>Rule IDs</dt><dd class="font-mono">{interp.ruleIds.join(", ") || "(none)"}</dd>
+      <dt>Evidence IDs</dt><dd class="font-mono">{interp.evidenceIds.join(", ") || "(none)"}</dd>
+      <dt>Supporting factors</dt><dd class="font-mono">{interp.supportingFactorIds.join(", ") || "(none)"}</dd>
+      <dt>Model</dt><dd class="font-mono">{interp.modelProvider} / {interp.modelVersion}</dd>
+    </dl>
+  </details>
+</article>

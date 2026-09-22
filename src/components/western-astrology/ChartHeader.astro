@@ -1,0 +1,25 @@
+---
+import type { ChartMetaVM } from "../../lib/western-astrology/view-model";
+
+interface Props {
+  chart: ChartMetaVM;
+  providerKind: "anthropic" | "mock";
+  place: string;
+  dateStr: string | null;
+  hourStr: string | null;
+  minuteStr: string | null;
+}
+const { chart, providerKind, place, dateStr, hourStr, minuteStr } = Astro.props;
+const timeLabel = hourStr ? `${hourStr.padStart(2, "0")}:${(minuteStr ?? "0").padStart(2, "0")}` : "không rõ giờ";
+---
+<section class="mb-6 rounded-lg border border-current/10 p-4 text-sm">
+  <p class="mb-2 text-base font-medium">Thông tin lá số (Astrology MVP)</p>
+  <dl class="grid grid-cols-2 gap-x-4 gap-y-1 sm:grid-cols-4">
+    <dt class="opacity-60">Ngày sinh</dt><dd>{dateStr} · {timeLabel}</dd>
+    <dt class="opacity-60">Nơi sinh</dt><dd>{place}</dd>
+    <dt class="opacity-60">Calculation ID</dt><dd class="truncate font-mono text-xs">{chart.calculationId}</dd>
+    <dt class="opacity-60">Nguồn narrative</dt><dd>{providerKind === "anthropic" ? "Anthropic (real)" : "Mock (deterministic)"}</dd>
+    <dt class="opacity-60">Engine</dt><dd class="font-mono text-xs">{chart.engine} {chart.engineVersion}</dd>
+    <dt class="opacity-60">Precision</dt><dd class="font-mono text-xs">{chart.precisionClass}</dd>
+  </dl>
+</section>
