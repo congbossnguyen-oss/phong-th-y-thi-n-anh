@@ -6,6 +6,7 @@ export const prerender = false;
 
 import Layout from "../layouts/BaseLayout.astro";
 import ChartHeader from "../components/western-astrology/ChartHeader.astro";
+import ChartDataSection from "../components/western-astrology/ChartDataSection.astro";
 import InterpretationCard from "../components/western-astrology/InterpretationCard.astro";
 import StatusMessage from "../components/western-astrology/StatusMessage.astro";
 import { runWesternAstrologyMvp } from "../lib/western-astrology/index";
@@ -89,6 +90,8 @@ if (dateStr) {
     )}
 
     {vm && vm.chart && <ChartHeader chart={vm.chart} providerKind={vm.narrativeProviderKind} place={place} dateStr={dateStr} hourStr={hourStr} minuteStr={minuteStr} />}
+
+    {vm && vm.chartData && <ChartDataSection data={vm.chartData} />}
 
     {vm && vm.status === "success" && (
       <div class="mt-6 flex flex-col gap-4">

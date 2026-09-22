@@ -1,0 +1,133 @@
+---
+// Internal debug tool — exposes exactly the NormalizedChart/Factor[] fields the engine already
+// computed (1:1 from ChartDataVM, no derivation). Plain HTML <details>/<table>, no JS, no framework.
+import type { ChartDataVM } from "../../lib/western-astrology/view-model";
+
+interface Props {
+  data: ChartDataVM;
+}
+const { data } = Astro.props;
+const fmt = (n: number) => n.toFixed(4);
+---
+<details open class="mb-6 rounded-lg border border-current/10 p-4 text-sm">
+  <summary class="cursor-pointer select-none text-base font-medium">📊 Dữ liệu lá số</summary>
+
+  <div class="mt-4 flex flex-col gap-4">
+    <details open class="rounded border border-current/10 p-3">
+      <summary class="cursor-pointer select-none font-medium">A. Planets ({data.planets.length})</summary>
+      <div class="mt-2 overflow-x-auto">
+        <table class="w-full min-w-[720px] border-collapse text-xs">
+          <thead>
+            <tr class="border-b border-current/10 text-left opacity-60">
+              <th class="py-1 pr-3">Body</th>
+              <th class="py-1 pr-3">Longitude</th>
+              <th class="py-1 pr-3">Latitude</th>
+              <th class="py-1 pr-3">Distance (AU)</th>
+              <th class="py-1 pr-3">Speed °/day</th>
+              <th class="py-1 pr-3">Retrograde</th>
+              <th class="py-1 pr-3">Sign</th>
+              <th class="py-1 pr-3">Sign degree</th>
+              <th class="py-1 pr-3">House</th>
+              <th class="py-1 pr-3">Precision</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.planets.map((p) => (
+              <tr class="border-b border-current/5 font-mono">
+                <td class="py-1 pr-3">{p.body}</td>
+                <td class="py-1 pr-3">{fmt(p.longitude)}°</td>
+                <td class="py-1 pr-3">{fmt(p.latitude)}°</td>
+                <td class="py-1 pr-3">{p.distanceAu === null ? "—" : fmt(p.distanceAu)}</td>
+                <td class="py-1 pr-3">{fmt(p.speedDegreesPerDay)}</td>
+                <td class="py-1 pr-3">{p.isRetrograde ? "R" : "—"}</td>
+                <td class="py-1 pr-3">{p.sign}</td>
+                <td class="py-1 pr-3">{fmt(p.signDegree)}°</td>
+                <td class="py-1 pr-3">{p.house ?? "—"}</td>
+                <td class="py-1 pr-3">{p.precision}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </details>
+
+    <details open class="rounded border border-current/10 p-3">
+      <summary class="cursor-pointer select-none font-medium">B. Angles ({data.angles.length})</summary>
+      <table class="mt-2 border-collapse text-xs">
+        <thead>
+          <tr class="border-b border-current/10 text-left opacity-60"><th class="py-1 pr-6">Type</th><th class="py-1 pr-6">Longitude</th></tr>
+        </thead>
+        <tbody>
+          {data.angles.map((a) => (
+            <tr class="border-b border-current/5 font-mono"><td class="py-1 pr-6">{a.type}</td><td class="py-1 pr-6">{fmt(a.longitude)}°</td></tr>
+          ))}
+        </tbody>
+      </table>
+      {data.angles.length === 0 && <p class="mt-1 text-xs opacity-60">(rỗng — chart không rõ giờ sinh)</p>}
+    </details>
+
+    <details open class="rounded border border-current/10 p-3">
+      <summary class="cursor-pointer select-none font-medium">C. House cusps ({data.houseCusps.length})</summary>
+      <table class="mt-2 border-collapse text-xs">
+        <thead>
+          <tr class="border-b border-current/10 text-left opacity-60"><th class="py-1 pr-6">House</th><th class="py-1 pr-6">Longitude</th><th class="py-1 pr-6">System</th></tr>
+        </thead>
+        <tbody>
+          {data.houseCusps.map((c) => (
+            <tr class="border-b border-current/5 font-mono"><td class="py-1 pr-6">{c.houseNumber}</td><td class="py-1 pr-6">{fmt(c.longitude)}°</td><td class="py-1 pr-6">{c.houseSystem}</td></tr>
+          ))}
+        </tbody>
+      </table>
+      {data.houseCusps.length === 0 && <p class="mt-1 text-xs opacity-60">(rỗng — chart không rõ giờ sinh)</p>}
+    </details>
+
+    <details open class="rounded border border-current/10 p-3">
+      <summary class="cursor-pointer select-none font-medium">D. Aspects ({data.aspects.length})</summary>
+      <div class="mt-2 overflow-x-auto">
+        <table class="w-full min-w-[560px] border-collapse text-xs">
+          <thead>
+            <tr class="border-b border-current/10 text-left opacity-60">
+              <th class="py-1 pr-3">Planet A</th><th class="py-1 pr-3">Planet B</th><th class="py-1 pr-3">Type</th>
+              <th class="py-1 pr-3">Exact °</th><th class="py-1 pr-3">Actual °</th><th class="py-1 pr-3">Orb</th><th class="py-1 pr-3">Within orb</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.aspects.map((a) => (
+              <tr class="border-b border-current/5 font-mono">
+                <td class="py-1 pr-3">{a.planetA}</td><td class="py-1 pr-3">{a.planetB}</td><td class="py-1 pr-3">{a.type}</td>
+                <td class="py-1 pr-3">{fmt(a.exactAngle)}</td><td class="py-1 pr-3">{fmt(a.actualAngle)}</td>
+                <td class="py-1 pr-3">{fmt(a.orb)}</td><td class="py-1 pr-3">{a.withinOrb ? "yes" : "no"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+      {data.aspects.length === 0 && <p class="mt-1 text-xs opacity-60">(rỗng — không có aspect nào trong orb)</p>}
+    </details>
+
+    <details open class="rounded border border-current/10 p-3">
+      <summary class="cursor-pointer select-none font-medium">E. Factors ({data.factors.length})</summary>
+      <div class="mt-2 max-h-96 overflow-y-auto">
+        <table class="w-full min-w-[560px] border-collapse text-xs">
+          <thead class="sticky top-0 bg-inherit">
+            <tr class="border-b border-current/10 text-left opacity-60">
+              <th class="py-1 pr-3">ID</th><th class="py-1 pr-3">Category</th><th class="py-1 pr-3">Strength</th>
+              <th class="py-1 pr-3">Inputs (provenance)</th><th class="py-1 pr-3">Version</th>
+            </tr>
+          </thead>
+          <tbody>
+            {data.factors.map((f) => (
+              <tr class="border-b border-current/5 font-mono">
+                <td class="py-1 pr-3">{f.id}</td>
+                <td class="py-1 pr-3">{f.category}</td>
+                <td class="py-1 pr-3">{f.strength}</td>
+                <td class="py-1 pr-3">{f.inputs.map((i) => `${i.type}:${i.ref}`).join(", ")}</td>
+                <td class="py-1 pr-3">{f.version}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </details>
+  </div>
+</details>

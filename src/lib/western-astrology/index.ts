@@ -8,6 +8,8 @@
  */
 import {
   type BirthData,
+  type NormalizedChart,
+  type Factor,
   validateBirthData,
   resolveBirthDataInstant,
   SwissEphemerisProvider,
@@ -23,13 +25,49 @@ import {
 import { MVP_DEMO_RULESET } from "./ruleset";
 import { DOMAIN_LABEL_VI } from "./domain-labels";
 import { getWesternAstrologyNarrativeProvider, type WesternAstrologyNarrativeProvider } from "./anthropic-narrative-provider";
-import type { WesternAstrologyMvpInput, WesternAstrologyMvpViewModel, DomainInterpretationVM } from "./view-model";
+import type { WesternAstrologyMvpInput, WesternAstrologyMvpViewModel, DomainInterpretationVM, ChartDataVM } from "./view-model";
 
 const NARRATIVE_STYLE: NarrativeStyle = { tone: "neutral", targetLanguage: "vi", maxLength: null };
 const NARRATIVE_UNAVAILABLE_TEXT_VI = "Không thể tạo narrative cho lĩnh vực này lúc này (lỗi kết nối AI).";
 
 function empty(status: WesternAstrologyMvpViewModel["status"], errors: string[], kind: "anthropic" | "mock"): WesternAstrologyMvpViewModel {
   return { status, errors, narrativeProviderKind: kind, interpretations: [] };
+}
+
+/**
+ * Debug-tool projection: exposes exactly the NormalizedChart/Factor[] fields astrology-core already
+ * computed — 1:1 copy, no derivation, no new astrology. Factors sorted by id for readability only
+ * (display-order convenience, not a data change).
+ */
+function toChartDataVM(chart: NormalizedChart, factors: readonly Factor[]): ChartDataVM {
+  return {
+    planets: chart.planets.map((p) => ({
+      body: p.body,
+      longitude: p.longitude,
+      latitude: p.latitude,
+      distanceAu: p.distanceAu,
+      speedDegreesPerDay: p.speedDegreesPerDay,
+      isRetrograde: p.isRetrograde,
+      sign: p.sign,
+      signDegree: p.signDegree,
+      house: p.house,
+      precision: p.precision,
+    })),
+    angles: chart.angles.map((a) => ({ type: a.type, longitude: a.longitude })),
+    houseCusps: chart.houseCusps.map((c) => ({ houseNumber: c.houseNumber, longitude: c.longitude, houseSystem: c.houseSystem })),
+    aspects: chart.aspects.map((a) => ({
+      planetA: a.planetA,
+      planetB: a.planetB,
+      type: a.type,
+      exactAngle: a.exactAngle,
+      actualAngle: a.actualAngle,
+      orb: a.orb,
+      withinOrb: a.withinOrb,
+    })),
+    factors: [...factors]
+      .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
+      .map((f) => ({ id: f.id, category: f.category, strength: f.strength, inputs: f.inputs, version: f.version })),
+  };
 }
 
 export async function runWesternAstrologyMvp(
@@ -87,9 +125,10 @@ export async function runWesternAstrologyMvp(
     engineVersion: chart.metadata.engineVersion,
     precisionClass: chart.metadata.precisionClass,
   };
+  const chartData = toChartDataVM(chart, factors);
 
   if (interpretations.length === 0) {
-    return { status: "empty_interpretation", errors: [], narrativeProviderKind: providerKind, chart: chartMeta, interpretations: [] };
+    return { status: "empty_interpretation", errors: [], narrativeProviderKind: providerKind, chart: chartMeta, chartData, interpretations: [] };
   }
 
   const engine = createNarrativeEngine(narrativeProvider);
@@ -128,5 +167,5 @@ export async function runWesternAstrologyMvp(
     }
   }
 
-  return { status: "success", errors: [], narrativeProviderKind: providerKind, chart: chartMeta, interpretations: domainVMs };
+  return { status: "success", errors: [], narrativeProviderKind: providerKind, chart: chartMeta, chartData, interpretations: domainVMs };
 }
