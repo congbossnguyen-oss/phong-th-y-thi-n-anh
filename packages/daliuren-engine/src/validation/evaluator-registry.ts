@@ -3,7 +3,7 @@
  * BIỆT khỏi `RuleDefinition` (dữ liệu tĩnh) — file này chỉ ghép 2 thứ đó lại và kiểm tra tính
  * ĐẦY ĐỦ 1-1 giữa registry rule đã validate và registry evaluator, KHÔNG chứa domain logic nào.
  */
-import type { RuleDefinition, RuleEvaluator, EvaluatorRegistration, RuleResult } from "../interpretation/rule.js";
+import type { RuleDefinition, RuleEvaluator, EvaluatorRegistration, RuleResult, RuleEvaluationContext } from "../interpretation/rule.js";
 import type { DaLiuRenCalculationResult } from "../da-liu-ren-calculation-result.js";
 import { DaLiuRenValidationError } from "./errors.js";
 import type { ValidatedRuleRegistry } from "./rule-registry.js";
@@ -60,14 +60,17 @@ export function buildEvaluatorRegistry(
 
 /**
  * Thực thi evaluator của 1 `RuleDefinition` cụ thể — Phase 10.6.2 Section 8: chỉ truyền
- * `DaLiuRenCalculationResult` (KHÔNG `ChartInput`/`EngineMeta`/`QuestionType`), KHÔNG sửa
- * `calculation` hay `rule` đầu vào, KHÔNG chứa logic domain nào (đó là việc của CHÍNH evaluator
- * đã đăng ký, ngoài phạm vi file này).
+ * `DaLiuRenCalculationResult` (KHÔNG `ChartInput`/`EngineMeta`/`QuestionType`) + `context`
+ * optional (Phase 11-F, Gender=Option A — CHỈ mang `gender`, KHÔNG CalculationProfile: Phase
+ * 11-F CalculationProfile=Option P2 giữ nguyên status quo), KHÔNG sửa `calculation` hay `rule`
+ * đầu vào, KHÔNG chứa logic domain nào (đó là việc của CHÍNH evaluator đã đăng ký, ngoài phạm
+ * vi file này).
  */
 export function runEvaluator(
   evaluatorRegistry: ValidatedEvaluatorRegistry,
   rule: RuleDefinition,
   calculation: DaLiuRenCalculationResult,
+  context?: RuleEvaluationContext,
 ): RuleResult {
   const evaluate = evaluatorRegistry.evaluatorByRuleId.get(rule.ruleId);
   if (!evaluate) {
@@ -78,5 +81,7 @@ export function runEvaluator(
       `Không tìm thấy evaluator cho ruleId "${rule.ruleId}" — evaluatorRegistry có thể không được dựng từ cùng Rule Registry chứa rule này.`,
     );
   }
-  return evaluate(calculation);
+  // Chỉ truyền `context` khi CÓ giá trị — giữ đúng lời gọi 1-tham-số cho MỌI evaluator hiện có
+  // khi caller không cần gender (regression [K]: arity phải giữ nguyên = 1 trong trường hợp đó).
+  return context === undefined ? evaluate(calculation) : evaluate(calculation, context);
 }

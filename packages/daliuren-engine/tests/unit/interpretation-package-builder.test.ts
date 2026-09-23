@@ -8,6 +8,8 @@ import { buildRuleRegistry } from "../../src/validation/rule-registry.js";
 import { buildEvaluatorRegistry } from "../../src/validation/evaluator-registry.js";
 import type { DaLiuRenCalculationResult } from "../../src/da-liu-ren-calculation-result.js";
 import type { EngineMeta } from "@thien-anh/engine-contract";
+import type { RuleDefinition, RuleResult, RuleEvaluationContext } from "../../src/interpretation/rule.js";
+import type { ProvenanceEntry } from "../../src/interpretation/provenance.js";
 
 const CHART_INPUT = { date: "2024-01-01", hour: 0, minute: 30, timeZone: "Asia/Shanghai" } as const;
 
@@ -148,6 +150,111 @@ describe("daliuren-engine/interpretation-package-builder", () => {
       { ruleId: "R-NHATTHAN-01", triggered: true },
       { ruleId: "R-HONNHAN-01", triggered: false },
     ]);
+  });
+
+  describe("Phase 11-F — gender context passthrough (Gender=Option A, KHÔNG PHẢI rule nghiệp vụ thật)", () => {
+    // Rule/evaluator HOÀN TOÀN SYNTHETIC, chỉ để chứng minh đường truyền kiến trúc
+    // BuildInterpretationPackageInput.gender → runEvaluator → evaluator context. KHÔNG đại diện
+    // bất kỳ nội dung cổ điển nào — không được coi là rule sức khỏe thật.
+    const SYNTHETIC_GENDER_PROVENANCE: ProvenanceEntry = {
+      id: "SYNTHETIC-GENDER-PROV",
+      sourceId: "synthetic-fixture",
+      sourceTitle: "SYNTHETIC — chỉ để test đường truyền gender, không phải nguồn cổ điển thật",
+      sourceType: "implementation-detail",
+      confidence: "A",
+    };
+    const SYNTHETIC_GENDER_RULE: RuleDefinition = {
+      ruleId: "R-SYNTHETIC-GENDER",
+      layer: "auxiliary",
+      topic: "SYNTHETIC",
+      description: "SYNTHETIC — trigger khi context.gender có mặt",
+      condition: "SYNTHETIC — context.gender !== undefined",
+      provenanceId: "SYNTHETIC-GENDER-PROV",
+      confidence: "A",
+      dependencies: { calculationFields: [], externalContext: ["gender"] },
+    };
+
+    function makeGenderCapturingRegistry(spy: (context: RuleEvaluationContext | undefined) => void) {
+      const ruleRegistry = buildRuleRegistry([SYNTHETIC_GENDER_RULE], { "SYNTHETIC-GENDER-PROV": SYNTHETIC_GENDER_PROVENANCE });
+      const evaluatorRegistry = buildEvaluatorRegistry(ruleRegistry, [
+        {
+          ruleId: "R-SYNTHETIC-GENDER",
+          evaluate: (_calculation, context): RuleResult => {
+            spy(context);
+            return {
+              ruleId: "R-SYNTHETIC-GENDER",
+              status: "not-triggered",
+              inputs: {},
+              signals: [],
+              provenanceId: "SYNTHETIC-GENDER-PROV",
+              ruleConfidence: "A",
+              calculationConfidence: "A",
+            };
+          },
+        },
+      ]);
+      return { ruleRegistry, evaluatorRegistry, provenanceById: { "SYNTHETIC-GENDER-PROV": SYNTHETIC_GENDER_PROVENANCE } };
+    }
+
+    it("Level 2 CHO PHÉP đăng ký rule externalContext:['gender'] — buildRuleRegistry không throw", () => {
+      expect(() => buildRuleRegistry([SYNTHETIC_GENDER_RULE], { "SYNTHETIC-GENDER-PROV": SYNTHETIC_GENDER_PROVENANCE })).not.toThrow();
+    });
+
+    it("BuildInterpretationPackageInput.gender ĐƯỢC truyền xuống evaluator qua context", () => {
+      const { calculation, engineMeta } = realCalculation();
+      let received: RuleEvaluationContext | undefined;
+      const { ruleRegistry, evaluatorRegistry, provenanceById } = makeGenderCapturingRegistry((context) => {
+        received = context;
+      });
+      buildInterpretationPackage({
+        calculation,
+        chartIdentity: CHART_INPUT,
+        profile: CLASSICAL_V1_PROFILE,
+        engineMeta,
+        questionType: "hon-nhan",
+        ruleRegistry,
+        evaluatorRegistry,
+        provenanceById,
+        gender: "female",
+      });
+      expect(received).toEqual({ gender: "female" });
+    });
+
+    it("KHÔNG truyền gender ở input → evaluator nhận context=undefined (không tạo object rỗng giả)", () => {
+      const { calculation, engineMeta } = realCalculation();
+      let received: RuleEvaluationContext | undefined = { gender: "male" }; // giá trị canary để chắc chắn spy có chạy
+      const { ruleRegistry, evaluatorRegistry, provenanceById } = makeGenderCapturingRegistry((context) => {
+        received = context;
+      });
+      buildInterpretationPackage({
+        calculation,
+        chartIdentity: CHART_INPUT,
+        profile: CLASSICAL_V1_PROFILE,
+        engineMeta,
+        questionType: "hon-nhan",
+        ruleRegistry,
+        evaluatorRegistry,
+        provenanceById,
+      });
+      expect(received).toBeUndefined();
+    });
+  });
+
+  it("4 evaluator PRODUCTION hiện có (R-NHATTHAN-01/R-HONNHAN-01/R-TIMDO-01/R-KIENTUNG-02) vẫn chạy đúng khi buildInterpretationPackage được gọi VỚI gender — backward-compatible, KHÔNG cần sửa evaluator", () => {
+    const { calculation, engineMeta } = realCalculation();
+    const pkg = buildInterpretationPackage({
+      calculation,
+      chartIdentity: CHART_INPUT,
+      profile: CLASSICAL_V1_PROFILE,
+      engineMeta,
+      questionType: "hon-nhan",
+      gender: "male",
+    });
+    expect(pkg.verified_rules).toEqual([
+      { ruleId: "R-NHATTHAN-01", triggered: true },
+      { ruleId: "R-HONNHAN-01", triggered: false },
+    ]);
+    expect(() => validateInterpretationPackage(pkg)).not.toThrow();
   });
 
   it("forbidden_inferences luôn có mặt, bao gồm 'scoring' — không AI tự chấm điểm", () => {

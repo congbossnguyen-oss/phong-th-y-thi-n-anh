@@ -62,12 +62,23 @@ export interface RuleResult<TInputs = unknown, TOutputs = unknown> {
 }
 
 /**
- * Chữ ký evaluator ĐÃ FREEZE (Phase 10.2 Model A, tái xác nhận Phase 10.4 Section 3): hàm
- * THUẦN, CHỈ nhận `DaLiuRenCalculationResult` — KHÔNG `ChartInput`, KHÔNG `EngineMeta`, KHÔNG
- * `QuestionType`. Sống ở evaluator registry RIÊNG (xem validation/evaluator-registry.ts) —
- * KHÔNG gắn vào `RuleDefinition` (đó vẫn CHỈ là dữ liệu, xem comment `condition` ở trên).
+ * Bối cảnh optional truyền thêm cho evaluator — Phase 11-F (Gender=Option A): CHỈ "gender", vì
+ * đây là ExternalContextId DUY NHẤT được Level 2 (`validateRuleRegistry`) cho phép làm ngoại lệ.
+ * KHÔNG mang CalculationProfile (Phase 11-F CalculationProfile=Option P2, giữ nguyên status quo).
  */
-export type RuleEvaluator = (calculation: DaLiuRenCalculationResult) => RuleResult;
+export interface RuleEvaluationContext {
+  readonly gender?: "male" | "female";
+}
+
+/**
+ * Chữ ký evaluator ĐÃ FREEZE (Phase 10.2 Model A, tái xác nhận Phase 10.4 Section 3), mở rộng
+ * BACKWARD-COMPATIBLE ở Phase 11-F: hàm THUẦN, nhận `DaLiuRenCalculationResult` + `context`
+ * optional (Phase 11-F Gender=Option A) — KHÔNG `ChartInput`, KHÔNG `EngineMeta`, KHÔNG
+ * `QuestionType`. 4 evaluator hiện có (Phase 10-11B) KHÔNG bắt buộc sửa — 1 tham số vẫn khớp
+ * type này. Sống ở evaluator registry RIÊNG (xem validation/evaluator-registry.ts) — KHÔNG gắn
+ * vào `RuleDefinition` (đó vẫn CHỈ là dữ liệu, xem comment `condition` ở trên).
+ */
+export type RuleEvaluator = (calculation: DaLiuRenCalculationResult, context?: RuleEvaluationContext) => RuleResult;
 
 /** 1 lượt đăng ký evaluator cho đúng 1 `ruleId` — dạng danh sách (không phải object/Map đã gộp sẵn) để `buildEvaluatorRegistry` phát hiện được ĐĂNG KÝ TRÙNG LẶP (Phase 10.6.2 Section 4). */
 export interface EvaluatorRegistration {

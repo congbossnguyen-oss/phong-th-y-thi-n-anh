@@ -53,13 +53,44 @@ describe("daliuren-engine/validation/rule-registry", () => {
       expect(() => validateRuleRegistry([blocked], SYNTHETIC_PROVENANCE)).toThrow(/RULE_DEPENDENCY_UNAVAILABLE|shiErChangSheng/);
     });
 
-    it("TỪ CHỐI rule có dependencies.externalContext khác rỗng", () => {
+    // Trước Phase 11-F: MỌI externalContext khác rỗng (kể cả "gender") bị chặn tuyệt đối — bài
+    // test này ĐÃ ĐỔI test case sang "birthDateBeyondCalendar" vì owner đã quyết định (Phase
+    // 11-F, Gender=Option A) mở "gender" làm ngoại lệ DUY NHẤT; hành vi cho riêng "gender" nay
+    // được test ở khối "Phase 11-F" ngay dưới. "birthDateBeyondCalendar" vẫn bị chặn tuyệt đối.
+    it("TỪ CHỐI rule có dependencies.externalContext khác rỗng (context chưa được phép, vd 'birthDateBeyondCalendar')", () => {
       const blocked: RuleDefinition = {
         ...SYNTHETIC_RULES[0]!,
-        ruleId: "R-CAN-GENDER",
+        ruleId: "R-CAN-BIRTHDATE-BASE",
+        dependencies: { calculationFields: ["twelveGenerals"], externalContext: ["birthDateBeyondCalendar"] },
+      };
+      expect(() => validateRuleRegistry([blocked], SYNTHETIC_PROVENANCE)).toThrow(/RULE_DEPENDENCY_UNAVAILABLE|birthDateBeyondCalendar/);
+    });
+
+    it("Phase 11-F (Gender=Option A): CHO PHÉP rule có externalContext ĐÚNG '[\"gender\"]'", () => {
+      const ok: RuleDefinition = {
+        ...SYNTHETIC_RULES[0]!,
+        ruleId: "R-SUCKHOE-GENDER",
         dependencies: { calculationFields: ["twelveGenerals"], externalContext: ["gender"] },
       };
-      expect(() => validateRuleRegistry([blocked], SYNTHETIC_PROVENANCE)).toThrow(/RULE_DEPENDENCY_UNAVAILABLE|gender/);
+      expect(() => validateRuleRegistry([ok], SYNTHETIC_PROVENANCE)).not.toThrow();
+    });
+
+    it("Phase 11-F: VẪN TỪ CHỐI externalContext 'birthDateBeyondCalendar' — ngoại lệ CHỈ áp dụng cho 'gender'", () => {
+      const blocked: RuleDefinition = {
+        ...SYNTHETIC_RULES[0]!,
+        ruleId: "R-CAN-BIRTHDATE",
+        dependencies: { calculationFields: ["twelveGenerals"], externalContext: ["birthDateBeyondCalendar"] },
+      };
+      expect(() => validateRuleRegistry([blocked], SYNTHETIC_PROVENANCE)).toThrow(/RULE_DEPENDENCY_UNAVAILABLE|birthDateBeyondCalendar/);
+    });
+
+    it("Phase 11-F: TỪ CHỐI externalContext hỗn hợp ['gender','birthDateBeyondCalendar'] — 1 phần tử không phải 'gender' là đủ để chặn", () => {
+      const blocked: RuleDefinition = {
+        ...SYNTHETIC_RULES[0]!,
+        ruleId: "R-CAN-MIXED",
+        dependencies: { calculationFields: ["twelveGenerals"], externalContext: ["gender", "birthDateBeyondCalendar"] },
+      };
+      expect(() => validateRuleRegistry([blocked], SYNTHETIC_PROVENANCE)).toThrow(/RULE_DEPENDENCY_UNAVAILABLE|birthDateBeyondCalendar/);
     });
 
     it("CHO PHÉP rule có dependencies chỉ gồm calculationFields (unimplementedComponents/externalContext rỗng hoặc vắng mặt)", () => {

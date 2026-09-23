@@ -44,6 +44,12 @@ export interface BuildInterpretationPackageInput {
   readonly profile: ChartIdentityProfile;
   readonly engineMeta: EngineMeta;
   readonly questionType: QuestionType;
+  /**
+   * Phase 11-F (Gender=Option A) — optional, truyền xuống evaluator qua `runEvaluator`
+   * (KHÔNG ảnh hưởng `chartId`, giữ đúng thiết kế cũ: gender KHÔNG nằm trong 8 field freeze).
+   * KHÔNG viết rule nghiệp vụ đọc field này ở package hiện tại — chỉ mở đường truyền kiến trúc.
+   */
+  readonly gender?: "male" | "female";
   /** Mặc định PRODUCTION_RULE_REGISTRY — truyền riêng khi test với fixture khác. */
   readonly ruleRegistry?: ValidatedRuleRegistry;
   /** Mặc định PRODUCTION_EVALUATOR_REGISTRY. */
@@ -75,8 +81,9 @@ export function buildInterpretationPackage(input: BuildInterpretationPackageInpu
   const verified_rules: Array<{ ruleId: string; triggered: boolean }> = [];
   const signals: Signal[] = [];
 
+  const evaluationContext = input.gender !== undefined ? { gender: input.gender } : undefined;
   for (const rule of eligibleRules) {
-    const result = runEvaluator(evaluatorRegistry, rule, input.calculation);
+    const result = runEvaluator(evaluatorRegistry, rule, input.calculation, evaluationContext);
     verified_rules.push({ ruleId: rule.ruleId, triggered: result.status === "triggered" });
     signals.push(...result.signals);
   }

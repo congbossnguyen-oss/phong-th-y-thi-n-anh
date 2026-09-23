@@ -119,4 +119,52 @@ describe("daliuren-engine/validation/evaluator-registry", () => {
       expect(() => runEvaluator(evaluatorRegistry, foreignRule, realCalculationResult())).toThrow(DaLiuRenValidationError);
     });
   });
+
+  describe("runEvaluator — context truyền thêm (Phase 11-F, Gender=Option A)", () => {
+    it("KHÔNG truyền context (như trước Phase 11-F) → evaluator NHẬN ĐÚNG 1 tham số, backward-compatible tuyệt đối", () => {
+      const spy = vi.fn(
+        (): RuleResult => ({
+          ruleId: "R-SANCHUAN-KE-NHAT",
+          status: "not-triggered",
+          inputs: {},
+          signals: [],
+          provenanceId: "R-SANCHUAN-KE-NHAT",
+          ruleConfidence: "A",
+          calculationConfidence: "A",
+        }),
+      );
+      const spyRegistry = buildEvaluatorRegistry(REGISTRY, [{ ruleId: "R-SANCHUAN-KE-NHAT", evaluate: spy }, SYNTHETIC_EVALUATOR_REGISTRATIONS[1]!]);
+      const calculation = realCalculationResult();
+      runEvaluator(spyRegistry, REGISTRY.rules[0]!, calculation); // không truyền context
+
+      expect(spy.mock.calls[0]!.length).toBe(1);
+    });
+
+    it("TRUYỀN context { gender } → evaluator nhận ĐÚNG context đó ở tham số thứ 2", () => {
+      const spy = vi.fn(
+        (): RuleResult => ({
+          ruleId: "R-SANCHUAN-KE-NHAT",
+          status: "not-triggered",
+          inputs: {},
+          signals: [],
+          provenanceId: "R-SANCHUAN-KE-NHAT",
+          ruleConfidence: "A",
+          calculationConfidence: "A",
+        }),
+      );
+      const spyRegistry = buildEvaluatorRegistry(REGISTRY, [{ ruleId: "R-SANCHUAN-KE-NHAT", evaluate: spy }, SYNTHETIC_EVALUATOR_REGISTRATIONS[1]!]);
+      const calculation = realCalculationResult();
+      runEvaluator(spyRegistry, REGISTRY.rules[0]!, calculation, { gender: "female" });
+
+      expect(spy).toHaveBeenCalledWith(calculation, { gender: "female" });
+    });
+
+    it("evaluator hiện có (CHỈ khai báo 1 tham số) vẫn chạy đúng dù runEvaluator được gọi VỚI context — JS bỏ qua tham số thừa", () => {
+      // SYNTHETIC_EVALUATOR_REGISTRATIONS[0] khai báo `evaluate: () => (...)` — 0 tham số khai báo tường minh.
+      const evaluatorRegistry = buildEvaluatorRegistry(REGISTRY, SYNTHETIC_EVALUATOR_REGISTRATIONS);
+      const calculation = realCalculationResult();
+      const result = runEvaluator(evaluatorRegistry, REGISTRY.rules[0]!, calculation, { gender: "male" });
+      expect(result.status).toBe("not-triggered");
+    });
+  });
 });

@@ -4,9 +4,12 @@
  * Đây là "linter" đúng tinh thần docs/daliuren/DA_LIU_REN_INTERPRETATION_PACKAGE.md mục 3.
  *
  * Level 2 gating (Phase 10.4 Section 4 / Phase 10.5 Audit #2, Option A): 1 rule có
- * `dependencies.unimplementedComponents`/`.externalContext` khác rỗng bị TỪ CHỐI Ở ĐÂY, tại
- * build/test time — KHÔNG có runtime fallback, KHÔNG tồn tại ở BẤT KỲ đâu tại runtime (kể cả
- * `unresolved_items` của `InterpretationPackage`) một khi đã bị từ chối.
+ * `dependencies.unimplementedComponents` khác rỗng, hoặc `.externalContext` chứa bất kỳ giá trị
+ * nào KHÁC "gender", bị TỪ CHỐI Ở ĐÂY, tại build/test time — KHÔNG có runtime fallback, KHÔNG
+ * tồn tại ở BẤT KỲ đâu tại runtime (kể cả `unresolved_items` của `InterpretationPackage`) một
+ * khi đã bị từ chối. NGOẠI LỆ DUY NHẤT (Phase 11-F, Gender=Option A): `externalContext: ["gender"]`
+ * được phép đăng ký — mọi externalContext khác (vd "birthDateBeyondCalendar") vẫn bị chặn tuyệt
+ * đối, KHÔNG mở rộng thêm.
  */
 import type { RuleDefinition } from "../interpretation/rule.js";
 import type { ProvenanceEntry } from "../interpretation/provenance.js";
@@ -67,12 +70,16 @@ export function validateRuleRegistry(
           `thành phần đó được implement (xem docs/daliuren/DA_LIU_REN_INTERPRETATION_GAPS.md).`,
       );
     }
-    if ((rule.dependencies.externalContext?.length ?? 0) > 0) {
+    // Phase 11-F (Gender=Option A, Decision Memo đã duyệt): "gender" là NGOẠI LỆ DUY NHẤT của
+    // Level 2 — mọi externalContext KHÁC (vd "birthDateBeyondCalendar") vẫn bị chặn TUYỆT ĐỐI.
+    const disallowedExternalContext = (rule.dependencies.externalContext ?? []).filter((ctx) => ctx !== "gender");
+    if (disallowedExternalContext.length > 0) {
       throw new DaLiuRenValidationError(
         "RULE_DEPENDENCY_UNAVAILABLE",
-        `Rule "${rule.ruleId}" cần bối cảnh ngoài Calculation Layer: ` +
-          `${rule.dependencies.externalContext!.join(", ")} — KHÔNG được đăng ký (chỉ 8 field đã ` +
-          `freeze của DaLiuRenCalculationResult được coi là AVAILABLE, xem rule-dependencies.ts).`,
+        `Rule "${rule.ruleId}" cần bối cảnh ngoài Calculation Layer CHƯA được phép: ` +
+          `${disallowedExternalContext.join(", ")} — KHÔNG được đăng ký (chỉ 8 field đã freeze của ` +
+          `DaLiuRenCalculationResult, cộng ngoại lệ DUY NHẤT "gender" — Phase 11-F, được coi là ` +
+          `AVAILABLE; xem rule-dependencies.ts).`,
       );
     }
   }
