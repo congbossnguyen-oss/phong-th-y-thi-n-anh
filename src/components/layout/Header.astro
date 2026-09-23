@@ -11,6 +11,13 @@ const currentPath = Astro.url.pathname;
 const isActive = (href: string) =>
   href === "/" ? currentPath === "/" : currentPath.startsWith(href);
 
+// Astrology Phase 10B (D-E) — "Lập lá số Chiêm tinh" is an internal professional tool (reuses
+// /astrology-mvp verbatim, D-D+D-E describe the same surface). Must NOT be seen by regular users
+// (D-E: "không được thấy hoặc truy cập"), so it is injected here at RENDER TIME based on the current
+// request's session — never added to the static, role-agnostic `mainNav` in site-config.ts.
+const isAdminUser = Astro.locals.user?.isAdmin === true;
+const ASTROLOGY_ADMIN_NAV_ITEM = { label: "Lập lá số Chiêm tinh", href: "/astrology-mvp" };
+
 // Bổ sung mục con thật (dịch vụ, vật phẩm, nhóm khóa học) cho menu — giữ site-config.ts làm khung
 // điều hướng gốc, tránh trùng lặp dữ liệu bằng cách lấy trực tiếp từ nguồn dữ liệu thật.
 const navWithChildren = mainNav.map((item) => {
@@ -26,13 +33,17 @@ const navWithChildren = mainNav.map((item) => {
       children: COURSE_CATEGORY_ORDER.map((cat) => ({ label: cat, href: `/khoa-hoc#${COURSE_CATEGORY_SLUGS[cat]}` })),
     };
   }
+  if (item.label === "Công cụ" && isAdminUser) {
+    return { ...item, children: [...(item.children ?? []), ASTROLOGY_ADMIN_NAV_ITEM] };
+  }
   return item;
 });
 
 // Menu "Công cụ" bản mobile TRƯỚC ĐÂY hardcode tay (lệch với site-config: thiếu Kỳ Môn, Huyền
 // Không Phi Tinh, Bát Trạch khi các mục đó được thêm vào config → desktop có mà mobile không có).
-// Nay lấy thẳng từ mainNav để đồng bộ tuyệt đối, không bao giờ drift nữa.
-const congCuChildren = mainNav.find((item) => item.label === "Công cụ")?.children ?? [];
+// Nay lấy thẳng từ navWithChildren (đã gồm cả mục admin tuỳ theo session) để đồng bộ tuyệt đối với
+// desktop, không bao giờ drift nữa.
+const congCuChildren = navWithChildren.find((item) => item.label === "Công cụ")?.children ?? [];
 const BADGE_BEST = ["/luan-so-dien-thoai"];
 ---
 

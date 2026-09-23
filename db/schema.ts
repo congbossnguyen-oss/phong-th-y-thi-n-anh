@@ -214,6 +214,29 @@ export const quanSuLichSuLuan = pgTable("quan_su_lich_su_luan", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
+// Astrology Phase 10B (D-C, HUMAN RATIFIED) — lịch sử lập lá số Chiêm tinh CHUYÊN MÔN NỘI BỘ
+// (Ban quản trị/chuyên gia, KHÔNG phải tính năng khách hàng — xem PHASE10B_SPEC.md §15/§19). Không
+// dùng chung bảng với `quanSuLichSuLuan` (D-B: không dùng quota/lịch sử Quân Sư) và KHÔNG scope
+// theo "chỉ chủ tài khoản tự xem" như Quân Sư — đây là tài nguyên tra cứu/đối chiếu/audit DÙNG
+// CHUNG giữa các admin/chuyên gia được cấp quyền (xem `history.ts`: `layLichSuChiemTinh` không lọc
+// theo userId). Cùng khuôn dauVao/ketQua jsonb như quanSuLichSuLuan — đủ để truy nguyên toàn bộ
+// provenance (reading → calculation → factors → rules → evidence → interpretation → narrative) mà
+// không cần sửa astrology-core hay đổi shape của WesternAstrologyMvpViewModel.
+export const chiemTinhLichSu = pgTable("chiem_tinh_lich_su", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  /** Admin/chuyên gia đã chạy lượt lập lá số này. */
+  userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  /** = NormalizedChart.metadata.calculationId (astrology-core) — khoá đối chiếu/audit độc lập. */
+  calculationId: text("calculation_id").notNull(),
+  /** Nguyên `WesternAstrologyMvpInput` (ngày/giờ/múi giờ/toạ độ sinh) đã dùng để chạy pipeline. */
+  dauVao: jsonb("dau_vao").notNull(),
+  /** Nguyên `WesternAstrologyMvpViewModel` trả về — gồm chart/chartData (planets/angles/houseCusps/
+   * aspects/factors) + interpretations (domain/conclusion/ruleIds/evidenceIds/supportingFactorIds/
+   * narrativeText) — đủ để truy nguyên toàn bộ chuỗi provenance mà không cần chạy lại pipeline. */
+  ketQua: jsonb("ket_qua").notNull(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+});
+
 // --- Khóa học: đăng ký & tiến độ học ---
 
 export const enrollmentSourceEnum = pgEnum("enrollment_source", [

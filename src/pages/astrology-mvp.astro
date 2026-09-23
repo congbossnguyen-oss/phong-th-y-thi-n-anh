@@ -11,6 +11,18 @@ import InterpretationCard from "../components/western-astrology/InterpretationCa
 import StatusMessage from "../components/western-astrology/StatusMessage.astro";
 import { runWesternAstrologyMvp } from "../lib/western-astrology/index";
 import type { WesternAstrologyMvpViewModel } from "../lib/western-astrology/view-model";
+import { astrologyLoginRedirect, astrologyAdminRedirect } from "../lib/western-astrology/auth-gate";
+import { luuLichSuChiemTinh } from "../lib/western-astrology/history";
+
+// Gate 10B-1 — require the app's existing session auth (resolved by src/middleware.ts into
+// Astro.locals.user). Thin pre-check BEFORE any compute; unauthenticated → login, preserving `next`.
+const loginRedirect = astrologyLoginRedirect(Astro.locals.user, Astro.url.pathname, Astro.url.search);
+if (loginRedirect) return Astro.redirect(loginRedirect);
+
+// Gate 10B-2 — authorization (D-A = admin-only during internal test on main). Reuses
+// SessionUser.isAdmin; no new entitlement. Authenticated non-admins are sent home (feature hidden).
+const adminRedirect = astrologyAdminRedirect(Astro.locals.user);
+if (adminRedirect) return Astro.redirect(adminRedirect);
 
 const params = Astro.url.searchParams;
 const dateStr = params.get("date"); // YYYY-MM-DD
@@ -29,14 +41,22 @@ if (dateStr) {
   const minute = minuteStr !== null && minuteStr !== "" ? Number(minuteStr) : null;
   const time = hour !== null && !Number.isNaN(hour) ? { hour, minute: minute ?? 0 } : null;
 
-  vm = await runWesternAstrologyMvp({
+  const input = {
     date: { year: year ?? 0, month: month ?? 0, day: day ?? 0 },
     time,
     timezoneId: tz,
     latitude: Number(latStr),
     longitude: Number(lonStr),
     locationLabel: place,
-  });
+  };
+  vm = await runWesternAstrologyMvp(input);
+
+  // D-C (HUMAN RATIFIED) — persist professional reading history whenever a chart was actually
+  // computed (success or empty_interpretation both carry a real chart); skip missing_input/
+  // calculation_error (nothing to audit). Astro.locals.user is guaranteed non-null past the gates above.
+  if (vm.chart) {
+    await luuLichSuChiemTinh(Astro.locals.user!.id, input, vm);
+  }
 }
 ---
 <Layout title="Astrology MVP" noIndex={true}>
