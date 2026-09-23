@@ -12,7 +12,6 @@ import StatusMessage from "../components/western-astrology/StatusMessage.astro";
 import { runWesternAstrologyMvp } from "../lib/western-astrology/index";
 import type { WesternAstrologyMvpViewModel } from "../lib/western-astrology/view-model";
 import { astrologyLoginRedirect, astrologyAdminRedirect } from "../lib/western-astrology/auth-gate";
-import { luuLichSuChiemTinh } from "../lib/western-astrology/history";
 
 // Gate 10B-1 — require the app's existing session auth (resolved by src/middleware.ts into
 // Astro.locals.user). Thin pre-check BEFORE any compute; unauthenticated → login, preserving `next`.
@@ -50,13 +49,6 @@ if (dateStr) {
     locationLabel: place,
   };
   vm = await runWesternAstrologyMvp(input);
-
-  // D-C (HUMAN RATIFIED) — persist professional reading history whenever a chart was actually
-  // computed (success or empty_interpretation both carry a real chart); skip missing_input/
-  // calculation_error (nothing to audit). Astro.locals.user is guaranteed non-null past the gates above.
-  if (vm.chart) {
-    await luuLichSuChiemTinh(Astro.locals.user!.id, input, vm);
-  }
 }
 ---
 <Layout title="Astrology MVP" noIndex={true}>
