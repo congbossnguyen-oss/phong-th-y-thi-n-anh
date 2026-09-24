@@ -52,6 +52,7 @@ export * from "./da-liu-ren-chart-with-ke-type.js";
 export * from "./wang-shuai/index.js";
 export * from "./void-branches/index.js";
 export * from "./shen-sha/index.js";
+export * from "./ben-ming-xing-nian/index.js";
 export * from "./rules/index.js";
 export * from "./interpretation-package-builder.js";
 
