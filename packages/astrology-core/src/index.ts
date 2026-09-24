@@ -206,6 +206,10 @@ export { getWholeSignHouseNumber } from "./vedic/houses.js";
 export type { VargaId } from "./vedic/divisional.js";
 export { countSignsForward, getD2HoraSign, getD3DrekkanaSign, getD4ChaturthamsaSign, getDivisionalSign } from "./vedic/divisional.js";
 
+// V1.1 — chart-level Varga placements (NormalizedChart → divisional placements via getDivisionalSign)
+export type { DivisionalPlacement } from "./vedic/divisionalChart.js";
+export { computeDivisionalPlacements } from "./vedic/divisionalChart.js";
+
 // ---------------------------------------------------------------------------------------
 // Phase 5 — Factor Engine (Layer 7). Shared contract types + Western engine only.
 // Vedic FactorEngine deferred; Rule/Scoring layers (Phase 6+) not implemented.
