@@ -29,6 +29,31 @@ describe("dựng prompt luận giải", () => {
     expect(TRI_THUC_LOI).toContain("PHƯƠNG PHÁP HÓA GIẢI");
   });
 
+  it("an-lệ (worked cases) được nhúng vào tri thức: mục lục + thân Tập 1/8", () => {
+    // Marker section + kỷ luật dùng án lệ.
+    expect(TRI_THUC_LOI).toContain("AN-LỆ / WORKED CASES");
+    expect(TRI_THUC_LOI).toContain("MỤC LỤC ÁN LỆ");
+    expect(TRI_THUC_LOI).toContain("ÁN LỆ ĐẦY ĐỦ — TẬP 1/8");
+    // Mục lục thật (INDEX) có mặt.
+    expect(TRI_THUC_LOI).toContain("153 case");
+    // Thân án lệ Tập 1 thật sự vào bundle (header thân + 1 case đầy đủ — chỉ có trong chunk, không có ở INDEX).
+    expect(TRI_THUC_LOI).toContain("Án lệ hóa giải — phần 1");
+    expect(TRI_THUC_LOI).toContain("### Anh không ra mồ hôi");
+    // Bounded: chỉ Tập 1/8, KHÔNG nạp mù cả 8 tập (không có header thân của tập sau).
+    expect(TRI_THUC_LOI).not.toContain("ÁN LỆ ĐẦY ĐỦ — TẬP 2/8");
+    // Không nhân đôi section.
+    expect(TRI_THUC_LOI.split("AN-LỆ / WORKED CASES").length - 1).toBe(1);
+  });
+
+  it("prompt mang chỉ dẫn dùng án lệ đúng kỷ luật (few-shot, không phải bằng chứng)", () => {
+    const qt = systemPromptQuyTac("Nam");
+    expect(qt).toContain("CÁCH DÙNG AN-LỆ");
+    expect(qt).toContain("KHÔNG phải bằng chứng cho quẻ đang xem");
+    expect(qt).toContain("KHÔNG bịa án lệ");
+    // Án lệ nằm trong phần tri thức (cached), không phải phần quy tắc theo lượt.
+    expect(systemPromptTriThuc()).toContain("ÁN LỆ ĐẦY ĐỦ — TẬP 1/8");
+  });
+
   it("đã bỏ frontmatter YAML của SKILL.md", () => {
     // Frontmatter chứa mô tả kích hoạt skill — vô nghĩa với model và tốn token.
     expect(systemPromptTriThuc()).not.toContain("name: hoa-giai-kinh-dich");
