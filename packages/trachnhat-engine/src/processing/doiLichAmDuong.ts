@@ -5,7 +5,14 @@
  * không tồn tại), facade này chỉ thêm ràng buộc năm 1900-2100 theo đúng quy ước chung của các
  * module khác trong hệ thống (vd. `tuoiHopLamAn.ts`).
  */
-import { getLunarDate, getSolarDateFromLunar, getGanzhiYear, Data } from "@thien-anh/calendar-core";
+import {
+  getLunarDate,
+  getSolarDateFromLunar,
+  getGanzhiYear,
+  Data,
+  vnLunarZone,
+  vnInverseZone,
+} from "@thien-anh/calendar-core";
 
 const NAM_TOI_THIEU = 1900;
 const NAM_TOI_DA = 2100;
@@ -65,7 +72,14 @@ export function convertSolarToLunar(input: SolarToLunarInput): SolarToLunarResul
   validateNam(input.year, "Năm dương lịch");
   const timeZone = input.timeZone ?? DEFAULT_TIME_ZONE;
 
-  const am = getLunarDate({ year: input.year, month: input.month, day: input.day, hour: 12, timeZone });
+  // G10 (flag): khi BẬT + zone VN mặc định → quy đổi Âm lịch qua resolver chính sách (Etc/GMT-7/8).
+  // CHỈ đổi zone cho getLunarDate; namAmLich (Ganzhi) vẫn giữ timeZone dân dụng, KHÔNG đụng Ganzhi.
+  const lunarZone = vnLunarZone(
+    { year: input.year, month: input.month, day: input.day },
+    input.timeZone,
+  );
+
+  const am = getLunarDate({ year: input.year, month: input.month, day: input.day, hour: 12, timeZone: lunarZone });
 
   return {
     duong: { day: input.day, month: input.month, year: input.year },
@@ -78,9 +92,10 @@ export function convertLunarToSolar(input: LunarToSolarInput): LunarToSolarResul
   validateNam(input.year, "Năm âm lịch");
   const timeZone = input.timeZone ?? DEFAULT_TIME_ZONE;
 
+  // G10 (flag): nghịch (Âm→Dương) đi qua chính sách suy từ NĂM DƯƠNG tương ứng — đối xứng round-trip.
   const duong = getSolarDateFromLunar(
     { day: input.day, month: input.month, year: input.year, isLeapMonth: input.isLeapMonth },
-    timeZone,
+    vnInverseZone({ day: input.day, month: input.month, year: input.year, isLeapMonth: input.isLeapMonth }, input.timeZone),
   );
 
   return {

@@ -7,7 +7,7 @@
  * Can Chi) và Can Chi năm mất/năm sinh (quy ước "năm con giáp" đại chúng, giống
  * `tuoiHopLamAn.ts`), không cần biết trước phong thủy.
  */
-import { Data, getCanChi, getSolarDateFromLunar } from "@thien-anh/calendar-core";
+import { Data, getCanChi, getSolarDateFromLunar, vnInverseZone } from "@thien-anh/calendar-core";
 import { Scoring, TrungTang } from "@thien-anh/rule-engine";
 
 type Chi = Data.Chi;
@@ -74,7 +74,7 @@ export function calculateTrungTang(input: TrungTangInput): TrungTangOutput {
   // Quy đổi ngày mất âm lịch -> dương lịch, rồi tra Can Chi Ngày thật (khác cung "đếm tay" ở Bước 1).
   const solarNgayMat = getSolarDateFromLunar(
     { day: input.ngayMatAmLich, month: input.thangMatAmLich, year: input.namMatAmLich, isLeapMonth: input.thangNhuan ?? false },
-    timeZone,
+    vnInverseZone({ day: input.ngayMatAmLich, month: input.thangMatAmLich, year: input.namMatAmLich, isLeapMonth: input.thangNhuan ?? false }, timeZone),
   );
   const canChiNgayMat = getCanChi({ ...solarNgayMat, hour: 12, timeZone });
 

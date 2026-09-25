@@ -18,7 +18,7 @@
  * GIỚI HẠN CHỦ ĐỘNG (theo SPEC): KHÔNG code tầng "Phiên Hóa Đẩu Thủ Ngũ Hành" bậc 2 — nguồn
  * chưa tổng quát hóa được thành quy trình đáng tin, báo `thieuDuLieu` nếu người dùng cần.
  */
-import { Astronomy, Calendar, Data, getCanChi, getGanzhiHour, getLunarDate } from "@thien-anh/calendar-core";
+import { Astronomy, Calendar, Data, getCanChi, getGanzhiHour, getLunarDate, vnLunarZone } from "@thien-anh/calendar-core";
 import { DauThu, TrachNhat, XemNgayCaoCap } from "@thien-anh/rule-engine";
 
 type Can = Data.Can;
@@ -162,7 +162,7 @@ function laNgayTruocMocTietKhi(jdUT: number, longitudes: readonly number[]): boo
 function laNguyetTan(nam: number, thang: number, ngay: number, timeZone: string): boolean {
   const jdn = Astronomy.julianDayNumber(nam, thang, ngay) + 1;
   const maiSau = Astronomy.julianDayNumberToCalendarDate(jdn);
-  const lunarMaiSau = getLunarDate({ year: maiSau.year, month: maiSau.month, day: maiSau.day, timeZone });
+  const lunarMaiSau = getLunarDate({ year: maiSau.year, month: maiSau.month, day: maiSau.day, timeZone: vnLunarZone({ year: maiSau.year, month: maiSau.month, day: maiSau.day }, timeZone) });
   return lunarMaiSau.day === 1;
 }
 
@@ -265,7 +265,7 @@ export function tinhDauThuChonNgay(input: DauThuChonNgayInput): DauThuChonNgayRe
   }
 
   const canChi = getCanChi({ year: nam, month: thang, day: ngay, hour: 12, timeZone });
-  const lunar = getLunarDate({ year: nam, month: thang, day: ngay, timeZone });
+  const lunar = getLunarDate({ year: nam, month: thang, day: ngay, timeZone: vnLunarZone({ year: nam, month: thang, day: ngay }, timeZone) });
 
   const truNam = xayTru("Năm", canChi.year.can, canChi.year.chi, canChi.year.napAm.name, hanhSonDau);
   const truThang = xayTru("Tháng", canChi.month.can, canChi.month.chi, canChi.month.napAm.name, hanhSonDau);

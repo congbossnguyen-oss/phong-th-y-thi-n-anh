@@ -114,9 +114,15 @@ export function convertSolarToLunar(
   const dayNumber = julianDayNumber(year, month, day);
   const k = approximateLunationNumber(dayNumber);
 
-  let monthStart = newMoonDayJdn(k + 1, utcOffsetHours);
-  if (monthStart > dayNumber) {
-    monthStart = newMoonDayJdn(k, utcOffsetHours);
+  // Chọn đầu tháng âm là lần Sóc CUỐI CÙNG không muộn hơn dayNumber. Bắt đầu từ k+1 rồi lùi dần —
+  // KHÔNG chỉ lùi đúng một lunation (bug day-0 V3-45): khi làm tròn Sóc rơi vào nửa đêm+1 ngày, tháng
+  // chứa dayNumber có thể là k-1, nên phải lùi tới khi monthStart <= dayNumber. newMoonDayJdn đơn điệu
+  // giảm theo lunation (~29.53 ngày/kỳ) nên vòng lặp luôn dừng.
+  let kMonth = k + 1;
+  let monthStart = newMoonDayJdn(kMonth, utcOffsetHours);
+  while (monthStart > dayNumber) {
+    kMonth -= 1;
+    monthStart = newMoonDayJdn(kMonth, utcOffsetHours);
   }
 
   let a11 = lunarMonth11Jdn(year, utcOffsetHours);

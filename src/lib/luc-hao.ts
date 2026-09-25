@@ -18,6 +18,7 @@ import { CHI_NGU_HANH, khongVongOf, khongVongIndicesOf, tinhBatTu, TRUONG_SINH_S
 import type { NguHanh } from "./menh-nap-am";
 import { jdFromDate, getCurrentTietKhi24Name } from "./solar-term";
 import { solarToLunar } from "./lunar-calendar";
+import { resolveVnLunar } from "./lunar-canonical";
 
 export type LineVal = 0 | 1; // 0 = Âm (đứt), 1 = Dương (liền)
 
@@ -912,7 +913,7 @@ function finalizeCast(
 // --- Phương pháp 1: Mai Hoa Dịch Số (Thiệu Khang Tiết) — dùng Năm/Tháng/Ngày/Giờ ÂM LỊCH của thời
 // điểm lập quẻ. Công thức đã kiểm chứng khớp chính xác với ví dụ thực tế tham chiếu.
 export function maiHoaCast(input: CastInput): FullCastResult {
-  const lunar = solarToLunar(input.day, input.month, input.year);
+  const lunar = resolveVnLunar(input.day, input.month, input.year);
   const yearChiIndex = ((lunar.year - 4) % 12 + 12) % 12;
   const soNam = yearChiIndex + 1; // Tý=1...Hợi=12
   const soThang = lunar.month;

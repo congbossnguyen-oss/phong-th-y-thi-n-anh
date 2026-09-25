@@ -12,7 +12,7 @@
  * `rule-engine/src/trach-nhat/thangCanChi.ts` để biết chi tiết đối chiếu.
  */
 
-import { Calendar, Data, getCanChi, getLunarDate, getSolarTerms } from "@thien-anh/calendar-core";
+import { Calendar, Data, getCanChi, getLunarDate, getSolarTerms, vnLunarZone } from "@thien-anh/calendar-core";
 import { TrachNhat } from "@thien-anh/rule-engine";
 import type { TrachNhatInput } from "../types.js";
 
@@ -57,7 +57,7 @@ export function tinhTuTru(input: TrachNhatInput): TuTruResult {
   const dateTimeInput = { ...solarDate, hour: 12, timeZone };
 
   const canChi = getCanChi(dateTimeInput);
-  const lunar = getLunarDate(dateTimeInput);
+  const lunar = getLunarDate({ ...dateTimeInput, timeZone: vnLunarZone(dateTimeInput, dateTimeInput.timeZone) });
 
   const monthOrderIndex = Calendar.monthBoundaryOrderIndex(canChi.julianDay);
   const tietKhi = findTietKhiHieuLuc(solarDate.year, canChi.julianDay);

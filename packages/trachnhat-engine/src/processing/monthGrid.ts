@@ -10,7 +10,7 @@
  * (`TrachNhat.getTruc` + `TrachNhat.getThanSatTrongNgay`, cùng logic với `ngayInfo.ts`), chi
  * phí thêm không đáng kể so với `getLunarDate` đã gọi sẵn cho mỗi ô.
  */
-import { Calendar, getCanChi, getLunarDate } from "@thien-anh/calendar-core";
+import { Calendar, getCanChi, getLunarDate, vnLunarZone } from "@thien-anh/calendar-core";
 import { TrachNhat } from "@thien-anh/rule-engine";
 
 export interface MonthGridInput {
@@ -81,7 +81,7 @@ export function calculateMonthGrid(input: MonthGridInput): MonthGridResult {
 
   const days: MonthGridDay[] = cells.map((c) => {
     const dateTimeInput = { year: c.year, month: c.month, day: c.day, hour: 12, timeZone };
-    const lunar = getLunarDate(dateTimeInput);
+    const lunar = getLunarDate({ ...dateTimeInput, timeZone: vnLunarZone(dateTimeInput, dateTimeInput.timeZone) });
     const weekday = new Date(Date.UTC(c.year, c.month - 1, c.day)).getUTCDay();
 
     const canChi = getCanChi(dateTimeInput);

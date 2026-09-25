@@ -7,7 +7,7 @@
  * KHÔNG chẩn đoán lại Trùng Tang — chỉ dùng `TrungTang.tinhBonCungTrungTang` (đã có, dùng chung
  * với công cụ miễn phí) để lấy 4 cung làm nền cho việc xếp hạng giờ/ngày.
  */
-import { Astronomy, Calendar, Data, getCanChi, getLunarDate, getSolarTerms } from "@thien-anh/calendar-core";
+import { Astronomy, Calendar, Data, getCanChi, getLunarDate, getSolarTerms, vnLunarZone } from "@thien-anh/calendar-core";
 import { TrachNhat, TrungTang, Scoring } from "@thien-anh/rule-engine";
 
 type Can = Data.Can;
@@ -431,7 +431,7 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
     return { tuoiTa, duoi10Tuoi: true };
   }
 
-  const lunarMat = getLunarDate({ year: input.namMat, month: input.thangMat, day: input.ngayMat, timeZone });
+  const lunarMat = getLunarDate({ year: input.namMat, month: input.thangMat, day: input.ngayMat, timeZone: vnLunarZone({ year: input.namMat, month: input.thangMat, day: input.ngayMat }, timeZone) });
   const bonCung = TrungTang.tinhBonCungTrungTang(input.gioiTinh, tuoiTa, lunarMat.month, lunarMat.day, input.chiGioMat);
   const jdnMat = Astronomy.julianDayNumber(input.namMat, input.thangMat, input.ngayMat);
   // Can Chi NĂM MẤT — Hành Niên Tầm Thái Tuế tra theo năm mất, KHÔNG theo năm sinh của vong.
@@ -689,7 +689,7 @@ export function calculateGioLiemHaHuyet(input: GioLiemHaHuyetInput): GioLiemHaHu
       const jdnCandidate = jdnMat + offset;
       const rawDate = Astronomy.julianDayNumberToCalendarDate(jdnCandidate);
       const canChiCandidate = getCanChi({ ...rawDate, hour: 12, timeZone });
-      const lunarCandidate = getLunarDate({ ...rawDate, timeZone });
+      const lunarCandidate = getLunarDate({ ...rawDate, timeZone: vnLunarZone(rawDate, timeZone) });
 
       // ================= PHÂN LOẠI HUNG TINH CỦA NGÀY =================
       // Cây quyết định chủ dự án chốt 2026-08-16:

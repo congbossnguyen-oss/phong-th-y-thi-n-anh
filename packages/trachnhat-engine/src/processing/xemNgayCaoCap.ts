@@ -13,7 +13,7 @@
  * Bước 3 soát đủ 5 sát cốt lõi + 3 Thái Tuế Sát mở rộng (Mậu Kỷ Đô Thiên, Âm Phủ Thái Tuế, Mộ
  * Long Biến Vận).
  */
-import { Astronomy, Calendar, Data, getCanChi, getJulianDay, getLunarDate } from "@thien-anh/calendar-core";
+import { Astronomy, Calendar, Data, getCanChi, getJulianDay, getLunarDate, vnLunarZone } from "@thien-anh/calendar-core";
 import { Scoring, TrachNhat, XemNgayCaoCap } from "@thien-anh/rule-engine";
 
 function mod(a: number, n: number): number {
@@ -188,7 +188,7 @@ export function calculateXemNgayCaoCap(input: XemNgayCaoCapInput): XemNgayCaoCap
 
   // ----- Nền: Tứ Trụ thật + âm lịch -----
   const canChi = getCanChi({ year: nam, month: thang, day: ngay, hour: 12, timeZone });
-  const lunar = getLunarDate({ year: nam, month: thang, day: ngay, timeZone });
+  const lunar = getLunarDate({ year: nam, month: thang, day: ngay, timeZone: vnLunarZone({ year: nam, month: thang, day: ngay }, timeZone) });
 
   const truNamRaw = toTruQue(canChi.year.can, canChi.year.chi);
   const truThangRaw = toTruQue(canChi.month.can, canChi.month.chi);
@@ -260,7 +260,7 @@ export function calculateXemNgayCaoCap(input: XemNgayCaoCapInput): XemNgayCaoCap
   // Nguyệt Tận: ngày mai (ÂL) là mùng 1 → hôm nay là ngày cuối tháng ÂL.
   const jdHomNay = getJulianDay({ year: nam, month: thang, day: ngay, hour: 12, timeZone });
   const ngayMaiCal = Astronomy.julianDayNumberToCalendarDate(jdHomNay.julianDayNumber + 1);
-  const lunarNgayMai = getLunarDate({ year: ngayMaiCal.year, month: ngayMaiCal.month, day: ngayMaiCal.day, timeZone });
+  const lunarNgayMai = getLunarDate({ year: ngayMaiCal.year, month: ngayMaiCal.month, day: ngayMaiCal.day, timeZone: vnLunarZone({ year: ngayMaiCal.year, month: ngayMaiCal.month, day: ngayMaiCal.day }, timeZone) });
   const phamNguyetTanTinh = lunarNgayMai.day === 1;
 
   // Tứ Ly / Tứ Tuyệt: "1 ngày trước" 1 trong 8 mốc tiết khí — so JDN của tiết khí gần nhất với

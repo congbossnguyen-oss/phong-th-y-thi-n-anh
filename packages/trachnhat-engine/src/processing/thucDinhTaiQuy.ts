@@ -10,7 +10,7 @@
  * 2 trường `doTinCay` và `ghiChuApDungDuongTrach` BẮT BUỘC giữ nguyên ở output theo yêu cầu minh
  * bạch dữ liệu của README-CLAUDE-CODE.md mục 4 — không được bỏ khi build UI.
  */
-import { Astronomy, getGanzhiDay, getLunarDate } from "@thien-anh/calendar-core";
+import { Astronomy, getGanzhiDay, getLunarDate, vnLunarZone } from "@thien-anh/calendar-core";
 import { ThucDinhTaiQuy } from "@thien-anh/rule-engine";
 
 type Quai = ThucDinhTaiQuy.Quai;
@@ -91,7 +91,7 @@ function tinhMotNhanh(
     for (let i = 0; i < soNgay; i++) {
       const ngay = jdnToNgay(jdnTu + i);
       const canChiNgay = getGanzhiDay({ year: ngay.nam, month: ngay.thang, day: ngay.ngay, hour: 12, timeZone });
-      const lunar = getLunarDate({ year: ngay.nam, month: ngay.thang, day: ngay.ngay, timeZone });
+      const lunar = getLunarDate({ year: ngay.nam, month: ngay.thang, day: ngay.ngay, timeZone: vnLunarZone({ year: ngay.nam, month: ngay.thang, day: ngay.ngay }, timeZone) });
 
       if (mucTieuNhanh === "tai") {
         const phanLoai = ThucDinhTaiQuy.phanLoaiTai(canChiNgay.can, canChiNgay.chi, quaiDungDeTra);
