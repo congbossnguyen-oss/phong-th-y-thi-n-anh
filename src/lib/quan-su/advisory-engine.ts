@@ -144,6 +144,7 @@ export interface FourGodState {
 export interface FourGodInteractions {
   nhatNguyet: HaoRelation[]; // HaoInfo.relations: quan hệ với Nhật Thần / Nguyệt Kiến (sinh/khắc/phá/hợp/hại/xung/nhập mộ)
   tienThoai: KetQuaTienThoaiHao | null; // từ tienThoaiCuaHao() có sẵn — null nếu hào không động/không tiến-thoái
+  hoa: HoaRelation; // Phase 4 — hồi đầu sinh/khắc của hào (từ getHoaRelation dùng chung), FACT không phán cát hung
 }
 
 export interface FourGodMember {
@@ -188,7 +189,7 @@ function stateOf(h: HaoInfo): FourGodState {
 
 /** Tương tác FACT của hào (Phase 3) — quan hệ Nhật/Nguyệt có sẵn + tiến/thoái từ engine hiện có. */
 function interactionsOf(cast: FullCastResult, h: HaoInfo): FourGodInteractions {
-  return { nhatNguyet: h.relations, tienThoai: tienThoaiCuaHao(cast, h.hao) };
+  return { nhatNguyet: h.relations, tienThoai: tienThoaiCuaHao(cast, h.hao), hoa: getHoaRelation(cast, h.hao) };
 }
 
 /**
@@ -330,8 +331,38 @@ function moTaXuHuong(verdict: Verdict, diem: number): string {
   }
 }
 
-function khuyen(verdict: Verdict, payload: QuanSuInterpretationPayload, luck: LuckContext | null): string[] {
+/**
+ * Lời khuyên BÁM THEO TÍN HIỆU QUẺ cụ thể (khác nhau giữa các quẻ, không phải template chung theo
+ * verdict) — trả 0-1 câu ưu tiên đặt đầu để tránh mọi câu hỏi cùng verdict ra lời khuyên y hệt.
+ */
+function khuyenTheoTinHieu(resolved: DungThanResolved, cast: QuanSuInterpretationPayload["cast"]): string | null {
+  const dt = resolved.hao;
+  if (resolved.trangThai === "phuc_tang") return "Điều anh/chị hỏi đang ẩn chưa lộ (Dụng Thần phục tàng) — chưa nên thúc ép, chờ khi việc rõ đầu mối hãy quyết.";
+  if (!dt || resolved.trangThai !== "hien") return null;
+  if (dt.xunKong) return "Dụng Thần đang Tuần Không (như việc còn trống, chưa tới lúc) — đừng vội, chờ qua ngày/tháng xung Không thì hãy động.";
+  if (dt.relations.some((r) => r.type === "Nguyệt Phá")) return "Dụng Thần bị Nguyệt Phá — cả tháng này bất lợi, nên lùi sang tháng khác (tháng xung lại chỗ phá) rồi tính.";
+  if (dt.relations.some((r) => r.type === "Khắc")) return "Dụng Thần đang bị Nhật/Nguyệt khắc chế — cần hóa giải nguồn khắc hoặc tìm thế được sinh phò trước khi tiến.";
+  if (dt.vuongSuy === "Tù" || dt.vuongSuy === "Tử") return "Dụng Thần suy nhược (mùa không phò) — nên chờ tới mùa Dụng Thần vượng, hoặc mượn nguyên thần sinh phò rồi hãy làm.";
+  // Hào động là kỵ thần khắc Dụng Thần?
+  for (const pos of cast.dongPositions) {
+    const hg = cast.chinh.hao[pos - 1];
+    if (hg.hao !== dt.hao && nguHanhTac(hg.nguHanh, dt.nguHanh) === "a-khac-b") {
+      return `Có hào động (${hg.lucThan}) đang khắc Dụng Thần — đề phòng đúng nguồn đó gây trở ngại; xử lý gốc này thì việc mới thông.`;
+    }
+    // Dụng Thần động hóa thoái / hồi đầu khắc — dùng helper Hóa chung (Phase 4), giữ nguyên hành vi.
+    if (hg.hao === dt.hao && getHoaRelation(cast, pos).hoiDau === "HOI_DAU_KHAC") {
+      return "Dụng Thần động biến hồi đầu khắc (việc dễ quay lại hại mình) — cân nhắc rất kỹ, tránh dấn sâu.";
+    }
+  }
+  if (dt.vuongSuy === "Vượng" && dt.relations.some((r) => r.type === "Sinh" || r.type === "Lâm Nhật" || r.type === "Lâm Nguyệt"))
+    return "Dụng Thần vượng lại được Nhật/Nguyệt phò — thế đang lên, chuẩn bị đủ là tiến được, đừng bỏ lỡ nhịp thuận.";
+  return null;
+}
+
+function khuyen(verdict: Verdict, payload: QuanSuInterpretationPayload, luck: LuckContext | null, resolved: DungThanResolved, _cham: ChamKetQua): string[] {
   const acts: string[] = [];
+  const theoTin = khuyenTheoTinHieu(resolved, payload.cast);
+  if (theoTin) acts.push(theoTin); // lời khuyên riêng theo quẻ, đặt đầu
   switch (verdict) {
     case "NEN":
       acts.push("Chuẩn bị kỹ phần việc trong tầm tay rồi tiến hành, đừng chần chừ quá lâu.");
@@ -354,10 +385,15 @@ function khuyen(verdict: Verdict, payload: QuanSuInterpretationPayload, luck: Lu
       acts.push("Bổ sung thông tin (ngày giờ sinh, bối cảnh) để luận sát hơn.");
       break;
   }
-  // Hành động thứ 3 theo an toàn / vận trình.
+  // Hành động cuối theo an toàn / vận trình. Với việc an toàn cao (sức khỏe/pháp lý) BẮT BUỘC giữ
+  // lại — nên chèn thẳng vào vị trí cuối của 3 câu, không để bị slice mất khi đã có lời khuyên riêng.
   if (payload.question.safety_level === "cao") {
-    acts.push(payload.question.category === "suc-khoe" ? "Với sức khỏe, hãy tham vấn bác sĩ — đây chỉ là góc nhìn tham khảo." : "Với việc pháp lý, hãy tham vấn luật sư trước khi hành động.");
-  } else if (luck && luck.dimensions.find((d) => d.key === "bien-dong")!.score >= 7) {
+    const canhBao = payload.question.category === "suc-khoe" ? "Với sức khỏe, hãy tham vấn bác sĩ — đây chỉ là góc nhìn tham khảo." : "Với việc pháp lý, hãy tham vấn luật sư trước khi hành động.";
+    const ba = acts.slice(0, 2);
+    ba.push(canhBao);
+    return ba;
+  }
+  if (luck && luck.dimensions.find((d) => d.key === "bien-dong")!.score >= 7) {
     acts.push("Giai đoạn này nhiều xáo trộn — giữ tâm bình tĩnh, tránh quyết định trong lúc nóng.");
   } else {
     acts.push("Giữ tâm bình tĩnh và quyết định dựa trên cả lý trí lẫn hoàn cảnh thực tế.");
@@ -375,12 +411,182 @@ function vanTrinhTomTat(luck: LuckContext | null): VanTrinhTomTat | null {
   };
 }
 
-function luanChiTiet(resolved: DungThanResolved, cast: QuanSuInterpretationPayload["cast"]): string {
+// ---------------------------------------------------------------------------------------------
+// LUẬN SÂU (rule-based, deterministic) — narrate CÁC TÍN HIỆU engine đã tính thành lời luận Lục Hào
+// đúng phép, KHÔNG tự tính thêm thuật toán. Bao: Dụng Thần vượng suy so Nhật/Nguyệt, lưỡng hiện,
+// từng hào động (quan hệ với Dụng Thần + Lục Thú + hóa biến hồi đầu/tiến-thoái/hóa Không/nhập Mộ),
+// Tam Hợp cục, Ứng Kỳ. Dùng ngôn ngữ xác suất, không phán tuyệt đối.
+const VUONG_SUY_Y: Record<VerdictVuong, string> = {
+  "Vượng": "đang vượng, có khí lực — chủ về mạnh, dễ thành",
+  "Tướng": "được tướng khí (mùa sinh cho), khá có lực",
+  "Hưu": "hưu khí (đã qua thời) — sức đã kém",
+  "Tù": "bị tù hãm — suy nhược",
+  "Tử": "tử khí — rất yếu, phải được sinh phò mới đứng được",
+};
+type VerdictVuong = "Vượng" | "Tướng" | "Hưu" | "Tù" | "Tử";
+
+const LUC_THU_Y: Record<string, string> = {
+  "Thanh Long": "chủ hỉ sự, tài lộc, việc chính đáng hanh thông",
+  "Chu Tước": "chủ văn thư, tin tức, giấy tờ — nhưng cũng dễ khẩu thiệt, tranh cãi",
+  "Câu Trần": "chủ ruộng đất, nhà cửa — việc trì trệ, chậm, dây dưa",
+  "Đằng Xà": "chủ chuyện bất ngờ, quái dị, lo âu vướng bận, mộng mị",
+  "Bạch Hổ": "chủ tật bệnh, tang thương, thị phi — nhưng động vào việc quân/pháp/mạnh bạo lại thành uy lực",
+  "Huyền Vũ": "chủ ám muội, hao ngầm, trộm cắp, tình cảm riêng tư mờ ám",
+};
+
+/** Quan hệ ngũ hành của a ĐỐI VỚI b: a sinh b / a khắc b / b sinh a / b khắc a / cùng hành. */
+function nguHanhTac(a: NguHanh, b: NguHanh): NguHanhTacRelation {
+  if (a === b) return "ti-hoa";
+  if (SINH[a] === b) return "a-sinh-b";
+  if (KHAC[a] === b) return "a-khac-b";
+  if (SINH[b] === a) return "b-sinh-a";
+  if (KHAC[b] === a) return "b-khac-a";
+  return "ti-hoa";
+}
+type NguHanhTacRelation = "a-sinh-b" | "a-khac-b" | "b-sinh-a" | "b-khac-a" | "ti-hoa";
+
+// ---------------------------------------------------------------------------------------------
+// HÓA / HỒI ĐẦU (Phase 4) — extract quan hệ biến-hào-tác-động-lên-hào-gốc thành 1 helper dùng chung.
+// KHÔNG công thức mới: chính là `nguHanhTac(biến_hào, gốc_hào)` vốn đã dùng inline ở 2 chỗ (advice của
+// Dụng Thần động + luận từng hào động). Chỉ đặt tên 2 hướng engine hiện dùng: biến SINH gốc = Hồi Đầu
+// Sinh; biến KHẮC gốc = Hồi Đầu Khắc. Các quan hệ khác (gốc sinh/khắc biến, tị hòa) engine không đặt
+// tên → hoiDau=null (giữ nguyên hành vi cũ), nhưng `quanHeBienVoiGoc` vẫn lưu đủ raw để không mất tin.
+export type HoaHoiDau = "HOI_DAU_SINH" | "HOI_DAU_KHAC" | null;
+
+export interface HoaRelation {
+  hao: number; // 1-6
+  isDong: boolean;
+  coBien: boolean; // có hào biến (quẻ có biến) không
+  nguHanhGoc: NguHanh;
+  nguHanhBien: NguHanh | null;
+  hoiDau: HoaHoiDau; // FACT: biến sinh/khắc lại gốc — KHÔNG kèm phán cát/hung
+  quanHeBienVoiGoc: NguHanhTacRelation | null; // raw nguHanhTac(biến, gốc) — đủ thông tin, không mất mát
+}
+
+/**
+ * Quan hệ Hóa (hồi đầu) của MỘT hào — pure/deterministic, không side effect, không LLM.
+ * Nguồn duy nhất của phép tính này (thay cho 2 chỗ inline trước đây). `null` hoiDau khi quẻ không có
+ * biến hoặc quan hệ không thuộc 2 hướng có tên.
+ */
+export function getHoaRelation(cast: FullCastResult, hao: number): HoaRelation {
+  const hg = cast.chinh.hao[hao - 1]!;
+  const hb = cast.bien?.hao[hao - 1] ?? null;
+  if (!hb) {
+    return { hao, isDong: hg.isDong, coBien: false, nguHanhGoc: hg.nguHanh, nguHanhBien: null, hoiDau: null, quanHeBienVoiGoc: null };
+  }
+  const qh = nguHanhTac(hb.nguHanh, hg.nguHanh); // biến hào TÁC ĐỘNG lên hào gốc
+  const hoiDau: HoaHoiDau = qh === "a-sinh-b" ? "HOI_DAU_SINH" : qh === "a-khac-b" ? "HOI_DAU_KHAC" : null;
+  return { hao, isDong: hg.isDong, coBien: true, nguHanhGoc: hg.nguHanh, nguHanhBien: hb.nguHanh, hoiDau, quanHeBienVoiGoc: qh };
+}
+
+/**
+ * Luận 1 hào ĐỘNG so với Dụng Thần + Lục Thú + hóa biến. `dtNguHanh`/`dtHaoNum` CHỈ truyền khi Dụng
+ * Thần HIỆN RÕ trên quẻ (phục tàng thì để null — không so ngũ hành với hào chủ, tránh sai vì hào
+ * chủ khác ngũ hành với phục thần).
+ */
+function luanMotHaoDong(
+  pos: number,
+  cast: QuanSuInterpretationPayload["cast"],
+  dtNguHanh: NguHanh | null,
+  dtHaoNum: number | null,
+  tienThoai: QuanSuInterpretationPayload["tien_thoai_than"],
+): string {
+  const hg = cast.chinh.hao[pos - 1];
+  const hb = cast.bien?.hao[pos - 1] ?? null;
+  const parts: string[] = [`Hào ${pos} (${hg.lucThan}, ${hg.lucThu}) động`];
+
+  // Quan hệ với Dụng Thần — chỉ luận khi Dụng Thần hiện rõ (dtNguHanh != null).
+  if (dtHaoNum !== null && hg.hao === dtHaoNum) {
+    parts.push("CHÍNH LÀ Dụng Thần động — biến hóa của nó quyết định trực tiếp việc hỏi");
+  } else if (dtNguHanh) {
+    const qh = nguHanhTac(hg.nguHanh, dtNguHanh);
+    if (qh === "a-sinh-b") parts.push("là nguyên thần đến sinh phò Dụng Thần (lực trợ, tốt)");
+    else if (qh === "a-khac-b") parts.push("là kỵ thần khắc Dụng Thần (bất lợi, cần đề phòng)");
+    else if (qh === "ti-hoa") parts.push("cùng hành với Dụng Thần (trợ thế, nhưng nếu là Huynh Đệ thì kèm cạnh tranh/hao)");
+    else if (qh === "b-sinh-a") parts.push("hút khí Dụng Thần (Dụng Thần sinh nó → bị tiết hao lực)");
+    else if (qh === "b-khac-a") parts.push("bị Dụng Thần khắc (Dụng Thần chế được nó)");
+  }
+
+  // Lục Thú của hào động.
+  const ltY = LUC_THU_Y[hg.lucThu];
+  if (ltY) parts.push(`Lục Thú ${hg.lucThu} ${ltY}`);
+
+  // Hóa biến (hồi đầu sinh/khắc, tiến/thoái, hóa Không, nhập Mộ). Hồi đầu dùng helper Hóa chung (Phase 4).
+  if (hb) {
+    const hoiDau = getHoaRelation(cast, pos).hoiDau; // biến hào TÁC ĐỘNG lên hào gốc
+    if (hoiDau === "HOI_DAU_KHAC") parts.push("biến ra hào HỒI ĐẦU KHẮC (việc quay lại hại chính mình — xấu)");
+    else if (hoiDau === "HOI_DAU_SINH") parts.push("biến ra hào HỒI ĐẦU SINH (được nuôi dưỡng, hậu vận tốt)");
+    const tt = tienThoai.danhSach.find((d) => d.viTriHao === pos);
+    if (tt) parts.push(tt.loai === "tien-than" ? "hóa TIẾN THẦN (đà việc tiến tới, tăng dần)" : "hóa THOÁI THẦN (đà việc thoái lui, giảm dần)");
+    if (hb.xunKong) parts.push("hào biến rơi Tuần Không (hóa Không — chuyển biến chưa thành, còn treo)");
+    if (hg.relations.some((r) => r.type === "Nhập Mộ" && r.source === "CHANGED_YAO")) parts.push("động biến NHẬP MỘ (việc bị vùi, khó phát lộ — cần chờ xung Mộ)");
+  }
+  return parts.join("; ") + ".";
+}
+
+function luanChiTiet(payload: QuanSuInterpretationPayload, resolved: DungThanResolved): string {
+  const cast = payload.cast;
+  const dt = resolved.hao;
+  const secs: string[] = [];
+
+  // 1) Quẻ + Can Chi thời điểm.
   const que = cast.bien ? `${cast.chinh.name} → biến ${cast.bien.name}` : cast.chinh.name;
-  const dong = cast.dongPositions.length ? cast.dongPositions.join(", ") : "không có";
-  const dt = resolved.lyDo;
-  const bang = `${cast.canChiText}. Tuần Không: ${cast.tuanKhong}. Nguyệt Lệnh: ${cast.nguyetLenh}, Nhật Thần: ${cast.nhatThan}.`;
-  return `Quẻ: ${que}. Hào động: ${dong}. ${dt} ${bang}\n(Đây là các dữ kiện engine đã tính. Luận giải sâu theo phép Kinh Dịch sẽ do Quân Sư đảm nhận khi hoàn thiện.)`;
+  secs.push(`▪ Quẻ: ${que}. ${cast.canChiText}. Nguyệt Lệnh ${cast.nguyetLenh}, Nhật Thần ${cast.nhatThan}, Tuần Không ${cast.tuanKhong}.`);
+
+  // 2) Dụng Thần: trạng thái + vượng suy + quan hệ Nhật/Nguyệt + lưỡng hiện.
+  const dtLines: string[] = [`▪ Dụng Thần: ${resolved.lyDo}`];
+  if (dt && resolved.trangThai === "hien") {
+    dtLines.push(`  – Vượng suy: Dụng Thần ${VUONG_SUY_Y[dt.vuongSuy as VerdictVuong] ?? dt.vuongSuy} (xét theo Nguyệt Lệnh).`);
+    const qhNhatNguyet: string[] = [];
+    for (const r of dt.relations) {
+      if (r.type === "Sinh") qhNhatNguyet.push(`được ${r.source === "DAY" ? "Nhật Thần" : "Nguyệt Kiến"} sinh phò`);
+      else if (r.type === "Khắc") qhNhatNguyet.push(`bị ${r.source === "DAY" ? "Nhật Thần" : "Nguyệt Kiến"} khắc chế`);
+      else if (r.type === "Lâm Nhật") qhNhatNguyet.push("lâm Nhật Thần (đắc thế ngày)");
+      else if (r.type === "Lâm Nguyệt") qhNhatNguyet.push("lâm Nguyệt Kiến (đắc lệnh tháng)");
+      else if (r.type === "Nguyệt Phá") qhNhatNguyet.push("bị Nguyệt Phá (phá cả tháng, chờ qua tháng xung mới cứu)");
+      else if (r.type === "Nhật Phá") qhNhatNguyet.push("bị Nhật Phá (suy, khó đứng vững)");
+      else if (r.type === "Ám Động") qhNhatNguyet.push("ám động (có lực ngầm)");
+    }
+    if (dt.xunKong) qhNhatNguyet.push("rơi Tuần Không (chưa tới lúc, còn trống — chờ ngày xung Không / xuất Không)");
+    if (qhNhatNguyet.length) dtLines.push(`  – So với Nhật/Nguyệt: Dụng Thần ${qhNhatNguyet.join(", ")}.`);
+    // Lưỡng hiện.
+    if (payload.question.dung_than_hint.kind === "luc-than") {
+      const target = payload.question.dung_than_hint.value;
+      const soLan = cast.chinh.hao.filter((h) => h.lucThan === target).length;
+      if (soLan > 1) {
+        dtLines.push(`  – LƯỠNG HIỆN: ${target} xuất hiện ${soLan} lần trên quẻ. Nguyên tắc chọn: ưu tiên hào ĐANG ĐỘNG (hào "lên tiếng"); nếu đều tĩnh thì lấy hào không rơi Không Vong / không bị Phá; nếu 1 hào Không 1 hào thực thì lấy hào thực. Hai hào cùng hiện thường ứng "có hai đầu mối / hai lựa chọn" cho việc hỏi — cần soi bối cảnh để chốt đúng hào.`);
+      }
+    }
+  } else if (resolved.trangThai === "phuc_tang") {
+    dtLines.push("  – Dụng Thần PHỤC TÀNG (ẩn dưới hào khác): điều hỏi chưa lộ, thường là chưa tới lúc — chờ ngày Dụng Thần được dẫn ra (trùng/xung hào phi phục, hoặc gặp Trường Sinh).");
+  }
+  secs.push(dtLines.join("\n"));
+
+  // 3) Hào động.
+  if (cast.dongPositions.length === 0) {
+    secs.push("▪ Quẻ TĨNH (không hào động): việc ít biến động, phần lớn giữ nguyên hiện trạng — luận chủ yếu theo vượng suy Dụng Thần và thế cục Thế/Ứng ở trên. Ứng nghiệm thường chờ tới ngày/tháng xung hoặc trùng Dụng Thần.");
+  } else {
+    // Chỉ so ngũ hành hào động ↔ Dụng Thần khi Dụng Thần HIỆN rõ (phục tàng: hào chủ khác ngũ hành).
+    const dtNguHanh = resolved.trangThai === "hien" ? dt?.nguHanh ?? null : null;
+    const dtHaoNum = resolved.trangThai === "hien" ? dt?.hao ?? null : null;
+    const dongLines = cast.dongPositions.map((pos) => "  – " + luanMotHaoDong(pos, cast, dtNguHanh, dtHaoNum, payload.tien_thoai_than));
+    secs.push("▪ Hào động (phần chủ động, quyết định của quẻ):\n" + dongLines.join("\n"));
+  }
+
+  // 4) Tam Hợp cục.
+  if (payload.tam_hop_cuc.co && payload.tam_hop_cuc.danhSach.length) {
+    const th = payload.tam_hop_cuc.danhSach.map((c) => c.moTa ?? "").filter(Boolean);
+    if (th.length) secs.push("▪ Tam Hợp cục: " + th.join(" "));
+  }
+
+  // 5) Ứng Kỳ (mốc thời gian) — lấy ứng viên ưu tiên cao nhất.
+  if (payload.ung_ky && payload.ung_ky.hopLe && payload.ung_ky.ungVien.length) {
+    const uv = payload.ung_ky.ungVien[0];
+    secs.push(`▪ Ứng kỳ (thời điểm ứng nghiệm gợi ý): quanh ${uv.chi} (theo ${payload.ung_ky.donViGoiY}) — ${uv.lyDo}`);
+  }
+
+  secs.push("(Luận theo phép Lục Hào từ số liệu quẻ; kết quả mang tính tham khảo, ứng nghiệm còn tùy thời điểm và người trong cuộc.)");
+  return secs.join("\n\n");
 }
 
 // ---------------------------------------------------------------------------------------------

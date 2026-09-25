@@ -94,7 +94,7 @@ export function userPrompt(payload: QuanSuInterpretationPayload, moTa?: string, 
         1,
       ),
       "- Đây là kết quả deterministic của engine/rule: chỉ dùng ĐÚNG các hào trong nguyen_than/ky_than trên, KHÔNG tự xác định thêm hào nào là Nguyên/Kỵ/Cừu Thần.",
-      "- Mỗi hào kèm `state` (vượng suy, Trường Sinh, Không Vong, Nguyệt/Nhật Phá) và `interactions` (quan hệ Nhật/Nguyệt, tiến/thoái) — đây là DỮ KIỆN engine tính sẵn; luận mạnh/yếu, phò/phá dựa trên các dữ kiện này.",
+      "- Mỗi hào kèm `state` (vượng suy, Trường Sinh, Không Vong, Nguyệt/Nhật Phá) và `interactions` (quan hệ Nhật/Nguyệt, tiến/thoái, và `hoa` = hồi đầu sinh/khắc khi có biến) — đây là DỮ KIỆN engine tính sẵn; luận mạnh/yếu, phò/phá dựa trên các dữ kiện này.",
       "- KHÔNG tự tạo điểm số 'strength' (0–100) hay xếp hạng mới cho Nguyên/Kỵ Thần — chỉ luận định tính từ các state/interactions đã cho.",
       "- Có dữ kiện thì luận; KHÔNG có (mảng rỗng / trường vắng) thì nói đúng là 'không có', KHÔNG bịa. Kết quả engine/rule ưu tiên hơn mọi án lệ tham khảo.",
     );
