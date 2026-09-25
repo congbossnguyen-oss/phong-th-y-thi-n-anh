@@ -351,8 +351,13 @@ export const questions: QuestionDefinition[] = [
   {
     question_id: "cau-hoi-tu-do",
     category: "cau-hoi-khac",
-    title: "Câu hỏi khác",
-    subtitle: "Không có trong danh sách các nhóm ở trên? Anh/chị viết cụ thể việc muốn hỏi.",
+    // Đổi tiêu đề/mô tả từ "Câu hỏi khác" (2026-09-25, cùng lúc đổi pricing_tier ở dưới) — trước đây
+    // câu này là lối vào PHỤ, dự phòng cho việc không thuộc nhóm nào; giờ là lối vào CHÍNH duy nhất
+    // từ trang chủ (index.astro), không còn hợp để nói "không có trong danh sách các nhóm ở trên"
+    // (khách không còn thấy danh sách nhóm nào nữa). question_id/category giữ nguyên để không phá
+    // lịch sử luận giải cũ hay đường dẫn cũ đang trỏ vào.
+    title: "Hỏi Quân Sư",
+    subtitle: "Viết cụ thể việc anh/chị đang phân vân — Quân Sư lập quẻ và luận giải cho bạn.",
     required_inputs: [
       {
         key: "mo_ta_tinh_huong",
@@ -367,7 +372,10 @@ export const questions: QuestionDefinition[] = [
     recommended_engines: ["bat-tu", "tu-vi"],
     divination_method: "luc-hao",
     output_type: "luan-giai",
-    pricing_tier: "cao-cap",
+    // Đổi từ "cao-cap" sang "co-ban" (Thầy, 2026-09-25): "Câu hỏi khác" giờ là lối vào DUY NHẤT để
+    // hỏi Quân Sư (xem index.astro) — cả 3 hạng Cơ bản/Cao cấp/VIP đều phải vào được, chỉ khác nhau
+    // hạn mức lượt hỏi/tháng (HAN_MUC_LUOT_THEO_GOI), không còn khác nhau ở LOẠI câu hỏi được hỏi.
+    pricing_tier: "co-ban",
     safety_level: "thuong",
   },
 ];
