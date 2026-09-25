@@ -351,8 +351,13 @@ export const questions: QuestionDefinition[] = [
   {
     question_id: "cau-hoi-tu-do",
     category: "cau-hoi-khac",
-    title: "Câu hỏi khác",
-    subtitle: "Không có trong danh sách các nhóm ở trên? Anh/chị viết cụ thể việc muốn hỏi.",
+    // Đổi tiêu đề/mô tả từ "Câu hỏi khác" (2026-09-25, cùng lúc đổi pricing_tier ở dưới) — trước đây
+    // câu này là lối vào PHỤ, dự phòng cho việc không thuộc nhóm nào; giờ là lối vào CHÍNH duy nhất
+    // từ trang chủ (index.astro), không còn hợp để nói "không có trong danh sách các nhóm ở trên"
+    // (khách không còn thấy danh sách nhóm nào nữa). question_id/category giữ nguyên để không phá
+    // lịch sử luận giải cũ hay đường dẫn cũ đang trỏ vào.
+    title: "Hỏi Quân Sư",
+    subtitle: "Viết cụ thể việc anh/chị đang phân vân — Quân Sư lập quẻ và luận giải cho bạn.",
     required_inputs: [
       {
         key: "mo_ta_tinh_huong",
