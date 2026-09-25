@@ -7,7 +7,9 @@
  */
 import type { QuanSuInterpretationPayload } from "../divination";
 import type { FourGods } from "../advisory-engine";
-import { getPhiPhucRelations } from "../advisory-engine";
+import { getPhiPhucRelations, resolveDungThan } from "../advisory-engine";
+import { canLucHao } from "../can-luc-hao";
+import { phanLoaiSauTamHop } from "../../luc-hao-tam-hop-cuc";
 import { quyTacGiongVan } from "../giong-van";
 import { TRI_THUC_LOI } from "./kien-thuc";
 
@@ -98,6 +100,39 @@ export function userPrompt(payload: QuanSuInterpretationPayload, moTa?: string, 
       "- Mỗi hào kèm `state` (vượng suy, Trường Sinh, Không Vong, Nguyệt/Nhật Phá) và `interactions` (quan hệ Nhật/Nguyệt, tiến/thoái, và `hoa` = hồi đầu sinh/khắc khi có biến) — đây là DỮ KIỆN engine tính sẵn; luận mạnh/yếu, phò/phá dựa trên các dữ kiện này.",
       "- KHÔNG tự tạo điểm số 'strength' (0–100) hay xếp hạng mới cho Nguyên/Kỵ Thần — chỉ luận định tính từ các state/interactions đã cho.",
       "- Có dữ kiện thì luận; KHÔNG có (mảng rỗng / trường vắng) thì nói đúng là 'không có', KHÔNG bịa. Kết quả engine/rule ưu tiên hơn mọi án lệ tham khảo.",
+    );
+  }
+
+  // CÂN LỰC HÀO (HaoStrength) — trạng thái LỰC deterministic của Dụng/Nguyên/Kỵ Thần (module dùng chung).
+  // Giúp AI luận mạnh/yếu theo state engine tính sẵn, KHÔNG tự chấm Vượng/Suy. Mô hình chuỗi Kỵ→Nguyên→Dụng.
+  if (fourGods && fourGods.dungThanNguHanh) {
+    const dtR = resolveDungThan(payload.cast.chinh, q.dung_than_hint);
+    const canLuc: Array<{ vaiTro: string } & ReturnType<typeof canLucHao>> = [];
+    if (dtR.trangThai === "hien" && dtR.hao) canLuc.push({ vaiTro: "Dụng Thần", ...canLucHao(payload.cast, dtR.hao.hao) });
+    for (const n of fourGods.nguyenThan) canLuc.push({ vaiTro: "Nguyên Thần", ...canLucHao(payload.cast, n.hao) });
+    for (const k of fourGods.kyThan) canLuc.push({ vaiTro: "Kỵ Thần", ...canLucHao(payload.cast, k.hao) });
+    if (canLuc.length > 0) {
+      phan.push(
+        "",
+        "CÂN LỰC HÀO (engine/rule tính sẵn — trạng thái LỰC của từng hào, deterministic, KHÔNG phải điểm số):",
+        JSON.stringify(canLuc, null, 1),
+        "- Ưu tiên trạng thái deterministic đã tính ở đây; KHÔNG tự thay đổi kết luận Vượng/Suy của hào.",
+        "- `baseForce` = lực nền theo Nhật/Nguyệt (7 trường hợp đã khóa). `currentState.effective` đã tính nâng/hạ theo hóa biến; `reduced`=bị Phá/Hồi Đầu Khắc/Hóa Xung-Mộ-Tuyệt làm giảm nhưng GIỮ nền (không về 0); `restrained`=Hóa Hợp níu chân; `hidden`=Nhập Mộ ẩn tàng; `temporalExistence=EMPTY`=Không Vong (chưa hiện hữu, chờ Xuất Không/Ứng Kỳ) — KHÔNG coi là mất lực.",
+        "- Chuỗi Kỵ → Nguyên → Dụng: xét lực Kỵ Thần trước, rồi Kỵ tác động Nguyên, Nguyên tác động Dụng — KHÔNG mặc định 'Nguyên mạnh thì Dụng tốt'.",
+      );
+    }
+  }
+
+  // TAM HỢP — PHÂN LOẠI 6 THỂ (đủ / khuyết) + Ứng Kỳ. Bổ sung cho block TAM HỢP CỤC ở trên (chỉ cục đã thành).
+  const sauTamHop = phanLoaiSauTamHop(payload.cast);
+  if (sauTamHop.co) {
+    phan.push(
+      "",
+      "TAM HỢP — PHÂN LOẠI (engine/rule tính sẵn 6 thể: đủ / khuyết; kèm Ứng Kỳ khi suy được):",
+      JSON.stringify(sauTamHop.danhSach, null, 1),
+      "- `full=false` = cục KHUYẾT (còn thiếu 1 hào — an tĩnh/Phục Thần), CHƯA thành ngay: ứng khi gặp Chi ở `ungKyChi` (hoặc khi hào giữ chỗ được kích).",
+      "- TH6 nếu `phucLine.quaSuy=true`: Phục Thần quá suy, khó thoát ra → cục khó/không đủ lực thành, nói dè dặt.",
+      "- Chỉ dùng đúng các cục liệt kê ở đây; cục TỐT/XẤU tùy hành cục sinh/khắc Dụng Thần — tự luận, KHÔNG mặc định là điềm lành.",
     );
   }
 

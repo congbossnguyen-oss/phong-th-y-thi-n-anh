@@ -435,7 +435,7 @@ const LUC_THU_Y: Record<string, string> = {
 };
 
 /** Quan hệ ngũ hành của a ĐỐI VỚI b: a sinh b / a khắc b / b sinh a / b khắc a / cùng hành. */
-function nguHanhTac(a: NguHanh, b: NguHanh): NguHanhTacRelation {
+export function nguHanhTac(a: NguHanh, b: NguHanh): NguHanhTacRelation {
   if (a === b) return "ti-hoa";
   if (SINH[a] === b) return "a-sinh-b";
   if (KHAC[a] === b) return "a-khac-b";
@@ -443,7 +443,7 @@ function nguHanhTac(a: NguHanh, b: NguHanh): NguHanhTacRelation {
   if (KHAC[b] === a) return "b-khac-a";
   return "ti-hoa";
 }
-type NguHanhTacRelation = "a-sinh-b" | "a-khac-b" | "b-sinh-a" | "b-khac-a" | "ti-hoa";
+export type NguHanhTacRelation = "a-sinh-b" | "a-khac-b" | "b-sinh-a" | "b-khac-a" | "ti-hoa";
 
 // ---------------------------------------------------------------------------------------------
 // HÓA / HỒI ĐẦU (Phase 4) — extract quan hệ biến-hào-tác-động-lên-hào-gốc thành 1 helper dùng chung.
