@@ -14,6 +14,7 @@ import { ketLuanSuViec } from "../ket-luan-su-viec";
 import { synthesizeUngKy } from "../ung-ky-synthesis";
 import { synthesizeHinh } from "../hinh-relations";
 import { synthesizeCuuThan } from "../cuu-than";
+import { synthesizeHaoTimeFacts } from "../hao-time-relations";
 import { phanLoaiSauTamHop } from "../../luc-hao-tam-hop-cuc";
 import { quyTacGiongVan } from "../giong-van";
 import { TRI_THUC_LOI } from "./kien-thuc";
@@ -218,6 +219,19 @@ export function userPrompt(payload: QuanSuInterpretationPayload, moTa?: string, 
         JSON.stringify(cuu, null, 1),
         "- Cừu Thần là 'kẻ thù gián tiếp' (nuôi Kỵ, chặn Nguyên). Đây là QUAN HỆ deterministic — KHÔNG tự thêm Cừu, KHÔNG đổi vai trò, KHÔNG coi Cừu = Kỵ Thần.",
         "- KHÔNG tự biến Cừu thành lực Suy/Hung hay verdict; KHÔNG dùng Cừu để đảo `conclusion`. Nguồn CHƯA khóa mức cát/hung cụ thể → chỉ MÔ TẢ quan hệ (Cừu sinh Kỵ nào, khắc Nguyên nào).",
+      );
+    }
+
+    // NHẬT / NGUYỆT — DETERMINISTIC FACTS (Phase 17) — quan hệ hào ↔ Nhật/Nguyệt, GIỮ RIÊNG hai nguồn.
+    const haoTime = synthesizeHaoTimeFacts(payload.cast, dtR2, fgForKetLuan);
+    if (haoTime.nhat.length > 0 || haoTime.nguyet.length > 0) {
+      phan.push(
+        "",
+        "NHẬT / NGUYỆT — QUAN HỆ FACT (engine tính sẵn; GIỮ RIÊNG hào↔Nhật Thần và hào↔Nguyệt Kiến):",
+        JSON.stringify(haoTime, null, 1),
+        "- Đây là QUAN HỆ deterministic. KHÔNG tự tính lại, KHÔNG đảo chiều sinh/khắc, KHÔNG GỘP Nhật với Nguyệt (giữ đúng 2 fact, vd 'Nhật sinh nhưng Nguyệt khắc').",
+        "- KHÔNG biến quan hệ thành kết luận: Nhật/Nguyệt sinh KHÔNG tự thành 'tốt', Nhật/Nguyệt Phá KHÔNG tự thành 'xấu' hay mất hết lực (Phá = giảm/tổn thương). Tổng hợp Vượng/Suy đã ở CÂN LỰC HÀO — KHÔNG override.",
+        "- Ám Động (hào vượng + Nhật xung) KHÁC Nhật Phá (hào suy + Nhật xung) — dùng đúng như engine đã gắn, KHÔNG tự đổi.",
       );
     }
   }
