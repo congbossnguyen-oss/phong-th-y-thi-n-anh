@@ -24,10 +24,10 @@ function castMau() {
 }
 
 /** Dụng Thần = Hào Thế (luôn hiện) → element xác định, tiện kiểm bất biến. */
-function fourGodsTheHao(): { fg: FourGods; dt: DungThanResolved; chinh: ReturnType<typeof castMau>["chinh"] } {
+function fourGodsTheHao(): { fg: FourGods; dt: DungThanResolved; chinh: ReturnType<typeof castMau>["chinh"]; cast: ReturnType<typeof castMau> } {
   const cast = castMau();
   const dt = resolveDungThan(cast.chinh, { kind: "the-hao" });
-  return { fg: resolveFourGods(cast.chinh, dt), dt, chinh: cast.chinh };
+  return { fg: resolveFourGods(cast, dt), dt, chinh: cast.chinh, cast };
 }
 
 describe("Phase 2 — Tứ Thần structured (Dụng → Nguyên/Kỵ; Cừu hoãn)", () => {
@@ -91,7 +91,7 @@ describe("Phase 2 — Tứ Thần structured (Dụng → Nguyên/Kỵ; Cừu ho�
   it("Không có candidate / Dụng Thần không hiện: dungThanNguHanh null, mảng rỗng", () => {
     const cast = castMau();
     const dtKhong: DungThanResolved = { hao: null, target: "Thê Tài", trangThai: "khong_hien", lyDo: "" };
-    const fg = resolveFourGods(cast.chinh, dtKhong);
+    const fg = resolveFourGods(cast, dtKhong);
     expect(fg.dungThanNguHanh).toBeNull();
     expect(fg.nguyenThan).toEqual([]);
     expect(fg.kyThan).toEqual([]);
@@ -103,7 +103,7 @@ describe("Phase 2 — Tứ Thần structured (Dụng → Nguyên/Kỵ; Cừu ho�
     const host = cast.chinh.hao.find((h) => h.phucThan);
     if (!host) return; // quẻ này không có Phục Thần — nhánh null/hien đã phủ; bỏ qua đúng "nếu hỗ trợ"
     const dtPhuc: DungThanResolved = { hao: host, target: host.phucThan!.lucThan, trangThai: "phuc_tang", lyDo: "" };
-    const fg = resolveFourGods(cast.chinh, dtPhuc);
+    const fg = resolveFourGods(cast, dtPhuc);
     // Không loại hào host (Dụng Thần là phục thần, không phải hào hiện) → derivation vẫn chạy.
     const { CHI_NGU_HANH } = await import("../bat-tu");
     expect(fg.dungThanNguHanh).toBe(CHI_NGU_HANH[host.phucThan!.chiIndex]);
@@ -112,7 +112,7 @@ describe("Phase 2 — Tứ Thần structured (Dụng → Nguyên/Kỵ; Cừu ho�
   it("determinism: cùng quẻ + cùng Dụng Thần → kết quả giống hệt", () => {
     const cast = castMau();
     const dt = resolveDungThan(cast.chinh, { kind: "the-hao" });
-    expect(resolveFourGods(cast.chinh, dt)).toEqual(resolveFourGods(cast.chinh, dt));
+    expect(resolveFourGods(cast, dt)).toEqual(resolveFourGods(cast, dt));
   });
 
   it("tích hợp: buildAdvisoryReport().fourGods có mặt và khớp resolveFourGods (không regression)", () => {
@@ -122,6 +122,46 @@ describe("Phase 2 — Tứ Thần structured (Dụng → Nguyên/Kỵ; Cừu ho�
     const report = buildAdvisoryReport(payload);
     expect(report.fourGods).toBeDefined();
     const dt = resolveDungThan(cast.chinh, payload.question.dung_than_hint);
-    expect(report.fourGods).toEqual(resolveFourGods(cast.chinh, dt));
+    expect(report.fourGods).toEqual(resolveFourGods(cast, dt));
+  });
+});
+
+describe("Phase 3 — four-god FACT signals (state + interactions, không scoring)", () => {
+  it("state fidelity: vuongSuy / khongVong / trườngSinh / Nguyệt-Nhật Phá đúng theo hào gốc", async () => {
+    const { fg, chinh, cast } = fourGodsTheHao();
+    const { tienThoaiCuaHao } = await import("../luc-hao-tien-thoai-than");
+    for (const m of [...fg.nguyenThan, ...fg.kyThan]) {
+      const h = chinh.hao.find((x) => x.hao === m.hao)!;
+      // state = FACT đã tính trên HaoInfo, không tính lại.
+      expect(m.state.vuongSuy).toBe(h.vuongSuy);
+      expect(m.state.khongVong).toBe(h.xunKong);
+      expect(m.state.truongSinh.nhat).toBe(h.growthDay);
+      expect(m.state.truongSinh.nguyet).toBe(h.growthMonth);
+      expect(m.state.nguyetPha).toBe(h.relations.some((r) => r.type === "Nguyệt Phá"));
+      expect(m.state.nhatPha).toBe(h.relations.some((r) => r.type === "Nhật Phá"));
+      // interactions = dữ liệu engine hiện có (không duplicate calc).
+      expect(m.interactions.nhatNguyet).toEqual(h.relations);
+      expect(m.interactions.tienThoai).toEqual(tienThoaiCuaHao(cast, h.hao));
+    }
+  });
+
+  it("KHÔNG có strength score / weight (Phase 3 chỉ expose FACT)", () => {
+    const { fg } = fourGodsTheHao();
+    for (const m of [...fg.nguyenThan, ...fg.kyThan]) {
+      for (const banned of ["strengthScore", "powerScore", "weight", "mucDoManh", "score", "diem"]) {
+        expect(m).not.toHaveProperty(banned);
+        expect(m.state).not.toHaveProperty(banned);
+      }
+    }
+  });
+
+  it("mỗi member có đủ state + interactions (schema đầy đủ)", () => {
+    const { fg } = fourGodsTheHao();
+    for (const m of [...fg.nguyenThan, ...fg.kyThan]) {
+      expect(m.state).toBeDefined();
+      expect(m.interactions).toBeDefined();
+      expect(m.interactions).toHaveProperty("nhatNguyet");
+      expect(m.interactions).toHaveProperty("tienThoai");
+    }
   });
 });
