@@ -21,6 +21,7 @@ import { tienThoaiCuaHao, type KetQuaTienThoaiHao } from "../luc-hao-tien-thoai-
 import { synthesizeKyNguyenDung, type KyNguyenDungSynthesis } from "./ky-nguyen-dung";
 import { ketLuanSuViec, type QuanSuConclusion } from "./ket-luan-su-viec";
 import { synthesizeUngKy, type UngKySynthesis } from "./ung-ky-synthesis";
+import { synthesizeHinh, type HinhResult } from "./hinh-relations";
 
 export type Verdict = "NEN" | "KHONG_NEN" | "NEN_CHO" | "CO_DIEU_KIEN" | "CHUA_DU_DU_LIEU";
 
@@ -72,6 +73,8 @@ export interface AdvisoryReport {
   ketLuanSuViec?: QuanSuConclusion;
   // 12. ỨNG KỲ SYNTHESIS (Phase 14, optional — backward compatible) — tổng hợp mốc thời gian deterministic.
   ungKy?: UngKySynthesis;
+  // 13. HÌNH RELATIONS (Phase 15, optional — backward compatible) — FACT quan hệ Hình (không verdict).
+  hinh?: HinhResult;
 
   // Cờ chất lượng
   coNhap: true; // trọng số chấm điểm là bản nháp — Thầy calibrate
@@ -671,6 +674,7 @@ export function buildAdvisoryReport(payload: QuanSuInterpretationPayload): Advis
     kyNguyenDung: synthesizeKyNguyenDung(payload.cast, resolved, fourGods),
     ketLuanSuViec: ketLuanSuViec(payload.cast, resolved, fourGods),
     ungKy: synthesizeUngKy(payload.cast, resolved, fourGods),
+    hinh: synthesizeHinh(payload.cast, resolved, fourGods),
     coNhap: true,
     proseLaDemo: true,
   };

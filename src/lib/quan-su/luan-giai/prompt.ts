@@ -12,6 +12,7 @@ import { canLucHao } from "../can-luc-hao";
 import { synthesizeKyNguyenDung } from "../ky-nguyen-dung";
 import { ketLuanSuViec } from "../ket-luan-su-viec";
 import { synthesizeUngKy } from "../ung-ky-synthesis";
+import { synthesizeHinh } from "../hinh-relations";
 import { phanLoaiSauTamHop } from "../../luc-hao-tam-hop-cuc";
 import { quyTacGiongVan } from "../giong-van";
 import { TRI_THUC_LOI } from "./kien-thuc";
@@ -191,6 +192,19 @@ export function userPrompt(payload: QuanSuInterpretationPayload, moTa?: string, 
         "- Nếu `status` = MULTIPLE_CANDIDATES hoặc UNRESOLVED (chưa có precedence để chốt): GIỮ NGUYÊN, nêu các cửa sổ thời gian, KHÔNG tự chốt một mốc. Chỉ nói mốc `primary` là chính khi engine đã đặt sẵn.",
         "- Ứng Kỳ KHÔNG được lật `conclusion`: nếu kết luận là bất lợi, mốc chỉ mô tả THỜI ĐIỂM (cửa sổ), không biến thành 'ứng kỳ tốt'. Không Vong = chờ Xuất Không (chưa hiện hữu), KHÔNG phải 'mất'.",
         "- `canAudit=true` (mốc dựa Nhập Mộ, engine còn nợ audit) → nói dè dặt ('có thể', 'thường rơi vào').",
+      );
+    }
+
+    // HÌNH — DETERMINISTIC FACT (Phase 15) — chỉ 2 bộ spec §3.7 khóa (Dần-Tỵ-Thân, Tý-Mão). Chỉ render khi có.
+    const hinh = synthesizeHinh(payload.cast, dtR2, fgForKetLuan);
+    if (hinh.relations.length > 0) {
+      phan.push(
+        "",
+        "HÌNH — QUAN HỆ FACT (engine tính sẵn theo spec — CHỈ là quan hệ, KHÔNG phải Khắc, KHÔNG phải verdict):",
+        JSON.stringify(hinh, null, 1),
+        "- Hình là QUAN HỆ deterministic engine đã xác định. KHÔNG tự thêm Hình, KHÔNG tự coi Hình = Khắc, KHÔNG biến Hình thành 'xấu/hung' hay lực Suy.",
+        "- Nguồn CHƯA khóa ý nghĩa cát/hung cụ thể của Hình → chỉ MÔ TẢ quan hệ (vd 'có Tam Hình Dần-Tỵ-Thân giữa các hào...'), KHÔNG dùng Hình để đảo `conclusion`.",
+        "- Chỉ dùng đúng các bộ Hình liệt kê ở đây (engine cố ý CHỈ xét Dần-Tỵ-Thân và Tý-Mão; Tự Hình / Sửu-Tuất-Mùi chưa khóa nguồn nên KHÔNG có — đừng tự thêm).",
       );
     }
   }
