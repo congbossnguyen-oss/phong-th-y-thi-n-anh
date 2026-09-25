@@ -24,6 +24,11 @@ import { synthesizeUngKy, type UngKySynthesis } from "./ung-ky-synthesis";
 import { synthesizeHinh, type HinhResult } from "./hinh-relations";
 import { synthesizeCuuThan, type CuuThanResult } from "./cuu-than";
 import { synthesizeHaoTimeFacts, type HaoTimeFacts } from "./hao-time-relations";
+import { canLucHao, type HaoStrengthState } from "./can-luc-hao";
+import { NGU_HANH_SINH, NGU_HANH_KHAC } from "./ngu-hanh";
+
+/** 1 dòng CÂN LỰC HÀO (Dụng/Nguyên/Kỵ) — precompute 1 lần để prompt serialize, tránh tính lại (Phase 19). */
+export type CanLucEntry = { vaiTro: "Dụng Thần" | "Nguyên Thần" | "Kỵ Thần" } & HaoStrengthState;
 
 export type Verdict = "NEN" | "KHONG_NEN" | "NEN_CHO" | "CO_DIEU_KIEN" | "CHUA_DU_DU_LIEU";
 
@@ -81,6 +86,8 @@ export interface AdvisoryReport {
   cuuThan?: CuuThanResult;
   // 15. HÀO ↔ NHẬT/NGUYỆT (Phase 17, optional — backward compatible) — FACT quan hệ, giữ riêng Nhật vs Nguyệt.
   haoTimeRelations?: HaoTimeFacts;
+  // 16. CÂN LỰC HÀO precompute (Phase 19) — Dụng/Nguyên/Kỵ, để prompt serialize không tính lại.
+  canLuc?: CanLucEntry[];
 
   // Cờ chất lượng
   coNhap: true; // trọng số chấm điểm là bản nháp — Thầy calibrate
@@ -88,9 +95,9 @@ export interface AdvisoryReport {
 }
 
 // ---------------------------------------------------------------------------------------------
-// Ngũ hành sinh/khắc (cho quan hệ Thế-Ứng).
-const SINH: Record<string, string> = { Mộc: "Hỏa", Hỏa: "Thổ", Thổ: "Kim", Kim: "Thủy", Thủy: "Mộc" };
-const KHAC: Record<string, string> = { Mộc: "Thổ", Thổ: "Thủy", Thủy: "Hỏa", Hỏa: "Kim", Kim: "Mộc" };
+// Ngũ hành sinh/khắc — dùng bảng CANONICAL quan-su (ngu-hanh.ts). KHÔNG định nghĩa lại (Phase 19).
+const SINH = NGU_HANH_SINH;
+const KHAC = NGU_HANH_KHAC;
 
 // ---------------------------------------------------------------------------------------------
 // Xác định hào Dụng Thần để chấm điểm — ĐỌC từ dung_than_hint (do engine/divination cung cấp),
@@ -664,6 +671,12 @@ export function buildAdvisoryReport(payload: QuanSuInterpretationPayload): Advis
   const ketLuan = suyKetLuan(resolved, cham);
   const fourGods = resolveFourGods(payload.cast, resolved);
 
+  // CÂN LỰC HÀO precompute (Phase 19) — tính 1 lần cho Dụng/Nguyên/Kỵ; prompt serialize lại, KHÔNG tính lại.
+  const canLuc: CanLucEntry[] = [];
+  if (resolved.trangThai === "hien" && resolved.hao) canLuc.push({ vaiTro: "Dụng Thần", ...canLucHao(payload.cast, resolved.hao.hao) });
+  for (const n of fourGods.nguyenThan) canLuc.push({ vaiTro: "Nguyên Thần", ...canLucHao(payload.cast, n.hao) });
+  for (const k of fourGods.kyThan) canLuc.push({ vaiTro: "Kỵ Thần", ...canLucHao(payload.cast, k.hao) });
+
   // Nếu chưa đủ dữ liệu, điểm để về ngưỡng thấp-trung tính (không khẳng định).
   const mucDoThuan = ketLuan === "CHUA_DU_DU_LIEU" ? Math.min(cham.diem, 45) : cham.diem;
 
@@ -685,6 +698,7 @@ export function buildAdvisoryReport(payload: QuanSuInterpretationPayload): Advis
     hinh: synthesizeHinh(payload.cast, resolved, fourGods),
     cuuThan: synthesizeCuuThan(payload.cast, fourGods),
     haoTimeRelations: synthesizeHaoTimeFacts(payload.cast, resolved, fourGods),
+    canLuc,
     coNhap: true,
     proseLaDemo: true,
   };

@@ -12,7 +12,7 @@
  * giống cách `chart-profile` đã làm với `suyDaiVanDuPhong`.
  */
 import type { QuanSuInterpretationPayload } from "../divination";
-import type { FourGods } from "../advisory-engine";
+import type { FourGods, AdvisoryReport } from "../advisory-engine";
 import { goiLuanGiaiKinhDich, type LuanGiaiKinhDich, type KetLuanKinhDich } from "./llm";
 import { systemPromptQuyTac, systemPromptTriThuc, userPrompt } from "./prompt";
 
@@ -25,6 +25,8 @@ export interface TuyChonLuan {
   moTa?: string;
   /** Tứ Thần (Dụng/Nguyên/Kỵ) do advisory-engine tính sẵn — để AI luận, không tự dẫn xuất lại. */
   fourGods?: FourGods;
+  /** AdvisoryReport đã tính sẵn (Phase 19) — prompt SERIALIZE synthesis từ đây, KHÔNG tính lại. */
+  report?: AdvisoryReport;
 }
 
 export interface KetQuaLuanGiai {
@@ -48,7 +50,7 @@ export async function luanGiaiBangAI(
   const ketQua = await goiLuanGiaiKinhDich(
     systemPromptTriThuc(),
     systemPromptQuyTac(tuyChon.gioiTinh, payload.question.safety_level),
-    userPrompt(payload, tuyChon.moTa, tuyChon.fourGods),
+    userPrompt(payload, tuyChon.moTa, tuyChon.fourGods, tuyChon.report),
   );
 
   if (!ketQua.ok) {
