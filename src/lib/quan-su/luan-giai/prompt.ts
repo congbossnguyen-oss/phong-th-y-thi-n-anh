@@ -11,6 +11,7 @@ import { getPhiPhucRelations, resolveDungThan, resolveFourGods } from "../adviso
 import { canLucHao } from "../can-luc-hao";
 import { synthesizeKyNguyenDung } from "../ky-nguyen-dung";
 import { ketLuanSuViec } from "../ket-luan-su-viec";
+import { synthesizeUngKy } from "../ung-ky-synthesis";
 import { phanLoaiSauTamHop } from "../../luc-hao-tam-hop-cuc";
 import { quyTacGiongVan } from "../giong-van";
 import { TRI_THUC_LOI } from "./kien-thuc";
@@ -178,6 +179,20 @@ export function userPrompt(payload: QuanSuInterpretationPayload, moTa?: string, 
       "- `conclusion` chỉ là khung; nhiệm vụ của bạn là DIỄN ĐẠT, NỐI MẠCH, giải thích và đưa ngữ cảnh đời thực — không lật ngược kết luận engine.",
       "- FAVORABLE_WITH_DELAY = có lực/có hướng nhưng còn chờ (Không Vong/Nhập Mộ/Ứng Kỳ); nói rõ 'chờ đúng thời' thay vì 'thất bại'.",
     );
+
+    // ỨNG KỲ — TỔNG HỢP (Phase 14) — mốc thời gian deterministic (candidate), KHÔNG override conclusion.
+    const ungKy = synthesizeUngKy(payload.cast, dtR2, fgForKetLuan);
+    if (ungKy.candidates.length > 0) {
+      phan.push(
+        "",
+        "ỨNG KỲ — TỔNG HỢP (engine tổng hợp mốc thời gian deterministic từ Không Vong/Mộ/Tam Hợp/Tiến-Thoái/động):",
+        JSON.stringify({ status: ungKy.status, primary: ungKy.primary, candidates: ungKy.candidates, reasons: ungKy.reasons }, null, 1),
+        "- Ứng Kỳ là TEMPORAL CANDIDATE (khả năng), KHÔNG phải 'chắc chắn xảy ra ngày X'. Chỉ dùng đúng các mốc/Chi liệt kê ở đây; KHÔNG tự chọn, đổi hoặc phát minh mốc mới.",
+        "- Nếu `status` = MULTIPLE_CANDIDATES hoặc UNRESOLVED (chưa có precedence để chốt): GIỮ NGUYÊN, nêu các cửa sổ thời gian, KHÔNG tự chốt một mốc. Chỉ nói mốc `primary` là chính khi engine đã đặt sẵn.",
+        "- Ứng Kỳ KHÔNG được lật `conclusion`: nếu kết luận là bất lợi, mốc chỉ mô tả THỜI ĐIỂM (cửa sổ), không biến thành 'ứng kỳ tốt'. Không Vong = chờ Xuất Không (chưa hiện hữu), KHÔNG phải 'mất'.",
+        "- `canAudit=true` (mốc dựa Nhập Mộ, engine còn nợ audit) → nói dè dặt ('có thể', 'thường rơi vào').",
+      );
+    }
   }
 
   // TAM HỢP — PHÂN LOẠI 6 THỂ (đủ / khuyết) + Ứng Kỳ. Bổ sung cho block TAM HỢP CỤC ở trên (chỉ cục đã thành).
