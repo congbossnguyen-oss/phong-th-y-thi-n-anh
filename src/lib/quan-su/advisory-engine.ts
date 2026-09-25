@@ -23,6 +23,7 @@ import { ketLuanSuViec, type QuanSuConclusion } from "./ket-luan-su-viec";
 import { synthesizeUngKy, type UngKySynthesis } from "./ung-ky-synthesis";
 import { synthesizeHinh, type HinhResult } from "./hinh-relations";
 import { synthesizeCuuThan, type CuuThanResult } from "./cuu-than";
+import { synthesizeHaoTimeFacts, type HaoTimeFacts } from "./hao-time-relations";
 
 export type Verdict = "NEN" | "KHONG_NEN" | "NEN_CHO" | "CO_DIEU_KIEN" | "CHUA_DU_DU_LIEU";
 
@@ -78,6 +79,8 @@ export interface AdvisoryReport {
   hinh?: HinhResult;
   // 14. CỪU THẦN (Phase 16, optional — backward compatible) — FACT ngữ cảnh (sinh Kỵ, khắc Nguyên; KHÔNG vào chuỗi).
   cuuThan?: CuuThanResult;
+  // 15. HÀO ↔ NHẬT/NGUYỆT (Phase 17, optional — backward compatible) — FACT quan hệ, giữ riêng Nhật vs Nguyệt.
+  haoTimeRelations?: HaoTimeFacts;
 
   // Cờ chất lượng
   coNhap: true; // trọng số chấm điểm là bản nháp — Thầy calibrate
@@ -681,6 +684,7 @@ export function buildAdvisoryReport(payload: QuanSuInterpretationPayload): Advis
     ungKy: synthesizeUngKy(payload.cast, resolved, fourGods),
     hinh: synthesizeHinh(payload.cast, resolved, fourGods),
     cuuThan: synthesizeCuuThan(payload.cast, fourGods),
+    haoTimeRelations: synthesizeHaoTimeFacts(payload.cast, resolved, fourGods),
     coNhap: true,
     proseLaDemo: true,
   };
