@@ -74,6 +74,14 @@ const choDoiTuongKhac = dungThanHintFor(question.category).kind === "the-hao";
 
           <p class="qs-eyebrow">Bước 3 · Cách lập quẻ</p>
           <p class="qs-sub">Chọn 1 trong 3 cách lập quẻ Kinh Dịch — kết quả luận giải như nhau, chỉ khác cách nhập.</p>
+          {/* Hướng dẫn đặt câu hỏi (Thầy, 2026-09-25) — chỉ nên động tâm hỏi 1 việc cho 1 quẻ, và
+              riêng Mai Hoa Dịch Số lập quẻ theo GIỜ nên trong cùng 1 canh giờ chỉ nên hỏi 1 việc
+              (gieo lại việc khác cùng canh giờ dễ ra quẻ giống/gần giống, không phản ánh đúng việc
+              mới); các cách còn lại không lệ thuộc giờ nên gieo nhiều quẻ cho nhiều việc trong cùng
+              canh giờ vẫn được. */}
+          <div class="qs-notice" style="margin-bottom:1rem;">
+            Chỉ nên tĩnh tâm hỏi <strong>một việc</strong> cho <strong>một quẻ</strong>. Nếu chọn cách <strong>Mai Hoa Dịch Số</strong>, trong cùng <strong>một canh giờ</strong> chỉ nên hỏi một việc; các cách gieo quẻ khác (không dựa theo giờ) vẫn gieo được nhiều quẻ cho nhiều việc khác nhau trong cùng canh giờ.
+          </div>
           <div class="qs-methods" id="qs-methods">
             <button type="button" class="qs-method active" data-method="gieo-tay">
               <span class="ti">Gieo đồng xu</span>
