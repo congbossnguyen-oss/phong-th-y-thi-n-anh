@@ -10,6 +10,7 @@ import type { FourGods } from "../advisory-engine";
 import { getPhiPhucRelations, resolveDungThan, resolveFourGods } from "../advisory-engine";
 import { canLucHao } from "../can-luc-hao";
 import { synthesizeKyNguyenDung } from "../ky-nguyen-dung";
+import { ketLuanSuViec } from "../ket-luan-su-viec";
 import { phanLoaiSauTamHop } from "../../luc-hao-tam-hop-cuc";
 import { quyTacGiongVan } from "../giong-van";
 import { TRI_THUC_LOI } from "./kien-thuc";
@@ -148,6 +149,29 @@ export function userPrompt(payload: QuanSuInterpretationPayload, moTa?: string, 
         "- Đọc theo CHUỖI: lực Kỵ → Kỵ tác động Nguyên → Nguyên tác động Dụng. Nếu Kỵ 'tham sinh' Nguyên (Kỵ sinh Nguyên còn lực) thì Dụng được thông quan bảo vệ; nếu không có Nguyên, Kỵ khắc thẳng Dụng.",
       );
     }
+
+    // KẾT LUẬN SỰ VIỆC (Phase 12) — tầng synthesis cuối. Deterministic; AI chỉ diễn đạt, KHÔNG đổi trạng thái.
+    const fgForKetLuan = resolveFourGods(payload.cast, dtR2);
+    const conclusion = ketLuanSuViec(payload.cast, dtR2, fgForKetLuan);
+    phan.push(
+      "",
+      "KẾT LUẬN SỰ VIỆC (engine/rule tổng hợp deterministic — Dụng Thần + Kỵ/Nguyên + Thế/Ứng + ngữ cảnh):",
+      JSON.stringify(
+        {
+          dung_than: conclusion.dungThan, // strength/support/protection/temporal/conclusion + reasons
+          the_ung: conclusion.theUng, // tương quan Thế↔Ứng (FACT, không tốt/xấu tuyệt đối)
+          contextual: conclusion.contextualSignals, // Tam Hợp / Phản Ngâm / Phục Ngâm nếu có
+          conclusion: conclusion.conclusion, // FAVORABLE / FAVORABLE_WITH_DELAY / MIXED / DIFFICULT / UNFAVORABLE / UNRESOLVED
+          reasons: conclusion.reasons,
+        },
+        null,
+        1,
+      ),
+      "- Đây là KẾT QUẢ DETERMINISTIC của engine. KHÔNG tự thay đổi trạng thái Dụng Thần, Kỵ/Nguyên/Dụng, Thế/Ứng hay Vượng/Suy; KHÔNG tự tính lại Ngũ hành.",
+      "- Khi `conclusion` = MIXED (tín hiệu mâu thuẫn) hoặc UNRESOLVED (chưa đủ dữ liệu): GIỮ NGUYÊN trạng thái đó, giải thích nguyên nhân — KHÔNG ép thành tốt/xấu.",
+      "- `conclusion` chỉ là khung; nhiệm vụ của bạn là DIỄN ĐẠT, NỐI MẠCH, giải thích và đưa ngữ cảnh đời thực — không lật ngược kết luận engine.",
+      "- FAVORABLE_WITH_DELAY = có lực/có hướng nhưng còn chờ (Không Vong/Nhập Mộ/Ứng Kỳ); nói rõ 'chờ đúng thời' thay vì 'thất bại'.",
+    );
   }
 
   // TAM HỢP — PHÂN LOẠI 6 THỂ (đủ / khuyết) + Ứng Kỳ. Bổ sung cho block TAM HỢP CỤC ở trên (chỉ cục đã thành).

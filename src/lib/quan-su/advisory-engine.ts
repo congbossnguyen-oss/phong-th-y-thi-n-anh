@@ -19,6 +19,7 @@ import { CHI_NGU_HANH } from "../bat-tu";
 import type { TruongSinhStage } from "../bat-tu";
 import { tienThoaiCuaHao, type KetQuaTienThoaiHao } from "../luc-hao-tien-thoai-than";
 import { synthesizeKyNguyenDung, type KyNguyenDungSynthesis } from "./ky-nguyen-dung";
+import { ketLuanSuViec, type QuanSuConclusion } from "./ket-luan-su-viec";
 
 export type Verdict = "NEN" | "KHONG_NEN" | "NEN_CHO" | "CO_DIEU_KIEN" | "CHUA_DU_DU_LIEU";
 
@@ -66,6 +67,8 @@ export interface AdvisoryReport {
   fourGods: FourGods;
   // 10. KỴ → NGUYÊN → DỤNG synthesis (Phase 11, optional — backward compatible). null khi Dụng không hiện.
   kyNguyenDung?: KyNguyenDungSynthesis;
+  // 11. KẾT LUẬN SỰ VIỆC (Phase 12, optional — backward compatible) — tầng synthesis Dụng Thần → kết luận.
+  ketLuanSuViec?: QuanSuConclusion;
 
   // Cờ chất lượng
   coNhap: true; // trọng số chấm điểm là bản nháp — Thầy calibrate
@@ -663,6 +666,7 @@ export function buildAdvisoryReport(payload: QuanSuInterpretationPayload): Advis
     luanGiaiChiTiet: luanChiTiet(payload, resolved),
     fourGods,
     kyNguyenDung: synthesizeKyNguyenDung(payload.cast, resolved, fourGods),
+    ketLuanSuViec: ketLuanSuViec(payload.cast, resolved, fourGods),
     coNhap: true,
     proseLaDemo: true,
   };
