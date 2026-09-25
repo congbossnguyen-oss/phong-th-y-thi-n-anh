@@ -162,6 +162,70 @@ describe("Phase 3 — four-god FACT signals (state + interactions, không scorin
       expect(m.interactions).toBeDefined();
       expect(m.interactions).toHaveProperty("nhatNguyet");
       expect(m.interactions).toHaveProperty("tienThoai");
+      expect(m.interactions).toHaveProperty("hoa"); // Phase 4
     }
+  });
+});
+
+describe("Phase 4 — Hóa (hồi đầu) helper: extract-and-reuse, behavior-preserving", () => {
+  // Oracle = CHÍNH công thức inline cũ (nguHanhTac(biến, gốc)) tái dựng độc lập trong test.
+  const rel = (a: NguHanh, b: NguHanh): "a-sinh-b" | "a-khac-b" | "b-sinh-a" | "b-khac-a" | "ti-hoa" => {
+    if (a === b) return "ti-hoa";
+    if (SINH[a] === b) return "a-sinh-b";
+    if (KHAC[a] === b) return "a-khac-b";
+    if (SINH[b] === a) return "b-sinh-a";
+    if (KHAC[b] === a) return "b-khac-a";
+    return "ti-hoa";
+  };
+
+  it("getHoaRelation khớp CHÍNH XÁC công thức cũ nguHanhTac(biến, gốc) cho cả 6 hào", async () => {
+    const { getHoaRelation } = await import("./advisory-engine");
+    const cast = castMau();
+    for (let hao = 1; hao <= 6; hao++) {
+      const hg = cast.chinh.hao[hao - 1]!;
+      const hb = cast.bien?.hao[hao - 1] ?? null;
+      const r = getHoaRelation(cast, hao);
+      if (!hb) {
+        expect(r.coBien).toBe(false);
+        expect(r.hoiDau).toBeNull();
+        expect(r.quanHeBienVoiGoc).toBeNull();
+      } else {
+        const qh = rel(hb.nguHanh, hg.nguHanh);
+        expect(r.quanHeBienVoiGoc).toBe(qh);
+        // Chỉ 2 hướng có tên như engine cũ: a-sinh-b → HỒI ĐẦU SINH, a-khac-b → HỒI ĐẦU KHẮC, còn lại null.
+        expect(r.hoiDau).toBe(qh === "a-sinh-b" ? "HOI_DAU_SINH" : qh === "a-khac-b" ? "HOI_DAU_KHAC" : null);
+        expect(r.nguHanhBien).toBe(hb.nguHanh);
+      }
+      expect(r.nguHanhGoc).toBe(hg.nguHanh);
+      expect(r.isDong).toBe(hg.isDong);
+    }
+  });
+
+  it("getHoaRelation deterministic", async () => {
+    const { getHoaRelation } = await import("./advisory-engine");
+    const cast = castMau();
+    expect(getHoaRelation(cast, 3)).toEqual(getHoaRelation(cast, 3));
+  });
+
+  it("four-god member.interactions.hoa khớp getHoaRelation của đúng hào (không duplicate calc)", async () => {
+    const { getHoaRelation } = await import("./advisory-engine");
+    const { fg, cast } = fourGodsTheHao();
+    for (const m of [...fg.nguyenThan, ...fg.kyThan]) {
+      expect(m.interactions.hoa).toEqual(getHoaRelation(cast, m.hao));
+    }
+  });
+
+  it("advisory report vẫn build được + fourGods.interactions.hoa có mặt (không regression)", () => {
+    const q = getQuestion("vay-tien")!;
+    const cast = castMau();
+    const payload = buildInterpretationPayload(q, cast, { method: "luc-hao-tosses" });
+    const report = buildAdvisoryReport(payload);
+    for (const m of [...report.fourGods.nguyenThan, ...report.fourGods.kyThan]) {
+      expect(m.interactions.hoa).toBeDefined();
+      expect(m.interactions.hoa).toHaveProperty("hoiDau");
+    }
+    // Backward-compat: các trường verdict/điểm vẫn nguyên kiểu (refactor Hóa chỉ đổi prose nội bộ).
+    expect(typeof report.mucDoThuan).toBe("number");
+    expect(Array.isArray(report.bangChamDiem)).toBe(true);
   });
 });

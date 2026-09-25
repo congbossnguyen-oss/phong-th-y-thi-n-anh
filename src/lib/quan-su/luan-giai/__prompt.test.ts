@@ -90,8 +90,8 @@ describe("dựng prompt luận giải", () => {
     const fg = {
       dungThanNguHanh: "Kim" as const,
       trangThai: "hien" as const,
-      nguyenThan: [{ hao: 4, lucThan: "Phụ Mẫu" as const, nguHanh: "Thổ" as const, quanHe: "sinh-dung-than" as const, isDong: false, lyDo: "Thổ sinh Kim (Dụng Thần) → Nguyên Thần.", state: { vuongSuy: "Vượng" as const, truongSinh: { nhat: "Trường Sinh" as const, nguyet: "Trường Sinh" as const }, khongVong: false, nguyetPha: false, nhatPha: false }, interactions: { nhatNguyet: [], tienThoai: null } }],
-      kyThan: [{ hao: 2, lucThan: "Quan Quỷ" as const, nguHanh: "Hỏa" as const, quanHe: "khac-dung-than" as const, isDong: true, lyDo: "Hỏa khắc Kim (Dụng Thần) → Kỵ Thần.", state: { vuongSuy: "Tù" as const, truongSinh: { nhat: "Tử" as const, nguyet: "Tử" as const }, khongVong: false, nguyetPha: false, nhatPha: false }, interactions: { nhatNguyet: [], tienThoai: null } }],
+      nguyenThan: [{ hao: 4, lucThan: "Phụ Mẫu" as const, nguHanh: "Thổ" as const, quanHe: "sinh-dung-than" as const, isDong: false, lyDo: "Thổ sinh Kim (Dụng Thần) → Nguyên Thần.", state: { vuongSuy: "Vượng" as const, truongSinh: { nhat: "Trường Sinh" as const, nguyet: "Trường Sinh" as const }, khongVong: false, nguyetPha: false, nhatPha: false }, interactions: { nhatNguyet: [], tienThoai: null, hoa: { hao: 4, isDong: false, coBien: false, nguHanhGoc: "Thổ" as const, nguHanhBien: null, hoiDau: null, quanHeBienVoiGoc: null } } }],
+      kyThan: [{ hao: 2, lucThan: "Quan Quỷ" as const, nguHanh: "Hỏa" as const, quanHe: "khac-dung-than" as const, isDong: true, lyDo: "Hỏa khắc Kim (Dụng Thần) → Kỵ Thần.", state: { vuongSuy: "Tù" as const, truongSinh: { nhat: "Tử" as const, nguyet: "Tử" as const }, khongVong: false, nguyetPha: false, nhatPha: false }, interactions: { nhatNguyet: [], tienThoai: null, hoa: { hao: 2, isDong: true, coBien: true, nguHanhGoc: "Hỏa" as const, nguHanhBien: "Thủy" as const, hoiDau: "HOI_DAU_KHAC" as const, quanHeBienVoiGoc: "a-khac-b" as const } } }],
       cuuThan: { resolved: false as const, lyDo: "Cừu Thần hoãn." },
     };
     const co = userPrompt(p, undefined, fg);
