@@ -5,9 +5,9 @@
 // quan hệ + role + provenance.
 //
 // NGUỒN (khóa trong `docs/quan-su-thien-anh/LUAN_QUE_LUC_HAO_SPEC.md` §3.7):
-//   • Tam Hình THẬT: Dần-Tị-Thân (cần đủ CẢ 3 chi).
+//   • Tam Hình THẬT: Dần-Tỵ-Thân (cần đủ CẢ 3 chi).
 //   • Tương Hình: Tý-Mão (cặp 2 chi).
-// §348 (mục "còn thiếu") của CHÍNH spec ghi rõ: "Danh sách đầy đủ Tam Hình ngoài Dần-Tị-Thân và Tý-Mão
+// §348 (mục "còn thiếu") của CHÍNH spec ghi rõ: "Danh sách đầy đủ Tam Hình ngoài Dần-Tỵ-Thân và Tý-Mão
 //   — cần đối chiếu thêm nguồn khác." ⇒ Sửu-Tuất-Mùi và Tự Hình (Thìn/Ngọ/Dậu/Hợi) CHƯA KHÓA →
 //   KHÔNG implement (báo DATA GAP), dù án lệ có nhắc "Dậu/Hợi tự hình" (án lệ < spec).
 // PHẠM VI: chỉ giữa 6 hào CHÍNH (chi-based, gồm cả hào động/tĩnh). Nhật/Nguyệt/năm/hào-biến/Phục làm
@@ -29,7 +29,7 @@ export interface HinhMember {
 
 export interface HinhRelation {
   kind: HinhKind;
-  label: string; // "Tam Hình Dần-Tị-Thân" / "Tương Hình Tý-Mão"
+  label: string; // "Tam Hình Dần-Tỵ-Thân" / "Tương Hình Tý-Mão"
   members: HinhMember[];
   lineIndices: number[];
   chi: string[];
@@ -81,7 +81,7 @@ export function detectHinh(cast: FullCastResult, roleOf: (lineIndex: number) => 
   const relations: HinhRelation[] = [];
   const present = new Set(cast.chinh.hao.map((h) => h.chiIndex));
 
-  // Tam Hình Dần-Tị-Thân — cần đủ CẢ 3 chi có mặt trên quẻ.
+  // Tam Hình Dần-Tỵ-Thân — cần đủ CẢ 3 chi có mặt trên quẻ.
   if (TAM_HINH_CHI.every((c) => present.has(c))) {
     const members = linesWithChi(cast, TAM_HINH_CHI).map((m) => ({ ...m, role: roleOf(m.lineIndex) }));
     relations.push({
@@ -90,7 +90,7 @@ export function detectHinh(cast: FullCastResult, roleOf: (lineIndex: number) => 
       members,
       lineIndices: members.map((m) => m.lineIndex),
       chi: ["Dần", "Tỵ", "Thân"],
-      reason: [`Đủ 3 chi Dần-Tị-Thân trên quẻ (hào ${members.map((m) => `${m.lineIndex}=${m.chi}`).join(", ")}) → Tam Hình thật (FACT quan hệ, KHÔNG phải Khắc, KHÔNG tự phán cát/hung).`],
+      reason: [`Đủ 3 chi Dần-Tỵ-Thân trên quẻ (hào ${members.map((m) => `${m.lineIndex}=${m.chi}`).join(", ")}) → Tam Hình thật (FACT quan hệ, KHÔNG phải Khắc, KHÔNG tự phán cát/hung).`],
     });
   }
 
@@ -108,7 +108,7 @@ export function detectHinh(cast: FullCastResult, roleOf: (lineIndex: number) => 
   }
 
   const ghiChu = relations.length === 0
-    ? ["Không có Tam Hình Dần-Tị-Thân hay Tương Hình Tý-Mão trên quẻ (chỉ xét 2 bộ spec §3.7 đã khóa)."]
+    ? ["Không có Tam Hình Dần-Tỵ-Thân hay Tương Hình Tý-Mão trên quẻ (chỉ xét 2 bộ spec §3.7 đã khóa)."]
     : ["Hình là QUAN HỆ FACT (spec §3.7) — KHÔNG tự coi là Khắc, KHÔNG tự làm Suy/Hung, KHÔNG override kết luận. Ý nghĩa cát/hung chưa được nguồn khóa."];
   // Ghi chú giới hạn (spec §348): các bộ Hình khác chưa khóa → cố ý KHÔNG detect.
   ghiChu.push("Giới hạn (spec §348): Sửu-Tuất-Mùi và Tự Hình (Thìn/Ngọ/Dậu/Hợi) CHƯA khóa nguồn → không xét. Hình với Nhật/Nguyệt/năm/hào-biến/Phục cũng chưa khóa điều kiện → không xét.");

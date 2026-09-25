@@ -6,7 +6,7 @@
  * liệu huyền học nào. Thiếu dữ liệu thì im lặng ở phần đó, không được suy đoán bù.
  */
 import type { QuanSuInterpretationPayload } from "../divination";
-import type { FourGods } from "../advisory-engine";
+import type { FourGods, AdvisoryReport, CanLucEntry } from "../advisory-engine";
 import { getPhiPhucRelations, resolveDungThan, resolveFourGods } from "../advisory-engine";
 import { canLucHao } from "../can-luc-hao";
 import { synthesizeKyNguyenDung } from "../ky-nguyen-dung";
@@ -76,7 +76,7 @@ export function systemPromptQuyTac(gioiTinh?: "Nam" | "Nữ", mucNhayCam?: "thuo
 }
 
 /** Gói dữ liệu quẻ thành phần người dùng. Giữ nguyên JSON để model không hiểu sai. */
-export function userPrompt(payload: QuanSuInterpretationPayload, moTa?: string, fourGods?: FourGods): string {
+export function userPrompt(payload: QuanSuInterpretationPayload, moTa?: string, fourGods?: FourGods, report?: AdvisoryReport): string {
   const q = payload.question;
   const phan: string[] = [
     `CÂU HỎI CỦA NGƯỜI HỎI: ${q.title}`,
@@ -94,16 +94,34 @@ export function userPrompt(payload: QuanSuInterpretationPayload, moTa?: string, 
     JSON.stringify(payload.cast, null, 1),
   );
 
-  if (fourGods && fourGods.dungThanNguHanh) {
+  // ---- SYNTHESIS BUNDLE (Phase 19 hardening) — CHỈ tính 1 lần. Nếu có `report` (đã tính ở buildAdvisoryReport)
+  // thì SERIALIZE lại, KHÔNG tính lại; nếu không (test cũ gọi userPrompt trực tiếp) → fallback tính tại chỗ.
+  const activeFg = report?.fourGods ?? fourGods;
+  const bundle = activeFg && activeFg.dungThanNguHanh
+    ? report
+      ? { fg: report.fourGods, canLuc: report.canLuc ?? [], knd: report.kyNguyenDung!, conclusion: report.ketLuanSuViec!, ungKy: report.ungKy!, hinh: report.hinh!, cuu: report.cuuThan!, haoTime: report.haoTimeRelations! }
+      : (() => {
+          const dt = resolveDungThan(payload.cast.chinh, q.dung_than_hint);
+          const fgc = resolveFourGods(payload.cast, dt);
+          const cl: CanLucEntry[] = [];
+          if (dt.trangThai === "hien" && dt.hao) cl.push({ vaiTro: "Dụng Thần", ...canLucHao(payload.cast, dt.hao.hao) });
+          for (const n of fgc.nguyenThan) cl.push({ vaiTro: "Nguyên Thần", ...canLucHao(payload.cast, n.hao) });
+          for (const k of fgc.kyThan) cl.push({ vaiTro: "Kỵ Thần", ...canLucHao(payload.cast, k.hao) });
+          return { fg: fgc, canLuc: cl, knd: synthesizeKyNguyenDung(payload.cast, dt, fgc), conclusion: ketLuanSuViec(payload.cast, dt, fgc), ungKy: synthesizeUngKy(payload.cast, dt, fgc), hinh: synthesizeHinh(payload.cast, dt, fgc), cuu: synthesizeCuuThan(payload.cast, fgc), haoTime: synthesizeHaoTimeFacts(payload.cast, dt, fgc) };
+        })()
+    : null;
+
+  if (bundle) {
+    const { fg, canLuc, knd, conclusion, ungKy, hinh, cuu, haoTime } = bundle;
     phan.push(
       "",
       "TỨ THẦN (engine/rule ĐÃ tính sẵn từ Dụng Thần — KHÔNG tự dẫn xuất lại, KHÔNG tự thêm hào):",
       JSON.stringify(
         {
-          dung_than_ngu_hanh: fourGods.dungThanNguHanh,
-          nguyen_than: fourGods.nguyenThan, // hào SINH Dụng Thần (phò trợ)
-          ky_than: fourGods.kyThan, // hào KHẮC Dụng Thần (cản phá)
-          cuu_than: "chưa dùng (hoãn — sẽ bổ sung ở phase sau)",
+          dung_than_ngu_hanh: fg.dungThanNguHanh,
+          nguyen_than: fg.nguyenThan, // hào SINH Dụng Thần (phò trợ)
+          ky_than: fg.kyThan, // hào KHẮC Dụng Thần (cản phá)
+          cuu_than: "xem block CỪU THẦN riêng bên dưới (engine đã tính)",
         },
         null,
         1,
@@ -113,16 +131,8 @@ export function userPrompt(payload: QuanSuInterpretationPayload, moTa?: string, 
       "- KHÔNG tự tạo điểm số 'strength' (0–100) hay xếp hạng mới cho Nguyên/Kỵ Thần — chỉ luận định tính từ các state/interactions đã cho.",
       "- Có dữ kiện thì luận; KHÔNG có (mảng rỗng / trường vắng) thì nói đúng là 'không có', KHÔNG bịa. Kết quả engine/rule ưu tiên hơn mọi án lệ tham khảo.",
     );
-  }
 
-  // CÂN LỰC HÀO (HaoStrength) — trạng thái LỰC deterministic của Dụng/Nguyên/Kỵ Thần (module dùng chung).
-  // Giúp AI luận mạnh/yếu theo state engine tính sẵn, KHÔNG tự chấm Vượng/Suy. Mô hình chuỗi Kỵ→Nguyên→Dụng.
-  if (fourGods && fourGods.dungThanNguHanh) {
-    const dtR = resolveDungThan(payload.cast.chinh, q.dung_than_hint);
-    const canLuc: Array<{ vaiTro: string } & ReturnType<typeof canLucHao>> = [];
-    if (dtR.trangThai === "hien" && dtR.hao) canLuc.push({ vaiTro: "Dụng Thần", ...canLucHao(payload.cast, dtR.hao.hao) });
-    for (const n of fourGods.nguyenThan) canLuc.push({ vaiTro: "Nguyên Thần", ...canLucHao(payload.cast, n.hao) });
-    for (const k of fourGods.kyThan) canLuc.push({ vaiTro: "Kỵ Thần", ...canLucHao(payload.cast, k.hao) });
+    // CÂN LỰC HÀO (HaoStrength) — trạng thái LỰC deterministic của Dụng/Nguyên/Kỵ Thần (module dùng chung).
     if (canLuc.length > 0) {
       phan.push(
         "",
@@ -134,10 +144,7 @@ export function userPrompt(payload: QuanSuInterpretationPayload, moTa?: string, 
       );
     }
 
-    // KỴ → NGUYÊN → DỤNG SYNTHESIS (Phase 11) — kết quả deterministic của chuỗi, để AI KHÔNG tự phát minh
-    // lại quan hệ sinh/khắc hay Vượng/Suy.
-    const dtR2 = resolveDungThan(payload.cast.chinh, q.dung_than_hint);
-    const knd = synthesizeKyNguyenDung(payload.cast, dtR2, resolveFourGods(payload.cast, dtR2));
+    // KỴ → NGUYÊN → DỤNG SYNTHESIS (Phase 11) — dùng `knd` từ bundle (đã tính 1 lần).
     if (knd.currentState !== "NO_DIRECT_CHAIN") {
       phan.push(
         "",
@@ -160,9 +167,7 @@ export function userPrompt(payload: QuanSuInterpretationPayload, moTa?: string, 
       );
     }
 
-    // KẾT LUẬN SỰ VIỆC (Phase 12) — tầng synthesis cuối. Deterministic; AI chỉ diễn đạt, KHÔNG đổi trạng thái.
-    const fgForKetLuan = resolveFourGods(payload.cast, dtR2);
-    const conclusion = ketLuanSuViec(payload.cast, dtR2, fgForKetLuan);
+    // KẾT LUẬN SỰ VIỆC (Phase 12) — dùng `conclusion` từ bundle (tầng synthesis cuối, deterministic).
     phan.push(
       "",
       "KẾT LUẬN SỰ VIỆC (engine/rule tổng hợp deterministic — Dụng Thần + Kỵ/Nguyên + Thế/Ứng + ngữ cảnh):",
@@ -183,8 +188,7 @@ export function userPrompt(payload: QuanSuInterpretationPayload, moTa?: string, 
       "- FAVORABLE_WITH_DELAY = có lực/có hướng nhưng còn chờ (Không Vong/Nhập Mộ/Ứng Kỳ); nói rõ 'chờ đúng thời' thay vì 'thất bại'.",
     );
 
-    // ỨNG KỲ — TỔNG HỢP (Phase 14) — mốc thời gian deterministic (candidate), KHÔNG override conclusion.
-    const ungKy = synthesizeUngKy(payload.cast, dtR2, fgForKetLuan);
+    // ỨNG KỲ — TỔNG HỢP (Phase 14) — dùng `ungKy` từ bundle (candidate, KHÔNG override conclusion).
     if (ungKy.candidates.length > 0) {
       phan.push(
         "",
@@ -197,8 +201,7 @@ export function userPrompt(payload: QuanSuInterpretationPayload, moTa?: string, 
       );
     }
 
-    // HÌNH — DETERMINISTIC FACT (Phase 15) — chỉ 2 bộ spec §3.7 khóa (Dần-Tỵ-Thân, Tý-Mão). Chỉ render khi có.
-    const hinh = synthesizeHinh(payload.cast, dtR2, fgForKetLuan);
+    // HÌNH — DETERMINISTIC FACT (Phase 15) — dùng `hinh` từ bundle (chỉ 2 bộ spec §3.7: Dần-Tỵ-Thân, Tý-Mão).
     if (hinh.relations.length > 0) {
       phan.push(
         "",
@@ -210,8 +213,7 @@ export function userPrompt(payload: QuanSuInterpretationPayload, moTa?: string, 
       );
     }
 
-    // CỪU THẦN — DETERMINISTIC FACT (Phase 16) — sinh Kỵ, khắc Nguyên (spec §260/§229). Chỉ render khi có hào Cừu.
-    const cuu = synthesizeCuuThan(payload.cast, fgForKetLuan);
+    // CỪU THẦN — DETERMINISTIC FACT (Phase 16) — dùng `cuu` từ bundle (sinh Kỵ, khắc Nguyên; spec §260/§229).
     if (cuu.members.length > 0) {
       phan.push(
         "",
@@ -222,8 +224,7 @@ export function userPrompt(payload: QuanSuInterpretationPayload, moTa?: string, 
       );
     }
 
-    // NHẬT / NGUYỆT — DETERMINISTIC FACTS (Phase 17) — quan hệ hào ↔ Nhật/Nguyệt, GIỮ RIÊNG hai nguồn.
-    const haoTime = synthesizeHaoTimeFacts(payload.cast, dtR2, fgForKetLuan);
+    // NHẬT / NGUYỆT — DETERMINISTIC FACTS (Phase 17) — dùng `haoTime` từ bundle (GIỮ RIÊNG Nhật vs Nguyệt).
     if (haoTime.nhat.length > 0 || haoTime.nguyet.length > 0) {
       phan.push(
         "",
