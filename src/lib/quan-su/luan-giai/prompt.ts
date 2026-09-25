@@ -133,6 +133,22 @@ export function userPrompt(payload: QuanSuInterpretationPayload, moTa?: string, 
     );
   }
 
+  // PHẢN NGÂM / PHỤC NGÂM — engine tính sẵn ở `cast.fanYin`/`cast.fuYin`; surface thành block riêng
+  // để AI không bỏ sót (chúng vốn nằm lẫn trong cast JSON). CHỈ FACT: truyền đúng label/type engine
+  // cung cấp, KHÔNG tự đặt điểm/mức mạnh-yếu. Chỉ render khi ít nhất một cái enabled.
+  if (payload.cast.fanYin?.enabled || payload.cast.fuYin?.enabled) {
+    const phanNgam = payload.cast.fanYin?.enabled ? payload.cast.fanYin : null;
+    const phucNgam = payload.cast.fuYin?.enabled ? payload.cast.fuYin : null;
+    phan.push(
+      "",
+      "PHẢN NGÂM / PHỤC NGÂM (engine tính sẵn giữa Quẻ Chính và Quẻ Biến — FACT, KHÔNG tự suy diễn thêm):",
+      JSON.stringify({ phan_ngam: phanNgam, phuc_ngam: phucNgam }, null, 1),
+      "- Chỉ khi tín hiệu có mặt ở đây thì quẻ MỚI có Phản Ngâm/Phục Ngâm — nếu vắng, KHÔNG được tự gán.",
+      "- Phản Ngâm chỉ điềm việc lặp lại/đảo ngược, trắc trở; Phục Ngâm chỉ điềm trì trệ, đau đáu kéo dài — đưa vào luận, nhưng KHÔNG tự đặt điểm số hay mức mạnh/yếu.",
+      "- Dùng ĐÚNG `label`/`type` engine cung cấp (kể cả mức nặng nếu label đã ghi); KHÔNG tự chế mức độ. Dữ liệu engine/rule ưu tiên hơn án lệ tham khảo.",
+    );
+  }
+
   if (payload.ung_ky) {
     phan.push(
       "",

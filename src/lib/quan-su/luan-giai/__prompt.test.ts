@@ -118,6 +118,48 @@ describe("dựng prompt luận giải", () => {
     expect(up).not.toContain("undefined");
     expect(up).not.toContain("HOÀN CẢNH NGƯỜI HỎI TỰ KỂ");
   });
+
+  // Phase 6 — PHẢN NGÂM / PHỤC NGÂM surfacing. Override cast.fanYin/fuYin để render xác định.
+  const FAN = { enabled: true, type: "inner_outer" as const, label: "PHẢN NGÂM MẪU (điềm lặp lại)", originalUpper: "Càn", originalLower: "Càn", changedUpper: "Khôn", changedLower: "Khôn", innerFanYin: true, outerFanYin: true };
+  const FU = { enabled: true, type: "outer" as const, label: "PHỤC NGÂM MẪU (trì trệ)", originalHexagram: "Càn Vi Thiên", changedHexagram: "Càn Vi Thiên" };
+  const withCast = (qid: string, over: Record<string, unknown>) => {
+    const p = payloadMau(qid);
+    return { ...p, cast: { ...p.cast, ...over } } as typeof p;
+  };
+
+  it("fanYin enabled → block Phản Ngâm/Phục Ngâm xuất hiện, mang đúng label engine", () => {
+    const up = userPrompt(withCast("vay-tien", { fanYin: FAN, fuYin: { ...FU, enabled: false } }));
+    expect(up).toContain("PHẢN NGÂM / PHỤC NGÂM");
+    expect(up).toContain("PHẢN NGÂM MẪU (điềm lặp lại)"); // dữ liệu engine, không hardcode
+    expect(up).toContain('"phuc_ngam": null'); // fuYin disabled → không đưa
+  });
+
+  it("fuYin enabled → block xuất hiện với dữ liệu Phục Ngâm", () => {
+    const up = userPrompt(withCast("vay-tien", { fanYin: { ...FAN, enabled: false }, fuYin: FU }));
+    expect(up).toContain("PHẢN NGÂM / PHỤC NGÂM");
+    expect(up).toContain("PHỤC NGÂM MẪU (trì trệ)");
+    expect(up).toContain('"phan_ngam": null');
+  });
+
+  it("cả hai enabled → block chứa cả Phản Ngâm lẫn Phục Ngâm", () => {
+    const up = userPrompt(withCast("vay-tien", { fanYin: FAN, fuYin: FU }));
+    expect(up).toContain("PHẢN NGÂM MẪU (điềm lặp lại)");
+    expect(up).toContain("PHỤC NGÂM MẪU (trì trệ)");
+  });
+
+  it("cả hai disabled → KHÔNG render block (không tự gán)", () => {
+    const up = userPrompt(withCast("vay-tien", { fanYin: { ...FAN, enabled: false }, fuYin: { ...FU, enabled: false } }));
+    expect(up).not.toContain("PHẢN NGÂM / PHỤC NGÂM");
+  });
+
+  it("legacy payload thiếu fanYin/fuYin → không crash, không render block", () => {
+    const p = payloadMau("vay-tien");
+    // Bỏ hẳn 2 trường (giả lập payload cũ).
+    const { fanYin: _f, fuYin: _fu, ...restCast } = p.cast as unknown as Record<string, unknown>;
+    const up = userPrompt({ ...p, cast: restCast } as unknown as Parameters<typeof userPrompt>[0]);
+    expect(up).not.toContain("PHẢN NGÂM / PHỤC NGÂM");
+    expect(up).not.toContain("undefined");
+  });
 });
 
 // Khoá riêng lỗi đã gặp: Git trên Windows đổi LF sang CRLF khi checkout, làm biểu thức cắt
