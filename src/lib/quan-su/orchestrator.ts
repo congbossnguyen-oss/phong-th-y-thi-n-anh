@@ -140,7 +140,7 @@ export async function runQuanSu(input: RunQuanSuInput): Promise<QuanSuResult> {
   //    một lần gọi mạng trục trặc không làm mất trắng lượt hỏi của khách.
   const { luan } = input.boQuaAI
     ? { luan: null }
-    : await luanGiaiBangAI(payload, { gioiTinh: input.ngaySinh?.gender, moTa: input.moTa });
+    : await luanGiaiBangAI(payload, { gioiTinh: input.ngaySinh?.gender, moTa: input.moTa, fourGods: report.fourGods });
 
   return {
     question: { id: question.question_id, title: question.title, category: question.category },

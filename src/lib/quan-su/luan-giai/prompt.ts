@@ -6,6 +6,7 @@
  * liệu huyền học nào. Thiếu dữ liệu thì im lặng ở phần đó, không được suy đoán bù.
  */
 import type { QuanSuInterpretationPayload } from "../divination";
+import type { FourGods } from "../advisory-engine";
 import { quyTacGiongVan } from "../giong-van";
 import { TRI_THUC_LOI } from "./kien-thuc";
 
@@ -60,7 +61,7 @@ export function systemPromptQuyTac(gioiTinh?: "Nam" | "Nữ", mucNhayCam?: "thuo
 }
 
 /** Gói dữ liệu quẻ thành phần người dùng. Giữ nguyên JSON để model không hiểu sai. */
-export function userPrompt(payload: QuanSuInterpretationPayload, moTa?: string): string {
+export function userPrompt(payload: QuanSuInterpretationPayload, moTa?: string, fourGods?: FourGods): string {
   const q = payload.question;
   const phan: string[] = [
     `CÂU HỎI CỦA NGƯỜI HỎI: ${q.title}`,
@@ -91,6 +92,26 @@ export function userPrompt(payload: QuanSuInterpretationPayload, moTa?: string):
     "DỮ LIỆU QUẺ (do engine lập quẻ tính, là nguồn sự thật duy nhất):",
     JSON.stringify(payload.cast, null, 1),
   );
+
+  if (fourGods && fourGods.dungThanNguHanh) {
+    phan.push(
+      "",
+      "TỨ THẦN (engine/rule ĐÃ tính sẵn từ Dụng Thần — KHÔNG tự dẫn xuất lại, KHÔNG tự thêm hào):",
+      JSON.stringify(
+        {
+          dung_than_ngu_hanh: fourGods.dungThanNguHanh,
+          nguyen_than: fourGods.nguyenThan, // hào SINH Dụng Thần (phò trợ)
+          ky_than: fourGods.kyThan, // hào KHẮC Dụng Thần (cản phá)
+          cuu_than: "chưa dùng (hoãn — sẽ bổ sung ở phase sau)",
+        },
+        null,
+        1,
+      ),
+      "- Đây là kết quả deterministic của engine/rule: chỉ dùng ĐÚNG các hào trong nguyen_than/ky_than trên, KHÔNG tự xác định thêm hào nào là Nguyên/Kỵ/Cừu Thần.",
+      "- Nguyên Thần phò Dụng Thần, Kỵ Thần khắc Dụng Thần — luận sức mạnh phò/phá dựa trên danh sách này cùng vượng suy/động của từng hào đã có trong DỮ LIỆU QUẺ.",
+      "- Nếu nguyen_than hoặc ky_than rỗng thì nói đúng là 'không có', KHÔNG bịa ra hào cho đủ. Kết quả engine/rule ưu tiên hơn mọi án lệ tham khảo.",
+    );
+  }
 
   if (payload.van_trinh) {
     phan.push(

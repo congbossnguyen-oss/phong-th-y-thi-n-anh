@@ -15,6 +15,7 @@ import type { QuanSuInterpretationPayload } from "./divination";
 import type { LuckContext } from "./current-luck";
 import type { HaoInfo, LucThan, QueDayDu } from "../luc-hao";
 import type { NguHanh } from "../menh-nap-am";
+import { CHI_NGU_HANH } from "../bat-tu";
 
 export type Verdict = "NEN" | "KHONG_NEN" | "NEN_CHO" | "CO_DIEU_KIEN" | "CHUA_DU_DU_LIEU";
 
@@ -58,6 +59,8 @@ export interface AdvisoryReport {
   quanSuKhuyen: string[];
   // 8. LUẬN GIẢI CHI TIẾT (chỉ hiện khi người dùng yêu cầu)
   luanGiaiChiTiet: string;
+  // 9. TỨ THẦN (structured, deterministic) — Dụng Thần + Nguyên/Kỵ Thần (Cừu Thần hoãn — xem FourGods)
+  fourGods: FourGods;
 
   // Cờ chất lượng
   coNhap: true; // trọng số chấm điểm là bản nháp — Thầy calibrate
@@ -72,7 +75,7 @@ const KHAC: Record<string, string> = { Mộc: "Thổ", Thổ: "Thủy", Thủy: 
 // ---------------------------------------------------------------------------------------------
 // Xác định hào Dụng Thần để chấm điểm — ĐỌC từ dung_than_hint (do engine/divination cung cấp),
 // KHÔNG tự luận. Trả về hào + trạng thái (hiện / phục tàng / không hiện).
-interface DungThanResolved {
+export interface DungThanResolved {
   hao: HaoInfo | null; // hào để chấm điểm
   target: LucThan | "the-hao" | "ung-hao" | null;
   trangThai: "hien" | "phuc_tang" | "khong_hien";
@@ -90,7 +93,7 @@ function chonLuongHien(cands: HaoInfo[]): HaoInfo {
   return theHao ?? pool2[0];
 }
 
-function resolveDungThan(chinh: QueDayDu, hint: QuanSuInterpretationPayload["question"]["dung_than_hint"]): DungThanResolved {
+export function resolveDungThan(chinh: QueDayDu, hint: QuanSuInterpretationPayload["question"]["dung_than_hint"]): DungThanResolved {
   if (hint.kind === "the-hao" || hint.kind === "framework") {
     const the = chinh.hao.find((h) => h.theUng === "Thế") ?? null;
     return {
@@ -121,6 +124,71 @@ function resolveDungThan(chinh: QueDayDu, hint: QuanSuInterpretationPayload["que
     return { hao: phuc, target, trangThai: "phuc_tang", lyDo: `Dụng Thần ${target} phục tàng (ẩn) dưới hào ${phuc.hao} — chưa lộ rõ.` };
   }
   return { hao: null, target, trangThai: "khong_hien", lyDo: `Dụng Thần ${target} không hiện trên quẻ, cũng không phục tàng — quẻ chưa nói rõ điều anh/chị hỏi.` };
+}
+
+// ---------------------------------------------------------------------------------------------
+// TỨ THẦN (four-god chain) — structured, DETERMINISTIC, dẫn xuất ở RULE LAYER từ Dụng Thần đã resolve.
+// KHÔNG sửa luc-hao.ts, KHÔNG đổi cách resolve Dụng Thần. Chỉ đọc ngũ hành + danh sách hào có sẵn.
+//
+// SOURCE-LOCK (Phase 2):
+//   • Nguyên Thần = hào có Ngũ Hành SINH Dụng Thần  — source-backed (an-le của Quân Sư dùng "Nguyên
+//     thần <hành> sinh Dụng"; định nghĩa cổ điển 增删卜易/卜筮正宗 nhất quán).
+//   • Kỵ Thần   = hào có Ngũ Hành KHẮC Dụng Thần    — source-backed (an-le dùng "Ky thần").
+//   • Cừu Thần  = HOÃN: methodology Quân Sư (kien-thuc + an-le) KHÔNG định nghĩa Cừu Thần, và định
+//     nghĩa cổ có biến thể → KHÔNG tự chọn (đúng STOP condition Phase 2). Đánh dấu resolved:false.
+export interface FourGodMember {
+  hao: number; // vị trí hào 1-6 (từ dưới lên)
+  lucThan: LucThan;
+  nguHanh: NguHanh;
+  quanHe: "sinh-dung-than" | "khac-dung-than";
+  isDong: boolean; // hào động?
+  lyDo: string; // provenance đọc được
+}
+
+export interface FourGods {
+  /** Ngũ hành của Dụng Thần (nguồn để dẫn xuất Nguyên/Kỵ). null nếu Dụng Thần không xác định được. */
+  dungThanNguHanh: NguHanh | null;
+  trangThai: DungThanResolved["trangThai"];
+  nguyenThan: FourGodMember[]; // hào SINH Dụng Thần
+  kyThan: FourGodMember[]; // hào KHẮC Dụng Thần
+  /** Phase 2: Cừu Thần hoãn — chưa source-lock trong methodology Quân Sư, không tự chọn định nghĩa. */
+  cuuThan: { resolved: false; lyDo: string };
+}
+
+/** Ngũ hành của Dụng Thần đã resolve: hào hiện → nguHanh của hào; phục tàng → nguHanh Chi của Phục Thần. */
+function nguHanhDungThan(dt: DungThanResolved): NguHanh | null {
+  if (dt.trangThai === "hien" && dt.hao) return dt.hao.nguHanh;
+  if (dt.trangThai === "phuc_tang" && dt.hao?.phucThan) return CHI_NGU_HANH[dt.hao.phucThan.chiIndex] ?? null;
+  return null;
+}
+
+/**
+ * Dẫn xuất Tứ Thần từ Dụng Thần đã resolve. DETERMINISTIC: cùng quẻ + cùng Dụng Thần ⇒ cùng kết quả.
+ * Một hào là Nguyên Thần XOR Kỵ Thần (không thể vừa sinh vừa khắc cùng một hành); hào cùng hành Dụng
+ * Thần (Huynh Đệ) và hào Dụng Thần sinh ra (tiết khí) đều KHÔNG thuộc Nguyên/Kỵ — đúng phép.
+ */
+export function resolveFourGods(chinh: QueDayDu, dt: DungThanResolved): FourGods {
+  const cuuThan = {
+    resolved: false as const,
+    lyDo: "Cừu Thần hoãn ở Phase 2: methodology Quân Sư chưa source-lock định nghĩa Cừu Thần (an-le/kien-thuc không dùng), định nghĩa cổ có biến thể — không tự chọn.",
+  };
+  const dung = nguHanhDungThan(dt);
+  if (dung === null) {
+    return { dungThanNguHanh: null, trangThai: dt.trangThai, nguyenThan: [], kyThan: [], cuuThan };
+  }
+  // Khi Dụng Thần HIỆN trên quẻ: loại chính hào Dụng Thần khỏi ứng viên (không tự là Nguyên/Kỵ của mình).
+  const dungHaoPos = dt.trangThai === "hien" ? dt.hao?.hao : undefined;
+  const nguyenThan: FourGodMember[] = [];
+  const kyThan: FourGodMember[] = [];
+  for (const h of chinh.hao) {
+    if (h.hao === dungHaoPos) continue;
+    if (SINH[h.nguHanh] === dung) {
+      nguyenThan.push({ hao: h.hao, lucThan: h.lucThan, nguHanh: h.nguHanh, quanHe: "sinh-dung-than", isDong: h.isDong, lyDo: `${h.nguHanh} sinh ${dung} (Dụng Thần) → Nguyên Thần.` });
+    } else if (KHAC[h.nguHanh] === dung) {
+      kyThan.push({ hao: h.hao, lucThan: h.lucThan, nguHanh: h.nguHanh, quanHe: "khac-dung-than", isDong: h.isDong, lyDo: `${h.nguHanh} khắc ${dung} (Dụng Thần) → Kỵ Thần.` });
+    }
+  }
+  return { dungThanNguHanh: dung, trangThai: dt.trangThai, nguyenThan, kyThan, cuuThan };
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -477,6 +545,7 @@ export function buildAdvisoryReport(payload: QuanSuInterpretationPayload): Advis
     vanTrinh: vanTrinhTomTat(luck),
     quanSuKhuyen: khuyen(ketLuan, payload, luck, resolved, cham),
     luanGiaiChiTiet: luanChiTiet(payload, resolved),
+    fourGods: resolveFourGods(payload.cast.chinh, resolved),
     coNhap: true,
     proseLaDemo: true,
   };

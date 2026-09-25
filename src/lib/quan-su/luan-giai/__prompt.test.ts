@@ -85,6 +85,24 @@ describe("dựng prompt luận giải", () => {
     expect(qt).toContain("im lặng bỏ qua phần đó");
   });
 
+  it("Tứ Thần: có fourGods thì userPrompt render khối TỨ THẦN + guardrail; không có thì bỏ qua", () => {
+    const p = payloadMau("vay-tien");
+    const fg = {
+      dungThanNguHanh: "Kim" as const,
+      trangThai: "hien" as const,
+      nguyenThan: [{ hao: 4, lucThan: "Phụ Mẫu" as const, nguHanh: "Thổ" as const, quanHe: "sinh-dung-than" as const, isDong: false, lyDo: "Thổ sinh Kim (Dụng Thần) → Nguyên Thần." }],
+      kyThan: [{ hao: 2, lucThan: "Quan Quỷ" as const, nguHanh: "Hỏa" as const, quanHe: "khac-dung-than" as const, isDong: true, lyDo: "Hỏa khắc Kim (Dụng Thần) → Kỵ Thần." }],
+      cuuThan: { resolved: false as const, lyDo: "Cừu Thần hoãn." },
+    };
+    const co = userPrompt(p, undefined, fg);
+    expect(co).toContain("TỨ THẦN");
+    expect(co).toContain("nguyen_than");
+    expect(co).toContain("ky_than");
+    expect(co).toContain("KHÔNG tự dẫn xuất lại"); // guardrail: không tự thêm hào
+    // Không truyền fourGods → không có khối TỨ THẦN (backward compatible).
+    expect(userPrompt(p)).not.toContain("TỨ THẦN");
+  });
+
   it("user prompt chứa dữ liệu quẻ thật và câu hỏi", () => {
     const p = payloadMau("vay-tien");
     const up = userPrompt(p, "Tôi đang tính vay ngân hàng để mở quán.");
