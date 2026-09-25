@@ -42,7 +42,8 @@ export type TinhNangAi =
   | "luan-giai-tu-vi-co-ban"
   | "luan-giai-tu-vi-nang-cao"
   | "huyen-khong-luan-chi-tiet"
-  | "tam-hop-luan-giai";
+  | "tam-hop-luan-giai"
+  | "hkdq-hoa-giai";
 
 /**
  * BẢNG CHỌN NHÀ CUNG CẤP CHO TỪNG TÍNH NĂNG — chỗ duy nhất cần sửa khi muốn đổi.
@@ -83,6 +84,10 @@ const BANG_NHA_CUNG_CAP: Record<TinhNangAi, NhaCungCap> = {
   // Tam Hợp Phái — luận giải từ dữ liệu tra bảng engine. Route theo lớp chung (hiện DeepSeek);
   // nơi gọi PHẢI ép modelOverride "deepseek-chat" (non-thinking) vì goiAiToolUse luôn dùng tool_choice ép buộc.
   "tam-hop-luan-giai": "openai-tuong-thich",
+  // HKĐQ luận nhà (công cụ TEST NỘI BỘ) — Bước 9 đề xuất hóa giải. Route DeepSeek; nơi gọi
+  // (ai-hoa-giai.ts) PHẢI ép modelOverride "deepseek-chat" (non-thinking) vì goiAiToolUse dùng
+  // tool_choice ép buộc mà model thinking mặc định từ chối.
+  "hkdq-hoa-giai": "openai-tuong-thich",
 };
 
 /**

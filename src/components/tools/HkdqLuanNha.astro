@@ -1,0 +1,405 @@
+---
+// Công cụ "Luận Nhà theo Huyền Không Đại Quái" — TEST NỘI BỘ, THẦY-ONLY.
+// Khách (không phải admin) chỉ thấy màn "đang hoàn thiện" — KHÔNG nhận form, KHÔNG nhận kết quả.
+//
+// KIẾN TRÚC (giống Tam Hợp Phái / Huyền Không Phi Tinh): engine (Bước 1–8) import & chạy SERVER-SIDE
+// trong frontmatter này, KHÔNG ở <script> client và KHÔNG có API route → không có endpoint tính toán
+// nào để gọi qua devtools/network tab. Form method="GET", tính toán khi admin gửi form.
+//
+// BƯỚC 9 (AI, nguon:"ai") tách hẳn: chỉ chạy khi bấm nút "Tạo đề xuất hóa giải" (gửi taoHoaGiai=1),
+// KHÔNG tự động gọi kèm — để anh Công kiểm soát phí API. Hiển thị có NHÃN CẢNH BÁO riêng.
+import Container from "../ui/Container.astro";
+import Button from "../ui/Button.astro";
+import {
+  luanNha,
+  type CuaInput,
+  type NoiCucInput,
+  type KetQuaLuanNha,
+  type MucDichLuan,
+  type NhomThan,
+  type MucDo,
+} from "../../lib/hkdq-luan-nha/engine";
+import { taoDeXuatHoaGiai, type KetQuaHoaGiaiAi } from "../../lib/hkdq-luan-nha/ai-hoa-giai";
+
+export const prerender = false;
+
+const laQuanTri = Astro.locals.user?.isAdmin === true;
+
+const q = Astro.url.searchParams;
+const num = (k: string): number | null => {
+  const v = q.get(k);
+  if (v == null || v.trim() === "") return null;
+  const n = Number(v);
+  return Number.isFinite(n) ? n : null;
+};
+const str = (k: string): string | null => {
+  const v = q.get(k);
+  return v && v.trim() ? v.trim() : null;
+};
+
+const toaDo = num("toaDo");
+const huongDo = num("huongDo");
+const namNhapTrach = num("namNhapTrach");
+const namLuan = num("namLuanHienTai");
+const namSinhGiaChu = num("namSinhGiaChu");
+const nguong = num("nguongKhongVong");
+const MUC_DICH: MucDichLuan[] = ["tong_quat", "tai_loc", "suc_khoe", "hon_nhan", "su_nghiep", "con_cai"];
+const mucDichRaw = str("mucDichLuan");
+const mucDichLuan: MucDichLuan = (MUC_DICH as string[]).includes(mucDichRaw ?? "") ? (mucDichRaw as MucDichLuan) : "tong_quat";
+
+const cuaInputs: CuaInput[] = [];
+for (const i of [1, 2]) {
+  const d = num(`cua${i}_do`);
+  if (d != null) cuaInputs.push({ ten: str(`cua${i}_ten`) ?? `cua_${i}`, doSo: d, soCanhMo: num(`cua${i}_canh`) });
+}
+const noiCucInputs: NoiCucInput[] = [];
+for (const [loai, key] of [["bep", "nc_bep"], ["giuong_ngu", "nc_giuong"], ["ban_lam_viec", "nc_ban"]] as const) {
+  const d = num(key);
+  if (d != null) noiCucInputs.push({ loai, doSo: d });
+}
+const nuocDen = num("nuoc_den");
+const nuocDi = num("nuoc_di");
+const thuyPhapInput = nuocDen != null || nuocDi != null ? { nuocDenDoSo: nuocDen, nuocDiDoSo: nuocDi } : null;
+
+const daGuiForm = toaDo != null && huongDo != null;
+
+let loi: string | null = null;
+let kq: KetQuaLuanNha | null = null;
+let hoaGiai: KetQuaHoaGiaiAi | null = null;
+if (laQuanTri && daGuiForm) {
+  try {
+    kq = luanNha({
+      toaDo: toaDo!,
+      huongDo: huongDo!,
+      namNhapTrach,
+      namLuanHienTai: namLuan,
+      mucDichLuan,
+      namSinhGiaChu,
+      cua: cuaInputs.length ? cuaInputs : null,
+      noiCuc: noiCucInputs.length ? noiCucInputs : null,
+      thuyPhap: thuyPhapInput,
+      nguongKhongVong: nguong,
+    });
+    if (kq && q.get("taoHoaGiai") === "1") {
+      hoaGiai = await taoDeXuatHoaGiai(kq); // Bước 9 — chỉ khi bấm nút riêng
+    }
+  } catch (e) {
+    loi = e instanceof Error ? e.message : "Không luận được.";
+  }
+}
+
+// Tách "phần chưa tính" thành 2 nhóm cho dễ đọc: anh chưa nhập (tùy chọn) vs chưa hỗ trợ (thiếu dữ liệu nguồn).
+const thieuNhap = kq ? kq.thieuDuLieu.filter((t) => /trong input|mucDichLuan|Thiếu cả/.test(t.ly_do)) : [];
+const thieuNguon = kq ? kq.thieuDuLieu.filter((t) => !/trong input|mucDichLuan|Thiếu cả/.test(t.ly_do)) : [];
+
+const cltLabel = (c: NhomThan | null): string => (c === "chinh_than" ? "Chính Thần" : c === "linh_than" ? "Linh Thần" : "—");
+const mucDoLabel: Record<MucDo, string> = { vuong: "VƯỢNG", suy: "SUY", trung_tinh: "trung tính" };
+const mucDoClass: Record<MucDo, string> = {
+  vuong: "border-emerald-500/40 bg-emerald-500/5 text-emerald-700",
+  suy: "border-(--color-danger-500)/40 bg-(--color-danger-500)/5 text-(--color-danger-600)",
+  trung_tinh: "border-(--color-ivory-300) bg-(--color-ivory-50) text-(--color-ink-700)",
+};
+const MUC_DICH_LABEL: Record<MucDichLuan, string> = {
+  tong_quat: "Tổng quát",
+  tai_loc: "Tài lộc",
+  suc_khoe: "Sức khỏe",
+  hon_nhan: "Hôn nhân",
+  su_nghiep: "Sự nghiệp",
+  con_cai: "Con cái",
+};
+---
+
+{
+  !laQuanTri ? (
+    <Container class="py-16">
+      <div class="mx-auto max-w-xl rounded-(--radius-card) border border-(--color-gold-400)/30 bg-(--color-ivory-100) p-8 text-center shadow-lg">
+        <p class="inline-block rounded-full border border-(--color-gold-400) bg-(--color-gold-400)/15 px-3 py-1 text-xs font-extrabold uppercase tracking-wide text-(--color-gold-600)">
+          Đang hoàn thiện
+        </p>
+        <h2 class="mt-3 font-display text-2xl font-bold text-(--color-ink-950)">Luận nhà Huyền Không Đại Quái</h2>
+        <p class="mx-auto mt-2 max-w-md text-sm font-medium leading-relaxed text-(--color-ink-700)">
+          Công cụ luận nhà theo Huyền Không Đại Quái (64 quẻ) đang được Thầy hoàn thiện. Vui lòng liên hệ để được tư vấn trực tiếp.
+        </p>
+        <div class="mt-5">
+          <Button href="/lien-he" size="lg">Liên hệ tư vấn trực tiếp</Button>
+        </div>
+      </div>
+    </Container>
+  ) : (
+    <Container class="py-10">
+      <div class="mx-auto max-w-4xl">
+        <div class="mb-4 rounded-(--radius-card) border-2 border-(--color-gold-400) bg-(--color-gold-400)/10 p-4 text-sm font-medium text-(--color-gold-600)">
+          🔒 CHẾ ĐỘ QUẢN TRỊ — công cụ TEST NỘI BỘ Huyền Không Đại Quái. Khách chỉ thấy màn "đang hoàn thiện".
+          Độ tin cậy engine ~45–55% (một số bước còn thiếu dữ liệu) — dùng để anh Công tự kiểm, chưa phải bản khách hàng.
+        </div>
+
+        <form method="GET" class="flex flex-col gap-6 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
+          <div>
+            <p class="text-sm font-semibold text-(--color-ink-900)">Bắt buộc — Tọa &amp; Hướng (độ la kinh 0–360°)</p>
+            <div class="mt-2 grid gap-4 sm:grid-cols-2">
+              <div>
+                <label for="toaDo" class="block text-xs font-semibold text-(--color-ink-800)">Độ Tọa <span class="text-(--color-cinnabar-400)">*</span></label>
+                <input type="number" id="toaDo" name="toaDo" step="0.001" min="0" max="360" required value={toaDo ?? undefined} class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm" />
+              </div>
+              <div>
+                <label for="huongDo" class="block text-xs font-semibold text-(--color-ink-800)">Độ Hướng <span class="text-(--color-cinnabar-400)">*</span></label>
+                <input type="number" id="huongDo" name="huongDo" step="0.001" min="0" max="360" required value={huongDo ?? undefined} class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm" />
+              </div>
+            </div>
+          </div>
+
+          <div class="grid gap-4 border-t border-(--color-ivory-300) pt-5 sm:grid-cols-3">
+            <div>
+              <label for="namLuanHienTai" class="block text-xs font-semibold text-(--color-ink-800)">Năm luận</label>
+              <p class="mt-0.5 text-[11px] text-(--color-ink-500)">Trống = năm hiện tại. Xác định Vận.</p>
+              <input type="number" id="namLuanHienTai" name="namLuanHienTai" step="1" value={namLuan ?? undefined} class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2 text-sm" />
+            </div>
+            <div>
+              <label for="namNhapTrach" class="block text-xs font-semibold text-(--color-ink-800)">Năm nhập trạch</label>
+              <p class="mt-0.5 text-[11px] text-(--color-ink-500)">Tùy chọn.</p>
+              <input type="number" id="namNhapTrach" name="namNhapTrach" step="1" value={namNhapTrach ?? undefined} class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2 text-sm" />
+            </div>
+            <div>
+              <label for="namSinhGiaChu" class="block text-xs font-semibold text-(--color-ink-800)">Năm sinh gia chủ</label>
+              <p class="mt-0.5 text-[11px] text-(--color-ink-500)">Tùy chọn (Đả Kiếp).</p>
+              <input type="number" id="namSinhGiaChu" name="namSinhGiaChu" step="1" value={namSinhGiaChu ?? undefined} class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2 text-sm" />
+            </div>
+          </div>
+
+          <div class="grid gap-4 sm:grid-cols-2">
+            <div>
+              <label for="mucDichLuan" class="block text-xs font-semibold text-(--color-ink-800)">Mục đích luận</label>
+              <p class="mt-0.5 text-[11px] text-(--color-ink-500)">Nội cục chỉ xét khi khác "Tổng quát".</p>
+              <select id="mucDichLuan" name="mucDichLuan" class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2 text-sm">
+                {MUC_DICH.map((m) => <option value={m} selected={mucDichLuan === m}>{MUC_DICH_LABEL[m]}</option>)}
+              </select>
+            </div>
+            <div>
+              <label for="nguongKhongVong" class="block text-xs font-semibold text-(--color-ink-800)">Ngưỡng không vong (°)</label>
+              <p class="mt-0.5 text-[11px] text-(--color-ink-500)">Trống = 0.3° (mặc định, cần duyệt lại).</p>
+              <input type="number" id="nguongKhongVong" name="nguongKhongVong" step="0.01" min="0" value={nguong ?? undefined} class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2 text-sm" />
+            </div>
+          </div>
+
+          <div class="border-t border-(--color-ivory-300) pt-5">
+            <p class="text-sm font-semibold text-(--color-ink-900)">Thủy pháp (tùy chọn — độ la kinh)</p>
+            <div class="mt-2 grid gap-4 sm:grid-cols-2">
+              <div>
+                <label for="nuoc_den" class="block text-xs font-semibold text-(--color-ink-800)">Nước đến</label>
+                <input type="number" id="nuoc_den" name="nuoc_den" step="0.001" value={nuocDen ?? undefined} class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label for="nuoc_di" class="block text-xs font-semibold text-(--color-ink-800)">Nước đi</label>
+                <input type="number" id="nuoc_di" name="nuoc_di" step="0.001" value={nuocDi ?? undefined} class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2 text-sm" />
+              </div>
+            </div>
+          </div>
+
+          <div class="border-t border-(--color-ivory-300) pt-5">
+            <p class="text-sm font-semibold text-(--color-ink-900)">Cửa (tùy chọn — độ + số cánh mở)</p>
+            <div class="mt-2 grid gap-4 sm:grid-cols-2">
+              {[1, 2].map((i) => (
+                <div class="grid grid-cols-3 gap-2">
+                  <div class="col-span-3">
+                    <input type="text" name={`cua${i}_ten`} placeholder={`Tên cửa ${i} (vd cua_chinh)`} value={str(`cua${i}_ten`) ?? undefined} class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2 text-sm" />
+                  </div>
+                  <div class="col-span-2">
+                    <input type="number" name={`cua${i}_do`} step="0.001" placeholder="Độ" value={num(`cua${i}_do`) ?? undefined} class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2 text-sm" />
+                  </div>
+                  <div>
+                    <input type="number" name={`cua${i}_canh`} step="1" min="1" placeholder="Cánh" value={num(`cua${i}_canh`) ?? undefined} class="w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2 text-sm" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div class="border-t border-(--color-ivory-300) pt-5">
+            <p class="text-sm font-semibold text-(--color-ink-900)">Nội cục (tùy chọn — độ; chỉ xét khi mục đích khác "Tổng quát")</p>
+            <div class="mt-2 grid gap-4 sm:grid-cols-3">
+              <div>
+                <label class="block text-xs font-semibold text-(--color-ink-800)">Bếp</label>
+                <input type="number" name="nc_bep" step="0.001" value={num("nc_bep") ?? undefined} class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-(--color-ink-800)">Giường ngủ</label>
+                <input type="number" name="nc_giuong" step="0.001" value={num("nc_giuong") ?? undefined} class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2 text-sm" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-(--color-ink-800)">Bàn làm việc</label>
+                <input type="number" name="nc_ban" step="0.001" value={num("nc_ban") ?? undefined} class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2 text-sm" />
+              </div>
+            </div>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-3">
+            <Button type="submit" size="lg">Luận nhà (engine, Bước 1–8)</Button>
+            {kq && (
+              <button
+                type="submit"
+                name="taoHoaGiai"
+                value="1"
+                class="inline-flex items-center justify-center gap-2 rounded-(--radius-pill) border border-(--color-ink-600) bg-transparent px-7 py-3.5 text-base font-semibold uppercase tracking-wide text-(--color-ink-950) transition-colors hover:border-(--color-gold-400) hover:text-(--color-gold-500)"
+              >
+                🤖 Tạo đề xuất hóa giải (AI — tốn phí)
+              </button>
+            )}
+          </div>
+          {kq && <p class="text-[11px] text-(--color-ink-500)">Nút AI chạy Bước 9 (đề xuất hóa giải) — chỉ bấm khi cần, mỗi lần tốn phí API. Engine Bước 1–8 không dùng AI.</p>}
+        </form>
+
+        {loi && (
+          <div class="mt-4 rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm text-(--color-danger-500)">{loi}</div>
+        )}
+
+        {kq && (
+          <div class="mt-8 space-y-6">
+            <div class="inline-block rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3 py-1 text-xs font-extrabold uppercase tracking-wide text-emerald-700">
+              nguồn: engine — Bước 1–8, tính thuần túy (không AI)
+            </div>
+
+            {/* Vận + Tọa/Hướng */}
+            <section class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-4 text-sm text-(--color-ink-900)">
+              <p class="font-semibold">
+                VẬN (năm luận {kq.input.namLuanHienTai}):{" "}
+                {kq.van.so != null ? (
+                  <>Vận <strong>{kq.van.so}</strong> — {kq.van.nguyen === "thuong" ? "Thượng" : "Hạ"} Nguyên ({kq.van.namBatDau}–{kq.van.namKetThuc}), quái chủ vận: {kq.van.quaiChuVan ?? "CHƯA xác định trong dữ liệu"}</>
+                ) : (
+                  <span class="text-(--color-danger-600)">ngoài bảng Vận (1864–2043) — chưa xác định</span>
+                )}
+              </p>
+              <div class="mt-3 grid gap-3 sm:grid-cols-2">
+                {([["TỌA", kq.toa], ["HƯỚNG", kq.huong]] as const).map(([nhan, v]) => (
+                  <div class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3">
+                    <p class="font-bold text-(--color-ink-950)">{nhan}: {v.que} <span class="font-normal text-(--color-ink-600)">({v.doSo}°)</span></p>
+                    <p class="mt-1 text-(--color-ink-700)">Quái Khí {v.quaiKhi} · Quái Vận {v.quaiVan} · {v.canChi}</p>
+                    <p class="mt-1">{cltLabel(v.chinhLinhThan)}{v.satRanhGioi && <span class="ml-2 font-semibold text-(--color-danger-600)">⚠ sát ranh giới</span>}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+
+            {/* Tổng hợp nhận định */}
+            <section>
+              <h3 class="font-display text-lg font-bold text-(--color-ink-950)">Tổng hợp nhận định (Bước 8)</h3>
+              <div class="mt-2 space-y-1.5">
+                {kq.tongHop.map((t) => (
+                  <div class:list={["rounded-(--radius-control) border px-4 py-2 text-sm", mucDoClass[t.mucDo]]}>
+                    <strong>[{mucDoLabel[t.mucDo]}]</strong> {t.yeuTo} — <span class="text-(--color-ink-700)">{t.canCu}</span>
+                  </div>
+                ))}
+                {kq.tongHop.length === 0 && <p class="text-sm text-(--color-ink-500)">(không có nhận định)</p>}
+              </div>
+            </section>
+
+            {/* Cách cục đặc biệt */}
+            <section class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4 text-sm">
+              <h3 class="font-display text-lg font-bold text-(--color-ink-950)">Cách cục đặc biệt (Bước 7)</h3>
+              <ul class="mt-2 space-y-1 text-(--color-ink-800)">
+                <li>• Không vong: {kq.cachCucDacBiet.khongVong?.phamPhai ? <span class="font-semibold text-(--color-danger-600)">PHẠM</span> : "không"} — {kq.cachCucDacBiet.khongVong?.moTa}</li>
+                <li>• Hợp thập (Tọa+Hướng): {kq.cachCucDacBiet.hopThap?.co ? <span class="font-semibold text-emerald-700">CÓ</span> : "không"} (tổng Quái Khí {kq.cachCucDacBiet.hopThap?.tong})</li>
+              </ul>
+              <p class="mt-2 text-xs text-(--color-ink-500)">Phản/Phục Ngâm, Đồng Nguyên Long, Thất Tinh Đả Kiếp: xem mục "Phần chưa tính" bên dưới.</p>
+            </section>
+
+            {kq.thuyPhap && (
+              <section class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4 text-sm">
+                <h3 class="font-display text-lg font-bold text-(--color-ink-950)">Thủy pháp (Bước 4)</h3>
+                {kq.thuyPhap.dienGiai.map((d) => <p class="mt-1 text-(--color-ink-800)">▸ {d.noiDung}</p>)}
+              </section>
+            )}
+
+            {kq.cua && (
+              <section class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4 text-sm">
+                <h3 class="font-display text-lg font-bold text-(--color-ink-950)">Cửa (Bước 5)</h3>
+                {kq.cua.map((c) => (
+                  <p class="mt-1 text-(--color-ink-800)">
+                    ▸ <strong>{c.ten}</strong> {c.doSo}° = {c.que} (Khí {c.quaiKhi}) · {cltLabel(c.chinhLinhThan)} · khí {c.khiChat}
+                    {c.queLienQuan.length > 0 && <> (+{c.queLienQuan.join("/")})</>}
+                  </p>
+                ))}
+              </section>
+            )}
+
+            {kq.noiCuc && (
+              <section class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4 text-sm">
+                <h3 class="font-display text-lg font-bold text-(--color-ink-950)">Nội cục (Bước 6)</h3>
+                {kq.noiCuc.map((n) => (
+                  <p class="mt-1 text-(--color-ink-800)">▸ {n.loai}: {n.doSo != null ? <>{n.doSo}° = {n.que} · {cltLabel(n.chinhLinhThan)}</> : "(thiếu độ số)"}</p>
+                ))}
+              </section>
+            )}
+
+            {/* Phần chưa tính — tách "anh chưa nhập" (tùy chọn) vs "chưa hỗ trợ" (thiếu dữ liệu nguồn). KHÔNG giấu. */}
+            {kq.thieuDuLieu.length > 0 && (
+              <section class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4 text-sm">
+                <h3 class="font-display text-lg font-bold text-(--color-ink-950)">Phần chưa tính (không suy đoán)</h3>
+                {thieuNhap.length > 0 && (
+                  <div class="mt-2">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-(--color-ink-500)">Anh chưa nhập (tùy chọn) — nhập thêm sẽ tính</p>
+                    <ul class="mt-1 space-y-1 text-(--color-ink-700)">
+                      {thieuNhap.map((t) => <li>• Bước {t.buoc}: {t.ly_do}</li>)}
+                    </ul>
+                  </div>
+                )}
+                {thieuNguon.length > 0 && (
+                  <div class="mt-3">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-(--color-gold-600)">Chưa hỗ trợ — thiếu dữ liệu nguồn (điểm "còn hở", cần anh cấp dữ liệu mới wire được)</p>
+                    <ul class="mt-1 space-y-1 text-(--color-ink-700)">
+                      {thieuNguon.map((t) => <li>• Bước {t.buoc}: {t.ly_do}</li>)}
+                    </ul>
+                  </div>
+                )}
+              </section>
+            )}
+
+            {/* Ghi chú độ tin cậy */}
+            <section class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-4">
+              <h3 class="font-display text-sm font-bold text-(--color-ink-900)">Ghi chú độ tin cậy</h3>
+              <ul class="mt-2 space-y-1">
+                {kq.ghiChuTinCay.map((g) => <li class="text-xs text-(--color-ink-600)">⚠ {g}</li>)}
+              </ul>
+            </section>
+
+            {/* Diễn giải từng bước + JSON thô */}
+            <details class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4">
+              <summary class="cursor-pointer text-sm font-semibold text-(--color-ink-900)">Diễn giải từng bước</summary>
+              <ol class="mt-2 space-y-1 text-xs text-(--color-ink-700)">
+                {kq.dienGiai.map((d) => <li>[Bước {d.buoc}] {d.noiDung}</li>)}
+              </ol>
+            </details>
+            {q.get("debug") === "1" && (
+              <details class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4">
+                <summary class="cursor-pointer text-sm font-semibold text-(--color-ink-900)">JSON thô (nguon: engine) — chỉ hiện khi ?debug=1</summary>
+                <pre class="mt-2 overflow-x-auto text-[11px] leading-relaxed text-(--color-ink-800)">{JSON.stringify(kq, null, 2)}</pre>
+              </details>
+            )}
+
+            {/* ── BƯỚC 9 — AI (nguon: "ai") — KHỐI TÁCH RIÊNG, NHÃN CẢNH BÁO ── */}
+            {hoaGiai && (
+              <section class="rounded-(--radius-card) border-2 border-(--color-cinnabar-400)/50 bg-(--color-cinnabar-400)/5 p-4">
+                <div class="inline-block rounded-full border border-(--color-cinnabar-400) bg-(--color-cinnabar-400)/15 px-3 py-1 text-xs font-extrabold uppercase tracking-wide text-(--color-cinnabar-500)">
+                  nguồn: AI — Bước 9 (đề xuất hóa giải)
+                </div>
+                <p class="mt-2 text-xs font-medium italic text-(--color-ink-600)">{hoaGiai.canhBao}</p>
+                {hoaGiai.loi ? (
+                  <p class="mt-3 rounded-(--radius-control) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-3 text-sm text-(--color-danger-600)">{hoaGiai.loi}</p>
+                ) : (
+                  <div class="mt-3 space-y-2">
+                    {hoaGiai.deXuatHoaGiai.map((d) => (
+                      <div class="rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) p-3 text-sm">
+                        <p class="font-semibold text-(--color-ink-900)">{d.viTri}: {d.phuongAn}</p>
+                        <p class="mt-1 text-(--color-ink-600)">Lý do ngũ hành: {d.lyDoNguHanh}</p>
+                      </div>
+                    ))}
+                    {hoaGiai.deXuatHoaGiai.length === 0 && <p class="text-sm text-(--color-ink-500)">(AI không đưa ra đề xuất nào)</p>}
+                  </div>
+                )}
+              </section>
+            )}
+          </div>
+        )}
+      </div>
+    </Container>
+  )
+}

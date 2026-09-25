@@ -1,0 +1,29 @@
+---
+// TRANG "Luận nhà Huyền Không Đại Quái" — chỉ khung trang; form/tính toán/kết quả + gate thầy-only
+// nằm ở HkdqLuanNha.astro. Đăng ký card trong phong-thuy-chinh-phai.astro (khách bấm vào thấy "đang
+// hoàn thiện", chỉ admin dùng được).
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import HkdqLuanNha from "../../components/tools/HkdqLuanNha.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout
+  title="Luận nhà Huyền Không Đại Quái"
+  description="Công cụ luận một căn nhà đã có sẵn tọa/hướng theo Huyền Không Đại Quái (vòng 64 quẻ) — Vận, Chính/Linh Thần, thủy pháp, cửa, cách cục đặc biệt."
+>
+  <PageHero
+    eyebrow="Phong thủy chính phái — đang thử nghiệm"
+    title="Luận nhà Huyền Không Đại Quái"
+    description="Nhập tọa/hướng (độ la kinh) và các yếu tố (thủy pháp, cửa, nội cục) để luận nhà theo Huyền Không Đại Quái: xác định Vận, quẻ Tọa/Hướng, Chính/Linh Thần, hợp thập, không vong và các cách cục đặc biệt."
+    breadcrumbs={[
+      { label: "Trang chủ", href: "/" },
+      { label: "Đại Cát Lợi", href: "/dai-cat-loi" },
+      { label: "Phong thủy chính phái", href: "/dai-cat-loi/phong-thuy-chinh-phai" },
+      { label: "Luận nhà Huyền Không Đại Quái" },
+    ]}
+  />
+
+  <HkdqLuanNha />
+</BaseLayout>
