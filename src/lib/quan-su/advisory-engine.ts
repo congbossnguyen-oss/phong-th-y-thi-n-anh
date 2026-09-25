@@ -479,6 +479,50 @@ export function getHoaRelation(cast: FullCastResult, hao: number): HoaRelation {
   return { hao, isDong: hg.isDong, coBien: true, nguHanhGoc: hg.nguHanh, nguHanhBien: hb.nguHanh, hoiDau, quanHeBienVoiGoc: qh };
 }
 
+// ---------------------------------------------------------------------------------------------
+// PHI THẦN ↔ PHỤC THẦN (Phase 7) — structured FACT về quan hệ ngũ hành giữa Phục Thần (ẩn) và Phi
+// Thần (hào chủ mang nó). KHÔNG công thức mới, KHÔNG điểm số, KHÔNG kết luận tốt/xấu — chỉ phân loại
+// quan hệ theo `nguHanhTac` sẵn có; Ý NGHĨA từng quan hệ đã nằm ở `nguyen-tac-luan-giai.md` §5 (đã
+// nạp vào prompt), engine chỉ nêu FACT. Phi = hào chủ (HaoInfo đầy đủ); Phục = h.phucThan (ngũ hành
+// lấy từ CHI_NGU_HANH[chiIndex]) — cùng linkage engine đã dùng để resolve Dụng Thần phục tàng.
+export type PhiPhucQuanHe = "phuc-sinh-phi" | "phi-sinh-phuc" | "phi-khac-phuc" | "phuc-khac-phi" | "ti-hoa";
+
+export interface PhiPhucRelation {
+  hao: number; // vị trí Phi Thần (hào chủ mang phục), 1-6
+  phiThan: { lucThan: LucThan; nguHanh: NguHanh }; // hào chủ (hiện)
+  phucThan: { lucThan: LucThan; nguHanh: NguHanh }; // lục thân ẩn (phục)
+  quanHe: PhiPhucQuanHe; // FACT ngũ hành Phi↔Phục; ý nghĩa xem nguyen-tac §5, KHÔNG kèm verdict ở đây
+  lyDo: string;
+}
+
+/**
+ * Liệt kê mọi cặp Phi↔Phục hiện có trong quẻ (mỗi hào chủ có `phucThan` → một cặp). Pure/deterministic,
+ * không side effect, không LLM. Không tạo điểm/verdict — chỉ FACT quan hệ ngũ hành.
+ */
+export function getPhiPhucRelations(cast: FullCastResult): PhiPhucRelation[] {
+  const out: PhiPhucRelation[] = [];
+  for (const h of cast.chinh.hao) {
+    if (!h.phucThan) continue;
+    const phucNguHanh = CHI_NGU_HANH[h.phucThan.chiIndex];
+    if (!phucNguHanh) continue;
+    const qh = nguHanhTac(phucNguHanh, h.nguHanh); // a = Phục, b = Phi
+    const quanHe: PhiPhucQuanHe =
+      qh === "a-sinh-b" ? "phuc-sinh-phi"
+      : qh === "b-sinh-a" ? "phi-sinh-phuc"
+      : qh === "a-khac-b" ? "phuc-khac-phi"
+      : qh === "b-khac-a" ? "phi-khac-phuc"
+      : "ti-hoa";
+    out.push({
+      hao: h.hao,
+      phiThan: { lucThan: h.lucThan, nguHanh: h.nguHanh },
+      phucThan: { lucThan: h.phucThan.lucThan, nguHanh: phucNguHanh },
+      quanHe,
+      lyDo: `Phục ${h.phucThan.lucThan} (${phucNguHanh}) ẩn dưới Phi ${h.lucThan} (${h.nguHanh}) tại hào ${h.hao} — quan hệ ngũ hành: ${quanHe}.`,
+    });
+  }
+  return out;
+}
+
 /**
  * Luận 1 hào ĐỘNG so với Dụng Thần + Lục Thú + hóa biến. `dtNguHanh`/`dtHaoNum` CHỈ truyền khi Dụng
  * Thần HIỆN RÕ trên quẻ (phục tàng thì để null — không so ngũ hành với hào chủ, tránh sai vì hào

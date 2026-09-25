@@ -160,6 +160,27 @@ describe("dựng prompt luận giải", () => {
     expect(up).not.toContain("PHẢN NGÂM / PHỤC NGÂM");
     expect(up).not.toContain("undefined");
   });
+
+  // Phase 7 — PHI THẦN ↔ PHỤC THẦN surfacing. Override 1 hào có phục thần để render xác định.
+  const withPhuc = (qid: string, pos: number, phuc: { lucThan: string; chiIndex: number } | null) => {
+    const p = payloadMau(qid);
+    const hao = p.cast.chinh.hao.map((h) =>
+      h.hao === pos ? { ...h, phucThan: phuc ? { lucThan: phuc.lucThan, canIndex: 0, chiIndex: phuc.chiIndex } : null } : { ...h, phucThan: null },
+    );
+    return { ...p, cast: { ...p.cast, chinh: { ...p.cast.chinh, hao } } } as typeof p;
+  };
+
+  it("có phục thần → block PHI THẦN ↔ PHỤC THẦN xuất hiện, mang quan hệ ngũ hành", () => {
+    const up = userPrompt(withPhuc("vay-tien", 3, { lucThan: "Thê Tài", chiIndex: 6 })); // Ngọ Hỏa
+    expect(up).toContain("PHI THẦN ↔ PHỤC THẦN");
+    expect(up).toContain('"quanHe"');
+    expect(up).toContain("Thê Tài"); // dữ liệu engine, không hardcode
+  });
+
+  it("không có phục thần → KHÔNG render block Phi/Phục", () => {
+    const up = userPrompt(withPhuc("vay-tien", 3, null));
+    expect(up).not.toContain("PHI THẦN ↔ PHỤC THẦN");
+  });
 });
 
 // Khoá riêng lỗi đã gặp: Git trên Windows đổi LF sang CRLF khi checkout, làm biểu thức cắt

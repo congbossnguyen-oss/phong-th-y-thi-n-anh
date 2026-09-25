@@ -7,6 +7,7 @@
  */
 import type { QuanSuInterpretationPayload } from "../divination";
 import type { FourGods } from "../advisory-engine";
+import { getPhiPhucRelations } from "../advisory-engine";
 import { quyTacGiongVan } from "../giong-van";
 import { TRI_THUC_LOI } from "./kien-thuc";
 
@@ -130,6 +131,19 @@ export function userPrompt(payload: QuanSuInterpretationPayload, moTa?: string, 
       "TAM HỢP CỤC (engine tính sẵn — các hào tham gia ĐỔI HẲN sang ngũ hành của cục):",
       JSON.stringify(payload.tam_hop_cuc, null, 1),
       "Cục hình thành là tốt hay xấu tùy hành của cục sinh/khắc gì với Dụng Thần — tự luận, KHÔNG mặc định cục là điềm lành.",
+    );
+  }
+
+  // PHI THẦN ↔ PHỤC THẦN — surface FACT quan hệ ngũ hành (Phục ẩn dưới hào chủ Phi). Ý nghĩa từng
+  // quan hệ đã có trong phần tri thức (§ Phục Thần) — ở đây chỉ nêu dữ kiện, không kèm verdict/điểm.
+  const phiPhuc = getPhiPhucRelations(payload.cast);
+  if (phiPhuc.length > 0) {
+    phan.push(
+      "",
+      "PHI THẦN ↔ PHỤC THẦN (engine tính sẵn — lục thân ẩn 'phục' dưới hào chủ 'phi'; FACT quan hệ ngũ hành):",
+      JSON.stringify(phiPhuc, null, 1),
+      "- Ý nghĩa từng quan hệ (Phục sinh Phi / Phi sinh Phục / Phi khắc Phục / Phục khắc Phi) theo ĐÚNG mục 'Phục Thần' trong phần tri thức — KHÔNG tự đặt điểm số, KHÔNG tự đổi ai là Phi/ai là Phục.",
+      "- Chỉ dùng đúng các cặp Phi/Phục liệt kê ở đây; nếu vắng thì quẻ không có phục thần đáng xét. Dữ liệu engine/rule ưu tiên hơn án lệ tham khảo.",
     );
   }
 
