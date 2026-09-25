@@ -1,12 +1,19 @@
 ---
 // Trang chủ "app Quân Sư" — dựng lại theo đúng 4 ảnh tham khảo Thầy gửi (2026-08-23, chốt phương án
 // B: khung app đầy đủ, không chỉ chỉnh từng trang riêng lẻ). Bố cục: Hero đạo sĩ → Module cốt lõi
-// "Quân Sư Luận Giải" (RIÊNG, không gộp với Trạch Cát — Thầy nhắc rõ) → 5 icon nhóm nổi bật → toàn
-// bộ nhóm câu hỏi (thu gọn) → thẻ Xem Thời Vận → thanh điều hướng 5 tab dưới cùng.
+// "Quân Sư Luận Giải" (RIÊNG, không gộp với Trạch Cát — Thầy nhắc rõ) → 1 thẻ "Hỏi Quân Sư" duy nhất
+// → thẻ Xem Thời Vận → thanh điều hướng 5 tab dưới cùng.
+//
+// Đổi 2026-09-25 (Thầy): trước đây mục hỏi có 2 bước — chọn 1 trong 16 nhóm câu hỏi rồi chọn 1 câu
+// cụ thể trong nhóm. Thầy yêu cầu bỏ bước chọn nhóm, đưa khách vào thẳng câu hỏi tự do ("Câu hỏi
+// khác" cũ, question_id "cau-hoi-tu-do") — xem thêm chú thích tại thẻ "Hỏi Quân Sư" bên dưới. Thư
+// viện 16 nhóm/120 câu hỏi VẪN CÒN NGUYÊN trong dữ liệu (questions.ts/categories.ts) — chỉ không
+// còn đường dẫn từ trang chủ nữa, vẫn tìm được qua thanh tìm kiếm và vẫn dùng cho lịch sử luận giải
+// cũ, tránh xoá dữ liệu không cần thiết.
 import BaseLayout from "../../layouts/BaseLayout.astro";
 import BottomNav from "../../components/quan-su/BottomNav.astro";
 import "../../styles/quan-su.css";
-import { getAllCategories, getAllQuestions, getCategoriesWithCounts } from "../../lib/quan-su";
+import { getAllCategories, getAllQuestions } from "../../lib/quan-su";
 import TourChaoMung from "../../components/quan-su/TourChaoMung.astro";
 import { thongTinKhuyenMai } from "../../lib/quan-su/khuyen-mai-luan-giai";
 import { daiCatLoiTools, paidTools } from "../../lib/dai-cat-loi-tools";
@@ -17,8 +24,6 @@ export const prerender = false;
 // api/quan-su/goi-thue-bao/checkout.ts và goi-thue-bao.astro (3 chỗ, sửa cả 3 khi mở lại), vì badge
 // ở đây chỉ là hiển thị — chặn thật nằm ở checkout.ts.
 const DANG_MO_BAN = false;
-
-const categories = getCategoriesWithCounts();
 
 // "Công cụ hữu ích" — tách thành hằng số dùng chung giữa lưới hiển thị (bên dưới) và chỉ mục tìm
 // kiếm, để không lặp lại 5 dòng này 2 chỗ rồi lệch nhau dần theo thời gian.
@@ -93,23 +98,6 @@ const hienTour = Boolean(
 // Thông báo khuyến mãi "50 người đăng ký sớm nhất — 10 lượt luận Kinh Dịch miễn phí trong 1 tháng"
 // (anh Công 7/9/2026) — chỉ đọc khi CẦN hiện tour, tránh 1 query DB thừa cho khách đã xem tour rồi.
 const khuyenMai = hienTour && Astro.locals.user ? await thongTinKhuyenMai(Astro.locals.user.id) : null;
-
-// 5 nhóm nổi bật hiện thành icon tròn ngay dưới module cốt lõi (đúng ảnh 1) — trỏ vào đúng
-// category_id thật trong Question Library, không phải mục giả. Nhóm còn lại vẫn xem đủ ở khối
-// "Xem tất cả" bên dưới, không mất tính năng nào.
-//
-// Icon vector 1 màu vàng (không dùng emoji nhiều màu) — Thầy: "icon chỉ để hình vector màu vàng,
-// vòng tròn ngoài cũng vàng cho đồng bộ" (2026-08-23). Trước đó dùng emoji + vòng nhiều màu, đổi
-// nền tảng hay ra màu khác ý muốn (ví dụ ☯ ra ô vuông tím trên iOS) — vector tự vẽ mới kiểm soát
-// được đúng 1 màu trên mọi máy.
-const NOI_BAT_DINH_NGHIA = [
-  { id: "su-nghiep", label: "Công việc", icon: "briefcase" },
-  { id: "tai-chinh", label: "Tài lộc", icon: "coin" },
-  { id: "dau-tu", label: "Đầu tư", icon: "trend" },
-  { id: "tinh-duyen-hon-nhan", label: "Tình cảm", icon: "heart" },
-  { id: "nha-cua", label: "Gia đạo", icon: "home" },
-] as const;
-const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === n.id));
 ---
 
 <BaseLayout title="Quân Sư Thiên Anh" description="Hỏi Quân Sư — cố vấn quyết định dựa trên Kinh Dịch." appShell>
@@ -186,47 +174,18 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
           <p>Một việc – Một hướng đi. Quân Sư lập quẻ, dịch soi đường, định hướng hành động.</p>
         </div>
       </div>
-      <a href="#hoi" class="qsh-cta">💬 Hỏi Quân Sư</a>
-
-      <h2 id="hoi" class="qsh-section-title">Anh muốn hỏi việc gì?</h2>
-      <div class="qsh-icon-row" data-tour="luan-dich">
-        {noiBat.map((n) => (
-          <a href={`/quan-su/${n.id}`} class="qsh-icon-item">
-            <span class="qsh-icon-badge">
-              {n.icon === "briefcase" && (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><rect x="3.5" y="7.5" width="17" height="12" rx="2"/><path d="M8.5 7.5V6a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v1.5" stroke-linecap="round"/><path d="M3.5 12.5h17" /></svg>
-              )}
-              {n.icon === "coin" && (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5v9M14.5 9.8c0-1-1-1.8-2.5-1.8s-2.5.9-2.5 1.9c0 2.7 5 1.3 5 4 0 1-1 1.9-2.5 1.9s-2.5-.8-2.5-1.8" stroke-linecap="round"/></svg>
-              )}
-              {n.icon === "trend" && (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M4 17 9.5 11l4 4L20 6" stroke-linecap="round" stroke-linejoin="round"/><path d="M14.5 6H20v5.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              )}
-              {n.icon === "heart" && (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M12 20s-7.5-4.6-9.7-9.3C.6 7 2.4 4 5.6 4c1.9 0 3.4 1 4.4 2.5C11 5 12.5 4 14.4 4c3.2 0 5 3 3.3 6.7C15.5 15.4 12 20 12 20Z" stroke-linejoin="round"/></svg>
-              )}
-              {n.icon === "home" && (
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M3 11.5 12 4l9 7.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M5.5 10v9a1 1 0 0 0 1 1h11a1 1 0 0 0 1-1v-9" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              )}
-            </span>
-            <span>{n.label}</span>
-          </a>
-        ))}
-      </div>
-
-      <details class="qsh-more" data-tour="luan-dich">
-        <summary>Xem tất cả {categories.length} nhóm câu hỏi</summary>
-        <div class="qs-grid" style="margin-top:1rem;">
-          {categories.map((c) => (
-            <a class="qs-card" href={`/quan-su/${c.id}`}>
-              <div class="ic">{c.icon}</div>
-              <div class="ti">{c.title}</div>
-              <div class="de">{c.subtitle}</div>
-              <div class="ct">{c.questionCount} câu hỏi</div>
-            </a>
-          ))}
+      {/* Trước đây phải chọn 1 trong 16 nhóm rồi mới chọn 1 câu hỏi cụ thể trong nhóm — Thầy yêu cầu
+          bỏ bước chọn nhóm (2026-09-25), đưa thẳng vào ô hỏi tự do (câu hỏi "cau-hoi-tu-do", trước
+          đây là mục "Câu hỏi khác" duy nhất cho gói Cao Cấp — nay pricing_tier đổi sang "co-ban" nên
+          cả 3 hạng đều hỏi được, chỉ khác hạn mức lượt/tháng, xem questions.ts). */}
+      <a href="/quan-su/hoi/cau-hoi-tu-do" id="hoi" class="qsh-tv-card" data-tour="luan-dich">
+        <div>
+          <p class="qs-eyebrow" style="margin:0 0 0.2rem;">Hỏi Quân Sư</p>
+          <h3>Anh muốn hỏi việc gì?</h3>
+          <p>Viết cụ thể việc đang phân vân — Quân Sư lập quẻ, luận giải, và đưa hướng đi.</p>
         </div>
-      </details>
+        <span class="qsh-arrow">→</span>
+      </a>
 
       <a href="/quan-su/xem-thoi-van" class="qsh-tv-card" data-tour="thoi-van">
         <div>
@@ -382,7 +341,6 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
   <BottomNav />
   {hienTour && (
     <TourChaoMung
-      soNhom={categories.length}
       tenNguoiDung={Astro.locals.user!.name}
       hetHanKhuyenMai={khuyenMai ? khuyenMai.hetHanLuc.toISOString() : null}
     />
@@ -527,43 +485,9 @@ const noiBat = NOI_BAT_DINH_NGHIA.filter((n) => categories.some((c) => c.id === 
   .qsh-module-body h2 { font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.25rem; margin: 0 0 0.3rem; color: var(--qs-ivory); }
   .qsh-module-body p { margin: 0; color: var(--qs-muted); font-size: 0.82rem; line-height: 1.5; }
 
-  .qsh-cta {
-    display: block; text-align: center; margin: 0.9rem 0 1.8rem; text-decoration: none;
-    background: linear-gradient(160deg, #f6d878, #d9a53a); color: #1a1206; font-weight: 800;
-    border-radius: 999px; padding: 0.85rem 1.2rem; font-size: 0.95rem;
-    box-shadow: 0 8px 20px rgba(241, 200, 90, 0.25);
-  }
-
   .qsh-section-title { font-family: "Cormorant Garamond", Georgia, serif; font-size: 1.3rem; color: var(--qs-ivory); margin: 0 0 1rem; scroll-margin-top: 1rem; }
 
-  .qsh-icon-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 0.5rem; margin-bottom: 1.6rem; }
-  .qsh-icon-item { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; text-decoration: none; color: var(--qs-ivory); font-size: 0.72rem; text-align: center; }
-  .qsh-icon-badge {
-    --c: #f1c85a;
-    width: 50px; height: 50px; display: flex; align-items: center; justify-content: center;
-    border-radius: 999px;
-    background: color-mix(in srgb, var(--c) 14%, transparent);
-    border: 1.5px solid var(--c);
-    box-shadow: 0 0 14px color-mix(in srgb, var(--c) 45%, transparent);
-  }
-  /* Icon bên trong nhỏ lại rõ ràng — Thầy: "to quá hơi phô" (2026-08-23). Ép kích thước bằng CSS
-     thay vì chỉ dựa vào viewBox, vì <svg> không có width/height riêng dễ bị trình duyệt render
-     theo kích thước mặc định (300×150) rồi mới bị bóp méo bởi layout, không nhất quán giữa máy. */
-  .qsh-icon-badge svg { width: 20px; height: 20px; }
-
-  .qsh-more { margin-bottom: 1.6rem; }
-  .qsh-more summary {
-    cursor: pointer; color: var(--qs-gold); font-size: 0.85rem; font-weight: 600;
-    padding: 0.7rem 0.9rem; border: 1px solid rgba(241, 200, 90, 0.2); border-radius: 12px;
-    background: rgba(255, 255, 255, 0.02); list-style: none;
-  }
-  .qsh-more summary::-webkit-details-marker { display: none; }
-  .qsh-more summary::after { content: "▾"; float: right; }
-  .qsh-more[open] summary::after { content: "▴"; }
-
-  /* Nút "Giới thiệu Zhi Gong" — cùng cơ chế <details> với .qsh-more phía trên, nhưng tách class
-     riêng vì nội dung mở ra dài hẳn (tự sự nhiều đoạn), cần padding/line-height rộng rãi hơn thay
-     vì 1 dòng ngắn như "Xem tất cả N nhóm câu hỏi". */
+  /* Nút "Giới thiệu Zhi Gong" — dùng cơ chế <details>. */
   .qsh-intro { margin-top: 1.4rem; margin-bottom: 0.4rem; }
   .qsh-intro summary {
     cursor: pointer; color: var(--qs-gold); font-size: 0.85rem; font-weight: 600;

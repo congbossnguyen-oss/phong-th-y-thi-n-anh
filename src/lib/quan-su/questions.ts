@@ -367,7 +367,10 @@ export const questions: QuestionDefinition[] = [
     recommended_engines: ["bat-tu", "tu-vi"],
     divination_method: "luc-hao",
     output_type: "luan-giai",
-    pricing_tier: "cao-cap",
+    // Đổi từ "cao-cap" sang "co-ban" (Thầy, 2026-09-25): "Câu hỏi khác" giờ là lối vào DUY NHẤT để
+    // hỏi Quân Sư (xem index.astro) — cả 3 hạng Cơ bản/Cao cấp/VIP đều phải vào được, chỉ khác nhau
+    // hạn mức lượt hỏi/tháng (HAN_MUC_LUOT_THEO_GOI), không còn khác nhau ở LOẠI câu hỏi được hỏi.
+    pricing_tier: "co-ban",
     safety_level: "thuong",
   },
 ];

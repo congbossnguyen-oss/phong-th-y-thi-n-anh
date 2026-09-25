@@ -12,8 +12,6 @@
 import { TONG_LUOT_MIEN_PHI_KHUYEN_MAI } from "../../lib/quan-su/khuyen-mai-luan-giai";
 
 interface Props {
-  /** Số nhóm câu hỏi thật — đọc trong lời thoại để không nói sai số khi thư viện câu hỏi đổi. */
-  soNhom: number;
   /** Tên tài khoản, để Quân Sư chào đúng tên ở lời mở đầu. */
   tenNguoiDung: string;
   /**
@@ -24,7 +22,7 @@ interface Props {
    */
   hetHanKhuyenMai: string | null;
 }
-const { soNhom, tenNguoiDung, hetHanKhuyenMai } = Astro.props;
+const { tenNguoiDung, hetHanKhuyenMai } = Astro.props;
 // Chỉ lấy tên (từ cuối) — "Nguyễn Văn A" -> "A", giống cách xưng hô thân mật ngoài đời, không đọc
 // hết họ tên đầy đủ nghe trang trọng xa cách.
 const tenNgan = tenNguoiDung.trim().split(/\s+/).at(-1) || tenNguoiDung;
@@ -66,7 +64,7 @@ const BUOC = [
   },
   {
     moc: "thue-bao",
-    loi: "Gói thuê bao có mức Cơ Bản và Cao Cấp để bạn chọn lựa, tuỳ nhu cầu của mỗi người.",
+    loi: "Gói thuê bao có 3 mức Cơ Bản, Cao Cấp và VIP để bạn chọn lựa, tuỳ nhu cầu của mỗi người.",
   },
   {
     moc: "cao-cap",
@@ -74,7 +72,7 @@ const BUOC = [
   },
   {
     moc: "luan-dich",
-    loi: `Và đây là linh hồn của Quân Sư Thiên Anh: Luận Quẻ Kinh Dịch. ${soNhom} mục lớn, bên trong mỗi mục có sẵn rất nhiều câu hỏi nhỏ. Riêng bản Cao Cấp còn có thêm mục "Câu hỏi khác" để bạn tuỳ ý hỏi.`,
+    loi: "Và đây là linh hồn của Quân Sư Thiên Anh: Luận Quẻ Kinh Dịch. Bạn chỉ cần viết ra việc mình đang phân vân, Quân Sư sẽ lập quẻ và luận giải cho bạn — gói nào cũng hỏi được, chỉ khác nhau hạn mức lượt hỏi trong tháng.",
   },
   {
     loi: "Khi bước vào mục lập quẻ, bạn có 4 hình thức để gieo. Cách thực hiện chi tiết tôi đã để sẵn trong từng mục — bạn hãy trải nghiệm.",
