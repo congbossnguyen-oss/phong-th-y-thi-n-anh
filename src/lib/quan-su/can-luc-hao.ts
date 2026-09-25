@@ -9,11 +9,15 @@
 //   temporalExistence (Không Vong) · breakState (Nguyệt/Nhật/Tuế Phá) · burialState (Nhập Mộ)
 //   transformationState (hóa biến) · yearState (Thái Tuế/Tuế Phá) · currentState (mô tả tổng hợp).
 //
-// ⚠️ CASE 6 — nguồn ghi "Hào sinh Tháng + Tháng khắc Hào": hai vế loại trừ nhau về ngũ hành (không thể
-// đồng thời đúng). Cả 2 cách đọc đều cho kết luận TRUNG HÒA; chỉ cách đọc "Hào sinh Tháng (tiết khí)"
-// mới khiến Case 6 KHÁC Case 4 (không trùng lặp). Vì vậy cài theo vế "Hào sinh Tháng". Kết luận KHÔNG
-// tự chế (Trung Hòa là do Thầy khóa); chỉ giải quyết mâu thuẫn văn tự theo cách duy nhất không thoái hóa.
-// → Cần Thầy xác nhận lại wording Case 6 (xem báo cáo Phase 10C).
+// ⚠️ CASE 6 — nguồn ghi "Hào sinh Tháng + Tháng khắc Hào": hai vế loại trừ nhau về ngũ hành. THẦY ĐÃ KHÓA
+// (Phase 10E): đọc theo vế "Hào sinh Tháng" = hào bị tiết khí → Trung Hòa. KHÔNG mở lại ambiguity này.
+//
+// GAP-1 / GAP-2 (Phase 10E — Thầy khóa sau khi validate 153 án lệ ở Phase 10D):
+//   • GAP-1: một trụ (Ngày HOẶC Tháng) sinh/phù + trụ kia khắc → TRUNG HÒA (cân bằng lực). Không cho rule
+//     "khắc → Suy" ghi đè khi trụ còn lại đang trợ. Đánh giá Ngày+Tháng như MỘT hệ lực.
+//   • GAP-2: "Nguyệt phù" = Tháng đồng hành/sinh phù cho hào (KHÔNG cần trùng đúng Chi Lâm Nguyệt Kiến) là
+//     một NGUỒN VƯỢNG. Phân biệt: Lâm Nguyệt Kiến (trùng chi) = special; Nguyệt phù (đồng hành) = Vượng.
+//     KHÔNG tự nâng Rất Vượng (Rất Vượng chỉ khi Ngày Nhị Hợp + Tháng sinh).
 
 import type { FullCastResult, HaoInfo } from "../luc-hao";
 import { LUC_HOP_PAIRS, chiXungVoi, chiTaiGiaiDoanTruongSinh } from "../luc-hao";
@@ -49,6 +53,7 @@ export interface HaoStrengthState {
   interactionState: {
     nhatSupport: "sinh" | "khac" | "hao" | "dong-hanh" | "none"; // Nhật ĐỐI VỚI hào
     nguyetSupport: "sinh" | "khac" | "hao" | "dong-hanh" | "none";
+    nguyetPhu: boolean; // Nguyệt phù: Tháng sinh/đồng hành (KHÔNG cần trùng đúng Chi) — nguồn Vượng (GAP-2)
     tietLuc: boolean; // hào sinh/khắc Nhật hoặc Nguyệt (bị tiết)
     dongSinh: boolean; // có hào ĐỘNG khác đến sinh hào này
     dongKhac: boolean; // có hào ĐỘNG khác đến khắc hào này
@@ -147,32 +152,51 @@ function tinhBaseForce(
   const daySame = dayRel === "ti-hoa";
   const daySupport = daySinh || dayNhiHop || daySame; // Ngày sinh / Nhị Hợp / đồng hành
   const monthSinh = monthRel === "b-sinh-a";
+  const monthSame = monthRel === "ti-hoa"; // Nguyệt phù (đồng hành, không cần trùng đúng Chi) — GAP-2
+  const monthSupport = monthSinh || monthSame; // Tháng sinh HOẶC đồng hành = Nguyệt phù (nguồn Vượng)
   const monthKhac = monthRel === "b-khac-a";
   const lineSinhMonth = monthRel === "a-sinh-b"; // hào sinh Tháng (tiết)
   const lineKhacMonth = monthRel === "a-khac-b"; // hào khắc Tháng
   const dayKhac = dayRel === "b-khac-a";
   const lineDrainsDay = dayRel === "a-sinh-b" || dayRel === "a-khac-b"; // hào sinh/khắc Ngày
 
-  // Case 2/1/3 — Ngày trợ + Tháng sinh.
-  if (daySupport && monthSinh) {
-    if (dayNhiHop) { prov.push("Case 2: Ngày Nhị Hợp hào + Tháng sinh hào → Rất Vượng."); return "Rất Vượng"; }
-    prov.push(`Case ${daySinh ? 1 : 3}: Ngày ${daySinh ? "sinh" : "đồng hành"} hào + Tháng sinh hào → Vượng.`);
+  // GAP-1 (Phase 10E — Thầy khóa): một trụ (Ngày/Tháng) sinh/phù + trụ kia khắc → cân bằng → TRUNG HÒA.
+  // Đặt TRƯỚC nhánh "khắc → Suy" để không cho một rule khắc đơn lẻ ghi đè khi trụ kia đang trợ.
+  // Nhánh Ngày-trợ + Tháng-khắc chính là Case 4 cũ; bổ sung nhánh đối xứng Tháng-phù + Ngày-khắc.
+  if (daySupport && monthKhac) {
+    prov.push("Case 4: Ngày trợ + Tháng khắc hào → Trung Hòa (cân bằng lực).");
+    return napHaoDong("Trung Hòa", dong, prov);
+  }
+  if (monthSupport && dayKhac) {
+    prov.push("GAP-1 (đối xứng Case 4): Tháng sinh/phù + Ngày khắc hào → Trung Hòa (cân bằng lực).");
+    return napHaoDong("Trung Hòa", dong, prov);
+  }
+
+  // Case 1/2/3 + GAP-2 — cả Ngày và Tháng đều trợ (Tháng trợ gồm cả Nguyệt phù đồng hành).
+  if (daySupport && monthSupport) {
+    if (dayNhiHop && monthSinh) { prov.push("Case 2: Ngày Nhị Hợp hào + Tháng sinh hào → Rất Vượng."); return "Rất Vượng"; }
+    prov.push("Case 1/3: Ngày trợ + Tháng sinh/phù → Vượng.");
     return "Vượng";
   }
-  // Case 7 — Ngày trợ + hào khắc Tháng.
+  // GAP-2 (Phase 10E — Thầy khóa): Nguyệt phù (Tháng sinh/đồng hành) là NGUỒN VƯỢNG, kể cả khi Ngày
+  // không trợ — miễn Ngày không khắc trực tiếp (nhánh Ngày khắc đã xử ở GAP-1 ở trên). KHÔNG tự nâng Rất Vượng.
+  if (monthSupport && !dayKhac) {
+    prov.push("GAP-2: Nguyệt phù (Tháng sinh/đồng hành) + Ngày không khắc → Vượng.");
+    return "Vượng";
+  }
+
+  // Ngày trợ + Tháng ở thế tiết (hào sinh/khắc Tháng) — Case 7 / Case 6.
   if (daySupport && lineKhacMonth) { prov.push("Case 7: Ngày trợ + hào khắc Tháng → vẫn Vượng."); return "Vượng"; }
-  // Case 4 — Ngày trợ + Tháng khắc hào → Trung Hòa (có thể được hào động nâng).
-  if (daySupport && monthKhac) {
-    prov.push("Case 4: Ngày trợ + Tháng khắc hào → Trung Hòa.");
-    return napHaoDong("Trung Hòa", dong, prov);
-  }
-  // Case 6 — Ngày trợ + hào sinh Tháng (tiết) → Trung Hòa (đọc theo vế 'Hào sinh Tháng', xem chú thích đầu file).
   if (daySupport && lineSinhMonth) {
-    prov.push("Case 6: Ngày trợ + hào sinh Tháng (tiết khí) → Trung Hòa.");
+    // Case 6 — GIỮ NGUYÊN cách đọc Thầy đã khóa: "Hào sinh Tháng" = hào bị tiết khí → Trung Hòa
+    // (xem chú thích đầu file; Phase 10E KHÔNG mở lại ambiguity này).
+    prov.push("Case 6 (đã khóa): Ngày trợ + hào sinh Tháng (tiết khí) → Trung Hòa.");
     return napHaoDong("Trung Hòa", dong, prov);
   }
-  // Case 5 — hào bị tiết (sinh/khắc Nhật/Nguyệt) HOẶC Nhật/Nguyệt khắc hào.
-  if (dayKhac || monthKhac) { prov.push("Nhật/Nguyệt khắc hào → Suy (Case 5 nhánh khắc trực tiếp)."); return "Suy"; }
+
+  // Case 5 — Nhật/Nguyệt khắc trực tiếp (không có trụ nào trợ để cân bằng) → Suy.
+  if (dayKhac || monthKhac) { prov.push("Nhật/Nguyệt khắc hào (không trụ nào trợ) → Suy (Case 5 nhánh khắc trực tiếp)."); return "Suy"; }
+  // Case 5 — hào bị tiết (sinh/khắc Nhật/Nguyệt) → xét hào động.
   if (lineDrainsDay || lineSinhMonth || lineKhacMonth) {
     prov.push("Case 5: hào bị tiết (sinh/khắc Nhật/Nguyệt) → xét hào động.");
     return napHaoDong("Trung Hòa", dong, prov);
@@ -275,6 +299,7 @@ export function canLucHao(cast: FullCastResult, lineIndex: number): HaoStrengthS
     interactionState: {
       nhatSupport: CANH_SUPPORT(dayRel),
       nguyetSupport: CANH_SUPPORT(monthRel),
+      nguyetPhu: self.chiIndex !== monthChiIndex && (monthRel === "b-sinh-a" || monthRel === "ti-hoa"),
       tietLuc: dayRel === "a-sinh-b" || dayRel === "a-khac-b" || monthRel === "a-sinh-b" || monthRel === "a-khac-b",
       dongSinh: dong.dongSinh,
       dongKhac: dong.dongKhac,
