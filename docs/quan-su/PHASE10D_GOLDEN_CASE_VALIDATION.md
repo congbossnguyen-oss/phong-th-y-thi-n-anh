@@ -204,3 +204,39 @@ nghĩa, KHÔNG phải code cài sai rule → **không sửa code** (đúng §I.5
 
 ## Commit
 `docs(quan-su): validate hao strength against golden cases` — chỉ thêm tài liệu, **no push**.
+
+---
+
+# Resolved in Phase 10E
+
+Thầy đã khóa hướng xử lý 2 gap; Phase 10E cài vào `canLucHao` (`src/lib/quan-su/can-luc-hao.ts`,
+`tinhBaseForce`) + regression test (`__can-luc-hao.test.ts`). **Lịch sử Phase 10D ở trên GIỮ NGUYÊN.**
+
+### GAP-1 → RESOLVED
+Một trụ (Ngày HOẶC Tháng) **sinh/phù** + trụ kia **khắc** hào → **Trung Hòa** (cân bằng lực). Cài đối xứng:
+- Ngày trợ + Tháng khắc → Trung Hòa (Case 4 cũ).
+- Tháng sinh/phù + Ngày khắc → Trung Hòa (nhánh mới — khớp án lệ "Thuốc đến bệnh trừ" và 7 ca "suy vượng
+  tương đương").
+- Đặt TRƯỚC nhánh "khắc → Suy" nên rule khắc đơn lẻ không ghi đè khi trụ kia đang trợ. Khắc trực tiếp mà
+  **không** trụ nào trợ → vẫn **Suy** (không nới lỏng quá tay).
+
+### GAP-2 → RESOLVED
+"Nguyệt phù" = Tháng **đồng hành/sinh phù** cho hào (KHÔNG cần trùng đúng Chi Lâm Nguyệt Kiến) → **nguồn
+Vượng**. `monthSupport = monthSinh || monthSame`. Phân biệt: Lâm Nguyệt Kiến (trùng chi) = special state;
+Nguyệt phù (đồng hành khác chi) = Vượng, có cờ `interactionState.nguyetPhu`. **KHÔNG** tự nâng Rất Vượng
+(Rất Vượng chỉ khi Ngày Nhị Hợp + Tháng sinh). Khớp án lệ "Con gái khóc thức giấc" (Mão mộc, Nguyệt Dần phù
+→ vượng tướng).
+
+### Case 6 → LOCKED (không đổi)
+Giữ cách đọc Thầy đã khóa: "Hào sinh Tháng" = hào bị **tiết khí** → Case 6 (Ngày trợ + hào sinh Tháng) →
+**Trung Hòa**. Phase 10E KHÔNG mở lại ambiguity này.
+
+### Không đổi (vẫn nguyên như Phase 10C)
+7 case cũ, Không Vong (trục hiện hữu riêng, không zero), Phá (chỉ giảm, không zero), Ám Động
+(Vượng+Nhật xung), Thái Tuế (≠ Vượng), 6 thể Tam Hợp. Không scoring/weighting.
+
+### Regression
+- `__can-luc-hao.test.ts`: +9 test Phase 10E (GAP-1 ×4, GAP-2 ×4, Case 6 ×1), gồm golden-case fixtures
+  ("Thuốc đến bệnh trừ", "Con gái khóc thức giấc"). Tổng can-luc-hao + sau-tam-hop: **42 PASS**.
+- Quan Su + Lục Hào: **126/126 PASS** (117 cũ + 9 mới). `tsc` các file 10E: không lỗi.
+- Data gap còn lại (Tuế Phá, Tam Hợp TH2/TH3/TH6) & synthesis Kỵ→Nguyên→Dụng: chưa thuộc phạm vi 10E.

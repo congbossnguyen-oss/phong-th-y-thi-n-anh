@@ -196,6 +196,59 @@ describe("Phase 10C — trục hiện hữu, ám động, năm", () => {
   });
 });
 
+// -------------------------------------------------------------------------------------------------
+// Phase 10E — GAP-1 (một trụ sinh/phù + trụ kia khắc → Trung Hòa) + GAP-2 (Nguyệt phù = nguồn Vượng).
+// Golden-case fixtures lấy từ án lệ đã validate ở Phase 10D.
+describe("Phase 10E — GAP-1: cân bằng khi một trụ trợ + một trụ khắc", () => {
+  it("Day sinh + Month khắc → Trung Hòa", () => {
+    const s = canLucHao(mkCast({ hao: [mkHao(1, c("Dần"))], dayChi: "Tý", monthChi: "Dậu" }), 1);
+    expect(s.baseForce).toBe("Trung Hòa");
+  });
+  it("Day khắc + Month sinh → Trung Hòa (đối xứng — án lệ 'Thuốc đến bệnh trừ')", () => {
+    // hào Mão (Mộc); Ngày Dậu (Kim khắc Mộc) + Tháng Tý (Thủy sinh Mộc) → suy vượng tương đương.
+    const s = canLucHao(mkCast({ hao: [mkHao(1, c("Mão"))], dayChi: "Dậu", monthChi: "Tý" }), 1);
+    expect(s.baseForce).toBe("Trung Hòa");
+  });
+  it("Day đồng hành + Month khắc → Trung Hòa", () => {
+    const s = canLucHao(mkCast({ hao: [mkHao(1, c("Dần"))], dayChi: "Mão", monthChi: "Dậu" }), 1);
+    expect(s.baseForce).toBe("Trung Hòa");
+  });
+  it("khắc trực tiếp KHÔNG có trụ trợ vẫn Suy (không nới lỏng quá tay)", () => {
+    // hào Dần; Ngày Dậu + Tháng Thân đều khắc (Kim khắc Mộc), không trụ nào trợ → Suy.
+    const s = canLucHao(mkCast({ hao: [mkHao(1, c("Dần"))], dayChi: "Dậu", monthChi: "Thân" }), 1);
+    expect(s.baseForce).toBe("Suy");
+  });
+});
+
+describe("Phase 10E — GAP-2: Nguyệt phù (Tháng đồng hành) = nguồn Vượng", () => {
+  it("Month đồng hành + Day không khắc → Vượng (án lệ 'Con gái khóc thức giấc')", () => {
+    // hào Mão (Mộc); Tháng Dần (Mộc, Nguyệt phù, khác Chi) + Ngày Mùi (hào khắc Ngày = tiết, không khắc hào).
+    const s = canLucHao(mkCast({ hao: [mkHao(1, c("Mão"))], dayChi: "Mùi", monthChi: "Dần" }), 1);
+    expect(s.baseForce).toBe("Vượng");
+  });
+  it("Nguyệt phù nhận diện được dù KHÔNG trùng đúng Chi", () => {
+    const s = canLucHao(mkCast({ hao: [mkHao(1, c("Mão"))], dayChi: "Mùi", monthChi: "Dần" }), 1);
+    expect(s.interactionState.nguyetPhu).toBe(true);
+  });
+  it("Nguyệt phù KHÔNG tự động → Rất Vượng (chỉ Vượng)", () => {
+    const s = canLucHao(mkCast({ hao: [mkHao(1, c("Mão"))], dayChi: "Mùi", monthChi: "Dần" }), 1);
+    expect(s.baseForce).not.toBe("Rất Vượng");
+  });
+  it("Lâm Nguyệt Kiến (trùng Chi) vẫn Vượng, và KHÔNG bị gắn cờ Nguyệt phù", () => {
+    const s = canLucHao(mkCast({ hao: [mkHao(1, c("Dần"))], dayChi: "Sửu", monthChi: "Dần" }), 1);
+    expect(s.baseForce).toBe("Vượng");
+    expect(s.interactionState.nguyetPhu).toBe(false); // Lâm ≠ Nguyệt phù
+  });
+});
+
+describe("Phase 10E — Case 6 Tam Hợp GIỮ NGUYÊN", () => {
+  it("Ngày trợ + hào sinh Tháng (tiết) → vẫn Trung Hòa (đã khóa)", () => {
+    // hào Dần; Ngày Tý (Thủy sinh Mộc = trợ) + Tháng Tỵ (Mộc sinh Hỏa = hào sinh Tháng, tiết).
+    const s = canLucHao(mkCast({ hao: [mkHao(1, c("Dần"))], dayChi: "Tý", monthChi: "Tỵ" }), 1);
+    expect(s.baseForce).toBe("Trung Hòa");
+  });
+});
+
 describe("Phase 10C — deterministic + không điểm số", () => {
   it("cùng input → cùng output", () => {
     const build = () => canLucHao(mkCast({ hao: [mkHao(1, c("Dần"))], dayChi: "Tý", monthChi: "Hợi" }), 1);
