@@ -13,6 +13,7 @@ import { synthesizeKyNguyenDung } from "../ky-nguyen-dung";
 import { ketLuanSuViec } from "../ket-luan-su-viec";
 import { synthesizeUngKy } from "../ung-ky-synthesis";
 import { synthesizeHinh } from "../hinh-relations";
+import { synthesizeCuuThan } from "../cuu-than";
 import { phanLoaiSauTamHop } from "../../luc-hao-tam-hop-cuc";
 import { quyTacGiongVan } from "../giong-van";
 import { TRI_THUC_LOI } from "./kien-thuc";
@@ -205,6 +206,18 @@ export function userPrompt(payload: QuanSuInterpretationPayload, moTa?: string, 
         "- Hình là QUAN HỆ deterministic engine đã xác định. KHÔNG tự thêm Hình, KHÔNG tự coi Hình = Khắc, KHÔNG biến Hình thành 'xấu/hung' hay lực Suy.",
         "- Nguồn CHƯA khóa ý nghĩa cát/hung cụ thể của Hình → chỉ MÔ TẢ quan hệ (vd 'có Tam Hình Dần-Tỵ-Thân giữa các hào...'), KHÔNG dùng Hình để đảo `conclusion`.",
         "- Chỉ dùng đúng các bộ Hình liệt kê ở đây (engine cố ý CHỈ xét Dần-Tỵ-Thân và Tý-Mão; Tự Hình / Sửu-Tuất-Mùi chưa khóa nguồn nên KHÔNG có — đừng tự thêm).",
+      );
+    }
+
+    // CỪU THẦN — DETERMINISTIC FACT (Phase 16) — sinh Kỵ, khắc Nguyên (spec §260/§229). Chỉ render khi có hào Cừu.
+    const cuu = synthesizeCuuThan(payload.cast, fgForKetLuan);
+    if (cuu.members.length > 0) {
+      phan.push(
+        "",
+        "CỪU THẦN — QUAN HỆ FACT (engine xác định theo spec: hào SINH Kỵ Thần đồng thời KHẮC Nguyên Thần):",
+        JSON.stringify(cuu, null, 1),
+        "- Cừu Thần là 'kẻ thù gián tiếp' (nuôi Kỵ, chặn Nguyên). Đây là QUAN HỆ deterministic — KHÔNG tự thêm Cừu, KHÔNG đổi vai trò, KHÔNG coi Cừu = Kỵ Thần.",
+        "- KHÔNG tự biến Cừu thành lực Suy/Hung hay verdict; KHÔNG dùng Cừu để đảo `conclusion`. Nguồn CHƯA khóa mức cát/hung cụ thể → chỉ MÔ TẢ quan hệ (Cừu sinh Kỵ nào, khắc Nguyên nào).",
       );
     }
   }

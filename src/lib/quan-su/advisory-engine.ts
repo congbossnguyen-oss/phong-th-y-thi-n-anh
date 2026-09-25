@@ -22,6 +22,7 @@ import { synthesizeKyNguyenDung, type KyNguyenDungSynthesis } from "./ky-nguyen-
 import { ketLuanSuViec, type QuanSuConclusion } from "./ket-luan-su-viec";
 import { synthesizeUngKy, type UngKySynthesis } from "./ung-ky-synthesis";
 import { synthesizeHinh, type HinhResult } from "./hinh-relations";
+import { synthesizeCuuThan, type CuuThanResult } from "./cuu-than";
 
 export type Verdict = "NEN" | "KHONG_NEN" | "NEN_CHO" | "CO_DIEU_KIEN" | "CHUA_DU_DU_LIEU";
 
@@ -75,6 +76,8 @@ export interface AdvisoryReport {
   ungKy?: UngKySynthesis;
   // 13. HÌNH RELATIONS (Phase 15, optional — backward compatible) — FACT quan hệ Hình (không verdict).
   hinh?: HinhResult;
+  // 14. CỪU THẦN (Phase 16, optional — backward compatible) — FACT ngữ cảnh (sinh Kỵ, khắc Nguyên; KHÔNG vào chuỗi).
+  cuuThan?: CuuThanResult;
 
   // Cờ chất lượng
   coNhap: true; // trọng số chấm điểm là bản nháp — Thầy calibrate
@@ -139,8 +142,10 @@ export function resolveDungThan(chinh: QueDayDu, hint: QuanSuInterpretationPaylo
 //   • Nguyên Thần = hào có Ngũ Hành SINH Dụng Thần  — source-backed (an-le của Quân Sư dùng "Nguyên
 //     thần <hành> sinh Dụng"; định nghĩa cổ điển 增删卜易/卜筮正宗 nhất quán).
 //   • Kỵ Thần   = hào có Ngũ Hành KHẮC Dụng Thần    — source-backed (an-le dùng "Ky thần").
-//   • Cừu Thần  = HOÃN: methodology Quân Sư (kien-thuc + an-le) KHÔNG định nghĩa Cừu Thần, và định
-//     nghĩa cổ có biến thể → KHÔNG tự chọn (đúng STOP condition Phase 2). Đánh dấu resolved:false.
+//   • Cừu Thần  = KHÔNG đưa vào four-god CHAIN này (giữ chuỗi chỉ Nguyên/Kỵ). Phase 16: spec dự án
+//     (LUAN_QUE_LUC_HAO_SPEC §260 + QUY_TRINH §229) đã khóa "Cừu = sinh Kỵ, khắc Nguyên" → Cừu được
+//     xác định + surface như FACT ngữ cảnh riêng ở `cuu-than.ts`; `cuuThan.resolved:false` ở đây CHỈ
+//     nghĩa "không thuộc chain", không còn nghĩa "methodology chưa có".
 /**
  * Trạng thái của MỘT hào — CHỈ là FACT engine đã tính sẵn trên `HaoInfo`, KHÔNG scoring/heuristic mới.
  */
@@ -216,7 +221,7 @@ export function resolveFourGods(cast: FullCastResult, dt: DungThanResolved): Fou
   const chinh = cast.chinh;
   const cuuThan = {
     resolved: false as const,
-    lyDo: "Cừu Thần hoãn ở Phase 2: methodology Quân Sư chưa source-lock định nghĩa Cừu Thần (an-le/kien-thuc không dùng), định nghĩa cổ có biến thể — không tự chọn.",
+    lyDo: "Cừu Thần CỐ Ý không nằm trong chuỗi Kỵ→Nguyên→Dụng ở đây. Phase 16: spec dự án (LUAN_QUE_LUC_HAO_SPEC.md §260 + QUY_TRINH §229) ĐÃ khóa định nghĩa (sinh Kỵ = khắc Nguyên) → Cừu được surface như FACT ngữ cảnh riêng ở cuu-than.ts, KHÔNG trộn vào four-god chain.",
   };
   const dung = nguHanhDungThan(dt);
   if (dung === null) {
@@ -675,6 +680,7 @@ export function buildAdvisoryReport(payload: QuanSuInterpretationPayload): Advis
     ketLuanSuViec: ketLuanSuViec(payload.cast, resolved, fourGods),
     ungKy: synthesizeUngKy(payload.cast, resolved, fourGods),
     hinh: synthesizeHinh(payload.cast, resolved, fourGods),
+    cuuThan: synthesizeCuuThan(payload.cast, fourGods),
     coNhap: true,
     proseLaDemo: true,
   };
