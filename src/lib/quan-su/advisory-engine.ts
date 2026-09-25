@@ -13,9 +13,11 @@
 
 import type { QuanSuInterpretationPayload } from "./divination";
 import type { LuckContext } from "./current-luck";
-import type { HaoInfo, LucThan, QueDayDu } from "../luc-hao";
+import type { HaoInfo, LucThan, QueDayDu, FullCastResult, VuongSuy, HaoRelation } from "../luc-hao";
 import type { NguHanh } from "../menh-nap-am";
 import { CHI_NGU_HANH } from "../bat-tu";
+import type { TruongSinhStage } from "../bat-tu";
+import { tienThoaiCuaHao, type KetQuaTienThoaiHao } from "../luc-hao-tien-thoai-than";
 
 export type Verdict = "NEN" | "KHONG_NEN" | "NEN_CHO" | "CO_DIEU_KIEN" | "CHUA_DU_DU_LIEU";
 
@@ -136,6 +138,23 @@ export function resolveDungThan(chinh: QueDayDu, hint: QuanSuInterpretationPaylo
 //   • Kỵ Thần   = hào có Ngũ Hành KHẮC Dụng Thần    — source-backed (an-le dùng "Ky thần").
 //   • Cừu Thần  = HOÃN: methodology Quân Sư (kien-thuc + an-le) KHÔNG định nghĩa Cừu Thần, và định
 //     nghĩa cổ có biến thể → KHÔNG tự chọn (đúng STOP condition Phase 2). Đánh dấu resolved:false.
+/**
+ * Trạng thái của MỘT hào — CHỈ là FACT engine đã tính sẵn trên `HaoInfo`, KHÔNG scoring/heuristic mới.
+ */
+export interface FourGodState {
+  vuongSuy: VuongSuy; // Vượng/Tướng/Hưu/Tù/Tử (theo Nguyệt Lệnh) — HaoInfo.vuongSuy
+  truongSinh: { nhat: TruongSinhStage; nguyet: TruongSinhStage }; // HaoInfo.growthDay / growthMonth
+  khongVong: boolean; // HaoInfo.xunKong (Tuần Không của Ngày)
+  nguyetPha: boolean; // suy ra từ HaoInfo.relations (type "Nguyệt Phá") — đọc, không tính lại
+  nhatPha: boolean; // suy ra từ HaoInfo.relations (type "Nhật Phá")
+}
+
+/** Tương tác của hào — chỉ dữ liệu engine hiện có (quan hệ Nhật/Nguyệt + tiến/thoái). */
+export interface FourGodInteractions {
+  nhatNguyet: HaoRelation[]; // HaoInfo.relations: quan hệ với Nhật Thần / Nguyệt Kiến (sinh/khắc/phá/hợp/hại/xung/nhập mộ)
+  tienThoai: KetQuaTienThoaiHao | null; // từ tienThoaiCuaHao() có sẵn — null nếu hào không động/không tiến-thoái
+}
+
 export interface FourGodMember {
   hao: number; // vị trí hào 1-6 (từ dưới lên)
   lucThan: LucThan;
@@ -143,6 +162,9 @@ export interface FourGodMember {
   quanHe: "sinh-dung-than" | "khac-dung-than";
   isDong: boolean; // hào động?
   lyDo: string; // provenance đọc được
+  state: FourGodState; // Phase 3 — FACT signals đã có
+  interactions: FourGodInteractions; // Phase 3 — tương tác đã có (Nhật/Nguyệt + tiến/thoái)
+  // KHÔNG có strengthScore/weight/mucDoManh — Phase 3 chỉ expose FACT, không tạo điểm số.
 }
 
 export interface FourGods {
@@ -162,12 +184,32 @@ function nguHanhDungThan(dt: DungThanResolved): NguHanh | null {
   return null;
 }
 
+/** State FACT của hào (Phase 3) — chỉ đọc field engine đã tính, không tính lại. */
+function stateOf(h: HaoInfo): FourGodState {
+  return {
+    vuongSuy: h.vuongSuy,
+    truongSinh: { nhat: h.growthDay, nguyet: h.growthMonth },
+    khongVong: h.xunKong,
+    nguyetPha: h.relations.some((r) => r.type === "Nguyệt Phá"),
+    nhatPha: h.relations.some((r) => r.type === "Nhật Phá"),
+  };
+}
+
+/** Tương tác FACT của hào (Phase 3) — quan hệ Nhật/Nguyệt có sẵn + tiến/thoái từ engine hiện có. */
+function interactionsOf(cast: FullCastResult, h: HaoInfo): FourGodInteractions {
+  return { nhatNguyet: h.relations, tienThoai: tienThoaiCuaHao(cast, h.hao) };
+}
+
 /**
  * Dẫn xuất Tứ Thần từ Dụng Thần đã resolve. DETERMINISTIC: cùng quẻ + cùng Dụng Thần ⇒ cùng kết quả.
  * Một hào là Nguyên Thần XOR Kỵ Thần (không thể vừa sinh vừa khắc cùng một hành); hào cùng hành Dụng
  * Thần (Huynh Đệ) và hào Dụng Thần sinh ra (tiết khí) đều KHÔNG thuộc Nguyên/Kỵ — đúng phép.
+ *
+ * Phase 3: mỗi member kèm `state` + `interactions` = FACT engine đã tính (vượng suy, Trường Sinh,
+ * Không Vong, Nguyệt/Nhật Phá, quan hệ Nhật/Nguyệt, tiến/thoái). KHÔNG scoring, KHÔNG heuristic mới.
  */
-export function resolveFourGods(chinh: QueDayDu, dt: DungThanResolved): FourGods {
+export function resolveFourGods(cast: FullCastResult, dt: DungThanResolved): FourGods {
+  const chinh = cast.chinh;
   const cuuThan = {
     resolved: false as const,
     lyDo: "Cừu Thần hoãn ở Phase 2: methodology Quân Sư chưa source-lock định nghĩa Cừu Thần (an-le/kien-thuc không dùng), định nghĩa cổ có biến thể — không tự chọn.",
@@ -183,9 +225,9 @@ export function resolveFourGods(chinh: QueDayDu, dt: DungThanResolved): FourGods
   for (const h of chinh.hao) {
     if (h.hao === dungHaoPos) continue;
     if (SINH[h.nguHanh] === dung) {
-      nguyenThan.push({ hao: h.hao, lucThan: h.lucThan, nguHanh: h.nguHanh, quanHe: "sinh-dung-than", isDong: h.isDong, lyDo: `${h.nguHanh} sinh ${dung} (Dụng Thần) → Nguyên Thần.` });
+      nguyenThan.push({ hao: h.hao, lucThan: h.lucThan, nguHanh: h.nguHanh, quanHe: "sinh-dung-than", isDong: h.isDong, lyDo: `${h.nguHanh} sinh ${dung} (Dụng Thần) → Nguyên Thần.`, state: stateOf(h), interactions: interactionsOf(cast, h) });
     } else if (KHAC[h.nguHanh] === dung) {
-      kyThan.push({ hao: h.hao, lucThan: h.lucThan, nguHanh: h.nguHanh, quanHe: "khac-dung-than", isDong: h.isDong, lyDo: `${h.nguHanh} khắc ${dung} (Dụng Thần) → Kỵ Thần.` });
+      kyThan.push({ hao: h.hao, lucThan: h.lucThan, nguHanh: h.nguHanh, quanHe: "khac-dung-than", isDong: h.isDong, lyDo: `${h.nguHanh} khắc ${dung} (Dụng Thần) → Kỵ Thần.`, state: stateOf(h), interactions: interactionsOf(cast, h) });
     }
   }
   return { dungThanNguHanh: dung, trangThai: dt.trangThai, nguyenThan, kyThan, cuuThan };
@@ -545,7 +587,7 @@ export function buildAdvisoryReport(payload: QuanSuInterpretationPayload): Advis
     vanTrinh: vanTrinhTomTat(luck),
     quanSuKhuyen: khuyen(ketLuan, payload, luck, resolved, cham),
     luanGiaiChiTiet: luanChiTiet(payload, resolved),
-    fourGods: resolveFourGods(payload.cast.chinh, resolved),
+    fourGods: resolveFourGods(payload.cast, resolved),
     coNhap: true,
     proseLaDemo: true,
   };

@@ -108,8 +108,9 @@ export function userPrompt(payload: QuanSuInterpretationPayload, moTa?: string, 
         1,
       ),
       "- Đây là kết quả deterministic của engine/rule: chỉ dùng ĐÚNG các hào trong nguyen_than/ky_than trên, KHÔNG tự xác định thêm hào nào là Nguyên/Kỵ/Cừu Thần.",
-      "- Nguyên Thần phò Dụng Thần, Kỵ Thần khắc Dụng Thần — luận sức mạnh phò/phá dựa trên danh sách này cùng vượng suy/động của từng hào đã có trong DỮ LIỆU QUẺ.",
-      "- Nếu nguyen_than hoặc ky_than rỗng thì nói đúng là 'không có', KHÔNG bịa ra hào cho đủ. Kết quả engine/rule ưu tiên hơn mọi án lệ tham khảo.",
+      "- Mỗi hào kèm `state` (vượng suy, Trường Sinh, Không Vong, Nguyệt/Nhật Phá) và `interactions` (quan hệ Nhật/Nguyệt, tiến/thoái) — đây là DỮ KIỆN engine tính sẵn; luận mạnh/yếu, phò/phá dựa trên các dữ kiện này.",
+      "- KHÔNG tự tạo điểm số 'strength' (0–100) hay xếp hạng mới cho Nguyên/Kỵ Thần — chỉ luận định tính từ các state/interactions đã cho.",
+      "- Có dữ kiện thì luận; KHÔNG có (mảng rỗng / trường vắng) thì nói đúng là 'không có', KHÔNG bịa. Kết quả engine/rule ưu tiên hơn mọi án lệ tham khảo.",
     );
   }
 
