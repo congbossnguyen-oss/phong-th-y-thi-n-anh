@@ -7,8 +7,9 @@
  */
 import type { QuanSuInterpretationPayload } from "../divination";
 import type { FourGods } from "../advisory-engine";
-import { getPhiPhucRelations, resolveDungThan } from "../advisory-engine";
+import { getPhiPhucRelations, resolveDungThan, resolveFourGods } from "../advisory-engine";
 import { canLucHao } from "../can-luc-hao";
+import { synthesizeKyNguyenDung } from "../ky-nguyen-dung";
 import { phanLoaiSauTamHop } from "../../luc-hao-tam-hop-cuc";
 import { quyTacGiongVan } from "../giong-van";
 import { TRI_THUC_LOI } from "./kien-thuc";
@@ -119,6 +120,32 @@ export function userPrompt(payload: QuanSuInterpretationPayload, moTa?: string, 
         "- Ưu tiên trạng thái deterministic đã tính ở đây; KHÔNG tự thay đổi kết luận Vượng/Suy của hào.",
         "- `baseForce` = lực nền theo Nhật/Nguyệt (7 trường hợp đã khóa). `currentState.effective` đã tính nâng/hạ theo hóa biến; `reduced`=bị Phá/Hồi Đầu Khắc/Hóa Xung-Mộ-Tuyệt làm giảm nhưng GIỮ nền (không về 0); `restrained`=Hóa Hợp níu chân; `hidden`=Nhập Mộ ẩn tàng; `temporalExistence=EMPTY`=Không Vong (chưa hiện hữu, chờ Xuất Không/Ứng Kỳ) — KHÔNG coi là mất lực.",
         "- Chuỗi Kỵ → Nguyên → Dụng: xét lực Kỵ Thần trước, rồi Kỵ tác động Nguyên, Nguyên tác động Dụng — KHÔNG mặc định 'Nguyên mạnh thì Dụng tốt'.",
+      );
+    }
+
+    // KỴ → NGUYÊN → DỤNG SYNTHESIS (Phase 11) — kết quả deterministic của chuỗi, để AI KHÔNG tự phát minh
+    // lại quan hệ sinh/khắc hay Vượng/Suy.
+    const dtR2 = resolveDungThan(payload.cast.chinh, q.dung_than_hint);
+    const knd = synthesizeKyNguyenDung(payload.cast, dtR2, resolveFourGods(payload.cast, dtR2));
+    if (knd.currentState !== "NO_DIRECT_CHAIN") {
+      phan.push(
+        "",
+        "KỴ → NGUYÊN → DỤNG (engine/rule tổng hợp sẵn — chuỗi tác động, deterministic, KHÔNG điểm số):",
+        JSON.stringify(
+          {
+            ky_pressure: knd.kyPressure, // áp lực Kỵ Thần lên Dụng (STRONG..NONE)
+            nguyen_support: knd.nguyenSupport, // hỗ trợ của Nguyên Thần cho Dụng
+            dung_protection: knd.dungProtection, // Dụng được bảo vệ / chịu áp lực / trì hoãn...
+            current_state: knd.currentState, // trạng thái chuỗi (tham sinh, Kỵ áp đảo, cân bằng...)
+            chains: knd.chains, // từng cặp quan hệ + effective (khả năng phát huy)
+            reasons: knd.reasons,
+          },
+          null,
+          1,
+        ),
+        "- Ưu tiên Kỵ → Nguyên → Dụng deterministic synthesis ở đây. KHÔNG tự phát minh lại quan hệ sinh/khắc hoặc Vượng/Suy.",
+        "- `effective` = khả năng thực thi (STRONG/AVAILABLE/LIMITED/HIDDEN/EMPTY): EMPTY = Không Vong (chưa hiện hữu, KHÔNG phải mất lực); HIDDEN = Nhập Mộ; LIMITED = bị Phá/Hồi Đầu Khắc/Hóa Hợp hạn chế nhưng GIỮ nền.",
+        "- Đọc theo CHUỖI: lực Kỵ → Kỵ tác động Nguyên → Nguyên tác động Dụng. Nếu Kỵ 'tham sinh' Nguyên (Kỵ sinh Nguyên còn lực) thì Dụng được thông quan bảo vệ; nếu không có Nguyên, Kỵ khắc thẳng Dụng.",
       );
     }
   }
