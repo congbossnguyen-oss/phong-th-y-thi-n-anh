@@ -18,6 +18,7 @@ import type { NguHanh } from "../menh-nap-am";
 import { CHI_NGU_HANH } from "../bat-tu";
 import type { TruongSinhStage } from "../bat-tu";
 import { tienThoaiCuaHao, type KetQuaTienThoaiHao } from "../luc-hao-tien-thoai-than";
+import { synthesizeKyNguyenDung, type KyNguyenDungSynthesis } from "./ky-nguyen-dung";
 
 export type Verdict = "NEN" | "KHONG_NEN" | "NEN_CHO" | "CO_DIEU_KIEN" | "CHUA_DU_DU_LIEU";
 
@@ -63,6 +64,8 @@ export interface AdvisoryReport {
   luanGiaiChiTiet: string;
   // 9. TỨ THẦN (structured, deterministic) — Dụng Thần + Nguyên/Kỵ Thần (Cừu Thần hoãn — xem FourGods)
   fourGods: FourGods;
+  // 10. KỴ → NGUYÊN → DỤNG synthesis (Phase 11, optional — backward compatible). null khi Dụng không hiện.
+  kyNguyenDung?: KyNguyenDungSynthesis;
 
   // Cờ chất lượng
   coNhap: true; // trọng số chấm điểm là bản nháp — Thầy calibrate
@@ -642,6 +645,7 @@ export function buildAdvisoryReport(payload: QuanSuInterpretationPayload): Advis
   const resolved = resolveDungThan(payload.cast.chinh, payload.question.dung_than_hint);
   const cham = chamDiem(resolved, payload.cast.chinh, luck);
   const ketLuan = suyKetLuan(resolved, cham);
+  const fourGods = resolveFourGods(payload.cast, resolved);
 
   // Nếu chưa đủ dữ liệu, điểm để về ngưỡng thấp-trung tính (không khẳng định).
   const mucDoThuan = ketLuan === "CHUA_DU_DU_LIEU" ? Math.min(cham.diem, 45) : cham.diem;
@@ -657,7 +661,8 @@ export function buildAdvisoryReport(payload: QuanSuInterpretationPayload): Advis
     vanTrinh: vanTrinhTomTat(luck),
     quanSuKhuyen: khuyen(ketLuan, payload, luck, resolved, cham),
     luanGiaiChiTiet: luanChiTiet(payload, resolved),
-    fourGods: resolveFourGods(payload.cast, resolved),
+    fourGods,
+    kyNguyenDung: synthesizeKyNguyenDung(payload.cast, resolved, fourGods),
     coNhap: true,
     proseLaDemo: true,
   };
