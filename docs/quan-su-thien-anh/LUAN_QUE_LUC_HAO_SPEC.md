@@ -96,7 +96,7 @@ Thuật toán: từ Can Chi ngày, quy về chu kỳ 60 Giáp Tý → xác đị
 | Được Nhật sinh phù nhưng tiết khí cho Nguyệt | Trung hòa |
 | Được Nhật sinh phù nhưng khắc xuất Nguyệt | Trung hòa, hơi vượng |
 
-Thứ tự ưu tiên khi xét 1 hào: (1) Nguyệt kiến? → Nguyệt phá? → Tam/Nhị hợp với Nguyệt? → sinh khắc thường; (2) rồi lặp lại với Nhật; (3) đặc biệt: hào vượng bị Nhật xung = **ám động** (lợi, không phải suy); hào hưu tù tĩnh bị Nhật xung = **Nhật phá** (hại); hào đang động bị Nhật xung = **Nhật tán** (hại).
+Thứ tự ưu tiên khi xét 1 hào: (1) Nguyệt kiến? → Nguyệt phá? → Tam/Nhị hợp với Nguyệt? → sinh khắc thường; (2) rồi lặp lại với Nhật; (3) đặc biệt: hào bị **Nhật xung** chia **4 trạng thái** theo trục **tĩnh/động × vượng/suy** — khóa đầy đủ ở **§3.10 (Phase 24, profile 《增删卜易》)**. Tóm tắt: Tĩnh+Vượng→**Ám Động**; Tĩnh+Hưu-tù→**Nhật Phá**; Động+Vượng→**愈动 / Xung càng động**; Động+Hưu-tù→**Nhật Tán / 散**. *(Bản trước gộp nhầm "hào đang động → Nhật Tán" vô điều kiện — đã sửa ở §3.10.)*
 
 ### 3.5. 12 cung Trường Sinh (vòng đời ngũ hành — dùng tính Nhập Mộ, Ứng Kỳ)
 
@@ -150,6 +150,58 @@ KHÔNG thay thế tính Vượng/Suy theo Nhật/Nguyệt (mục 3.4). Tuế Ph�
 3. *Validation evidence* — **DATA GAP**: bộ 153 án lệ (Vương Hổ Ứng) **không có** ca Tuế Phá đủ cấu trúc 6 hào để
    replay deterministic (xác nhận Phase 10D/21). Việc thiếu fixture **KHÔNG** cho phép sửa/định nghĩa lại rule;
    nếu sau này thu thập được fixture 6 hào thật thì dùng để **kiểm chứng** rule hiện có, KHÔNG được âm thầm đổi nghĩa.
+
+### 3.10. Nhật Xung — 4 trạng thái (khóa Phase 24, profile 《增删卜易》)
+
+> **Quyết định methodology (Phase 24).** Quân Sư CHỌN 《增删卜易》 (日辰章 / 动散章) làm **profile chính** cho ngữ nghĩa
+> Nhật Xung. Đây là **quyết định thiết kế của Quân Sư**, KHÔNG phải tuyên bố 《增删卜易》 "đúng phổ quát" hơn các
+> trường phái cổ khác. 《黄金策》/《卜筮正宗》 dùng một profile khác cho hào động (**动逢冲 → 散**, vô điều kiện vượng/suy)
+> — đó là **một profile hợp lệ khác**, Quân Sư CỐ Ý không dùng cho cơ chế này để tránh trộn hai trường phái.
+
+**Lý do chọn:** (a) ngữ nghĩa **tĩnh** hiện có của Quân Sư (N1/N2) vốn đã theo kiểu 增删卜易; (b) 增删卜易 **giải
+tường minh cả hai ô động**; (c) cho Quân Sư **một** profile nguồn nhất quán thay vì gộp ngầm hai trường phái.
+
+**Bảng khóa N1–N4 (Nhật xung = Chi Ngày xung Chi hào):**
+
+| CASE | Điều kiện | KẾT QUẢ (khóa) | Hán tự |
+|---|---|---|---|
+| N1 | Tĩnh + Vượng(-Tướng) + Nhật xung | **Ám Động** (lợi, không phải suy) | 暗动 |
+| N2 | Tĩnh + Hưu/Tù + Nhật xung | **Nhật Phá** (hại) | 日破 |
+| N4 | Động + Vượng(-Tướng) + Nhật xung | **愈动 / Xung càng động** (KHÔNG phải Nhật Tán) | 愈动 |
+| N3 | Động + Hưu/Tù + Nhật xung | **Nhật Tán / Tán** (hại, mất tác dụng động) | 散 / 冲脱 |
+
+**Ngoại lệ (theo 增删卜易 日辰章):** hào **lâm Nguyệt kiến** thì "日冲而不散" — Nhật xung KHÔNG làm tán/phá (đương lệnh
+không sợ Nhật xung). Ngoại lệ này áp trước khi phân N1–N4.
+
+**Nhật Phá ≠ Nhật Tán (khóa):**
+- **日破 (Nhật Phá)** = nhánh **Tĩnh + Hưu/Tù** (N2).
+- **散 / Nhật Tán** = nhánh **Động + Hưu/Tù** (N3).
+- Hai nhãn **KHÔNG đồng nghĩa**, thuộc **hai nhánh khác nhau** (tĩnh vs động). *(冲脱 là biến thể chữ của 散.)*
+- **Nhánh Động + Vượng (N4) KHÔNG phải Nhật Tán** — là trạng thái riêng **愈动 / Xung càng động**.
+
+**Loại bỏ hybrid cũ (không giấu chỉnh sửa lịch sử):**
+> "The previous specification combined the static branch associated with 增删卜易 with the unconditional dynamic 散
+> rule found in 黄金策 / 卜筮正宗. Phase 24 formally resolves this by selecting one primary methodology profile."
+
+Cụ thể: bản trước lấy **hàng tĩnh** theo 增删卜易 (N1 暗动 / N2 日破) NHƯNG lấy **hàng động** theo 黄金策 (动→散 vô điều
+kiện), khiến ô **N4** mâu thuẫn với chính nguồn cấp N1/N2. Phase 24 khóa toàn bộ theo **một** profile (增删卜易).
+
+**Ranh giới lực & kết luận (CHƯA suy diễn — chờ engine design + evidence):**
+- KHÔNG tự động suy: Nhật Tán → giảm lực (`reduced`). KHÔNG tự động suy: 愈动 → tăng điểm/tăng lực.
+- Đây là **trạng thái ngữ nghĩa methodology**; ánh xạ xuống strength/conclusion cần **thiết kế engine riêng + bằng
+  chứng**, làm ở phase sau. Phase 24 KHÔNG đổi strength/conclusion engine.
+
+**Ánh xạ runtime hiện tại (ghi nhận, CHƯA sửa — thuộc phase sau):** `luc-hao.ts::getDayRelations` hiện chỉ phân 2
+nhãn (`vuongTuong ? "Ám Động" : "Nhật Phá"`), KHÔNG nhận `isDong` → chưa biểu diễn được N3 (散) và N4 (愈动).
+`HaoRelationType` chưa có "Nhật Tán"/"愈动". Sửa engine = **Phase 25** (xem `PHASE24_NHAT_XUNG_METHODOLOGY_LOCK.md`).
+
+**Nguồn (đã verify Phase 23C, ghi URL):**
+- Primary profile: 《增删卜易》 日辰章 — https://www.quanxue.cn/qt_mingxiang/zengshanpy/zengshanpy19.html
+  (đối chiếu https://ly.yishihui.net/17685.htm). Verbatim: "冲旺相之静爻，即为暗动，冲衰弱之静爻，则为日破。" ·
+  "爻旺而动，冲之愈动，爻衰而动，冲之则散。" · "爻逢月建，日冲而不散。"
+- Profile khác (KHÔNG dùng cho cơ chế này, vẫn hợp lệ): 《黄金策·总断千金赋》 —
+  https://www.quanxue.cn/qt_mingxiang/huangjin/huangjin01.html ("动逢冲而事散", vô điều kiện);
+  《卜筮正宗》 — https://ctext.org/wiki.pl?chapter=889452 (index) / https://www.shidianguji.com/zh/book/HY0057/chapter/1lpdfpe5gs8wz (partial).
 
 ---
 
