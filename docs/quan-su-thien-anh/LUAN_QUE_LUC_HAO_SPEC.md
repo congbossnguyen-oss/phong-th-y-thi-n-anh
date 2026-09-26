@@ -249,6 +249,31 @@ concludeDung/temporalFrom/Ứng Kỳ/chamDiem/verdict 吉-hung. Chỉ được s
 gate riêng** khi có nguồn primary mới đủ khóa một rule cụ thể. *(Riêng việc kích hoạt `reduced` vào verdict là vấn đề
 kiến trúc verdict TÁCH BIỆT — OPEN "Reduced-state verdict architecture" — KHÔNG thuộc trục efficacy.)*
 
+### 3.10.2. Nhật Phá — trạng thái hạn chế ĐỘC LẬP (khóa Phase 26D, MODEL A)
+
+> **Quyết định methodology-owner (Phase 26D).** Nhật Phá là **trạng thái hạn chế độc lập**: khi một hào được phân
+> loại Nhật Phá, nó **vẫn** áp hiệu ứng LIMITED (availability/protection) **kể cả khi** `effective` tổ hợp là Trung Hòa
+> hoặc Vượng. Giữ nguyên hành vi load-bearing mà probe Phase 26B phát hiện.
+
+**Luật khóa:** `IF relation = "Nhật Phá" THEN reduced = true` — đúng **mọi** trường hợp, KỂ CẢ `effective ∈ {Trung Hòa,
+Vượng}`. **KHÔNG** thêm ngoại lệ theo effective. **KHÔNG** đổi cách phân loại Nhật Phá theo month (Phase 24). (Đây đúng
+hành vi runtime hiện tại — Phase 26D chỉ **khóa methodology**, KHÔNG sửa code.)
+
+**Phân tách 5 khái niệm (KHÔNG gộp):**
+1. `monthVuongSuy` — getDayRelations dùng để phân **Nhật Phá vs Ám Động** (Phase 24 lock).
+2. `effective`/`baseForce` — lực tổ hợp Nhật+Nguyệt, availabilityOf dùng ở nhánh force.
+3. **Nhật Phá** — trạng thái hạn chế quan hệ, **độc lập** với việc effective tình cờ Trung Hòa/Vượng.
+4. `reduced` — tín hiệu hạn chế availability/protection ĐANG hoạt động; Nhật Phá là **producer hợp lệ**.
+5. `movementEfficacy = BROKEN_STATIC` — **FACT-only** (Phase 25I), **KHÔNG** gộp với `reduced`, **KHÔNG** thành active.
+
+**Provenance boundary:** 增删卜易/易冒 hỗ trợ phân biệt Nhật Phá theo 旺相/衰弱 × Nhật xung (verify Phase 25C/26C). Việc
+**tổng quát hóa** "Nhật Phá độc lập áp LIMITED trong MỌI ca combined-effective" là **QUÂN SƯ METHODOLOGY DECISION** (Phase
+26D), KHÔNG phải tuyên bố mọi trường phái cổ phát biểu y hệt; **KHÔNG** bịa câu cổ văn cho nhánh combined-effective.
+
+**Hành vi được bảo vệ:** 14 ca (probe Phase 26B, quẻ Thuần Càn) Nhật Phá + effective Trung Hòa/Vượng → LIMITED được
+**cố ý giữ**. Đề xuất "gỡ redundant" (Phase 26B) đã **bị bác** vì thực chất load-bearing. **Reopen** chỉ qua gate riêng
+khi có nguồn primary mới cho nhánh combined-effective.
+
 ---
 
 ## 4. LỚP 3 — Xác định Dụng thần (rule-based, có fallback)
