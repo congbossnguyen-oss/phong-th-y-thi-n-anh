@@ -186,14 +186,13 @@ không sợ Nhật xung). Ngoại lệ này áp trước khi phân N1–N4.
 Cụ thể: bản trước lấy **hàng tĩnh** theo 增删卜易 (N1 暗动 / N2 日破) NHƯNG lấy **hàng động** theo 黄金策 (动→散 vô điều
 kiện), khiến ô **N4** mâu thuẫn với chính nguồn cấp N1/N2. Phase 24 khóa toàn bộ theo **một** profile (增删卜易).
 
-**Ranh giới lực & kết luận (CHƯA suy diễn — chờ engine design + evidence):**
-- KHÔNG tự động suy: Nhật Tán → giảm lực (`reduced`). KHÔNG tự động suy: 愈动 → tăng điểm/tăng lực.
-- Đây là **trạng thái ngữ nghĩa methodology**; ánh xạ xuống strength/conclusion cần **thiết kế engine riêng + bằng
-  chứng**, làm ở phase sau. Phase 24 KHÔNG đổi strength/conclusion engine.
+**Ranh giới lực & kết luận:** KHÔNG tự động suy Nhật Tán → giảm lực, KHÔNG tự động suy 愈动 → tăng lực. Mô hình EFFECT
+đã được khóa ở **§3.10.1 (Phase 25F — Model 1)**: base strength và movement-efficacy là **hai trục tách biệt**.
 
-**Ánh xạ runtime hiện tại (ghi nhận, CHƯA sửa — thuộc phase sau):** `luc-hao.ts::getDayRelations` hiện chỉ phân 2
-nhãn (`vuongTuong ? "Ám Động" : "Nhật Phá"`), KHÔNG nhận `isDong` → chưa biểu diễn được N3 (散) và N4 (愈动).
-`HaoRelationType` chưa có "Nhật Tán"/"愈动". Sửa engine = **Phase 25** (xem `PHASE24_NHAT_XUNG_METHODOLOGY_LOCK.md`).
+**Ánh xạ runtime (ĐÃ implement Phase 25B, commit 56db7cb):** `luc-hao.ts::getDayRelations` nhận `isDong` và phân đủ
+4 nhãn (tĩnh: `vuongTuong ? "Ám Động" : "Nhật Phá"`; động: `vuongTuong ? "愈动" : "Nhật Tán"`); `HaoRelationType` đã có
+"Nhật Tán"/"愈动"; `hao-time-relations.ts` surface FACT (kind `TAN`/`DU_DONG`). Hiện **FACT-only** (canLucHao/ket-luan/
+chamDiem KHÔNG đọc 2 nhãn mới) — xem `PHASE25B/25C`.
 
 **Nguồn (đã verify Phase 23C, ghi URL):**
 - Primary profile: 《增删卜易》 日辰章 — https://www.quanxue.cn/qt_mingxiang/zengshanpy/zengshanpy19.html
@@ -202,6 +201,45 @@ nhãn (`vuongTuong ? "Ám Động" : "Nhật Phá"`), KHÔNG nhận `isDong` →
 - Profile khác (KHÔNG dùng cho cơ chế này, vẫn hợp lệ): 《黄金策·总断千金赋》 —
   https://www.quanxue.cn/qt_mingxiang/huangjin/huangjin01.html ("动逢冲而事散", vô điều kiện);
   《卜筮正宗》 — https://ctext.org/wiki.pl?chapter=889452 (index) / https://www.shidianguji.com/zh/book/HY0057/chapter/1lpdfpe5gs8wz (partial).
+
+### 3.10.1. Mô hình EFFECT Nhật Xung — Model 1 (khóa Phase 25F)
+
+> **Quyết định methodology-owner (Phase 25F).** Chọn **MODEL 1 — FACT + MOVEMENT-EFFICACY AXIS**. Base strength và
+> movement efficacy là **HAI TRỤC NGỮ NGHĨA TÁCH BIỆT**. Áp **đồng nhất cho cả 4** trạng thái Nhật Xung.
+
+**Hai trục:**
+1. **BASE STRENGTH (giữ nguyên, authoritative):** Nguyệt kiến, vượng/suy, Nhật thần, và toàn bộ phép tính lực hiện có
+   (`canLucHao` base/effective/reduced). 4 nhãn Nhật Xung **KHÔNG** sửa trục này.
+2. **MOVEMENT EFFICACY (trục ngữ nghĩa MỚI, mô tả):** trạng thái/hiệu lực của việc động hoặc bị xung. **Định tính**,
+   KHÔNG phải bậc lực, KHÔNG phải số.
+
+**Bảng trạng thái (state matrix) — khóa:**
+| Tĩnh/Động | Vượng/Hưu-Tù | Relation | Movement-efficacy semantics |
+|---|---|---|---|
+| Tĩnh | Vượng | **Ám Động** (暗动) | tĩnh nhưng được kích hoạt/tiềm động (latent activated) |
+| Tĩnh | Hưu/Tù | **Nhật Phá** (日破) | tĩnh-suy bị Nhật xung → tổn thương/vỡ trạng thái tĩnh. **KHÔNG phải 散.** |
+| Động | Hưu/Tù | **Nhật Tán / 散** | động-suy → hiệu lực động bị **tán/mất**. KHÔNG trừ lực bằng số. |
+| Động | Vượng | **愈动** | động-vượng → hiệu lực động **được tăng cường** bởi xung. KHÔNG cộng lực bằng số. |
+
+**Ngoại lệ Nguyệt kiến (爻逢月建，日冲而不散):** hào lâm Nguyệt **đã Vượng** trong base-strength → Động + Vượng + Nhật
+xung → **愈动**, KHÔNG phải 散. Đạt qua trạng thái vượng sẵn có — **KHÔNG thêm guard đặc biệt dư thừa**.
+
+**Provenance (chỉ dùng đã verify Phase 25C):** profile chính 《增删卜易》 日辰章, hậu thuẫn 《易冒》 卷三 日冲章
+("旺相为动，休囚为散"). KHÔNG dùng profile 黄金策/卜筮正宗 (动逢冲→散 vô điều kiện). *(易冒 gọi tĩnh-suy = 暗破, dị danh của
+日破.)*
+
+**Invariants — mọi implementation tương lai PHẢI giữ:**
+1. KHÔNG biến 散 thành delta lực âm bằng số. 2. KHÔNG biến 愈动 thành delta lực dương bằng số. 3. KHÔNG sửa vượng/suy.
+4. KHÔNG đổi base/effective strength chỉ vì 散/愈动. 5. Nhật Phá ≠ Nhật Tán. 6. 愈动 KHÔNG phải bậc lực mới.
+7. KHÔNG import profile 黄金策/卜筮正宗 (动逢冲→散). 8. Primary = 增删卜易 (+易冒). 9. KHÔNG chế rule Ứng Kỳ. 10. KHÔNG
+chấm điểm chamDiem cho 4 nhãn. 11. KHÔNG để 4 nhãn tự quyết 吉/凶. 12. Trục efficacy hiện **mô tả/ngữ nghĩa**; tích hợp
+verdict là quyết định implement tương lai.
+
+**Downstream boundaries (khóa):** no strength mutation · no numeric score · no automatic verdict mutation · no automatic
+Ứng Kỳ rule · no rejected-school import.
+
+**Trạng thái field runtime:** hiện CHƯA có field "movement efficacy" trong `HaoStrengthState`. Đây là **task Phase 25G**
+(thêm trục efficacy đọc từ 4 nhãn relations, trực giao base/effective/reduced) — Phase 25F KHÔNG implement.
 
 ---
 
