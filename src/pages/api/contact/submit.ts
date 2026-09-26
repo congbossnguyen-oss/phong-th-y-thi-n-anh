@@ -6,7 +6,7 @@ import { checkRateLimit } from "../../../lib/rate-limit";
 
 export const prerender = false;
 
-export const POST: APIRoute = async ({ request, clientAddress }) => {
+export const POST: APIRoute = async ({ request, clientAddress, locals }) => {
   // Chống spam form + lạm dụng gửi email/Google Sheet (tốn phí): 5 lần / phút / IP.
   const limited = checkRateLimit({ request, clientAddress }, { key: "contact", max: 5, windowMs: 60_000 });
   if (limited) return limited;
@@ -60,7 +60,10 @@ export const POST: APIRoute = async ({ request, clientAddress }) => {
   // nếu 1 trong 2 lỗi (vd chưa cấu hình DATABASE_URL/RESEND_API_KEY ở môi trường nào đó), vẫn
   // log lại đầy đủ và trả về thành công cho khách, không chặn luồng chính.
   try {
-    await createConsultationRequest({ name, phone, email, topic, message });
+    // Gắn user_id CHỈ khi khách đang đăng nhập sẵn lúc gửi form (đọc từ session middleware đã xác
+    // thực) — form vẫn hoạt động bình thường cho khách vãng lai (locals.user null → userId null).
+    // KHÔNG suy đoán bằng email/phone.
+    await createConsultationRequest({ name, phone, email, topic, message, userId: locals.user?.id ?? null });
   } catch (err) {
     console.error("[contact-form] Lưu DB thất bại:", err);
   }

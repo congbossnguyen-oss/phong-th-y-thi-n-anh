@@ -261,6 +261,11 @@ export const consultationRequests = pgTable("consultation_requests", {
   email: text("email"),
   topic: text("topic"),
   message: text("message"),
+  // Gắn tài khoản nếu khách ĐANG đăng nhập lúc gửi form — nullable vì form KHÔNG bắt đăng nhập
+  // (khách vãng lai vẫn gửi được bình thường). KHÔNG suy đoán bằng email/phone ở bất kỳ đâu — chỉ
+  // ghi khi có session thật (xem src/pages/api/contact/submit.ts). onDelete "set null" cùng pattern
+  // với orders.user_id/push_subscriptions.user_id.
+  userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 

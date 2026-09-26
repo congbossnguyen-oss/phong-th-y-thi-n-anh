@@ -7,6 +7,9 @@ export async function createConsultationRequest(params: {
   email: string | null;
   topic: string | null;
   message: string | null;
+  // Gắn tài khoản CHỈ khi khách đang đăng nhập lúc gửi form (đọc từ session, không suy đoán bằng
+  // email/phone). Mặc định null — form không bắt đăng nhập.
+  userId?: string | null;
 }) {
   const [row] = await db
     .insert(consultationRequests)
@@ -16,6 +19,7 @@ export async function createConsultationRequest(params: {
       email: params.email,
       topic: params.topic,
       message: params.message,
+      userId: params.userId ?? null,
     })
     .returning({ id: consultationRequests.id });
 
