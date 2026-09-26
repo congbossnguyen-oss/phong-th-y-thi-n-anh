@@ -133,6 +133,24 @@ Thứ tự ưu tiên khi xét 1 hào: (1) Nguyệt kiến? → Nguyệt phá? �
 
 Khi Dụng thần không lộ trên quẻ chính, an theo bát cung gốc của quẻ để tìm hào Phục Thần và Phi Thần tương ứng — đây là thuật toán tra bảng bát cung tiêu chuẩn (64 quẻ × 8 cung), có thể code cứng thành bảng tra.
 
+### 3.9. Thái Tuế / Tuế Phá (quan hệ hào ↔ Chi Năm)
+
+> **Khóa methodology (Phase 10A).** Đây là quyết định methodology được **Thầy khóa ở Phase 10A** (chat/methodology lock), KHÔNG phải trích dẫn văn bản cổ. Ghi vào đây để spec tự-đủ; KHÔNG được nâng thành "cổ thư chứng minh" khi chưa có nguồn trong repo.
+
+- **Thái Tuế**: Chi hào **trùng** Chi Năm (太歲). Biểu thị sự việc của hào đó nhập/ứng theo năm. **Thái Tuế KHÔNG đồng nghĩa Vượng** — không tự nâng lực hào.
+- **Tuế Phá**: Chi Năm **xung** Chi hào (歲破). Là trạng thái tổn thương theo năm (suy mạnh) — thuộc **trục giảm lực (reduced/adverse)**, GIỮ nền lực (KHÔNG erase base force), nhất quán với cách xử lý Nguyệt Phá / Nhật Phá.
+
+**Triển khai runtime (đã có sẵn):** `canLucHao().yearState = { thaiTue, tuePha }` (`src/lib/quan-su/can-luc-hao.ts`):
+`thaiTue = (chiHào === chiNăm)`; `tuePha = (chiHào === chi-xung-của chiNăm)`. Năm CHỈ dùng cho Thái Tuế/Tuế Phá,
+KHÔNG thay thế tính Vượng/Suy theo Nhật/Nguyệt (mục 3.4). Tuế Phá đưa vào `reduced`; Thái Tuế không đổi `baseForce`.
+
+**Phân tách 3 tầng (bắt buộc giữ đúng):**
+1. *Methodology lock* — Phase 10A (như trên).
+2. *Runtime implementation* — `canLucHao().yearState` (đã implement, đã test ở `__can-luc-hao.test.ts`).
+3. *Validation evidence* — **DATA GAP**: bộ 153 án lệ (Vương Hổ Ứng) **không có** ca Tuế Phá đủ cấu trúc 6 hào để
+   replay deterministic (xác nhận Phase 10D/21). Việc thiếu fixture **KHÔNG** cho phép sửa/định nghĩa lại rule;
+   nếu sau này thu thập được fixture 6 hào thật thì dùng để **kiểm chứng** rule hiện có, KHÔNG được âm thầm đổi nghĩa.
+
 ---
 
 ## 4. LỚP 3 — Xác định Dụng thần (rule-based, có fallback)
@@ -352,3 +370,5 @@ App nên tổ chức kiến thức chuyên sâu thành các "domain pack" nạp 
 ## Ghi chú nguồn
 
 Toàn bộ nội dung trên được đúc kết từ skill `hoa-giai-kinh-dich` đã xây dựng, dựa trên: Lục Hào Xu Cát Tị Hung Hóa Giải Bí Truyền, Lục Hào Hóa Giải Kinh Nghiệm Tâm Pháp, Lục Hào Nghi Hoặc Chỉ Mê, Lục Hào Quái Lệ Thuyết Chân, Lục Hào Quái Tượng Giải Mật (đều của Vương Hổ Ứng); Kinh Dịch Ứng Dụng — Xu Cát Tị Hung Tường Giải, Kinh Dịch Cơ Bản (Nguyễn Huy Hoàng); Tài Vận Bí Pháp (Giả Bỉnh Nhiên); Kinh Dịch Lục Hào Sơ Cấp (Học Viện Minh Việt). Một số chi tiết được đánh dấu rõ "không rõ/cần xác minh" ở mục 10 vì nguồn OCR bị lỗi hoặc thiếu — không nên tự suy diễn thêm khi code, nên tra cứu bản gốc giấy nếu cần độ chính xác tuyệt đối.
+
+**Khóa methodology bổ sung (không từ văn bản trên):** mục **3.9 (Thái Tuế / Tuế Phá)** là **quyết định methodology khóa ở Phase 10A** (chat/methodology lock của Thầy), đã triển khai ở `canLucHao().yearState` và còn **DATA GAP** về evidence án lệ — xem thêm `PHASE21_METHODOLOGY_GAP_CLOSURE.md` và `PHASE22A_TUE_PHA_SPEC_CLOSURE.md`. KHÔNG gán nguồn cổ thư cho mục này.
