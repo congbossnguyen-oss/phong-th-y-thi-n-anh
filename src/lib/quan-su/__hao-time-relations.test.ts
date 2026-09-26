@@ -81,6 +81,19 @@ describe("Phase 17 — chi-specials (đọc HaoInfo.relations canonical)", () =>
     expect(nhatOf(one("Dần", "Hợi", "Ngọ", { relations: [rel("Hợp", "DAY")] }), 6)).toContain("HOP");
     expect(nhatOf(one("Dần", "Tỵ", "Ngọ", { relations: [rel("Hại", "DAY")] }), 6)).toContain("HAI");
   });
+  it("Phase 25B — Nhật Tán/散 (chỉ Nhật; hào ĐỘNG suy) surface → TAN, KHÁC Nhật Phá & Ám Động", () => {
+    const f = one("Dần", "Thân", "Ngọ", { isDong: true, relations: [rel("Xung", "DAY"), rel("Nhật Tán", "DAY")] });
+    expect(nhatOf(f, 6)).toContain("TAN");
+    expect(nhatOf(f, 6)).not.toContain("PHA");
+    expect(nhatOf(f, 6)).not.toContain("AM_DONG");
+    expect(f.nhat.find((r) => r.kind === "TAN")?.source).toBe("NHAT");
+  });
+  it("Phase 25B — 愈动 (chỉ Nhật; hào ĐỘNG vượng) surface → DU_DONG, KHÁC Ám Động", () => {
+    const f = one("Dần", "Thân", "Ngọ", { isDong: true, relations: [rel("Xung", "DAY"), rel("愈动", "DAY")] });
+    expect(nhatOf(f, 6)).toContain("DU_DONG");
+    expect(nhatOf(f, 6)).not.toContain("AM_DONG");
+    expect(nhatOf(f, 6)).not.toContain("TAN");
+  });
 });
 
 describe("Phase 17 — source separation + role preservation", () => {

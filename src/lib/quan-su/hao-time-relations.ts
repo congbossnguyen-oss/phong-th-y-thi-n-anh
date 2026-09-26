@@ -27,7 +27,9 @@ export type HaoTimeKind =
   | "DONG_HANH" // cùng ngũ hành, khác chi
   | "XUNG" // Nhật/Nguyệt xung hào (chi)
   | "PHA" // Nhật Phá / Nguyệt Phá
-  | "AM_DONG" // Ám Động (chỉ Nhật; engine derive theo vượng+Nhật xung)
+  | "AM_DONG" // Ám Động (chỉ Nhật; engine derive: hào TĨNH vượng + Nhật xung)
+  | "TAN" // Nhật Tán / 散 (chỉ Nhật; hào ĐỘNG hưu/tù + Nhật xung) — Phase 25B
+  | "DU_DONG" // 愈动 / Xung càng động (chỉ Nhật; hào ĐỘNG vượng + Nhật xung) — Phase 25B
   | "HOP" | "HAI";
 
 export interface HaoTimeRelation {
@@ -87,7 +89,7 @@ function directionalRelations(
     SINH_HAO: `${SRC_LABEL[source]} sinh hào`, KHAC_HAO: `${SRC_LABEL[source]} khắc hào`,
     HAO_SINH: `hào sinh ${SRC_LABEL[source]} (bị tiết)`, HAO_KHAC: `hào khắc ${SRC_LABEL[source]}`,
     DONG_HANH: `hào đồng hành ${SRC_LABEL[source]}`,
-    LAM_KIEN: "", XUNG: "", PHA: "", AM_DONG: "", HOP: "", HAI: "",
+    LAM_KIEN: "", XUNG: "", PHA: "", AM_DONG: "", TAN: "", DU_DONG: "", HOP: "", HAI: "",
   };
   return [{ ...base, kind, reason: `Hào ${h.hao} (${h.nguHanh}) — ${desc[kind]} (${SRC_LABEL[source]} ${sourceNH}) — FACT ngũ hành.` }];
 }
@@ -101,7 +103,9 @@ function specialRelations(h: HaoInfo, source: HaoTimeSource, role: HaoTimeRole):
   const phaType = source === "NHAT" ? "Nhật Phá" : "Nguyệt Phá";
   if (has("Xung")) out.push({ ...base, kind: "XUNG", reason: `${SRC_LABEL[source]} xung hào ${h.hao} (chi) — FACT engine.` });
   if (has(phaType)) out.push({ ...base, kind: "PHA", reason: `${phaType} hào ${h.hao} — engine tính (Phá = giảm/tổn thương, KHÔNG mất hết lực).` });
-  if (source === "NHAT" && has("Ám Động")) out.push({ ...base, kind: "AM_DONG", reason: `Ám Động hào ${h.hao} — engine derive (hào vượng + Nhật xung). KHÔNG phải Nhật Phá.` });
+  if (source === "NHAT" && has("Ám Động")) out.push({ ...base, kind: "AM_DONG", reason: `Ám Động hào ${h.hao} — engine derive (hào TĨNH vượng + Nhật xung). KHÔNG phải Nhật Phá.` });
+  if (source === "NHAT" && has("Nhật Tán")) out.push({ ...base, kind: "TAN", reason: `Nhật Tán (散) hào ${h.hao} — engine derive (hào ĐỘNG hưu/tù + Nhật xung → tán, mất tác dụng động). KHÁC Nhật Phá (tĩnh-suy).` });
+  if (source === "NHAT" && has("愈动")) out.push({ ...base, kind: "DU_DONG", reason: `愈动 (Xung càng động) hào ${h.hao} — engine derive (hào ĐỘNG vượng + Nhật xung → càng động). KHÁC Ám Động (tĩnh-vượng).` });
   if (has("Hợp")) out.push({ ...base, kind: "HOP", reason: `${SRC_LABEL[source]} hợp hào ${h.hao} — FACT engine.` });
   if (has("Hại")) out.push({ ...base, kind: "HAI", reason: `${SRC_LABEL[source]} hại hào ${h.hao} — FACT engine.` });
   return out;
