@@ -30,10 +30,24 @@ import { tienThoaiCuaHao } from "../luc-hao-tien-thoai-than";
 /** Lực nền — kết luận Vượng/Suy có ngữ cảnh, KHÔNG phải điểm số. */
 export type BaseForce = "Rất Vượng" | "Vượng" | "Trung Hòa" | "Suy";
 
+/**
+ * Trục MOVEMENT EFFICACY (Model 1, khóa Phase 25F) — ngữ nghĩa MÔ TẢ về hiệu lực của động/xung, TÁCH BIỆT
+ * base strength. KHÔNG phải bậc lực, KHÔNG số. Suy TRỰC TIẾP từ 4 nhãn Nhật-xung (relations, Phase 25B),
+ * KHÔNG tính lại vượng/suy/động. null = không có trạng thái Nhật-xung áp dụng.
+ */
+export type MovementEfficacy = "LATENT_ACTIVATED" | "BROKEN_STATIC" | "DISPERSED" | "INTENSIFIED";
+
 export interface HaoStrengthState {
   lineIndex: number; // 1-6
   nguHanh: NguHanh;
   isDong: boolean;
+
+  /**
+   * Trục hiệu-lực-động (Model 1, Phase 25G) — MÔ TẢ, TRỰC GIAO base/effective/reduced. KHÔNG tham gia
+   * strengthFrom/concludeDung/temporalFrom/chamDiem/verdict/Ứng Kỳ. Ám Động→LATENT_ACTIVATED,
+   * Nhật Phá→BROKEN_STATIC, Nhật Tán/散→DISPERSED, 愈动→INTENSIFIED; null nếu không có Nhật-xung.
+   */
+  movementEfficacy: MovementEfficacy | null;
 
   /** Lực nền từ quan hệ Nhật/Nguyệt (7 case đã khóa) + tác động hào động. */
   baseForce: BaseForce;
@@ -246,6 +260,15 @@ export function canLucHao(cast: FullCastResult, lineIndex: number): HaoStrengthS
   const amDong = hasRel(self, "Ám Động");
   const khongVong = self.xunKong;
 
+  // Trục MOVEMENT EFFICACY (Model 1) — suy TRỰC TIẾP từ 4 nhãn Nhật-xung engine (Phase 25B), loại trừ lẫn nhau
+  // (getDayRelations phát đúng 1 nhãn/hào). MÔ TẢ, KHÔNG đổi lực. null nếu hào không bị Nhật xung.
+  const movementEfficacy: MovementEfficacy | null =
+    amDong ? "LATENT_ACTIVATED"
+    : nhatPha ? "BROKEN_STATIC"
+    : hasRel(self, "Nhật Tán") ? "DISPERSED"
+    : hasRel(self, "愈动") ? "INTENSIFIED"
+    : null;
+
   // Nhập Mộ — phân biệt Mộ tĩnh (DAY/MONTH) với Hóa Mộ (CHANGED_YAO).
   const hoaMo = hasRel(self, "Nhập Mộ", "CHANGED_YAO");
   const nhapMoTinh = hasRel(self, "Nhập Mộ", "DAY") || hasRel(self, "Nhập Mộ", "MONTH");
@@ -293,6 +316,7 @@ export function canLucHao(cast: FullCastResult, lineIndex: number): HaoStrengthS
     lineIndex,
     nguHanh: self.nguHanh,
     isDong: self.isDong,
+    movementEfficacy,
     baseForce,
     yearState: { thaiTue, tuePha },
     temporalState: { khongVong, nguyetPha, nhatPha, tuePha },
