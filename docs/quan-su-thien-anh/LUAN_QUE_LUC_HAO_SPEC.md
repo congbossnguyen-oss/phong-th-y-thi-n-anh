@@ -238,8 +238,16 @@ verdict là quyết định implement tương lai.
 **Downstream boundaries (khóa):** no strength mutation · no numeric score · no automatic verdict mutation · no automatic
 Ứng Kỳ rule · no rejected-school import.
 
-**Trạng thái field runtime:** hiện CHƯA có field "movement efficacy" trong `HaoStrengthState`. Đây là **task Phase 25G**
-(thêm trục efficacy đọc từ 4 nhãn relations, trực giao base/effective/reduced) — Phase 25F KHÔNG implement.
+**Trạng thái field runtime (đã implement — Phase 25G, commit c9207a9):** `HaoStrengthState.movementEfficacy`
+(`LATENT_ACTIVATED | BROKEN_STATIC | DISPERSED | INTENSIFIED | null`) suy từ 4 nhãn relations, TRỰC GIAO
+base/effective/reduced; surface prompt như FACT.
+
+**KHÓA CUỐI — FACT-ONLY (Phase 25I).** Theo audit bằng chứng Phase 25H (không có nguồn số/verdict/timing; mọi hiệu ứng
+trùng vượng/suy×động×Xung đã biểu diễn; diễn dịch verdict cho 散 lại trùng Suy hoặc trôi về profile 黄金策 đã loại):
+movementEfficacy được **khóa FACT-ONLY** — CHỈ mô tả, KHÔNG tác động canLucHao/strengthFrom/effective/reduced/
+concludeDung/temporalFrom/Ứng Kỳ/chamDiem/verdict 吉-hung. Chỉ được surface prompt/report. **Reopen** chỉ qua **decision
+gate riêng** khi có nguồn primary mới đủ khóa một rule cụ thể. *(Riêng việc kích hoạt `reduced` vào verdict là vấn đề
+kiến trúc verdict TÁCH BIỆT — OPEN "Reduced-state verdict architecture" — KHÔNG thuộc trục efficacy.)*
 
 ---
 
