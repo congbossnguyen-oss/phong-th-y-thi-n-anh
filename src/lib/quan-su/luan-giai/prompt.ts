@@ -140,6 +140,7 @@ export function userPrompt(payload: QuanSuInterpretationPayload, moTa?: string, 
         JSON.stringify(canLuc, null, 1),
         "- Ưu tiên trạng thái deterministic đã tính ở đây; KHÔNG tự thay đổi kết luận Vượng/Suy của hào.",
         "- `baseForce` = lực nền theo Nhật/Nguyệt (7 trường hợp đã khóa). `currentState.effective` đã tính nâng/hạ theo hóa biến; `reduced`=bị Phá/Hồi Đầu Khắc/Hóa Xung-Mộ-Tuyệt làm giảm nhưng GIỮ nền (không về 0); `restrained`=Hóa Hợp níu chân; `hidden`=Nhập Mộ ẩn tàng; `temporalExistence=EMPTY`=Không Vong (chưa hiện hữu, chờ Xuất Không/Ứng Kỳ) — KHÔNG coi là mất lực.",
+        "- `movementEfficacy` = trạng thái HIỆU LỰC ĐỘNG do Nhật xung (Model 1, chỉ MÔ TẢ, TÁCH BIỆT lực nền — KHÔNG mạnh/yếu hơn, KHÔNG điểm, KHÔNG cát/hung): `LATENT_ACTIVATED`=Ám Động (tĩnh vượng, tiềm động); `BROKEN_STATIC`=Nhật Phá (tĩnh suy, vỡ trạng thái tĩnh — KHÁC Nhật Tán); `DISPERSED`=Nhật Tán/散 (động suy, hiệu lực động bị tán); `INTENSIFIED`=愈动 (động vượng, hiệu lực động tăng); null=không bị Nhật xung. Đây là FACT mô tả, KHÔNG dùng để đảo lực nền hay kết luận cát/hung.",
         "- Chuỗi Kỵ → Nguyên → Dụng: xét lực Kỵ Thần trước, rồi Kỵ tác động Nguyên, Nguyên tác động Dụng — KHÔNG mặc định 'Nguyên mạnh thì Dụng tốt'.",
       );
     }
