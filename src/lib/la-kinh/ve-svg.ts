@@ -131,10 +131,13 @@ export function veLaKinhSvg(kq: KetQuaLaKinh): string {
     const op = w.vungKhi ? 0.13 : 0;
     parts.push(`<path d="${wedge(R.daiQuai[0], R.daiQuai[1], w.startDeg, w.endDeg)}" fill="${nen}" fill-opacity="${op}" />`);
     if (active) parts.push(napHighlight(R.daiQuai[0], R.daiQuai[1], w));
-    const lat = w.centerDeg > 90 && w.centerDeg < 270;
-    const rTxt = lat ? R.daiQuai[1] - 8 : R.daiQuai[0] + 8;
-    const [tx, ty] = diem(rTxt, w.centerDeg);
-    parts.push(chu(tx, ty, w.que.tenQue, 10, active ? MAU_ACTIVE : NEN_CHU, { bold: active, rot: lat ? w.centerDeg + 180 : w.centerDeg, anchor: lat ? "end" : "start" }));
+    // Chữ đọc DỌC THEO BÁN KÍNH (không phải theo centerDeg — đó là lỗi cũ khiến quẻ gần đỉnh
+    // xoay gần ngang, đè lên nhau). Baseline khớp bán kính = centerDeg − 90; nửa Tây (>180°)
+    // xoay thêm 180° cho khỏi ngược. Đặt GIỮA ô + canh giữa → mỗi tên gọn trong ô của nó.
+    let rot = w.centerDeg - 90;
+    if (w.centerDeg > 180) rot += 180;
+    const [tx, ty] = diem((R.daiQuai[0] + R.daiQuai[1]) / 2, w.centerDeg);
+    parts.push(chu(tx, ty, w.que.tenQue, 9.5, active ? MAU_ACTIVE : NEN_CHU, { bold: active, rot, anchor: "middle" }));
   });
 
   // ── Vạch chia ô (mỗi ranh giới ô) từng vòng ──────────────────────────────
