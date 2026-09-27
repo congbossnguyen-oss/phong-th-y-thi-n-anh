@@ -5,6 +5,7 @@ import { SO_THANG_THEO_KY_HAN, type SubscriptionTier, type SubscriptionDuration 
 import { generateOrderCode } from "../payments/sepay";
 import { products } from "../placeholder-data";
 import { getCourseBySlug } from "../cms/queries";
+import { notifyOperatorPayment, nenGuiThongBaoThanhToan } from "../thong-bao/van-hanh";
 import {
   sendProductOrderConfirmedEmail,
   sendCourseOrderConfirmedEmail,
@@ -945,9 +946,29 @@ async function _markOrderPaidAndFulfillNoiBo(orderId: string) {
  * (route webhook/checkout gọi hàm này trong try/catch của chúng). Các bước gửi email/PDF con bên
  * trong ĐÃ tự bọc try/catch riêng từ trước (không rethrow), không bị ảnh hưởng bởi lớp bọc này. */
 export function markOrderPaidAndFulfill(orderId: string) {
-  return boiLoiHeThong("markOrderPaidAndFulfill", "Có lỗi hệ thống khi xác nhận đơn hàng, vui lòng liên hệ hỗ trợ.", () =>
-    _markOrderPaidAndFulfillNoiBo(orderId)
-  );
+  return boiLoiHeThong("markOrderPaidAndFulfill", "Có lỗi hệ thống khi xác nhận đơn hàng, vui lòng liên hệ hỗ trợ.", async () => {
+    // Đọc trạng thái TRƯỚC khi fulfill để chống gửi thông báo trùng: chỉ đơn đang "pending_payment"
+    // mới là lần xử lý đầu tiên; webhook retry / đơn đã "confirmed" sẽ bị `_markOrder...` bỏ qua và
+    // KHÔNG được thông báo lại.
+    const [truoc] = await db.select({ status: orders.status }).from(orders).where(eq(orders.id, orderId)).limit(1);
+    const laLanDau = nenGuiThongBaoThanhToan(truoc?.status);
+
+    await _markOrderPaidAndFulfillNoiBo(orderId);
+
+    // Thông báo vận hành SAU KHI fulfillment thành công (nếu inner throw thì đã propagate ra
+    // boiLoiHeThong, không tới được đây). Best-effort: notifyOperatorPayment không bao giờ throw.
+    if (laLanDau) {
+      const [order] = await db.select().from(orders).where(eq(orders.id, orderId)).limit(1);
+      if (order && order.status === "confirmed") {
+        await notifyOperatorPayment({
+          orderCode: order.orderCode,
+          customerName: order.customerName,
+          totalAmount: Number(order.totalAmount),
+          orderType: order.orderType,
+        });
+      }
+    }
+  });
 }
 
 export function getOrderById(orderId: string) {

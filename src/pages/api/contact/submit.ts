@@ -1,6 +1,6 @@
 import type { APIRoute } from "astro";
 import { createConsultationRequest } from "../../../lib/db/consultationRequests";
-import { sendConsultationRequestEmail } from "../../../lib/email/send";
+import { notifyOperatorConsultation } from "../../../lib/thong-bao/van-hanh";
 import { appendConsultationRequestToSheet } from "../../../lib/google-sheets";
 import { checkRateLimit } from "../../../lib/rate-limit";
 
@@ -68,11 +68,8 @@ export const POST: APIRoute = async ({ request, clientAddress, locals }) => {
     console.error("[contact-form] Lưu DB thất bại:", err);
   }
 
-  try {
-    await sendConsultationRequestEmail({ name, phone, email, topic, message });
-  } catch (err) {
-    console.error("[contact-form] Gửi email thông báo thất bại:", err);
-  }
+  // Thông báo vận hành cho nhân viên (email; best-effort — helper tự nuốt lỗi, không chặn luồng form).
+  await notifyOperatorConsultation({ name, phone, email, topic, message });
 
   try {
     await appendConsultationRequestToSheet({ name, phone, email, topic, message });
