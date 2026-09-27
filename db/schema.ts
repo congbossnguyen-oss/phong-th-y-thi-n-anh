@@ -254,6 +254,10 @@ export const sepayWebhookLogs = pgTable("sepay_webhook_logs", {
 
 // --- Yêu cầu đặt lịch tư vấn (form /lien-he) ---
 
+// Trạng thái xử lý của nhân viên CMS với 1 yêu cầu tư vấn — "moi" là mặc định (chưa xử lý), KHÔNG
+// hàm ý đã liên hệ hay chưa. Chỉ nhân viên đặt qua CMS; form /lien-he không set (nhận default "moi").
+export const consultationStatusEnum = pgEnum("consultation_status", ["moi", "da_lien_he", "da_chot", "huy"]);
+
 export const consultationRequests = pgTable("consultation_requests", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: text("name").notNull(),
@@ -266,6 +270,8 @@ export const consultationRequests = pgTable("consultation_requests", {
   // ghi khi có session thật (xem src/pages/api/contact/submit.ts). onDelete "set null" cùng pattern
   // với orders.user_id/push_subscriptions.user_id.
   userId: uuid("user_id").references(() => users.id, { onDelete: "set null" }),
+  // Trạng thái xử lý CMS — default "moi" (chưa xử lý). Additive, không đổi hành vi form gửi.
+  status: consultationStatusEnum("status").notNull().default("moi"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
