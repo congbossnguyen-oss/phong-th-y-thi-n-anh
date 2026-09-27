@@ -1,0 +1,31 @@
+---
+// TRANG "La Kinh" — chỉ lo khung trang (SEO/PageHero/breadcrumbs); toàn bộ form/tính toán/
+// kết quả + gate thầy-only nằm ở LaKinh.astro.
+//
+// Có trong menu "Công cụ" (site-config.ts, 27/9/2026: anh Công yêu cầu làm mục con riêng) —
+// nhưng bản thân form/kết quả vẫn THẦY-ONLY (LaKinh.astro tự gate), khách bấm vào chỉ thấy
+// "đang hoàn thiện", giống cách Phong thủy chính phái đã public dù các mục con còn khóa.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PageHero from "../../components/ui/PageHero.astro";
+import LaKinh from "../../components/tools/LaKinh.astro";
+
+export const prerender = false;
+---
+
+<BaseLayout
+  title="La Kinh"
+  description="La kinh tổng hợp Bát Trạch, Tam Hợp Phái, Huyền Không Phi Tinh và Huyền Không Đại Quái quanh 1 độ số Hướng."
+>
+  <PageHero
+    eyebrow="Đại Cát Lợi — đang thử nghiệm"
+    title="La Kinh"
+    description="Nhập độ Hướng nhà (đo la kinh) để xem cùng lúc 4 vòng: Bát Trạch, Tam Hợp Phái, Huyền Không Phi Tinh, Huyền Không Đại Quái."
+    breadcrumbs={[
+      { label: "Trang chủ", href: "/" },
+      { label: "Đại Cát Lợi", href: "/dai-cat-loi" },
+      { label: "La Kinh" },
+    ]}
+  />
+
+  <LaKinh />
+</BaseLayout>

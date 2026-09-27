@@ -52,6 +52,7 @@ export const mainNav: NavItem[] = [
     children: [
       { label: "Đại Cát Lợi", href: "/dai-cat-loi" },
       { label: "Phong thủy chính phái", href: "/dai-cat-loi/phong-thuy-chinh-phai" },
+      { label: "La Kinh Phong Thủy", href: "/dai-cat-loi/la-kinh" },
       { label: "Lập lá số Bát Tự", href: "/lap-la-so-bat-tu" },
       { label: "Lập quẻ Kinh Dịch", href: "/gieo-que-kinh-dich" },
       { label: "Lập lá số Tử Vi", href: "/lap-la-so-tu-vi" },

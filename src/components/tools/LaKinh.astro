@@ -1,0 +1,172 @@
+---
+// Công cụ "La Kinh" — vòng tổng hợp Bát Trạch + Tam Hợp Phái + Huyền Không Phi Tinh + Huyền
+// Không Đại Quái quanh 1 độ số Hướng, thiết kế GỐC (không copy giao diện đối thủ). THẦY-ONLY
+// như 3 module anh em (TamHopPhai.astro/HuyenKhongPhiTinh.astro/XemHuongNhaBatTrach.astro —
+// khóa lại 13/9/2026, "để thành chế độ đang hoàn thiện, chỉ admin xem được").
+//
+// KIẾN TRÚC: chỉ GHÉP 4 engine đã có (xem src/lib/la-kinh/engine.ts) — không tính lại gì.
+// Vẽ SVG hoàn toàn SERVER-SIDE trong frontmatter (giống HkdqLuanNha.astro), form method="GET",
+// không client <script>, không API route riêng.
+import { CungMenhBatTrach } from "@thien-anh/rule-engine";
+import Container from "../ui/Container.astro";
+import Button from "../ui/Button.astro";
+import { tinhLaKinh, type KetQuaLaKinh } from "../../lib/la-kinh/engine";
+import { veLaKinhSvg } from "../../lib/la-kinh/ve-svg";
+
+export const prerender = false;
+
+const laQuanTri = Astro.locals.user?.isAdmin === true;
+
+const q = Astro.url.searchParams;
+const huongRaw = q.get("huong");
+const huongNum = huongRaw !== null && huongRaw.trim() !== "" ? Number(huongRaw) : null;
+const namSinhRaw = q.get("namSinh");
+const namSinhNum = namSinhRaw !== null && namSinhRaw.trim() !== "" ? Number(namSinhRaw) : null;
+const gioiTinhRaw = q.get("gioiTinh");
+const gioiTinh = gioiTinhRaw === "nam" || gioiTinhRaw === "nu" ? gioiTinhRaw : null;
+
+const daGuiForm = huongNum !== null && Number.isFinite(huongNum);
+
+let loi: string | null = null;
+let kq: KetQuaLaKinh | null = null;
+if (laQuanTri && daGuiForm) {
+  if (huongNum! < 0 || huongNum! > 360) {
+    loi = "Độ Hướng phải trong khoảng 0–360°.";
+  } else {
+    kq = tinhLaKinh(huongNum!, { namSinhGiaChu: namSinhNum, gioiTinh });
+  }
+}
+
+// Hình la kinh dựng ở lib dùng chung `veLaKinhSvg` (nhúng bằng set:html) — 1 nguồn cho cả trang
+// lẫn preview. Phần chữ dưới hình đọc tại ĐÚNG độ Hướng (kq.diemHuong) nên còn vài helper màu.
+const svgLaKinh = kq ? veLaKinhSvg(kq) : "";
+
+const MAU_CAT = "#1f8a70";
+const MAU_HUNG = "#c14a3a";
+const MAU_TRUNG_TINH = "var(--color-ink-700)";
+
+const catHungLabel = (cat: boolean | null): string => (cat === null ? "" : cat ? "CÁT" : "HUNG");
+const catHungMau = (cat: boolean | null): string => (cat === null ? MAU_TRUNG_TINH : cat ? MAU_CAT : MAU_HUNG);
+const vungKhiLabel = (v: "chinh_than" | "linh_than" | null): string => (v === "chinh_than" ? "Chính Thần" : v === "linh_than" ? "Linh Thần" : "");
+const vungKhiMau = (v: "chinh_than" | "linh_than" | null): string => (v === "chinh_than" ? MAU_CAT : v === "linh_than" ? "#3b6ea5" : MAU_TRUNG_TINH);
+---
+
+{
+  !laQuanTri ? (
+    <Container class="py-16">
+      <div class="mx-auto max-w-xl rounded-(--radius-card) border border-(--color-gold-400)/30 bg-(--color-ivory-100) p-8 text-center shadow-lg">
+        <p class="inline-block rounded-full border border-(--color-gold-400) bg-(--color-gold-400)/15 px-3 py-1 text-xs font-extrabold uppercase tracking-wide text-(--color-gold-600)">
+          Đang hoàn thiện
+        </p>
+        <h2 class="mt-3 font-display text-2xl font-bold text-(--color-ink-950)">La Kinh tổng hợp</h2>
+        <p class="mx-auto mt-2 max-w-md text-sm font-medium leading-relaxed text-(--color-ink-700)">
+          Công cụ la kinh tổng hợp Bát Trạch, Tam Hợp Phái, Huyền Không Phi Tinh và Huyền Không Đại Quái đang được Thầy hoàn thiện.
+        </p>
+        <div class="mt-5">
+          <Button href="/lien-he" size="lg">Liên hệ tư vấn trực tiếp</Button>
+        </div>
+      </div>
+    </Container>
+  ) : (
+    <Container class="py-10">
+      <div class="mx-auto max-w-5xl">
+        <div class="mb-4 rounded-(--radius-card) border-2 border-(--color-gold-400) bg-(--color-gold-400)/10 p-4 text-sm font-medium text-(--color-gold-600)">
+          🔒 CHẾ ĐỘ QUẢN TRỊ — công cụ TEST NỘI BỘ. Ghép 4 vòng từ 4 engine đã build/test riêng
+          (Bát Trạch, Tam Hợp, Phi Tinh, Đại Quái) — vòng chỉ hiện tên/nhãn khách quan theo độ số,
+          KHÔNG thay cho luận nhà đầy đủ từng trường phái (các công cụ riêng đã có).
+        </div>
+
+        <form method="GET" class="flex flex-col gap-4 rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-100) p-6">
+          <div class="grid gap-4 sm:grid-cols-3">
+            <div>
+              <label for="huong" class="block text-xs font-semibold text-(--color-ink-800)">Độ Hướng (0–360°) <span class="text-(--color-cinnabar-400)">*</span></label>
+              <input type="number" id="huong" name="huong" step="0.001" min="0" max="360" required value={huongNum ?? undefined} class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2.5 text-sm" />
+            </div>
+            <div>
+              <label for="namSinh" class="block text-xs font-semibold text-(--color-ink-800)">Năm sinh gia chủ</label>
+              <p class="mt-0.5 text-[11px] text-(--color-ink-500)">Tùy chọn — mở màu Cát/Hung vòng Bát Trạch.</p>
+              <input type="number" id="namSinh" name="namSinh" step="1" value={namSinhNum ?? undefined} class="mt-1 w-full rounded-(--radius-control) border border-(--color-ivory-300) bg-(--color-ivory-50) px-3 py-2 text-sm" />
+            </div>
+            <div>
+              <p class="text-xs font-semibold text-(--color-ink-800)">Giới tính</p>
+              <div class="mt-2 flex gap-3 text-sm">
+                <label class="flex items-center gap-1.5"><input type="radio" name="gioiTinh" value="nam" checked={gioiTinh === "nam"} /> Nam</label>
+                <label class="flex items-center gap-1.5"><input type="radio" name="gioiTinh" value="nu" checked={gioiTinh === "nu"} /> Nữ</label>
+              </div>
+            </div>
+          </div>
+          <div>
+            <Button type="submit" size="lg">Xem la kinh</Button>
+          </div>
+        </form>
+
+        {loi && (
+          <div class="mt-4 rounded-(--radius-card) border border-(--color-danger-500)/40 bg-(--color-danger-500)/10 p-4 text-sm text-(--color-danger-500)">{loi}</div>
+        )}
+
+        {kq && (
+          <div class="mt-8 space-y-6">
+            <div class="overflow-x-auto rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-2" set:html={svgLaKinh} />
+
+            <p class="text-center text-xs text-(--color-ink-600)">
+              Từ trong ra ngoài: <span class="font-semibold text-(--color-ink-800)">Bát Trạch</span> · Tam Hợp Phái · Huyền Không Phi Tinh · <span class="font-semibold text-(--color-ink-800)">Huyền Không Đại Quái</span>.
+              Ô sáng viền vàng = vị trí Hướng nhà; nan vàng đứt = 4 mốc Đại Không Vong (0/90/180/270°).
+            </p>
+
+            {/* Legend đọc tại đúng độ Hướng đã nhập */}
+            <section class="grid gap-3 sm:grid-cols-2">
+              <div class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4 text-sm">
+                <h3 class="font-display text-base font-bold text-(--color-ink-950)">Bát Trạch</h3>
+                <p class="mt-1 text-(--color-ink-800)">
+                  Cung <strong>{kq.diemHuong.batTrach.cung}</strong>
+                  {kq.diemHuong.batTrach.khi ? (
+                    <span class="ml-2 font-semibold" style={{ color: catHungMau(CungMenhBatTrach.KHI_BAT_TRACH_INFO[kq.diemHuong.batTrach.khi].cat) }}>
+                      — {CungMenhBatTrach.KHI_BAT_TRACH_INFO[kq.diemHuong.batTrach.khi].ten} ({catHungLabel(CungMenhBatTrach.KHI_BAT_TRACH_INFO[kq.diemHuong.batTrach.khi].cat)})
+                    </span>
+                  ) : (
+                    <span class="ml-2 text-(--color-ink-500)">(nhập năm sinh + giới tính gia chủ để biết Cát/Hung)</span>
+                  )}
+                </p>
+              </div>
+              <div class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4 text-sm">
+                <h3 class="font-display text-base font-bold text-(--color-ink-950)">Tam Hợp Phái</h3>
+                <p class="mt-1 text-(--color-ink-800)">
+                  Quái <strong>{kq.diemHuong.tamHop.quai}</strong> — Thủy Pháp:{" "}
+                  <span style={{ color: catHungMau(kq.diemHuong.tamHop.thuy.loai === "cat") }}>{kq.diemHuong.tamHop.thuy.sao} ({kq.diemHuong.tamHop.thuy.loai === "cat" ? "Cát" : "Hung"})</span>
+                  {" "}· Sa Pháp:{" "}
+                  <span style={{ color: catHungMau(kq.diemHuong.tamHop.sa.loai === "cat") }}>{kq.diemHuong.tamHop.sa.sao} ({kq.diemHuong.tamHop.sa.loai === "cat" ? "Cát" : "Hung"})</span>
+                </p>
+              </div>
+              <div class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4 text-sm">
+                <h3 class="font-display text-base font-bold text-(--color-ink-950)">Huyền Không Phi Tinh</h3>
+                <p class="mt-1 text-(--color-ink-800)">Sơn <strong>{kq.diemHuong.phiTinh.son}</strong></p>
+              </div>
+              <div class="rounded-(--radius-card) border border-(--color-ivory-300) bg-(--color-ivory-50) p-4 text-sm">
+                <h3 class="font-display text-base font-bold text-(--color-ink-950)">Huyền Không Đại Quái</h3>
+                <p class="mt-1 text-(--color-ink-800)">
+                  Quẻ <strong>{kq.diemHuong.daiQuai.que.tenQue}</strong> (Quái Khí {kq.diemHuong.daiQuai.que.quaiKhi} · Quái Vận {kq.diemHuong.daiQuai.que.quaiVan} · {kq.diemHuong.daiQuai.que.canChi})
+                  {kq.diemHuong.daiQuai.vungKhi && <> — <span style={{ color: vungKhiMau(kq.diemHuong.daiQuai.vungKhi) }}>{vungKhiLabel(kq.diemHuong.daiQuai.vungKhi)}</span></>}
+                </p>
+                {kq.diemHuong.daiQuai.khongVong.laDaiKhongVong && (
+                  <p class="mt-1 font-semibold text-(--color-danger-500)">⚠ ĐẠI Không Vong — cách cục nặng, cần chỉnh độ trước khi luận tiếp.</p>
+                )}
+                {!kq.diemHuong.daiQuai.khongVong.laDaiKhongVong && kq.diemHuong.daiQuai.khongVong.phamKhongVong && (
+                  <p class="mt-1 text-(--color-gold-600)">⚠ Phạm Không Vong (cách mốc chia quẻ {kq.diemHuong.daiQuai.khongVong.khoangCachToiMocGanNhat}°).</p>
+                )}
+                {kq.diemHuong.daiQuai.amDuongSaiThac.phamSaiThac && (
+                  <p class="mt-1 text-(--color-gold-600)">⚠ Phạm Âm Dương Sai Thác (sát mốc {kq.diemHuong.daiQuai.amDuongSaiThac.mocGanNhat}°).</p>
+                )}
+              </div>
+            </section>
+
+            <p class="text-[11px] text-(--color-ink-500)">
+              Vòng chỉ tra tên/nhãn khách quan theo độ số — không thay cho luận nhà đầy đủ (loan
+              đầu, thủy pháp thực địa...). Muốn luận sâu từng trường phái: dùng công cụ riêng
+              (Bát Trạch, Tam Hợp Phái, Huyền Không Phi Tinh, Huyền Không Đại Quái).
+            </p>
+          </div>
+        )}
+      </div>
+    </Container>
+  )
+}
