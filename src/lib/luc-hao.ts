@@ -395,6 +395,7 @@ function elementalRelationsOf(lineNguHanh: NguHanh, targetNguHanh: NguHanh): ("S
 export type HaoRelationType =
   | "Sinh" | "Khắc" | "Hợp" | "Xung" | "Hại"
   | "Nhật Phá" | "Nguyệt Phá" | "Ám Động" // Phá tách riêng Ngày/Tháng theo đúng nguồn (không gộp chung điều kiện)
+  | "Nhật Tán" | "愈动" // Phase 25B (profile 增删卜易): Nhật xung cho hào ĐỘNG — động+hưu/tù → Nhật Tán/散; động+vượng → 愈动 (khác Ám Động/Nhật Phá của hào TĨNH)
   | "Lâm Nhật" | "Lâm Nguyệt" // hào có Chi trùng đúng Chi Ngày/Chi Tháng (đương lệnh/lâm Nhật Thần)
   | "Nhập Mộ"; // xem khối chú thích "NHẬP MỘ" ngay trên — source DAY/MONTH/CHANGED_YAO ứng 3 dạng
 
@@ -408,17 +409,19 @@ export interface HaoRelation {
   relatedYao?: number; // vị trí hào (1-6) gây ra quan hệ này — chỉ dùng khi source là YAO/CHANGED_YAO, chưa dùng ở C1
 }
 
-// Quan hệ hào <-> Nhật Thần (Chi Ngày). Nhật Phá vs Ám Động phân biệt theo vượng/suy CỦA HÀO so với
-// NGUYỆT LỆNH (field `monthVuongSuy` đã có sẵn, đúng theo Chương VI: "Tĩnh hào vượng tướng, bị nhật
-// thần xung làm ám động; tĩnh hào bị hưu tù, bị nhật xung là nhật phá") — không phải vượng/suy so
-// với chính Ngày. Nhóm "vượng tướng" = Vượng/Tướng; nhóm "hưu tù" = Hưu/Tù/Tử (nguồn chỉ nói rõ 2
-// nhóm "vượng tướng" và "hưu tù", việc xếp Tử vào nhóm hưu tù là suy luận hợp lý từ hệ 5 bậc đã có,
-// không phải trích dẫn trực tiếp).
+// Quan hệ hào <-> Nhật Thần (Chi Ngày). Nhật xung phân 4 trạng thái theo trục TĨNH/ĐỘNG × VƯỢNG/SUY
+// (profile 《增删卜易》 日辰章, khóa Phase 24 — xem LUAN_QUE_LUC_HAO_SPEC §3.10):
+//   tĩnh + vượng/tướng → Ám Động ; tĩnh + hưu/tù → Nhật Phá (Chương VI: "tĩnh hào vượng tướng… ám động;
+//   tĩnh hào bị hưu tù… nhật phá"). ĐỘNG + vượng/tướng → 愈动 ("爻旺而动，冲之愈动") ; ĐỘNG + hưu/tù →
+//   Nhật Tán/散 ("爻衰而动，冲之则散"). Vượng/suy đọc từ `monthVuongSuy` (Nguyệt lệnh — KHÔNG tính lại);
+//   trạng thái động đọc từ `isDong` (do caller truyền). Nhóm "vượng tướng" = Vượng/Tướng; "hưu tù" =
+//   Hưu/Tù/Tử. Ngoại lệ 月建 "日冲而不散" tự thỏa: hào lâm Nguyệt → vượng → nhánh vượng (愈动), không vào 散.
 function getDayRelations(
   lineChiIndex: number,
   lineNguHanh: NguHanh,
   dayChiIndex: number | null,
   monthVuongSuy: VuongSuy,
+  isDong: boolean,
 ): HaoRelation[] {
   if (dayChiIndex === null) return [];
   const dayNguHanh = CHI_NGU_HANH[dayChiIndex];
@@ -430,7 +433,10 @@ function getDayRelations(
   if (chiPairMatch(LUC_XUNG_PAIRS, lineChiIndex, dayChiIndex)) {
     out.push({ type: "Xung", source: "DAY", target: "HAO" });
     const vuongTuong = monthVuongSuy === "Vượng" || monthVuongSuy === "Tướng";
-    out.push({ type: vuongTuong ? "Ám Động" : "Nhật Phá", source: "DAY", target: "HAO" });
+    const xungType: HaoRelationType = isDong
+      ? (vuongTuong ? "愈动" : "Nhật Tán")
+      : (vuongTuong ? "Ám Động" : "Nhật Phá");
+    out.push({ type: xungType, source: "DAY", target: "HAO" });
   }
   return out;
 }
@@ -633,7 +639,7 @@ export function lapQueDayDu(
       growthDay,
       growthMonth,
       relations: [
-        ...getDayRelations(chiIndex, nguHanh, dayChiIndex, vuongSuy),
+        ...getDayRelations(chiIndex, nguHanh, dayChiIndex, vuongSuy, dongPositions.includes(haoSo)),
         ...getMonthRelations(chiIndex, nguHanh, monthChiIndex),
         // Nhật Mộ / Nguyệt Mộ — xem khối chú thích "NHẬP MỘ" phía trên HaoRelationType.
         ...(growthDay === "Mộ" ? [{ type: "Nhập Mộ" as const, source: "DAY" as const, target: "HAO" as const }] : []),

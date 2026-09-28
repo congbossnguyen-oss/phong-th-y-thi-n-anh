@@ -96,7 +96,7 @@ Thuật toán: từ Can Chi ngày, quy về chu kỳ 60 Giáp Tý → xác đị
 | Được Nhật sinh phù nhưng tiết khí cho Nguyệt | Trung hòa |
 | Được Nhật sinh phù nhưng khắc xuất Nguyệt | Trung hòa, hơi vượng |
 
-Thứ tự ưu tiên khi xét 1 hào: (1) Nguyệt kiến? → Nguyệt phá? → Tam/Nhị hợp với Nguyệt? → sinh khắc thường; (2) rồi lặp lại với Nhật; (3) đặc biệt: hào vượng bị Nhật xung = **ám động** (lợi, không phải suy); hào hưu tù tĩnh bị Nhật xung = **Nhật phá** (hại); hào đang động bị Nhật xung = **Nhật tán** (hại).
+Thứ tự ưu tiên khi xét 1 hào: (1) Nguyệt kiến? → Nguyệt phá? → Tam/Nhị hợp với Nguyệt? → sinh khắc thường; (2) rồi lặp lại với Nhật; (3) đặc biệt: hào bị **Nhật xung** chia **4 trạng thái** theo trục **tĩnh/động × vượng/suy** — khóa đầy đủ ở **§3.10 (Phase 24, profile 《增删卜易》)**. Tóm tắt: Tĩnh+Vượng→**Ám Động**; Tĩnh+Hưu-tù→**Nhật Phá**; Động+Vượng→**愈动 / Xung càng động**; Động+Hưu-tù→**Nhật Tán / 散**. *(Bản trước gộp nhầm "hào đang động → Nhật Tán" vô điều kiện — đã sửa ở §3.10.)*
 
 ### 3.5. 12 cung Trường Sinh (vòng đời ngũ hành — dùng tính Nhập Mộ, Ứng Kỳ)
 
@@ -132,6 +132,147 @@ Thứ tự ưu tiên khi xét 1 hào: (1) Nguyệt kiến? → Nguyệt phá? �
 ### 3.8. An Phục Thần / Phi Thần
 
 Khi Dụng thần không lộ trên quẻ chính, an theo bát cung gốc của quẻ để tìm hào Phục Thần và Phi Thần tương ứng — đây là thuật toán tra bảng bát cung tiêu chuẩn (64 quẻ × 8 cung), có thể code cứng thành bảng tra.
+
+### 3.9. Thái Tuế / Tuế Phá (quan hệ hào ↔ Chi Năm)
+
+> **Khóa methodology (Phase 10A).** Đây là quyết định methodology được **Thầy khóa ở Phase 10A** (chat/methodology lock), KHÔNG phải trích dẫn văn bản cổ. Ghi vào đây để spec tự-đủ; KHÔNG được nâng thành "cổ thư chứng minh" khi chưa có nguồn trong repo.
+
+- **Thái Tuế**: Chi hào **trùng** Chi Năm (太歲). Biểu thị sự việc của hào đó nhập/ứng theo năm. **Thái Tuế KHÔNG đồng nghĩa Vượng** — không tự nâng lực hào.
+- **Tuế Phá**: Chi Năm **xung** Chi hào (歲破). Là trạng thái tổn thương theo năm (suy mạnh) — thuộc **trục giảm lực (reduced/adverse)**, GIỮ nền lực (KHÔNG erase base force), nhất quán với cách xử lý Nguyệt Phá / Nhật Phá.
+
+**Triển khai runtime (đã có sẵn):** `canLucHao().yearState = { thaiTue, tuePha }` (`src/lib/quan-su/can-luc-hao.ts`):
+`thaiTue = (chiHào === chiNăm)`; `tuePha = (chiHào === chi-xung-của chiNăm)`. Năm CHỈ dùng cho Thái Tuế/Tuế Phá,
+KHÔNG thay thế tính Vượng/Suy theo Nhật/Nguyệt (mục 3.4). Tuế Phá đưa vào `reduced`; Thái Tuế không đổi `baseForce`.
+
+**Phân tách 3 tầng (bắt buộc giữ đúng):**
+1. *Methodology lock* — Phase 10A (như trên).
+2. *Runtime implementation* — `canLucHao().yearState` (đã implement, đã test ở `__can-luc-hao.test.ts`).
+3. *Validation evidence* — **DATA GAP**: bộ 153 án lệ (Vương Hổ Ứng) **không có** ca Tuế Phá đủ cấu trúc 6 hào để
+   replay deterministic (xác nhận Phase 10D/21). Việc thiếu fixture **KHÔNG** cho phép sửa/định nghĩa lại rule;
+   nếu sau này thu thập được fixture 6 hào thật thì dùng để **kiểm chứng** rule hiện có, KHÔNG được âm thầm đổi nghĩa.
+
+### 3.10. Nhật Xung — 4 trạng thái (khóa Phase 24, profile 《增删卜易》)
+
+> **Quyết định methodology (Phase 24).** Quân Sư CHỌN 《增删卜易》 (日辰章 / 动散章) làm **profile chính** cho ngữ nghĩa
+> Nhật Xung. Đây là **quyết định thiết kế của Quân Sư**, KHÔNG phải tuyên bố 《增删卜易》 "đúng phổ quát" hơn các
+> trường phái cổ khác. 《黄金策》/《卜筮正宗》 dùng một profile khác cho hào động (**动逢冲 → 散**, vô điều kiện vượng/suy)
+> — đó là **một profile hợp lệ khác**, Quân Sư CỐ Ý không dùng cho cơ chế này để tránh trộn hai trường phái.
+
+**Lý do chọn:** (a) ngữ nghĩa **tĩnh** hiện có của Quân Sư (N1/N2) vốn đã theo kiểu 增删卜易; (b) 增删卜易 **giải
+tường minh cả hai ô động**; (c) cho Quân Sư **một** profile nguồn nhất quán thay vì gộp ngầm hai trường phái.
+
+**Bảng khóa N1–N4 (Nhật xung = Chi Ngày xung Chi hào):**
+
+| CASE | Điều kiện | KẾT QUẢ (khóa) | Hán tự |
+|---|---|---|---|
+| N1 | Tĩnh + Vượng(-Tướng) + Nhật xung | **Ám Động** (lợi, không phải suy) | 暗动 |
+| N2 | Tĩnh + Hưu/Tù + Nhật xung | **Nhật Phá** (hại) | 日破 |
+| N4 | Động + Vượng(-Tướng) + Nhật xung | **愈动 / Xung càng động** (KHÔNG phải Nhật Tán) | 愈动 |
+| N3 | Động + Hưu/Tù + Nhật xung | **Nhật Tán / Tán** (hại, mất tác dụng động) | 散 / 冲脱 |
+
+**Ngoại lệ (theo 增删卜易 日辰章):** hào **lâm Nguyệt kiến** thì "日冲而不散" — Nhật xung KHÔNG làm tán/phá (đương lệnh
+không sợ Nhật xung). Ngoại lệ này áp trước khi phân N1–N4.
+
+**Nhật Phá ≠ Nhật Tán (khóa):**
+- **日破 (Nhật Phá)** = nhánh **Tĩnh + Hưu/Tù** (N2).
+- **散 / Nhật Tán** = nhánh **Động + Hưu/Tù** (N3).
+- Hai nhãn **KHÔNG đồng nghĩa**, thuộc **hai nhánh khác nhau** (tĩnh vs động). *(冲脱 là biến thể chữ của 散.)*
+- **Nhánh Động + Vượng (N4) KHÔNG phải Nhật Tán** — là trạng thái riêng **愈动 / Xung càng động**.
+
+**Loại bỏ hybrid cũ (không giấu chỉnh sửa lịch sử):**
+> "The previous specification combined the static branch associated with 增删卜易 with the unconditional dynamic 散
+> rule found in 黄金策 / 卜筮正宗. Phase 24 formally resolves this by selecting one primary methodology profile."
+
+Cụ thể: bản trước lấy **hàng tĩnh** theo 增删卜易 (N1 暗动 / N2 日破) NHƯNG lấy **hàng động** theo 黄金策 (动→散 vô điều
+kiện), khiến ô **N4** mâu thuẫn với chính nguồn cấp N1/N2. Phase 24 khóa toàn bộ theo **một** profile (增删卜易).
+
+**Ranh giới lực & kết luận:** KHÔNG tự động suy Nhật Tán → giảm lực, KHÔNG tự động suy 愈动 → tăng lực. Mô hình EFFECT
+đã được khóa ở **§3.10.1 (Phase 25F — Model 1)**: base strength và movement-efficacy là **hai trục tách biệt**.
+
+**Ánh xạ runtime (ĐÃ implement Phase 25B, commit 56db7cb):** `luc-hao.ts::getDayRelations` nhận `isDong` và phân đủ
+4 nhãn (tĩnh: `vuongTuong ? "Ám Động" : "Nhật Phá"`; động: `vuongTuong ? "愈动" : "Nhật Tán"`); `HaoRelationType` đã có
+"Nhật Tán"/"愈动"; `hao-time-relations.ts` surface FACT (kind `TAN`/`DU_DONG`). Hiện **FACT-only** (canLucHao/ket-luan/
+chamDiem KHÔNG đọc 2 nhãn mới) — xem `PHASE25B/25C`.
+
+**Nguồn (đã verify Phase 23C, ghi URL):**
+- Primary profile: 《增删卜易》 日辰章 — https://www.quanxue.cn/qt_mingxiang/zengshanpy/zengshanpy19.html
+  (đối chiếu https://ly.yishihui.net/17685.htm). Verbatim: "冲旺相之静爻，即为暗动，冲衰弱之静爻，则为日破。" ·
+  "爻旺而动，冲之愈动，爻衰而动，冲之则散。" · "爻逢月建，日冲而不散。"
+- Profile khác (KHÔNG dùng cho cơ chế này, vẫn hợp lệ): 《黄金策·总断千金赋》 —
+  https://www.quanxue.cn/qt_mingxiang/huangjin/huangjin01.html ("动逢冲而事散", vô điều kiện);
+  《卜筮正宗》 — https://ctext.org/wiki.pl?chapter=889452 (index) / https://www.shidianguji.com/zh/book/HY0057/chapter/1lpdfpe5gs8wz (partial).
+
+### 3.10.1. Mô hình EFFECT Nhật Xung — Model 1 (khóa Phase 25F)
+
+> **Quyết định methodology-owner (Phase 25F).** Chọn **MODEL 1 — FACT + MOVEMENT-EFFICACY AXIS**. Base strength và
+> movement efficacy là **HAI TRỤC NGỮ NGHĨA TÁCH BIỆT**. Áp **đồng nhất cho cả 4** trạng thái Nhật Xung.
+
+**Hai trục:**
+1. **BASE STRENGTH (giữ nguyên, authoritative):** Nguyệt kiến, vượng/suy, Nhật thần, và toàn bộ phép tính lực hiện có
+   (`canLucHao` base/effective/reduced). 4 nhãn Nhật Xung **KHÔNG** sửa trục này.
+2. **MOVEMENT EFFICACY (trục ngữ nghĩa MỚI, mô tả):** trạng thái/hiệu lực của việc động hoặc bị xung. **Định tính**,
+   KHÔNG phải bậc lực, KHÔNG phải số.
+
+**Bảng trạng thái (state matrix) — khóa:**
+| Tĩnh/Động | Vượng/Hưu-Tù | Relation | Movement-efficacy semantics |
+|---|---|---|---|
+| Tĩnh | Vượng | **Ám Động** (暗动) | tĩnh nhưng được kích hoạt/tiềm động (latent activated) |
+| Tĩnh | Hưu/Tù | **Nhật Phá** (日破) | tĩnh-suy bị Nhật xung → tổn thương/vỡ trạng thái tĩnh. **KHÔNG phải 散.** |
+| Động | Hưu/Tù | **Nhật Tán / 散** | động-suy → hiệu lực động bị **tán/mất**. KHÔNG trừ lực bằng số. |
+| Động | Vượng | **愈动** | động-vượng → hiệu lực động **được tăng cường** bởi xung. KHÔNG cộng lực bằng số. |
+
+**Ngoại lệ Nguyệt kiến (爻逢月建，日冲而不散):** hào lâm Nguyệt **đã Vượng** trong base-strength → Động + Vượng + Nhật
+xung → **愈动**, KHÔNG phải 散. Đạt qua trạng thái vượng sẵn có — **KHÔNG thêm guard đặc biệt dư thừa**.
+
+**Provenance (chỉ dùng đã verify Phase 25C):** profile chính 《增删卜易》 日辰章, hậu thuẫn 《易冒》 卷三 日冲章
+("旺相为动，休囚为散"). KHÔNG dùng profile 黄金策/卜筮正宗 (动逢冲→散 vô điều kiện). *(易冒 gọi tĩnh-suy = 暗破, dị danh của
+日破.)*
+
+**Invariants — mọi implementation tương lai PHẢI giữ:**
+1. KHÔNG biến 散 thành delta lực âm bằng số. 2. KHÔNG biến 愈动 thành delta lực dương bằng số. 3. KHÔNG sửa vượng/suy.
+4. KHÔNG đổi base/effective strength chỉ vì 散/愈动. 5. Nhật Phá ≠ Nhật Tán. 6. 愈动 KHÔNG phải bậc lực mới.
+7. KHÔNG import profile 黄金策/卜筮正宗 (动逢冲→散). 8. Primary = 增删卜易 (+易冒). 9. KHÔNG chế rule Ứng Kỳ. 10. KHÔNG
+chấm điểm chamDiem cho 4 nhãn. 11. KHÔNG để 4 nhãn tự quyết 吉/凶. 12. Trục efficacy hiện **mô tả/ngữ nghĩa**; tích hợp
+verdict là quyết định implement tương lai.
+
+**Downstream boundaries (khóa):** no strength mutation · no numeric score · no automatic verdict mutation · no automatic
+Ứng Kỳ rule · no rejected-school import.
+
+**Trạng thái field runtime (đã implement — Phase 25G, commit c9207a9):** `HaoStrengthState.movementEfficacy`
+(`LATENT_ACTIVATED | BROKEN_STATIC | DISPERSED | INTENSIFIED | null`) suy từ 4 nhãn relations, TRỰC GIAO
+base/effective/reduced; surface prompt như FACT.
+
+**KHÓA CUỐI — FACT-ONLY (Phase 25I).** Theo audit bằng chứng Phase 25H (không có nguồn số/verdict/timing; mọi hiệu ứng
+trùng vượng/suy×động×Xung đã biểu diễn; diễn dịch verdict cho 散 lại trùng Suy hoặc trôi về profile 黄金策 đã loại):
+movementEfficacy được **khóa FACT-ONLY** — CHỈ mô tả, KHÔNG tác động canLucHao/strengthFrom/effective/reduced/
+concludeDung/temporalFrom/Ứng Kỳ/chamDiem/verdict 吉-hung. Chỉ được surface prompt/report. **Reopen** chỉ qua **decision
+gate riêng** khi có nguồn primary mới đủ khóa một rule cụ thể. *(Riêng việc kích hoạt `reduced` vào verdict là vấn đề
+kiến trúc verdict TÁCH BIỆT — OPEN "Reduced-state verdict architecture" — KHÔNG thuộc trục efficacy.)*
+
+### 3.10.2. Nhật Phá — trạng thái hạn chế ĐỘC LẬP (khóa Phase 26D, MODEL A)
+
+> **Quyết định methodology-owner (Phase 26D).** Nhật Phá là **trạng thái hạn chế độc lập**: khi một hào được phân
+> loại Nhật Phá, nó **vẫn** áp hiệu ứng LIMITED (availability/protection) **kể cả khi** `effective` tổ hợp là Trung Hòa
+> hoặc Vượng. Giữ nguyên hành vi load-bearing mà probe Phase 26B phát hiện.
+
+**Luật khóa:** `IF relation = "Nhật Phá" THEN reduced = true` — đúng **mọi** trường hợp, KỂ CẢ `effective ∈ {Trung Hòa,
+Vượng}`. **KHÔNG** thêm ngoại lệ theo effective. **KHÔNG** đổi cách phân loại Nhật Phá theo month (Phase 24). (Đây đúng
+hành vi runtime hiện tại — Phase 26D chỉ **khóa methodology**, KHÔNG sửa code.)
+
+**Phân tách 5 khái niệm (KHÔNG gộp):**
+1. `monthVuongSuy` — getDayRelations dùng để phân **Nhật Phá vs Ám Động** (Phase 24 lock).
+2. `effective`/`baseForce` — lực tổ hợp Nhật+Nguyệt, availabilityOf dùng ở nhánh force.
+3. **Nhật Phá** — trạng thái hạn chế quan hệ, **độc lập** với việc effective tình cờ Trung Hòa/Vượng.
+4. `reduced` — tín hiệu hạn chế availability/protection ĐANG hoạt động; Nhật Phá là **producer hợp lệ**.
+5. `movementEfficacy = BROKEN_STATIC` — **FACT-only** (Phase 25I), **KHÔNG** gộp với `reduced`, **KHÔNG** thành active.
+
+**Provenance boundary:** 增删卜易/易冒 hỗ trợ phân biệt Nhật Phá theo 旺相/衰弱 × Nhật xung (verify Phase 25C/26C). Việc
+**tổng quát hóa** "Nhật Phá độc lập áp LIMITED trong MỌI ca combined-effective" là **QUÂN SƯ METHODOLOGY DECISION** (Phase
+26D), KHÔNG phải tuyên bố mọi trường phái cổ phát biểu y hệt; **KHÔNG** bịa câu cổ văn cho nhánh combined-effective.
+
+**Hành vi được bảo vệ:** 14 ca (probe Phase 26B, quẻ Thuần Càn) Nhật Phá + effective Trung Hòa/Vượng → LIMITED được
+**cố ý giữ**. Đề xuất "gỡ redundant" (Phase 26B) đã **bị bác** vì thực chất load-bearing. **Reopen** chỉ qua gate riêng
+khi có nguồn primary mới cho nhánh combined-effective.
 
 ---
 
@@ -352,3 +493,5 @@ App nên tổ chức kiến thức chuyên sâu thành các "domain pack" nạp 
 ## Ghi chú nguồn
 
 Toàn bộ nội dung trên được đúc kết từ skill `hoa-giai-kinh-dich` đã xây dựng, dựa trên: Lục Hào Xu Cát Tị Hung Hóa Giải Bí Truyền, Lục Hào Hóa Giải Kinh Nghiệm Tâm Pháp, Lục Hào Nghi Hoặc Chỉ Mê, Lục Hào Quái Lệ Thuyết Chân, Lục Hào Quái Tượng Giải Mật (đều của Vương Hổ Ứng); Kinh Dịch Ứng Dụng — Xu Cát Tị Hung Tường Giải, Kinh Dịch Cơ Bản (Nguyễn Huy Hoàng); Tài Vận Bí Pháp (Giả Bỉnh Nhiên); Kinh Dịch Lục Hào Sơ Cấp (Học Viện Minh Việt). Một số chi tiết được đánh dấu rõ "không rõ/cần xác minh" ở mục 10 vì nguồn OCR bị lỗi hoặc thiếu — không nên tự suy diễn thêm khi code, nên tra cứu bản gốc giấy nếu cần độ chính xác tuyệt đối.
+
+**Khóa methodology bổ sung (không từ văn bản trên):** mục **3.9 (Thái Tuế / Tuế Phá)** là **quyết định methodology khóa ở Phase 10A** (chat/methodology lock của Thầy), đã triển khai ở `canLucHao().yearState` và còn **DATA GAP** về evidence án lệ — xem thêm `PHASE21_METHODOLOGY_GAP_CLOSURE.md` và `PHASE22A_TUE_PHA_SPEC_CLOSURE.md`. KHÔNG gán nguồn cổ thư cho mục này.

@@ -6,6 +6,16 @@
  * liệu huyền học nào. Thiếu dữ liệu thì im lặng ở phần đó, không được suy đoán bù.
  */
 import type { QuanSuInterpretationPayload } from "../divination";
+import type { FourGods, AdvisoryReport, CanLucEntry } from "../advisory-engine";
+import { getPhiPhucRelations, resolveDungThan, resolveFourGods } from "../advisory-engine";
+import { canLucHao } from "../can-luc-hao";
+import { synthesizeKyNguyenDung } from "../ky-nguyen-dung";
+import { ketLuanSuViec } from "../ket-luan-su-viec";
+import { synthesizeUngKy } from "../ung-ky-synthesis";
+import { synthesizeHinh } from "../hinh-relations";
+import { synthesizeCuuThan } from "../cuu-than";
+import { synthesizeHaoTimeFacts } from "../hao-time-relations";
+import { phanLoaiSauTamHop } from "../../luc-hao-tam-hop-cuc";
 import { quyTacGiongVan } from "../giong-van";
 import { TRI_THUC_LOI } from "./kien-thuc";
 
@@ -40,6 +50,17 @@ export function systemPromptQuyTac(gioiTinh?: "Nam" | "Nữ", mucNhayCam?: "thuo
     "- Nếu một thông tin không có trong dữ liệu, im lặng bỏ qua phần đó. Không được bịa ra cho đủ bài.",
     "- Không nhắc tới tên trường dữ liệu hay thuật ngữ kỹ thuật của hệ thống trong câu trả lời cho người hỏi.",
     "",
+    "NGUỒN SỰ THẬT DETERMINISTIC (bắt buộc trung thành — engine đã tính, bạn CHỈ diễn đạt, KHÔNG tính lại):",
+    "- Thứ tự ưu tiên khi dữ kiện có vẻ mâu thuẫn: (1) KẾT LUẬN SỰ VIỆC > (2) KỴ→NGUYÊN→DỤNG > (3) CÂN LỰC HÀO (trạng thái từng hào) > (4) tín hiệu ngữ cảnh (Tam Hợp / Phản-Phục Ngâm) > (5) dữ liệu quẻ thô. Tầng dưới KHÔNG được override tầng trên; nếu quẻ thô có vẻ ngược với kết luận, ưu tiên kết luận deterministic.",
+    "- KHÔNG tự thay đổi trạng thái engine đã xác định: Vượng/Suy, mạnh/yếu của Dụng-Kỵ-Nguyên, chiều sinh/khắc (giữ đúng ai tác động ai), Thế/Ứng, và `conclusion`. KHÔNG tự tính lại Ngũ hành.",
+    "- Khi `conclusion` = MIXED (tín hiệu mâu thuẫn) hoặc UNRESOLVED (chưa đủ dữ liệu): GIỮ NGUYÊN trạng thái đó — trình bày cả hai mặt / điều kiện / yếu tố cần theo dõi. TUYỆT ĐỐI KHÔNG tự chọn một phía chỉ vì văn phong, KHÔNG dùng ngôn ngữ chắc chắn (thành/bại) khi engine chưa chắc.",
+    "- Không Vong = chưa hiện hữu / chờ Xuất Không - Ứng Kỳ, KHÔNG phải 'mất' hay 'thất bại'. Phá = giảm/hạn chế lực nhưng GIỮ nền lực, KHÔNG xóa lực. Số lượng từ 'tốt/xấu' trong `reasons` KHÔNG thay thế được `conclusion` deterministic.",
+    "",
+    "CÁCH DÙNG AN-LỆ (WORKED CASES) trong phần tri thức:",
+    "- Luận từ DỮ LIỆU QUẺ + kết quả engine/rule của quẻ này TRƯỚC. Án lệ chỉ là ví dụ tham khảo cách lập luận, KHÔNG phải bằng chứng cho quẻ đang xem.",
+    "- KHÔNG coi một án lệ 'giống giống' là bằng chứng trực tiếp; KHÔNG copy kết luận / vật phẩm / con số của án lệ sang quẻ này.",
+    "- Chỉ được nhắc tới án lệ thực sự có mặt trong phần tri thức; KHÔNG bịa án lệ, KHÔNG bịa nguồn.",
+    "",
     quyTacGiongVan(gioiTinh),
     ...(canhBao.length > 0 ? ["", "AN TOÀN:", ...canhBao] : []),
     "",
@@ -55,7 +76,7 @@ export function systemPromptQuyTac(gioiTinh?: "Nam" | "Nữ", mucNhayCam?: "thuo
 }
 
 /** Gói dữ liệu quẻ thành phần người dùng. Giữ nguyên JSON để model không hiểu sai. */
-export function userPrompt(payload: QuanSuInterpretationPayload, moTa?: string): string {
+export function userPrompt(payload: QuanSuInterpretationPayload, moTa?: string, fourGods?: FourGods, report?: AdvisoryReport): string {
   const q = payload.question;
   const phan: string[] = [
     `CÂU HỎI CỦA NGƯỜI HỎI: ${q.title}`,
@@ -72,6 +93,163 @@ export function userPrompt(payload: QuanSuInterpretationPayload, moTa?: string):
     "DỮ LIỆU QUẺ (do engine lập quẻ tính, là nguồn sự thật duy nhất):",
     JSON.stringify(payload.cast, null, 1),
   );
+
+  // ---- SYNTHESIS BUNDLE (Phase 19 hardening) — CHỈ tính 1 lần. Nếu có `report` (đã tính ở buildAdvisoryReport)
+  // thì SERIALIZE lại, KHÔNG tính lại; nếu không (test cũ gọi userPrompt trực tiếp) → fallback tính tại chỗ.
+  const activeFg = report?.fourGods ?? fourGods;
+  const bundle = activeFg && activeFg.dungThanNguHanh
+    ? report
+      ? { fg: report.fourGods, canLuc: report.canLuc ?? [], knd: report.kyNguyenDung!, conclusion: report.ketLuanSuViec!, ungKy: report.ungKy!, hinh: report.hinh!, cuu: report.cuuThan!, haoTime: report.haoTimeRelations! }
+      : (() => {
+          const dt = resolveDungThan(payload.cast.chinh, q.dung_than_hint);
+          const fgc = resolveFourGods(payload.cast, dt);
+          const cl: CanLucEntry[] = [];
+          if (dt.trangThai === "hien" && dt.hao) cl.push({ vaiTro: "Dụng Thần", ...canLucHao(payload.cast, dt.hao.hao) });
+          for (const n of fgc.nguyenThan) cl.push({ vaiTro: "Nguyên Thần", ...canLucHao(payload.cast, n.hao) });
+          for (const k of fgc.kyThan) cl.push({ vaiTro: "Kỵ Thần", ...canLucHao(payload.cast, k.hao) });
+          return { fg: fgc, canLuc: cl, knd: synthesizeKyNguyenDung(payload.cast, dt, fgc), conclusion: ketLuanSuViec(payload.cast, dt, fgc), ungKy: synthesizeUngKy(payload.cast, dt, fgc), hinh: synthesizeHinh(payload.cast, dt, fgc), cuu: synthesizeCuuThan(payload.cast, fgc), haoTime: synthesizeHaoTimeFacts(payload.cast, dt, fgc) };
+        })()
+    : null;
+
+  if (bundle) {
+    const { fg, canLuc, knd, conclusion, ungKy, hinh, cuu, haoTime } = bundle;
+    phan.push(
+      "",
+      "TỨ THẦN (engine/rule ĐÃ tính sẵn từ Dụng Thần — KHÔNG tự dẫn xuất lại, KHÔNG tự thêm hào):",
+      JSON.stringify(
+        {
+          dung_than_ngu_hanh: fg.dungThanNguHanh,
+          nguyen_than: fg.nguyenThan, // hào SINH Dụng Thần (phò trợ)
+          ky_than: fg.kyThan, // hào KHẮC Dụng Thần (cản phá)
+          cuu_than: "xem block CỪU THẦN riêng bên dưới (engine đã tính)",
+        },
+        null,
+        1,
+      ),
+      "- Đây là kết quả deterministic của engine/rule: chỉ dùng ĐÚNG các hào trong nguyen_than/ky_than trên, KHÔNG tự xác định thêm hào nào là Nguyên/Kỵ/Cừu Thần.",
+      "- Mỗi hào kèm `state` (vượng suy, Trường Sinh, Không Vong, Nguyệt/Nhật Phá) và `interactions` (quan hệ Nhật/Nguyệt, tiến/thoái, và `hoa` = hồi đầu sinh/khắc khi có biến) — đây là DỮ KIỆN engine tính sẵn; luận mạnh/yếu, phò/phá dựa trên các dữ kiện này.",
+      "- KHÔNG tự tạo điểm số 'strength' (0–100) hay xếp hạng mới cho Nguyên/Kỵ Thần — chỉ luận định tính từ các state/interactions đã cho.",
+      "- Có dữ kiện thì luận; KHÔNG có (mảng rỗng / trường vắng) thì nói đúng là 'không có', KHÔNG bịa. Kết quả engine/rule ưu tiên hơn mọi án lệ tham khảo.",
+    );
+
+    // CÂN LỰC HÀO (HaoStrength) — trạng thái LỰC deterministic của Dụng/Nguyên/Kỵ Thần (module dùng chung).
+    if (canLuc.length > 0) {
+      phan.push(
+        "",
+        "CÂN LỰC HÀO (engine/rule tính sẵn — trạng thái LỰC của từng hào, deterministic, KHÔNG phải điểm số):",
+        JSON.stringify(canLuc, null, 1),
+        "- Ưu tiên trạng thái deterministic đã tính ở đây; KHÔNG tự thay đổi kết luận Vượng/Suy của hào.",
+        "- `baseForce` = lực nền theo Nhật/Nguyệt (7 trường hợp đã khóa). `currentState.effective` đã tính nâng/hạ theo hóa biến; `reduced`=bị Phá/Hồi Đầu Khắc/Hóa Xung-Mộ-Tuyệt làm giảm nhưng GIỮ nền (không về 0); `restrained`=Hóa Hợp níu chân; `hidden`=Nhập Mộ ẩn tàng; `temporalExistence=EMPTY`=Không Vong (chưa hiện hữu, chờ Xuất Không/Ứng Kỳ) — KHÔNG coi là mất lực.",
+        "- `movementEfficacy` = trạng thái HIỆU LỰC ĐỘNG do Nhật xung (Model 1, chỉ MÔ TẢ, TÁCH BIỆT lực nền — KHÔNG mạnh/yếu hơn, KHÔNG điểm, KHÔNG cát/hung): `LATENT_ACTIVATED`=Ám Động (tĩnh vượng, tiềm động); `BROKEN_STATIC`=Nhật Phá (tĩnh suy, vỡ trạng thái tĩnh — KHÁC Nhật Tán); `DISPERSED`=Nhật Tán/散 (động suy, hiệu lực động bị tán); `INTENSIFIED`=愈动 (động vượng, hiệu lực động tăng); null=không bị Nhật xung. Đây là FACT mô tả, KHÔNG dùng để đảo lực nền hay kết luận cát/hung.",
+        "- Chuỗi Kỵ → Nguyên → Dụng: xét lực Kỵ Thần trước, rồi Kỵ tác động Nguyên, Nguyên tác động Dụng — KHÔNG mặc định 'Nguyên mạnh thì Dụng tốt'.",
+      );
+    }
+
+    // KỴ → NGUYÊN → DỤNG SYNTHESIS (Phase 11) — dùng `knd` từ bundle (đã tính 1 lần).
+    if (knd.currentState !== "NO_DIRECT_CHAIN") {
+      phan.push(
+        "",
+        "KỴ → NGUYÊN → DỤNG (engine/rule tổng hợp sẵn — chuỗi tác động, deterministic, KHÔNG điểm số):",
+        JSON.stringify(
+          {
+            ky_pressure: knd.kyPressure, // áp lực Kỵ Thần lên Dụng (STRONG..NONE)
+            nguyen_support: knd.nguyenSupport, // hỗ trợ của Nguyên Thần cho Dụng
+            dung_protection: knd.dungProtection, // Dụng được bảo vệ / chịu áp lực / trì hoãn...
+            current_state: knd.currentState, // trạng thái chuỗi (tham sinh, Kỵ áp đảo, cân bằng...)
+            chains: knd.chains, // từng cặp quan hệ + effective (khả năng phát huy)
+            reasons: knd.reasons,
+          },
+          null,
+          1,
+        ),
+        "- Ưu tiên Kỵ → Nguyên → Dụng deterministic synthesis ở đây. KHÔNG tự phát minh lại quan hệ sinh/khắc hoặc Vượng/Suy.",
+        "- `effective` = khả năng thực thi (STRONG/AVAILABLE/LIMITED/HIDDEN/EMPTY): EMPTY = Không Vong (chưa hiện hữu, KHÔNG phải mất lực); HIDDEN = Nhập Mộ; LIMITED = bị Phá/Hồi Đầu Khắc/Hóa Hợp hạn chế nhưng GIỮ nền.",
+        "- Đọc theo CHUỖI: lực Kỵ → Kỵ tác động Nguyên → Nguyên tác động Dụng. Nếu Kỵ 'tham sinh' Nguyên (Kỵ sinh Nguyên còn lực) thì Dụng được thông quan bảo vệ; nếu không có Nguyên, Kỵ khắc thẳng Dụng.",
+      );
+    }
+
+    // KẾT LUẬN SỰ VIỆC (Phase 12) — dùng `conclusion` từ bundle (tầng synthesis cuối, deterministic).
+    phan.push(
+      "",
+      "KẾT LUẬN SỰ VIỆC (engine/rule tổng hợp deterministic — Dụng Thần + Kỵ/Nguyên + Thế/Ứng + ngữ cảnh):",
+      JSON.stringify(
+        {
+          dung_than: conclusion.dungThan, // strength/support/protection/temporal/conclusion + reasons
+          the_ung: conclusion.theUng, // tương quan Thế↔Ứng (FACT, không tốt/xấu tuyệt đối)
+          contextual: conclusion.contextualSignals, // Tam Hợp / Phản Ngâm / Phục Ngâm nếu có
+          conclusion: conclusion.conclusion, // FAVORABLE / FAVORABLE_WITH_DELAY / MIXED / DIFFICULT / UNFAVORABLE / UNRESOLVED
+          reasons: conclusion.reasons,
+        },
+        null,
+        1,
+      ),
+      "- Đây là KẾT QUẢ DETERMINISTIC của engine. KHÔNG tự thay đổi trạng thái Dụng Thần, Kỵ/Nguyên/Dụng, Thế/Ứng hay Vượng/Suy; KHÔNG tự tính lại Ngũ hành.",
+      "- Khi `conclusion` = MIXED (tín hiệu mâu thuẫn) hoặc UNRESOLVED (chưa đủ dữ liệu): GIỮ NGUYÊN trạng thái đó, giải thích nguyên nhân — KHÔNG ép thành tốt/xấu.",
+      "- `conclusion` chỉ là khung; nhiệm vụ của bạn là DIỄN ĐẠT, NỐI MẠCH, giải thích và đưa ngữ cảnh đời thực — không lật ngược kết luận engine.",
+      "- FAVORABLE_WITH_DELAY = có lực/có hướng nhưng còn chờ (Không Vong/Nhập Mộ/Ứng Kỳ); nói rõ 'chờ đúng thời' thay vì 'thất bại'.",
+    );
+
+    // ỨNG KỲ — TỔNG HỢP (Phase 14) — dùng `ungKy` từ bundle (candidate, KHÔNG override conclusion).
+    if (ungKy.candidates.length > 0) {
+      phan.push(
+        "",
+        "ỨNG KỲ — TỔNG HỢP (engine tổng hợp mốc thời gian deterministic từ Không Vong/Mộ/Tam Hợp/Tiến-Thoái/động):",
+        JSON.stringify({ status: ungKy.status, primary: ungKy.primary, candidates: ungKy.candidates, reasons: ungKy.reasons }, null, 1),
+        "- Ứng Kỳ là TEMPORAL CANDIDATE (khả năng), KHÔNG phải 'chắc chắn xảy ra ngày X'. Chỉ dùng đúng các mốc/Chi liệt kê ở đây; KHÔNG tự chọn, đổi hoặc phát minh mốc mới.",
+        "- Nếu `status` = MULTIPLE_CANDIDATES hoặc UNRESOLVED (chưa có precedence để chốt): GIỮ NGUYÊN, nêu các cửa sổ thời gian, KHÔNG tự chốt một mốc. Chỉ nói mốc `primary` là chính khi engine đã đặt sẵn.",
+        "- Ứng Kỳ KHÔNG được lật `conclusion`: nếu kết luận là bất lợi, mốc chỉ mô tả THỜI ĐIỂM (cửa sổ), không biến thành 'ứng kỳ tốt'. Không Vong = chờ Xuất Không (chưa hiện hữu), KHÔNG phải 'mất'.",
+        "- `canAudit=true` (mốc dựa Nhập Mộ, engine còn nợ audit) → nói dè dặt ('có thể', 'thường rơi vào').",
+      );
+    }
+
+    // HÌNH — DETERMINISTIC FACT (Phase 15) — dùng `hinh` từ bundle (chỉ 2 bộ spec §3.7: Dần-Tỵ-Thân, Tý-Mão).
+    if (hinh.relations.length > 0) {
+      phan.push(
+        "",
+        "HÌNH — QUAN HỆ FACT (engine tính sẵn theo spec — CHỈ là quan hệ, KHÔNG phải Khắc, KHÔNG phải verdict):",
+        JSON.stringify(hinh, null, 1),
+        "- Hình là QUAN HỆ deterministic engine đã xác định. KHÔNG tự thêm Hình, KHÔNG tự coi Hình = Khắc, KHÔNG biến Hình thành 'xấu/hung' hay lực Suy.",
+        "- Nguồn CHƯA khóa ý nghĩa cát/hung cụ thể của Hình → chỉ MÔ TẢ quan hệ (vd 'có Tam Hình Dần-Tỵ-Thân giữa các hào...'), KHÔNG dùng Hình để đảo `conclusion`.",
+        "- Chỉ dùng đúng các bộ Hình liệt kê ở đây (engine cố ý CHỈ xét Dần-Tỵ-Thân và Tý-Mão; Tự Hình / Sửu-Tuất-Mùi chưa khóa nguồn nên KHÔNG có — đừng tự thêm).",
+      );
+    }
+
+    // CỪU THẦN — DETERMINISTIC FACT (Phase 16) — dùng `cuu` từ bundle (sinh Kỵ, khắc Nguyên; spec §260/§229).
+    if (cuu.members.length > 0) {
+      phan.push(
+        "",
+        "CỪU THẦN — QUAN HỆ FACT (engine xác định theo spec: hào SINH Kỵ Thần đồng thời KHẮC Nguyên Thần):",
+        JSON.stringify(cuu, null, 1),
+        "- Cừu Thần là 'kẻ thù gián tiếp' (nuôi Kỵ, chặn Nguyên). Đây là QUAN HỆ deterministic — KHÔNG tự thêm Cừu, KHÔNG đổi vai trò, KHÔNG coi Cừu = Kỵ Thần.",
+        "- KHÔNG tự biến Cừu thành lực Suy/Hung hay verdict; KHÔNG dùng Cừu để đảo `conclusion`. Nguồn CHƯA khóa mức cát/hung cụ thể → chỉ MÔ TẢ quan hệ (Cừu sinh Kỵ nào, khắc Nguyên nào).",
+      );
+    }
+
+    // NHẬT / NGUYỆT — DETERMINISTIC FACTS (Phase 17) — dùng `haoTime` từ bundle (GIỮ RIÊNG Nhật vs Nguyệt).
+    if (haoTime.nhat.length > 0 || haoTime.nguyet.length > 0) {
+      phan.push(
+        "",
+        "NHẬT / NGUYỆT — QUAN HỆ FACT (engine tính sẵn; GIỮ RIÊNG hào↔Nhật Thần và hào↔Nguyệt Kiến):",
+        JSON.stringify(haoTime, null, 1),
+        "- Đây là QUAN HỆ deterministic. KHÔNG tự tính lại, KHÔNG đảo chiều sinh/khắc, KHÔNG GỘP Nhật với Nguyệt (giữ đúng 2 fact, vd 'Nhật sinh nhưng Nguyệt khắc').",
+        "- KHÔNG biến quan hệ thành kết luận: Nhật/Nguyệt sinh KHÔNG tự thành 'tốt', Nhật/Nguyệt Phá KHÔNG tự thành 'xấu' hay mất hết lực (Phá = giảm/tổn thương). Tổng hợp Vượng/Suy đã ở CÂN LỰC HÀO — KHÔNG override.",
+        "- Ám Động (hào vượng + Nhật xung) KHÁC Nhật Phá (hào suy + Nhật xung) — dùng đúng như engine đã gắn, KHÔNG tự đổi.",
+      );
+    }
+  }
+
+  // TAM HỢP — PHÂN LOẠI 6 THỂ (đủ / khuyết) + Ứng Kỳ. Bổ sung cho block TAM HỢP CỤC ở trên (chỉ cục đã thành).
+  const sauTamHop = phanLoaiSauTamHop(payload.cast);
+  if (sauTamHop.co) {
+    phan.push(
+      "",
+      "TAM HỢP — PHÂN LOẠI (engine/rule tính sẵn 6 thể: đủ / khuyết; kèm Ứng Kỳ khi suy được):",
+      JSON.stringify(sauTamHop.danhSach, null, 1),
+      "- `full=false` = cục KHUYẾT (còn thiếu 1 hào — an tĩnh/Phục Thần), CHƯA thành ngay: ứng khi gặp Chi ở `ungKyChi` (hoặc khi hào giữ chỗ được kích).",
+      "- TH6 nếu `phucLine.quaSuy=true`: Phục Thần quá suy, khó thoát ra → cục khó/không đủ lực thành, nói dè dặt.",
+      "- Chỉ dùng đúng các cục liệt kê ở đây; cục TỐT/XẤU tùy hành cục sinh/khắc Dụng Thần — tự luận, KHÔNG mặc định là điềm lành.",
+    );
+  }
 
   if (payload.van_trinh) {
     phan.push(
@@ -103,6 +281,35 @@ export function userPrompt(payload: QuanSuInterpretationPayload, moTa?: string):
       "TAM HỢP CỤC (engine tính sẵn — các hào tham gia ĐỔI HẲN sang ngũ hành của cục):",
       JSON.stringify(payload.tam_hop_cuc, null, 1),
       "Cục hình thành là tốt hay xấu tùy hành của cục sinh/khắc gì với Dụng Thần — tự luận, KHÔNG mặc định cục là điềm lành.",
+    );
+  }
+
+  // PHI THẦN ↔ PHỤC THẦN — surface FACT quan hệ ngũ hành (Phục ẩn dưới hào chủ Phi). Ý nghĩa từng
+  // quan hệ đã có trong phần tri thức (§ Phục Thần) — ở đây chỉ nêu dữ kiện, không kèm verdict/điểm.
+  const phiPhuc = getPhiPhucRelations(payload.cast);
+  if (phiPhuc.length > 0) {
+    phan.push(
+      "",
+      "PHI THẦN ↔ PHỤC THẦN (engine tính sẵn — lục thân ẩn 'phục' dưới hào chủ 'phi'; FACT quan hệ ngũ hành):",
+      JSON.stringify(phiPhuc, null, 1),
+      "- Ý nghĩa từng quan hệ (Phục sinh Phi / Phi sinh Phục / Phi khắc Phục / Phục khắc Phi) theo ĐÚNG mục 'Phục Thần' trong phần tri thức — KHÔNG tự đặt điểm số, KHÔNG tự đổi ai là Phi/ai là Phục.",
+      "- Chỉ dùng đúng các cặp Phi/Phục liệt kê ở đây; nếu vắng thì quẻ không có phục thần đáng xét. Dữ liệu engine/rule ưu tiên hơn án lệ tham khảo.",
+    );
+  }
+
+  // PHẢN NGÂM / PHỤC NGÂM — engine tính sẵn ở `cast.fanYin`/`cast.fuYin`; surface thành block riêng
+  // để AI không bỏ sót (chúng vốn nằm lẫn trong cast JSON). CHỈ FACT: truyền đúng label/type engine
+  // cung cấp, KHÔNG tự đặt điểm/mức mạnh-yếu. Chỉ render khi ít nhất một cái enabled.
+  if (payload.cast.fanYin?.enabled || payload.cast.fuYin?.enabled) {
+    const phanNgam = payload.cast.fanYin?.enabled ? payload.cast.fanYin : null;
+    const phucNgam = payload.cast.fuYin?.enabled ? payload.cast.fuYin : null;
+    phan.push(
+      "",
+      "PHẢN NGÂM / PHỤC NGÂM (engine tính sẵn giữa Quẻ Chính và Quẻ Biến — FACT, KHÔNG tự suy diễn thêm):",
+      JSON.stringify({ phan_ngam: phanNgam, phuc_ngam: phucNgam }, null, 1),
+      "- Chỉ khi tín hiệu có mặt ở đây thì quẻ MỚI có Phản Ngâm/Phục Ngâm — nếu vắng, KHÔNG được tự gán.",
+      "- Phản Ngâm chỉ điềm việc lặp lại/đảo ngược, trắc trở; Phục Ngâm chỉ điềm trì trệ, đau đáu kéo dài — đưa vào luận, nhưng KHÔNG tự đặt điểm số hay mức mạnh/yếu.",
+      "- Dùng ĐÚNG `label`/`type` engine cung cấp (kể cả mức nặng nếu label đã ghi); KHÔNG tự chế mức độ. Dữ liệu engine/rule ưu tiên hơn án lệ tham khảo.",
     );
   }
 

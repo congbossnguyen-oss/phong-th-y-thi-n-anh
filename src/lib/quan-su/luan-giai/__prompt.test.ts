@@ -29,6 +29,31 @@ describe("dựng prompt luận giải", () => {
     expect(TRI_THUC_LOI).toContain("PHƯƠNG PHÁP HÓA GIẢI");
   });
 
+  it("an-lệ (worked cases) được nhúng vào tri thức: mục lục + thân Tập 1/8", () => {
+    // Marker section + kỷ luật dùng án lệ.
+    expect(TRI_THUC_LOI).toContain("AN-LỆ / WORKED CASES");
+    expect(TRI_THUC_LOI).toContain("MỤC LỤC ÁN LỆ");
+    expect(TRI_THUC_LOI).toContain("ÁN LỆ ĐẦY ĐỦ — TẬP 1/8");
+    // Mục lục thật (INDEX) có mặt.
+    expect(TRI_THUC_LOI).toContain("153 case");
+    // Thân án lệ Tập 1 thật sự vào bundle (header thân + 1 case đầy đủ — chỉ có trong chunk, không có ở INDEX).
+    expect(TRI_THUC_LOI).toContain("Án lệ hóa giải — phần 1");
+    expect(TRI_THUC_LOI).toContain("### Anh không ra mồ hôi");
+    // Bounded: chỉ Tập 1/8, KHÔNG nạp mù cả 8 tập (không có header thân của tập sau).
+    expect(TRI_THUC_LOI).not.toContain("ÁN LỆ ĐẦY ĐỦ — TẬP 2/8");
+    // Không nhân đôi section.
+    expect(TRI_THUC_LOI.split("AN-LỆ / WORKED CASES").length - 1).toBe(1);
+  });
+
+  it("prompt mang chỉ dẫn dùng án lệ đúng kỷ luật (few-shot, không phải bằng chứng)", () => {
+    const qt = systemPromptQuyTac("Nam");
+    expect(qt).toContain("CÁCH DÙNG AN-LỆ");
+    expect(qt).toContain("KHÔNG phải bằng chứng cho quẻ đang xem");
+    expect(qt).toContain("KHÔNG bịa án lệ");
+    // Án lệ nằm trong phần tri thức (cached), không phải phần quy tắc theo lượt.
+    expect(systemPromptTriThuc()).toContain("ÁN LỆ ĐẦY ĐỦ — TẬP 1/8");
+  });
+
   it("đã bỏ frontmatter YAML của SKILL.md", () => {
     // Frontmatter chứa mô tả kích hoạt skill — vô nghĩa với model và tốn token.
     expect(systemPromptTriThuc()).not.toContain("name: hoa-giai-kinh-dich");
@@ -60,6 +85,24 @@ describe("dựng prompt luận giải", () => {
     expect(qt).toContain("im lặng bỏ qua phần đó");
   });
 
+  it("Tứ Thần: có fourGods thì userPrompt render khối TỨ THẦN + guardrail; không có thì bỏ qua", () => {
+    const p = payloadMau("vay-tien");
+    const fg = {
+      dungThanNguHanh: "Kim" as const,
+      trangThai: "hien" as const,
+      nguyenThan: [{ hao: 4, lucThan: "Phụ Mẫu" as const, nguHanh: "Thổ" as const, quanHe: "sinh-dung-than" as const, isDong: false, lyDo: "Thổ sinh Kim (Dụng Thần) → Nguyên Thần.", state: { vuongSuy: "Vượng" as const, truongSinh: { nhat: "Trường Sinh" as const, nguyet: "Trường Sinh" as const }, khongVong: false, nguyetPha: false, nhatPha: false }, interactions: { nhatNguyet: [], tienThoai: null, hoa: { hao: 4, isDong: false, coBien: false, nguHanhGoc: "Thổ" as const, nguHanhBien: null, hoiDau: null, quanHeBienVoiGoc: null } } }],
+      kyThan: [{ hao: 2, lucThan: "Quan Quỷ" as const, nguHanh: "Hỏa" as const, quanHe: "khac-dung-than" as const, isDong: true, lyDo: "Hỏa khắc Kim (Dụng Thần) → Kỵ Thần.", state: { vuongSuy: "Tù" as const, truongSinh: { nhat: "Tử" as const, nguyet: "Tử" as const }, khongVong: false, nguyetPha: false, nhatPha: false }, interactions: { nhatNguyet: [], tienThoai: null, hoa: { hao: 2, isDong: true, coBien: true, nguHanhGoc: "Hỏa" as const, nguHanhBien: "Thủy" as const, hoiDau: "HOI_DAU_KHAC" as const, quanHeBienVoiGoc: "a-khac-b" as const } } }],
+      cuuThan: { resolved: false as const, lyDo: "Cừu Thần hoãn." },
+    };
+    const co = userPrompt(p, undefined, fg);
+    expect(co).toContain("TỨ THẦN");
+    expect(co).toContain("nguyen_than");
+    expect(co).toContain("ky_than");
+    expect(co).toContain("KHÔNG tự dẫn xuất lại"); // guardrail: không tự thêm hào
+    // Không truyền fourGods → không có khối TỨ THẦN (backward compatible).
+    expect(userPrompt(p)).not.toContain("TỨ THẦN");
+  });
+
   it("user prompt chứa dữ liệu quẻ thật và câu hỏi", () => {
     const p = payloadMau("vay-tien");
     const up = userPrompt(p, "Tôi đang tính vay ngân hàng để mở quán.");
@@ -74,6 +117,69 @@ describe("dựng prompt luận giải", () => {
     const up = userPrompt(payloadMau("chuyen-viec"));
     expect(up).not.toContain("undefined");
     expect(up).not.toContain("HOÀN CẢNH NGƯỜI HỎI TỰ KỂ");
+  });
+
+  // Phase 6 — PHẢN NGÂM / PHỤC NGÂM surfacing. Override cast.fanYin/fuYin để render xác định.
+  const FAN = { enabled: true, type: "inner_outer" as const, label: "PHẢN NGÂM MẪU (điềm lặp lại)", originalUpper: "Càn", originalLower: "Càn", changedUpper: "Khôn", changedLower: "Khôn", innerFanYin: true, outerFanYin: true };
+  const FU = { enabled: true, type: "outer" as const, label: "PHỤC NGÂM MẪU (trì trệ)", originalHexagram: "Càn Vi Thiên", changedHexagram: "Càn Vi Thiên" };
+  const withCast = (qid: string, over: Record<string, unknown>) => {
+    const p = payloadMau(qid);
+    return { ...p, cast: { ...p.cast, ...over } } as typeof p;
+  };
+
+  it("fanYin enabled → block Phản Ngâm/Phục Ngâm xuất hiện, mang đúng label engine", () => {
+    const up = userPrompt(withCast("vay-tien", { fanYin: FAN, fuYin: { ...FU, enabled: false } }));
+    expect(up).toContain("PHẢN NGÂM / PHỤC NGÂM");
+    expect(up).toContain("PHẢN NGÂM MẪU (điềm lặp lại)"); // dữ liệu engine, không hardcode
+    expect(up).toContain('"phuc_ngam": null'); // fuYin disabled → không đưa
+  });
+
+  it("fuYin enabled → block xuất hiện với dữ liệu Phục Ngâm", () => {
+    const up = userPrompt(withCast("vay-tien", { fanYin: { ...FAN, enabled: false }, fuYin: FU }));
+    expect(up).toContain("PHẢN NGÂM / PHỤC NGÂM");
+    expect(up).toContain("PHỤC NGÂM MẪU (trì trệ)");
+    expect(up).toContain('"phan_ngam": null');
+  });
+
+  it("cả hai enabled → block chứa cả Phản Ngâm lẫn Phục Ngâm", () => {
+    const up = userPrompt(withCast("vay-tien", { fanYin: FAN, fuYin: FU }));
+    expect(up).toContain("PHẢN NGÂM MẪU (điềm lặp lại)");
+    expect(up).toContain("PHỤC NGÂM MẪU (trì trệ)");
+  });
+
+  it("cả hai disabled → KHÔNG render block (không tự gán)", () => {
+    const up = userPrompt(withCast("vay-tien", { fanYin: { ...FAN, enabled: false }, fuYin: { ...FU, enabled: false } }));
+    expect(up).not.toContain("PHẢN NGÂM / PHỤC NGÂM");
+  });
+
+  it("legacy payload thiếu fanYin/fuYin → không crash, không render block", () => {
+    const p = payloadMau("vay-tien");
+    // Bỏ hẳn 2 trường (giả lập payload cũ).
+    const { fanYin: _f, fuYin: _fu, ...restCast } = p.cast as unknown as Record<string, unknown>;
+    const up = userPrompt({ ...p, cast: restCast } as unknown as Parameters<typeof userPrompt>[0]);
+    expect(up).not.toContain("PHẢN NGÂM / PHỤC NGÂM");
+    expect(up).not.toContain("undefined");
+  });
+
+  // Phase 7 — PHI THẦN ↔ PHỤC THẦN surfacing. Override 1 hào có phục thần để render xác định.
+  const withPhuc = (qid: string, pos: number, phuc: { lucThan: string; chiIndex: number } | null) => {
+    const p = payloadMau(qid);
+    const hao = p.cast.chinh.hao.map((h) =>
+      h.hao === pos ? { ...h, phucThan: phuc ? { lucThan: phuc.lucThan, canIndex: 0, chiIndex: phuc.chiIndex } : null } : { ...h, phucThan: null },
+    );
+    return { ...p, cast: { ...p.cast, chinh: { ...p.cast.chinh, hao } } } as typeof p;
+  };
+
+  it("có phục thần → block PHI THẦN ↔ PHỤC THẦN xuất hiện, mang quan hệ ngũ hành", () => {
+    const up = userPrompt(withPhuc("vay-tien", 3, { lucThan: "Thê Tài", chiIndex: 6 })); // Ngọ Hỏa
+    expect(up).toContain("PHI THẦN ↔ PHỤC THẦN");
+    expect(up).toContain('"quanHe"');
+    expect(up).toContain("Thê Tài"); // dữ liệu engine, không hardcode
+  });
+
+  it("không có phục thần → KHÔNG render block Phi/Phục", () => {
+    const up = userPrompt(withPhuc("vay-tien", 3, null));
+    expect(up).not.toContain("PHI THẦN ↔ PHỤC THẦN");
   });
 });
 
