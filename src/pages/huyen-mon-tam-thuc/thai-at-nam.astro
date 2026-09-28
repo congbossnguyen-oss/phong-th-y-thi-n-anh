@@ -1,0 +1,359 @@
+---
+// Công cụ NỘI BỘ CONG TAIYI (Thái Ất -- Luận Giải Năm / Yearly Reading) -- CHỈ để anh Công tự
+// dùng, cùng lớp với src/pages/quan-su/dai-luc-nham.astro: noIndex, không link public vào
+// /huyen-mon-tam-thuc/, không phải sản phẩm cho khách. KHÔNG thêm luận giải AI, KHÔNG thêm công
+// thức mới -- toàn bộ dữ liệu (calendar/tongzong_facts/verified_interpretations/
+// facts_without_interpretation/blocked) render nguyên trạng theo đúng những gì engine CONG TAIYI
+// (repo taiyi-audit, F-011-F-017C, KHÔNG sửa) trả về, qua proxy /api/yearly-reading.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import "../../styles/quan-su.css";
+
+export const prerender = false;
+---
+
+<BaseLayout
+  title="CONG TAIYI — Luận Giải Năm (nội bộ)"
+  description="Công cụ nội bộ: nhập ngày giờ, xem dữ kiện Thái Ất Thống Tông (F-011-F-017C) và luận giải đã xác minh."
+  appShell
+  noIndex
+>
+  <section class="qs">
+    <div class="qs-wrap">
+      <a class="qs-back" href="/huyen-mon-tam-thuc">← Huyền Môn Tam Thức</a>
+      <h1 class="qs-h1" style="margin-top:1rem;">CONG TAIYI — Luận Giải Năm</h1>
+      <p class="qs-sub">
+        Công cụ nội bộ, chưa có luận giải AI -- chỉ hiện đúng dữ kiện tính toán Thái Ất Thống Tông
+        (F-011-F-017C) và các luận giải cổ thư đã xác minh trực tiếp từ engine. Các mục bị chặn/chưa
+        có dữ kiện hiển thị đúng trạng thái thật, không tự suy diễn thêm.
+      </p>
+
+      <form id="yr-form">
+        <div class="qs-row">
+          <div class="qs-field" style="flex:0 0 90px;">
+            <label for="yr-year">Năm</label>
+            <input id="yr-year" class="qs-input" type="number" min="1" max="9999" value="2024" required />
+          </div>
+          <div class="qs-field" style="flex:0 0 80px;">
+            <label for="yr-month">Tháng</label>
+            <input id="yr-month" class="qs-input" type="number" min="1" max="12" value="6" required />
+          </div>
+          <div class="qs-field" style="flex:0 0 80px;">
+            <label for="yr-day">Ngày</label>
+            <input id="yr-day" class="qs-input" type="number" min="1" max="31" value="21" required />
+          </div>
+          <div class="qs-field" style="flex:0 0 80px;">
+            <label for="yr-hour">Giờ</label>
+            <input id="yr-hour" class="qs-input" type="number" min="0" max="23" value="12" required />
+          </div>
+          <div class="qs-field" style="flex:0 0 80px;">
+            <label for="yr-minute">Phút</label>
+            <input id="yr-minute" class="qs-input" type="number" min="0" max="59" value="0" required />
+          </div>
+        </div>
+        <div class="qs-field">
+          <label for="yr-tz">Múi giờ (IANA)</label>
+          <input id="yr-tz" class="qs-input" type="text" value="Asia/Ho_Chi_Minh" required />
+          <p class="help">Vd "Asia/Ho_Chi_Minh". Bắt buộc -- engine không tự đoán múi giờ.</p>
+        </div>
+        <button type="submit" class="qs-btn" id="yr-submit">Lập Thái Ất</button>
+      </form>
+
+      <div id="yr-error" class="qs-notice qs-hidden"></div>
+
+      <div id="yr-result" class="qs-result qs-hidden">
+        <div class="qs-luck">
+          <h3>1. Lịch &amp; Can Chi</h3>
+          <div id="yr-calendar"></div>
+        </div>
+        <div class="qs-luck">
+          <h3>2. Dữ kiện Thái Ất Thống Tông</h3>
+          <div id="yr-facts"></div>
+        </div>
+        <div class="qs-luck">
+          <h3>3. Luận giải đã xác minh</h3>
+          <div id="yr-interpretations"></div>
+        </div>
+        <div class="qs-luck">
+          <h3>4. Dữ kiện chưa có luận giải</h3>
+          <div id="yr-no-interpretation"></div>
+        </div>
+        <div class="qs-luck">
+          <h3>5. Mục bị chặn / chưa khả dụng</h3>
+          <div id="yr-blocked"></div>
+        </div>
+        <details class="qs-detail">
+          <summary>Xem JSON thô đầy đủ</summary>
+          <div class="body"><pre id="yr-raw" style="white-space:pre-wrap;word-break:break-all;font-size:0.72rem;"></pre></div>
+        </details>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .yr-badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 700;
+    padding: 0.15rem 0.55rem;
+    border-radius: 999px;
+    border-width: 2px;
+    margin-right: 0.35rem;
+  }
+  .yr-badge-proven { border-style: solid; color: #a9e0c9; border-color: #7fb8a0; }
+  .yr-badge-blocked { border-style: dashed; color: var(--qs-muted); border-color: var(--qs-muted); }
+  .yr-badge-caveat { border-style: dotted; color: var(--qs-gold); border-color: var(--qs-gold); }
+  .yr-fact-card {
+    background: var(--qs-navy-2);
+    border: 1px solid rgba(241, 200, 90, 0.14);
+    border-radius: 10px;
+    padding: 0.7rem 0.9rem;
+    margin-bottom: 0.7rem;
+  }
+  .yr-fact-title { font-weight: 700; margin: 0 0 0.3rem; }
+  .yr-fact-value { font-size: 0.95rem; margin: 0 0 0.3rem; }
+  .yr-guard-note {
+    margin: 0.4rem 0;
+    padding: 0.4rem 0.6rem;
+    border: 1px dotted var(--qs-gold);
+    border-radius: 6px;
+    font-size: 0.8rem;
+    color: var(--qs-gold);
+  }
+  .yr-source-details { margin-top: 0.4rem; font-size: 0.78rem; }
+  .yr-source-details summary { cursor: pointer; color: var(--qs-muted); }
+  .yr-source-details .body { color: var(--qs-muted); margin-top: 0.35rem; white-space: pre-line; }
+</style>
+
+<script>
+  interface Provenance {
+    source_title?: string | null;
+    source_location?: string | null;
+    tradition?: string | null;
+    evidence_status?: string | null;
+    confidence?: string | null;
+    notes?: string | null;
+  }
+  interface TongzongFact {
+    rule_id: string;
+    school: string;
+    value: unknown;
+    confidence: string | null;
+    provenance: Provenance | null;
+    warnings: string[];
+    evidence_tier: string | null;
+    interpreted_by: string | null;
+    guard_note: string | null;
+  }
+  interface VerifiedInterpretation {
+    rule_id: string;
+    school: string;
+    category: string;
+    conclusion: string;
+    source: string | null;
+    status: string;
+    confidence: string;
+    provenance: Provenance | null;
+  }
+  interface BlockedEntry {
+    capability: string;
+    status: string;
+    reason: string;
+    rule_id: string | null;
+    provenance: Provenance | null;
+  }
+  interface YearlyReading {
+    calendar: {
+      date: { year: number; month: number; day: number; hour: number; minute: number; timezone: string };
+      year_ganzhi: string;
+      year_stem: string;
+    };
+    tongzong_facts: Record<string, TongzongFact>;
+    verified_interpretations: VerifiedInterpretation[];
+    facts_without_interpretation: string[];
+    blocked: BlockedEntry[];
+  }
+
+  const form = document.getElementById("yr-form") as HTMLFormElement;
+  const yearInput = document.getElementById("yr-year") as HTMLInputElement;
+  const monthInput = document.getElementById("yr-month") as HTMLInputElement;
+  const dayInput = document.getElementById("yr-day") as HTMLInputElement;
+  const hourInput = document.getElementById("yr-hour") as HTMLInputElement;
+  const minuteInput = document.getElementById("yr-minute") as HTMLInputElement;
+  const tzInput = document.getElementById("yr-tz") as HTMLInputElement;
+  const submitBtn = document.getElementById("yr-submit") as HTMLButtonElement;
+  const errorBox = document.getElementById("yr-error")!;
+  const resultBox = document.getElementById("yr-result")!;
+  const calendarBox = document.getElementById("yr-calendar")!;
+  const factsBox = document.getElementById("yr-facts")!;
+  const interpretationsBox = document.getElementById("yr-interpretations")!;
+  const noInterpretationBox = document.getElementById("yr-no-interpretation")!;
+  const blockedBox = document.getElementById("yr-blocked")!;
+  const rawBox = document.getElementById("yr-raw")!;
+
+  function el<K extends keyof HTMLElementTagNameMap>(tag: K, className?: string, text?: string): HTMLElementTagNameMap[K] {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined) node.textContent = text; // luôn textContent -- không innerHTML với dữ liệu từ API
+    return node;
+  }
+
+  // Nguồn/cảnh báo/ghi chú nguyên văn (thường tiếng Anh, dài) -- thu gọn mặc định trong <details>,
+  // đúng cơ chế "Nguyên văn nguồn" đã dùng ở TAIYI V4 frontend.
+  function renderSourceDetails(fact: { warnings: string[]; provenance: Provenance | null }): HTMLDetailsElement {
+    const details = el("details", "yr-source-details");
+    details.appendChild(el("summary", undefined, "Nguyên văn nguồn"));
+    const body = el("div", "body");
+    if (fact.provenance) {
+      const p = fact.provenance;
+      const lines = [
+        p.source_title ? `Nguồn: ${p.source_title}` : null,
+        p.source_location ? `Vị trí: ${p.source_location}` : null,
+        p.evidence_status ? `Mức bằng chứng: ${p.evidence_status}` : null,
+        p.notes ? `Ghi chú: ${p.notes}` : null,
+      ].filter((line): line is string => Boolean(line));
+      for (const line of lines) body.appendChild(el("p", undefined, line));
+    }
+    for (const w of fact.warnings ?? []) body.appendChild(el("p", undefined, `⚠ ${w}`));
+    details.appendChild(body);
+    return details;
+  }
+
+  // Giá trị fact có thể là số/chuỗi thuần, hoặc object nhiều trường (có khi lồng thêm 1 object con
+  // như F-015's "placements") -- không bao giờ hiện JSON thô nếu trình bày được rõ bằng text.
+  function formatFactValue(value: unknown): string {
+    if (value === null || value === undefined) return "(không có)";
+    if (typeof value !== "object") return String(value);
+    const entries = Object.entries(value as Record<string, unknown>);
+    return entries
+      .map(([k, v]) => {
+        if (v !== null && typeof v === "object") {
+          const nested = Object.entries(v as Record<string, unknown>)
+            .map(([nk, nv]) => `${nk}: ${nv}`)
+            .join(" · ");
+          return `${k}: {${nested}}`;
+        }
+        return `${k}: ${v}`;
+      })
+      .join(" · ");
+  }
+
+  function renderCalendar(calendar: YearlyReading["calendar"]) {
+    const d = calendar.date;
+    calendarBox.textContent = "";
+    calendarBox.appendChild(
+      el("p", "yr-fact-value", `${d.year}-${String(d.month).padStart(2, "0")}-${String(d.day).padStart(2, "0")} ${String(d.hour).padStart(2, "0")}:${String(d.minute).padStart(2, "0")} (${d.timezone})`),
+    );
+    calendarBox.appendChild(el("p", "yr-fact-value", `Can Chi năm: ${calendar.year_ganzhi} · Thiên Can năm: ${calendar.year_stem}`));
+  }
+
+  function renderFacts(facts: Record<string, TongzongFact>) {
+    factsBox.textContent = "";
+    const ids = Object.keys(facts).sort();
+    for (const id of ids) {
+      const fact = facts[id];
+      const card = el("div", "yr-fact-card");
+      card.appendChild(el("p", "yr-fact-title", `${fact.rule_id} (${fact.school})`));
+      const badges = el("div");
+      if (fact.confidence === "PARTIALLY_VERIFIED") badges.appendChild(el("span", "yr-badge yr-badge-caveat", "Xác minh một phần"));
+      else if (fact.confidence === "VERIFIED") badges.appendChild(el("span", "yr-badge yr-badge-proven", "Đã xác minh"));
+      else if (fact.confidence) badges.appendChild(el("span", "yr-badge yr-badge-blocked", fact.confidence));
+      card.appendChild(badges);
+      card.appendChild(el("p", "yr-fact-value", formatFactValue(fact.value)));
+      if (fact.guard_note) card.appendChild(el("p", "yr-guard-note", `Lưu ý: ${fact.guard_note}`));
+      card.appendChild(renderSourceDetails(fact));
+      factsBox.appendChild(card);
+    }
+  }
+
+  function renderInterpretations(list: VerifiedInterpretation[]) {
+    interpretationsBox.textContent = "";
+    if (list.length === 0) {
+      interpretationsBox.appendChild(el("p", "help", "Không có luận giải nào khớp cho ngày này."));
+      return;
+    }
+    for (const item of list) {
+      const card = el("div", "yr-fact-card");
+      card.appendChild(el("p", "yr-fact-title", `${item.rule_id} — ${item.category}`));
+      const badges = el("div");
+      badges.appendChild(
+        el(
+          "span",
+          item.confidence === "VERIFIED" ? "yr-badge yr-badge-proven" : "yr-badge yr-badge-caveat",
+          item.confidence === "VERIFIED" ? "Đã xác minh" : "Xác minh một phần",
+        ),
+      );
+      card.appendChild(badges);
+      card.appendChild(el("p", "yr-fact-value", item.conclusion));
+      card.appendChild(renderSourceDetails({ warnings: [], provenance: item.provenance }));
+      interpretationsBox.appendChild(card);
+    }
+  }
+
+  function renderNoInterpretation(ids: string[]) {
+    noInterpretationBox.textContent = "";
+    if (ids.length === 0) {
+      noInterpretationBox.appendChild(el("p", "help", "Tất cả dữ kiện đều có luận giải."));
+      return;
+    }
+    noInterpretationBox.appendChild(el("p", "yr-fact-value", ids.join(", ")));
+  }
+
+  function renderBlocked(list: BlockedEntry[]) {
+    blockedBox.textContent = "";
+    if (list.length === 0) {
+      blockedBox.appendChild(el("p", "help", "Không có mục nào bị chặn cho ngày này."));
+      return;
+    }
+    for (const item of list) {
+      const card = el("div", "yr-fact-card");
+      card.appendChild(el("p", "yr-fact-title", item.capability));
+      card.appendChild(el("span", "yr-badge yr-badge-blocked", item.status));
+      card.appendChild(el("p", "yr-fact-value", item.reason));
+      if (item.provenance) card.appendChild(renderSourceDetails({ warnings: [], provenance: item.provenance }));
+      blockedBox.appendChild(card);
+    }
+  }
+
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    errorBox.classList.add("qs-hidden");
+    resultBox.classList.add("qs-hidden");
+    submitBtn.disabled = true;
+    submitBtn.textContent = "Đang tính...";
+    try {
+      const res = await fetch("/api/yearly-reading", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          year: Number(yearInput.value),
+          month: Number(monthInput.value),
+          day: Number(dayInput.value),
+          hour: Number(hourInput.value),
+          minute: Number(minuteInput.value),
+          timezone: tzInput.value,
+        }),
+      });
+      const body = await res.json();
+
+      if (!(res.status >= 200 && res.status < 300)) {
+        throw new Error(body?.message || "Yêu cầu không hợp lệ.");
+      }
+
+      const reading = body as YearlyReading;
+      renderCalendar(reading.calendar);
+      renderFacts(reading.tongzong_facts);
+      renderInterpretations(reading.verified_interpretations);
+      renderNoInterpretation(reading.facts_without_interpretation);
+      renderBlocked(reading.blocked);
+      rawBox.textContent = JSON.stringify(reading, null, 2);
+      resultBox.classList.remove("qs-hidden");
+    } catch (err) {
+      errorBox.textContent = err instanceof Error ? err.message : String(err);
+      errorBox.classList.remove("qs-hidden");
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = "Lập Thái Ất";
+    }
+  });
+</script>
