@@ -1,0 +1,828 @@
+---
+// Màn hình ĐIỆN THOẠI: 6 bước khuôn mặt + 1 bước giọng nói, báo tiến độ về phiên.
+//
+// PHẠM VI: chỉ THU DỮ LIỆU. Không Rule Engine, không Knowledge Base, không LLM,
+// không một câu luận giải nào.
+//
+// Toàn bộ xử lý ở <script> nên chỉ chạy client — frontmatter không chạm
+// navigator/window, nên trang prerender = true vẫn an toàn.
+//
+// KHÔNG upload ảnh/video/âm thanh. Chỉ gửi số đo có cấu trúc qua API phiên.
+import Container from "../ui/Container.astro";
+
+/**
+ * Câu đọc cho bước giọng nói. Khai báo MỘT chỗ, dùng lại ở màn chuẩn bị + màn đang
+ * ghi; script đọc lại từ DOM chứ không chép thêm bản thứ ba.
+ */
+const VOICE_SENTENCE = "Xin chào bạn đến với Phong Thủy Thiên Anh.";
+
+const STEPS = [
+  { key: "front", label: "Chính diện" },
+  { key: "left", label: "Quay trái" },
+  { key: "right", label: "Quay phải" },
+  { key: "near", label: "Sát mặt" },
+  { key: "pitch_down", label: "Cúi xuống" },
+  { key: "pitch_up", label: "Ngẩng lên" },
+] as const;
+---
+
+<Container class="pb-10">
+  <div class="mx-auto max-w-md">
+    <div class="nt-panel p-5 text-(--color-ink-950)">
+      <span class="nt-corner tl" aria-hidden="true"></span>
+      <span class="nt-corner tr" aria-hidden="true"></span>
+      <span class="nt-corner bl" aria-hidden="true"></span>
+      <span class="nt-corner br" aria-hidden="true"></span>
+      <!-- ══════════ Screen 1 — đã kết nối + hướng dẫn ══════════ -->
+      <section id="ntm-intro">
+        <h2 class="text-center font-display text-2xl font-semibold text-(--color-gold-300)">
+          Kết nối với phiên phân tích
+        </h2>
+
+        <p id="ntm-conn" class="mt-3 flex items-center justify-center gap-2 text-center text-sm font-medium text-(--color-ink-700)">
+          Đang kết nối phiên…
+        </p>
+
+        <div class="nt-subcard mt-5 p-4">
+          <p class="text-xs font-semibold uppercase tracking-[0.14em] text-(--color-gold-500)">
+            Hướng dẫn chụp ảnh
+          </p>
+          <ul class="mt-3 space-y-2 text-sm text-(--color-ink-800)">
+            <li class="flex items-center gap-2"><span class="text-(--color-gold-400)" aria-hidden="true">✓</span> Ánh sáng đủ và đều</li>
+            <li class="flex items-center gap-2"><span class="text-(--color-gold-400)" aria-hidden="true">✓</span> Bỏ kính, mũ, khẩu trang nếu có thể</li>
+            <li class="flex items-center gap-2"><span class="text-(--color-gold-400)" aria-hidden="true">✓</span> Nhìn thẳng vào camera</li>
+            <li class="flex items-center gap-2"><span class="text-(--color-gold-400)" aria-hidden="true">✓</span> Giữ khoảng cách ổn định (50–70cm)</li>
+          </ul>
+          <p class="mt-3 border-t border-(--color-ivory-300) pt-3 text-xs leading-relaxed text-(--color-ink-500)">
+            Hãy cho phép Camera và Microphone khi hệ thống yêu cầu. Dữ liệu được xử lý trên thiết bị;
+            hệ thống không lưu ảnh/video khuôn mặt.
+          </p>
+        </div>
+
+        <div class="mt-5">
+          <button type="button" id="ntm-start" class="nt-cta" disabled>Bắt đầu chụp ảnh</button>
+        </div>
+        <p id="ntm-intro-err" class="mt-3 hidden text-sm text-(--color-cinnabar-400)"></p>
+      </section>
+
+      <!-- ══════════ Screen 2 — camera + 6 bước ══════════ -->
+      <section id="ntm-scan" class="hidden">
+        <!-- Chrome: quay lại (thật — về màn chuẩn bị) · emblem · đếm 1/6 -->
+        <div class="mb-3 flex items-center justify-between">
+          <button type="button" id="ntm-cancel" class="nt-back">
+            <span aria-hidden="true">‹</span> Quay lại
+          </button>
+          <span class="nt-emblem-sm" aria-hidden="true">
+            <svg viewBox="0 0 48 48" width="22" height="22" fill="none">
+              <circle cx="24" cy="24" r="22" stroke="currentColor" stroke-width="2" opacity="0.55"></circle>
+              <path d="M24 2a22 22 0 0 0 0 44 11 11 0 0 1 0-22 11 11 0 0 0 0-22Z" fill="currentColor"></path>
+              <circle cx="24" cy="13" r="2.4" fill="var(--color-ivory-50)"></circle>
+              <circle cx="24" cy="35" r="2.4" fill="currentColor"></circle>
+            </svg>
+          </span>
+          <span id="ntm-step-counter" class="font-mono text-sm font-semibold text-(--color-gold-300)"></span>
+        </div>
+
+        <p class="text-center font-display text-xl font-semibold text-(--color-gold-300)">
+          <span id="ntm-step-label"></span>
+        </p>
+
+        <div class="relative mt-3 overflow-hidden rounded-(--radius-card) border border-(--color-gold-500) bg-black">
+          <!-- playsinline + muted: BẮT BUỘC cho iOS Safari, thiếu là video bung fullscreen -->
+          <video
+            id="ntm-video"
+            class="block h-auto w-full"
+            playsinline
+            webkit-playsinline
+            muted
+            autoplay></video>
+          <span class="nt-cam-corner tl" aria-hidden="true"></span>
+          <span class="nt-cam-corner tr" aria-hidden="true"></span>
+          <span class="nt-cam-corner bl" aria-hidden="true"></span>
+          <span class="nt-cam-corner br" aria-hidden="true"></span>
+          <div class="nt-face-frame">
+            <div id="ntm-guide" class="nt-face-oval" data-ok="0"></div>
+          </div>
+        </div>
+
+        <!--
+          Mũi tên chỉ hướng cho bước quay trái/phải. Nằm NGOÀI khung video (ngay dưới),
+          nên không có cách nào che khuôn mặt.
+
+          aria-hidden: mũi tên chỉ là hỗ trợ thị giác. Thông tin thật vẫn là dòng chữ
+          "Từ từ quay mặt sang trái/phải" ngay bên dưới — screen reader đọc dòng đó.
+        -->
+        <div id="ntm-arrow" class="mt-3 hidden select-none text-center text-(--color-gold-400)" aria-hidden="true">
+          <div class="ntm-arrow-big text-4xl leading-none font-bold"></div>
+          <div class="mt-0.5 flex justify-center gap-3 text-xl leading-none">
+            <span class="ntm-arrow-s" style="--ntm-d: 0ms"></span>
+            <span class="ntm-arrow-s" style="--ntm-d: 160ms"></span>
+            <span class="ntm-arrow-s" style="--ntm-d: 320ms"></span>
+          </div>
+        </div>
+
+        <p id="ntm-instruction" class="mt-4 text-center text-base font-semibold text-(--color-ink-950)"></p>
+        <p id="ntm-hint" class="mt-1.5 min-h-5 text-center text-sm text-(--color-ink-600)"></p>
+
+        <div class="mt-3 h-2 w-full overflow-hidden rounded-(--radius-pill) bg-(--color-ivory-300)">
+          <div id="ntm-bar" class="h-full w-0 bg-(--color-gold-400) transition-all duration-150"></div>
+        </div>
+
+        <!--
+          THANH 6 BƯỚC — biểu diễn TRẠNG THÁI, KHÔNG phải ảnh đã chụp. Badge mang số bước;
+          markDone() đổi thành ✓ + đánh dấu data-done; paintStep() đánh dấu data-cur cho
+          bước hiện tại. Không có thumbnail, không lưu ảnh.
+        -->
+        <ol class="nt-rail mt-4" aria-label="Tiến độ 6 góc">
+          {
+            STEPS.map((s, i) => (
+              <li class="nt-rail-item" data-mstep={s.key} data-cur="0" data-done="0">
+                <span class="nt-rail-badge"><span class="ntm-mark">{i + 1}</span></span>
+                <span class="nt-rail-cap truncate">{s.label}</span>
+              </li>
+            ))
+          }
+        </ol>
+
+        <div class="nt-subcard mt-4 p-3">
+          <p class="text-[0.68rem] font-semibold uppercase tracking-[0.12em] text-(--color-gold-500)">
+            Lưu ý khi chụp
+          </p>
+          <ul class="mt-2 grid grid-cols-2 gap-x-3 gap-y-1.5 text-xs text-(--color-ink-700)">
+            <li class="flex items-center gap-1.5"><span class="text-(--color-gold-400)" aria-hidden="true">◈</span> Ánh sáng đủ và đều</li>
+            <li class="flex items-center gap-1.5"><span class="text-(--color-gold-400)" aria-hidden="true">◈</span> Giữ khoảng cách ổn định</li>
+            <li class="flex items-center gap-1.5"><span class="text-(--color-gold-400)" aria-hidden="true">◈</span> Nhìn theo hướng dẫn</li>
+            <li class="flex items-center gap-1.5"><span class="text-(--color-gold-400)" aria-hidden="true">◈</span> Giữ khuôn mặt tự nhiên</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- ══════════ Screen 3 — xong mặt, vào giọng nói ══════════ -->
+      <section id="ntm-voice-intro" class="hidden text-center">
+        <p class="font-display text-lg font-semibold text-(--color-gold-300)">✓ Đã xong phần khuôn mặt</p>
+        <h3 class="mt-4 text-xs font-semibold uppercase tracking-[0.15em] text-(--color-gold-500)">
+          Kiểm tra giọng nói
+        </h3>
+        <p class="mt-3 text-sm text-(--color-ink-700)">Hãy đọc to câu sau:</p>
+        <p
+          id="ntm-voice-text"
+          class="nt-subcard mt-2 p-3 text-lg leading-snug font-medium text-balance text-(--color-ink-950)"
+        >
+          “{VOICE_SENTENCE}”
+        </p>
+        <div class="mt-5 flex flex-col gap-2.5">
+          <!-- Ẩn bằng JS nếu trình duyệt không có SpeechSynthesis; câu chữ vẫn còn nguyên. -->
+          <button type="button" id="ntm-speak" class="nt-cta-ghost hidden">
+            <span aria-hidden="true">🔊</span> Nghe hướng dẫn
+          </button>
+          <button type="button" id="ntm-rec-start" class="nt-cta">Bắt đầu ghi</button>
+          <button type="button" id="ntm-rec-skip" class="nt-cta-ghost">Bỏ qua bước này</button>
+        </div>
+        <p id="ntm-voice-err" class="mt-3 hidden text-sm text-(--color-cinnabar-400)"></p>
+      </section>
+
+      <!-- ══════════ Screen 4 — đang ghi ══════════ -->
+      <section id="ntm-recording" class="hidden text-center">
+        <div class="flex items-center justify-center gap-2">
+          <span class="inline-block h-3 w-3 animate-pulse rounded-full bg-(--color-cinnabar-500)"></span>
+          <span class="text-sm font-medium text-(--color-ink-700)">Đang ghi âm…</span>
+        </div>
+        <p class="mt-4 text-sm text-(--color-ink-700)">Hãy đọc:</p>
+        <p class="nt-subcard mt-1.5 p-3 text-lg leading-snug font-medium text-balance text-(--color-ink-950)">
+          “{VOICE_SENTENCE}”
+        </p>
+        <p id="ntm-timer" class="mt-3 font-mono text-3xl tabular-nums text-(--color-gold-300)">0.0s</p>
+        <div class="mx-auto mt-3 h-2 w-3/4 overflow-hidden rounded-(--radius-pill) bg-(--color-ivory-300)">
+          <div id="ntm-level" class="h-full w-0 bg-(--color-gold-400)"></div>
+        </div>
+        <p class="mt-2 text-xs text-(--color-ink-500)">Tự dừng sau 10 giây.</p>
+        <div class="mt-5">
+          <button type="button" id="ntm-rec-stop" class="nt-cta">Xong</button>
+        </div>
+      </section>
+
+      <!-- ══════════ Screen 5 — hoàn tất ══════════ -->
+      <section id="ntm-done" class="hidden text-center">
+        <span class="mx-auto flex h-12 w-12 items-center justify-center rounded-full border border-(--color-gold-500) text-2xl text-(--color-gold-400)" aria-hidden="true">✓</span>
+        <p class="mt-3 font-display text-xl font-semibold text-(--color-gold-300)">Đã hoàn tất</p>
+        <p class="mt-2 text-sm text-(--color-ink-600)">
+          Kết quả đã được gửi về máy tính. Bạn có thể đặt điện thoại xuống.
+        </p>
+        <ul class="mx-auto mt-5 max-w-[240px] space-y-1.5 text-sm">
+          <li class="flex items-center justify-between">
+            <span class="text-(--color-ink-600)">Khuôn mặt</span>
+            <span id="ntm-sum-face" class="font-mono font-semibold text-(--color-ink-950)"></span>
+          </li>
+          <li class="flex items-center justify-between">
+            <span class="text-(--color-ink-600)">Giọng nói</span>
+            <span id="ntm-sum-voice" class="font-mono font-semibold text-(--color-ink-950)"></span>
+          </li>
+        </ul>
+        <p id="ntm-voice-ok" class="mt-3 hidden text-sm font-semibold text-(--color-gold-400)">
+          ✓ Đã nhận giọng nói
+        </p>
+        <p class="mt-5 text-xs text-(--color-ink-500)">
+          Bản thử nghiệm dừng ở bước thu dữ liệu. Kết quả hiển thị trên máy tính.
+        </p>
+      </section>
+
+      <!-- ══════════ Lỗi dừng hẳn ══════════ -->
+      <section id="ntm-error" class="hidden text-center">
+        <span class="mx-auto flex h-11 w-11 items-center justify-center rounded-full border border-(--color-cinnabar-400) text-xl text-(--color-cinnabar-400)" aria-hidden="true">!</span>
+        <p class="mt-3 font-display text-lg font-semibold text-(--color-cinnabar-400)">Không thể tiếp tục</p>
+        <p id="ntm-error-msg" class="mt-2 text-sm text-(--color-ink-700)"></p>
+        <div class="mt-5">
+          <button type="button" id="ntm-retry" class="nt-cta">Thử lại</button>
+        </div>
+      </section>
+    </div>
+  </div>
+</Container>
+
+<style>
+  /*
+    XEM NHƯ GƯƠNG — CHỈ HIỂN THỊ, KHÔNG ẢNH HƯỞNG ĐO.
+
+    Camera trước KHÔNG lật thì hiện đúng những gì người khác thấy: người test quay đầu
+    sang trái CỦA MÌNH nhưng ảnh trên màn hình lại nghiêng sang phải màn hình, trong khi
+    dòng chữ nói "trái" và mũi tên chỉ "←". Ba thứ chỏi nhau, và mọi app camera đều lật
+    sẵn nên người dùng quen với gương. Đó là lý do người vận hành thấy "ngược".
+
+    ⚠️ VÌ SAO CHỖ NÀY AN TOÀN VỚI PHÉP ĐO: `transform` của CSS chỉ tác động lúc VẼ LÊN
+    MÀN HÌNH. MediaPipe nhận `detectForVideo(video, ts)` — đọc khung hình đã giải mã của
+    phần tử video, không đọc kết quả sau khi trình duyệt biến hình. Tương tự,
+    `ctx.drawImage(video, …)` cũng lấy khung hình gốc. Nên landmark, yaw và LEFT/RIGHT
+    KHÔNG đổi một chút nào vì dòng dưới đây. Có test khoá cả hai mặt.
+
+    KHÔNG dùng dòng này để suy ra dấu yaw, và KHÔNG sửa `YAW_SIGN_FOR_USER_LEFT` vì nó.
+    Việc trái/phải có khớp hay không vẫn phải do NGƯỜI QUAN SÁT xác nhận, xem
+    `acquisition/yaw-calibration.ts`.
+
+    Mũi tên `#ntm-arrow` nằm NGOÀI khung video nên không bị lật theo.
+  */
+  #ntm-video {
+    transform: scaleX(-1);
+  }
+
+  /*
+    Nhịp đưa nhẹ theo đúng hướng cần quay. --ntm-dir = -1 (trái) / 1 (phải), JS đặt.
+    Biên độ 6px + opacity 0.35→1: đủ thấy trên màn hình điện thoại ngoài nắng, không
+    giật kiểu game.
+  */
+  @keyframes ntm-drift {
+    0%,
+    100% {
+      opacity: 0.35;
+      transform: translateX(0);
+    }
+    50% {
+      opacity: 1;
+      transform: translateX(calc(var(--ntm-dir, -1) * 6px));
+    }
+  }
+
+  .ntm-arrow-big,
+  .ntm-arrow-s {
+    animation: ntm-drift 1.4s ease-in-out infinite;
+    animation-delay: var(--ntm-d, 0ms);
+  }
+
+  /* Người tắt hiệu ứng chuyển động vẫn phải thấy mũi tên, chỉ là đứng yên. */
+  @media (prefers-reduced-motion: reduce) {
+    .ntm-arrow-big,
+    .ntm-arrow-s {
+      animation: none;
+      opacity: 1;
+    }
+  }
+</style>
+
+<script>
+  import { grabFrame, openCamera, checkBrowserSupport, type CameraError, type CameraHandle } from "../../features/physiognomy/camera/index";
+  import { buildFeatureProfile, type ViewObservation } from "../../features/physiognomy/features/extract";
+  import { toPhysiognomySessionFeaturePayload } from "../../features/physiognomy/features/transport";
+  import { computeBlurScore, computeLightingScore, decomposePose } from "../../features/physiognomy/capture/quality";
+  import { loadLandmarker, releaseLandmarker } from "../../features/physiognomy/landmarker/index";
+  import { computeFaceCoverage, faceBoundingBoxPx, measureGeometry, measureThreeCourts } from "../../features/physiognomy/geometry/index";
+  import { MAX_DURATION_MS, checkVoiceSupport, startRecording, type RecorderHandle } from "../../features/physiognomy/voice/recorder";
+  import type { LandmarkPoint } from "../../features/physiognomy/types/index";
+  import { FACE_STEPS, type FaceStep, type FaceTestSnapshot, type VoiceTestResult } from "../../features/physiognomy/session/types";
+  import { STEP_DEFS, STEP_STABLE_FRAMES, evaluateStep, nextStep } from "../../features/physiognomy/session/steps";
+  import { collectDeviceInfo } from "../../features/physiognomy/session/device";
+
+  // Chỉ chạy ở chế độ điện thoại — xem ghi chú cùng loại ở NhanTuongDesktop.astro.
+  if (new URLSearchParams(location.search).get("mode") === "mobile") {
+    initMobile();
+  }
+
+  function initMobile() {
+  const $ = <T extends HTMLElement = HTMLElement>(id: string) =>
+    document.getElementById(id) as T | null;
+
+  const SECTIONS = ["ntm-intro", "ntm-scan", "ntm-voice-intro", "ntm-recording", "ntm-done", "ntm-error"] as const;
+  function show(id: (typeof SECTIONS)[number]) {
+    for (const s of SECTIONS) $(s)?.classList.toggle("hidden", s !== id);
+  }
+
+  const video = $<HTMLVideoElement>("ntm-video");
+  const guide = $("ntm-guide");
+
+  // ─────────────────────────────────────────── phiên
+  const params = new URLSearchParams(location.search);
+  const sessionId = params.get("session");
+  let writeToken: string | null = null;
+
+  /**
+   * Đang mở bằng http qua địa chỉ LAN (không phải localhost)?
+   *
+   * Trình duyệt chỉ miễn yêu cầu HTTPS cho `localhost` và `127.0.0.1`. Mở bằng
+   * `http://192.168.x.x` là insecure context → `getUserMedia` bị chặn. Dùng cờ này
+   * để giải thích đúng lý do cho người test thay vì báo chung chung.
+   */
+  const isInsecureLanOrigin =
+    location.protocol === "http:" &&
+    location.hostname !== "localhost" &&
+    location.hostname !== "127.0.0.1";
+
+  /** Gửi một action lên API phiên. Không bao giờ gửi ảnh/âm thanh — chỉ số đo. */
+  async function post(action: string, extra: Record<string, unknown> = {}) {
+    const res = await fetch("/api/nhan-tuong/session", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ action, sessionId, writeToken, ...extra }),
+    });
+    if (!res.ok) {
+      const body = (await res.json().catch(() => ({}))) as { error?: string };
+      throw new Error(body.error ?? `HTTP ${res.status}`);
+    }
+    return res.json() as Promise<Record<string, unknown>>;
+  }
+
+  /** Báo lỗi về phiên (best-effort) rồi hiện màn hình lỗi. */
+  function fail(msg: string, reportToSession = true) {
+    releaseAll();
+    const el = $("ntm-error-msg");
+    if (el) el.textContent = msg;
+    show("ntm-error");
+    if (reportToSession && writeToken) {
+      void post("fail", { reason: msg }).catch(() => {});
+    }
+  }
+
+  // ─────────────────────────────────────────── dọn dẹp
+  let camera: CameraHandle | null = null;
+  let recorder: RecorderHandle | null = null;
+  let rafId: number | null = null;
+  let levelRaf: number | null = null;
+
+  function releaseAll() {
+    if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
+    if (levelRaf !== null) { cancelAnimationFrame(levelRaf); levelRaf = null; }
+    camera?.release();
+    camera = null;
+    recorder?.abort();
+    recorder = null;
+    releaseLandmarker();
+  }
+  // pagehide bắt được cả back/forward cache của iOS, nơi beforeunload KHÔNG chạy.
+  window.addEventListener("pagehide", releaseAll);
+  window.addEventListener("beforeunload", releaseAll);
+  document.addEventListener("visibilitychange", () => {
+    if (document.hidden && rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
+  });
+
+  // ─────────────────────────────────────────── kết nối phiên
+  (async function connect() {
+    const connEl = $("ntm-conn");
+    const errEl = $("ntm-intro-err");
+    if (!sessionId) {
+      if (connEl) connEl.textContent = "";
+      if (errEl) {
+        errEl.textContent = "Thiếu mã phiên. Hãy quét lại mã QR trên máy tính.";
+        errEl.classList.remove("hidden");
+      }
+      return;
+    }
+    // KẾT NỐI PHIÊN TRƯỚC, kiểm tra camera SAU — hai việc khác nhau, không dùng
+    // chung một cổng.
+    //
+    // Lý do: trên LAN (http://192.168.96.102:4321) trình duyệt KHÔNG coi là secure
+    // context — chỉ localhost/127.0.0.1 được miễn HTTPS — nên `checkBrowserSupport()`
+    // trả về không-ok. Bản trước gộp chung nên phiên cũng không kết nối được, khiến
+    // không test nổi phần giao tiếp Desktop↔Điện thoại qua LAN. Mà phần đó vốn
+    // KHÔNG cần camera.
+    try {
+      // Khai báo máy CHỈ ở DEV — dùng cho mẫu nghiên cứu. `import.meta.env.DEV` là
+      // hằng số lúc build nên ở production cả khối này lẫn `collectDeviceInfo` bị cắt.
+      // Máy QUÉT phải tự khai: nhãn máy người vận hành gõ trên máy tính không nói được
+      // điện thoại này là gì.
+      let khaiMay: Record<string, unknown> = {};
+      if (import.meta.env.DEV) {
+        khaiMay = { device: await collectDeviceInfo() };
+      }
+      const out = await post("connect", khaiMay);
+      writeToken = String(out.writeToken);
+      if (connEl) connEl.textContent = "✓ Điện thoại đã kết nối.";
+      // Chỉ tới đây mới hỏi: máy này có quét được không?
+      const support = checkBrowserSupport();
+      if (support.ok) {
+        $<HTMLButtonElement>("ntm-start")!.disabled = false;
+      } else if (errEl) {
+        errEl.textContent =
+          `Phiên đã kết nối, nhưng chưa quét được: ${support.reason}` +
+          (isInsecureLanOrigin
+            ? " (Đang mở bằng http qua địa chỉ LAN — trình duyệt chỉ cho dùng camera trên HTTPS hoặc localhost.)"
+            : "");
+        errEl.classList.remove("hidden");
+      }
+    } catch (err) {
+      if (connEl) connEl.textContent = "";
+      if (errEl) {
+        errEl.textContent = `Không kết nối được phiên: ${(err as Error).message}`;
+        errEl.classList.remove("hidden");
+      }
+    }
+  })();
+
+  // ─────────────────────────────────────────── luồng 6 bước
+  let currentStep: FaceStep = "front";
+  /**
+   * Landmark của ĐÚNG frame đã chốt mỗi bước, giữ lại để trích feature lúc kết thúc.
+   *
+   * Không chụp lại, không giữ ảnh — chỉ giữ 468 điểm đã có sẵn trong vòng lặp. Toàn bộ
+   * nằm trong bộ nhớ máy khách và KHÔNG bao giờ được gửi lên server (xem transport.ts).
+   */
+  const observations = new Map<FaceStep, ViewObservation>();
+  let stableFrames = 0;
+  let lastProcessedAt = 0;
+  let lastTimestamp = -1;
+  /** MediaPipe đòi timestamp TĂNG ĐƠN ĐIỆU; lặp lại là nó throw. */
+  const FRAME_INTERVAL_MS = 200; // ~5 fps, đủ theo Phase 1B
+  let busySending = false;
+
+  function paintStep() {
+    const def = STEP_DEFS[currentStep];
+    const i = FACE_STEPS.indexOf(currentStep);
+    const c = $("ntm-step-counter");
+    if (c) c.textContent = `${i + 1} / ${FACE_STEPS.length}`;
+    const l = $("ntm-step-label");
+    if (l) l.textContent = def.label;
+    const ins = $("ntm-instruction");
+    if (ins) ins.textContent = def.instruction;
+    // Đánh dấu bước hiện tại trên thanh 6 bước (chỉ TRÌNH BÀY — đọc currentStep, không
+    // đụng ngưỡng/pass-fail nào).
+    for (const el of document.querySelectorAll<HTMLElement>("[data-mstep]")) {
+      el.dataset.cur = el.dataset.mstep === currentStep ? "1" : "0";
+    }
+    paintArrow();
+  }
+
+  /**
+   * Mũi tên chỉ hướng cho hai bước quay. Chỉ đọc `currentStep` — KHÔNG đụng
+   * `YAW_SIGN_FOR_USER_LEFT`, ngưỡng, hay bất cứ thứ gì quyết định pass/fail.
+   * Hướng mũi tên bám đúng câu chữ đang hiện, nên quy ước trái/phải không đổi.
+   */
+  function paintArrow() {
+    const box = $("ntm-arrow");
+    if (!box) return;
+    const dir = currentStep === "left" ? -1 : currentStep === "right" ? 1 : 0;
+    box.classList.toggle("hidden", dir === 0);
+    if (dir === 0) return;
+    const ch = dir < 0 ? "←" : "→";
+    box.style.setProperty("--ntm-dir", String(dir));
+    for (const el of box.querySelectorAll(".ntm-arrow-big, .ntm-arrow-s")) {
+      el.textContent = ch;
+    }
+  }
+
+  function markDone(step: FaceStep) {
+    const li = document.querySelector<HTMLElement>(`[data-mstep="${step}"]`);
+    if (li) li.dataset.done = "1"; // badge chuyển vàng qua CSS
+    const mark = li?.querySelector(".ntm-mark");
+    if (mark) mark.textContent = "✓";
+  }
+
+  $("ntm-start")?.addEventListener("click", async () => {
+    if (!video) return fail("Không tìm thấy phần tử video.");
+    show("ntm-scan");
+    paintStep();
+
+    // getUserMedia GỌI TRONG handler cú bấm này — yêu cầu bắt buộc của iOS Safari.
+    try {
+      camera = await openCamera(video);
+    } catch (err) {
+      const e = err as CameraError;
+      return fail(
+        e.kind === "denied"
+          ? "Chưa có quyền dùng camera. Hãy cho phép camera rồi thử lại."
+          : e.message,
+      );
+    }
+
+    const hint = $("ntm-hint");
+    let lm: Awaited<ReturnType<typeof loadLandmarker>>;
+    try {
+      lm = await loadLandmarker((p) => { if (hint) hint.textContent = p.message; });
+    } catch (err) {
+      return fail(`Không tải được bộ nhận diện: ${(err as Error).message}`);
+    }
+    if (hint) hint.textContent = "";
+    loop(lm);
+  });
+
+  // Nút nghe câu mẫu. Không có SpeechSynthesis thì ẩn nút — câu chữ vẫn hiển thị
+  // bình thường, không có gì fail.
+  const speakBtn = $("ntm-speak");
+  if (speakBtn) {
+    const canSpeak =
+      typeof window.speechSynthesis !== "undefined" &&
+      typeof window.SpeechSynthesisUtterance === "function";
+    if (canSpeak) {
+      speakBtn.classList.remove("hidden");
+      speakBtn.addEventListener("click", () => {
+        // Đọc từ DOM để câu mẫu chỉ tồn tại một bản duy nhất.
+        const text = $("ntm-voice-text")?.textContent?.replace(/[“”]/g, "").trim();
+        if (!text) return;
+        try {
+          window.speechSynthesis.cancel();
+          const u = new SpeechSynthesisUtterance(text);
+          u.lang = "vi-VN";
+          u.rate = 0.9;
+          window.speechSynthesis.speak(u);
+        } catch {
+          // Có máy khai báo API nhưng gọi là throw. Ẩn nút, không làm hỏng luồng.
+          speakBtn.classList.add("hidden");
+        }
+      });
+    }
+  }
+
+  $("ntm-cancel")?.addEventListener("click", () => {
+    releaseAll();
+    show("ntm-intro");
+  });
+
+  function loop(lm: Awaited<ReturnType<typeof loadLandmarker>>) {
+    const canvas = document.createElement("canvas");
+
+    const tick = () => {
+      rafId = requestAnimationFrame(tick);
+      if (!video || !camera || busySending) return;
+      const now = performance.now();
+      if (now - lastProcessedAt < FRAME_INTERVAL_MS) return;
+      lastProcessedAt = now;
+
+      const w = video.videoWidth;
+      const h = video.videoHeight;
+      if (!w || !h) return;
+      const ts = Math.max(Math.round(now), lastTimestamp + 1);
+      lastTimestamp = ts;
+
+      let res: ReturnType<typeof lm.detectForVideo>;
+      try {
+        res = lm.detectForVideo(video, ts);
+      } catch (err) {
+        console.warn("[nhan-tuong/mobile] detect lỗi, bỏ frame:", err);
+        return;
+      }
+
+      const faces = res.faceLandmarks ?? [];
+      const faceCount = faces.length;
+
+      let yaw: number | null = null, pitch: number | null = null, roll: number | null = null;
+      let coverage: number | null = null, blur: number | null = null, brightness: number | null = null;
+      let points: LandmarkPoint[] | null = null;
+
+      if (faceCount === 1) {
+        points = faces[0].slice(0, 468) as LandmarkPoint[];
+        const mat = res.facialTransformationMatrixes?.[0]?.data ?? null;
+        if (mat) ({ yaw, pitch, roll } = decomposePose(mat));
+        coverage = computeFaceCoverage(points);
+        canvas.width = w;
+        canvas.height = h;
+        const cctx = canvas.getContext("2d", { willReadFrequently: true });
+        if (cctx) {
+          cctx.drawImage(video, 0, 0, w, h);
+          const roi = faceBoundingBoxPx(points, w, h);
+          blur = computeBlurScore(canvas, roi);
+          brightness = computeLightingScore(canvas, roi);
+        }
+      }
+
+      const v = evaluateStep(currentStep, { faceCount, yaw, pitch, roll, coverage, blur, brightness });
+
+      const hint = $("ntm-hint");
+      if (hint) hint.textContent = v.reasons[0] ?? v.warnings[0] ?? "";
+      const bar = $("ntm-bar");
+      if (bar) bar.style.width = `${Math.round(v.progress * 100)}%`;
+      // Chỉ ĐỔI MÀU khung dẫn (trình bày) — không đụng logic pass/fail của v.passed.
+      if (guide) guide.dataset.ok = v.passed ? "1" : "0";
+
+      if (!v.passed || !points) {
+        stableFrames = 0;
+        return;
+      }
+      stableFrames++;
+      if (stableFrames < STEP_STABLE_FRAMES) return;
+
+      // Đủ ổn định → chốt bước này.
+      stableFrames = 0;
+      busySending = true;
+      const snapshot = buildSnapshot(currentStep, points, w, h, {
+        yaw, pitch, roll, coverage, blur, brightness,
+      });
+      observations.set(currentStep, {
+        step: currentStep,
+        landmarks: points.map((q) => ({ x: q.x, y: q.y, z: q.z })),
+        frameWidth: w,
+        frameHeight: h,
+        pose: { yaw, pitch, roll },
+        quality: { faceDetected: true, coverage, brightness, blur },
+      });
+      void sendStep(snapshot);
+    };
+
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function buildSnapshot(
+    step: FaceStep,
+    points: LandmarkPoint[],
+    w: number,
+    h: number,
+    q: {
+      yaw: number | null; pitch: number | null; roll: number | null;
+      coverage: number | null; blur: number | null; brightness: number | null;
+    },
+  ): FaceTestSnapshot {
+    const g = measureGeometry(points, w, h);
+    const courts = measureThreeCourts(points, w, h);
+    return {
+      step,
+      timestamp: Date.now(),
+      quality: {
+        faceDetected: true,
+        // MediaPipe Face Landmarker KHÔNG trả điểm tin cậy cho face mesh, nên đây là
+        // tỉ lệ mặt/khung dùng thay — KHÔNG phải xác suất. Xem steps.ts.
+        confidence: q.coverage,
+        brightness: q.brightness,
+        blur: q.blur,
+      },
+      pose: { yaw: q.yaw, pitch: q.pitch, roll: q.roll },
+      geometry: {
+        faceWidth: g.referencePx.faceWidthPx,
+        faceHeight: g.referencePx.faceHeightPx,
+        faceShapeRatio: g.faceShapeRatio.value,
+        middleCourt: courts.middle.value,
+        upperCourt: courts.upper.value,
+        lowerCourt: courts.lower.value,
+      },
+    };
+  }
+
+  async function sendStep(snapshot: FaceTestSnapshot) {
+    try {
+      await post("step", { snapshot });
+    } catch (err) {
+      busySending = false;
+      return fail(`Không gửi được kết quả bước: ${(err as Error).message}`, false);
+    }
+    markDone(snapshot.step);
+    const nxt = nextStep(snapshot.step);
+    if (nxt) {
+      currentStep = nxt;
+      paintStep();
+      busySending = false;
+      return;
+    }
+    // Xong 6 bước → tắt camera NGAY, không giữ stream qua bước giọng nói.
+    if (rafId !== null) { cancelAnimationFrame(rafId); rafId = null; }
+    camera?.release();
+    camera = null;
+    releaseLandmarker();
+    busySending = false;
+    show("ntm-voice-intro");
+    const support = checkVoiceSupport();
+    if (!support.ok) {
+      const e = $("ntm-voice-err");
+      if (e) {
+        e.textContent = `${support.reason} Bạn có thể bỏ qua bước này.`;
+        e.classList.remove("hidden");
+      }
+      $<HTMLButtonElement>("ntm-rec-start")!.disabled = true;
+    }
+  }
+
+  // ─────────────────────────────────────────── giọng nói
+  /** 10 giây theo yêu cầu Phase 1C §G. */
+  const VOICE_MS = 10_000;
+
+  $("ntm-rec-start")?.addEventListener("click", async () => {
+    // Đang đọc mẫu mà bấm ghi thì micro sẽ thu luôn giọng máy. Cắt trước.
+    try {
+      window.speechSynthesis?.cancel();
+    } catch {
+      /* máy không hỗ trợ — không sao */
+    }
+    try {
+      recorder = await startRecording({
+        onTick: (ms) => {
+          const t = $("ntm-timer");
+          if (t) t.textContent = `${(ms / 1000).toFixed(1)}s`;
+        },
+        maxDurationMs: Math.min(VOICE_MS, MAX_DURATION_MS),
+      });
+    } catch (err) {
+      const msg = (err as Error).message;
+      const e = $("ntm-voice-err");
+      if (e) {
+        e.textContent =
+          msg === "DENIED"
+            ? "Chưa có quyền dùng micro. Bạn có thể bỏ qua bước này."
+            : `Không ghi âm được: ${msg}`;
+        e.classList.remove("hidden");
+      }
+      return;
+    }
+    show("ntm-recording");
+    const draw = () => {
+      levelRaf = requestAnimationFrame(draw);
+      const bar = $("ntm-level");
+      if (bar && recorder) bar.style.width = `${(recorder.getLevel() * 100).toFixed(0)}%`;
+    };
+    levelRaf = requestAnimationFrame(draw);
+    window.setTimeout(() => { void stopRec(); }, VOICE_MS + 300);
+  });
+
+  $("ntm-rec-stop")?.addEventListener("click", () => void stopRec());
+
+  async function stopRec() {
+    if (!recorder) return;
+    const r = recorder;
+    recorder = null;
+    if (levelRaf !== null) { cancelAnimationFrame(levelRaf); levelRaf = null; }
+    let voice: VoiceTestResult;
+    try {
+      const rec = await r.stop();
+      voice = {
+        // ĐẠT = pipeline micro chạy được và có tiếng thật. Phase 1C không cần
+        // speech-to-text, nên không phán xét nội dung nói.
+        passed: rec.durationMs > 500 && rec.blob.size > 0,
+        durationMs: rec.durationMs,
+        mimeType: rec.mimeType,
+        sampleRate: rec.sampleRate,
+        hasAudio: rec.blob.size > 0,
+      };
+    } catch (err) {
+      return fail(`Không kết thúc được bản ghi: ${(err as Error).message}`);
+    }
+    await finish(voice);
+  }
+
+  $("ntm-rec-skip")?.addEventListener("click", () => void finish(null));
+
+  async function finish(voice: VoiceTestResult | null) {
+    try {
+      if (voice) await post("voice", { voice });
+      await post("complete", buildFeatureBody());
+    } catch (err) {
+      return fail(`Không gửi được kết quả: ${(err as Error).message}`, false);
+    }
+    releaseAll();
+    const f = $("ntm-sum-face");
+    if (f) f.textContent = `${FACE_STEPS.length}/${FACE_STEPS.length}`;
+    const v = $("ntm-sum-voice");
+    if (v) v.textContent = voice?.passed ? "PASS" : "—";
+    $("ntm-voice-ok")?.classList.toggle("hidden", !voice?.passed);
+    show("ntm-done");
+  }
+
+  /**
+   * Trích feature rồi đóng gói cho đường truyền. Chạy NGAY TRƯỚC khi gửi `complete`.
+   *
+   * Trích hỏng KHÔNG làm hỏng phiên: trả `{ featureError }` để server ghi
+   * `featureStatus = "unavailable"` kèm lý do. Sáu bước đã thu vẫn nguyên giá trị.
+   * Tuyệt đối không bịa feature = 0 để "cho có".
+   */
+  function buildFeatureBody(): Record<string, unknown> {
+    try {
+      if (observations.size === 0) return { featureError: "Không thu được quan sát nào." };
+      const profile = buildFeatureProfile({
+        sessionId: sessionId!,
+        capturedAt: Date.now(),
+        observations: [...observations.values()],
+      });
+      const mapped = toPhysiognomySessionFeaturePayload(profile);
+      if (!mapped.ok) return { featureError: `${mapped.code}: ${mapped.message}` };
+      return { featureProfile: mapped.payload };
+    } catch (err) {
+      return { featureError: `Lỗi khi trích feature: ${(err as Error).message}` };
+    }
+  }
+
+  $("ntm-retry")?.addEventListener("click", () => {
+    // Phiên dùng một lần: đã fail thì phải lấy QR mới trên máy tính.
+    location.reload();
+  });
+  }
+</script>

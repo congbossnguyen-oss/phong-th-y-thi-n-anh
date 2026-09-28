@@ -122,6 +122,42 @@ export default defineConfig({
 
   vite: {
     plugins: [tailwindcss()],
+
+    // CHỈ ẢNH HƯỞNG `astro dev`. `@mediapipe/tasks-vision` chỉ được với tới qua
+    // `await import()` LÚC CHẠY (src/features/physiognomy/landmarker/index.ts) nên bộ
+    // quét dependency của Vite không thấy nó khi khởi động, và cũng KHÔNG tự đóng gói
+    // khi request tới: dev server phát ra URL dep
+    // `/node_modules/.vite/deps/@mediapipe_tasks-vision.js?v=…` nhưng tệp đó không tồn
+    // tại → 404 → trình duyệt báo "Importing a module script failed".
+    //
+    // ĐÃ ĐO TRÊN iPHONE THẬT (iOS 18 / Safari 26, hai lần liên tiếp): phiên chết ngay
+    // sau khi bấm BẮT ĐẦU, `failureReason: "Không tải được bộ nhận diện: Importing a
+    // module script failed."` — không phải lỗi thiết bị, không phải tunnel, không phải
+    // hết hạn phiên. Đã tái hiện bằng curl: URL dep trên trả 404, 0 byte.
+    //
+    // Khai tường minh ở đây để Vite đóng gói nó lúc khởi động thay vì dựa vào bộ quét
+    // tự động vốn không với tới import động. Production dùng Rollup, KHÔNG đọc
+    // `optimizeDeps`, nên bản build không đổi.
+    optimizeDeps: {
+      include: ['@mediapipe/tasks-vision'],
+    },
+
+    // CHỈ ẢNH HƯỞNG `astro dev`. Vite 8 chặn mọi Host lạ bằng 403 ("Blocked request"),
+    // nên tunnel HTTPS tạm thời (cloudflared/ngrok) để test camera trên điện thoại thật
+    // sẽ chết ngay từ request đầu tiên. Runtime Cloudflare Workers không đọc khối `vite`
+    // này, production không đổi.
+    //
+    // KHÔNG hard-code URL tunnel vào source — URL đổi mỗi lần chạy. Truyền qua biến môi
+    // trường, ví dụ:
+    //   TUNNEL_HOST=abc-def.trycloudflare.com npx astro dev
+    // Nhiều host thì ngăn cách bằng dấu phẩy.
+    server: {
+      allowedHosts: (process.env.TUNNEL_HOST ?? '')
+        .split(',')
+        .map((h) => h.trim())
+        .filter(Boolean),
+    },
+
     build: {
       rollupOptions: {
         output: {

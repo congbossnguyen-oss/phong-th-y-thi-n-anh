@@ -1,0 +1,1482 @@
+---
+// Màn hình MÁY TÍNH: tạo phiên, hiện QR, theo dõi tiến độ từ điện thoại.
+//
+// Máy tính KHÔNG nạp MediaPipe, KHÔNG mở camera — chỉ QR + poll. Đúng yêu cầu
+// Phase 1C §N: giữ bundle nhỏ, không preload model 15 MB ở màn hình chờ.
+//
+// Không hiển thị bất kỳ luận đoán nhân tướng nào — chỉ PASS/chưa của từng bước.
+import Container from "../ui/Container.astro";
+
+const BTN =
+  "inline-flex items-center justify-center gap-2 rounded-(--radius-pill) font-semibold uppercase tracking-wide transition-colors duration-200 ease-out focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-(--color-gold-400) disabled:opacity-50 disabled:pointer-events-none min-h-11";
+const BTN_SECONDARY =
+  "bg-transparent text-(--color-ink-950) border border-(--color-ink-600) hover:border-(--color-gold-400) hover:text-(--color-gold-300) px-5 py-2.5 text-sm";
+
+// Sáu bước, đúng thứ tự ở FACE_STEPS. Nhãn lặp lại ở đây để markup render được
+// ngay lúc build (tĩnh), không phải chờ JS.
+const STEPS = [
+  { key: "front", label: "Chính diện" },
+  { key: "left", label: "Quay trái" },
+  { key: "right", label: "Quay phải" },
+  { key: "near", label: "Sát mặt" },
+  { key: "pitch_down", label: "Cúi xuống" },
+  { key: "pitch_up", label: "Ngẩng lên" },
+] as const;
+---
+
+<Container class="py-10">
+  <div class="mx-auto max-w-3xl">
+    <div class="nt-panel p-6 text-(--color-ink-950) sm:p-8">
+      <span class="nt-corner tl" aria-hidden="true"></span>
+      <span class="nt-corner tr" aria-hidden="true"></span>
+      <span class="nt-corner bl" aria-hidden="true"></span>
+      <span class="nt-corner br" aria-hidden="true"></span>
+      <header class="text-center">
+        <p class="text-[0.7rem] font-semibold uppercase tracking-[0.28em] text-(--color-gold-500)">
+          Phong Thủy Thiên Anh
+        </p>
+      </header>
+
+      <!-- ─────────── Chờ điện thoại: QR ─────────── -->
+      <section id="ntd-wait" class="mt-6">
+        <h2 class="text-center font-display text-3xl font-semibold text-(--color-gold-300)">
+          Kết nối điện thoại
+        </h2>
+        <p class="mx-auto mt-2 max-w-xs text-center text-sm text-(--color-ink-600)">
+          Quét mã QR bằng điện thoại để bắt đầu phân tích nhân tướng.
+        </p>
+
+        <div class="mt-7 flex justify-center">
+          <div class="nt-qr relative">
+            <span class="nt-qr-corner tl" aria-hidden="true"></span>
+            <span class="nt-qr-corner tr" aria-hidden="true"></span>
+            <span class="nt-qr-corner bl" aria-hidden="true"></span>
+            <span class="nt-qr-corner br" aria-hidden="true"></span>
+            <span class="nt-qr-beam" aria-hidden="true"></span>
+            <div
+              id="ntd-qr"
+              class="flex h-[240px] w-[240px] items-center justify-center rounded-[0.6rem] bg-white"
+            >
+              <span class="text-xs text-neutral-500">Đang tạo mã…</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 flex items-center justify-center gap-2 text-sm font-medium text-(--color-ink-700)">
+          <span class="nt-status-dot" aria-hidden="true"></span>
+          <span id="ntd-wait-msg">Đang chờ kết nối…</span>
+        </div>
+
+        <div class="nt-subcard mx-auto mt-5 max-w-sm p-3 text-center">
+          <p class="text-xs text-(--color-ink-500)">
+            Hoặc mở trên điện thoại:
+            <span id="ntd-url" class="break-all font-mono text-(--color-ink-700)"></span>
+          </p>
+          <p class="mt-1 text-xs text-(--color-ink-500)">
+            Mã phiên:
+            <span id="ntd-code" class="font-mono font-semibold tracking-widest text-(--color-gold-300)"></span>
+          </p>
+        </div>
+
+        <ul class="mx-auto mt-6 max-w-sm space-y-2 text-xs text-(--color-ink-600)">
+          <li class="flex items-center gap-2"><span class="text-(--color-gold-500)" aria-hidden="true">◈</span> Dùng điện thoại quét mã QR trên màn hình.</li>
+          <li class="flex items-center gap-2"><span class="text-(--color-gold-500)" aria-hidden="true">◈</span> Giữ kết nối trong suốt quá trình.</li>
+          <li class="flex items-center gap-2"><span class="text-(--color-gold-500)" aria-hidden="true">◈</span> Không đóng trình duyệt này.</li>
+        </ul>
+        {
+          /* Phiên tự tạo lúc mở trang KHÔNG mang nhãn nghiên cứu. Trước đây hai loại
+             phiên trông y hệt nhau nên mẫu thật đầu tiên đã bị thu nhầm bằng phiên
+             không nhãn. Nhãn này làm sự khác biệt đó hiện ra trước khi quét. */
+          import.meta.env.DEV && (
+            <p id="ntd-sample-badge" class="mt-2 text-center font-mono text-xs"></p>
+          )
+        }
+
+        {
+          import.meta.env.DEV && (
+            <div
+              id="ntd-lan-warn"
+              class="mt-5 hidden rounded-(--radius-card) border border-amber-400 bg-amber-50 p-3 text-left text-xs leading-relaxed text-amber-900"
+            >
+              <strong class="block">Đang mở bằng localhost — điện thoại sẽ KHÔNG vào được.</strong>
+              <p class="mt-1">
+                Trên điện thoại, <code>localhost</code> trỏ về chính điện thoại chứ không phải máy
+                tính này. Hãy mở lại trang bằng địa chỉ LAN dưới đây (điện thoại phải cùng Wi-Fi):
+              </p>
+              <ul id="ntd-lan-list" class="mt-2 space-y-1"></ul>
+            </div>
+          )
+        }
+      </section>
+
+      <!-- ─────────── Đã kết nối: tiến độ ─────────── -->
+      {
+        import.meta.env.DEV && (
+          <section
+            id="ntd-collect"
+            class="mt-6 rounded-(--radius-card) border-2 border-dashed border-(--color-ink-400) p-4"
+          >
+            <div class="flex flex-wrap items-baseline justify-between gap-2">
+              <p class="text-xs font-semibold uppercase tracking-[0.15em] text-(--color-ink-500)">
+                Thu dữ liệu nghiên cứu — chỉ chạy ở máy phát triển
+              </p>
+              <p id="ntd-c-total" class="font-mono text-xs text-(--color-ink-600)"></p>
+            </div>
+
+            <div class="mt-3 flex flex-wrap items-end gap-3">
+              <div>
+                <span class="block text-xs text-(--color-ink-600)">Người</span>
+                <div id="ntd-c-people" class="mt-1 flex gap-1"></div>
+              </div>
+              <div>
+                <span class="block text-xs text-(--color-ink-600)">Lần</span>
+                <div id="ntd-c-runs" class="mt-1 flex gap-1"></div>
+              </div>
+              <label class="block">
+                <span class="block text-xs text-(--color-ink-600)">Máy</span>
+                <input
+                  id="ntd-c-dev"
+                  type="text"
+                  maxlength="24"
+                  placeholder="unknown"
+                  class="mt-1 w-40 rounded border border-(--color-ivory-300) bg-(--color-ivory-50) px-2 py-1.5 font-mono text-sm"
+                />
+              </label>
+            </div>
+
+            <p
+              id="ntd-c-instr"
+              class="mt-3 rounded-(--radius-card) bg-(--color-ivory-50) p-2.5 text-xs leading-relaxed text-(--color-ink-700)"
+            ></p>
+
+            <div class="mt-3 flex flex-wrap gap-2">
+              <button type="button" id="ntd-c-new" class={`${BTN} ${BTN_SECONDARY}`}>Tạo phiên</button>
+              <button type="button" id="ntd-c-export" class={`${BTN} ${BTN_SECONDARY}`}>
+                Tải dữ liệu người này
+              </button>
+              <button type="button" id="ntd-c-clear" class={`${BTN} ${BTN_SECONDARY}`}>Xoá người này</button>
+            </div>
+
+            <table class="mt-4 w-full border-collapse font-mono text-xs">
+              <thead>
+                <tr class="text-(--color-ink-500)">
+                  <th class="pb-1 text-left font-normal">Người</th>
+                  <th class="pb-1 text-left font-normal">Lần 1</th>
+                  <th class="pb-1 text-left font-normal">Lần 2</th>
+                  <th class="pb-1 text-left font-normal">Lần 3</th>
+                </tr>
+              </thead>
+              <tbody id="ntd-c-grid"></tbody>
+            </table>
+
+            <p id="ntd-c-err" class="mt-2 hidden text-xs text-red-700"></p>
+          </section>
+        )
+      }
+
+      {
+        import.meta.env.DEV && (
+          <section
+            id="ntd-cal"
+            class="mt-4 rounded-(--radius-card) border-2 border-dashed border-(--color-ink-400) p-4"
+          >
+            <p class="text-xs font-semibold uppercase tracking-[0.15em] text-(--color-ink-500)">
+              Hiệu chuẩn trái/phải — chỉ chạy ở máy phát triển
+            </p>
+            <p class="mt-1 text-xs text-(--color-ink-600)">
+              Người quan sát ngồi đây, nhìn người test bằng mắt rồi bấm. KHÔNG nhìn số
+              đo rồi mới bấm — số đo chính là thứ đang được đem ra kiểm.
+            </p>
+            <div id="ntd-cal-ask" class="mt-3 hidden space-y-2"></div>
+            <p id="ntd-cal-none" class="mt-3 text-xs text-(--color-ink-500)">
+              Chưa có lượt nào chờ xác nhận. Hoàn tất một phiên quét để bắt đầu.
+            </p>
+            <p id="ntd-cal-sum" class="mt-3 font-mono text-xs text-(--color-ink-700)"></p>
+            <p id="ntd-cal-rec" class="mt-1 text-xs text-(--color-ink-600)"></p>
+            <button
+              id="ntd-cal-reset"
+              type="button"
+              class="mt-3 rounded border border-(--color-ivory-300) px-2.5 py-1 font-mono text-xs text-(--color-ink-600)"
+            >
+              Xoá dữ liệu hiệu chuẩn
+            </button>
+          </section>
+        )
+      }
+
+      {
+        import.meta.env.DEV && (
+          <section
+            id="ntd-diag"
+            class="mt-4 hidden rounded-(--radius-card) border-2 border-dashed border-(--color-ink-400) p-4"
+          >
+            <div class="flex flex-wrap items-baseline justify-between gap-2">
+              <p class="text-xs font-semibold uppercase tracking-[0.15em] text-(--color-ink-500)">
+                Chẩn đoán kỹ thuật — chỉ chạy ở máy phát triển
+              </p>
+              <p id="ntd-d-sum" class="font-mono text-xs text-(--color-ink-600)"></p>
+            </div>
+            <p class="mt-1 text-xs text-(--color-ink-600)">
+              Bảng đo, KHÔNG phải luận giải. Không một dòng nào dưới đây nói tướng tốt/xấu.
+            </p>
+            <div class="mt-3 max-h-80 overflow-auto">
+              <table class="w-full border-collapse text-left font-mono text-[11px]">
+                <thead class="sticky top-0 bg-(--color-ivory-100) text-(--color-ink-500)">
+                  <tr>
+                    <th class="py-1 pr-2 font-normal">Feature</th>
+                    <th class="py-1 pr-2 font-normal">Giá trị</th>
+                    <th class="py-1 pr-2 font-normal">Đo</th>
+                    <th class="py-1 pr-2 font-normal">Kiểm chứng</th>
+                    <th class="py-1 pr-2 font-normal">Tin</th>
+                    <th class="py-1 pr-2 font-normal">Luận giải</th>
+                    <th class="py-1 font-normal">Vì sao</th>
+                  </tr>
+                </thead>
+                <tbody id="ntd-d-rows"></tbody>
+              </table>
+            </div>
+            <p id="ntd-d-interp" class="mt-3 rounded-(--radius-card) bg-(--color-ivory-50) p-2.5 text-xs text-(--color-ink-700)"></p>
+          </section>
+        )
+      }
+
+      <section id="ntd-progress" class="mt-8 hidden">
+        <p class="flex items-center justify-center gap-2 text-center text-sm font-semibold text-(--color-gold-300)">
+          <span class="nt-status-dot" aria-hidden="true"></span> Điện thoại đã kết nối
+        </p>
+        <p class="mt-1 text-center text-sm text-(--color-ink-600)">Đang thực hiện kiểm tra khuôn mặt…</p>
+
+        <div class="mx-auto mt-6 grid max-w-lg gap-6 sm:grid-cols-2">
+          <div>
+            <h3 class="text-xs font-semibold uppercase tracking-[0.15em] text-(--color-ink-500)">
+              Khuôn mặt
+            </h3>
+            <ul class="mt-3 space-y-2 text-sm">
+              {
+                STEPS.map((s) => (
+                  <li class="flex items-center gap-2" data-step={s.key}>
+                    <span class="ntd-mark w-4 text-center text-(--color-ink-400)">○</span>
+                    <span class="ntd-label text-(--color-ink-600)">{s.label}</span>
+                  </li>
+                ))
+              }
+            </ul>
+          </div>
+
+          <div>
+            <h3 class="text-xs font-semibold uppercase tracking-[0.15em] text-(--color-ink-500)">
+              Giọng nói
+            </h3>
+            <ul class="mt-3 space-y-2 text-sm">
+              <li class="flex items-center gap-2" data-voice>
+                <span class="ntd-mark w-4 text-center text-(--color-ink-400)">○</span>
+                <span class="ntd-label text-(--color-ink-600)">Chưa kiểm tra</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ─────────── Đang phân tích (chuyển cảnh trung thực) ─────────── -->
+      <!--
+        Checklist CÓ CHỦ ĐÍCH: ba mục ĐẦU là các phép kiểm ĐÃ chạy thật lúc thu (chất
+        lượng ảnh, đủ góc, độ ổn định) — nên đánh ✓. Hai mục CUỐI treo (○) vì chưa có
+        nguồn cổ thư xác minh → không có luận giải. KHÔNG %, KHÔNG "AI đang nghĩ".
+      -->
+      <section id="ntd-analyze" class="mt-8 hidden text-center">
+        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-(--color-gold-500)">
+          <span aria-hidden="true">✓</span> Đã hoàn tất thu thập
+        </p>
+        <div class="nt-analyze-orb mt-6">
+          <svg viewBox="0 0 200 200" class="absolute inset-0 h-full w-full p-[20%] text-(--color-gold-300)" fill="none" aria-hidden="true">
+            <ellipse cx="100" cy="100" rx="42" ry="56" stroke="currentColor" stroke-width="1" opacity="0.75"></ellipse>
+            <path d="M100 50 L100 148 M60 90 Q100 106 140 90 M76 126 Q100 138 124 126" stroke="currentColor" stroke-width="0.8" opacity="0.5"></path>
+            <circle cx="82" cy="90" r="2.6" fill="currentColor"></circle>
+            <circle cx="118" cy="90" r="2.6" fill="currentColor"></circle>
+          </svg>
+        </div>
+        <h2 class="mt-6 font-display text-3xl font-semibold text-(--color-gold-300)">Đang phân tích…</h2>
+        <p class="mx-auto mt-2 max-w-sm text-sm text-(--color-ink-600)">
+          Hệ thống đang xử lý dữ liệu khuôn mặt và đối chiếu với các nguyên lý nhân tướng.
+        </p>
+        <ul class="mx-auto mt-6 max-w-xs space-y-2.5 text-left text-sm text-(--color-ink-800)">
+          <li class="nt-check" data-done="1"><span class="nt-check-i" aria-hidden="true">✓</span> Kiểm tra chất lượng hình ảnh</li>
+          <li class="nt-check" data-done="1"><span class="nt-check-i" aria-hidden="true">✓</span> Kiểm tra các góc khuôn mặt</li>
+          <li class="nt-check" data-done="1"><span class="nt-check-i" aria-hidden="true">✓</span> Đánh giá độ ổn định dữ liệu</li>
+          <li class="nt-check" data-done="0"><span class="nt-check-i" aria-hidden="true">○</span> Đối chiếu dữ liệu nhân tướng</li>
+          <li class="nt-check" data-done="0"><span class="nt-check-i" aria-hidden="true">○</span> Tổng hợp luận giải</li>
+        </ul>
+      </section>
+
+      <!-- ─────────── Hoàn tất ─────────── -->
+      <section id="ntd-done" class="mt-8 hidden">
+        <div class="nt-rule" aria-hidden="true"><span>❖</span></div>
+        <h2 class="text-center font-display text-3xl font-semibold text-(--color-gold-300)">
+          Kết quả phân tích
+        </h2>
+        <p class="mt-1 text-center text-sm text-(--color-ink-600)">
+          Đã nhận đủ dữ liệu khuôn mặt từ điện thoại.
+        </p>
+
+        <!-- THẺ GIẤY: Hồ sơ khuôn mặt — CHỈ dữ kiện có thật (ngày/góc/đặc điểm/chất lượng). -->
+        <div class="nt-card-parchment mx-auto mt-6 max-w-sm p-5">
+          <p class="flex items-center gap-2 text-sm font-semibold text-[#2a1c12]">
+            <span class="inline-flex h-6 w-6 items-center justify-center rounded-full border border-[#c79a4a] text-xs" aria-hidden="true">◈</span>
+            Hồ sơ khuôn mặt
+          </p>
+          <dl class="mt-4 space-y-3 text-sm">
+            <div class="flex items-center justify-between border-b border-[#dcc79a] pb-2.5">
+              <dt class="text-[#7a5f38]">Ngày phân tích</dt>
+              <dd id="ntd-r-date" class="font-medium text-[#3a2a16]">—</dd>
+            </div>
+            <div class="flex items-center justify-between border-b border-[#dcc79a] pb-2.5">
+              <dt class="text-[#7a5f38]">Góc đã thu thập</dt>
+              <dd id="ntd-r-face" class="font-semibold text-[#3a2a16]">—</dd>
+            </div>
+            <div class="flex items-center justify-between border-b border-[#dcc79a] pb-2.5">
+              <dt class="text-[#7a5f38]">Đặc điểm đã kiểm tra</dt>
+              <dd id="ntd-r-features" class="font-semibold text-[#3a2a16]">—</dd>
+            </div>
+            <div class="flex items-center justify-between border-b border-[#dcc79a] pb-2.5">
+              <dt class="text-[#7a5f38]">Giọng nói</dt>
+              <dd id="ntd-r-voice" class="font-medium text-[#3a2a16]">—</dd>
+            </div>
+            <div class="flex items-center justify-between">
+              <dt class="text-[#7a5f38]">Chất lượng dữ liệu</dt>
+              <dd class="flex items-center gap-2">
+                <span id="ntd-r-quality" class="font-semibold text-[#3a2a16]">—</span>
+                <span id="ntd-r-qbar" class="nt-qbar" aria-hidden="true"><i></i><i></i><i></i></span>
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <!--
+          THẺ HỔ PHÁCH: cảnh báo TRUNG THỰC, luôn hiện ở màn kết quả. Tiêu đề + câu giải
+          thích là TĨNH và luôn đúng (fail-closed). Khối `#ntd-interp` bên trong giữ phần
+          động + chi tiết kỹ thuật, do renderInterpretation() bật/tắt — kho nguồn rỗng nên
+          KHÔNG bao giờ có câu luận tướng khẳng định.
+        -->
+        <div class="nt-card-amber mx-auto mt-4 max-w-sm p-4">
+          <p class="flex items-start gap-2.5 font-display text-lg font-semibold">
+            <span class="mt-0.5 flex h-6 w-6 flex-none items-center justify-center rounded-full border border-[#b9822e] text-sm" aria-hidden="true">!</span>
+            Chưa đủ dữ liệu để luận giải
+          </p>
+          <p class="mt-1.5 pl-8 text-sm leading-relaxed nt-amber-muted">
+            Hệ thống chưa có đủ bằng chứng để đưa ra kết luận nhân tướng học. Kết quả hiện tại
+            chỉ thể hiện dữ liệu đã thu thập.
+          </p>
+
+          <div id="ntd-interp" class="mt-3 hidden pl-8">
+            <p id="ntd-i-msg" class="text-xs leading-relaxed nt-amber-muted"></p>
+            <details class="mt-2 text-xs">
+              <summary class="cursor-pointer text-[#8a6a3a]">Chi tiết kỹ thuật</summary>
+              <dl class="mt-2 space-y-1 text-[#6b4a1e]">
+                <div class="flex justify-between"><dt class="nt-amber-muted">Trạng thái</dt><dd id="ntd-i-status" class="font-mono font-semibold"></dd></div>
+                <div class="flex justify-between"><dt class="nt-amber-muted">Đặc điểm đủ điều kiện</dt><dd id="ntd-i-eligible" class="font-mono font-semibold"></dd></div>
+                <div class="flex justify-between"><dt class="nt-amber-muted">Luật: khớp / bỏ qua</dt><dd id="ntd-i-rules" class="font-mono font-semibold"></dd></div>
+                <div class="flex justify-between"><dt class="nt-amber-muted">Mục luận giải khả dụng</dt><dd id="ntd-i-luangiai" class="font-mono font-semibold"></dd></div>
+              </dl>
+              <ul id="ntd-i-reasons" class="mt-1.5 list-disc space-y-0.5 pl-5 nt-amber-muted"></ul>
+              <div id="ntd-feat" class="mt-2 hidden border-t border-[#dcbf8e] pt-2">
+                <dl class="space-y-1 text-[#6b4a1e]">
+                  <div class="flex justify-between"><dt class="nt-amber-muted">Đo được</dt><dd id="ntd-f-measured" class="font-mono font-semibold"></dd></div>
+                  <div class="flex justify-between"><dt class="nt-amber-muted">Độ tin thấp</dt><dd id="ntd-f-low" class="font-mono font-semibold"></dd></div>
+                  <div class="flex justify-between"><dt class="nt-amber-muted">Không đo được</dt><dd id="ntd-f-unsup" class="font-mono font-semibold"></dd></div>
+                  <div class="flex justify-between"><dt class="nt-amber-muted">Góc cấp số</dt><dd id="ntd-f-view" class="font-mono font-semibold"></dd></div>
+                </dl>
+                <p id="ntd-f-err" class="mt-1.5 hidden text-[#a3352a]"></p>
+              </div>
+            </details>
+          </div>
+        </div>
+
+        <p class="mx-auto mt-6 max-w-sm text-center text-xs leading-relaxed text-(--color-ink-500)">
+          Phân tích dừng ở mức đo và kiểm bằng chứng. Chưa có nguồn cổ thư nào được xác minh
+          nên hệ thống chưa đưa ra bất kỳ luận giải tướng học nào.
+        </p>
+
+        <div class="mx-auto mt-6 flex max-w-xs justify-center">
+          <button type="button" id="ntd-restart" class="nt-cta-ghost">Thử lại</button>
+        </div>
+      </section>
+
+      <!-- ─────────── Lỗi / hết hạn ─────────── -->
+      <section id="ntd-error" class="mt-8 hidden text-center">
+        <span
+          class="mx-auto flex h-11 w-11 items-center justify-center rounded-full border border-(--color-cinnabar-400) text-xl text-(--color-cinnabar-400)"
+          aria-hidden="true">!</span>
+        <p class="mt-3 font-display text-xl font-semibold text-(--color-cinnabar-400)">Phiên không tiếp tục được</p>
+        <p id="ntd-error-msg" class="mx-auto mt-2 max-w-sm text-sm text-(--color-ink-700)"></p>
+        <div class="mx-auto mt-6 flex max-w-xs justify-center">
+          <button type="button" id="ntd-error-restart" class="nt-cta-ghost">Tạo phiên mới</button>
+        </div>
+      </section>
+    </div>
+  </div>
+</Container>
+
+<script>
+  import {
+    DESKTOP_POLL_MS,
+    FACE_STEPS,
+    type SessionPublicView,
+  } from "../../features/physiognomy/session/types";
+  import { summarizeFeatures } from "../../features/physiognomy/features/transport";
+
+  // Cả hai component cùng nằm trong một trang tĩnh, nên phải tự kiểm chế độ:
+  // ở mode=mobile thì KHÔNG được tạo phiên (sẽ sinh phiên rỗng vô ích trong KV).
+  if (new URLSearchParams(location.search).get("mode") === "mobile") {
+    // không làm gì — màn hình điện thoại lo phần việc của nó
+  } else {
+    void initDesktop();
+  }
+
+  function initDesktop() {
+  const $ = <T extends HTMLElement = HTMLElement>(id: string) =>
+    document.getElementById(id) as T | null;
+
+  const secWait = $("ntd-wait");
+  const secProgress = $("ntd-progress");
+  const secAnalyze = $("ntd-analyze");
+  const secDone = $("ntd-done");
+  const secError = $("ntd-error");
+  /** Chuyển cảnh "Đang phân tích…" chỉ chạy MỘT lần mỗi lần tải trang. */
+  let analyzePlayed = false;
+
+  let sessionId: string | null = null;
+  let pollTimer: number | null = null;
+  /** Poll liên tiếp lỗi bao nhiêu lần rồi thì bỏ — tránh nện API khi mất mạng. */
+  let consecutiveErrors = 0;
+  const MAX_ERRORS = 5;
+
+  function show(which: "wait" | "progress" | "analyze" | "done" | "error") {
+    secWait?.classList.toggle("hidden", which !== "wait");
+    secProgress?.classList.toggle("hidden", which !== "progress");
+    secAnalyze?.classList.toggle("hidden", which !== "analyze");
+    secDone?.classList.toggle("hidden", which !== "done");
+    secError?.classList.toggle("hidden", which !== "error");
+  }
+
+  function stopPolling() {
+    if (pollTimer !== null) {
+      clearInterval(pollTimer);
+      pollTimer = null;
+    }
+  }
+
+  function fail(msg: string) {
+    stopPolling();
+    const el = $("ntd-error-msg");
+    if (el) el.textContent = msg;
+    show("error");
+  }
+
+  /**
+   * URL cho điện thoại — dựng từ origin HIỆN TẠI, không hard-code gì.
+   *
+   * Mở trang bằng LAN IP thì QR giữ LAN IP; mở bằng localhost thì QR ra localhost
+   * (và điện thoại không vào được — xem cảnh báo DEV bên dưới). Cố ý không "sửa"
+   * localhost thành IP ở đây: trang không có cách nào biết IP nào của máy chủ là
+   * đúng interface, và đoán sai thì QR dẫn tới chỗ chết mà không ai biết.
+   */
+  function mobileUrl(id: string): string {
+    const u = new URL(location.pathname, location.origin);
+    u.searchParams.set("session", id);
+    u.searchParams.set("mode", "mobile");
+    return u.toString();
+  }
+
+  const isLoopbackHost =
+    location.hostname === "localhost" ||
+    location.hostname === "127.0.0.1" ||
+    location.hostname === "[::1]" ||
+    location.hostname === "::1";
+
+  /**
+   * CHỈ DEV: mở bằng localhost thì nhắc mở lại bằng địa chỉ LAN.
+   *
+   * KHÔNG dò IP tự động. Đã thử một endpoint dev đọc `os.networkInterfaces()` và nó
+   * trả về RỖNG: dev server của dự án chạy trong workerd (adapter Cloudflare qua
+   * @cloudflare/vite-plugin), nơi shim `node:os` không thấy interface mạng thật.
+   * Trình duyệt cũng không có cách hợp lệ nào để biết IP LAN của máy chủ.
+   *
+   * Nên chỉ dẫn tới nguồn ĐÚNG và luôn có: dòng `Network:` mà dev server in ra.
+   * Thà chỉ đúng chỗ tra hơn là đoán một IP rồi tạo QR dẫn vào chỗ chết.
+   */
+  function showLanHintIfNeeded() {
+    if (!import.meta.env.DEV || !isLoopbackHost) return;
+    const box = $("ntd-lan-warn");
+    const list = $("ntd-lan-list");
+    if (!box || !list) return;
+    box.classList.remove("hidden");
+    const port = location.port || "4321";
+    list.innerHTML =
+      `<li>Chạy <code class="font-mono">astro dev status</code> (hoặc xem terminal) để lấy dòng ` +
+      `<code class="font-mono">Network: http://&lt;IP&gt;:${port}/</code></li>` +
+      `<li>Mở trên máy tính: <code class="font-mono">http://&lt;IP&gt;:${port}${location.pathname}</code>` +
+      ` — QR sẽ tự mang theo đúng IP đó.</li>` +
+      `<li>Điện thoại phải cùng Wi-Fi với máy tính.</li>`;
+  }
+
+  /**
+   * Vẽ QR bằng SVG. Nạp trễ `qrcode-generator` (zero-dep) — chỉ máy tính cần nó,
+   * điện thoại không tải.
+   */
+  async function renderQr(text: string) {
+    const box = $("ntd-qr");
+    if (!box) return;
+    try {
+      const mod = await import("qrcode-generator");
+      const qrFactory = (mod.default ?? mod) as unknown as (
+        typeNumber: number,
+        errorLevel: string,
+      ) => {
+        addData(s: string): void;
+        make(): void;
+        getModuleCount(): number;
+        isDark(r: number, c: number): boolean;
+      };
+      // typeNumber 0 = tự chọn phiên bản nhỏ nhất vừa dữ liệu.
+      // Mức sửa lỗi M: chịu được ~15% hỏng, đủ cho QR hiện trên màn hình.
+      const qr = qrFactory(0, "M");
+      qr.addData(text);
+      qr.make();
+
+      const n = qr.getModuleCount();
+      const quiet = 2; // viền trắng bắt buộc để máy quét nhận được
+      const size = n + quiet * 2;
+      let path = "";
+      for (let r = 0; r < n; r++) {
+        for (let c = 0; c < n; c++) {
+          if (qr.isDark(r, c)) path += `M${c + quiet} ${r + quiet}h1v1h-1z`;
+        }
+      }
+      box.innerHTML =
+        `<svg viewBox="0 0 ${size} ${size}" width="240" height="240" ` +
+        `shape-rendering="crispEdges" role="img" aria-label="Mã QR mở trang kiểm tra trên điện thoại">` +
+        `<rect width="${size}" height="${size}" fill="#fff"/>` +
+        `<path d="${path}" fill="#000"/></svg>`;
+    } catch (err) {
+      box.textContent = "Không tạo được mã QR.";
+      console.error("[nhan-tuong/desktop] QR lỗi:", err);
+    }
+  }
+
+  function markStep(key: string, done: boolean) {
+    const li = secProgress?.querySelector(`[data-step="${key}"]`);
+    if (!li) return;
+    const mark = li.querySelector(".ntd-mark");
+    const label = li.querySelector(".ntd-label");
+    if (mark) {
+      mark.textContent = done ? "✓" : "○";
+      mark.className = `ntd-mark w-4 text-center ${done ? "text-(--color-gold-500)" : "text-(--color-ink-400)"}`;
+    }
+    if (label) {
+      label.className = `ntd-label ${done ? "font-medium text-(--color-ink-900)" : "text-(--color-ink-600)"}`;
+    }
+  }
+
+  function markVoice(view: SessionPublicView) {
+    const li = secProgress?.querySelector("[data-voice]");
+    if (!li) return;
+    const mark = li.querySelector(".ntd-mark");
+    const label = li.querySelector(".ntd-label");
+    const done = view.voice != null;
+    if (mark) {
+      mark.textContent = done ? "✓" : "○";
+      mark.className = `ntd-mark w-4 text-center ${done ? "text-(--color-gold-500)" : "text-(--color-ink-400)"}`;
+    }
+    if (label) {
+      label.textContent = done
+        ? `Đã nhận (${((view.voice!.durationMs ?? 0) / 1000).toFixed(1)}s)`
+        : view.status === "voice"
+          ? "Đang kiểm tra…"
+          : "Chưa kiểm tra";
+      label.className = `ntd-label ${done ? "font-medium text-(--color-ink-900)" : "text-(--color-ink-600)"}`;
+    }
+  }
+
+  /**
+   * Tóm tắt kỹ thuật của tầng đo. CHỈ đếm — không diễn giải.
+   *
+   * Phải chịu được cả ba tình huống: có payload, máy khách báo trích hỏng, và bản ghi
+   * cũ không có trường nào (KV nhất quán theo thời gian, xem audit §7).
+   */
+  function renderFeatureSummary(r: SessionPublicView["result"]) {
+    const box = $("ntd-feat");
+    const err = $("ntd-f-err");
+    if (!box) return;
+    const p = r?.featureProfile ?? null;
+    box.classList.toggle("hidden", r == null);
+    if (err) {
+      const msg = r?.featureError ?? null;
+      err.textContent = msg ? `Không trích được đặc điểm: ${msg}` : "";
+      err.classList.toggle("hidden", msg === null);
+    }
+    const set = (id: string, v: string) => {
+      const el = $(id);
+      if (el) el.textContent = v;
+    };
+    if (!p) {
+      for (const id of ["ntd-f-measured", "ntd-f-low", "ntd-f-unsup"]) set(id, "—");
+      set("ntd-f-view", r?.featureStatus === "unavailable" ? "—" : "chưa có");
+      return;
+    }
+    const s = summarizeFeatures(p);
+    set("ntd-f-measured", `${s.measured}/${s.total}`);
+    set("ntd-f-low", String(s.lowConfidence));
+    set("ntd-f-unsup", String(s.unsupported));
+    set("ntd-f-view", p.primaryView ?? "—");
+  }
+
+  function renderDone(view: SessionPublicView) {
+    const r = view.result;
+    const setTxt = (id: string, v: string) => {
+      const el = $(id);
+      if (el) el.textContent = v;
+    };
+
+    // Ngày phân tích — mốc THẬT từ server (completedAt), KHÔNG bịa. Rơi về createdAt nếu
+    // vì lý do nào đó thiếu completedAt.
+    const when = new Date(view.completedAt ?? view.createdAt);
+    const p2 = (n: number) => String(n).padStart(2, "0");
+    setTxt(
+      "ntd-r-date",
+      `${p2(when.getDate())}/${p2(when.getMonth() + 1)}/${when.getFullYear()} ${p2(when.getHours())}:${p2(when.getMinutes())}`,
+    );
+
+    // Góc đã thu thập — số bước mặt đạt / tổng (thật).
+    const nFace = r?.quality.faceTestsPassed ?? 0;
+    setTxt("ntd-r-face", `${nFace}/${FACE_STEPS.length} góc`);
+
+    // Đặc điểm đã kiểm tra — đếm THẬT từ featureProfile; "—" nếu trích hỏng (không bịa 0).
+    const prof = r?.featureProfile ?? null;
+    setTxt("ntd-r-features", prof ? `${summarizeFeatures(prof).total} đặc điểm` : "—");
+
+    // Giọng nói — có/không, không phán xét nội dung.
+    setTxt("ntd-r-voice", r?.quality.voicePassed === true ? "Đã nhận" : "—");
+
+    // Chất lượng dữ liệu — nhãn + thanh 3 mức, ÁNH XẠ từ giá trị categorical thật.
+    const overall = r?.quality.overall ?? "fail";
+    setTxt("ntd-r-quality", overall === "pass" ? "Tốt" : overall === "partial" ? "Khá" : "Chưa đạt");
+    const qFill = overall === "pass" ? 3 : overall === "partial" ? 2 : 1;
+    const qbar = $("ntd-r-qbar");
+    if (qbar) [...qbar.children].forEach((dot, i) => ((dot as HTMLElement).dataset.on = i < qFill ? "1" : "0"));
+
+    renderFeatureSummary(r);
+    // ĐƯỜNG PRODUCTION đi qua tầng luận giải — không bọc DEV, không phải bảng chẩn đoán.
+    void renderInterpretation(r?.featureProfile ?? null);
+    // Cập nhật bảng thu dữ liệu ngay, không cần tải lại trang.
+    if (sessionId) markSampleComplete?.(sessionId);
+    renderDiagnostics?.(r?.featureProfile ?? null);
+    hoiHieuChuan?.(view);
+
+    // CHUYỂN CẢNH trung thực: lần đầu tới hoàn tất trong mỗi lần tải trang, hiện màn
+    // "Đang phân tích…" ngắn rồi mới ra kết quả. Không % giả, không "AI đang nghĩ" —
+    // checklist đã cứng: 3 mục ĐÃ đạt lúc thu, 2 mục treo vì chưa có nguồn kiểm chứng.
+    if (analyzePlayed) {
+      show("done");
+      return;
+    }
+    analyzePlayed = true;
+    const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches === true;
+    show("analyze");
+    window.setTimeout(() => show("done"), reduce ? 400 : 2300);
+  }
+
+  /**
+   * LUẬN GIẢI — đường production. Gọi CHÍNH `runPipelineOnFeatures()` (đúng pipeline mà
+   * bảng chẩn đoán DEV dùng), không dựng bản song song.
+   *
+   * ⚠️ FAIL-CLOSED nằm TRONG pipeline: kho nguồn rỗng → không luật nào có nguồn → không
+   * luật nào chạy → `interpretation.outcome = INSUFFICIENT_EVIDENCE`. UI chỉ hiển thị
+   * lại thứ pipeline trả về, KHÔNG tự quyết, KHÔNG bao giờ dựng câu luận tướng.
+   *
+   * Chỉ nhận PAYLOAD TRANSPORT (k/v/u/c/s/m/w) — không có ảnh, video, landmark. Đó là
+   * ranh giới dữ liệu thô: engine và luận giải không có đường nào chạm tới media.
+   */
+  async function renderInterpretation(payload: unknown) {
+    const box = $("ntd-interp");
+    if (!box) return;
+    const p = payload as {
+      features?: { k: string; v: number | null; u: string; c: number; s: string; m: string; w: string | null }[];
+    } | null;
+    if (!p?.features) {
+      box.classList.add("hidden");
+      return;
+    }
+    box.classList.remove("hidden");
+
+    const { runPipelineOnFeatures, resolveInterpretations } = await import("../../features/physiognomy/pipeline");
+    const out = runPipelineOnFeatures(
+      p.features.map((f) => ({
+        key: f.k, value: f.v, unit: f.u, confidence: f.c,
+        status: f.s, method: f.m, sourceView: f.w,
+      })),
+    );
+    // Thư viện luận giải chỉ kích hoạt SAU khi có luật match hợp lệ. Kho nguồn rỗng →
+    // resolved rỗng. Hiển thị số mục để thấy rõ hệ đang fail-closed, không phải im lặng.
+    const resolved = resolveInterpretations(out);
+
+    const set = (id: string, v: string) => {
+      const el = $(id);
+      if (el) el.textContent = v;
+    };
+    const s = out.summary;
+    const insufficient = out.interpretation.outcome !== "ok";
+    set("ntd-i-status", out.interpretation.outcome);
+    const st = $("ntd-i-status");
+    if (st) st.className = "font-mono font-semibold " + (insufficient ? "text-amber-700" : "text-(--color-gold-600)");
+    set("ntd-i-eligible", `${s.eligible}/${s.totalFeatures}`);
+    set("ntd-i-rules", `${s.rulesMatched} / ${s.rulesSkipped}`);
+    set("ntd-i-luangiai", String(resolved.length));
+    set(
+      "ntd-i-msg",
+      insufficient
+        ? "Chưa đủ bằng chứng để luận giải — hệ không đưa ra kết luận tướng học nào."
+        : "",
+    );
+    const ul = $("ntd-i-reasons");
+    if (ul) {
+      ul.innerHTML = "";
+      for (const ly of out.interpretation.reasons) {
+        const li = document.createElement("li");
+        li.textContent = ly;
+        ul.appendChild(li);
+      }
+    }
+  }
+
+  /**
+   * Nhãn phân biệt PHIÊN NGHIÊN CỨU với PHIÊN CHẨN ĐOÁN.
+   *
+   * Đọc từ dữ liệu SERVER trả về, không từ lúc tạo phiên: trang tự tạo phiên khi mở, và
+   * mỗi lần F5 lại đi vào nhánh `?session=` — đặt nhãn lúc tạo thì cứ tải lại là nhãn
+   * biến mất, đúng lại cái mơ hồ mà nhãn này sinh ra để dẹp.
+   *
+   * Cũng cho biết điện thoại đã khai máy chưa: không có khai báo máy thì lượt quét
+   * không tính vào sổ nghiên cứu, và biết điều đó TRƯỚC khi quét thì đỡ hơn nhiều so
+   * với biết lúc xuất dữ liệu.
+   *
+   * Phần tử chỉ tồn tại ở DEV; ở production `$()` trả null nên hàm này không làm gì.
+   */
+  function veNhanPhien(view: SessionPublicView) {
+    // Chặn ngay đầu hàm, KHÔNG chỉ dựa vào `$()` trả null. Phần tử là DEV-only nên ở
+    // production hàm này vô hại về hành vi — nhưng thân hàm vẫn nằm trong bundle, kéo
+    // theo cả chuỗi "MẪU NGHIÊN CỨU"/"PHIÊN CHẨN ĐOÁN" ra bản công khai. `return` sớm
+    // bằng hằng số build thì trình đóng gói cắt sạch phần còn lại.
+    if (!import.meta.env.DEV) return;
+    const badge = $("ntd-sample-badge");
+    if (!badge) return;
+    const s = view.sample;
+    const may = view.device
+      ? `máy: ${view.device.os} · ${view.device.browser}`
+      : "máy: chưa khai";
+    badge.textContent = s
+      ? `MẪU NGHIÊN CỨU ${s.sampleId} — ${may}`
+      : `PHIÊN CHẨN ĐOÁN — không tính vào nghiên cứu (${may})`;
+    badge.className =
+      "mt-2 text-center font-mono text-xs " +
+      (s && view.device ? "text-(--color-gold-600)" : "text-amber-700");
+  }
+
+  /**
+   * Mở trang có được TỰ TẠO phiên không nhãn hay không.
+   *
+   * Ở production: CÓ — đó là luồng khách bình thường, mở trang là có QR ngay.
+   *
+   * Khi bảng Thu dữ liệu nghiên cứu hiện (chỉ DEV): KHÔNG. Phiên tự tạo lúc mở trang
+   * không có nhãn, mà QR của nó trông y hệt QR của A-01. Chuyện này đã làm mất BA lượt
+   * quét thật trên iPhone (5YH7RKGUD7, 6XW4XV36NT, KSE96KZ6SX — mỗi lượt đủ 6 bước, 29
+   * feature, chất lượng tốt) chỉ vì `sample = null`: không biết là của ai, lượt nào.
+   *
+   * Nhãn cảnh báo dưới QR là chưa đủ — người bấm nút và người cầm điện thoại là hai
+   * người khác nhau, và người quét không đọc nhãn. Chặn ở LUỒNG, không chỉ cảnh báo.
+   */
+  let tuTaoPhienKhiMoTrang = true;
+
+  /**
+   * Nhãn mẫu của phiên ĐANG quét, lấy từ dữ liệu SERVER qua mỗi lượt poll.
+   *
+   * Tồn tại để nút "Tạo phiên mới" trên màn hình LỖI/HẾT HẠN dựng lại phiên với ĐÚNG
+   * nhãn cũ. Trước đây nút đó gọi `start()` không đối số nên phiên mới MẤT NHÃN, và hệ
+   * quả đã xảy ra thật: A-01 hết hạn lúc 01:48:13Z, 7 giây sau một phiên KHÔNG NHÃN
+   * được tạo, người tham gia quét phiên đó và hoàn tất trọn 6 bước trong 59 giây — dữ
+   * liệu tốt nhưng không tính được vào bộ nghiên cứu vì không biết là của ai, lượt nào.
+   *
+   * Lấy từ server chứ không từ lúc tạo: sống qua F5, và tự về null khi phiên hiện tại
+   * không có nhãn. Ở production `view.sample` luôn null nên biến này luôn null.
+   */
+  let nhanDangQuet: { participantId: string; runNumber: number; deviceLabel: string } | null = null;
+
+  function apply(view: SessionPublicView) {
+    // KHÔNG truyền thẳng `view.sample`: nó có thêm `sampleId`, mà `parseSampleLabel` ở
+    // server dùng whitelist nên trường lạ là bị từ chối. Server tự dựng `sampleId`.
+    nhanDangQuet = view.sample
+      ? {
+          participantId: view.sample.participantId,
+          runNumber: view.sample.runNumber,
+          deviceLabel: view.sample.deviceLabel,
+        }
+      : null;
+    veNhanPhien(view);
+    if (view.status === "failed") {
+      fail(view.failureReason ?? "Điện thoại báo lỗi trong lúc kiểm tra.");
+      return;
+    }
+    if (view.status === "waiting") {
+      show("wait");
+      return;
+    }
+    if (view.status === "complete") {
+      stopPolling();
+      renderDone(view);
+      return;
+    }
+    // connected / face_* / voice
+    show("progress");
+    const done = new Set(view.stepsDone);
+    for (const s of FACE_STEPS) markStep(s, done.has(s));
+    markVoice(view);
+  }
+
+  async function poll() {
+    if (!sessionId) return;
+    try {
+      const res = await fetch(
+        `/api/nhan-tuong/session?id=${encodeURIComponent(sessionId)}`,
+        { cache: "no-store" },
+      );
+      if (res.status === 404) {
+        fail("Phiên đã hết hạn. Hãy tạo phiên mới.");
+        return;
+      }
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      consecutiveErrors = 0;
+      apply((await res.json()) as SessionPublicView);
+    } catch (err) {
+      consecutiveErrors++;
+      console.warn("[nhan-tuong/desktop] poll lỗi:", err);
+      if (consecutiveErrors >= MAX_ERRORS) {
+        fail("Mất kết nối tới máy chủ. Hãy tải lại trang.");
+      }
+    }
+  }
+
+  /**
+   * Móc để `start()` ghi lại mẫu vừa tạo. null ở bản production.
+   *
+   * Cần một biến trung gian vì `start()` nằm NGOÀI khối DEV: nếu gọi thẳng hàm bên
+   * trong khối thì Vite không cắt được khối đó đi.
+   */
+  let rememberSample:
+    | ((s: { participantId: string; runNumber: number }, sid: string) => void)
+    | null = null;
+  /** Móc để `renderDone()` báo cho bảng thu dữ liệu biết phiên đã xong. null ở production. */
+  let markSampleComplete: ((sid: string) => void) | null = null;
+
+  /**
+   * Móc để `renderDone()` vẽ bảng chẩn đoán. null ở bản production.
+   *
+   * Nhận payload transport (không phải profile nội bộ) vì đó là thứ máy tính thực sự
+   * nhận về — bảng chẩn đoán phải soi đúng dữ liệu đã đi qua dây.
+   */
+  let renderDiagnostics: ((payload: unknown) => void) | null = null;
+
+  /** Móc để `renderDone()` mở bảng hiệu chuẩn trái/phải. null ở bản production. */
+  let hoiHieuChuan: ((view: SessionPublicView) => void) | null = null;
+
+  /**
+   * Tra nhãn mẫu theo sessionId, đọc từ bản đồ localStorage của bảng thu.
+   *
+   * Cần thiết vì `nhanDangQuet` học nhãn từ SERVER qua poll — nhưng nếu phiên đã hết hạn
+   * TRƯỚC khi trang được mở (mở lại link `?session=…` cũ, hoặc F5 sau khi hết hạn) thì
+   * poll đầu tiên trả 404 ngay và `apply()` chưa bao giờ chạy, nên không có gì để giữ.
+   *
+   * Đã mất capture thật lần thứ tư đúng vì lỗ này: A-01 hết hạn 10:54:24Z, link được mở
+   * lại lúc sau, 46 giây sau một phiên KHÔNG NHÃN được tạo và người tham gia quét trọn
+   * 6 bước trong 70 giây trên iPhone. Bản đồ localStorage biết phiên đó là A-01; code
+   * chỉ việc tra.
+   */
+  let traNhanTheoPhien: ((sid: string) => { participantId: string; runNumber: number; deviceLabel: string } | null) | null = null;
+
+  // ──────────────────────────────── hiệu chuẩn trái/phải (chỉ DEV)
+  //
+  // Đóng khoảng trống duy nhất mà cảm biến không tự đóng được: giao diện bảo "quay
+  // trái", người test quay một phía nào đó, cảm biến đọc ra một dấu yaw — nhưng KHÔNG
+  // AI từng kiểm rằng ba thứ đó khớp nhau. Ở đây người quan sát đóng mắt xích giữa.
+  //
+  // Cố ý GIẤU số yaw cho tới khi người quan sát đã bấm: thấy số trước rồi mới chọn là
+  // tự gợi ý cho chính mình, và phép thử sẽ chỉ xác nhận lại điều nó muốn tin.
+  if (import.meta.env.DEV) {
+    const KHO_CAL = "nt-yaw-cal-v1";
+    type Huong = "left" | "right";
+    type Luot = {
+      sessionId: string;
+      requestedDirection: Huong;
+      observedDirection: Huong;
+      yaw: number;
+      at: number;
+    };
+
+    const docCal = (): Luot[] => {
+      try {
+        const raw = localStorage.getItem(KHO_CAL);
+        return raw ? (JSON.parse(raw) as Luot[]) : [];
+      } catch {
+        return [];
+      }
+    };
+    const ghiCal = (v: Luot[]) => {
+      try {
+        localStorage.setItem(KHO_CAL, JSON.stringify(v));
+      } catch {
+        /* chế độ riêng tư thì thôi, không làm hỏng trang */
+      }
+    };
+
+    /** Câu hỏi còn treo: phiên này đã quét xong nhưng chưa ai xác nhận hướng. */
+    let treo: { sessionId: string; huong: Huong; yaw: number }[] = [];
+
+    async function veCal() {
+      const { summarizeCalibration, TURN_INSTRUCTION } = await import(
+        "../../features/physiognomy/acquisition/yaw-calibration"
+      );
+      const hoi = $("ntd-cal-ask");
+      const trong = $("ntd-cal-none");
+      const tom = $("ntd-cal-sum");
+      const dn = $("ntd-cal-rec");
+      if (!hoi || !trong || !tom || !dn) return;
+
+      hoi.innerHTML = "";
+      hoi.classList.toggle("hidden", treo.length === 0);
+      trong.classList.toggle("hidden", treo.length > 0);
+
+      for (const t of treo) {
+        const box = document.createElement("div");
+        box.className = "rounded border border-(--color-ivory-300) p-2";
+        const nhac = document.createElement("p");
+        nhac.className = "text-xs text-(--color-ink-700)";
+        nhac.textContent = `Phiên ${t.sessionId} — màn hình đã bảo: “${TURN_INSTRUCTION[t.huong]}”`;
+        const cau = document.createElement("p");
+        cau.className = "mt-1 text-xs font-semibold text-(--color-ink-800)";
+        cau.textContent = "Bạn NHÌN THẤY người đó quay về phía nào?";
+        const hang = document.createElement("div");
+        hang.className = "mt-2 flex flex-wrap gap-2";
+
+        const nut = (nhan: string, quan: Huong | null) => {
+          const b = document.createElement("button");
+          b.type = "button";
+          b.className =
+            "rounded border border-(--color-ivory-300) px-2.5 py-1 font-mono text-xs text-(--color-ink-700)";
+          b.textContent = nhan;
+          b.addEventListener("click", () => {
+            if (quan !== null) {
+              const v = docCal();
+              v.push({
+                sessionId: t.sessionId,
+                requestedDirection: t.huong,
+                observedDirection: quan,
+                yaw: t.yaw,
+                at: Date.now(),
+              });
+              ghiCal(v);
+            }
+            treo = treo.filter((x) => !(x.sessionId === t.sessionId && x.huong === t.huong));
+            void veCal();
+          });
+          return b;
+        };
+        hang.append(nut("Họ quay TRÁI", "left"), nut("Họ quay PHẢI", "right"), nut("Bỏ qua", null));
+        box.append(nhac, cau, hang);
+        hoi.append(box);
+      }
+
+      const luot = docCal();
+      const s = summarizeCalibration(luot);
+      tom.textContent =
+        `${s.verdict} · khớp ${s.counts.pass} · ngược ${s.counts.sign_mismatch} · ` +
+        `sai thao tác ${s.counts.invalid_trial} · quay thiếu ${s.counts.no_turn} · ` +
+        `dùng được: trái ${s.usable.left}, phải ${s.usable.right} · ` +
+        `hằng số hiện tại ${s.currentConstant}`;
+      dn.textContent = s.recommendation;
+    }
+
+    hoiHieuChuan = (view) => {
+      const face = view.result?.face;
+      if (!face || !view.sessionId) return;
+      const daHoi = new Set(
+        docCal()
+          .filter((x) => x.sessionId === view.sessionId)
+          .map((x) => x.requestedDirection),
+      );
+      for (const h of ["left", "right"] as const) {
+        const yaw = face[h]?.pose?.yaw;
+        if (typeof yaw !== "number" || daHoi.has(h)) continue;
+        if (treo.some((x) => x.sessionId === view.sessionId && x.huong === h)) continue;
+        treo.push({ sessionId: view.sessionId, huong: h, yaw });
+      }
+      void veCal();
+    };
+
+    $("ntd-cal-reset")?.addEventListener("click", () => {
+      ghiCal([]);
+      treo = [];
+      void veCal();
+    });
+
+    void veCal();
+  }
+
+  // ──────────────────────────────── chẩn đoán kỹ thuật (chỉ DEV)
+  //
+  // Chạy lại đúng pipeline thật trên payload vừa nhận, rồi bày ra từng feature:
+  // đo được gì, kiểm chứng tới đâu, có đủ tư cách luận giải không, và VÌ SAO không.
+  //
+  // Đây là bảng ĐO. Không có một dòng nào nói tướng tốt/xấu — và không thể có, vì
+  // pipeline hiện trả INSUFFICIENT_EVIDENCE cho mọi thứ.
+  if (import.meta.env.DEV) {
+    const esc = (v: unknown) =>
+      String(v).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
+
+    const MAU_DO: Record<string, string> = {
+      measured: "text-(--color-gold-600)",
+      low_confidence: "text-amber-600",
+      unsupported: "text-(--color-ink-400)",
+    };
+    const MAU_KIEM: Record<string, string> = {
+      validated: "text-(--color-gold-600)",
+      provisional: "text-amber-600",
+      unvalidated: "text-(--color-ink-400)",
+    };
+
+    renderDiagnostics = async (payload) => {
+      const box = $("ntd-diag");
+      const rows = $("ntd-d-rows");
+      if (!box || !rows) return;
+      const p = payload as { features?: { k: string; v: number | null }[] } | null;
+      if (!p?.features) {
+        box.classList.add("hidden");
+        return;
+      }
+
+      // Nạp động ĐÚNG pipeline thật, không tự đấu lại contract + cổng + engine.
+      // Tự đấu lại nghĩa là có hai nơi quyết định "đủ tư cách hay không", và bản sao
+      // sẽ trôi khác bản chính lúc nào không biết.
+      const { runPipelineOnFeatures } = await import("../../features/physiognomy/pipeline");
+
+      const feats = p.features as {
+        k: string; v: number | null; u: string; c: number; s: string; m: string; w: string | null;
+      }[];
+      const out = runPipelineOnFeatures(
+        feats.map((f) => ({
+          key: f.k, value: f.v, unit: f.u, confidence: f.c,
+          status: f.s, method: f.m, sourceView: f.w,
+        })),
+      );
+      const rel = out.reliability;
+      const gate = out.eligibility;
+      const ruleResults = out.ruleResults;
+
+      rows.innerHTML = feats
+        .map((f) => {
+          const r = rel[f.k];
+          const g = gate[f.k];
+          const viSao = g.eligible ? "" : g.reasons.slice(0, 2).join(", ");
+          return (
+            `<tr class="border-t border-(--color-ivory-300)">` +
+            `<td class="py-0.5 pr-2">${esc(f.k)}</td>` +
+            `<td class="py-0.5 pr-2">${f.v === null ? "—" : esc(f.v)}</td>` +
+            `<td class="py-0.5 pr-2 ${MAU_DO[r.measurementStatus] ?? ""}">${esc(r.measurementStatus)}</td>` +
+            `<td class="py-0.5 pr-2 ${MAU_KIEM[r.validationStatus] ?? ""}">${esc(r.validationStatus)}</td>` +
+            `<td class="py-0.5 pr-2">${esc(r.confidence)}</td>` +
+            `<td class="py-0.5 pr-2 ${g.eligible ? "text-(--color-gold-600)" : "text-red-700"}">` +
+            `${g.eligible ? "CÓ" : "KHÔNG"}</td>` +
+            `<td class="py-0.5 text-(--color-ink-500)">${esc(viSao)}</td>` +
+            `</tr>`
+          );
+        })
+        .join("");
+
+      // Số liệu lấy thẳng từ pipeline, không tự đếm lại.
+      const sum = $("ntd-d-sum");
+      if (sum) {
+        sum.textContent =
+          `${out.summary.totalFeatures} feature · ${out.summary.measured} đo được · ` +
+          `${out.summary.validated} đã kiểm chứng · ${out.summary.eligible} đủ tư cách luận giải`;
+      }
+
+      const interp = $("ntd-d-interp");
+      if (interp) {
+        interp.textContent =
+          `Luận giải: ${out.interpretation.outcome} — ${out.summary.rulesConsidered} luật xét, ` +
+          `${out.summary.rulesSkipped} bị bỏ qua, ${out.summary.rulesMatched} khớp. ` +
+          out.interpretation.reasons.join(" ");
+      }
+      box.classList.remove("hidden");
+    };
+  }
+  // ──────────────────────────────── hết khối chẩn đoán
+
+  // ──────────────────────────────── thu dữ liệu nghiên cứu (chỉ DEV)
+  //
+  // TOÀN BỘ khối nằm trong `import.meta.env.DEV` để Vite cắt hẳn khi build. Bọc riêng
+  // markup là KHÔNG đủ — script vẫn ship ra production. Đã kiểm lại bằng grep dist/.
+  if (import.meta.env.DEV) {
+    /** Năm người, ba lần mỗi người — đúng cỡ mẫu tối thiểu ở tài liệu validation §7. */
+    const NGUOI = ["A", "B", "C", "D", "E"] as const;
+    const LAN = [1, 2, 3] as const;
+    const KHO = "nt-collect-v1";
+
+    /**
+     * Hướng dẫn cho người vận hành. Cự ly là biến gây ra 7.56% lệch của
+     * `interocular_distance` (Phase 1D-3), nên mỗi lần PHẢI đổi khoảng cách thật.
+     */
+    const HUONG_DAN: Record<number, string> = {
+      1: "Lần 1 — cầm điện thoại ở khoảng cách bình thường, thoải mái nhất.",
+      2: "Lần 2 — cầm GẦN HƠN hoặc XA HƠN hẳn so với lần 1. Đổi rõ, đừng đổi nhẹ.",
+      3: "Lần 3 — đổi khoảng cách một lần nữa, khác cả lần 1 lẫn lần 2.",
+    };
+
+    type TrangThai = "pending" | "active" | "complete";
+    type MauDaTao = {
+      sampleId: string;
+      participantId: string;
+      runNumber: number;
+      sessionId: string;
+      deviceLabel: string;
+      status: TrangThai;
+    };
+
+    function docKho(): MauDaTao[] {
+      try {
+        const raw = localStorage.getItem(KHO);
+        const v = raw ? (JSON.parse(raw) as MauDaTao[]) : [];
+        return Array.isArray(v) ? v : [];
+      } catch {
+        return [];
+      }
+    }
+    function ghiKho(v: MauDaTao[]) {
+      try {
+        localStorage.setItem(KHO, JSON.stringify(v));
+      } catch {
+        /* chế độ riêng tư — chỉ mất nhãn, không hỏng luồng quét */
+      }
+    }
+    const timMau = (pid: string, run: number) =>
+      docKho().find((m) => m.participantId === pid && m.runNumber === run) ?? null;
+
+    let chonNguoi: string = NGUOI[0];
+    let chonLan = 1;
+
+    const devLabel = () => ($("ntd-c-dev") as HTMLInputElement | null)?.value.trim() || "unknown";
+
+    function loiThu(msg: string | null) {
+      const el = $("ntd-c-err");
+      if (!el) return;
+      el.textContent = msg ?? "";
+      el.classList.toggle("hidden", msg === null);
+    }
+
+    const NUT = "rounded px-2.5 py-1 font-mono text-xs border transition-colors duration-150";
+    const NUT_TAT = NUT + " border-(--color-ivory-300) text-(--color-ink-600)";
+    const NUT_BAT = NUT + " border-(--color-gold-400) bg-(--color-gold-400) text-(--color-on-accent)";
+
+    /** Lần chưa xong đầu tiên của người này; xong hết thì quay về 1. */
+    function lanTiepTheo(pid: string): number {
+      for (const l of LAN) {
+        if (timMau(pid, l)?.status !== "complete") return l;
+      }
+      return 1;
+    }
+
+    function veChonLua() {
+      const p = $("ntd-c-people");
+      if (p) {
+        p.innerHTML = NGUOI.map(
+          (n) =>
+            `<button type="button" data-nguoi="${n}" class="${n === chonNguoi ? NUT_BAT : NUT_TAT}">${n}</button>`,
+        ).join("");
+        for (const b of p.querySelectorAll<HTMLButtonElement>("[data-nguoi]")) {
+          b.addEventListener("click", () => {
+            chonNguoi = b.dataset.nguoi as string;
+            chonLan = lanTiepTheo(chonNguoi);
+            veTatCa();
+          });
+        }
+      }
+      const r = $("ntd-c-runs");
+      if (r) {
+        r.innerHTML = LAN.map(
+          (l) =>
+            `<button type="button" data-lan="${l}" class="${l === chonLan ? NUT_BAT : NUT_TAT}">${l}</button>`,
+        ).join("");
+        for (const b of r.querySelectorAll<HTMLButtonElement>("[data-lan]")) {
+          b.addEventListener("click", () => {
+            chonLan = Number(b.dataset.lan);
+            veTatCa();
+          });
+        }
+      }
+    }
+
+    function veBang() {
+      const body = $("ntd-c-grid");
+      if (!body) return;
+      const ICON: Record<TrangThai, string> = {
+        pending: '<span class="text-(--color-ink-400)">○ chưa</span>',
+        active: '<span class="text-amber-600">● đang quét</span>',
+        complete: '<span class="text-(--color-gold-600)">✓ xong</span>',
+      };
+      body.innerHTML = NGUOI.map((n) => {
+        const o = n === chonNguoi ? ' class="bg-(--color-ivory-50)"' : "";
+        const cells = LAN.map((l) => {
+          const m = timMau(n, l);
+          return `<td class="py-0.5 pr-2">${ICON[m?.status ?? "pending"]}</td>`;
+        }).join("");
+        return `<tr${o}><td class="py-0.5 pr-2 font-semibold">${n}</td>${cells}</tr>`;
+      }).join("");
+
+      const xong = docKho().filter((m) => m.status === "complete").length;
+      const tong = $("ntd-c-total");
+      if (tong) tong.textContent = `${xong}/15 mẫu`;
+    }
+
+    function veNut() {
+      const nut = $<HTMLButtonElement>("ntd-c-new");
+      if (!nut) return;
+      const m = timMau(chonNguoi, chonLan);
+      const id = `${chonNguoi}-0${chonLan}`;
+      nut.textContent =
+        m?.status === "complete"
+          ? `Quét lại ${id}`
+          : m?.status === "active"
+            ? `Tạo lại ${id}`
+            : `Tạo phiên ${id}`;
+      const instr = $("ntd-c-instr");
+      if (instr) {
+        const duCa3 = LAN.every((l) => timMau(chonNguoi, l)?.status === "complete");
+        instr.textContent = duCa3
+          ? `Người ${chonNguoi} đã đủ 3 lần. Bấm "Tải dữ liệu người này" rồi chuyển sang người tiếp theo.`
+          : HUONG_DAN[chonLan];
+      }
+    }
+
+    const veTatCa = () => {
+      veChonLua();
+      veBang();
+      veNut();
+    };
+
+    rememberSample = (sample, sid) => {
+      const sampleId = `${sample.participantId}-${String(sample.runNumber).padStart(2, "0")}`;
+      // MỘT sampleId chỉ ứng với MỘT bản ghi: tạo lại thì thay, không sinh bản thứ hai.
+      const kho = docKho().filter((m) => m.sampleId !== sampleId);
+      kho.push({
+        sampleId,
+        participantId: sample.participantId,
+        runNumber: sample.runNumber,
+        sessionId: sid,
+        deviceLabel: devLabel(),
+        status: "active",
+      });
+      ghiKho(kho);
+      veTatCa();
+    };
+
+    /**
+     * Máy tính thấy phiên `complete` → đánh dấu mẫu tương ứng là xong rồi tự nhảy sang
+     * lần chưa quét. Gọi từ `renderDone()`, KHÔNG cần tải lại trang.
+     */
+    markSampleComplete = (sid) => {
+      const kho = docKho();
+      const m = kho.find((x) => x.sessionId === sid);
+      if (!m || m.status === "complete") return;
+      m.status = "complete";
+      ghiKho(kho);
+      chonNguoi = m.participantId;
+      chonLan = lanTiepTheo(m.participantId);
+      veTatCa();
+    };
+
+    /**
+     * Dò lại các mẫu còn kẹt ở "đang quét".
+     *
+     * Máy tính chỉ poll MỘT phiên tại một thời điểm: tạo phiên mới là bỏ phiên cũ.
+     * Nếu điện thoại hoàn tất SAU khi người vận hành đã bấm tạo lượt tiếp theo — hoặc
+     * trang bị tải lại giữa chừng — thì mẫu cũ kẹt ở "đang quét" dù dữ liệu đã nằm
+     * trong KV. Hỏi thẳng máy chủ một lần cho mỗi mẫu đang treo là xong.
+     */
+    async function dongBoMauDangQuet() {
+      const treo = docKho().filter((m) => m.status === "active");
+      if (treo.length === 0) return;
+      let doi = false;
+      for (const m of treo) {
+        try {
+          const res = await fetch(`/api/nhan-tuong/session?id=${encodeURIComponent(m.sessionId)}`);
+          if (!res.ok) continue;
+          const view = (await res.json()) as { status?: string };
+          if (view.status !== "complete") continue;
+          const kho = docKho();
+          const x = kho.find((k) => k.sessionId === m.sessionId);
+          if (!x || x.status === "complete") continue;
+          x.status = "complete";
+          ghiKho(kho);
+          doi = true;
+        } catch {
+          /* mất mạng — để lần sau */
+        }
+      }
+      if (doi) {
+        chonLan = lanTiepTheo(chonNguoi);
+        veTatCa();
+      }
+    }
+
+    $("ntd-c-new")?.addEventListener("click", async () => {
+      loiThu(null);
+      // Chốt sổ các lượt còn treo TRƯỚC khi bỏ phiên hiện tại để tạo phiên mới.
+      await dongBoMauDangQuet();
+      void start({ participantId: chonNguoi, runNumber: chonLan, deviceLabel: devLabel() });
+    });
+
+    $("ntd-c-clear")?.addEventListener("click", () => {
+      ghiKho(docKho().filter((m) => m.participantId !== chonNguoi));
+      chonLan = 1;
+      veTatCa();
+    });
+
+    $("ntd-c-export")?.addEventListener("click", async () => {
+      loiThu(null);
+      const cua = docKho()
+        .filter((m) => m.participantId === chonNguoi && m.status === "complete")
+        .sort((a, b) => a.runNumber - b.runNumber);
+      if (cua.length === 0) return loiThu(`Người ${chonNguoi} chưa có lượt nào xong.`);
+      let res: Response;
+      try {
+        res = await fetch(`/api/nhan-tuong/test-export?ids=${cua.map((m) => m.sessionId).join(",")}`);
+      } catch (err) {
+        return loiThu(`Không gọi được endpoint xuất: ${(err as Error).message}`);
+      }
+      if (!res.ok) return loiThu(`Endpoint xuất trả HTTP ${res.status}.`);
+      const data = (await res.json()) as { runs: Record<string, unknown>[] };
+      // MỘT TỆP MỖI LƯỢT, đặt tên đúng cách `scripts/nhan-tuong-do-lai.mjs` gom nhóm
+      // (`<người>__<điều-kiện>.json`) — để không phải sửa bộ đo.
+      let n = 0;
+      for (const run of data.runs) {
+        if (run.error) continue;
+        const ten = (run.suggestedFileName as string | null) ?? `${chonNguoi}__${run.sessionId}.json`;
+        const blob = new Blob([JSON.stringify(run, null, 2)], { type: "application/json" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = ten;
+        a.click();
+        URL.revokeObjectURL(a.href);
+        n++;
+      }
+      loiThu(n > 0 ? null : "Không có gì để tải.");
+    });
+
+    // Bảng thu đang hoạt động → KHÔNG tự tạo phiên không nhãn khi mở trang.
+    tuTaoPhienKhiMoTrang = false;
+
+    traNhanTheoPhien = (sid) => {
+      const m = docKho().find((x) => x.sessionId === sid);
+      return m
+        ? { participantId: m.participantId, runNumber: m.runNumber, deviceLabel: m.deviceLabel }
+        : null;
+    };
+
+    chonLan = lanTiepTheo(chonNguoi);
+    veTatCa();
+    // Mở trang lên là dò ngay: reload giữa chừng không làm mất lượt nào.
+    void dongBoMauDangQuet();
+  }
+  // ──────────────────────────────── hết khối DEV
+
+  async function start(sample?: { participantId: string; runNumber: number; deviceLabel: string }) {
+    stopPolling();
+    consecutiveErrors = 0;
+    show("wait");
+    const qrBox = $("ntd-qr");
+    if (qrBox) qrBox.innerHTML = '<span class="text-xs text-(--color-ink-500)">Đang tạo mã…</span>';
+
+    try {
+      const res = await fetch("/api/nhan-tuong/session", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(sample ? { action: "create", sample } : { action: "create" }),
+      });
+      if (!res.ok) {
+        const msg = await res.text().catch(() => "");
+        throw new Error(`HTTP ${res.status}${msg ? ` — ${msg.slice(0, 200)}` : ""}`);
+      }
+      const data = (await res.json()) as { sessionId: string };
+      sessionId = data.sessionId;
+      if (sample) rememberSample?.(sample, sessionId);
+    } catch (err) {
+      return fail(`Không tạo được phiên: ${(err as Error)?.message ?? err}`);
+    }
+
+    const url = mobileUrl(sessionId);
+    const urlEl = $("ntd-url");
+    if (urlEl) urlEl.textContent = url;
+    const codeEl = $("ntd-code");
+    if (codeEl) codeEl.textContent = sessionId;
+    // Cho máy tính biết session trên URL của chính nó, để F5 không mất phiên.
+    const self = new URL(location.href);
+    self.searchParams.set("session", sessionId);
+    history.replaceState(null, "", self.toString());
+
+    await renderQr(url);
+    showLanHintIfNeeded();
+    pollTimer = window.setInterval(poll, DESKTOP_POLL_MS);
+    void poll();
+  }
+
+  // Màn hình XONG: lượt vừa rồi đã thu được, nút này để sang lượt/người TIẾP THEO →
+  // cố ý KHÔNG giữ nhãn cũ.
+  $("ntd-restart")?.addEventListener("click", () => void start());
+  // Màn hình LỖI/HẾT HẠN: lượt đó CHƯA thu được, nên phải dựng lại ĐÚNG nhãn đó.
+  // Hai nguồn, theo thứ tự: nhãn học được từ server qua poll, rồi bản đồ localStorage
+  // (cần cho trường hợp phiên đã hết hạn trước khi trang mở, poll 404 ngay).
+  $("ntd-error-restart")?.addEventListener("click", () => {
+    const nhan = nhanDangQuet ?? (sessionId ? traNhanTheoPhien?.(sessionId) ?? null : null);
+    void start(nhan ?? undefined);
+  });
+  // Rời trang thì ngừng poll — không để timer chạy trong back/forward cache.
+  window.addEventListener("pagehide", stopPolling);
+
+  // Nếu URL đã có session (F5) thì dùng lại, không tạo phiên mới.
+  const existing = new URLSearchParams(location.search).get("session");
+  if (existing) {
+    sessionId = existing;
+    const url = mobileUrl(existing);
+    const urlEl = $("ntd-url");
+    if (urlEl) urlEl.textContent = url;
+    const codeEl = $("ntd-code");
+    if (codeEl) codeEl.textContent = existing;
+    void renderQr(url);
+    showLanHintIfNeeded();
+    pollTimer = window.setInterval(poll, DESKTOP_POLL_MS);
+    void poll();
+  } else if (tuTaoPhienKhiMoTrang) {
+    void start();
+  } else {
+    // Chỉ xảy ra ở DEV khi bảng thu hiện. Nói rõ phải làm gì thay vì để ô QR quay mãi.
+    show("wait");
+    const qrBox = $("ntd-qr");
+    if (qrBox) {
+      qrBox.textContent = "Chọn người + lượt ở bảng dưới, rồi bấm Tạo phiên.";
+      qrBox.className =
+        "flex h-[264px] w-[264px] items-center justify-center rounded-(--radius-card) " +
+        "border-2 border-dashed border-(--color-ink-400) bg-white p-4 text-center text-sm " +
+        "text-(--color-ink-700)";
+    }
+    const waitMsg = $("ntd-wait-msg");
+    if (waitMsg) waitMsg.textContent = "Chưa có phiên nào. Mọi lượt quét phải có nhãn người/lượt.";
+  }
+  }
+</script>

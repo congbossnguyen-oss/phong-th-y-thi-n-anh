@@ -1,0 +1,521 @@
+/*
+ * NHÂN TƯỚNG — lớp giao diện cao cấp (Phase 1: design system).
+ *
+ * TẤT CẢ selector nằm dưới `.nt-premium` nên KHÔNG rò ra phần còn lại của site (vốn là
+ * cùng bảng màu tối "Celestial Alchemy" nhưng không có lớp khí quyển/ trang trí này).
+ *
+ * KHÔNG đổi token toàn cục, KHÔNG chạm pipeline/script. Chỉ thêm:
+ *   · nền khí quyển (núi/mây/hào quang vàng)
+ *   · tiêu đề serif, ấn phẩm vàng mảnh
+ *   · CTA chu sa (cinnabar), thẻ tối viền vàng + thẻ "giấy" cho kết quả
+ *   · khung QR bọc góc + tia quét, khung dẫn khuôn mặt bọc góc
+ *   · chỉ báo 6 bước, chuyển cảnh phân tích
+ *
+ * Mọi chuyển động đều tôn trọng prefers-reduced-motion (cuối tệp).
+ */
+
+.nt-premium {
+  position: relative;
+  isolation: isolate;
+  /* Chặn lớp khí quyển (::before/::after) tràn ngang gây cuộn ngang; vẫn cho phép
+     bleed dọc bị cắt gọn. */
+  overflow-x: clip;
+}
+
+/* ───────────────────────── nền khí quyển: hào quang + mây + núi ───────────────────────── */
+
+/* Hào quang vàng + sương mù — quầng sáng ấm phía trên, tan dần xuống. */
+.nt-premium::before {
+  content: "";
+  position: absolute;
+  inset: -10% 0 auto 0;
+  height: 620px;
+  z-index: -2;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 80% at 50% -8%, rgba(201, 162, 86, 0.16), rgba(201, 162, 86, 0) 60%),
+    radial-gradient(90% 60% at 82% 6%, rgba(209, 92, 74, 0.08), rgba(209, 92, 74, 0) 55%),
+    radial-gradient(70% 50% at 16% 12%, rgba(220, 189, 122, 0.07), rgba(220, 189, 122, 0) 55%);
+}
+
+/* Dãy núi mực + sương — SVG nhúng, độ mờ thấp để không tranh chỗ với khuôn mặt/CTA. */
+.nt-premium::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  top: 0;
+  z-index: -3;
+  pointer-events: none;
+  opacity: 0.5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='1440' height='620' viewBox='0 0 1440 620' preserveAspectRatio='xMidYMax slice'%3E%3Cdefs%3E%3ClinearGradient id='m' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%233d1f27'/%3E%3Cstop offset='1' stop-color='%23150a0c'/%3E%3C/linearGradient%3E%3ClinearGradient id='n' x1='0' y1='0' x2='0' y2='1'%3E%3Cstop offset='0' stop-color='%2326141a'/%3E%3Cstop offset='1' stop-color='%23150a0c'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cg fill='none' opacity='0.55'%3E%3Cpath stroke='%23c9a256' stroke-width='0.6' opacity='0.35' d='M0 300 L1440 300'/%3E%3C/g%3E%3Cpath fill='url(%23n)' opacity='0.7' d='M0 470 L180 380 L320 440 L470 350 L640 430 L820 360 L1000 440 L1180 370 L1320 430 L1440 390 L1440 620 L0 620 Z'/%3E%3Cpath fill='url(%23m)' d='M0 540 L140 470 L300 520 L460 440 L640 520 L800 450 L980 520 L1160 460 L1320 520 L1440 470 L1440 620 L0 620 Z'/%3E%3Cg stroke='%23c9a256' opacity='0.10' stroke-width='0.8' fill='none'%3E%3Cpath d='M300 520 L460 440 L640 520'/%3E%3Cpath d='M980 520 L1160 460 L1320 520'/%3E%3C/g%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: center top;
+  background-size: 1440px 620px;
+}
+
+/* ───────────────────────── hero thương hiệu ───────────────────────── */
+
+.nt-hero {
+  position: relative;
+  text-align: center;
+  padding: 2.25rem 1rem 0.5rem;
+}
+
+.nt-hero-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 3.25rem;
+  height: 3.25rem;
+  margin: 0 auto 0.75rem;
+  color: var(--color-gold-300);
+}
+
+.nt-hero-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: clamp(2.6rem, 9vw, 3.75rem);
+  line-height: 1.02;
+  letter-spacing: 0.01em;
+  background: linear-gradient(180deg, #f4e9cf 0%, var(--color-gold-300) 55%, var(--color-gold-500) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.nt-hero-tagline {
+  margin-top: 0.4rem;
+  font-family: var(--font-display);
+  font-size: clamp(1rem, 3.6vw, 1.2rem);
+  color: var(--color-gold-300);
+  letter-spacing: 0.06em;
+}
+
+.nt-hero-sub {
+  margin: 0.85rem auto 0;
+  max-width: 34ch;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--color-ink-600);
+}
+
+/* Đường phân cách vàng mảnh có chấm giữa — mô-típ ấn phẩm. */
+.nt-rule {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  margin: 1.15rem auto;
+  color: var(--color-gold-500);
+}
+.nt-rule::before,
+.nt-rule::after {
+  content: "";
+  height: 1px;
+  width: min(28vw, 4.5rem);
+  background: linear-gradient(90deg, transparent, var(--color-gold-500));
+}
+.nt-rule::after { transform: scaleX(-1); }
+.nt-rule > span { font-size: 0.7rem; }
+
+/* ───────────────────────── thẻ ───────────────────────── */
+
+/* Thẻ tối chủ đạo: viền vàng mảnh + quầng sáng trong rất nhẹ. */
+.nt-panel {
+  position: relative;
+  border-radius: 1.25rem;
+  background:
+    radial-gradient(140% 90% at 50% 0%, rgba(201, 162, 86, 0.06), rgba(201, 162, 86, 0) 55%),
+    linear-gradient(180deg, var(--color-ivory-200), var(--color-ivory-100));
+  border: 1px solid color-mix(in srgb, var(--color-gold-500) 45%, transparent);
+  box-shadow:
+    0 1px 0 rgba(244, 233, 207, 0.04) inset,
+    0 24px 60px -30px rgba(0, 0, 0, 0.8);
+}
+/* Hairline vàng thứ hai bên trong — cảm giác khảm. */
+.nt-panel::before {
+  content: "";
+  position: absolute;
+  inset: 5px;
+  border-radius: 1rem;
+  border: 1px solid color-mix(in srgb, var(--color-gold-500) 18%, transparent);
+  pointer-events: none;
+}
+
+/* Thẻ "giấy" cho màn kết quả (như bản mock 07–13). */
+.nt-card-parchment {
+  border-radius: 1rem;
+  background: linear-gradient(180deg, #f6ecd6, #efe1c4);
+  border: 1px solid var(--color-gold-500);
+  color: #2a1c12;
+  box-shadow: 0 18px 40px -24px rgba(0, 0, 0, 0.7);
+}
+.nt-card-parchment .nt-ink { color: #5a4632; }
+
+/* Thẻ phụ tối, mềm. */
+.nt-subcard {
+  border-radius: var(--radius-card);
+  background: color-mix(in srgb, var(--color-ivory-50) 70%, black 0%);
+  border: 1px solid color-mix(in srgb, var(--color-gold-500) 22%, transparent);
+}
+
+/* ───────────────────────── CTA ───────────────────────── */
+
+/* CTA chính = chu sa. Đúng vai "hành động chính" theo tham chiếu. */
+.nt-cta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  width: 100%;
+  min-height: 3.25rem;
+  padding: 0.9rem 1.5rem;
+  border-radius: var(--radius-pill);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff5ef;
+  background: linear-gradient(180deg, var(--color-cinnabar-400), var(--color-cinnabar-600));
+  border: 1px solid color-mix(in srgb, var(--color-gold-300) 40%, transparent);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.2),
+    0 10px 30px -12px rgba(193, 74, 58, 0.7),
+    0 1px 0 rgba(255, 255, 255, 0.18) inset;
+  transition: transform 0.15s ease, box-shadow 0.2s ease, filter 0.2s ease;
+}
+.nt-cta:hover { filter: brightness(1.06); box-shadow: 0 12px 34px -12px rgba(193, 74, 58, 0.8), 0 1px 0 rgba(255,255,255,0.2) inset; }
+.nt-cta:active { transform: translateY(1px); }
+.nt-cta:focus-visible { outline: 2px solid var(--color-gold-300); outline-offset: 3px; }
+.nt-cta[disabled] { opacity: 0.5; pointer-events: none; }
+
+/* CTA phụ = viền vàng, nền trong. */
+.nt-cta-ghost {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  width: 100%;
+  min-height: 3rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: var(--radius-pill);
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  color: var(--color-gold-300);
+  background: color-mix(in srgb, var(--color-gold-500) 8%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-gold-500) 55%, transparent);
+  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+.nt-cta-ghost:hover { border-color: var(--color-gold-300); color: var(--color-gold-100); background: color-mix(in srgb, var(--color-gold-500) 14%, transparent); }
+.nt-cta-ghost:focus-visible { outline: 2px solid var(--color-gold-300); outline-offset: 3px; }
+.nt-cta-ghost[disabled] { opacity: 0.5; pointer-events: none; }
+
+/* ───────────────────────── khung QR ───────────────────────── */
+
+.nt-qr {
+  position: relative;
+  padding: 0.9rem;
+  border-radius: 1rem;
+  background: linear-gradient(180deg, #fbf6ea, #f3ead9);
+  box-shadow: 0 14px 40px -18px rgba(0, 0, 0, 0.75);
+}
+/* Bốn ngoặc vàng ở góc — bọc lấy QR, luôn để QR trắng sạch để quét. */
+.nt-qr-corner {
+  position: absolute;
+  width: 26px;
+  height: 26px;
+  border: 2px solid var(--color-gold-300);
+  /* Quầng sáng bám theo hình chữ L (drop-shadow theo shape, không theo hộp vuông). */
+  filter: drop-shadow(0 0 5px rgba(201, 162, 86, 0.75));
+  pointer-events: none;
+}
+.nt-qr-corner.tl { top: -7px; left: -7px; border-right: 0; border-bottom: 0; border-top-left-radius: 8px; }
+.nt-qr-corner.tr { top: -7px; right: -7px; border-left: 0; border-bottom: 0; border-top-right-radius: 8px; }
+.nt-qr-corner.bl { bottom: -7px; left: -7px; border-right: 0; border-top: 0; border-bottom-left-radius: 8px; }
+.nt-qr-corner.br { bottom: -7px; right: -7px; border-left: 0; border-top: 0; border-bottom-right-radius: 8px; }
+/* Tia quét chạy dọc — chỉ trang trí, nằm trên viền, không che module QR nhờ độ mờ thấp. */
+.nt-qr-beam {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  height: 2px;
+  border-radius: 2px;
+  background: linear-gradient(90deg, transparent, var(--color-gold-400), transparent);
+  box-shadow: 0 0 12px 2px rgba(201, 162, 86, 0.55);
+  animation: nt-scan 2.8s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes nt-scan {
+  0%, 100% { top: 14%; opacity: 0; }
+  15% { opacity: 0.9; }
+  50% { top: 82%; opacity: 0.9; }
+  85% { opacity: 0.9; }
+}
+
+/* Chấm trạng thái chờ/kết nối. */
+.nt-status-dot {
+  display: inline-block;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--color-gold-400);
+  box-shadow: 0 0 0 0 rgba(201, 162, 86, 0.6);
+  animation: nt-pulse 1.8s ease-out infinite;
+}
+@keyframes nt-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(201, 162, 86, 0.5); }
+  70% { box-shadow: 0 0 0 8px rgba(201, 162, 86, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(201, 162, 86, 0); }
+}
+
+/* ───────────────────────── chỉ báo 6 bước ───────────────────────── */
+
+.nt-steps {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.nt-steps > span {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--color-gold-500) 55%, transparent);
+  transition: background 0.2s ease, box-shadow 0.2s ease;
+}
+.nt-steps > span[data-on="1"] {
+  background: var(--color-gold-400);
+  box-shadow: 0 0 8px 1px rgba(201, 162, 86, 0.6);
+}
+.nt-steps > span[data-on="cur"] {
+  background: var(--color-cinnabar-500);
+  border-color: var(--color-cinnabar-400);
+  box-shadow: 0 0 8px 1px rgba(193, 74, 58, 0.6);
+}
+
+/* ───────────────────────── khung dẫn khuôn mặt (mobile) ───────────────────────── */
+
+.nt-face-frame {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+.nt-face-oval {
+  height: 78%;
+  width: 58%;
+  border-radius: 50%;
+  border: 2px solid rgba(247, 236, 217, 0.55);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.nt-face-oval[data-ok="1"] {
+  border-color: var(--color-gold-400);
+  box-shadow: 0 0 22px -2px rgba(201, 162, 86, 0.55);
+}
+/* Bốn ngoặc vàng quanh khung camera. */
+.nt-cam-corner {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  border: 2px solid var(--color-gold-400);
+  opacity: 0.85;
+  pointer-events: none;
+}
+.nt-cam-corner.tl { top: 10px; left: 10px; border-right: 0; border-bottom: 0; }
+.nt-cam-corner.tr { top: 10px; right: 10px; border-left: 0; border-bottom: 0; }
+.nt-cam-corner.bl { bottom: 10px; left: 10px; border-right: 0; border-top: 0; }
+.nt-cam-corner.br { bottom: 10px; right: 10px; border-left: 0; border-top: 0; }
+
+/* ───────────────────────── chuyển cảnh phân tích ───────────────────────── */
+
+.nt-analyze-orb {
+  position: relative;
+  width: clamp(160px, 48vw, 210px);
+  aspect-ratio: 1;
+  margin: 0 auto;
+  border-radius: 999px;
+  /* Trường hạt vàng tĩnh + quầng trung tâm ấm — không dùng ảnh, thuần CSS. */
+  background:
+    radial-gradient(circle at 28% 30%, rgba(220, 189, 122, 0.55) 0 1.2px, transparent 2px),
+    radial-gradient(circle at 72% 34%, rgba(220, 189, 122, 0.4) 0 1.1px, transparent 2px),
+    radial-gradient(circle at 66% 72%, rgba(220, 189, 122, 0.45) 0 1.2px, transparent 2px),
+    radial-gradient(circle at 34% 68%, rgba(220, 189, 122, 0.35) 0 1px, transparent 2px),
+    radial-gradient(circle at 50% 46%, rgba(201, 162, 86, 0.22), rgba(21, 10, 12, 0) 70%);
+  box-shadow: 0 0 44px -8px rgba(201, 162, 86, 0.35);
+  animation: nt-glow 4.5s ease-in-out infinite;
+}
+@keyframes nt-glow {
+  0%, 100% { box-shadow: 0 0 40px -10px rgba(201, 162, 86, 0.3); }
+  50% { box-shadow: 0 0 64px -4px rgba(201, 162, 86, 0.5); }
+}
+.nt-analyze-orb::before,
+.nt-analyze-orb::after {
+  content: "";
+  position: absolute;
+  inset: 6%;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--color-gold-400) 55%, transparent);
+  animation: nt-orbit 6s linear infinite;
+}
+.nt-analyze-orb::after { inset: 22%; border-style: dashed; animation-duration: 9s; animation-direction: reverse; }
+@keyframes nt-orbit { to { transform: rotate(360deg); } }
+
+/* checklist phân tích: ○ chờ, ✓ xong (JS đặt data-done). */
+.nt-check { display: flex; align-items: center; gap: 0.6rem; }
+.nt-check > .nt-check-i { color: var(--color-ink-500); }
+.nt-check[data-done="1"] > .nt-check-i { color: var(--color-gold-400); }
+
+/* ───────────────────────── điều hướng đáy (chỉ desktop hero, trạng thái coming-soon) ─── */
+
+.nt-navrow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  gap: clamp(1.25rem, 6vw, 2.75rem);
+  margin-top: 1.5rem;
+}
+.nt-navitem {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.72rem;
+  color: var(--color-ink-500);
+}
+.nt-navitem > .nt-navicon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--color-gold-500) 35%, transparent);
+  color: var(--color-gold-400);
+}
+.nt-navitem[aria-disabled="true"] { opacity: 0.55; }
+
+/* ───────────────────────── ngoặc vàng ở góc thẻ chính ───────────────────────── */
+
+.nt-corner {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border: 1.5px solid color-mix(in srgb, var(--color-gold-400) 70%, transparent);
+  opacity: 0.7;
+  pointer-events: none;
+}
+.nt-corner.tl { top: 10px; left: 10px; border-right: 0; border-bottom: 0; border-top-left-radius: 6px; }
+.nt-corner.tr { top: 10px; right: 10px; border-left: 0; border-bottom: 0; border-top-right-radius: 6px; }
+.nt-corner.bl { bottom: 10px; left: 10px; border-right: 0; border-top: 0; border-bottom-left-radius: 6px; }
+.nt-corner.br { bottom: 10px; right: 10px; border-left: 0; border-top: 0; border-bottom-right-radius: 6px; }
+
+/* ───────────────────────── thẻ cảnh báo hổ phách ───────────────────────── */
+
+/* Thẻ "chưa đủ dữ liệu" — hổ phách ấm, chữ nâu đậm, giống bản mock 07. Tách hẳn khỏi
+   thẻ giấy dữ kiện để người xem thấy rõ đây là CẢNH BÁO, không phải kết luận. */
+.nt-card-amber {
+  border-radius: var(--radius-card);
+  background: linear-gradient(180deg, #f7e6c4, #f0d8a6);
+  border: 1px solid #d29a3c;
+  color: #6b4a1e;
+  box-shadow: 0 14px 34px -22px rgba(0, 0, 0, 0.7);
+}
+.nt-card-amber .nt-amber-muted { color: #8a6a3a; }
+
+/* Thanh chất lượng 3 mức — ánh xạ TỪ giá trị categorical thật (pass/partial/fail),
+   KHÔNG phải phần trăm bịa. */
+.nt-qbar { display: inline-flex; gap: 3px; vertical-align: middle; }
+.nt-qbar > i { width: 16px; height: 5px; border-radius: 3px; background: rgba(90, 70, 50, 0.22); }
+.nt-qbar > i[data-on="1"] { background: var(--color-success-500); }
+
+/* ───────────────────────── chrome màn hình: back + emblem ───────────────────────── */
+
+.nt-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  /* Vùng chạm ≥44px dù chữ nhỏ. */
+  min-height: 2.75rem;
+  padding-right: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--color-ink-500);
+  transition: color 0.2s ease;
+}
+.nt-back:hover { color: var(--color-gold-300); }
+.nt-back:focus-visible { outline: 2px solid var(--color-gold-300); outline-offset: 3px; border-radius: 4px; }
+.nt-back > span[aria-hidden] { font-size: 1.1rem; line-height: 1; }
+
+.nt-emblem-sm { display: inline-flex; color: var(--color-gold-300); opacity: 0.9; }
+
+/* ───────────────────────── thanh 6 bước (STATE, không phải ảnh) ───────────────────────── */
+
+.nt-rail {
+  display: flex;
+  gap: 6px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.nt-rail-item {
+  flex: 1 1 0;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+.nt-rail-badge {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--color-gold-500) 50%, transparent);
+  background: color-mix(in srgb, var(--color-ivory-50) 55%, transparent);
+  color: var(--color-ink-500);
+  font-size: 0.72rem;
+  font-weight: 600;
+  transition: transform 0.2s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, color 0.2s ease;
+}
+/* Đã xong → vàng đặc + ✓. */
+.nt-rail-item[data-done="1"] .nt-rail-badge {
+  background: var(--color-gold-400);
+  border-color: var(--color-gold-300);
+  color: var(--color-on-accent);
+  box-shadow: 0 0 8px 1px rgba(201, 162, 86, 0.5);
+}
+/* Bước hiện tại → nổi bật chu sa, phóng to nhẹ. */
+.nt-rail-item[data-cur="1"] .nt-rail-badge {
+  border-color: var(--color-cinnabar-400);
+  color: var(--color-cinnabar-400);
+  box-shadow: 0 0 9px 1px rgba(193, 74, 58, 0.55);
+  transform: scale(1.16);
+}
+.nt-rail-item[data-cur="1"][data-done="1"] .nt-rail-badge { transform: none; }
+.nt-rail-cap {
+  font-size: 0.6rem;
+  line-height: 1.15;
+  text-align: center;
+  color: var(--color-ink-500);
+  max-width: 100%;
+}
+.nt-rail-item[data-cur="1"] .nt-rail-cap { color: var(--color-gold-300); font-weight: 600; }
+
+/* ───────────────────────── chuyển động nhẹ ───────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .nt-qr-beam,
+  .nt-status-dot,
+  .nt-analyze-orb,
+  .nt-analyze-orb::before,
+  .nt-analyze-orb::after {
+    animation: none !important;
+  }
+  .nt-qr-beam { display: none; }
+}

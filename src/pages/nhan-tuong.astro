@@ -1,0 +1,66 @@
+---
+// Route /nhan-tuong — Nhân Tướng, mô hình Desktop ⇄ QR ⇄ Điện thoại.
+//
+// MỘT trang, HAI chế độ. Chọn theo `?mode=mobile` ở CLIENT (không phải server) để
+// trang vẫn `prerender = true`:
+//   · không có ?mode      → màn hình máy tính: tạo phiên + QR + theo dõi tiến độ
+//   · ?mode=mobile        → màn hình điện thoại: 6 bước khuôn mặt + giọng nói
+//
+// Vì sao giữ prerender = true:
+//   1. src/middleware.ts tự bỏ qua trang prerender (`if (context.isPrerendered)`)
+//      → không truy vấn DB, không đọc cookie, không ghi session đăng nhập.
+//   2. HTML tĩnh phục vụ từ edge Cloudflare (HKG) → mở nhanh trên 4G.
+//   3. Phần động duy nhất là /api/nhan-tuong/session.
+//
+// Hệ quả: cả hai khối markup đều có trong HTML, một khối bị ẩn. Máy tính KHÔNG nạp
+// MediaPipe (chỉ điện thoại nạp, và chỉ sau khi bấm BẮT ĐẦU), nên không tốn gì.
+//
+// Giao diện cao cấp: lớp khí quyển + trang trí ở src/styles/nhan-tuong.css, phạm vi
+// dưới `.nt-premium` nên không rò ra phần còn lại của site. KHÔNG chạm pipeline/đo.
+import BaseLayout from "../layouts/BaseLayout.astro";
+import NhanTuongDesktop from "../components/tools/NhanTuongDesktop.astro";
+import NhanTuongMobile from "../components/tools/NhanTuongMobile.astro";
+import "../styles/nhan-tuong.css";
+
+export const prerender = true;
+---
+
+<BaseLayout
+  title="Nhân Tướng — Phong Thủy Thiên Anh"
+  description="Khám phá các đặc điểm khuôn mặt qua hệ thống phân tích nhân tướng: quét mã QR bằng điện thoại, thực hiện 6 góc khuôn mặt. Toàn bộ xử lý diễn ra trên thiết bị."
+>
+  <div class="nt-premium">
+    <header class="nt-hero">
+      <span class="nt-hero-mark" aria-hidden="true">
+        <svg viewBox="0 0 48 48" width="52" height="52" fill="none">
+          <circle cx="24" cy="24" r="22" stroke="currentColor" stroke-width="1.2" opacity="0.6"></circle>
+          <path
+            d="M24 2a22 22 0 0 0 0 44 11 11 0 0 1 0-22 11 11 0 0 0 0-22Z"
+            fill="currentColor"
+            opacity="0.9"></path>
+          <circle cx="24" cy="13" r="2.4" fill="var(--color-ivory-50)"></circle>
+          <circle cx="24" cy="35" r="2.4" fill="currentColor"></circle>
+        </svg>
+      </span>
+      <h1 class="nt-hero-title">Nhân Tướng</h1>
+      <p class="nt-hero-tagline">Biết người · Hiểu mình · Sống thuận</p>
+      <p class="nt-hero-sub">
+        Khám phá các đặc điểm khuôn mặt qua hệ thống phân tích nhân tướng ứng dụng trí tuệ hiện đại.
+      </p>
+      <div class="nt-rule" aria-hidden="true"><span>❖</span></div>
+    </header>
+
+    <div id="nt-mode-desktop"><NhanTuongDesktop /></div>
+    <div id="nt-mode-mobile" class="hidden"><NhanTuongMobile /></div>
+  </div>
+</BaseLayout>
+
+<script>
+  // Chọn chế độ TRƯỚC khi script của hai component chạy xong phần khởi tạo nặng.
+  // Cả hai component đều tự khởi tạo khi nạp, nên việc ẩn/hiện ở đây chỉ quyết định
+  // cái nào NHÌN THẤY — phần việc thật của mỗi bên đều chờ hành động người dùng
+  // (máy tính: tạo phiên qua API; điện thoại: bấm BẮT ĐẦU mới mở camera).
+  const isMobileMode = new URLSearchParams(location.search).get("mode") === "mobile";
+  document.getElementById("nt-mode-desktop")?.classList.toggle("hidden", isMobileMode);
+  document.getElementById("nt-mode-mobile")?.classList.toggle("hidden", !isMobileMode);
+</script>
