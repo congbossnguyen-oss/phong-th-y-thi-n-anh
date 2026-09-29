@@ -22,6 +22,14 @@
   // sẵn trong tài khoản (tự phát sinh từ một lần thử deploy trước, cùng đúng tên theo quy ước
   // wrangler) thay vì để wrangler tự tạo namespace mới — namespace mới bị trùng tên nên deploy lỗi.
   "kv_namespaces": [{ "binding": "SESSION", "id": "6d7b9d11decd4f7dacd97ede5deab9d2" }],
+  // Worker Previews (Wrangler >= 4.135). Preview dùng KV RIÊNG, KHÔNG đụng KV production ở trên.
+  // Namespace preview tạo mới bằng `wrangler kv namespace create physiognomy-preview-SESSION`
+  // (id dưới đây), tách hẳn khỏi id production 6d7b9d11… ASSETS kế thừa từ cấu hình gốc
+  // (PreviewsConfig không có khoá assets). /nhan-tuong lúc CHẠY chỉ cần binding SESSION — không
+  // secret nào khác; SANITY_* chỉ cần lúc BUILD (đọc từ .env cục bộ), không đưa vào source.
+  "previews": {
+    "kv_namespaces": [{ "binding": "SESSION", "id": "907acc7b6ab44110a4c1701039ecb12c" }]
+  },
   // Thay Render Cron Job cũ gọi /api/thong-bao/gui-nhac-ngay-le qua HTTP (xem comment gốc trong file
   // đó + src/worker-entry.ts).
   //

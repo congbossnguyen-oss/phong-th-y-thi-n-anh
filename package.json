@@ -28,6 +28,7 @@
     "@sanity/client": "^7.26.0",
     "@tailwindcss/vite": "^4.3.3",
     "@thien-anh/calendar-core": "*",
+    "@thien-anh/duongtrach-engine": "*",
     "@thien-anh/phone-energy-engine": "*",
     "@thien-anh/tinhdanh-engine": "*",
     "@thien-anh/trachnhat-engine": "*",
@@ -39,8 +40,7 @@
     "qrcode-generator": "^2.0.4",
     "resend": "^6.18.1",
     "tailwindcss": "^4.3.3",
-    "wrangler": "^4.125.0",
-    "@thien-anh/duongtrach-engine": "*"
+    "wrangler": "^4.143.0"
   },
   "devDependencies": {
     "drizzle-kit": "^0.31.10",
