@@ -15,6 +15,7 @@ import {
   KNOWLEDGE_SOURCES,
   LOCATOR_REQUIRED,
   NO_EVIDENCE_RESOLVER,
+  PINNED_EVIDENCE_RESOLVER,
   getSource,
   hasVerifiedSource,
   isUsableSource,
@@ -69,8 +70,16 @@ const RESOLVER_GIA: EvidenceResolver = {
 // ─────────────────────────────────────────── A
 
 describe("A — nguồn chưa xác minh không vào được registry", () => {
-  it("registry RỖNG và đóng băng", () => {
-    expect(Object.keys(KNOWLEDGE_SOURCES)).toHaveLength(0);
+  it("registry chỉ có ĐÚNG nguồn đã xác minh, và đóng băng", () => {
+    expect(Object.keys(KNOWLEDGE_SOURCES)).toEqual(["SHEN_XIANG_QUAN_BIAN_XIANG_MEI_001"]);
+    const s = KNOWLEDGE_SOURCES.SHEN_XIANG_QUAN_BIAN_XIANG_MEI_001;
+    expect(s.verificationStatus).toBe("verified");
+    expect(s.locatorPolicy).toBe("scan_page");
+    expect(s.locator.scanPage).toBe("141");
+    // Nguồn thật này phải TỰ nó dùng được dưới resolver THẬT (pinned), không phải resolver test.
+    expect(isUsableSource(s, PINNED_EVIDENCE_RESOLVER)).toBe(true);
+    // …và KHÔNG dùng được dưới resolver mặc định TỪ CHỐI — fail-closed vẫn nguyên.
+    expect(isUsableSource(s, NO_EVIDENCE_RESOLVER)).toBe(false);
     expect(Object.isFrozen(KNOWLEDGE_SOURCES)).toBe(true);
   });
 
@@ -368,7 +377,11 @@ describe("F — hành vi pipeline KHÔNG đổi", () => {
 // ─────────────────────────────────────────── G
 
 describe("G — bundle production không chứa nguồn chỉ-dùng-cho-test", () => {
-  it("không tệp nào trong src/ chứa literal trích dẫn", () => {
+  // NƠI DUY NHẤT được phép chứa literal trích dẫn/định vị thật: kho nguồn đã xác minh.
+  // Mọi tệp khác vẫn bị cấm — một câu trích lọt ra ngoài file này là dấu hiệu nguồn bịa.
+  const REGISTRY = join(SRC, "knowledge", "physiognomy", "source.ts");
+
+  it("chỉ MỖI kho nguồn được phép chứa literal trích dẫn; không tệp nào khác", () => {
     const walk = (d: string, out: string[] = []): string[] => {
       for (const n of readdirSync(d)) {
         const p = join(d, n);
@@ -378,11 +391,21 @@ describe("G — bundle production không chứa nguồn chỉ-dùng-cho-test", (
       return out;
     };
     for (const f of walk(SRC)) {
+      if (resolve(f) === resolve(REGISTRY)) continue; // file được phép, kiểm riêng bên dưới
       const s = readFileSync(f, "utf-8");
       expect(s, relative(SRC, f).split(sep).join("/")).not.toMatch(
         /["'](citation|chapter|paragraph|scanPage)["']\s*:\s*["'][^"']+["']/,
       );
     }
+  });
+
+  it("kho nguồn chứa ĐÚNG trích dẫn 神相全編 đã xác minh, không phải nguồn test", () => {
+    const s = readFileSync(REGISTRY, "utf-8");
+    expect(s).toContain("神相全編");
+    expect(s).toContain("SHEN_XIANG_QUAN_BIAN_XIANG_MEI_001");
+    // Không được lẫn id/hiện vật chỉ-dùng-cho-test vào file production.
+    expect(s).not.toContain("TEST_FIXTURE_ONLY");
+    expect(s).not.toContain("test://");
   });
 
   /**

@@ -13,7 +13,11 @@
 import { buildReliability, type FeatureReliability } from "./measurement-contract/reliability";
 import { evaluateAll, type EligibilityVerdict } from "./measurement-contract/policy";
 import type { PhysiognomyFeatureProfile } from "./features/schema";
-import { hasVerifiedSource } from "../../knowledge/physiognomy/source";
+import {
+  hasVerifiedSource,
+  PINNED_EVIDENCE_RESOLVER,
+  type EvidenceResolver,
+} from "../../knowledge/physiognomy/source";
 import {
   getInterpretationsForFeature,
   type InterpretationItem,
@@ -90,6 +94,11 @@ export interface RunOptions {
    * mặc định là không feature nào có nguồn.
    */
   sourceLookup?: (featureKey: string) => boolean;
+  /**
+   * Bộ phân giải hiện vật. Mặc định là resolver THẬT (`PINNED_EVIDENCE_RESOLVER`) — nó chỉ
+   * mở đúng các bản scan đã đối chiếu tay. Cho test bơm resolver khác để soi từng nhánh.
+   */
+  resolver?: EvidenceResolver;
 }
 
 export function runPhysiognomyPipeline(
@@ -150,6 +159,7 @@ export function runPipelineOnFeatures(
   opts: RunOptions = {},
 ): PipelineOutput {
   const rules = opts.rules ?? PHYSIOGNOMY_RULES;
+  const resolver = opts.resolver ?? PINNED_EVIDENCE_RESOLVER;
 
   // 1. Hợp đồng đo — đo được gì, và đã kiểm chứng tới đâu.
   const reliability = buildReliability(
@@ -161,12 +171,13 @@ export function runPipelineOnFeatures(
     opts.sourceLookup ??
     ((featureKey: string) =>
       rules.some(
-        (r) => r.featureRequirements.includes(featureKey) && hasVerifiedSource(r.sourceRefs),
+        (r) =>
+          r.featureRequirements.includes(featureKey) && hasVerifiedSource(r.sourceRefs, resolver),
       ));
   const eligibility = evaluateAll(reliability, sourceLookup);
 
   // 3. Luật — chỉ chạy trên feature đã qua cổng.
-  const ruleResults = evaluate({ features, eligibility, rules });
+  const ruleResults = evaluate({ features, eligibility, rules, resolver });
 
   // 4. Luận giải — chỉ gói lại thứ luật đã chứng minh.
   const blocked = Object.values(eligibility)

@@ -162,8 +162,10 @@ describe("F — production insufficient-evidence KHÔNG đổi vì resolver", ()
 // ─────────────────────────────────────────── G. library giữ nguyên verificationStatus
 
 describe("G — toàn bộ library giữ nguyên verificationStatus", () => {
-  it("KNOWLEDGE_SOURCES vẫn {} và mọi item vẫn skill-derived/unverified", () => {
-    expect(Object.keys(KNOWLEDGE_SOURCES).length).toBe(0);
+  it("KNOWLEDGE_SOURCES chỉ có nguồn cổ thư đã xác minh; thư viện luận giải vẫn skill-derived", () => {
+    // Kho nguồn (cổ thư) và thư viện luận giải (skill-derived) là HAI thứ tách biệt: thêm một
+    // nguồn cổ thư đã xác minh KHÔNG được phép nâng cấp bất kỳ mục luận giải nào.
+    expect(Object.keys(KNOWLEDGE_SOURCES)).toEqual(["SHEN_XIANG_QUAN_BIAN_XIANG_MEI_001"]);
     for (const it of INTERPRETATION_LIBRARY) {
       expect(it.provenance.verificationStatus, it.id).toBe("unverified");
       expect(it.provenance.type, it.id).toBe("skill-derived");

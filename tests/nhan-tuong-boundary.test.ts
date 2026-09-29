@@ -376,8 +376,13 @@ describe("media thô không đi quá tầng cảm biến", () => {
 // ─────────────────────────────────────────── kho nguồn
 
 describe("kho nguồn không có tri thức bịa", () => {
-  it("không tệp nào trong src/ chứa literal nguồn cổ thư", () => {
+  // NƠI DUY NHẤT được phép chứa literal trích dẫn: kho nguồn đã xác minh. Mọi tệp khác
+  // vẫn bị cấm tuyệt đối — một câu trích lọt ra ngoài file này = dấu hiệu nguồn bịa.
+  const REGISTRY = join(SRC, "knowledge/physiognomy/source.ts");
+
+  it("chỉ kho nguồn được phép chứa literal cổ thư; không tệp nào khác", () => {
     for (const f of walkFiles(SRC)) {
+      if (resolve(f) === resolve(REGISTRY)) continue; // file được phép
       const src = readFileSync(f, "utf-8");
       // Một object nguồn thật sẽ có cặp khoá-giá trị kiểu "citation": "…"
       expect(src, relative(SRC, f)).not.toMatch(
@@ -386,9 +391,14 @@ describe("kho nguồn không có tri thức bịa", () => {
     }
   });
 
-  it("registry rỗng và đóng băng", () => {
-    const src = readFileSync(join(SRC, "knowledge/physiognomy/source.ts"), "utf-8");
-    expect(src).toContain("Object.freeze({})");
+  it("registry chỉ có ĐÚNG nguồn 神相全編 đã xác minh, và đóng băng", () => {
+    const src = readFileSync(REGISTRY, "utf-8");
+    expect(src).toContain("Object.freeze({");
+    expect(src).toContain("SHEN_XIANG_QUAN_BIAN_XIANG_MEI_001");
+    expect(src).toContain('verificationStatus: "verified"');
+    // Không lẫn nguồn/hiện vật chỉ-dùng-cho-test vào file production.
+    expect(src).not.toContain("TEST_FIXTURE_ONLY");
+    expect(src).not.toContain("test://");
   });
 
   it("không có nguồn dự phòng ẩn", () => {

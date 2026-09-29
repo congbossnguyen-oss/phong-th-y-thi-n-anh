@@ -113,8 +113,10 @@ describe("KHÔNG threshold số, KHÔNG tạo rule", () => {
 // ─────────────────────────────────────────── 7-8. KNOWLEDGE_SOURCES rỗng, engine fail-closed
 
 describe("ranh giới cứng với Rule Engine / Knowledge", () => {
-  it("KNOWLEDGE_SOURCES vẫn = {}", () => {
-    expect(Object.keys(KNOWLEDGE_SOURCES).length).toBe(0);
+  it("KNOWLEDGE_SOURCES chỉ có nguồn cổ thư đã xác minh — tách biệt với thư viện luận giải", () => {
+    // Kho nguồn (cổ thư) và thư viện luận giải (skill-derived) là hai thứ khác nhau; thêm một
+    // nguồn cổ thư KHÔNG được nâng cấp thư viện luận giải này.
+    expect(Object.keys(KNOWLEDGE_SOURCES)).toEqual(["SHEN_XIANG_QUAN_BIAN_XIANG_MEI_001"]);
   });
 
   it("thư viện KHÔNG import source/engine/rule/feature (là module lá)", () => {

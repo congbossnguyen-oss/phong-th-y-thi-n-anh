@@ -12,7 +12,13 @@
  */
 
 import type { EligibilityVerdict } from "../../features/physiognomy/measurement-contract/policy";
-import { getSource, isUsableSource, type KnowledgeSource } from "../../knowledge/physiognomy/source";
+import {
+  getSource,
+  isUsableSource,
+  NO_EVIDENCE_RESOLVER,
+  type EvidenceResolver,
+  type KnowledgeSource,
+} from "../../knowledge/physiognomy/source";
 import { isRunnable, type PhysiognomyRule } from "./rule";
 
 export const ENGINE_VERSION = "physiognomy-engine-v1" as const;
@@ -71,6 +77,12 @@ export interface EvaluateInput {
   features: EngineFeature[];
   eligibility: Record<string, EligibilityVerdict>;
   rules: readonly PhysiognomyRule[];
+  /**
+   * Bộ phân giải hiện vật để xác nhận nguồn. MẶC ĐỊNH TỪ CHỐI MỌI THỨ: gọi engine trực
+   * tiếp mà không cắm resolver thật thì không nguồn nào qua được — fail-closed. Pipeline
+   * mới là nơi cắm resolver thật vào.
+   */
+  resolver?: EvidenceResolver;
 }
 
 /**
@@ -81,6 +93,7 @@ export interface EvaluateInput {
  */
 export function evaluate(input: EvaluateInput): RuleResult[] {
   const byKey = new Map(input.features.map((f) => [f.key, f]));
+  const resolver = input.resolver ?? NO_EVIDENCE_RESOLVER;
   const out: RuleResult[] = [];
 
   for (const rule of input.rules) {
@@ -93,7 +106,7 @@ export function evaluate(input: EvaluateInput): RuleResult[] {
     // ── nguồn
     for (const id of rule.sourceRefs) {
       const s = getSource(id);
-      if (!isUsableSource(s)) continue;
+      if (!isUsableSource(s, resolver)) continue;
       sourceEvidence.push({
         sourceId: s.sourceId,
         title: s.title,
@@ -155,6 +168,18 @@ export function evaluate(input: EvaluateInput): RuleResult[] {
       }
       if (c.min !== null && v < c.min) matched = false;
       if (c.max !== null && v > c.max) matched = false;
+    }
+
+    // ── phép so sánh hai feature (luật kiểu 「過」, không ngưỡng). Cùng mẫu số đã bảo đảm
+    //    khi chọn cặp khoá ở tầng luật; engine chỉ so số.
+    for (const cmp of rule.comparisons ?? []) {
+      const l = byKey.get(cmp.leftFeatureKey)?.value;
+      const r = byKey.get(cmp.rightFeatureKey)?.value;
+      if (typeof l !== "number" || typeof r !== "number") {
+        matched = false;
+        break;
+      }
+      if (cmp.op === ">" && !(l > r)) matched = false;
     }
 
     out.push({

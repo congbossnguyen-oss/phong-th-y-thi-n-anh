@@ -41,12 +41,38 @@ export interface RuleCondition {
   thresholdSource: string | null;
 }
 
+/**
+ * Một phép SO SÁNH giữa hai feature — KHÔNG có ngưỡng số.
+ *
+ * Đây là con đường duy nhất mà cổ thư thật cho phép mà không phải bịa số: sách nói
+ * 「眉長過目」 (mày dài hơn mắt), một mệnh đề SO SÁNH thuần, không nói "dài bao nhiêu".
+ *
+ * Ràng buộc cố ý:
+ *   · chỉ có `>` (nghiêm ngặt), khớp đúng chữ 「過」 — không `>=`, không biên độ/epsilon.
+ *   · hai feature phải cùng mẫu số chuẩn hoá thì phép so mới có nghĩa; điều đó KHÔNG
+ *     kiểm được ở đây mà phải bảo đảm khi chọn cặp khoá (xem luật bên dưới).
+ *   · `basisSource` bắt buộc: phép so này phát biểu ở nguồn nào.
+ */
+export interface RuleComparison {
+  leftFeatureKey: string;
+  op: ">";
+  rightFeatureKey: string;
+  /** sourceId trong `source.ts` phát biểu phép so sánh này. */
+  basisSource: string;
+}
+
 export interface PhysiognomyRule {
   ruleId: string;
   domain: RuleDomain;
   /** Khoá feature bắt buộc phải có mặt và đủ tư cách. */
   featureRequirements: string[];
   conditions: RuleCondition[];
+  /**
+   * Phép so sánh giữa hai feature, cho luật kiểu 「過」 không có ngưỡng số. Tuỳ chọn:
+   * luật cũ chỉ có `conditions`, luật so sánh chỉ có `comparisons`. Một luật phải có ÍT
+   * NHẤT một trong hai thì mới chạy được (xem `isRunnable`).
+   */
+  comparisons?: RuleComparison[];
   /**
    * Câu luận giải, chép từ nguồn. KHÔNG được tự viết lại cho "hay hơn".
    * Rỗng khi luật còn ở trạng thái nháp.
@@ -95,18 +121,95 @@ export const THREE_COURTS_MIDDLE_001: PhysiognomyRule = {
   schemaVersion: RULE_SCHEMA_VERSION,
 };
 
-/** Kho luật đang có. Một luật, trạng thái nháp, không chạy được. */
+/**
+ * 眉長過目 — mày dài hơn mắt. Luật SO SÁNH thật đầu tiên, và tới giờ là duy nhất.
+ *
+ * Vì sao luật này hợp lệ mà không cần bịa ngưỡng: nguồn (神相全編 卷三 相眉, đã xác minh
+ * tận bản scan — xem `SHEN_XIANG_QUAN_BIAN_XIANG_MEI_001`) phát biểu một phép SO SÁNH, không
+ * phải một con số. Ta chỉ chép đúng phép so đó.
+ *
+ * Vì sao phép so có nghĩa về mặt đo: cả `eyebrows.*_length` lẫn `eyes.*_width` đều chuẩn
+ * hoá theo CÙNG mẫu số faceWidth (xem landmarks.ts / SPANS), nên `mày > mắt` trên tỉ lệ
+ * tương đương `mày > mắt` trên pixel — không cần khử mẫu số. So CÙNG BÊN (trái↔trái,
+ * phải↔phải), không so chéo.
+ *
+ * Ngữ nghĩa (chép từ nguồn, thuộc về 兄弟/anh em — KHÔNG phải tài lộc): xem `interpretation`.
+ *
+ * ⚠️ Trong sản phẩm thật luật này VẪN không bao giờ chạy tới bước so: bốn feature nền đều
+ * `low_confidence` nên trượt cổng tư cách. Nó "runnable" về hình dạng, nhưng fail-closed ở
+ * cổng đo. Chỉ test bơm feature đủ tư cách mới chứng minh được nhánh khớp.
+ */
+export const BROW_LONGER_THAN_EYE_SIBLINGS_001: PhysiognomyRule = {
+  ruleId: "BROW_LONGER_THAN_EYE_SIBLINGS_001",
+  domain: "five_officials",
+  featureRequirements: [
+    "face.eyebrows.left_length",
+    "face.eyes.left_width",
+    "face.eyebrows.right_length",
+    "face.eyes.right_width",
+  ],
+  conditions: [],
+  comparisons: [
+    {
+      leftFeatureKey: "face.eyebrows.left_length",
+      op: ">",
+      rightFeatureKey: "face.eyes.left_width",
+      basisSource: "SHEN_XIANG_QUAN_BIAN_XIANG_MEI_001",
+    },
+    {
+      leftFeatureKey: "face.eyebrows.right_length",
+      op: ">",
+      rightFeatureKey: "face.eyes.right_width",
+      basisSource: "SHEN_XIANG_QUAN_BIAN_XIANG_MEI_001",
+    },
+  ],
+  // Chép nguyên văn nguồn + gắn rõ đây là mệnh đề của cổ thư, không phải kết luận của hệ.
+  interpretation:
+    "Nguồn 《神相全編》卷三「相眉」chép: 「眉長過眼，弟兄須五六」— tướng mày dài quá mắt, theo " +
+    "sách thuộc về việc anh em (兄弟), không phải tài lộc. Đây là mệnh đề của cổ thư ứng với " +
+    "phép đo «mày dài hơn mắt», KHÔNG phải suy luận của phần mềm.",
+  sourceRefs: ["SHEN_XIANG_QUAN_BIAN_XIANG_MEI_001"],
+  confidence: 0.5,
+  applicability:
+    "Chỉ khi CẢ bốn feature (mày/mắt hai bên) đủ tư cách đo. Nguồn không giới hạn đối tượng.",
+  limitations: [
+    "Nguồn nói về 兄弟 (anh em ruột) — không mở rộng sang tài lộc, tính cách, sức khoẻ.",
+    "Phép so cần mày và mắt cùng chuẩn hoá theo faceWidth; đúng với contract hiện tại.",
+    "Feature nền mày/mắt đang low_confidence — trong sản phẩm thật luật này luôn bị cổng chặn.",
+    "Câu chép từ bản render 500px; các vế số anh em (五六/家無) là dị bản vần, không phải định lượng.",
+  ],
+  status: "active",
+  schemaVersion: RULE_SCHEMA_VERSION,
+};
+
+/** Kho luật đang có: một luật nháp (chặn), một luật so sánh đã xác minh. */
 export const PHYSIOGNOMY_RULES: readonly PhysiognomyRule[] = Object.freeze([
   THREE_COURTS_MIDDLE_001,
+  BROW_LONGER_THAN_EYE_SIBLINGS_001,
 ]);
 
-/** Luật có đủ hình dạng để CHẠY không (chưa xét tới feature hay nguồn). */
+/**
+ * Luật có đủ hình dạng để CHẠY không (chưa xét tới feature hay nguồn).
+ *
+ * Nhận HAI kiểu: luật ngưỡng (min/max + thresholdSource) và luật so sánh (comparisons).
+ * Phải có ít nhất một điều kiện thuộc một trong hai kiểu, và mọi điều kiện có mặt phải đủ.
+ */
 export function isRunnable(rule: PhysiognomyRule): boolean {
   if (rule.status !== "active") return false;
-  if (rule.conditions.length === 0) return false;
   if (rule.sourceRefs.length === 0) return false;
   if (rule.interpretation.trim() === "") return false;
-  return rule.conditions.every(
+
+  const comparisons = rule.comparisons ?? [];
+  if (rule.conditions.length === 0 && comparisons.length === 0) return false;
+
+  const conditionsOk = rule.conditions.every(
     (c) => (c.min !== null || c.max !== null) && c.thresholdSource !== null,
   );
+  const comparisonsOk = comparisons.every(
+    (c) =>
+      c.leftFeatureKey.trim() !== "" &&
+      c.rightFeatureKey.trim() !== "" &&
+      c.basisSource.trim() !== "",
+  );
+  return conditionsOk && comparisonsOk;
 }

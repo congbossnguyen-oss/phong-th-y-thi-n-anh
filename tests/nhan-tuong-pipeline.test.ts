@@ -176,8 +176,10 @@ describe("cổng tư cách luận giải", () => {
 // ─────────────────────────────────────────── kho tri thức
 
 describe("kho nguồn — KHÔNG được bịa", () => {
-  it("registry RỖNG", () => {
-    expect(Object.keys(KNOWLEDGE_SOURCES)).toHaveLength(0);
+  it("registry chỉ có ĐÚNG nguồn đã xác minh (神相全編 相眉), không thừa", () => {
+    const ids = Object.keys(KNOWLEDGE_SOURCES);
+    expect(ids).toEqual(["SHEN_XIANG_QUAN_BIAN_XIANG_MEI_001"]);
+    expect(KNOWLEDGE_SOURCES[ids[0]].verificationStatus).toBe("verified");
   });
 
   it("nguồn chưa xác minh hoặc thiếu locator đều KHÔNG dùng được", () => {
@@ -198,13 +200,16 @@ describe("kho nguồn — KHÔNG được bịa", () => {
   });
 });
 
-describe("kho luật — chỉ một luật nháp, không ngưỡng, không nguồn", () => {
-  it("mọi luật đang có đều KHÔNG chạy được", () => {
-    for (const r of PHYSIOGNOMY_RULES) expect(isRunnable(r), r.ruleId).toBe(false);
+describe("kho luật — một luật nháp bị chặn, một luật so sánh đã xác minh", () => {
+  it("luật nháp KHÔNG chạy được; luật so sánh CÓ chạy được", () => {
+    const draft = PHYSIOGNOMY_RULES.find((r) => r.ruleId === "THREE_COURTS_MIDDLE_001")!;
+    const brow = PHYSIOGNOMY_RULES.find((r) => r.ruleId === "BROW_LONGER_THAN_EYE_SIBLINGS_001")!;
+    expect(isRunnable(draft), draft.ruleId).toBe(false);
+    expect(isRunnable(brow), brow.ruleId).toBe(true);
   });
 
   it("luật nháp không có ngưỡng bịa và không có nguồn bịa", () => {
-    const r = PHYSIOGNOMY_RULES[0];
+    const r = PHYSIOGNOMY_RULES.find((x) => x.ruleId === "THREE_COURTS_MIDDLE_001")!;
     expect(r.status).toBe("draft");
     expect(r.sourceRefs).toEqual([]);
     expect(r.interpretation).toBe("");
@@ -212,6 +217,16 @@ describe("kho luật — chỉ một luật nháp, không ngưỡng, không ngu�
       expect(c.min).toBeNull();
       expect(c.max).toBeNull();
       expect(c.thresholdSource).toBeNull();
+    }
+  });
+
+  it("luật so sánh chỉ trỏ nguồn đã xác minh và không mang ngưỡng số", () => {
+    const r = PHYSIOGNOMY_RULES.find((x) => x.ruleId === "BROW_LONGER_THAN_EYE_SIBLINGS_001")!;
+    expect(r.conditions).toEqual([]); // không ngưỡng số nào
+    expect(r.sourceRefs).toEqual(["SHEN_XIANG_QUAN_BIAN_XIANG_MEI_001"]);
+    for (const c of r.comparisons ?? []) {
+      expect(c.op).toBe(">"); // chỉ so sánh nghiêm ngặt, không biên độ
+      expect(c.basisSource).toBe("SHEN_XIANG_QUAN_BIAN_XIANG_MEI_001");
     }
   });
 
@@ -345,8 +360,23 @@ describe("pipeline đầu-cuối trên fixture", () => {
   });
 
   it("thiếu provenance KHÔNG tới được tầng luận giải", () => {
+    // 4 feature mày/mắt được luật so sánh đã-xác-minh trỏ tới → CÓ nguồn, nên không mang
+    // lý do no_verified_source. Nhưng chúng vẫn bị chặn ở CỔNG ĐO (low_confidence) — đó
+    // mới là điều cần chứng minh: có nguồn vẫn không đủ để luận nếu chưa đo được.
+    const coNguon = new Set([
+      "face.eyebrows.left_length",
+      "face.eyebrows.right_length",
+      "face.eyes.left_width",
+      "face.eyes.right_width",
+    ]);
     for (const v of Object.values(out.eligibility)) {
-      expect(v.reasons, v.featureKey).toContain("no_verified_source");
+      if (coNguon.has(v.featureKey)) {
+        expect(v.reasons, v.featureKey).not.toContain("no_verified_source");
+        expect(v.reasons, v.featureKey).toContain("measurement_not_measured");
+        expect(v.eligible, v.featureKey).toBe(false);
+      } else {
+        expect(v.reasons, v.featureKey).toContain("no_verified_source");
+      }
     }
   });
 
