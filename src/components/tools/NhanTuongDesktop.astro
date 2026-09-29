@@ -391,6 +391,23 @@ const STEPS = [
           </div>
         </div>
 
+        <!--
+          THẺ THAM KHẢO (advisory) — TÁCH HẲN khối fail-closed ở trên. Chỉ hiện khi đo được
+          mày/mắt và mày dài hơn mắt. Là QUAN SÁT skill-derived, độ tin cậy THẤP, CHƯA phải
+          kết luận xác thực. Do renderInterpretation() bật/tắt qua composeBrowEyeAdvisory().
+          KHÔNG dùng chữ "Kết luận".
+        -->
+        <div id="ntd-advisory" class="nt-card-parchment mx-auto mt-4 max-w-sm p-4 hidden">
+          <p class="flex flex-wrap items-center gap-2 text-[11px] font-semibold uppercase tracking-wide">
+            <span class="rounded-full border border-(--color-gold-500) px-2 py-0.5 text-(--color-gold-600)">Quan sát · Tham khảo</span>
+            <span id="ntd-adv-conf" class="nt-amber-muted">Độ tin cậy: THẤP</span>
+          </p>
+          <p id="ntd-adv-observed" class="mt-2 font-display text-base font-semibold text-(--color-ink-800)"></p>
+          <p id="ntd-adv-text" class="mt-1.5 text-sm leading-relaxed text-(--color-ink-600)"></p>
+          <p id="ntd-adv-attr" class="mt-1.5 text-[11px] italic nt-amber-muted"></p>
+          <p id="ntd-adv-disclaimer" class="mt-2 border-t border-[#dcbf8e] pt-2 text-xs leading-relaxed nt-amber-muted"></p>
+        </div>
+
         <p class="mx-auto mt-6 max-w-sm text-center text-xs leading-relaxed text-(--color-ink-500)">
           Phân tích dừng ở mức đo và kiểm bằng chứng. Chưa có nguồn cổ thư nào được xác minh
           nên hệ thống chưa đưa ra bất kỳ luận giải tướng học nào.
@@ -708,13 +725,12 @@ const STEPS = [
     }
     box.classList.remove("hidden");
 
-    const { runPipelineOnFeatures, resolveInterpretations } = await import("../../features/physiognomy/pipeline");
-    const out = runPipelineOnFeatures(
-      p.features.map((f) => ({
-        key: f.k, value: f.v, unit: f.u, confidence: f.c,
-        status: f.s, method: f.m, sourceView: f.w,
-      })),
-    );
+    const { runPipelineOnFeatures, resolveInterpretations, composeBrowEyeAdvisory } = await import("../../features/physiognomy/pipeline");
+    const engineFeatures = p.features.map((f) => ({
+      key: f.k, value: f.v, unit: f.u, confidence: f.c,
+      status: f.s, method: f.m, sourceView: f.w,
+    }));
+    const out = runPipelineOnFeatures(engineFeatures);
     // Thư viện luận giải chỉ kích hoạt SAU khi có luật match hợp lệ. Kho nguồn rỗng →
     // resolved rỗng. Hiển thị số mục để thấy rõ hệ đang fail-closed, không phải im lặng.
     const resolved = resolveInterpretations(out);
@@ -744,6 +760,26 @@ const STEPS = [
         const li = document.createElement("li");
         li.textContent = ly;
         ul.appendChild(li);
+      }
+    }
+
+    // ── TẦNG THAM KHẢO — độc lập verified path, KHÔNG chạm rule engine / eligibility /
+    //    tra nguồn. Chỉ hiện khi đo được mày/mắt và mày dài hơn mắt. Đây là QUAN SÁT
+    //    skill-derived (LOW/unverified), KHÔNG phải kết luận xác thực.
+    const advisory = composeBrowEyeAdvisory(engineFeatures);
+    const advBox = $("ntd-advisory");
+    if (advBox) {
+      if (advisory) {
+        set("ntd-adv-conf", "Độ tin cậy: THẤP");
+        set("ntd-adv-observed", "Quan sát được: lông mày có xu hướng dài hơn chiều rộng mắt.");
+        // Chọn ĐÚNG item thư viện nói tới quan hệ 'dài hơn mắt'; không tự viết nội dung.
+        const ref = advisory.references.find((r) => r.text.includes("dài hơn mắt")) ?? advisory.references[0];
+        set("ntd-adv-text", ref ? `Tham khảo: ${ref.text}` : "");
+        set("ntd-adv-attr", ref ? `Nguồn tham khảo (chưa đối chiếu bản gốc): ${ref.attribution}` : "");
+        set("ntd-adv-disclaimer", advisory.disclaimer);
+        advBox.classList.remove("hidden");
+      } else {
+        advBox.classList.add("hidden");
       }
     }
   }

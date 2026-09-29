@@ -203,3 +203,87 @@ export function runPipelineOnFeatures(
     },
   };
 }
+
+// ─────────────────────────────────────────── TẦNG THAM KHẢO (advisory)
+
+/**
+ * ADVISORY — quan sát THAM KHẢO, TÁCH HẲN verified path.
+ *
+ * Đặt ở tầng PIPELINE (orchestrator) vì cần chạm kho tri thức — tầng `interp` là lá thuần,
+ * KHÔNG được import knowledge (ranh giới ở nhan-tuong-boundary). Composer này KHÔNG dùng
+ * `evaluate`/eligibility/`resolveInterpretations`, KHÔNG sinh `InterpretationResult`, KHÔNG
+ * nâng `verificationStatus`. Verified path chạy độc lập và vẫn fail-closed.
+ */
+export const ADVISORY_VERSION = "physiognomy-advisory-v1" as const;
+
+const ADVISORY_KEYS = {
+  browL: "face.eyebrows.left_length", browR: "face.eyebrows.right_length",
+  eyeL: "face.eyes.left_width", eyeR: "face.eyes.right_width",
+} as const;
+
+export interface AdvisoryReference {
+  concept: string;
+  text: string;
+  verificationStatus: "unverified";
+  attribution: string;
+}
+
+export interface AdvisoryInterpretation {
+  /** KHÔNG BAO GIỜ "ok" — nhãn phân biệt với verified result. */
+  status: "ADVISORY";
+  confidence: "LOW";
+  observation: {
+    pattern: "brow_longer_than_eye";
+    holds: boolean;
+    observed: { key: string; value: number }[];
+  };
+  references: AdvisoryReference[];
+  disclaimer: string;
+  version: typeof ADVISORY_VERSION;
+}
+
+const ADVISORY_DISCLAIMER =
+  "Đây là quan sát THAM KHẢO từ thư tịch, độ tin cậy đo lường THẤP — CHƯA phải kết luận " +
+  "tướng học đã được xác thực. Nội dung là tri thức tổng hợp (chưa đối chiếu bản gốc).";
+
+/**
+ * Dựng advisory cho pattern 眉長過目 từ feature ĐÃ ĐO — KHÔNG cần eligibility, KHÔNG chạm
+ * verified engine. Trả `null` khi thiếu đo (chưa quan sát được) hoặc mày không dài hơn mắt
+ * ở cả hai bên (pattern không thành). Câu chữ chép nguyên từ thư viện skill-derived.
+ */
+export function composeBrowEyeAdvisory(features: EngineFeature[]): AdvisoryInterpretation | null {
+  const byKey = new Map(features.map((f) => [f.key, f]));
+  const num = (k: string) => {
+    const v = byKey.get(k)?.value;
+    return typeof v === "number" ? v : null;
+  };
+  const bL = num(ADVISORY_KEYS.browL), bR = num(ADVISORY_KEYS.browR);
+  const eL = num(ADVISORY_KEYS.eyeL), eR = num(ADVISORY_KEYS.eyeR);
+  if (bL === null || bR === null || eL === null || eR === null) return null;
+  if (!(bL > eL && bR > eR)) return null;
+
+  const references: AdvisoryReference[] = getInterpretationsForFeature(ADVISORY_KEYS.browL).map(
+    (it) => ({
+      concept: it.concept,
+      text: it.interpretation,
+      verificationStatus: it.provenance.verificationStatus,
+      attribution: it.provenance.attribution,
+    }),
+  );
+
+  return {
+    status: "ADVISORY",
+    confidence: "LOW",
+    observation: {
+      pattern: "brow_longer_than_eye",
+      holds: true,
+      observed: [
+        { key: ADVISORY_KEYS.browL, value: bL }, { key: ADVISORY_KEYS.eyeL, value: eL },
+        { key: ADVISORY_KEYS.browR, value: bR }, { key: ADVISORY_KEYS.eyeR, value: eR },
+      ],
+    },
+    references,
+    disclaimer: ADVISORY_DISCLAIMER,
+    version: ADVISORY_VERSION,
+  };
+}
